@@ -174,6 +174,7 @@ export default {
             district: form.district,
             developer_requiment: form.developer_requiment,
             project_image_url: form.project_image_url,
+            note: form.developer_requiment, // Mapping to note as per API example usually having both
             units: form.units.map(u => ({
               type: u.type,
               count: parseInt(u.count) || 0,

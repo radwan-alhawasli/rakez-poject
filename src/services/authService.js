@@ -1,4 +1,5 @@
 import apiClient from '../api/apiClient'
+import { ROLE_MAP } from '../constants/roles'
 
 const AUTH_TOKEN_KEY = 'authToken'
 const USER_INFO_KEY = 'userInfo'
@@ -12,10 +13,12 @@ const authService = {
      */
     async login(email, password) {
         try {
+            console.log('Attempting login for:', email)
             // Use the base URL from apiClient configuration
             const response = await apiClient.post('/login', { email, password })
 
             const { access_token, user } = response.data
+            console.log('Login response data:', response.data)
 
             if (access_token) {
                 localStorage.setItem(AUTH_TOKEN_KEY, access_token)
@@ -23,8 +26,16 @@ const authService = {
                 // If user object is returned, save it. Otherwise create a mock one based on email
                 const userData = user || {
                     name: 'Admin',
-                    email: email
+                    email: email,
+                    type: 1 // Default to admin if nothing returned
                 }
+
+                // Normalize type if it comes as string "admin" from backend
+                if (typeof userData.type === 'string' && ROLE_MAP[userData.type] !== undefined) {
+                    userData.type = ROLE_MAP[userData.type]
+                }
+
+                console.log('Saving normalized user data:', userData)
                 localStorage.setItem(USER_INFO_KEY, JSON.stringify(userData))
 
                 return userData

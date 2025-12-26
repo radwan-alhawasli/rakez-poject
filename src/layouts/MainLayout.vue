@@ -67,6 +67,7 @@
       <!-- القائمة الجانبية -->
       <aside class="sidebar">
         <div class="sidebar-header">
+           <img src="/img/logo-circle.png" class="sidebar-logo-img" alt="Logo" />
            <div class="sidebar-logo-text">
              <span class="rakez-ar">راكز</span> | <span class="rakez-en">Rakez</span>
            </div>
@@ -488,12 +489,20 @@ export default {
 }
 
 .sidebar-header {
-  height: 80px; display: flex; align-items: center; padding: 0 20px;
+  height: 80px; display: flex; align-items: center; padding: 0 20px; gap: 12px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
+.sidebar-logo-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(161, 139, 92, 0.3);
+}
+
 .sidebar-logo-text { font-size: 20px; font-weight: 700; font-family: 'Amiri', serif; }
-.rakez-ar { color: #fbbf24; }
+.rakez-ar { color: #a18b5c; }
 .rakez-en { font-size: 14px; opacity: 0.7; margin-right: 5px; }
 
 .sidebar-nav { flex: 1; padding: 15px 10px; overflow-y: auto; }
@@ -505,7 +514,7 @@ export default {
 }
 
 .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
-.nav-item.active { background: linear-gradient(90deg, #334155 0%, #1e293b 100%); color: #fbbf24; font-weight: 700; border-left: 3px solid #fbbf24; }
+.nav-item.active { background: linear-gradient(90deg, #334155 0%, #1e293b 100%); color: #a18b5c; font-weight: 700; border-left: 3px solid #a18b5c; }
 
 .nav-content { display: flex; align-items: center; gap: 12px; }
 .nav-icon-svg { width: 20px; height: 20px; color: currentColor; stroke-width: 2; }

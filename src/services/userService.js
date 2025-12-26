@@ -5,17 +5,16 @@ import { ROLE_MAP } from '../constants/roles'
 const userService = {
     /**
      * Get all employees
+     * GET /admin/employees/list_employees
      * @returns {Promise<Array>} List of employees
      */
     async getEmployees(params = {}) {
         try {
             const response = await apiClient.get('/admin/employees/list_employees', { params })
             const result = response.data
-            console.log('Raw Employee API Response:', result)
-
+            
             let employees = []
 
-            // More robust extraction
             if (result && result.employees && Array.isArray(result.employees)) {
                 employees = result.employees
             } else if (result && result.data && Array.isArray(result.data)) {
@@ -24,21 +23,16 @@ const userService = {
                 employees = result.data.employees
             } else if (Array.isArray(result)) {
                 employees = result
-            } else if (result && result.data && typeof result.data === 'object') {
-                // If data is an object, try to find an array property
-                const keys = Object.keys(result.data)
-                const arrayKey = keys.find(k => Array.isArray(result.data[k]))
-                if (arrayKey) employees = result.data[arrayKey]
+            } else if (result && typeof result === 'object') {
+                // Last resort: find first array value
+                const values = Object.values(result)
+                const found = values.find(v => Array.isArray(v))
+                if (found) employees = found
             }
 
-            if (!Array.isArray(employees)) {
-                console.warn('Could not find employee array in response', result)
-                employees = []
-            }
-
-            // Map string patterns to integers if needed for UI consistency
             return employees.map(emp => ({
                 ...emp,
+                // Ensure type is mapped correctly if it comes as string/int
                 type: (typeof emp.type === 'string' && ROLE_MAP[emp.type] !== undefined)
                     ? ROLE_MAP[emp.type]
                     : emp.type
@@ -51,12 +45,13 @@ const userService = {
 
     /**
      * Add a new employee
+     * POST /admin/employees/add_employee
+     * Payload: { email, password, phone, name, type }
      * @param {Object} employeeData 
      * @returns {Promise<Object>} Created employee
      */
     async addEmployee(employeeData) {
         try {
-            // Include all available fields in the payload
             const payload = {
                 name: employeeData.name,
                 email: employeeData.email,
@@ -73,61 +68,62 @@ const userService = {
                 salary: employeeData.salary
             }
 
-            console.log('Adding employee with full payload:', payload)
+            console.log('Adding employee payload:', payload)
             const response = await apiClient.post('/admin/employees/add_employee', payload)
             return response.data
         } catch (error) {
-            if (error.response && error.response.data) {
-                console.error('Add Employee API Error Details:', error.response.data)
-            }
+            console.error('Add Employee API Error:', error.response?.data || error.message)
             throw error
         }
     },
 
     /**
      * Update an existing employee
+     * PUT /admin/employees/update_employee/:id
+     * Payload: { email, phone, name, type } + optional password
      * @param {number|string} id 
      * @param {Object} employeeData 
      * @returns {Promise<Object>} Updated employee
      */
     async updateEmployee(id, employeeData) {
         try {
-            // Strict payload for update
             const payload = {
-                name: employeeData.name,
                 email: employeeData.email,
-                phone: employeeData.phone,
-                type: (typeof employeeData.type === 'string' && ROLE_MAP[employeeData.type] !== undefined)
-                    ? ROLE_MAP[employeeData.type]
-                    : parseInt(employeeData.type)
+                // phone: employeeData.phone, // Commented out in some examples, keeping to be safe or strictly following request? 
+                // Request image shows keys commented out, but we typically need to update them if changed. 
+                // We will send what is provided.
+                name: employeeData.name,
+                type: parseInt(employeeData.type)
+            }
+            
+            if (employeeData.phone) {
+                payload.phone = employeeData.phone
             }
 
-            // Only add password if it's not empty
+            // Only add password if it's explicitly provided and not empty
             if (employeeData.password && employeeData.password.trim() !== '') {
                 payload.password = employeeData.password
             }
 
-            console.log(`Updating employee ${id} with strict payload:`, payload)
+            console.log(`Updating employee ${id} payload:`, payload)
             const response = await apiClient.put(`/admin/employees/update_employee/${id}`, payload)
             return response.data
         } catch (error) {
-            if (error.response) {
-                console.error('Update Employee API Error:', error.response.data)
-            }
+            console.error('Update Employee API Error:', error.response?.data || error.message)
             throw error
         }
     },
 
     /**
      * Delete an employee
+     * DELETE /admin/employees/delete_employee/:id
      * @param {number|string} id 
      * @returns {Promise<Object>} Response
      */
     async deleteEmployee(id) {
         try {
-            console.log(`Sending DELETE request for employee ID: ${id}`)
+            console.log(`Deleting employee ID: ${id}`)
             const response = await apiClient.delete(`/admin/employees/delete_employee/${id}`)
-            console.log('Delete response:', response.data)
             return response.data
         } catch (error) {
             console.error('Error deleting employee:', error)
@@ -137,6 +133,7 @@ const userService = {
 
     /**
      * Get specific employee details
+     * GET /admin/employees/show_employee/:id
      * @param {number|string} id 
      * @returns {Promise<Object>} Employee details
      */

@@ -13,26 +13,12 @@
           كل السجلات <span class="tab-count">{{ totalCount }}</span>
         </button>
         
-        <!-- Admin Specific Tabs -->
-        <template v-if="userRole == 1">
-          <button :class="['tab-item', { active: activeFilter === 'marketer_contracts' }]" @click="activeFilter = 'marketer_contracts'">
-            عقود مسوقين <span class="tab-count">{{ marketerCount }}</span>
-          </button>
-          <button :class="['tab-item', { active: activeFilter === 'exclusive_requests' }]" @click="activeFilter = 'exclusive_requests'">
-            طلبات حصرية <span class="tab-count">{{ exclusiveCount }}</span>
-          </button>
-          <button :class="['tab-item', { active: activeFilter === 'my_requests' }]" @click="activeFilter = 'my_requests'">
-            طلباتي <span class="tab-count">{{ myRequestsCount }}</span>
-          </button>
-        </template>
-
         <button :class="['tab-item', { active: activeFilter === 'pending' }]" @click="activeFilter = 'pending'">
           المعلقة <span class="tab-count">{{ pendingCount }}</span>
         </button>
-        
-        <!-- General/Marketer Specific (Optional but keeping pending/approved/archive flow) -->
-        <button v-if="userRole != 1" :class="['tab-item', { active: activeFilter === 'approved' }]" @click="activeFilter = 'approved'">
-          الموافق عليها <span class="tab-count">{{ approvedCount }}</span>
+
+        <button :class="['tab-item', { active: activeFilter === 'approved' }]" @click="activeFilter = 'approved'">
+          العقود المقبولة <span class="tab-count">{{ approvedCount }}</span>
         </button>
 
         <button :class="['tab-item', { active: activeFilter === 'archive' }]" @click="activeFilter = 'archive'">
@@ -82,8 +68,8 @@
             <td class="dev-name">{{ contract.developer }}</td>
             <td class="dir-ltr">{{ contract.createdDate }}</td>
             <td>
-              <span :class="['status-badge-gold', { 'pending': contract.status === 'Pending', 'rejected': contract.status === 'Rejected', 'approved': contract.status === 'Approved' }]">
-                {{ contract.status === 'Pending' ? 'معلق' : (contract.status === 'Approved' ? 'موافق عليه' : 'مرفوض') }}
+              <span :class="['status-badge-custom', { 'pending': contract.status === 'Pending', 'rejected': contract.status === 'Refused', 'approved': contract.status === 'Approved' }]">
+                {{ contract.status }}
               </span>
             </td>
             <td><button class="view-link" @click="viewContract(contract)">عرض</button></td>
@@ -129,16 +115,23 @@ export default {
           
         const data = await serviceCall
         
-        contracts.value = data.map(c => ({
-          id: c.id,
-          type: c.type || (c.project_name ? 'Exclusive' : 'Full Contract'),
-          number: c.developer_number || c.id,
-          developer: c.project_name || c.name || 'غير محدد',
-          createdDate: c.created_at?.split('T')[0] || '-',
-          status: c.status === 'approved' ? 'Approved' : (c.status === 'rejected' ? 'Rejected' : 'Pending'),
-          marketer: c.marketer || c.created_by_name || 'System',
-          ...c
-        }))
+        contracts.value = data.map(c => {
+          let statusRaw = c.status ? c.status.toLowerCase() : 'pending'
+          let status = 'Pending'
+          if (statusRaw === 'approved') status = 'Approved'
+          else if (statusRaw === 'rejected' || statusRaw === 'refused') status = 'Refused'
+          
+          return {
+            ...c,
+            id: c.id,
+            type: c.type || (c.project_name ? 'Exclusive' : 'Full Contract'),
+            number: c.developer_number || c.id,
+            developer: c.project_name || c.name || 'غير محدد',
+            createdDate: c.created_at?.split('T')[0] || '-',
+            status: status,
+            marketer: c.marketer || c.created_by_name || 'System'
+          }
+        })
       } catch (err) {
         console.error('Error fetching contracts:', err)
         error.value = 'فشل تحميل العقود. يرجى التأكد من الصلاحيات.'
@@ -150,7 +143,7 @@ export default {
       
       if (activeFilter.value === 'pending') filtered = filtered.filter(c => c.status === 'Pending')
       else if (activeFilter.value === 'approved') filtered = filtered.filter(c => c.status === 'Approved')
-      else if (activeFilter.value === 'archive') filtered = filtered.filter(c => c.status === 'Rejected')
+      else if (activeFilter.value === 'archive') filtered = filtered.filter(c => c.status === 'Refused')
       else if (activeFilter.value === 'marketer_contracts') filtered = filtered.filter(c => c.type === 'Full Contract' || !c.type)
       else if (activeFilter.value === 'exclusive_requests') filtered = filtered.filter(c => c.type === 'Exclusive')
       else if (activeFilter.value === 'my_requests') filtered = filtered.filter(c => c.marketer === user.value?.name)
@@ -165,7 +158,7 @@ export default {
     const totalCount = computed(() => contracts.value.length)
     const pendingCount = computed(() => contracts.value.filter(c => c.status === 'Pending').length)
     const approvedCount = computed(() => contracts.value.filter(c => c.status === 'Approved').length)
-    const archiveCount = computed(() => contracts.value.filter(c => c.status === 'Rejected').length)
+    const archiveCount = computed(() => contracts.value.filter(c => c.status === 'Refused').length)
     const marketerCount = computed(() => contracts.value.filter(c => c.type === 'Full Contract' || !c.type).length)
     const exclusiveCount = computed(() => contracts.value.filter(c => c.type === 'Exclusive').length)
     const myRequestsCount = computed(() => contracts.value.filter(c => c.marketer === user.value?.name).length)
@@ -351,7 +344,7 @@ export default {
 
 .dir-ltr { direction: ltr; text-align: right; display: inline-block; width: 100%; }
 
-.status-badge-gold {
+.status-badge-custom {
     padding: 6px 16px;
     border-radius: 20px;
     font-size: 13px;
@@ -361,9 +354,9 @@ export default {
     display: inline-block;
 }
 
-.status-badge-gold.approved { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-.status-badge-gold.pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-.status-badge-gold.rejected { background: #fee2e2; color: #b91c1c; border: 1px solid #fecdd3; }
+.status-badge-custom.approved { background: #dcfce7 !important; color: #166534 !important; border: 1px solid #bbf7d0 !important; }
+.status-badge-custom.pending { background: #fef9c3 !important; color: #854d0e !important; border: 1px solid #fde047 !important; }
+.status-badge-custom.rejected { background: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fecdd3 !important; }
 
 .view-link {
     background: none; border: none; color: #1e293b; font-weight: 700; cursor: pointer; font-size: 14px;

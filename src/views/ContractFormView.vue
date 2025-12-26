@@ -340,7 +340,7 @@ export default {
         const payload = {
             // Second Party
             second_party_name: form.second_party_name,
-            second_party_id: form.second_party_id,
+            second_party_id_number: form.second_party_id,
             second_party_phone: form.second_party_phone,
             second_party_email: form.second_party_email,
             second_party_address: form.second_party_address,
@@ -349,18 +349,21 @@ export default {
             second_party_role: form.second_party_role,
 
             // Dates
-            gregorian_date: form.gregorian_date,
-            hijri_date: form.hijri_date,
-
+            // Dates - Format to DD-MM-YYYY if needed, or send as is if input matches
+            // Input type="date" gives YYYY-MM-DD. Postman shows DD-M-YYYY.
+            // We will format to DD-MM-YYYY to be safe.
+            gregorian_date: form.gregorian_date ? form.gregorian_date.split('-').reverse().join('-') : '',
+            hijri_date: form.hijri_date, // Usually text input, user enters correctly or we assume so
+            
             // Details
             contract_city: form.contract_city,
             agreement_duration_days: form.agreement_duration_days.toString(),
             commission_percent: form.commission_percent.toString(),
             commission_from: form.commission_from,
             agency_number: form.agency_number,
-            agency_date: form.agency_date,
+            agency_date: form.agency_date ? form.agency_date.split('-').reverse().join('-') : '',
             avg_property_value: form.avg_property_value.toString(),
-            release_date: form.release_date
+            release_date: form.release_date ? form.release_date.split('-').reverse().join('-') : ''
         }
 
         await contractService.storeContractInfo(requestId, payload)
