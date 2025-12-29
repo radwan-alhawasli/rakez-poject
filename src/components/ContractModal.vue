@@ -6,8 +6,8 @@
         <div class="header-content">
           <div class="header-title-row">
             <h2 class="modal-title">تفاصيل العقد/الطلب</h2>
-            <span :class="['status-badge-header', contract.status.toLowerCase()]">
-               {{ contract.status === 'Approved' ? 'موافق عليه' : (contract.status === 'Rejected' ? 'مرفوض' : 'معلق') }}
+            <span :class="['status-badge-header', normalizedStatus]">
+               {{ normalizedStatus === 'approved' ? 'موافق عليه' : (normalizedStatus === 'rejected' ? 'مرفوض' : 'معلق') }}
             </span>
           </div>
           <p class="modal-subtitle">مراجعة كاملة لبيانات السجل قبل الموافقة أو الرفض.</p>
@@ -29,10 +29,6 @@
             <div class="detail-row">
               <span class="detail-label">الاسم:</span>
               <span class="detail-value">{{ contractDetails.name }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">الممثل:</span>
-              <span class="detail-value">{{ contractDetails.representative }}</span>
             </div>
           </div>
         </section>
@@ -70,14 +66,6 @@
               <span class="detail-label">المسوقون (جلب):</span>
               <span class="detail-value">{{ contractDetails.marketer }}</span>
             </div>
-            <div class="detail-row">
-              <span class="detail-label">فريق التسويق:</span>
-              <span class="detail-value">{{ contractDetails.marketingTeam }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">نسبة السعي:</span>
-              <span class="detail-value highlight">{{ contractDetails.commissionRate }}</span>
-            </div>
           </div>
         </section>
 
@@ -87,9 +75,9 @@
           ...
         </div> 
         -->
-        <div class="modal-footer-action">
+       <div class="modal-footer-action">
            <button @click="closeModal" class="btn-close-large">إغلاق</button>
-           <div v-if="contract.status === 'Pending'" class="action-buttons">
+           <div v-if="normalizedStatus === 'pending'" class="action-buttons">
              <button @click="rejectContract" class="btn-reject">رفض العقد</button>
              <button @click="approveContract" class="btn-approve">الموافقة على العقد</button>
            </div>
@@ -112,19 +100,46 @@ export default {
   },
   emits: ['close', 'approve', 'reject'],
   setup(props, { emit }) {
-    // بيانات تفاصيل العقد المحددة
+    // بيانات تفاصيل العقد المحددة - ربط صحيح مع API
     const contractDetails = computed(() => {
       const c = props.contract || {}
-      return {
-        name: c.developerName || c.developer || 'غير محدد',
-        representative: c.representativeName || 'ابراهيم بدر الحربي',
-        projectName: c.projectName || 'غير محدد',
-        unitType: c.unitType || 'N/A',
-        unitCount: c.unitsCount || '0',
-        marketer: 'Admin', // يمكن تخصيصها لاحقاً إذا وجد حقل في API
-        marketingTeam: c.marketing_team || 'N/A',
-        commissionRate: c.commission_rate || '1.4875%'
+      
+      // حساب عدد الوحدات ونوعها من units array إذا كان موجوداً
+      let unitType = 'N/A'
+      let unitCount = 0
+      
+      if (c.units && Array.isArray(c.units) && c.units.length > 0) {
+        // جمع عدد الوحدات من جميع العناصر
+        unitCount = c.units.reduce((sum, unit) => sum + (parseInt(unit.count) || 0), 0)
+        // أخذ نوع الوحدة من العنصر الأول (أو دمج الأنواع إذا كانت مختلفة)
+        const types = c.units.map(u => u.type).filter(t => t).join('، ')
+        unitType = types || 'N/A'
+      } else {
+        // استخدام الحقول المباشرة إذا لم يكن هناك units array
+        unitType = c.unit_type || 'N/A'
+        unitCount = c.units_count || c.unit_count || 0
       }
+      
+      return {
+        // بيانات المطور - الاسم هو اسم المطور (developer_name)
+        name: c.developer_name || c.developer || 'غير محدد',
+        
+        // بيانات المشروع - من API الحقول الصحيحة
+        projectName: c.project_name || 'غير محدد',
+        unitType: unitType,
+        unitCount: unitCount,
+        
+        // تفاصيل التسويق - المسوقون هو اسم المستخدم الذي قدم الطلب (created_by_name)
+        marketer: c.created_by_name || c.marketer || c.marketer_name || 'غير محدد'
+      }
+    })
+
+    // حساب الحالة المعيارية للعرض والتحقق
+    const normalizedStatus = computed(() => {
+      const s = props.contract?.status ? String(props.contract.status).toLowerCase() : 'pending'
+      if (s === 'approved') return 'approved'
+      if (s === 'rejected' || s === 'refused') return 'rejected'
+      return 'pending'
     })
 
     const closeModal = () => {
@@ -149,7 +164,8 @@ export default {
       contractDetails,
       closeModal,
       approveContract,
-      rejectContract
+      rejectContract,
+      normalizedStatus
     }
   }
 }

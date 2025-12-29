@@ -45,7 +45,7 @@
             </td>
             <td>
               <div class="status-badge" :class="request.status.toLowerCase()">
-                {{ request.status === 'Approved' ? 'موافق عليه' : (request.status === 'Rejected' ? 'مرفوض' : 'معلق') }}
+                {{ request.status.toLowerCase() === 'approved' ? 'موافق عليه' : (request.status.toLowerCase() === 'rejected' ? 'مرفوض' : 'معلق') }}
               </div>
             </td>
             <td class="text-center">
@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import contractService from '../services/contractService'
 
@@ -76,12 +76,62 @@ export default {
     const requests = ref([])
     const isLoading = ref(true)
 
+    // Check if contract is completed (has been filled with data)
+    const isContractCompleted = (item) => {
+      // Check if contract has completion data
+      // We check for fields that are ONLY present after the "Complete Contract" form is submitted.
+      // These fields are not part of the initial Exclusive Project Request.
+      
+      const hasDate = item.gregorian_date && item.gregorian_date !== '';
+      const hasHijri = item.hijri_date && item.hijri_date !== '';
+      const hasDuration = item.agreement_duration_days != null && item.agreement_duration_days !== '' && item.agreement_duration_days != 0;
+      const hasCommission = item.commission_percent != null && item.commission_percent !== '';
+      
+      // If ANY of these specific completion fields are present, the contract is considered completed.
+      // We avoid checking second_party_name alone as it might be pre-filled from developer info.
+      return hasDate || hasHijri || hasDuration || hasCommission;
+    }
+
     const fetchRequests = async () => {
       isLoading.value = true
       try {
         const data = await contractService.getContracts()
+        
+        // 1. Filter out rejected contracts initially if needed, or keep all
+        // The user only sees their requests.
+        
+        // 2. Process contracts
+        const processedRequests = await Promise.all(data.map(async (item) => {
+           const status = (item.status || 'Pending').toLowerCase()
+           
+           // If approved, we need to check if it's completed
+           // But 'item' from list might be incomplete. 
+           // We'll check if we need to fetch details.
+           // Ideally, the list API should return enough info.
+           // If not, we fetch detail. 
+           
+           if (status === 'approved') {
+               // Fetch full details to check completion
+               try {
+                   const fullDetails = await contractService.getContractById(item.id)
+                   if (isContractCompleted(fullDetails)) {
+                       return null // Filter out completed
+                   }
+                   return { ...item, status: 'Approved' } // Keep non-completed
+               } catch (e) {
+                   console.error(`Failed to fetch details for ${item.id}`, e)
+                   return item // Keep if check fails, better safe than hidden
+               }
+           }
+           
+           return item
+        }))
+        
+        // Filter out nulls (completed contracts)
+        const validRequests = processedRequests.filter(r => r !== null)
+
         // Map API fields if they differ
-        requests.value = data.map(item => ({
+        requests.value = validRequests.map(item => ({
             id: item.id,
             project_name: item.project_name || 'بدون اسم',
             date: item.created_at ? item.created_at.split('T')[0] : 'غير متوفر',
@@ -94,7 +144,11 @@ export default {
       }
     }
 
+    // Fetch on mount
     onMounted(fetchRequests)
+    
+    // Re-fetch when component is activated (returning to this route)
+    onActivated(fetchRequests)
 
     const completeContract = (id) => {
       router.push(`/contract-form/${id}`)

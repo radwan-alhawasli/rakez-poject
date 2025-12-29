@@ -163,7 +163,22 @@ export default {
     const exclusiveCount = computed(() => contracts.value.filter(c => c.type === 'Exclusive').length)
     const myRequestsCount = computed(() => contracts.value.filter(c => c.marketer === user.value?.name).length)
 
-    const viewContract = (c) => { selectedContract.value = c; showModal.value = true }
+    const viewContract = async (c) => {
+      try {
+        // جلب تفاصيل العقد الكاملة من API
+        const fullDetails = await contractService.getContractById(c.id)
+        selectedContract.value = {
+          ...c,
+          ...fullDetails
+        }
+        showModal.value = true
+      } catch (error) {
+        console.error('Error fetching contract details:', error)
+        // في حالة الخطأ، استخدم البيانات الأساسية
+        selectedContract.value = c
+        showModal.value = true
+      }
+    }
     const closeModal = () => { showModal.value = false; selectedContract.value = null }
 
     const handleApprove = async (c) => { await contractService.approveContract(c.id); fetchContracts(); closeModal() }

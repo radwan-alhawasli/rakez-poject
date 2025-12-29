@@ -101,8 +101,8 @@
                 <label>السعي من</label>
                 <select v-model="form.commission_from" class="form-input">
                   <option value="">اختر الطرف</option>
-                  <option value="owner">المالك / Owner</option>
-                  <option value="partner">الشريك / Partner</option>
+                  <option value="owner">المالك </option>
+                  <option value="partner">المشتري</option>
                 </select>
               </div>
               <div class="field-group">
@@ -144,15 +144,15 @@
             <div class="input-row grid-3">
               <div class="field-group">
                 <label>سجل تجاري الطرف الثاني رقم</label>
-                <input type="text" v-model="form.second_party_cr_number" class="form-input readonly" readonly />
+                <input type="text" v-model="form.second_party_cr_number" class="form-input" />
               </div>
               <div class="field-group">
                 <label>مقر الطرف الثاني</label>
-                <input type="text" v-model="form.second_party_address" class="form-input readonly" readonly />
+                <input type="text" v-model="form.second_party_address" class="form-input" />
               </div>
               <div class="field-group">
                 <label>اسم الطرف الثاني</label>
-                <input type="text" v-model="form.second_party_name" class="form-input readonly" readonly />
+                <input type="text" v-model="form.second_party_name" class="form-input" />
               </div>
             </div>
 
@@ -209,9 +209,6 @@
 
             <div class="input-row grid-3">
               <div class="field-group">
-                  <!-- Empty for alignment -->
-              </div>
-              <div class="field-group">
                 <label>الحي</label>
                 <input type="text" v-model="form.district" class="form-input" />
               </div>
@@ -248,14 +245,40 @@
 
         <!-- Final Action -->
         <div class="form-footer">
-          <button type="submit" class="save-btn" :disabled="isSaving">
+          <button type="submit" class="save-btn approve-btn" :disabled="isSaving">
             <span v-if="isSaving" class="spinner-small"></span>
-            حفظ التعديلات
+            حفظ واعتماد العقد
           </button>
         </div>
 
       </form>
     </div>
+
+    <!-- Success Modal -->
+    <div v-if="showDownloadModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="success-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            </div>
+            <h3>تم حفظ العقد بنجاح</h3>
+            <p>يمكنك الآن تحميل نسخة PDF من العقد.</p>
+            
+            <div class="modal-actions">
+                <button @click="downloadContract" class="download-btn" :disabled="isDownloading">
+                    <span v-if="isDownloading" class="spinner-small"></span>
+                    <span v-else>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    </span>
+                    تحميل العقد (PDF)
+                </button>
+                <button @click="closeModal" class="close-btn">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
   </div>
 </template>
 
@@ -263,6 +286,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import contractService from '../services/contractService'
+import { downloadFilledContract } from '../services/pdfService'
 
 export default {
   name: 'ContractFormView',
@@ -270,6 +294,8 @@ export default {
     const router = useRouter()
     const route = useRoute()
     const isSaving = ref(false)
+    const isDownloading = ref(false)
+    const showDownloadModal = ref(false)
     const requestId = route.params.id
 
     const form = reactive({
@@ -316,14 +342,90 @@ export default {
         try {
             const data = await contractService.getContractById(requestId)
             if (data) {
-                form.city = data.city || ''
-                form.project_name = data.project_name || ''
-                form.district = data.district || ''
-                form.units_count = data.units_count || 0
-                form.unit_type = data.unit_type || ''
-                form.total_units_value = data.total_units_value || 0
-                form.average_unit_price = data.average_unit_price || 0
-                form.notes = data.notes || ''
+                // Project Info
+                form.city = data.city || form.city
+                form.project_name = data.project_name || form.project_name
+                form.district = data.district || form.district
+                
+                // Handle logic to extract unit info from units array if present
+                if (data.units && Array.isArray(data.units) && data.units.length > 0) {
+                   const firstUnit = data.units[0]
+                   form.unit_type = firstUnit.type || data.unit_type || form.unit_type
+                   
+                   // Calculate counts and total value (price * count) as per user request for "Average Property Value"
+                   let totalCount = 0
+                   let calculatedValue = 0
+                   
+                   data.units.forEach(u => {
+                       const count = parseInt(u.count) || 0
+                       const price = parseInt(u.price) || 0
+                       totalCount += count
+                       calculatedValue += (price * count)
+                   })
+
+                   form.units_count = totalCount > 0 ? totalCount : (data.units_count || form.units_count || 0)
+                   // Set avg_property_value using the calculated total
+                   form.avg_property_value = calculatedValue > 0 ? calculatedValue : (data.avg_property_value || form.avg_property_value || 0)
+                   
+                } else {
+                   form.units_count = data.units_count || data.unit_count || form.units_count || 0
+                   form.unit_type = data.unit_type || form.unit_type
+                }
+                
+                form.total_units_value = data.total_units_value || form.total_units_value || 0
+                form.average_unit_price = data.average_unit_price || form.average_unit_price || 0
+                form.notes = data.notes || form.notes
+                
+                // Second Party Info - Pre-fill from Developer info if it's an exclusive project or info exists
+                form.second_party_name = data.second_party_name || data.developer_name || data.name || form.second_party_name
+                form.second_party_id = data.second_party_id_number || data.second_party_id || form.second_party_id
+                form.second_party_phone = data.second_party_phone || form.second_party_phone
+                form.second_party_email = data.second_party_email || form.second_party_email
+                form.second_party_address = data.second_party_address || form.second_party_address
+                form.second_party_cr_number = data.second_party_cr_number || data.developer_number || form.second_party_cr_number
+                form.second_party_signatory = data.second_party_signatory || form.second_party_signatory
+                form.second_party_role = data.second_party_role || 'developer' // Default role for exclusive projects
+                
+                // Dates
+                if (data.gregorian_date) {
+                    // Convert DD-MM-YYYY to YYYY-MM-DD if needed
+                    const dateStr = data.gregorian_date;
+                    if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
+                        const parts = dateStr.split('-');
+                        form.gregorian_date = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    } else {
+                        form.gregorian_date = dateStr;
+                    }
+                }
+                form.hijri_date = data.hijri_date || form.hijri_date
+                
+                // Contract Details
+                form.contract_city = data.contract_city || form.contract_city
+                form.agreement_duration_days = data.agreement_duration_days || form.agreement_duration_days
+                
+                // Marketing
+                form.agency_number = data.agency_number || form.agency_number
+                if (data.agency_date) {
+                    const dateStr = data.agency_date;
+                    if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
+                        const parts = dateStr.split('-');
+                        form.agency_date = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    } else {
+                        form.agency_date = dateStr;
+                    }
+                }
+                form.commission_percent = data.commission_percent || form.commission_percent
+                form.commission_from = data.commission_from || form.commission_from
+                form.avg_property_value = data.avg_property_value || form.avg_property_value
+                if (data.release_date) {
+                    const dateStr = data.release_date;
+                    if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
+                        const parts = dateStr.split('-');
+                        form.release_date = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    } else {
+                        form.release_date = dateStr;
+                    }
+                }
             }
         } catch (error) {
             console.error('Failed to fetch contract details', error)
@@ -368,8 +470,9 @@ export default {
 
         await contractService.storeContractInfo(requestId, payload)
         
-        alert('تم حفظ تعديلات العقد بنجاح!')
-        router.push('/my-requests')
+        // alert('تم حفظ تعديلات العقد بنجاح!')
+        // router.push('/my-requests')
+        showDownloadModal.value = true
       } catch (error) {
         console.error('Save failed', error)
         alert('حدث خطأ أثناء الحفظ')
@@ -378,10 +481,36 @@ export default {
       }
     }
 
+    const downloadContract = async () => {
+        isDownloading.value = true
+        try {
+            const pdfBytes = await downloadFilledContract(form)
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+            const link = document.createElement('a')
+            link.href = URL.createObjectURL(blob)
+            link.download = `contract-${requestId}.pdf`
+            link.click()
+        } catch (error) {
+            console.error('Download failed', error)
+            alert('فشل تحميل ملف PDF. يرجى المحاولة مرة أخرى.')
+        } finally {
+            isDownloading.value = false
+        }
+    }
+
+    const closeModal = () => {
+        showDownloadModal.value = false
+        router.push('/my-requests')
+    }
+
     return {
       form,
       isSaving,
-      saveChanges
+      isDownloading,
+      showDownloadModal,
+      saveChanges,
+      downloadContract,
+      closeModal
     }
   }
 }
@@ -599,4 +728,123 @@ export default {
 @media (max-width: 900px) {
   .input-row.grid-3 { grid-template-columns: 1fr; }
 }
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: #ecfdf5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px auto;
+}
+
+.modal-content h3 {
+    font-size: 24px;
+    color: #1e3a5f;
+    margin-bottom: 10px;
+    font-family: 'Amiri', serif;
+}
+
+.modal-content p {
+    color: #64748b;
+    margin-bottom: 30px;
+    font-size: 16px;
+}
+
+.modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.download-btn {
+    background: #1e3a5f;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'Tajawal', sans-serif;
+    transition: all 0.2s;
+}
+
+.download-btn:hover:not(:disabled) {
+    background: #2c5282;
+    transform: translateY(-1px);
+}
+
+.download-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.close-btn {
+    background: white;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #475569;
+}
+
+/* Approve Button Style */
+.approve-btn {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); /* Darker blue request */
+    box-shadow: 0 4px 12px rgba(30, 58, 95, 0.25);
+}
+
+.approve-btn:hover:not(:disabled) {
+    box-shadow: 0 8px 20px rgba(30, 58, 95, 0.35);
+}
+
 </style>
