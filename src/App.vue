@@ -2,9 +2,8 @@
   <div id="app">
     <div class="logo-container">
       <div class="rakez-logo">
-        <div class="logo-text-main">راكز</div>
-        <div class="logo-subtitle">RAKEZ</div>
-        <div class="logo-tagline">محل الثقة</div>
+
+    
       </div>
     </div>
     <router-view />

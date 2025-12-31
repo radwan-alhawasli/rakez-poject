@@ -102,14 +102,20 @@ export default {
     const selectedContract = ref(null)
     
     const user = ref(authService.getCurrentUser())
-    const userRole = computed(() => user.value?.type ?? 0)
+    const userRole = computed(() => {
+      const type = user.value?.type
+      if (type === 1 || type === 'admin' || user.value?.role === 'admin') return 1
+      // Check for Project Management (3)
+      if (type == 3 || type === 'project_management') return 3
+      return type ?? 0
+    })
 
     const fetchContracts = async () => {
       isLoading.value = true
       error.value = null
       try {
         // Dynamic service call based on role
-        const serviceCall = userRole.value == 1 
+        const serviceCall = (userRole.value == 1 || userRole.value == 3)
           ? contractService.getAllContracts() 
           : contractService.getContracts()
           

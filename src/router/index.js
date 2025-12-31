@@ -20,7 +20,22 @@ const routes = [
             {
                 path: 'dashboard',
                 name: 'Dashboard',
-                component: () => import('../views/ContractsView.vue')
+                component: () => import('../views/DashboardView.vue')
+            },
+            {
+                path: 'project-management',
+                name: 'ProjectManagement',
+                component: () => import('../views/ProjectManagementView.vue')
+            },
+            {
+                path: 'developers',
+                name: 'Developers',
+                component: () => import('../views/DevelopersView.vue')
+            },
+            {
+                path: 'notifications',
+                name: 'Notifications',
+                component: () => import('../views/NotificationsView.vue')
             },
             {
                 path: 'contracts',
