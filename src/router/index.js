@@ -61,6 +61,21 @@ const routes = [
                 path: 'contract-form/:id',
                 name: 'ContractForm',
                 component: () => import('../views/ContractFormView.vue')
+            },
+            {
+                path: 'reservations',
+                name: 'Reservations',
+                component: () => import('../views/ReservationsView.vue')
+            },
+            {
+                path: 'cancelled-reservations',
+                name: 'CancelledReservations',
+                component: () => import('../views/CancelledReservationsView.vue')
+            },
+            {
+                path: 'profile',
+                name: 'Profile',
+                component: () => import('../views/ProfileView.vue')
             }
         ]
     },

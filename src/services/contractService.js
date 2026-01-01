@@ -58,6 +58,23 @@ const contractService = {
     return this.updateContractStatus(contractId, 'rejected')
   },
 
+  /**
+   * تحديث حالة العقد (لمدير المشاريع)
+   * PATCH /contracts/update-status/:id
+   */
+  async updateContractStatusProjectManager(contractId, status) {
+    try {
+      const response = await apiClient.patch(
+        `/contracts/update-status/${contractId}`,
+        { status }
+      )
+      return response.data
+    } catch (error) {
+      console.error('Error updating contract status (PM):', error)
+      throw error
+    }
+  },
+
   // --- Marketer / User Endpoints ---
 
   /**

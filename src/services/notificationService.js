@@ -80,7 +80,7 @@ const notificationService = {
     },
 
     markAllAsRead() {
-        notifications.value.forEach(Math => {
+        notifications.value.forEach(n => {
             n.read = true
             n.actionRequired = false
         })

@@ -115,7 +115,9 @@ export default {
       error.value = null
       try {
         // Dynamic service call based on role
-        const serviceCall = (userRole.value == 1 || userRole.value == 3)
+        // Role 1 (Admin) uses adminIndex
+        // Role 3 (Project Manager) and others use contracts/index
+        const serviceCall = (userRole.value == 1)
           ? contractService.getAllContracts() 
           : contractService.getContracts()
           
@@ -187,8 +189,35 @@ export default {
     }
     const closeModal = () => { showModal.value = false; selectedContract.value = null }
 
-    const handleApprove = async (c) => { await contractService.approveContract(c.id); fetchContracts(); closeModal() }
-    const handleReject = async (c) => { await contractService.rejectContract(c.id); fetchContracts(); closeModal() }
+    const handleApprove = async (c) => { 
+      try {
+        if (userRole.value == 3) {
+          await contractService.updateContractStatusProjectManager(c.id, 'approved')
+        } else {
+          await contractService.approveContract(c.id)
+        }
+        fetchContracts()
+        closeModal()
+      } catch (err) {
+        console.error('Error approving contract:', err)
+        alert('حدث خطأ أثناء اعتماد العقد')
+      }
+    }
+
+    const handleReject = async (c) => { 
+      try {
+        if (userRole.value == 3) {
+          await contractService.updateContractStatusProjectManager(c.id, 'rejected')
+        } else {
+          await contractService.rejectContract(c.id)
+        }
+        fetchContracts()
+        closeModal()
+      } catch (err) {
+        console.error('Error rejecting contract:', err)
+        alert('حدث خطأ أثناء رفض العقد')
+      }
+    }
 
     onMounted(fetchContracts)
 
