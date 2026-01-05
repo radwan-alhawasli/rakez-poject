@@ -304,7 +304,7 @@ export default {
 }
 
 .tab-item.active .tab-count {
-    background: #a18b5c;
+    background: #B1A28F;
     color: white;
 }
 
@@ -341,7 +341,7 @@ export default {
 
 .search-input:focus {
     outline: none;
-    border-color: #a18b5c;
+    border-color: #B1A28F;
     box-shadow: 0 0 0 3px rgba(161, 139, 92, 0.1);
 }
 
@@ -420,14 +420,14 @@ export default {
 }
 
 .loading-spinner {
-  width: 50px; height: 50px; border: 4px solid #f1f5f9; border-top-color: #a18b5c;
+  width: 50px; height: 50px; border: 4px solid #f1f5f9; border-top-color: #B1A28F;
   border-radius: 50%; animation: spin 1s linear infinite;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .retry-btn {
-  padding: 10px 24px; background: linear-gradient(135deg, #a18b5c 0%, #8c7851 100%);
+  padding: 10px 24px; background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
   color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
 }
 </style>

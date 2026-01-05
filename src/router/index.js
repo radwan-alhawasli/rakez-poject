@@ -58,9 +58,19 @@ const routes = [
                 component: () => import('../views/MyRequestsView.vue')
             },
             {
+                path: 'photography',
+                name: 'Photography',
+                component: () => import('../views/PhotographyView.vue')
+            },
+            {
                 path: 'contract-form/:id',
                 name: 'ContractForm',
                 component: () => import('../views/ContractFormView.vue')
+            },
+            {
+                path: 'project-tracker/:id',
+                name: 'ProjectTracker',
+                component: () => import('../views/ProjectTrackerView.vue')
             },
             {
                 path: 'reservations',

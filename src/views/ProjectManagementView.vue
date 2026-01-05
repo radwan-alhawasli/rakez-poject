@@ -6,12 +6,7 @@
         <h1 class="page-title">إدارة المشاريع</h1>
         <p class="page-subtitle">عرض وإدارة جميع المشاريع النشطة والمكتملة والمؤرشفة.</p>
       </div>
-      <div class="header-actions">
-        <router-link to="/exclusive-request" class="btn-primary">
-           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-           مشروع جديد
-        </router-link>
-      </div>
+
     </div>
 
     <!-- Filters and Search -->
@@ -37,6 +32,9 @@
       </button>
       <button :class="['tab-btn', { active: activeTab === 'ready' }]" @click="activeTab = 'ready'">
         مشاريع جاهزة للتسويق ({{ readyCount }})
+      </button>
+      <button :class="['tab-btn', { active: activeTab === 'photography' }]" @click="activeTab = 'photography'">
+        التصوير ({{ photographyCount }})
       </button>
        <button :class="['tab-btn', { active: activeTab === 'archive' }]" @click="activeTab = 'archive'">
         الأرشيف ({{ archiveCount }})
@@ -83,7 +81,7 @@
             </div>
              <!-- Tracker Link or Info -->
             <button class="tracker-btn" @click="viewTracker(project)">
-               المتتبع
+               {{ activeTab === 'photography' ? 'متابعة التصوير' : 'عرض التفاصيل' }}
             </button>
           </div>
         </div>
@@ -95,13 +93,17 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import contractService from '../services/contractService'
-import notificationService from '../services/notificationService'
+
 
 export default {
   name: 'ProjectManagementView',
   setup() {
-    const activeTab = ref('not_ready')
+    const router = useRouter()
+    const route = useRoute() // Import this
+    // Initialize activeTab based on query param if present
+    const activeTab = ref(route.query.tab === 'photography' ? 'photography' : 'not_ready')
     const searchQuery = ref('')
     const teamFilter = ref('')
     const isLoading = ref(false)
@@ -143,6 +145,9 @@ export default {
       } else if (activeTab.value === 'not_ready') {
          // Not Ready = Not Approved OR No Units (Tracker incomplete)
          filtered = filtered.filter(p => p.status !== 'Approved' || !p.units || p.units.length === 0)
+      } else if (activeTab.value === 'photography') {
+         // For now, treat approved projects as candidates for photography
+         filtered = filtered.filter(p => p.status === 'Approved')
       } else if (activeTab.value === 'archive') {
          filtered = filtered.filter(p => p.status === 'Refused' || p.status === 'Rejected')
       }
@@ -159,24 +164,17 @@ export default {
     const notReadyCount = computed(() => projects.value.filter(p => p.status !== 'Approved' || !p.units || p.units.length === 0).length)
     const readyCount = computed(() => projects.value.filter(p => p.status === 'Approved' && p.units && p.units.length > 0).length)
     const archiveCount = computed(() => projects.value.filter(p => p.status === 'Refused' || p.status === 'Rejected').length)
+    const photographyCount = computed(() => projects.value.filter(p => p.status === 'Approved').length) // Same logic as filter active
 
     const viewTracker = (project) => {
-        // Redirect to tracker view (need to implement or route to contract details)
-        const confirmComplete = confirm(`هل تريد إكمال متتبع المشروع "${project.name}" ونقله إلى القائمة الجاهزة؟ (تجريبي)`)
-        if (confirmComplete) {
-           notificationService.triggerProjectCompletion(project.name)
-           // For demo, we might want to locally update status to show effect, but without backend it resets on reload
-           project.status = 'Approved' 
-           project.units = [{id:1}] // Mock units to make it "Ready"
-           alert('تم إكمال المتتبع وإرسال إشعار بذلك!')
-        }
+        router.push({ name: 'ProjectTracker', params: { id: project.id } })
     }
 
     onMounted(fetchProjects)
 
     return {
       activeTab, searchQuery, teamFilter, isLoading,
-      filteredProjects, notReadyCount, readyCount, archiveCount,
+      filteredProjects, notReadyCount, readyCount, archiveCount, photographyCount,
       viewTracker
     }
   }
@@ -208,7 +206,7 @@ export default {
 .page-subtitle { color: #64748b; font-size: 15px; margin: 0; }
 
 .btn-primary {
-  background: #a18b5c; color: white; border: none; padding: 10px 20px;
+  background: #B1A28F; color: white; border: none; padding: 10px 20px;
   border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;
   text-decoration: none; transition: background 0.2s;
 }
@@ -230,7 +228,7 @@ export default {
   border-radius: 10px; outline: none; transition: border-color 0.2s;
   font-family: inherit;
 }
-.search-box input:focus { border-color: #a18b5c; }
+.search-box input:focus { border-color: #B1A28F; }
 
 .filter-dropdown select {
   padding: 12px 30px 12px 15px; border: 1px solid #e2e8f0; border-radius: 10px;
@@ -248,7 +246,7 @@ export default {
 .tab-btn.active { color: #1e3a5f; font-weight: 700; }
 .tab-btn.active::after {
   content: ''; position: absolute; bottom: -1px; width: 100%; height: 3px;
-  background: #a18b5c; left: 0; border-radius: 3px 3px 0 0;
+  background: #B1A28F; left: 0; border-radius: 3px 3px 0 0;
 }
 
 .projects-grid {
@@ -307,7 +305,7 @@ export default {
   text-align: center; padding: 40px; color: #94a3b8;
 }
 .spinner {
-   width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: #a18b5c;
+   width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: #B1A28F;
    border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }

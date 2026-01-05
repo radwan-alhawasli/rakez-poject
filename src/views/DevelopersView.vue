@@ -214,7 +214,7 @@ export default {
 .view-projects-btn:hover { background: #0f172a; }
 
 .btn-primary {
-  background: #a18b5c; color: white; border: none; padding: 10px 20px;
+  background: #B1A28F; color: white; border: none; padding: 10px 20px;
   border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;
   cursor: pointer; transition: background 0.2s;
 }

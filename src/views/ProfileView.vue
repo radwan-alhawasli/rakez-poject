@@ -158,7 +158,7 @@ export default {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #a18b5c 0%, #c9a85c 100%);
+  background: linear-gradient(135deg, #B1A28F 0%, #c9a85c 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -217,7 +217,7 @@ export default {
 .section-title svg {
   width: 20px;
   height: 20px;
-  color: #a18b5c;
+  color: #B1A28F;
 }
 
 /* Info Grid */
@@ -274,8 +274,8 @@ export default {
 
 .settings-btn:hover {
   background: #fdfbf7;
-  border-color: #a18b5c;
-  color: #a18b5c;
+  border-color: #B1A28F;
+  color: #B1A28F;
 }
 
 .settings-btn svg {
@@ -307,7 +307,7 @@ export default {
 .stat-value {
   font-size: 28px;
   font-weight: 700;
-  color: #a18b5c;
+  color: #B1A28F;
   margin-bottom: 4px;
 }
 

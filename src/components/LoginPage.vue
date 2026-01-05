@@ -157,7 +157,7 @@ export default {
   left: 10%;
   border-radius: 20px;
   transform: rotate(-15deg);
-  background: linear-gradient(135deg, #a18b5c 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
   opacity: 0.1;
 }
 
@@ -228,7 +228,7 @@ export default {
 
 .form-input:focus {
   outline: none;
-  border-color: #a18b5c;
+  border-color: #B1A28F;
   background: white;
   box-shadow: 0 0 0 3px rgba(161, 139, 92, 0.1);
 }
@@ -251,12 +251,12 @@ export default {
 }
 
 .forgot-link:hover {
-  color: #a18b5c;
+  color: #B1A28F;
 }
 
 .login-btn {
   margin-top: 10px;
-  background: #a18b5c; /* Gold */
+  background: #B1A28F; /* Gold */
   color: white;
   border: none;
   padding: 14px;
@@ -320,7 +320,7 @@ export default {
 .r-en {
   font-size: 14px;
   letter-spacing: 4px;
-  color: #a18b5c;
+  color: #B1A28F;
   margin-top: 5px;
 }
 

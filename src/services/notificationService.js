@@ -30,6 +30,7 @@ const INITIAL_NOTIFICATIONS = [
         title: 'تم إضافة مشروع جديد "ss" وهو الآن في قسم المشاريع غير الجاهزة للمراجعة.',
         time: 'منذ 7 أيام بواسطة النظام',
         read: false,
+        type: 'info',
         actionRequired: true
     }
 ]
@@ -64,6 +65,7 @@ const notificationService = {
             title: text,
             time: 'الآن',
             read: false,
+            type: type,
             actionRequired: type === 'action'
         }
         notifications.value.unshift(newNotif)

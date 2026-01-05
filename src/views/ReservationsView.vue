@@ -864,7 +864,7 @@ export default {
   transition: all 0.2s;
   font-family: 'Tajawal', sans-serif;
 }
-.filter-toggle:hover, .export-btn:hover { border-color: #a18b5c; color: #a18b5c; }
+.filter-toggle:hover, .export-btn:hover { border-color: #B1A28F; color: #B1A28F; }
 .filter-toggle svg, .export-btn svg { width: 16px; height: 16px; }
 .export-btn { background: linear-gradient(135deg, #1e3a5f 0%, #0f1e30 100%); color: white; border: none; }
 .export-btn:hover { opacity: 0.9; }
@@ -947,8 +947,8 @@ export default {
 
 .tab-btn:hover {
   background: #f8fafc;
-  border-color: #a18b5c;
-  color: #a18b5c;
+  border-color: #B1A28F;
+  color: #B1A28F;
 }
 
 .tab-btn.active {
@@ -999,7 +999,7 @@ export default {
 }
 
 .unit-number {
-  color: #a18b5c;
+  color: #B1A28F;
 }
 
 .client-info {
@@ -1055,7 +1055,7 @@ export default {
   border-radius: 20px;
   font-size: 11px;
   font-weight: 600;
-  background: linear-gradient(135deg, #a18b5c 0%, #c9a85c 100%);
+  background: linear-gradient(135deg, #B1A28F 0%, #c9a85c 100%);
   color: white;
 }
 
@@ -1150,8 +1150,8 @@ export default {
 }
 
 .action-btn.primary {
-  background: linear-gradient(135deg, #a18b5c 0%, #c9a85c 100%);
-  border-color: #a18b5c;
+  background: linear-gradient(135deg, #B1A28F 0%, #c9a85c 100%);
+  border-color: #B1A28F;
   color: white;
 }
 
@@ -1166,8 +1166,8 @@ export default {
 }
 
 .action-btn.secondary:hover {
-  border-color: #a18b5c;
-  color: #a18b5c;
+  border-color: #B1A28F;
+  color: #B1A28F;
 }
 
 .action-btn.cancel {
@@ -1278,8 +1278,8 @@ export default {
 }
 
 .progress-step.active .step-circle {
-  background: #a18b5c;
-  border-color: #a18b5c;
+  background: #B1A28F;
+  border-color: #B1A28F;
   color: white;
 }
 
@@ -1328,8 +1328,8 @@ export default {
 }
 
 .complete-all-btn:hover {
-  border-color: #a18b5c;
-  color: #a18b5c;
+  border-color: #B1A28F;
+  color: #B1A28F;
 }
 
 /* Details Grid */
@@ -1373,7 +1373,7 @@ export default {
 .detail-title svg {
   width: 18px;
   height: 18px;
-  color: #a18b5c;
+  color: #B1A28F;
 }
 
 .detail-row {
@@ -1399,7 +1399,7 @@ export default {
 }
 
 .detail-value.link {
-  color: #a18b5c;
+  color: #B1A28F;
   cursor: pointer;
 }
 

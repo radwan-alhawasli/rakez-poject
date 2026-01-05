@@ -88,7 +88,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue'
 import authService from '../services/authService'
-import contractService from '../services/contractService' // Using contract service as source for now
+import contractService from '../services/contractService'
 
 export default {
   name: 'DashboardView',
@@ -97,8 +97,8 @@ export default {
     const userName = computed(() => user.value?.name || 'مستخدم')
     
     // Stats
-    const totalProjectValue = ref(1594.02) // Mocked for now or calc from loop
-    const availableUnits = ref(486) // Mocked or calc
+    const totalProjectValue = ref(0)
+    const availableUnits = ref(0)
     const totalProjects = ref(0)
     const readyProjects = ref(0)
     const notReadyProjects = ref(0)
@@ -106,20 +106,33 @@ export default {
     const fetchData = async () => {
       try {
         // Fetch contracts/projects
-        const data = await contractService.getContracts() // Or getAllContracts based on role?
+        const data = await contractService.getContracts() 
         const projects = Array.isArray(data) ? data : []
         
         totalProjects.value = projects.length
 
         // Logic for Ready/Not Ready
-        // "Ready" = has units. "Not Ready" = tracker not completed.
-        // Since we don't have "tracker" field transparently, we'll improvise:
-        // Assume 'status' === 'Approved' is Ready, 'Pending' is Not Ready for now, OR check if 'units' array exists/length > 0
-        
         readyProjects.value = projects.filter(p => p.status === 'Approved' || (p.units && p.units.length > 0)).length
         notReadyProjects.value = projects.filter(p => p.status !== 'Approved').length
         
-        // availableUnits.value = projects.reduce((acc, p) => acc + (p.units?.length || 0), 0)
+        // Calculate Total Value and Available Units
+        let valueSum = 0
+        let unitsSum = 0
+
+        projects.forEach(p => {
+             if (p.units && Array.isArray(p.units)) {
+                 p.units.forEach(u => {
+                     const count = parseInt(u.count) || 1
+                     const price = parseFloat(u.price) || 0
+                     unitsSum += count
+                     valueSum += (price * count)
+                 })
+             }
+        })
+
+        availableUnits.value = unitsSum
+        // Format to Millions if large enough, else keep as is
+        totalProjectValue.value = (valueSum / 1000000).toFixed(2)
 
       } catch (e) {
         console.error('Error fetching dashboard data', e)
@@ -193,7 +206,7 @@ export default {
 .stat-card.clickable:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-  border-color: #a18b5c;
+  border-color: #B1A28F;
 }
 
 .stat-card:hover {

@@ -338,7 +338,7 @@ export default {
 
 .input:focus {
   outline: none;
-  border-color: #a18b5c;
+  border-color: #B1A28F;
   box-shadow: 0 0 0 2px rgba(161, 139, 92, 0.1);
 }
 
@@ -389,7 +389,7 @@ export default {
 }
 
 .btn-submit {
-  background: linear-gradient(135deg, #a18b5c 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
   color: white;
   box-shadow: 0 4px 12px rgba(161, 139, 92, 0.2);
 }

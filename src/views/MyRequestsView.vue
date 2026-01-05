@@ -267,7 +267,7 @@ export default {
 .status-badge.rejected { background: #fee2e2; color: #b91c1c; border: 1px solid #fecdd3; }
 
 .complete-btn {
-  background: linear-gradient(135deg, #a18b5c 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -300,7 +300,7 @@ export default {
   width: 40px;
   height: 40px;
   border: 3px solid rgba(161, 139, 92, 0.1);
-  border-top-color: #a18b5c;
+  border-top-color: #B1A28F;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   display: inline-block;
@@ -308,7 +308,7 @@ export default {
 
 .loading-text {
   margin-top: 10px;
-  color: #a18b5c;
+  color: #B1A28F;
   font-weight: 500;
 }
 

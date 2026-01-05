@@ -80,7 +80,7 @@ export default {
   display: flex; justify-content: space-between; align-items: flex-start;
   border: 1px solid #e2e8f0; transition: all 0.2s;
   background: #f8fafc; /* Unread Styles */
-  border-right: 4px solid #a18b5c;
+  border-right: 4px solid #B1A28F;
 }
 
 .notif-item.read {

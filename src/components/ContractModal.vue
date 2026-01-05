@@ -199,7 +199,7 @@ export default {
   overflow: hidden;
   direction: rtl;
   font-family: 'Tajawal', sans-serif;
-  border-top: 4px solid #a18b5c; /* Gold Top Border */
+  border-top: 4px solid #B1A28F; /* Gold Top Border */
 }
 
 /* Classic Typography Helpers */
@@ -293,7 +293,7 @@ h2, h3, .modal-title, .section-title {
 .section-bar {
   width: 4px;
   height: 24px;
-  background: linear-gradient(180deg, #a18b5c 0%, #c9a961 100%);
+  background: linear-gradient(180deg, #B1A28F 0%, #c9a961 100%);
   border-radius: 2px;
   box-shadow: 0 2px 4px rgba(161, 139, 92, 0.3);
 }
@@ -352,7 +352,7 @@ h2, h3, .modal-title, .section-title {
 }
 
 .detail-value.highlight {
-  color: #a18b5c;
+  color: #B1A28F;
   font-weight: 700;
   font-size: 15px;
 }
@@ -372,7 +372,7 @@ h2, h3, .modal-title, .section-title {
 }
 
 .btn-approve {
-  background: linear-gradient(135deg, #a18b5c 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
   color: white;
   border: none;
   padding: 12px 32px;
@@ -423,8 +423,8 @@ h2, h3, .modal-title, .section-title {
 
 .btn-close-large:hover {
   background: #fdfdfd;
-  color: #a18b5c;
-  border-color: #a18b5c;
+  color: #B1A28F;
+  border-color: #B1A28F;
 }
 
 
@@ -436,7 +436,7 @@ h2, h3, .modal-title, .section-title {
   background: #f1f1f1; 
 }
 ::-webkit-scrollbar-thumb {
-  background: #a18b5c; 
+  background: #B1A28F; 
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {

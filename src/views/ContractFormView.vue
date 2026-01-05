@@ -580,7 +580,7 @@ export default {
     color: #1e3a5f;
     margin-bottom: 15px;
     padding-right: 10px;
-    border-right: 4px solid #a18b5c;
+    border-right: 4px solid #B1A28F;
 }
 
 .form-group-info {
@@ -649,7 +649,7 @@ export default {
 
 .form-input:focus {
   outline: none;
-  border-color: #a18b5c;
+  border-color: #B1A28F;
   box-shadow: 0 0 0 3px rgba(161, 139, 92, 0.1);
   background: white;
 }
@@ -680,8 +680,8 @@ export default {
 }
 
 .add-project-btn:hover {
-    border-color: #a18b5c;
-    color: #a18b5c;
+    border-color: #B1A28F;
+    color: #B1A28F;
     background: #fdfbf7;
 }
 
@@ -692,7 +692,7 @@ export default {
 }
 
 .save-btn {
-  background: linear-gradient(135deg, #a18b5c 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
   color: white;
   border: none;
   padding: 14px 40px;

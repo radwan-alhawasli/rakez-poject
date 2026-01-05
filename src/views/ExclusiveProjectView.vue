@@ -132,6 +132,7 @@
 <script>
 import { ref, reactive } from 'vue'
 import contractService from '../services/contractService'
+import notificationService from '../services/notificationService'
 
 export default {
   name: 'ExclusiveProjectView',
@@ -184,6 +185,12 @@ export default {
 
         await contractService.createContract(payload)
         
+        // Trigger notification
+        notificationService.addNotification(
+           `تم إضافة مشروع جديد "${form.project_name}" بنجاح وهو الآن قيد المراجعة.`,
+           'info'
+        )
+
         alert('تم إرسال طلب اعتماد المشروع بنجاح!')
         // Reset form
         Object.assign(form, {
@@ -326,7 +333,7 @@ export default {
 
 .form-input:focus {
   outline: none;
-  border-color: #a18b5c;
+  border-color: #B1A28F;
   box-shadow: 0 0 0 3px rgba(161, 139, 92, 0.1);
   background: white;
 }
@@ -358,7 +365,7 @@ export default {
 .add-unit-link {
     background: none;
     border: none;
-    color: #a18b5c;
+    color: #B1A28F;
     font-weight: 700;
     cursor: pointer;
     font-size: 14px;
@@ -379,7 +386,7 @@ export default {
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #a18b5c 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
   color: white;
   border: none;
   padding: 14px 40px;

@@ -30,11 +30,12 @@
               <div v-for="notification in notifications" :key="notification.id"
                 :class="['notification-item', { unread: !notification.read }]" @click="markAsRead(notification.id)">
                 <div class="notification-icon-bg" :class="notification.type">
-                  <svg v-if="notification.type==='info'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                  <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                  <svg v-if="notification.type==='success'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <svg v-else-if="notification.type==='warning'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                  <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                 </div>
                 <div class="notification-content">
-                  <div class="notification-text">{{ notification.text }}</div>
+                  <div class="notification-text">{{ notification.title }}</div>
                   <div class="notification-time">{{ notification.time }}</div>
                 </div>
                 <div v-if="!notification.read" class="unread-dot"></div>
@@ -191,6 +192,14 @@
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                 <span class="nav-text">إدارة المشاريع</span>
+              </div>
+            </router-link>
+
+            <!-- التصوير (New) -->
+            <router-link to="/photography" class="nav-item" active-class="active">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <span class="nav-text">التصوير</span>
               </div>
             </router-link>
 
@@ -371,6 +380,7 @@
 <script>
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import notificationService from '../services/notificationService'
 import authService from '../services/authService'
 
 export default {
@@ -380,35 +390,34 @@ export default {
     const router = useRouter()
     
     const user = computed(() => {
-        // Accessing route.path makes this computed property reactive to route changes
         route.path
         return authService.getCurrentUser()
     })
     const showNotifications = ref(false)
     
-    // Check auth status on setup
     if (!authService.isAuthenticated()) {
       router.push('/login')
     }
     
-    const notifications = ref([
-      { id: 1, text: 'تم إنشاء عقد جديد من شركة سكف العقارية', time: 'منذ 5 دقائق', read: false, type: 'info' },
-      { id: 2, text: 'عقد رقم 1512DC يحتاج إلى مراجعة', time: 'منذ 15 دقيقة', read: false, type: 'warning' }
-    ])
+    // Use the comprehensive notification service
+    const notifications = notificationService.getAll()
     
     const unreadCount = computed(() => notifications.value.filter(n => !n.read).length)
     
     const toggleNotifications = () => { showNotifications.value = !showNotifications.value }
+    
     const markAsRead = (id) => { 
-      const n = notifications.value.find(notif => notif.id === id)
-      if (n) n.read = true
+      notificationService.markAsRead(id)
     }
-    const markAllAsRead = () => { notifications.value.forEach(n => n.read = true) }
+    
+    const markAllAsRead = () => { 
+        notificationService.markAllAsRead()
+    }
 
     const userRole = computed(() => {
       const type = user.value?.type
-      // If type is 1 or string 'admin', it's an Admin
       if (type === 1 || type === 'admin' || user.value?.role === 'admin') return 1
+      if (type == 3 || type === 'project_management') return 3
       return type ?? 0
     })
 
@@ -451,7 +460,7 @@ export default {
   justify-content: space-between;
   padding: 0 30px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  border-bottom: 2px solid #a18b5c;
+  border-bottom: 2px solid #B1A28F;
   position: fixed;
   top: 0;
   left: 0;
@@ -474,12 +483,12 @@ export default {
 
 .notification-btn:hover {
   background: #fdfbf7;
-  border-color: #a18b5c;
-  color: #a18b5c;
+  border-color: #B1A28F;
+  color: #B1A28F;
   box-shadow: 0 4px 12px rgba(161, 139, 92, 0.15);
   transform: translateY(-2px);
 }
-.back-btn:hover, .notification-btn:hover { border-color: #a18b5c; background: white; }
+.back-btn:hover, .notification-btn:hover { border-color: #B1A28F; background: white; }
 
 .notification-badge {
     position: absolute; top: -5px; right: -5px;
@@ -523,7 +532,7 @@ export default {
 }
 
 .notifications-title { font-size: 16px; font-weight: 700; color: #1e3a5f; margin: 0; }
-.mark-read-btn { font-size: 12px; color: #a18b5c; background: none; border: none; cursor: pointer; font-weight: 600; }
+.mark-read-btn { font-size: 12px; color: #B1A28F; background: none; border: none; cursor: pointer; font-weight: 600; }
 .mark-read-btn:hover { text-decoration: underline; }
 
 .notifications-list { max-height: 400px; overflow-y: auto; }
@@ -540,7 +549,8 @@ export default {
     width: 36px; height: 36px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.notification-icon-bg.info { background: rgba(161, 139, 92, 0.1); color: #a18b5c; }
+.notification-icon-bg.info { background: rgba(161, 139, 92, 0.1); color: #B1A28F; }
+.notification-icon-bg.success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 .notification-icon-bg.warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
 
 .notification-content { flex: 1; }
@@ -548,7 +558,7 @@ export default {
 .notification-time { font-size: 11px; color: #94a3b8; }
 
 .unread-dot {
-    width: 6px; height: 6px; background: #a18b5c; border-radius: 50%;
+    width: 6px; height: 6px; background: #B1A28F; border-radius: 50%;
     position: absolute; top: 20px; left: 10px;
 }
 
@@ -579,7 +589,7 @@ export default {
 }
 
 .sidebar-logo-text { font-size: 20px; font-weight: 700; font-family: 'Amiri', serif; }
-.rakez-ar { color: #a18b5c; }
+.rakez-ar { color: #B1A28F; }
 .rakez-en { font-size: 14px; opacity: 0.7; margin-right: 5px; }
 
 .sidebar-nav { flex: 1; padding: 15px 10px; overflow-y: auto; }
@@ -591,7 +601,7 @@ export default {
 }
 
 .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
-.nav-item.active { background: linear-gradient(90deg, #334155 0%, #1e293b 100%); color: #a18b5c; font-weight: 700; border-left: 3px solid #a18b5c; }
+.nav-item.active { background: linear-gradient(90deg, #334155 0%, #1e293b 100%); color: #B1A28F; font-weight: 700; border-left: 3px solid #B1A28F; }
 
 .nav-content { display: flex; align-items: center; gap: 12px; }
 .nav-icon-svg { width: 20px; height: 20px; color: currentColor; stroke-width: 2; }
@@ -627,7 +637,7 @@ export default {
   position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
   z-index: 0; pointer-events: none; opacity: 0.05; text-align: center; width: 100%;
 }
-.logo-text-main { font-size: 100px; font-weight: 900; color: #a18b5c; font-family: 'Amiri', serif; }
+.logo-text-main { font-size: 100px; font-weight: 900; color: #B1A28F; font-family: 'Amiri', serif; }
 
 .footer { height: 50px; background: white; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; margin-right: 260px; }
 .copyright { color: #94a3b8; font-size: 12px; }

@@ -238,7 +238,7 @@ export default {
 }
 
 .add-btn {
-  background: linear-gradient(135deg, #a18b5c 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
   color: white;
   border: none;
   padding: 12px 28px;
@@ -365,8 +365,8 @@ export default {
 }
 
 .action-btn:hover { 
-  border-color: #a18b5c; 
-  color: #a18b5c; 
+  border-color: #B1A28F; 
+  color: #B1A28F; 
   background: #fdfbf7;
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(161, 139, 92, 0.1);
@@ -380,7 +380,7 @@ export default {
 }
 
 .spinner {
-  width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: #a18b5c;
+  width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: #B1A28F;
   border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
