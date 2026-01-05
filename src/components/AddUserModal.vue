@@ -50,6 +50,7 @@
                    <option :value="5">المبيعات / Sales</option>
                    <option :value="6">المحاسبة / Accounting</option>
                    <option :value="7">الائتمان / Credit</option>
+                   <option :value="10">مدير إدارة المشاريع / PM Manager</option>
                 </select>
               </div>
               <div class="form-group">
