@@ -57,11 +57,7 @@ const routes = [
                 name: 'MyRequests',
                 component: () => import('../views/MyRequestsView.vue')
             },
-            {
-                path: 'photography',
-                name: 'Photography',
-                component: () => import('../views/PhotographyView.vue')
-            },
+
             {
                 path: 'contract-form/:id',
                 name: 'ContractForm',

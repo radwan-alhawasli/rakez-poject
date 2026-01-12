@@ -16,14 +16,14 @@ const contractService = {
       const res = response.data
       let contracts = []
       if (Array.isArray(res)) {
-          contracts = res
+        contracts = res
       } else if (res && res.data && Array.isArray(res.data)) {
-          contracts = res.data
+        contracts = res.data
       } else if (res && res.data && res.data.data && Array.isArray(res.data.data)) {
-          contracts = res.data.data
+        contracts = res.data.data
       } else {
-          // Fallback or empty
-          contracts = res.data || []
+        // Fallback or empty
+        contracts = res.data || []
       }
       return Array.isArray(contracts) ? contracts : []
     } catch (error) {
@@ -87,13 +87,13 @@ const contractService = {
       const res = response.data
       let contracts = []
       if (Array.isArray(res)) {
-          contracts = res
+        contracts = res
       } else if (res && res.data && Array.isArray(res.data)) {
-          contracts = res.data
+        contracts = res.data
       } else if (res && res.data && res.data.data && Array.isArray(res.data.data)) {
         contracts = res.data.data
       } else {
-          contracts = res.data || []
+        contracts = res.data || []
       }
       return Array.isArray(contracts) ? contracts : []
     } catch (error) {
@@ -158,6 +158,176 @@ const contractService = {
       return response.data
     } catch (error) {
       console.error('Error storing contract info:', error)
+      throw error
+    }
+  },
+
+  /**
+   * حفظ بيانات الطرف الثاني (المتتبع)
+   * POST /second-party-data/store/:id
+   */
+  async storeSecondPartyData(id, payload) {
+    try {
+      console.log(`Storing second party data for ${id}:`, payload)
+      const response = await apiClient.post(`/second-party-data/store/${id}`, payload)
+      return response.data
+    } catch (error) {
+      console.error('Error storing second party data:', error)
+      throw error
+    }
+  },
+
+  /**
+   * تحديث بيانات الطرف الثاني
+   * PUT /second-party-data/update/:id
+   */
+  async updateSecondPartyData(id, payload) {
+    try {
+      console.log(`Updating second party data for ${id}:`, payload)
+      const response = await apiClient.put(`/second-party-data/update/${id}`, payload)
+      return response.data
+    } catch (error) {
+      console.error('Error updating second party data:', error)
+      throw error
+    }
+  },
+
+  /**
+   * جلب بيانات الطرف الثاني (المتتبع)
+   * GET /second-party-data/show/:id
+   */
+  async getSecondPartyData(id) {
+    try {
+      const response = await apiClient.get(`/second-party-data/show/${id}`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching second party data:', error)
+      // Allow 404/400 to pass gracefully as "no data found"
+      return null
+    }
+  },
+
+  // --- Units Endpoints ---
+
+  /**
+   * جلب وحدات العقد
+   * GET /contracts/units/show/:id
+   */
+  async getContractUnits(id) {
+    try {
+      const response = await apiClient.get(`/contracts/units/show/${id}`)
+      const res = response.data
+      let units = []
+      if (Array.isArray(res)) {
+        units = res
+      } else if (res && res.data && Array.isArray(res.data)) {
+        units = res.data
+      } else {
+        units = res.data || []
+      }
+      return Array.isArray(units) ? units : []
+    } catch (error) {
+      console.error('Error fetching contract units:', error)
+      return []
+    }
+  },
+
+  /**
+   * إضافة وحدة واحدة
+   * POST /contracts/units/store/:id
+   */
+  async addContractUnit(id, payload) {
+    try {
+      const response = await apiClient.post(`/contracts/units/store/${id}`, payload)
+      return response.data
+    } catch (error) {
+      console.error('Error adding contract unit:', error)
+      throw error
+    }
+  },
+
+  /**
+   * تحديث وحدة
+   * POST/PUT /contracts/units/update/:unitId
+   * Note: The user mentioned update url http://.../update/2
+   */
+  async updateContractUnit(unitId, payload) {
+    try {
+      // Using POST or PUT depending on backend, robustly trying whatever works usually implies adhering to REST or confirmed docs.
+      // User said: http://143.198.24.230/api/contracts/units/update/2 with body
+      const response = await apiClient.post(`/contracts/units/update/${unitId}`, payload)
+      return response.data
+    } catch (error) {
+      console.error('Error updating contract unit:', error)
+      throw error
+    }
+  },
+
+  /**
+   * رفع ملف CSV للوحدات
+   * POST /contracts/units/upload-csv/:id
+   */
+  async uploadContractUnitsCsv(id, formData) {
+    try {
+      const response = await apiClient.post(`/contracts/units/upload-csv/${id}`, formData)
+      return response.data
+    } catch (error) {
+      console.error('Error uploading units CSV:', error)
+      throw error
+    }
+  },
+
+  /**
+  async uploadContractUnitsCsv(id, formData) {
+    try {
+      const response = await apiClient.post(`/contracts/units/upload-csv/${id}`, formData)
+      return response.data
+    } catch (error) {
+      console.error('Error uploading units CSV:', error)
+      throw error
+    }
+  },
+
+  /**
+   * جلب بيانات قسم التصوير
+   * GET /photography-department/show/:id
+   */
+  async getPhotography(id) {
+    try {
+      // Assuming this endpoint exists based on standard REST patterns in this project
+      const response = await apiClient.get(`/photography-department/show/${id}`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching photography data:', error)
+      // Return null rather than throwing so we can handle empty state gracefully
+      return null
+    }
+  },
+
+  /**
+   * حفظ بيانات قسم التصوير
+   * POST /photography-department/store/:id
+   */
+  async storePhotography(id, payload) {
+    try {
+      const response = await apiClient.post(`/photography-department/store/${id}`, payload)
+      return response.data
+    } catch (error) {
+      console.error('Error storing photography data:', error)
+      throw error
+    }
+  },
+
+  /**
+   * تحديث بيانات قسم التصوير
+   * PUT /photography-department/update/:id
+   */
+  async updatePhotography(id, payload) {
+    try {
+      const response = await apiClient.put(`/photography-department/update/${id}`, payload)
+      return response.data
+    } catch (error) {
+      console.error('Error updating photography data:', error)
       throw error
     }
   }

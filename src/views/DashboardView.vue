@@ -9,17 +9,7 @@
     <!-- Stats Cards -->
     <div class="stats-grid">
       
-      <!-- Total Value (Instead of Profits) -->
-      <div class="stat-card">
-        <div class="stat-icon-bg dollar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-        </div>
-        <div class="stat-content">
-          <span class="stat-label">إجمالي قيمة المشاريع المستلمة</span>
-          <span class="stat-value">{{ totalProjectValue }}M</span>
-          <span class="stat-desc">قيمة كل المشاريع في الشركة</span>
-        </div>
-      </div>
+
 
       <!-- Available Units -->
       <div class="stat-card">
@@ -105,9 +95,19 @@ export default {
 
     const fetchData = async () => {
       try {
-        // Fetch contracts/projects
-        const data = await contractService.getContracts() 
-        const projects = Array.isArray(data) ? data : []
+        let apps = []
+        // Check if user is admin (type 1)
+        const isUserAdmin = user.value && (user.value.type === 1 || user.value.type === 'admin')
+        
+        if (isUserAdmin) {
+             console.log('Fetching Admin Contracts...')
+             apps = await contractService.getAllContracts()
+        } else {
+             console.log('Fetching User Contracts...')
+             apps = await contractService.getContracts()
+        }
+
+        const projects = Array.isArray(apps) ? apps : []
         
         totalProjects.value = projects.length
 

@@ -28,8 +28,12 @@
       <!-- Navigation Tabs -->
       <div class="tabs-nav">
         <button class="nav-tab" :class="{ active: activeTab === 'progress' }" @click="activeTab = 'progress'">تقدم المشروع والمستندات</button>
-        <button class="nav-tab" :class="{ active: activeTab === 'units' }" @click="activeTab = 'units'">الوحدات</button>
-        <button class="nav-tab" :class="{ active: activeTab === 'photography' }" @click="activeTab = 'photography'">التصوير والوسائط</button>
+        <button class="nav-tab" :class="{ active: activeTab === 'photography' }" @click="activeTab = 'photography'">التصوير</button>
+        <button class="nav-tab" :class="{ active: activeTab === 'boards' }" @click="activeTab = 'boards'">اللوحات</button>
+        <button class="nav-tab" :class="{ active: activeTab === 'units' }" @click="selectUnitsTab" :disabled="!isTrackerCompleted">
+            الوحدات 
+            <span v-if="!isTrackerCompleted" style="font-size:10px; opacity:0.7">(مغلق)</span>
+        </button>
       </div>
 
       <!-- Main Content Area -->
@@ -40,7 +44,7 @@
             <!-- Tracker Header -->
             <div class="tracker-header-box">
             <h2 class="tracker-title">متتبع حالة المشروع</h2>
-            <p class="tracker-desc">أكمل جميع المراحل لتمكين إضافة الوحدات. اضغط على مرحلة لإدخال بياناتها</p>
+            <p class="tracker-desc">أكمل جميع المراحل لتمكين إضافة الوحدات. سيتم حفظ البيانات تلقائياً عند الإكمال.</p>
             
             <div class="progress-indicator">
                 <span class="progress-label">التقدم</span>
@@ -57,7 +61,7 @@
             <div class="steps-container">
                 <div v-for="(stage, index) in stages" :key="index" 
                     class="step-item" 
-                    :class="{ 'completed': stage.status === 'completed', 'active': stage.status === 'active' }"
+                    :class="{ 'completed': stage.status === 'completed', 'active': activeStageIndex === index }"
                     @click="selectStage(index)">
                     <div class="step-circle">
                         <span v-if="stage.status === 'completed'">✓</span>
@@ -65,19 +69,26 @@
                     </div>
                     <span class="step-label">{{ stage.name }}</span>
                     <span class="step-sublabel">{{ stage.subLabel }}</span>
+                    <span v-if="stage.completedAt" class="step-date">{{ stage.completedAt }}</span>
                 </div>
             </div>
             </div>
 
             <!-- Documents Section (Active Stage Content) -->
             <div class="stage-content-area">
-                <h3 class="stage-section-title">{{ stages[activeStageIndex].name }}</h3>
+                <h3 class="stage-section-title">
+                    {{ stages[activeStageIndex].name }}
+                    <span v-if="stages[activeStageIndex].completedAt" class="date-badge">
+                        تم الإنجاز
+                    </span>
+                </h3>
 
                 <!-- Default Stage Content -->
                 <div class="input-group">
-                    <label>رابط المشروع</label>
+                    <label>رابط المستند / الملف</label>
                     <div class="input-wrapper">
-                        <input type="text" v-model="projectLink" class="form-input" placeholder="https://..." />
+                        <!-- If completed, show disabled input or allow edit if needed. User asked for "locked". -->
+                        <input type="text" v-model="stages[activeStageIndex].value" class="form-input" placeholder="https://..." :disabled="stages[activeStageIndex].status === 'completed'" />
                         <button class="link-btn">
                             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                         </button>
@@ -85,46 +96,123 @@
                 </div>
 
                 <div class="action-buttons">
-                    <button class="update-btn" @click="saveProgress">تحديث الرابط</button>
+                    <button v-if="stages[activeStageIndex].status !== 'completed'" class="update-btn" @click="saveProgress">
+                        حفظ وإكمال
+                    </button>
+                    <button v-else class="update-btn secondary" @click="stages[activeStageIndex].status = 'pending'">
+                        تعديل الربط
+                    </button>
                 </div>
-            </div>
-        </div>
-
-        <!-- UNITS TAB (Placeholder) -->
-        <div v-else-if="activeTab === 'units'" class="tab-content">
-            <div class="empty-state-tab">
-                <h3>إدارة الوحدات</h3>
-                <p>يمكنك إدارة وحدات المشروع هنا بعد اكتمال مرحلة التأسيس.</p>
             </div>
         </div>
 
         <!-- PHOTOGRAPHY TAB -->
         <div v-else-if="activeTab === 'photography'" class="tab-content">
-             <div class="stage-content-area" style="max-width: 100%;">
-                <h3 class="stage-section-title">متابعة التصوير والوسائط</h3>
-                <p class="section-desc">قم برفع روابط الصور والفيديوهات الخاصة بالمشروع للإعتماد.</p>
-                
-                <div class="input-group">
-                    <label>رابط ملفات المشروع (Drive/Dropbox)</label>
-                    <div class="input-wrapper">
-                        <input type="text" v-model="photoDriveLink" class="form-input" placeholder="https://drive.google.com/..." />
-                        <button class="link-btn">
-                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                        </button>
-                    </div>
+            <div class="tracker-header-box">
+                <h2 class="tracker-title">إدارة التصوير والوسائط</h2>
+                <h3 class="tracker-subtitle">{{ project.name }}</h3>
+                <p class="tracker-desc">يمكنك هنا رفع وتحديث صور وفيديوهات المشروع.</p>
+                <div v-if="photographyForm.updated_at" class="update-info-badge" style="margin-top: 10px; color: #10b981; font-size: 13px;">
+                    📅 تاريخ الإدخال: {{ photographyForm.updated_at }}
                 </div>
-                
-                <div class="input-group" style="margin-top: 25px;">
-                    <label>وصف المحتوى</label>
-                    <textarea v-model="photoDescription" class="form-input" rows="6" placeholder="أدخل تفاصيل عن الصور، الزوايا، أو أي ملاحظات هامة..."></textarea>
-                </div>
+            </div>
 
-                <div class="action-buttons" style="margin-top: 30px;">
-                    <button class="update-btn" @click="sendPhotographyApproval">
-                        <span style="margin-left:8px">🚀</span> إرسال للاعتماد
+            <div class="stage-content-area" style="max-width: 800px; margin: 0 auto;">
+                <form @submit.prevent="savePhotographyData">
+                    <div class="form-grid" style="grid-template-columns: 1fr; gap: 20px;">
+                        
+                        <!-- Image URL -->
+                        <div class="form-group">
+                            <label>رابط الصورة (Image URL)</label>
+                            <div class="input-wrapper">
+                                <input type="text" v-model="photographyForm.image_url" class="form-input" placeholder="https://..." required />
+                            </div>
+                        </div>
+
+                        <!-- Video URL -->
+                        <div class="form-group">
+                            <label>رابط الفيديو (Video URL)</label>
+                            <div class="input-wrapper">
+                                <input type="text" v-model="photographyForm.video_url" class="form-input" placeholder="https://..." />
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group">
+                            <label>وصف المحتوى (Description)</label>
+                            <textarea v-model="photographyForm.description" class="form-input" rows="4" placeholder="وصف للصور والمحتوى..." style="min-height: 100px;"></textarea>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="form-actions" style="margin-top: 20px; text-align: left;">
+                            <button type="submit" class="update-btn" :disabled="isPhotoSaving">
+                                {{ isPhotoSaving ? 'جاري الحفظ...' : 'حفظ التغييرات' }}
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- BOARDS TAB -->
+        <div v-else-if="activeTab === 'boards'" class="tab-content">
+            <div class="tracker-header-box">
+                <h2 class="tracker-title">اللوحات</h2>
+                <h3 class="tracker-subtitle">{{ project.name }}</h3>
+            </div>
+            <div class="empty-state-tab">
+                <p>قسم اللوحات قيد التطوير...</p>
+            </div>
+        </div>
+
+        <!-- UNITS TAB -->
+        <div v-else-if="activeTab === 'units'" class="tab-content">
+            <div class="units-header-actions">
+                <h3>إدارة الوحدات</h3>
+                <div class="units-btns">
+                    <button class="btn-primary" @click="showAddUnitModal = true">إضافة وحدة</button>
+                    <button class="btn-outline" @click="$refs.csvInput.click()">
+                        رفع CSV
+                        <input type="file" ref="csvInput" style="display:none" accept=".csv" @change="handleCsvUpload" />
                     </button>
                 </div>
-             </div>
+            </div>
+
+            <div v-if="unitsLoading" class="units-loading">جاري تحميل الوحدات...</div>
+            
+            <div v-else-if="units.length === 0" class="empty-state-tab">
+                <p>لا توجد وحدات مضافة لهذا المشروع حتى الآن.</p>
+            </div>
+
+            <div v-else class="units-table-container">
+                <table class="units-table">
+                    <thead>
+                        <tr>
+                            <th>رقم الوحدة</th>
+                            <th>النوع</th>
+                            <th>السعر</th>
+                            <th>المساحة</th>
+                            <th>الحالة</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="unit in units" :key="unit.id">
+                            <td>{{ unit.unit_number }}</td>
+                            <td>{{ unit.unit_type }}</td>
+                            <td>{{ formatCurrency(unit.price) }}</td>
+                            <td>{{ unit.area }} م²</td>
+                            <td>
+                                <span class="status-badge" :class="unit.status">{{ unit.status || 'pending' }}</span>
+                            </td>
+                            <td>
+                                <button class="btn-sm" @click="openEditUnit(unit)">تعديل</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
       </div>
@@ -133,6 +221,45 @@
     <div v-else class="error-state">
        <p>لم يتم العثور على المشروع.</p>
        <button @click="$router.push('/project-management')">العودة للقائمة</button>
+    </div>
+
+    <!-- Add/Edit Unit Modal -->
+    <div v-if="showAddUnitModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>{{ isEditingUnit ? 'تعديل الوحدة' : 'إضافة وحدة جديدة' }}</h3>
+            <form @submit.prevent="submitUnitForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>رقم الوحدة</label>
+                        <input type="text" v-model="unitForm.unit_number" required :disabled="isEditingUnit" />
+                    </div>
+                    <div class="form-group">
+                        <label>نوع الوحدة</label>
+                        <input type="text" v-model="unitForm.unit_type" placeholder="مثال: majestic" required />
+                    </div>
+                     <div class="form-group">
+                        <label>السعر</label>
+                        <input type="number" v-model="unitForm.price" required />
+                    </div>
+                     <div class="form-group">
+                        <label>إجمالي السعر</label>
+                        <input type="number" v-model="unitForm.total_price" required />
+                    </div>
+                     <div class="form-group">
+                        <label>المساحة</label>
+                        <input type="number" v-model="unitForm.area" required />
+                    </div>
+                    <div class="form-group">
+                        <label>الوصف</label>
+                        <textarea v-model="unitForm.description"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" @click="closeUnitModal" class="btn-text">إلغاء</button>
+                    <button type="submit" class="btn-primary">{{ isEditingUnit ? 'تحديث' : 'حفظ' }}</button>
+                </div>
+            </form>
+        </div>
     </div>
 
   </div>
@@ -150,36 +277,100 @@ export default {
     const isLoading = ref(true)
     const activeTab = ref('progress')
     const project = ref(null)
-    const projectLink = ref('')
     
-    // Photography Form Data
-    const photoDriveLink = ref('')
-    const photoDescription = ref('')
+    // Photography State
+    const isPhotoSaving = ref(false)
+    const photographyForm = reactive({
+        image_url: '',
+        video_url: '',
+        description: '',
+        updated_at: null
+    })
     
     // Dates
     const currentDate = new Date().toISOString().split('T')[0]
     const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
 
-    // Stages from user request
+    // Stages from user request with API keys - UPDATED: Removed Photography
     const stages = reactive([
-      { name: 'تجهيز اوراق العقار', subLabel: 'الصكوك والرخص', status: 'completed' },
-      { name: 'المخطاطات و التصميمات', subLabel: 'المخططات الهندسية', status: 'completed' },
-      { name: 'السجل و الهويه', subLabel: 'سجل وتصنيف', status: 'completed' },
-      { name: 'الاسعار و الوحدات', subLabel: 'شهاة اتمام و اخرى', status: 'active' }, 
-      { name: 'التصوير', subLabel: 'الصور والفيديو', status: 'pending' },
-      { name: 'رخصة تسويق', subLabel: 'الاسعار و الوحدات', status: 'pending' },
-      { name: 'انشاء رقم المعلن', subLabel: 'رقم المعلن', status: 'pending' }
+      { 
+        name: 'تجهيز اوراق العقار', 
+        subLabel: 'الصكوك والرخص', 
+        status: 'pending',
+        apiKey: 'real_estate_papers_url',
+        value: '',
+        completedAt: null
+      },
+      { 
+        name: 'المخطاطات و التصميمات', 
+        subLabel: 'المخططات الهندسية', 
+        status: 'pending',
+        apiKey: 'plans_equipment_docs_url',
+        value: '',
+        completedAt: null
+      },
+      { 
+        name: 'السجل و الهويه', 
+        subLabel: 'سجل وتصنيف', 
+        status: 'pending',
+        apiKey: 'project_logo_url',
+        value: '',
+        completedAt: null
+      },
+      { 
+        name: 'الاسعار و الوحدات', 
+        subLabel: 'شهاة اتمام و اخرى', 
+        status: 'pending',
+        apiKey: 'prices_units_url',
+        value: '',
+        completedAt: null
+      }, 
+      { 
+        name: 'رخصة تسويق', 
+        subLabel: 'الاسعار و الوحدات', 
+        status: 'pending',
+        apiKey: 'marketing_license_url',
+        value: '',
+        completedAt: null
+      },
+      { 
+        name: 'انشاء رقم المعلن', 
+        subLabel: 'رقم المعلن', 
+        status: 'pending',
+        apiKey: 'advertiser_section_url',
+        value: '',
+        completedAt: null
+      }
     ])
 
-    const activeStageIndex = ref(3) // Default to the active one (index 3 initially)
+    const activeStageIndex = ref(0) 
+    const isTrackerCompleted = computed(() => stages.every(s => s.status === 'completed'))
+
+    // Units Logic
+    const units = ref([])
+    const unitsLoading = ref(false)
+    const showAddUnitModal = ref(false)
+    const isEditingUnit = ref(false)
+    const editingUnitId = ref(null)
+
+    const unitForm = reactive({
+        unit_number: '',
+        unit_type: '',
+        count: 1, // Default from request example
+        status: 'pending',
+        price: 0,
+        total_price: 0,
+        area: 0,
+        description: ''
+    })
 
     const fetchProject = async () => {
        isLoading.value = true
        try {
           const id = route.params.id
-          // Try to get full contract details first
+          
+          // 1. Fetch Contract Basics
           const data = await contractService.getContractById(id)
-          // If not found (mock data limitation), list all and find
           if (!data || !data.project_name) {
              const all = await contractService.getContracts()
              const found = all.find(p => p.id == id)
@@ -187,25 +378,50 @@ export default {
           } else {
              project.value = data
           }
-
-          // Fallback mock if completely missing for demo
+          
           if (!project.value) {
              project.value = {
                 id: id,
-                name: `أدوار رحاب 1 - حي التعاون الرياض`,
-                location: 'الرياض - حي التعاون',
-                image: '/img/project-header-mock.jpg'
+                name: `أدوار رحاب 1 - حي التعاون الرياض`, 
+                // Fallback mock
              }
           }
-          
-          // Set active stage index based on status
-          const activeIdx = stages.findIndex(s => s.status === 'active')
-          if (activeIdx !== -1) activeStageIndex.value = activeIdx
-          
-          // Check if we should auto-open photography tab (optional logic)
-          
+
+          // 2. Fetch Existing Tracker Data
+          const trackerData = await contractService.getSecondPartyData(id)
+          if (trackerData && trackerData.data) {
+              const d = trackerData.data
+              stages.forEach(stage => {
+                  if (stage.apiKey && d[stage.apiKey]) {
+                      stage.value = d[stage.apiKey]
+                      stage.status = 'completed'
+                      // Assuming backend doesn't give date per field easily, we just mark done.
+                      stage.completedAt = d.updated_at ? new Date(d.updated_at).toLocaleDateString() : 'تم' 
+                  }
+              })
+              
+              // Move index to first pending
+              const firstPending = stages.findIndex(s => s.status === 'pending')
+              if (firstPending !== -1) activeStageIndex.value = firstPending
+              else activeStageIndex.value = stages.length - 1
+          }
+
+          // 3. Fetch Photography Data
+          const photoData = await contractService.getPhotography(id)
+          if (photoData && photoData.data) {
+             const p = photoData.data
+             photographyForm.image_url = p.image_url || ''
+             photographyForm.video_url = p.video_url || ''
+             photographyForm.description = p.description || ''
+             if (p.updated_at) {
+                 photographyForm.updated_at = new Date(p.updated_at).toLocaleDateString('ar-SA')
+             } else if (p.created_at) {
+                 photographyForm.updated_at = new Date(p.created_at).toLocaleDateString('ar-SA')
+             }
+          }
+
        } catch (e) {
-         console.error(e)
+         console.error('Error loading project view:', e)
        } finally {
          isLoading.value = false
        }
@@ -214,41 +430,192 @@ export default {
     const completedStages = computed(() => stages.filter(s => s.status === 'completed').length)
     
     const progressPercentage = computed(() => {
-       // Calculation based on active index
-       const activeIndex = stages.findIndex(s => s.status === 'active')
-       if (activeIndex === -1 && stages[stages.length-1].status === 'completed') return 100
-       
-       const raw = activeIndex === -1 ? 0 : activeIndex
-       return (raw / (stages.length - 1)) * 100
+       const completedCount = stages.filter(s => s.status === 'completed').length
+       if (completedCount === stages.length) return 100
+       return (completedCount / stages.length) * 100
     })
 
     const selectStage = (index) => {
        activeStageIndex.value = index
     }
 
-    const saveProgress = () => {
-       alert('تم تحديث البيانات بنجاح')
-    }
-
-    const sendPhotographyApproval = () => {
-        if (!photoDriveLink.value || !photoDescription.value) {
-            alert('الرجاء تعبئة الرابط والوصف')
+    const selectUnitsTab = () => {
+        if (!isTrackerCompleted.value) {
+            alert('يجب إكمال جميع مراحل المتتبع أولاً')
             return
         }
-        // Placeholder API call
-        console.log('Sending Photography Approval:', {
-            link: photoDriveLink.value,
-            description: photoDescription.value,
-            projectId: project.value.id
-        })
+        activeTab.value = 'units'
+        loadUnits()
+    }
+
+    const saveProgress = async () => {
+       const currentStage = stages[activeStageIndex.value]
+       
+       if (!currentStage.value) {
+           alert('الرجاء إدخال الرابط قبل الحفظ')
+           return
+       }
+
+       try {
+           const payload = {}
+           stages.forEach(stage => {
+               if (stage.apiKey) {
+                   payload[stage.apiKey] = stage.value || null
+               }
+           })
+           
+           console.log('Saving payload:', payload)
+
+            // Try Create first, then Update
+           try {
+               await contractService.storeSecondPartyData(project.value.id, payload)
+           } catch {
+               await contractService.updateSecondPartyData(project.value.id, payload)
+           }
+
+           // Update local state
+           currentStage.status = 'completed'
+           currentStage.completedAt = new Date().toLocaleDateString('ar-SA')
+           
+           if (activeStageIndex.value < stages.length - 1) {
+               activeStageIndex.value++
+           } else {
+               alert('تهانينا! تم إكمال المتتبع، يمكنك الآن إدارة الوحدات.')
+           }
+
+       } catch (error) {
+           console.error('Failed to save progress:', error)
+           const errorMsg = error.response?.data?.message || error.message
+           alert(`حدث خطأ أثناء حفظ البيانات: ${errorMsg}`)
+       }
+    }
+
+    // --- Units Functions ---
+
+    const loadUnits = async () => {
+        unitsLoading.value = true
+        units.value = await contractService.getContractUnits(project.value.id)
+        unitsLoading.value = false
+    }
+
+    const formatCurrency = (val) => {
+        return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR' }).format(val)
+    }
+
+    const resetUnitForm = () => {
+        unitForm.unit_number = ''
+        unitForm.unit_type = ''
+        unitForm.count = 1
+        unitForm.status = 'pending'
+        unitForm.price = 0
+        unitForm.total_price = 0
+        unitForm.area = 0
+        unitForm.description = ''
+    }
+
+    // --- Photography Functions ---
+    const savePhotographyData = async () => {
+        isPhotoSaving.value = true
+        try {
+            // Try Store first, if it fails maybe Update?
+            // The user gave specific store API.
+            // But usually we need to know if it exists. 
+            // We'll try Store. usage of contractService.
+            
+            // Note: Since we don't have a GET for photography, we just send what we have.
+            // If the backend handles 'store' as 'create or update', great. 
+            // If not, we might need to handle errors.
+            // I'll try Store first.
+            
+            try {
+                await contractService.storePhotography(project.value.id, {
+                    ...photographyForm
+                })
+                alert('تم حفظ بيانات التصوير بنجاح')
+            } catch (err) {
+                // If 400 or 500, maybe try update?
+                // User provided update API too.
+                console.log('Store failed, trying update...', err)
+                await contractService.updatePhotography(project.value.id, {
+                    ...photographyForm
+                })
+                alert('تم تحديث بيانات التصوير بنجاح')
+            }
+            // Update the date locally to show immediate feedback
+            photographyForm.updated_at = new Date().toLocaleDateString('ar-SA')
+
+        } catch (error) {
+            console.error('Photography save error:', error)
+             const msg = error.response?.data?.message || error.message || 'خطأ غير معروف'
+            alert(`حدث خطأ أثناء حفظ البيانات: ${msg}`)
+        } finally {
+            isPhotoSaving.value = false
+        }
+    }
+
+    const closeUnitModal = () => {
+        showAddUnitModal.value = false
+        isEditingUnit.value = false
+        editingUnitId.value = null
+        resetUnitForm()
+    }
+
+    const submitUnitForm = async () => {
+        try {
+            if (isEditingUnit.value) {
+                // Update
+                await contractService.updateContractUnit(editingUnitId.value, {
+                    ...unitForm
+                })
+                alert('تم تحديث الوحدة بنجاح')
+            } else {
+                // Create
+                await contractService.addContractUnit(project.value.id, {
+                    ...unitForm
+                })
+                alert('تم إضافة الوحدة بنجاح')
+            }
+            closeUnitModal()
+            loadUnits()
+        } catch (error) {
+            console.error(error)
+            const msg = error.response?.data?.message || error.message || 'خطأ غير معروف'
+            alert(`حدث خطأ أثناء حفظ الوحدة: ${msg}`)
+        }
+    }
+
+    const openEditUnit = (unit) => {
+        isEditingUnit.value = true
+        editingUnitId.value = unit.id
+        // Populate form
+        unitForm.unit_number = unit.unit_number
+        unitForm.unit_type = unit.unit_type
+        unitForm.price = unit.price
+        unitForm.total_price = unit.total_price || unit.price
+        unitForm.area = unit.area
+        unitForm.description = unit.description || '' // Handle null description
+        unitForm.status = unit.status
+        showAddUnitModal.value = true
+    }
+
+    const handleCsvUpload = async (event) => {
+        const file = event.target.files[0]
+        if (!file) return
         
-        alert('تم إرسال طلب الاعتماد بنجاح')
-        // Update stage status locally for demo
-        stages[4].status = 'completed' // Assuming index 4 is Photography
-        stages[5].status = 'active'
-        activeStageIndex.value = 5
-        // Maybe switch back to progress tab?
-        // activeTab.value = 'progress'
+        const formData = new FormData()
+        formData.append('file', file) // Using 'file' as key. If fails, try 'csv_file'
+
+        try {
+            await contractService.uploadContractUnitsCsv(project.value.id, formData)
+            alert('تم رفع ملف CSV بنجاح')
+            loadUnits()
+        } catch (error) {
+            console.error(error)
+            const msg = error.response?.data?.message || error.message || 'خطأ غير معروف'
+            alert(`فشل رفع الملف: ${msg}`)
+        }
+        // Reset input
+        event.target.value = ''
     }
 
     onMounted(fetchProject)
@@ -263,18 +630,32 @@ export default {
        activeStageIndex,
        completedStages,
        progressPercentage,
-       projectLink,
-       photoDriveLink,
-       photoDescription,
+       isTrackerCompleted,
        selectStage,
        saveProgress,
-       sendPhotographyApproval
+       selectUnitsTab,
+       // Units
+       units,
+       unitsLoading,
+       showAddUnitModal,
+       unitForm,
+       isEditingUnit,
+       submitUnitForm,
+       closeUnitModal,
+       openEditUnit,
+       handleCsvUpload,
+       formatCurrency,
+       // Photography
+       photographyForm,
+       isPhotoSaving,
+       savePhotographyData
     }
   }
 }
 </script>
 
 <style scoped>
+/* Reuse existing styles plus new ones */
 .project-tracker-view {
   font-family: 'Tajawal', sans-serif;
   padding-bottom: 50px;
@@ -373,6 +754,11 @@ export default {
   height: 3px;
   background: #B1A28F;
   border-radius: 3px 3px 0 0;
+}
+
+.nav-tab:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 /* Tracker Container */
@@ -497,6 +883,13 @@ export default {
   text-align: center;
 }
 
+.step-date {
+  font-size: 10px;
+  color: #28a745; 
+  font-weight: 600;
+  margin-top: 2px;
+}
+
 /* Stage Content */
 .stage-content-area {
   background: white;
@@ -512,6 +905,18 @@ export default {
   font-size: 18px;
   margin: 0 0 20px 0;
   font-family: 'Amiri', serif;
+}
+
+.date-badge {
+    display: inline-block;
+    background: #e6fffa;
+    color: #047857;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-right: 15px; 
+    vertical-align: middle;
+    border: 1px solid #a7f3d0;
 }
 
 .input-group label {
@@ -537,6 +942,12 @@ export default {
   font-family: 'Tajawal', sans-serif;
   color: #1e293b;
   transition: border-color 0.2s;
+}
+
+.form-input:disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
 }
 
 .form-input:focus {
@@ -567,8 +978,8 @@ export default {
   font-family: 'Tajawal', sans-serif;
 }
 
-.update-btn:hover {
-  background: #7a6a4a;
+.update-btn.secondary {
+    background: #64748b;
 }
 
 .loading-state, .error-state {
@@ -582,4 +993,124 @@ export default {
    border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Units Tab Styles */
+.units-header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.units-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-primary {
+    background: #1e3a5f;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-outline {
+    background: white;
+    color: #1e3a5f;
+    border: 1px solid #1e3a5f;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.units-table-container {
+    overflow-x: auto;
+}
+
+.units-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.units-table th, .units-table td {
+    padding: 12px 16px;
+    text-align: right;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.units-table th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+}
+.status-badge.pending { background: #fef3c7; color: #d97706; }
+.status-badge.available { background: #dcfce7; color: #16a34a; }
+.status-badge.sold { background: #fee2e2; color: #dc2626; }
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group label { font-size: 12px; color: #64748b; font-weight: 600; }
+.form-group input, .form-group textarea {
+    padding: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-family: inherit;
+}
+.form-group textarea { grid-column: span 2; }
+
+.modal-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-text {
+    background: none; border: none; color: #64748b; cursor: pointer;
+}
 </style>
