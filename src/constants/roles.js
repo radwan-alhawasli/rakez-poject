@@ -5,10 +5,8 @@ export const ROLE_MAP = {
     'project_management': 3,
     'editor': 4,
     'sales': 5,
-    'accounting': 6,
-    'credit': 7,
     'inventory': 8,
-    'hr': 9
+    'hr': 6
 }
 
 export const ROLES = {
@@ -18,10 +16,9 @@ export const ROLES = {
     3: { label: 'إدارة المشاريع / PM', key: 'project_management', class: 'role-pm' },
     4: { label: 'المونتاج / Editor', key: 'editor', class: 'role-editor' },
     5: { label: 'المبيعات / Sales', key: 'sales', class: 'role-sales' },
-    6: { label: 'المحاسبة / Accounting', key: 'accounting', class: 'role-accounting' },
+    6: { label: 'الموارد البشرية / HR', key: 'hr', class: 'role-hr' },
     7: { label: 'الائتمان / Credit', key: 'credit', class: 'role-credit' },
-    8: { label: 'المخزون / Inventory', key: 'inventory', class: 'role-inventory' },
-    9: { label: 'الموارد البشرية / HR', key: 'hr', class: 'role-hr' }
+    8: { label: 'المخزون / Inventory', key: 'inventory', class: 'role-inventory' }
 }
 
 export const getRoleLabel = (type, isManager = false) => {

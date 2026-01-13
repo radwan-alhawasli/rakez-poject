@@ -49,10 +49,9 @@
                     <option value="pm_employee">موظف إدارة المشاريع / PM Employee</option>
                     <option :value="4">المونتاج / Editor</option>
                    <option :value="5">المبيعات / Sales</option>
-                   <option :value="6">المحاسبة / Accounting</option>
-                   <option :value="7">الائتمان / Credit</option>
+                    <option :value="7">الائتمان / Credit</option>
                     <option :value="8">المخزون / Inventory</option>
-                    <option :value="9">الموارد البشرية / HR</option>
+                    <option :value="6">الموارد البشرية / HR</option>
                 </select>
               </div>
               <div class="form-group">

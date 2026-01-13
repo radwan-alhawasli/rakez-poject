@@ -348,8 +348,8 @@
 
           </template>
           
-          <!-- HR Sidebar (Role 9) -->
-          <template v-else-if="userRole == 9">
+          <!-- HR Sidebar (Role 6) -->
+          <template v-else-if="userRole == 6">
             <!-- 1. لوحة التحكم -->
             <router-link to="/dashboard" class="nav-item" active-class="active">
               <div class="nav-content">
