@@ -245,13 +245,6 @@
               </div>
             </router-link>
 
-            <!-- 10. اللوحات -->
-            <router-link to="/boards" class="nav-item" active-class="active">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                <span class="nav-text">اللوحات</span>
-              </div>
-            </router-link>
 
             <!-- العقود (إضافي) -->
             <router-link to="/contracts" class="nav-item" active-class="active">
@@ -344,13 +337,6 @@
               </div>
             </router-link>
 
-             <!-- 10. اللوحات -->
-            <router-link to="/boards" class="nav-item" active-class="active">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                <span class="nav-text">اللوحات</span>
-              </div>
-            </router-link>
 
              <!-- العقود -->
             <router-link to="/contracts" class="nav-item" active-class="active">
@@ -360,6 +346,41 @@
               </div>
             </router-link>
 
+          </template>
+          
+          <!-- HR Sidebar (Role 9) -->
+          <template v-else-if="userRole == 9">
+            <!-- 1. لوحة التحكم -->
+            <router-link to="/dashboard" class="nav-item" active-class="active">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span class="nav-text">لوحة التحكم العامة</span>
+              </div>
+            </router-link>
+
+            <!-- 2. الموارد البشرية -->
+            <router-link to="/hr" class="nav-item" active-class="active">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <span class="nav-text">إدارة الموارد البشرية</span>
+              </div>
+            </router-link>
+
+            <!-- 3. الإشعارات -->
+            <router-link to="/notifications" class="nav-item" active-class="active">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <span class="nav-text">الإشعارات</span>
+              </div>
+            </router-link>
+
+            <!-- 4. الملف الشخصي -->
+            <router-link to="/profile" class="nav-item" active-class="active">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span class="nav-text">الملف الشخصي</span>
+              </div>
+            </router-link>
           </template>
 
           <!-- Marketer Sidebar (Matches Image 2) -->
@@ -519,8 +540,14 @@ export default {
     const userRole = computed(() => {
       const type = user.value?.type
       if (type === 1 || type === 'admin' || user.value?.role === 'admin') return 1
-      if (type == 3 || type === 'project_management') return 3
-      if (type == 10) return 10 // Placeholder for PM Manager
+      
+      // Project Management Role (3)
+      if (type == 3 || type === 'project_management') {
+          // If is_manager is true, return 10 (Manager sidebar)
+          // If is_manager is false, return 3 (Employee sidebar)
+          return user.value?.is_manager ? 10 : 3
+      }
+      
       return type ?? 0
     })
 

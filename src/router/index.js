@@ -73,11 +73,13 @@ const routes = [
                 name: 'Reservations',
                 component: () => import('../views/ReservationsView.vue')
             },
+/*
             {
                 path: 'boards',
                 name: 'Boards',
                 component: () => import('../views/BoardsView.vue')
             },
+*/
             {
                 path: 'cancelled-reservations',
                 name: 'CancelledReservations',
@@ -92,6 +94,11 @@ const routes = [
                 path: 'image-approval',
                 name: 'ImageApproval',
                 component: () => import('../views/ImageApprovalView.vue')
+            },
+            {
+                path: 'hr',
+                name: 'HR',
+                component: () => import('../views/HRView.vue')
             }
         ]
     },

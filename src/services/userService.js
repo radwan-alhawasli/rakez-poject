@@ -65,7 +65,8 @@ const userService = {
                 contract_type: employeeData.contract_type,
                 social_status: employeeData.social_status,
                 iban: employeeData.iban,
-                salary: employeeData.salary
+                salary: employeeData.salary,
+                is_manager: !!employeeData.is_manager
             }
 
             console.log('Adding employee payload:', payload)
@@ -98,6 +99,10 @@ const userService = {
             
             if (employeeData.phone) {
                 payload.phone = employeeData.phone
+            }
+
+            if (employeeData.is_manager !== undefined) {
+                payload.is_manager = !!employeeData.is_manager
             }
 
             // Only add password if it's explicitly provided and not empty

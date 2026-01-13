@@ -6,7 +6,9 @@ export const ROLE_MAP = {
     'editor': 4,
     'sales': 5,
     'accounting': 6,
-    'credit': 7
+    'credit': 7,
+    'inventory': 8,
+    'hr': 9
 }
 
 export const ROLES = {
@@ -17,13 +19,20 @@ export const ROLES = {
     4: { label: 'المونتاج / Editor', key: 'editor', class: 'role-editor' },
     5: { label: 'المبيعات / Sales', key: 'sales', class: 'role-sales' },
     6: { label: 'المحاسبة / Accounting', key: 'accounting', class: 'role-accounting' },
-    7: { label: 'الائتمان / Credit', key: 'credit', class: 'role-credit' }
+    7: { label: 'الائتمان / Credit', key: 'credit', class: 'role-credit' },
+    8: { label: 'المخزون / Inventory', key: 'inventory', class: 'role-inventory' },
+    9: { label: 'الموارد البشرية / HR', key: 'hr', class: 'role-hr' }
 }
 
-export const getRoleLabel = (type) => {
+export const getRoleLabel = (type, isManager = false) => {
     const normalizedType = (typeof type === 'string' && ROLE_MAP[type] !== undefined)
         ? ROLE_MAP[type]
         : type
+    
+    if (normalizedType === 3) {
+        return isManager ? 'مدير إدارة المشاريع' : 'موظف إدارة المشاريع'
+    }
+
     return ROLES[normalizedType]?.label ?? (type || 'غير محدد')
 }
 

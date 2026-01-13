@@ -28,7 +28,7 @@
       <!-- Navigation Tabs -->
       <div class="tabs-nav">
         <button class="nav-tab" :class="{ active: activeTab === 'progress' }" @click="activeTab = 'progress'">تقدم المشروع والمستندات</button>
-        <button class="nav-tab" :class="{ active: activeTab === 'photography' }" @click="activeTab = 'photography'">التصوير</button>
+        <button v-if="!isManager" class="nav-tab" :class="{ active: activeTab === 'photography' }" @click="activeTab = 'photography'">التصوير</button>
         <button class="nav-tab" :class="{ active: activeTab === 'boards' }" @click="activeTab = 'boards'">اللوحات</button>
         <button class="nav-tab" :class="{ active: activeTab === 'units' }" @click="selectUnitsTab" :disabled="!isTrackerCompleted">
             الوحدات 
@@ -107,7 +107,7 @@
         </div>
 
         <!-- PHOTOGRAPHY TAB -->
-        <div v-else-if="activeTab === 'photography'" class="tab-content">
+        <div v-else-if="activeTab === 'photography' && !isManager" class="tab-content">
             <div class="tracker-header-box">
                 <h2 class="tracker-title">إدارة التصوير والوسائط</h2>
                 <h3 class="tracker-subtitle">{{ project.name }}</h3>
@@ -160,9 +160,51 @@
             <div class="tracker-header-box">
                 <h2 class="tracker-title">اللوحات</h2>
                 <h3 class="tracker-subtitle">{{ project.name }}</h3>
+                <p class="tracker-desc">إدارة لوحات المشروع وإضافة تفاصيل الوحدات.</p>
             </div>
-            <div class="empty-state-tab">
-                <p>قسم اللوحات قيد التطوير...</p>
+
+
+
+            <div class="boards-content-area">
+                <!-- Pending State: Premium CTA -->
+                <div v-if="boardsTabState === 'pending'" class="board-cta-container">
+                    <div class="board-cta-card">
+                        <div class="cta-icon">
+                            <svg viewBox="0 0 24 24" fill="none" class="animate-pulse">
+                               <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                               <path d="M9 3V21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                               <path d="M15 3V21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                               <path d="M3 9H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                               <path d="M3 15H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        
+                        <h3 class="cta-title">إعداد لوحات المشروع</h3>
+                        <p class="cta-description">
+                            ابدأ بإعداد اللوحات والمخططات لهذا المشروع. سيتم إنشاء سجل اللوحات تلقائياً.
+                        </p>
+
+                        <button class="cta-btn-premium" @click="saveBoard" :disabled="isBoardSaving">
+                            <span v-if="!isBoardSaving">تأكيد وبدء اللوحات</span>
+                            <span v-else>جاري الإعداد...</span>
+                            <svg v-if="!isBoardSaving" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 5 12 12 19"></polyline></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Completed State: Data View -->
+                <div v-else class="board-completed-view">
+                    <div class="completed-info-card">
+                         <div class="success-header">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="3" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <h3>تم إضافة اللوحات بنجاح</h3>
+                         </div>
+                         <div class="details-summary">
+                            <p>تم حفظ تفاصيل لوحات المشروع وهي متاحة الآن في النظام.</p>
+                            <button class="btn-text" @click="boardsTabState = 'pending'">تعديل البيانات</button>
+                         </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -269,11 +311,13 @@
 import { ref, onMounted, computed, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import contractService from '../services/contractService'
+import authService from '../services/authService'
 
 export default {
   name: 'ProjectTrackerView',
   setup() {
     const route = useRoute()
+    // eslint-disable-next-line no-unused-vars
     const isLoading = ref(true)
     const activeTab = ref('progress')
     const project = ref(null)
@@ -287,7 +331,17 @@ export default {
         updated_at: null
     })
     
-    // Dates
+    const isManager = computed(() => {
+        const user = authService.getCurrentUser()
+        return user?.type == 3 && user?.is_manager
+    })
+    
+    // Boards State
+    const boardsTabState = ref('pending') // 'pending' or 'completed'
+    const boardsFormData = reactive({
+        projectName: ''
+    })
+    const isBoardSaving = ref(false)
     const currentDate = new Date().toISOString().split('T')[0]
     const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
 
@@ -425,6 +479,24 @@ export default {
        } finally {
          isLoading.value = false
        }
+    }
+
+    const fetchBoardData = () => {
+        if (!project.value) return
+        
+        // Always prepopulate project name if not already set or if fresh
+        if (!boardsFormData.projectName && project.value.name) {
+            boardsFormData.projectName = project.value.name
+        }
+
+        const savedBoard = localStorage.getItem(`board_${project.value.id}`)
+        if (savedBoard) {
+            const data = JSON.parse(savedBoard)
+            Object.assign(boardsFormData, data)
+            boardsTabState.value = 'completed'
+        } else {
+            boardsTabState.value = 'pending'
+        }
     }
 
     const completedStages = computed(() => stages.filter(s => s.status === 'completed').length)
@@ -618,7 +690,34 @@ export default {
         event.target.value = ''
     }
 
-    onMounted(fetchProject)
+    const saveBoard = async () => {
+        if (!project.value) return
+        isBoardSaving.value = true
+        
+        try {
+            // Simulate API save or use localStorage as per current logic
+            const boardData = {
+                ...boardsFormData,
+                projectId: project.value.id,
+                savedAt: new Date().toISOString()
+            }
+            localStorage.setItem(`board_${project.value.id}`, JSON.stringify(boardData))
+            
+            // Switch to completed state
+            boardsTabState.value = 'completed'
+            alert('تم تأكيد إضافة اللوحات بنجاح')
+        } catch (error) {
+            console.error('Error saving board:', error)
+            alert('حدث خطأ أثناء حفظ اللوحات')
+        } finally {
+            isBoardSaving.value = false
+        }
+    }
+
+    onMounted(async () => {
+        await fetchProject()
+        fetchBoardData()
+    })
 
     return {
        isLoading,
@@ -648,7 +747,13 @@ export default {
        // Photography
        photographyForm,
        isPhotoSaving,
-       savePhotographyData
+       savePhotographyData,
+        // Boards
+        boardsFormData,
+        boardsTabState,
+        isBoardSaving,
+        saveBoard,
+        isManager
     }
   }
 }
@@ -1112,5 +1217,243 @@ export default {
 
 .btn-text {
     background: none; border: none; color: #64748b; cursor: pointer;
+}
+
+/* --- Boards Section Styles --- */
+
+
+.board-form-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    overflow: hidden;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.modal-header-strip {
+    background: #c0392b;
+    color: white;
+    padding: 12px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 800;
+    font-family: 'Amiri', serif;
+}
+
+.form-container {
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.section-card {
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.section-card.purple-theme { border: 1px solid #a78bfa; }
+.section-card.purple-theme .section-header { background: #8b5cf6; color: white; }
+
+.section-card.yellow-theme { border: 1px solid #fbbf24; }
+.section-card.yellow-theme .section-header { background: #fcd34d; color: #451a03; }
+.section-card.yellow-theme .section-body { background: #fffbeb; }
+
+.section-header {
+    padding: 8px 15px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.section-body { padding: 15px; }
+
+.vertical-layout { display: flex; flex-direction: column; gap: 10px; }
+.grid-layout { display: flex; flex-direction: column; gap: 10px; }
+.grid-row { display: flex; gap: 10px; }
+
+.box-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    text-align: center;
+    outline: none;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.box-input:focus {
+    border-color: #B1A28F;
+    box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.2);
+}
+
+.form-actions-board {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+.save-btn-board {
+    background: #1e293b;
+    color: white;
+    padding: 12px 50px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.save-btn-board:hover:not(:disabled) {
+    background: #0f172a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+.save-btn-board:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.board-completed-view {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.completed-info-card {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.success-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    color: #10b981;
+    margin-bottom: 20px;
+}
+
+.success-header h3 { margin: 0; font-size: 20px; }
+
+.details-summary p { color: #64748b; margin-bottom: 20px; }
+
+.btn-text {
+    background: none;
+    border: none;
+    color: #B1A28F;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+    font-family: inherit;
+}
+/* --- Premium CTA Styles --- */
+.board-cta-container {
+    padding: 60px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.board-cta-card {
+    background: white;
+    padding: 50px;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
+    border: 1px solid rgba(177, 162, 143, 0.2);
+    text-align: center;
+    max-width: 450px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.board-cta-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 6px;
+    background: linear-gradient(90deg, #1e3a5f, #B1A28F, #1e3a5f);
+}
+
+.cta-icon {
+    width: 80px;
+    height: 80px;
+    background: #f8fafc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px;
+    color: #B1A28F;
+    border: 1px solid #e2e8f0;
+}
+
+.cta-icon svg {
+    width: 40px;
+    height: 40px;
+}
+
+.cta-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1e3a5f;
+    margin-bottom: 12px;
+    font-family: 'Amiri', serif;
+}
+
+.cta-description {
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 35px;
+    font-size: 15px;
+}
+
+.cta-btn-premium {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2c3e50 100%);
+    color: white;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px -5px rgba(30, 58, 95, 0.25);
+}
+
+.cta-btn-premium:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px -5px rgba(30, 58, 95, 0.35);
+    background: linear-gradient(135deg, #2c3e50 0%, #1e3a5f 100%);
+}
+
+.cta-btn-premium:disabled {
+    opacity: 0.7;
+    cursor: wait;
+    transform: none;
+}
+
+.animate-pulse {
+    animation: pulse 3s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1); }
 }
 </style>

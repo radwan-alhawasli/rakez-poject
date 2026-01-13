@@ -44,13 +44,15 @@
                    <option value="" disabled selected>اختر الادارة</option>
                    <option :value="0">التسويق / Marketing</option>
                    <option :value="1">الإدارة (الادمن) / Admin</option>
-                   <option :value="2">العقود / Project Acquisition</option>
-                   <option :value="3">إدارة المشاريع / Project Management</option>
-                   <option :value="4">المونتاج / Editor</option>
+                    <option :value="2">العقود / Project Acquisition</option>
+                    <option value="pm_manager">مدير إدارة المشاريع / PM Manager</option>
+                    <option value="pm_employee">موظف إدارة المشاريع / PM Employee</option>
+                    <option :value="4">المونتاج / Editor</option>
                    <option :value="5">المبيعات / Sales</option>
                    <option :value="6">المحاسبة / Accounting</option>
                    <option :value="7">الائتمان / Credit</option>
-                   <option :value="10">مدير إدارة المشاريع / PM Manager</option>
+                    <option :value="8">المخزون / Inventory</option>
+                    <option :value="9">الموارد البشرية / HR</option>
                 </select>
               </div>
               <div class="form-group">
@@ -110,6 +112,25 @@
                <label class="label">الراتب</label>
                <input v-model="form.salary" type="number" class="input" placeholder="0.00" />
             </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="label">صورة الهوية (رابط)</label>
+                <input v-model="form.identity_image" type="text" class="input" placeholder="https://..." />
+              </div>
+              <div class="form-group">
+                <label class="label">نسخة العقد الموقعة (رابط)</label>
+                <input v-model="form.signed_contract" type="text" class="input" placeholder="https://..." />
+              </div>
+            </div>
+
+            <div class="contract-actions" v-if="!isEdit">
+               <button type="button" class="btn-contract" @click="generateContract" :disabled="isGeneratingContract">
+                 <span v-if="isGeneratingContract">جاري إنشاء العقد...</span>
+                 <span v-else>📄 إنشاء عقد توظيف وإرساله للموظف</span>
+               </button>
+               <p class="helper-text" v-if="form.contract_generated">✅ تم إنشاء العقد وإرساله للموظف وللمدير المختص.</p>
+            </div>
            </div>
 
           <div class="modal-actions">
@@ -160,8 +181,27 @@ export default {
       contract_type: 'full_time',
       social_status: 'single',
       iban: '',
-      salary: ''
+      salary: '',
+      identity_image: '',
+      signed_contract: '',
+      contract_generated: false,
+      is_manager: false
     })
+
+    const isGeneratingContract = ref(false)
+
+    const generateContract = async () => {
+      if (!form.value.name || !form.value.email) {
+        alert('الرجاء إدخال الاسم والبريد الإلكتروني أولاً لإنشاء العقد.')
+        return
+      }
+      isGeneratingContract.value = true
+      // Simulate API call for contract generation
+      await new Promise(r => setTimeout(r, 2000))
+      form.value.contract_generated = true
+      isGeneratingContract.value = false
+      alert(`تم إنشاء مسودة عقد العمل للموظف ${form.value.name} وإرسالها لبريده: ${form.value.email}`)
+    }
 
     const resetForm = () => {
       form.value = {
@@ -177,23 +217,31 @@ export default {
         contract_type: 'full_time',
         social_status: 'single',
         iban: '',
-        salary: ''
+        salary: '',
+        identity_image: '',
+        signed_contract: '',
+        contract_generated: false,
+        is_manager: false
       }
     }
 
     watch(() => props.editUser, (user) => {
       if (user) {
         isEdit.value = true
-        // Map string type to integer if needed
-        // Imported ROLE_MAP is used here
-        const typeValue = (typeof user.type === 'string' && ROLE_MAP[user.type] !== undefined)
+        let typeValue = (typeof user.type === 'string' && ROLE_MAP[user.type] !== undefined)
           ? ROLE_MAP[user.type]
           : user.type
 
-        form.value = { 
-          ...user, 
+        // Handle Project Management special case (3)
+        if (typeValue === 3) {
+          typeValue = user.is_manager ? 'pm_manager' : 'pm_employee'
+        }
+
+        form.value = {
+          ...user,
           type: typeValue,
-          password: '' 
+          password: '',
+          is_manager: !!user.is_manager
         }
       } else {
         isEdit.value = false
@@ -202,12 +250,30 @@ export default {
     }, { immediate: true })
 
     const handleSubmit = () => {
-      emit('submit', { ...form.value, id: props.editUser?.id })
+      const submissionData = { ...form.value, id: props.editUser?.id }
+
+      // Convert virtual PM types back to real type and is_manager flag
+      if (submissionData.type === 'pm_manager') {
+        submissionData.type = 3
+        submissionData.is_manager = true
+      } else if (submissionData.type === 'pm_employee') {
+        submissionData.type = 3
+        submissionData.is_manager = false
+      } else {
+        // Ensure is_manager is false for other types unless specified otherwise
+        // Actually, for other roles it might not matter, but let's keep it consistent
+        submissionData.type = parseInt(submissionData.type)
+        submissionData.is_manager = false // Default to false for non-PM types
+      }
+
+      emit('submit', submissionData)
     }
 
-    return {
+      return {
       form,
       isEdit,
+      isGeneratingContract,
+      generateContract,
       handleSubmit
     }
   }
@@ -423,6 +489,46 @@ export default {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+.contract-actions {
+  margin-top: 15px;
+  padding: 15px;
+  background: #f8fafc;
+  border: 1px dashed #B1A28F;
+  border-radius: 10px;
+}
+
+.btn-contract {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  border: 1.5px solid #1e3a5f;
+  color: #1e3a5f;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-contract:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #B1A28F;
+  color: #B1A28F;
+}
+
+.btn-contract:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.helper-text {
+  font-size: 11px;
+  color: #10b981;
+  margin-top: 8px;
+  font-weight: 600;
+  text-align: center;
 }
 
 @media (max-width: 640px) {

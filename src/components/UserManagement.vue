@@ -46,7 +46,7 @@
             </td>
             <td>
               <div class="role-badge" :class="getRoleClass(user.type)">
-                {{ getRoleLabel(user.type) }}
+                {{ getRoleLabel(user.type, user.is_manager) }}
               </div>
             </td>
             <td>{{ user.team || '-' }}</td>
@@ -338,6 +338,8 @@ export default {
 .role-marketing { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
 .role-admin { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
 .role-pm { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.role-inventory { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.role-hr { background: #faf5ff; color: #6b21a8; border: 1px solid #e9d5ff; }
 .role-default { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
 
 .actions { 
