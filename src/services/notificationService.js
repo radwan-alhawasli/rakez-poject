@@ -12,6 +12,10 @@ const notificationService = {
     state: notifications,
     unreadCount,
 
+    getAll() {
+        return this.state
+    },
+
     /**
      * Initialize notifications and WebSocket listeners
      */
