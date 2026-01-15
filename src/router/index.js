@@ -98,7 +98,15 @@ const routes = [
             {
                 path: 'hr',
                 name: 'HR',
-                component: () => import('../views/HRView.vue')
+                component: () => import('../views/HRView.vue'),
+                children: [
+                    { path: '', redirect: { name: 'HRDashboard' } },
+                    { path: 'dashboard', name: 'HRDashboard', component: () => import('../views/HRView.vue') },
+                    { path: 'teams', name: 'HRTeams', component: () => import('../views/HRView.vue') },
+                    { path: 'team-performance', name: 'HRTeamPerformance', component: () => import('../views/HRView.vue') },
+                    { path: 'employee-performance', name: 'HREmployeePerformance', component: () => import('../views/HRView.vue') },
+                    { path: 'users', name: 'HRUsers', component: () => import('../views/HRView.vue') }
+                ]
             }
         ]
     },
@@ -119,7 +127,12 @@ router.beforeEach((to, from, next) => {
     if (!to.meta.public && !isAuthenticated) {
         next('/login')
     } else if (to.name === 'Login' && isAuthenticated) {
-        next('/dashboard')
+        const user = authService.getCurrentUser()
+        if (user && user.type == 6) {
+            next('/hr')
+        } else {
+            next('/dashboard')
+        }
     } else {
         next()
     }

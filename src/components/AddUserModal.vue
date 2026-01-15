@@ -103,7 +103,7 @@
             </div>
 
             <div class="form-group">
-              <label class="label">IBAN</label>
+              <label class="label">رقم حساب البنك (IBAN)</label>
               <input v-model="form.iban" type="text" class="input" placeholder="SA..." />
             </div>
 

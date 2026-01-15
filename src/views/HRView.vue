@@ -1,36 +1,19 @@
 <template>
   <div class="hr-view">
-    <div class="hr-header">
-      <div class="header-info">
-        <h1 class="view-title">إدارة الموارد البشرية</h1>
-        <p class="view-subtitle">متابعة الأداء، الأفرقة، وإدارة عقود الموظفين.</p>
-      </div>
-      <div class="header-actions">
-        <button class="btn-primary" @click="showAddUserModal = true">
-          <span class="plus-icon">+</span> إضافة موظف جديد
-        </button>
-      </div>
-    </div>
+    <!-- Global header removed to avoid duplication with sub-sections -->
 
-    <!-- Tabs Navigation -->
-    <div class="hr-tabs">
-      <button 
-        v-for="tab in tabs" 
-        :key="tab.id"
-        class="tab-btn"
-        :class="{ active: activeTab === tab.id }"
-        @click="activeTab = tab.id"
-      >
-        <span class="tab-icon">{{ tab.icon }}</span>
-        {{ tab.label }}
-      </button>
-    </div>
+    <!-- Tabs removed as they are now in the sidebar -->
 
     <!-- Tab Content -->
     <div class="tab-content custom-scrollbar">
       
       <!-- 1. Dashboard Tab -->
       <div v-if="activeTab === 'dashboard'" class="hr-dashboard-grid">
+        <!-- 0. Section Title -->
+        <div class="section-header-compact">
+          <h2 class="section-title">نظرة عامة على الموارد البشرية</h2>
+          <p class="section-subtitle">ملخص الأداء العام للمنظمة والموظفين.</p>
+        </div>
         <div class="metric-card">
           <div class="metric-icon blue">💰</div>
           <div class="metric-label">متوسط بيع الموظف الشهري</div>
@@ -59,8 +42,9 @@
 
       <!-- 2. Teams Tab -->
       <div v-else-if="activeTab === 'teams'" class="hr-teams-view">
-        <div class="section-title-row">
-            <h3>متابعة الأفرقة والمبيعات</h3>
+        <div class="section-header-compact">
+            <h2 class="section-title">متابعة الأفرقة والمبيعات</h2>
+            <p class="section-subtitle">توزيع المبيعات والأهداف على مستوى الفرق.</p>
         </div>
         <div class="teams-grid">
           <div v-for="team in teamsData" :key="team.name" class="team-card">
@@ -93,6 +77,10 @@
 
       <!-- 3. Team Performance Tab -->
       <div v-else-if="activeTab === 'team-performance'" class="performance-view">
+         <div class="section-header-compact">
+            <h2 class="section-title">أداء الأفرقة</h2>
+            <p class="section-subtitle">تحليل الإنتاجية والجودة لكل فريق عمل.</p>
+         </div>
          <div class="metrics-table-container">
             <table class="metrics-table">
                <thead>
@@ -122,38 +110,51 @@
          </div>
       </div>
 
-      <!-- 4. Employee Performance Tab -->
-      <div v-else-if="activeTab === 'employee-performance'" class="performance-view">
-         <div class="metrics-table-container">
-            <table class="metrics-table">
-               <thead>
-                  <tr>
-                     <th>الموظف</th>
-                     <th>الفريق</th>
-                     <th>الأهداف الشخصية</th>
-                     <th>المشاريع المباعة</th>
-                     <th>التقييم</th>
-                  </tr>
-               </thead>
-               <tbody>
-                  <tr v-for="emp in performanceData.employees" :key="emp.name">
-                     <td>
-                        <div class="emp-user">
-                           <div class="user-avatar">{{ emp.name.charAt(0) }}</div>
-                           <span>{{ emp.name }}</span>
-                        </div>
-                     </td>
-                     <td>{{ emp.team }}</td>
-                     <td>{{ emp.goals }}</td>
-                     <td>{{ emp.sold }}</td>
-                     <td>
-                        <div class="rating">
-                           <span v-for="i in 5" :key="i" class="star" :class="{ gold: i <= emp.rating }">★</span>
-                        </div>
-                     </td>
-                  </tr>
-               </tbody>
-            </table>
+      <!-- 4. Employee Performance Tab (Premium Grid) -->
+      <div v-else-if="activeTab === 'employee-performance'" class="performance-premium-view">
+         <div class="section-header-compact">
+            <h2 class="section-title">أداء الموظفين الفردي</h2>
+            <p class="section-subtitle">متابعة الأهداف البيعية والتقييمات لكل موظف.</p>
+         </div>
+         
+         <div class="performance-cards-grid">
+            <div v-for="emp in performanceData.employees" :key="emp.name" class="premium-card">
+               <div class="card-glass-effect"></div>
+               
+               <div class="emp-profile">
+                  <div class="avatar-large">{{ emp.name.charAt(0) }}</div>
+                  <div class="emp-info">
+                     <h4 class="name">{{ emp.name }}</h4>
+                     <span class="team-tag">{{ emp.team }}</span>
+                  </div>
+                  <div class="achievement-ring" :style="{ '--progress': (emp.sold / emp.goals) * 100 + '%' }">
+                     <div class="ring-content">
+                        <span class="percentage">{{ Math.round((emp.sold / emp.goals) * 100) }}%</span>
+                        <span class="label">إنجاز</span>
+                     </div>
+                  </div>
+               </div>
+
+               <div class="card-stats">
+                  <div class="stat-box">
+                     <span class="label">المستهدف</span>
+                     <span class="value">{{ formatCurrency(emp.goals) }}</span>
+                  </div>
+                  <div class="stat-box highlighted">
+                     <span class="label">المحقق فعلياً</span>
+                     <span class="value">{{ formatCurrency(emp.sold) }}</span>
+                  </div>
+               </div>
+
+               <div class="card-footer">
+                  <div class="rating-stars">
+                     <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= emp.rating }">★</span>
+                  </div>
+                  <button class="btn-action-outline" @click="openSetTarget(emp)">
+                     <span class="icon">🎯</span> تعيين هدف
+                  </button>
+               </div>
+            </div>
          </div>
       </div>
 
@@ -171,32 +172,48 @@
       @submit="handleUserSubmit"
       :isLoading="isSavingUser"
     />
+
+    <SetTargetModal
+      v-if="showTargetModal"
+      :employee="selectedEmployee"
+      :isLoading="isSavingTarget"
+      @close="showTargetModal = false"
+      @submit="handleTargetSubmit"
+    />
   </div>
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import UserManagement from '../components/UserManagement.vue'
 import AddUserModal from '../components/AddUserModal.vue'
+import SetTargetModal from '../components/SetTargetModal.vue'
 
 export default {
-  name: 'HRView',
-  components: {
-    UserManagement,
-    AddUserModal
-  },
+    name: 'HRView',
+    components: {
+        UserManagement,
+        AddUserModal,
+        SetTargetModal
+    },
   setup() {
-    const activeTab = ref('dashboard')
+    const route = useRoute()
     const showAddUserModal = ref(false)
-    const isSavingUser = ref(false)
 
-    const tabs = [
-      { id: 'dashboard', label: 'لوحة التحكم', icon: '📊' },
-      { id: 'teams', label: 'الأفرقة', icon: '👥' },
-      { id: 'team-performance', label: 'أداء الأفرقة', icon: '📈' },
-      { id: 'employee-performance', label: 'أداء الموظفين', icon: '👤' },
-      { id: 'users', label: 'إدارة المستخدمين', icon: '⚙️' }
-    ]
+    const activeTab = computed(() => {
+        const name = route.name
+        if (name === 'HRDashboard') return 'dashboard'
+        if (name === 'HRTeams') return 'teams'
+        if (name === 'HRTeamPerformance') return 'team-performance'
+        if (name === 'HREmployeePerformance') return 'employee-performance'
+        if (name === 'HRUsers') return 'users'
+        return 'dashboard'
+    })
+    const isSavingUser = ref(false)
+    const showTargetModal = ref(false)
+    const selectedEmployee = ref(null)
+    const isSavingTarget = ref(false)
 
     const teamsData = reactive([
       { name: 'فريق المبيعات الرياض', members: 8, goalProgress: 85, soldProjects: 12, totalValue: '1.2M', color: '#B1A28F' },
@@ -210,11 +227,37 @@ export default {
             { name: 'مبيعات الغربية', achievement: 72, productivity: 75, quality: 82, status: 'good', statusLabel: 'جيد' }
         ],
         employees: [
-            { name: 'أحمد العتيبي', team: 'الوسطى', goals: '10/12', sold: 5, rating: 5 },
-            { name: 'خالد محمد', team: 'الغربية', goals: '6/10', sold: 2, rating: 3 },
-            { name: 'سارة أحمد', team: 'الوسطى', goals: '9/9', sold: 7, rating: 5 }
+            { name: 'أحمد العتيبي', team: 'الوسطى', goals: 50000, sold: 45000, rating: 5 },
+            { name: 'خالد محمد', team: 'الغربية', goals: 40000, sold: 12000, rating: 3 },
+            { name: 'سارة أحمد', team: 'الوسطى', goals: 30000, sold: 30000, rating: 5 }
         ]
     })
+
+    const openSetTarget = (emp) => {
+        selectedEmployee.value = emp
+        showTargetModal.value = true
+    }
+
+    const handleTargetSubmit = async (targetData) => {
+        isSavingTarget.value = true
+        try {
+            console.log('Setting target:', targetData)
+            await new Promise(r => setTimeout(r, 1000))
+            
+            // Update local state for demo
+            const emp = performanceData.employees.find(e => e.name === selectedEmployee.value.name)
+            if (emp) emp.goals = targetData.targetValue
+
+            alert(`تم تحديث الهدف البيعي للموظف ${selectedEmployee.value.name} بنجاح!`)
+            showTargetModal.value = false
+        } finally {
+            isSavingTarget.value = false
+        }
+    }
+
+    const formatCurrency = (val) => {
+        return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR', maximumFractionDigits: 0 }).format(val)
+    }
 
     const handleUserSubmit = async (userData) => {
         isSavingUser.value = true
@@ -231,12 +274,17 @@ export default {
 
     return {
       activeTab,
-      tabs,
       showAddUserModal,
       isSavingUser,
       teamsData,
       performanceData,
-      handleUserSubmit
+      handleUserSubmit,
+      showTargetModal,
+      selectedEmployee,
+      isSavingTarget,
+      openSetTarget,
+      handleTargetSubmit,
+      formatCurrency
     }
   }
 }
@@ -268,6 +316,26 @@ export default {
 
 .view-subtitle {
   color: #64748b;
+  margin: 0;
+}
+
+.section-header-compact {
+  margin-bottom: 24px;
+  border-right: 4px solid #B1A28F;
+  padding-right: 15px;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0 0 5px 0;
+  font-family: 'Amiri', serif;
+}
+
+.section-subtitle {
+  color: #64748b;
+  font-size: 14px;
   margin: 0;
 }
 
@@ -507,8 +575,153 @@ export default {
 .rating { color: #e2e8f0; font-size: 18px; line-height: 1; }
 .star.gold { color: #fbbf24; }
 
-/* Custom Scrollbar */
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+/* Premium Performance Cards */
+.performance-premium-view { animation: fadeIn 0.6s ease-out; }
+
+.performance-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 30px;
+  margin-top: 10px;
+}
+
+.premium-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border-radius: 28px;
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.premium-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 30px 60px rgba(177, 162, 143, 0.15);
+  border-color: rgba(177, 162, 143, 0.3);
+}
+
+.card-glass-effect {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(177, 162, 143, 0.03) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.emp-profile {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.avatar-large {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c3e50 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  font-weight: 800;
+  box-shadow: 0 8px 16px rgba(30, 58, 95, 0.2);
+}
+
+.emp-info .name { margin: 0; font-size: 20px; color: #1e3a5f; font-family: 'Amiri', serif; }
+.emp-info .team-tag { font-size: 13px; color: #94a3b8; font-weight: 600; }
+
+.achievement-ring {
+  margin-right: auto;
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: conic-gradient(#B1A28F var(--progress), #f1f5f9 0deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.achievement-ring::before {
+  content: '';
+  position: absolute;
+  width: 68px;
+  height: 68px;
+  background: white;
+  border-radius: 50%;
+}
+
+.ring-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.ring-content .percentage { font-size: 18px; font-weight: 800; color: #1e3a5f; }
+.ring-content .label { font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
+
+.card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.stat-box {
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-box.highlighted { background: #fdfbf7; border: 1px solid rgba(177, 162, 143, 0.2); }
+.stat-box .label { font-size: 11px; color: #94a3b8; font-weight: 700; margin-bottom: 5px; }
+.stat-box .value { font-size: 16px; font-weight: 800; color: #1e293b; }
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.rating-stars { display: flex; gap: 4px; }
+.rating-stars .star { color: #e2e8f0; font-size: 20px; }
+.rating-stars .star.filled { color: #fbbf24; }
+
+.btn-action-outline {
+  background: white;
+  border: 2px solid #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e3a5f;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-action-outline:hover {
+  border-color: #B1A28F;
+  color: #B1A28F;
+  background: #fdfbf7;
+}
+
+@media (max-width: 768px) {
+  .performance-cards-grid { grid-template-columns: 1fr; }
+}
 </style>

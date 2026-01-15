@@ -1,99 +1,147 @@
 import { ref } from 'vue'
-
-const STORAGE_KEY = 'rakez_notifications'
-
-// Initial Mock Notifications matching screenshot
-const INITIAL_NOTIFICATIONS = [
-    {
-        id: 1,
-        title: 'تم إضافة مشروع جديد "أدوار للبيع في أصيل فلور - حي النرجس" وهو الآن في قسم المشاريع غير الجاهزة للمراجعة.',
-        time: 'منذ 6 أيام بواسطة النظام',
-        read: false,
-        actionRequired: true
-    },
-    {
-        id: 2,
-        title: 'تم إضافة مشروع جديد "أدوار رحاب 1 - حي التعاون الرياض" وهو الآن في قسم المشاريع غير الجاهزة للمراجعة.',
-        time: 'منذ 6 أيام بواسطة النظام',
-        read: false,
-        actionRequired: true
-    },
-    {
-        id: 3,
-        title: 'تم إضافة مشروع جديد "شقق نرفانا القصر - المدينة المنورة" وهو الآن في قسم المشاريع غير الجاهزة للمراجعة.',
-        time: 'منذ 6 أيام بواسطة النظام',
-        read: false,
-        actionRequired: true
-    },
-    {
-        id: 4,
-        title: 'تم إضافة مشروع جديد "ss" وهو الآن في قسم المشاريع غير الجاهزة للمراجعة.',
-        time: 'منذ 7 أيام بواسطة النظام',
-        read: false,
-        type: 'info',
-        actionRequired: true
-    }
-]
+import apiClient from '../api/apiClient'
+import authService from './authService'
+import { createPusher } from '../plugins/pusher'
 
 const notifications = ref([])
-
-const loadNotifications = () => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-        notifications.value = JSON.parse(stored)
-    } else {
-        notifications.value = INITIAL_NOTIFICATIONS
-        saveNotifications()
-    }
-}
-
-const saveNotifications = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications.value))
-}
+const unreadCount = ref(0)
+let pusher = null
+let channels = []
 
 const notificationService = {
     state: notifications,
+    unreadCount,
 
-    getAll() {
-        if (notifications.value.length === 0) loadNotifications()
-        return notifications
+    /**
+     * Initialize notifications and WebSocket listeners
+     */
+    async init() {
+        if (!authService.isAuthenticated()) return
+
+        const user = authService.getCurrentUser()
+        const token = authService.getToken()
+        
+        // 1. Fetch existing notifications
+        await this.fetchAll()
+
+        // 2. Setup Pusher
+        if (!pusher) {
+            pusher = createPusher(token)
+            
+            // Subscribe to Public
+            const publicChannel = pusher.subscribe('public-notifications')
+            publicChannel.bind('public.notification', (data) => {
+                this.addReceivedNotification(data, 'public')
+            })
+            channels.push(publicChannel)
+
+            // Subscribe to User Private
+            if (user && user.id) {
+                const userChannel = pusher.subscribe(`private-user-notifications.${user.id}`)
+                userChannel.bind('user.notification', (data) => {
+                    this.addReceivedNotification(data, 'private')
+                })
+                channels.push(userChannel)
+            }
+
+            // Subscribe to Admin Private
+            if (user && user.type === 1) {
+                const adminChannel = pusher.subscribe('private-admin-notifications')
+                adminChannel.bind('admin.notification', (data) => {
+                    this.addReceivedNotification(data, 'admin')
+                })
+                channels.push(adminChannel)
+            }
+        }
     },
 
-    addNotification(text, type = 'info') {
+    /**
+     * Fetch all notifications from API
+     */
+    async fetchAll() {
+        try {
+            const [privateRes, publicRes] = await Promise.all([
+                apiClient.get('/user/notifications/private'),
+                apiClient.get('/user/notifications/public')
+            ])
+
+            const all = [
+                ...(privateRes.data.notifications || []),
+                ...(publicRes.data.notifications || [])
+            ].map(n => ({
+                id: n.id,
+                title: n.message || n.title,
+                time: n.created_at,
+                read: !!n.read_at,
+                type: n.type || 'info',
+                actionRequired: !n.read_at
+            }))
+
+            // Sort by date newest first
+            notifications.value = all.sort((a, b) => new Date(b.time) - new Date(a.time))
+            this.updateUnreadCount()
+        } catch (error) {
+            console.error('Error fetching notifications:', error)
+        }
+    },
+
+    /**
+     * Handle incoming WebSocket notification
+     */
+    addReceivedNotification(data, source) {
         const newNotif = {
-            id: Date.now(),
-            title: text,
-            time: 'الآن',
+            id: data.id || Date.now(),
+            title: data.message,
+            time: new Date().toISOString(),
             read: false,
-            type: type,
-            actionRequired: type === 'action'
+            type: source === 'admin' ? 'warning' : 'info',
+            actionRequired: true
         }
         notifications.value.unshift(newNotif)
-        saveNotifications()
+        this.updateUnreadCount()
+        
+        // Optional: Trigger a browser notification or toast here
+        console.log(`New ${source} notification received:`, data.message)
     },
 
-    markAsRead(id) {
-        const n = notifications.value.find(x => x.id === id)
-        if (n) {
-            n.read = true
-            n.actionRequired = false // Assume action taken or dismissed
-            saveNotifications()
+    async markAsRead(id) {
+        try {
+            await apiClient.patch(`/user/notifications/${id}/read`)
+            const n = notifications.value.find(x => x.id === id)
+            if (n) {
+                n.read = true
+                n.actionRequired = false
+                this.updateUnreadCount()
+            }
+        } catch (error) {
+            console.error('Error marking as read:', error)
         }
     },
 
-    markAllAsRead() {
-        notifications.value.forEach(n => {
-            n.read = true
-            n.actionRequired = false
-        })
-        saveNotifications()
+    async markAllAsRead() {
+        try {
+            await apiClient.patch('/user/notifications/mark-all-read')
+            notifications.value.forEach(n => {
+                n.read = true
+                n.actionRequired = false
+            })
+            this.updateUnreadCount()
+        } catch (error) {
+            console.error('Error marking all as read:', error)
+        }
     },
 
-    triggerProjectCompletion(projectName) {
-        this.addNotification(
-            `تم نقل مشروع "${projectName}" إلى المشاريع الجاهزة بعد اكتمال المتتبع.`,
-            'success'
-        )
+    updateUnreadCount() {
+        unreadCount.value = notifications.value.filter(n => !n.read).length
+    },
+
+    disconnect() {
+        if (pusher) {
+            channels.forEach(c => c.unbind_all())
+            pusher.disconnect()
+            pusher = null
+            channels = []
+        }
     }
 }
 

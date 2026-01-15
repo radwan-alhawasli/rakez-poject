@@ -350,31 +350,66 @@
           
           <!-- HR Sidebar (Role 6) -->
           <template v-else-if="userRole == 6">
-            <!-- 1. لوحة التحكم -->
-            <router-link to="/dashboard" class="nav-item" active-class="active">
+            <!-- 1. لوحة التحكم (HR) -->
+            <router-link to="/hr/dashboard" class="nav-item" active-class="active">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span class="nav-text">لوحة التحكم (HR)</span>
+              </div>
+            </router-link>
+
+            <!-- 2. الأفرقة -->
+            <router-link to="/hr/teams" class="nav-item" active-class="active">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <span class="nav-text">الأفرقة</span>
+              </div>
+            </router-link>
+
+            <!-- 3. أداء الأفرقة -->
+            <router-link to="/hr/team-performance" class="nav-item" active-class="active">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                <span class="nav-text">أداء الأفرقة</span>
+              </div>
+            </router-link>
+
+            <!-- 4. أداء الموظفين -->
+            <router-link to="/hr/employee-performance" class="nav-item" active-class="active">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span class="nav-text">أداء الموظفين</span>
+              </div>
+            </router-link>
+
+            <!-- 5. إدارة المستخدمين -->
+            <router-link to="/hr/users" class="nav-item" active-class="active">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span class="nav-text">إدارة المستخدمين</span>
+              </div>
+            </router-link>
+
+            <!-- 6. لوحة التحكم العامة (Optional/Backup) -->
+            <router-link to="/dashboard" class="nav-item" active-class="active">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                 <span class="nav-text">لوحة التحكم العامة</span>
               </div>
             </router-link>
 
-            <!-- 2. الموارد البشرية -->
-            <router-link to="/hr" class="nav-item" active-class="active">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span class="nav-text">إدارة الموارد البشرية</span>
-              </div>
-            </router-link>
-
-            <!-- 3. الإشعارات -->
+            <!-- 7. الإشعارات -->
             <router-link to="/notifications" class="nav-item" active-class="active">
               <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <div class="icon-with-badge">
+                  <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                  <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
+                </div>
                 <span class="nav-text">الإشعارات</span>
               </div>
             </router-link>
 
-            <!-- 4. الملف الشخصي -->
+            <!-- 8. الملف الشخصي -->
             <router-link to="/profile" class="nav-item" active-class="active">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -392,12 +427,15 @@
               </div>
             </router-link>
             
-            <a href="#" class="nav-item">
+            <router-link to="/notifications" class="nav-item" active-class="active">
               <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <div class="icon-with-badge">
+                  <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                  <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
+                </div>
                 <span class="nav-text">الإشعارات</span>
               </div>
-            </a>
+            </router-link>
             
             <a href="#" class="nav-item">
               <div class="nav-content">
@@ -501,7 +539,7 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import notificationService from '../services/notificationService'
 import authService from '../services/authService'
@@ -538,29 +576,47 @@ export default {
     }
 
     const userRole = computed(() => {
-      const type = user.value?.type
+      let type = user.value?.type
       if (type === 1 || type === 'admin' || user.value?.role === 'admin') return 1
       
       // Project Management Role (3)
       if (type == 3 || type === 'project_management') {
-          // If is_manager is true, return 10 (Manager sidebar)
-          // If is_manager is false, return 3 (Employee sidebar)
           return user.value?.is_manager ? 10 : 3
       }
+
+      // HR Role (6) - Normalize if it's coming as string or from constants
+      const roleMap = {
+        'hr': 6,
+        'marketer': 0,
+        'sales': 5,
+        'accounting': 6, // Keep consistent if needed
+      }
+
+      if (typeof type === 'string' && roleMap[type] !== undefined) {
+        type = roleMap[type]
+      }
       
-      return type ?? 0
+      return parseInt(type) ?? 0
     })
 
     const handleLogout = async () => {
       await authService.logout()
+      notificationService.disconnect()
       router.push('/login')
     }
+
+    onMounted(() => {
+      notificationService.init()
+    })
+
+    onUnmounted(() => {
+      notificationService.disconnect()
+    })
 
     return {
       user,
       userRole,
       showNotifications,
-      notifications,
       unreadCount,
       toggleNotifications,
       markAsRead,
@@ -776,4 +832,36 @@ export default {
 .sidebar-nav::-webkit-scrollbar { width: 4px; }
 .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
 .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+/* Notification Badge Styles */
+.icon-with-badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #B1A28F;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 2px solid #1e293b;
+  min-width: 18px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
 </style>

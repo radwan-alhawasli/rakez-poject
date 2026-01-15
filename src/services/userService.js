@@ -105,6 +105,12 @@ const userService = {
                 payload.is_manager = !!employeeData.is_manager
             }
 
+            // New HR fields
+            if (employeeData.salary) payload.salary = employeeData.salary
+            if (employeeData.iban) payload.iban = employeeData.iban
+            if (employeeData.identity_image) payload.identity_image = employeeData.identity_image
+            if (employeeData.signed_contract) payload.signed_contract = employeeData.signed_contract
+
             // Only add password if it's explicitly provided and not empty
             if (employeeData.password && employeeData.password.trim() !== '') {
                 payload.password = employeeData.password
