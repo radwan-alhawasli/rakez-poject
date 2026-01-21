@@ -98,7 +98,6 @@ const routes = [
             {
                 path: 'hr',
                 name: 'HR',
-<<<<<<< Updated upstream
                 component: () => import('../views/HRView.vue'),
                 children: [
                     { path: '', redirect: { name: 'HRDashboard' } },
@@ -108,14 +107,11 @@ const routes = [
                     { path: 'employee-performance', name: 'HREmployeePerformance', component: () => import('../views/HRView.vue') },
                     { path: 'users', name: 'HRUsers', component: () => import('../views/HRView.vue') }
                 ]
-=======
-                component: () => import('../views/HRView.vue')
             },
             {
                 path: 'teams',
                 name: 'Teams',
                 component: () => import('../views/TeamsView.vue')
->>>>>>> Stashed changes
             }
         ]
     },
