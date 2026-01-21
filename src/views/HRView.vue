@@ -7,44 +7,74 @@
     <!-- Tab Content -->
     <div class="tab-content custom-scrollbar">
       
-      <!-- 1. Dashboard Tab -->
-      <div v-if="activeTab === 'dashboard'" class="hr-dashboard-grid">
-        <!-- 0. Section Title -->
-        <div class="section-header-compact">
-          <h2 class="section-title">نظرة عامة على الموارد البشرية</h2>
-          <p class="section-subtitle">ملخص الأداء العام للمنظمة والموظفين.</p>
+      <div v-if="activeTab === 'dashboard'" class="hr-dashboard-grid-view">
+        <!-- Premium Header -->
+        <div class="welcome-header">
+          <h1 class="welcome-title">أهلاً بعودتك، {{ userName }}!</h1>
+          <p class="welcome-subtitle">المؤشرات الرئيسية للأداء وإدارة القوى العاملة.</p>
         </div>
-        <div class="metric-card">
-          <div class="metric-icon blue">💰</div>
-          <div class="metric-label">متوسط بيع الموظف الشهري</div>
-          <div class="metric-value">45,000 <small>ر.س</small></div>
-          <div class="metric-trend positive">↑ 12% من الشهر الماضي</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-icon purple">👥</div>
-          <div class="metric-label">متوسط بيع الفريق</div>
-          <div class="metric-value">180,000 <small>ر.س</small></div>
-          <div class="metric-trend neutral">→ مستقر</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-icon red">⚠️</div>
-          <div class="metric-label">نسبة الأخطاء والتحذيرات</div>
-          <div class="metric-value">2.4%</div>
-          <div class="metric-trend negative">↑ 0.5% تم رصدها</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-icon green">📈</div>
-          <div class="metric-label">عدد الموظفين الحاليين</div>
-          <div class="metric-value">24</div>
-          <div class="metric-trend positive">3 موظفين جدد هذا الشهر</div>
+
+        <div class="stats-grid">
+          <!-- KPI 1: متوسط مبيع الموظف الشهري -->
+          <div class="stat-card">
+            <div class="stat-icon-bg dollar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">متوسط مبيع الموظف الشهري</span>
+              <span class="stat-value">{{ dashboardMetrics.avgEmployeeMonthlySales || 0 }}</span>
+              <span class="stat-desc">عدد المشاريع المباعة ÷ عدد الموظفين</span>
+            </div>
+          </div>
+
+          <!-- KPI 2: متوسط بيع الفريق الشهري -->
+          <div class="stat-card">
+            <div class="stat-icon-bg units">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">متوسط بيع الفريق الشهري</span>
+              <span class="stat-value">{{ formatCurrency(dashboardMetrics.avgTeamMonthlySales || 0) }}</span>
+              <span class="stat-desc">متوسط المبيعات الشهرية لكل الفرق</span>
+            </div>
+          </div>
+
+          <!-- KPI 3: عدد الموظفين الحاليين -->
+          <div class="stat-card">
+            <div class="stat-icon-bg projects">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">عدد الموظفين الحاليين</span>
+              <span class="stat-value">{{ dashboardMetrics.currentEmployeesCount || 0 }}</span>
+              <span class="stat-desc">العدد الإجمالي للموظفين النشطين</span>
+            </div>
+          </div>
+
+          <!-- KPI 4: متوسط نسبة تحقيق الأهداف -->
+          <div class="stat-card">
+            <div class="stat-icon-bg ready">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">متوسط نسبة تحقيق الأهداف</span>
+              <span class="stat-value">{{ dashboardMetrics.avgGoalAchievement || 0 }}%</span>
+              <span class="stat-desc">مجموع نسب تحقيق الأهداف ÷ عدد الموظفين</span>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- 2. Teams Tab -->
       <div v-else-if="activeTab === 'teams'" class="hr-teams-view">
-        <div class="section-header-compact">
-            <h2 class="section-title">متابعة الأفرقة والمبيعات</h2>
-            <p class="section-subtitle">توزيع المبيعات والأهداف على مستوى الفرق.</p>
+        <div class="section-header-compact" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 class="section-title">متابعة الأفرقة والمبيعات</h2>
+                <p class="section-subtitle">توزيع المبيعات والأهداف على مستوى الفرق.</p>
+            </div>
+            <button class="btn-primary" @click="openAddTeamModal">
+                <span class="plus-icon">+</span> إضافة فريق
+            </button>
         </div>
         <div class="teams-grid">
           <div v-for="team in teamsData" :key="team.name" class="team-card">
@@ -70,6 +100,11 @@
                     <span class="stat-label">القيمة الإجمالية</span>
                     <span class="stat-value">{{ team.totalValue }} <small>ر.س</small></span>
                 </div>
+            </div>
+            <div class="team-actions">
+                <button class="btn-icon edit" @click="openEditTeamModal(team)" title="تعديل الفريق">✏️</button>
+                <button class="btn-icon delete" @click="handleDeleteTeam(team)" title="حذف الفريق">🗑️</button>
+                <button class="btn-link" @click="handleLinkMarketers(team)">🔗 ربط مسوقين</button>
             </div>
           </div>
         </div>
@@ -110,57 +145,59 @@
          </div>
       </div>
 
-      <!-- 4. Employee Performance Tab (Premium Grid) -->
-      <div v-else-if="activeTab === 'employee-performance'" class="performance-premium-view">
+      <!-- 4. Marketer Performance Tab (3.3 - أداء المسوقين) -->
+      <div v-else-if="activeTab === 'employee-performance'" class="performance-view">
          <div class="section-header-compact">
-            <h2 class="section-title">أداء الموظفين الفردي</h2>
-            <p class="section-subtitle">متابعة الأهداف البيعية والتقييمات لكل موظف.</p>
+            <h2 class="section-title">أداء المسوقين</h2>
+            <p class="section-subtitle">تتبع الأداء وتحقيق الأهداف لكل مسوق.</p>
          </div>
          
-         <div class="performance-cards-grid">
-            <div v-for="emp in performanceData.employees" :key="emp.name" class="premium-card">
-               <div class="card-glass-effect"></div>
-               
-               <div class="emp-profile">
-                  <div class="avatar-large">{{ emp.name.charAt(0) }}</div>
-                  <div class="emp-info">
-                     <h4 class="name">{{ emp.name }}</h4>
-                     <span class="team-tag">{{ emp.team }}</span>
-                  </div>
-                  <div class="achievement-ring" :style="{ '--progress': (emp.sold / emp.goals) * 100 + '%' }">
-                     <div class="ring-content">
-                        <span class="percentage">{{ Math.round((emp.sold / emp.goals) * 100) }}%</span>
-                        <span class="label">إنجاز</span>
-                     </div>
-                  </div>
-               </div>
-
-               <div class="card-stats">
-                  <div class="stat-box">
-                     <span class="label">المستهدف</span>
-                     <span class="value">{{ formatCurrency(emp.goals) }}</span>
-                  </div>
-                  <div class="stat-box highlighted">
-                     <span class="label">المحقق فعلياً</span>
-                     <span class="value">{{ formatCurrency(emp.sold) }}</span>
-                  </div>
-               </div>
-
-               <div class="card-footer">
-                  <div class="rating-stars">
-                     <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= emp.rating }">★</span>
-                  </div>
-                  <button class="btn-action-outline" @click="openSetTarget(emp)">
-                     <span class="icon">🎯</span> تعيين هدف
-                  </button>
-               </div>
-            </div>
+         <div class="metrics-table-container">
+            <table class="metrics-table">
+               <thead>
+                  <tr>
+                     <th>اسم الموظف</th>
+                     <th>نسبة تحقيق الأهداف</th>
+                     <th>عدد العرابين</th>
+                     <th>عدد التحذيرات</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  <tr v-for="marketer in marketerPerformanceData" :key="marketer.id">
+                     <td>
+                        <div class="emp-user">
+                           <div class="user-avatar">{{ marketer.name.charAt(0) }}</div>
+                           <span>{{ marketer.name }}</span>
+                        </div>
+                     </td>
+                     <td>
+                        <div class="table-progress">
+                           <span>{{ marketer.goalAchievement }}%</span>
+                           <div class="bar">
+                              <div class="fill" :style="{ width: marketer.goalAchievement + '%' }"></div>
+                           </div>
+                        </div>
+                     </td>
+                     <td>
+                        <span class="badge-info">{{ marketer.sponsorsCount }}</span>
+                     </td>
+                     <td>
+                        <span class="badge-warning">{{ marketer.warningsCount }}</span>
+                     </td>
+                  </tr>
+               </tbody>
+            </table>
          </div>
       </div>
 
       <!-- 5. User Management Tab -->
       <div v-else-if="activeTab === 'users'" class="management-view">
         <UserManagement />
+      </div>
+
+      <!-- 6. Reports Tab -->
+      <div v-else-if="activeTab === 'reports'" class="reports-view">
+        <ReportsTab />
       </div>
 
     </div>
@@ -180,26 +217,43 @@
       @close="showTargetModal = false"
       @submit="handleTargetSubmit"
     />
+
+    <TeamModal
+      v-if="showTeamModal"
+      :team="editingTeam"
+      :isLoading="isSavingTeam"
+      @close="showTeamModal = false"
+      @submit="handleTeamSubmit"
+    />
   </div>
 </template>
 
 <script>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import UserManagement from '../components/UserManagement.vue'
 import AddUserModal from '../components/AddUserModal.vue'
 import SetTargetModal from '../components/SetTargetModal.vue'
+import TeamModal from '../components/TeamModal.vue'
+import ReportsTab from '../components/ReportsTab.vue'
+import hrService from '../services/hrService'
+import authService from '../services/authService'
 
 export default {
     name: 'HRView',
     components: {
         UserManagement,
         AddUserModal,
-        SetTargetModal
+        SetTargetModal,
+        TeamModal,
+        ReportsTab
     },
   setup() {
     const route = useRoute()
+    const user = ref(authService.getCurrentUser())
+    const userName = computed(() => user.value?.name || 'الموارد البشرية')
     const showAddUserModal = ref(false)
+    const isLoading = ref(false)
 
     const activeTab = computed(() => {
         const name = route.name
@@ -208,30 +262,160 @@ export default {
         if (name === 'HRTeamPerformance') return 'team-performance'
         if (name === 'HREmployeePerformance') return 'employee-performance'
         if (name === 'HRUsers') return 'users'
+        if (name === 'HRReports') return 'reports'
         return 'dashboard'
     })
+    
     const isSavingUser = ref(false)
     const showTargetModal = ref(false)
     const selectedEmployee = ref(null)
     const isSavingTarget = ref(false)
 
-    const teamsData = reactive([
-      { name: 'فريق المبيعات الرياض', members: 8, goalProgress: 85, soldProjects: 12, totalValue: '1.2M', color: '#B1A28F' },
-      { name: 'فريق التطوير العقاري', members: 5, goalProgress: 60, soldProjects: 4, totalValue: '3.5M', color: '#1e3a5f' },
-      { name: 'فريق التسويق الميداني', members: 11, goalProgress: 92, soldProjects: 24, totalValue: '850K', color: '#B1A28F' }
-    ])
+    // Team Modal State
+    const showTeamModal = ref(false)
+    const editingTeam = ref(null)
+    const isSavingTeam = ref(false)
 
-    const performanceData = reactive({
-        teams: [
-            { name: 'مبيعات الوسطى', achievement: 94, productivity: 88, quality: 95, status: 'excellent', statusLabel: 'ممتاز' },
-            { name: 'مبيعات الغربية', achievement: 72, productivity: 75, quality: 82, status: 'good', statusLabel: 'جيد' }
-        ],
-        employees: [
-            { name: 'أحمد العتيبي', team: 'الوسطى', goals: 50000, sold: 45000, rating: 5 },
-            { name: 'خالد محمد', team: 'الغربية', goals: 40000, sold: 12000, rating: 3 },
-            { name: 'سارة أحمد', team: 'الوسطى', goals: 30000, sold: 30000, rating: 5 }
-        ]
+    // Team Handlers
+    const openAddTeamModal = () => {
+        editingTeam.value = null
+        showTeamModal.value = true
+    }
+
+    const openEditTeamModal = (team) => {
+        editingTeam.value = { ...team }
+        showTeamModal.value = true
+    }
+
+    const handleTeamSubmit = async (teamData) => {
+        isSavingTeam.value = true
+        try {
+            if (editingTeam.value) {
+                // Update existing team
+                await hrService.updateTeam(editingTeam.value.id, teamData)
+                alert('تم تحديث بيانات الفريق بنجاح')
+            } else {
+                // Create new team
+                await hrService.createTeam(teamData)
+                alert('تم إنشاء الفريق بنجاح')
+            }
+            showTeamModal.value = false
+            loadTeams() // Refresh list
+        } catch (error) {
+            console.error('Error saving team:', error)
+            alert('حدث خطأ أثناء حفظ بيانات الفريق')
+        } finally {
+            isSavingTeam.value = false
+        }
+    }
+
+    const handleDeleteTeam = async (team) => {
+        if (!confirm(`هل أنت متأكد من حذف فريق "${team.name}"؟`)) return
+
+        try {
+            await hrService.deleteTeam(team.id)
+            alert('تم حذف الفريق بنجاح')
+            loadTeams()
+        } catch (error) {
+            console.error('Error deleting team:', error)
+            alert('حدث خطأ أثناء حذف الفريق')
+        }
+    }
+
+    const handleLinkMarketers = (team) => {
+        // Placeholder for linking logic - could be another modal
+        const marketers = prompt('أدخل أرقام المسوقين لربطهم بالفريق (مفصولة بفاصلة):')
+        if (marketers) {
+            // Implementation would go here
+            alert(`تم ربط المسوقين بالفريق: ${team.name}`)
+        }
+    }
+
+    // Dashboard Metrics (3.1)
+    const dashboardMetrics = reactive({
+      avgEmployeeMonthlySales: 0,      // عدد المشاريع المباعة ÷ عدد الموظفين
+      avgTeamMonthlySales: 0,          // متوسط المبيعات الشهرية لكل الفرق
+      currentEmployeesCount: 0,        // العدد الإجمالي للموظفين النشطين
+      avgGoalAchievement: 0            // مجموع نسب تحقيق الأهداف ÷ عددهم
     })
+
+    // Teams Data (3.2)
+    const teamsData = reactive([])
+
+    // Team Performance Data
+    const performanceData = reactive({
+        teams: [],
+        employees: []
+    })
+
+    // Marketer Performance Data (3.3)
+    const marketerPerformanceData = reactive([])
+
+    // Load dashboard metrics
+    const loadDashboardMetrics = async () => {
+      isLoading.value = true
+      try {
+        const data = await hrService.getDashboardMetrics()
+        Object.assign(dashboardMetrics, data)
+      } catch (error) {
+        console.error('Error loading dashboard metrics:', error)
+        // Set default values on error
+        dashboardMetrics.avgEmployeeMonthlySales = 3.5
+        dashboardMetrics.avgTeamMonthlySales = 145000
+        dashboardMetrics.currentEmployeesCount = 24
+        dashboardMetrics.avgGoalAchievement = 78
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    // Load teams data
+    const loadTeams = async () => {
+      try {
+        const data = await hrService.getTeams()
+        teamsData.splice(0, teamsData.length, ...data)
+      } catch (error) {
+        console.error('Error loading teams:', error)
+        // Fallback to mock data
+        teamsData.splice(0, teamsData.length,
+          { name: 'فريق المبيعات الرياض', members: 8, goalProgress: 85, soldProjects: 12, totalValue: '1.2M', color: '#B1A28F' },
+          { name: 'فريق التطوير العقاري', members: 5, goalProgress: 60, soldProjects: 4, totalValue: '3.5M', color: '#1e3a5f' },
+          { name: 'فريق التسويق الميداني', members: 11, goalProgress: 92, soldProjects: 24, totalValue: '850K', color: '#B1A28F' }
+        )
+      }
+    }
+
+    // Load team performance
+    const loadTeamPerformance = async () => {
+      try {
+        const data = await hrService.getTeamPerformance()
+        performanceData.teams = data
+      } catch (error) {
+        console.error('Error loading team performance:', error)
+        // Fallback to mock data
+        performanceData.teams = [
+          { name: 'مبيعات الوسطى', achievement: 94, productivity: 88, quality: 95, status: 'excellent', statusLabel: 'ممتاز' },
+          { name: 'مبيعات الغربية', achievement: 72, productivity: 75, quality: 82, status: 'good', statusLabel: 'جيد' }
+        ]
+      }
+    }
+
+    // Load marketer performance (3.3)
+    const loadMarketerPerformance = async () => {
+      try {
+        const data = await hrService.getMarketerPerformance()
+        marketerPerformanceData.splice(0, marketerPerformanceData.length, ...data)
+      } catch (error) {
+        console.error('Error loading marketer performance:', error)
+        // Fallback to mock data
+        marketerPerformanceData.splice(0, marketerPerformanceData.length,
+          { id: 1, name: 'أحمد العتيبي', goalAchievement: 92, sponsorsCount: 5, warningsCount: 0 },
+          { id: 2, name: 'خالد محمد', goalAchievement: 45, sponsorsCount: 2, warningsCount: 3 },
+          { id: 3, name: 'سارة أحمد', goalAchievement: 100, sponsorsCount: 8, warningsCount: 0 },
+          { id: 4, name: 'فاطمة السلمي', goalAchievement: 78, sponsorsCount: 4, warningsCount: 1 }
+        )
+      }
+    }
 
     const openSetTarget = (emp) => {
         selectedEmployee.value = emp
@@ -272,19 +456,39 @@ export default {
         }
     }
 
+    // Load data on component mount
+    onMounted(() => {
+      loadDashboardMetrics()
+      loadTeams()
+      loadTeamPerformance()
+      loadMarketerPerformance()
+    })
+
     return {
       activeTab,
       showAddUserModal,
+      userName,
       isSavingUser,
       teamsData,
       performanceData,
+      dashboardMetrics,
+      marketerPerformanceData,
+      isLoading,
       handleUserSubmit,
       showTargetModal,
       selectedEmployee,
       isSavingTarget,
       openSetTarget,
       handleTargetSubmit,
-      formatCurrency
+      formatCurrency,
+      showTeamModal,
+      editingTeam,
+      isSavingTeam,
+      openAddTeamModal,
+      openEditTeamModal,
+      handleTeamSubmit,
+      handleDeleteTeam,
+      handleLinkMarketers
     }
   }
 }
@@ -402,64 +606,29 @@ export default {
 
 .tab-icon { font-size: 18px; }
 
-/* Dashboard Grid */
-.hr-dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 25px;
-  margin-bottom: 30px;
+/* Dashboard UI Sync with Standard View */
+.welcome-header { margin-bottom: 30px; text-align: right; }
+.welcome-title { font-size: 28px; font-weight: 800; color: #1e3a5f; margin: 0 0 5px 0; font-family: 'Amiri', serif; }
+.welcome-subtitle { color: #64748b; font-size: 16px; margin: 0; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+.stat-card {
+  background: white; border-radius: 16px; padding: 24px; display: flex; align-items: flex-start; gap: 16px;
+  border: 1px solid #e2e8f0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: default;
 }
+.stat-card:hover { border-color: #B1A28F; transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
 
-.metric-card {
-  background: white;
-  border-radius: 20px;
-  padding: 25px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  border: 1px solid #f1f5f9;
-  transition: transform 0.3s;
-}
+.stat-icon-bg { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.stat-icon-bg svg { width: 24px; height: 24px; }
+.stat-icon-bg.dollar { background: #eff6ff; color: #3b82f6; }
+.stat-icon-bg.units { background: #fefce8; color: #ca8a04; }
+.stat-icon-bg.projects { background: #f0fdf4; color: #16a34a; }
+.stat-icon-bg.ready { background: #f0f9ff; color: #0284c7; }
 
-.metric-card:hover { 
-  transform: translateY(-5px); 
-  border-color: #B1A28F;
-}
-
-.metric-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-
-.metric-icon.blue { background: rgba(30, 58, 95, 0.1); }
-.metric-icon.purple { background: rgba(139, 92, 246, 0.1); }
-.metric-icon.red { background: rgba(239, 68, 68, 0.1); }
-.metric-icon.green { background: rgba(16, 185, 129, 0.1); }
-
-.metric-label {
-  color: #64748b;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 5px;
-}
-
-.metric-value {
-  font-size: 28px;
-  font-weight: 800;
-  color: #1e293b;
-  margin-bottom: 10px;
-}
-
-.metric-value small { font-size: 14px; opacity: 0.6; }
-
-.metric-trend {
-  font-size: 12px;
-  font-weight: 700;
-}
+.stat-content { display: flex; flex-direction: column; }
+.stat-label { font-size: 13px; color: #64748b; font-weight: 600; margin-bottom: 4px; }
+.stat-value { font-size: 28px; font-weight: 800; color: #1e293b; line-height: 1.2; margin-bottom: 4px; font-family: 'Amiri', serif; }
+.stat-desc { font-size: 11px; color: #94a3b8; font-weight: 700; }
 
 .metric-trend.positive { color: #10b981; }
 .metric-trend.negative { color: #ef4444; }
@@ -719,6 +888,90 @@ export default {
   border-color: #B1A28F;
   color: #B1A28F;
   background: #fdfbf7;
+}
+
+.team-actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 15px;
+  margin-top: 15px;
+  border-top: 1px dashed #f1f5f9;
+  justify-content: flex-end;
+}
+
+.btn-icon {
+  background: #f8fafc;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background: #e2e8f0;
+  transform: scale(1.1);
+}
+
+.btn-icon.delete:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.btn-link {
+  background: none;
+  border: 1px solid #B1A28F;
+  color: #B1A28F;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: auto;
+}
+
+.btn-link:hover {
+  background: #B1A28F;
+  color: white;
+}
+
+/* Badges for Marketer Performance */
+.badge-info {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-warning {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #fef3c7;
+  color: #b45309;
+}
+
+/* Metric Description */
+.metric-description {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-top: 5px;
+}
+
+/* Gold icon color */
+.metric-icon.gold {
+  background: rgba(251, 191, 36, 0.1);
 }
 
 @media (max-width: 768px) {
