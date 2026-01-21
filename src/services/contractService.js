@@ -330,6 +330,46 @@ const contractService = {
       console.error('Error updating photography data:', error)
       throw error
     }
+  },
+
+  // --- Developer / Second Party Endpoints ---
+
+  /**
+   * جلب قائمة المطورين
+   * GET /second-party-data/second-parties
+   */
+  async getDevelopers() {
+    try {
+      const response = await apiClient.get('/second-party-data/second-parties')
+      // Normalize response
+      const res = response.data
+      let devs = []
+      if (Array.isArray(res)) {
+        devs = res
+      } else if (res && res.data && Array.isArray(res.data)) {
+        devs = res.data
+      } else {
+        devs = res.data || []
+      }
+      return Array.isArray(devs) ? devs : []
+    } catch (error) {
+      console.error('Error fetching developers:', error)
+      return []
+    }
+  },
+
+  /**
+   * جلب مشاريع مطور بواسطة البريد الإلكتروني
+   * POST /second-party-data/contracts-by-email
+   */
+  async getDeveloperContractsByEmail(email) {
+    try {
+      const response = await apiClient.post('/second-party-data/contracts-by-email', { email })
+      return response.data
+    } catch (error) {
+      console.error('Error fetching developer contracts:', error)
+      return []
+    }
   }
 }
 

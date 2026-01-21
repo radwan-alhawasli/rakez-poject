@@ -28,7 +28,7 @@
       <!-- Navigation Tabs -->
       <div class="tabs-nav">
         <button class="nav-tab" :class="{ active: activeTab === 'progress' }" @click="activeTab = 'progress'">تقدم المشروع والمستندات</button>
-        <button v-if="!isManager" class="nav-tab" :class="{ active: activeTab === 'photography' }" @click="activeTab = 'photography'">التصوير</button>
+        <button class="nav-tab" :class="{ active: activeTab === 'photography' }" @click="activeTab = 'photography'">التصوير</button>
         <button class="nav-tab" :class="{ active: activeTab === 'boards' }" @click="activeTab = 'boards'">اللوحات</button>
         <button class="nav-tab" :class="{ active: activeTab === 'units' }" @click="selectUnitsTab" :disabled="!isTrackerCompleted">
             الوحدات 
@@ -107,51 +107,102 @@
         </div>
 
         <!-- PHOTOGRAPHY TAB -->
-        <div v-else-if="activeTab === 'photography' && !isManager" class="tab-content">
+        <div v-if="activeTab === 'photography'" class="tab-content">
             <div class="tracker-header-box">
                 <h2 class="tracker-title">إدارة التصوير والوسائط</h2>
                 <h3 class="tracker-subtitle">{{ project.name }}</h3>
                 <p class="tracker-desc">يمكنك هنا رفع وتحديث صور وفيديوهات المشروع.</p>
-                <div v-if="photographyForm.updated_at" class="update-info-badge" style="margin-top: 10px; color: #10b981; font-size: 13px;">
-                    📅 تاريخ الإدخال: {{ photographyForm.updated_at }}
+                
+                <div class="status-bar" style="margin-top:15px; display: flex; gap: 10px; align-items: center;">
+                    <!-- Status Badge -->
+                    <span class="status-badge" 
+                        :class="{
+                            'pending': photographyForm.status === 'pending',
+                            'approved': photographyForm.status === 'approved',
+                            'rejected': photographyForm.status === 'rejected'
+                        }">
+                        {{ 
+                            photographyForm.status === 'approved' ? 'تم القبول' : 
+                            photographyForm.status === 'rejected' ? 'مرفوض' : 
+                            'قيد الانتظار' 
+                        }}
+                    </span>
+                    
+                    <div v-if="photographyForm.updated_at" class="update-info-badge" style="color: #6b7280; font-size: 13px;">
+                        📅 آخر تحديث: {{ photographyForm.updated_at }}
+                    </div>
+                </div>
+
+                <!-- Rejection Reason Warning -->
+                <div v-if="photographyForm.status === 'rejected' && photographyForm.rejection_reason" class="alert-box error" style="margin-top: 15px; background: #fee2e2; padding: 10px; border-radius: 8px; color: #991b1b;">
+                    <strong>سبب الرفض:</strong> {{ photographyForm.rejection_reason }}
                 </div>
             </div>
 
             <div class="stage-content-area" style="max-width: 800px; margin: 0 auto;">
-                <form @submit.prevent="savePhotographyData">
-                    <div class="form-grid" style="grid-template-columns: 1fr; gap: 20px;">
-                        
-                        <!-- Image URL -->
-                        <div class="form-group">
-                            <label>رابط الصورة (Image URL)</label>
-                            <div class="input-wrapper">
-                                <input type="text" v-model="photographyForm.image_url" class="form-input" placeholder="https://..." required />
-                            </div>
-                        </div>
-
-                        <!-- Video URL -->
-                        <div class="form-group">
-                            <label>رابط الفيديو (Video URL)</label>
-                            <div class="input-wrapper">
-                                <input type="text" v-model="photographyForm.video_url" class="form-input" placeholder="https://..." />
-                            </div>
-                        </div>
-
-                        <!-- Description -->
-                        <div class="form-group">
-                            <label>وصف المحتوى (Description)</label>
-                            <textarea v-model="photographyForm.description" class="form-input" rows="4" placeholder="وصف للصور والمحتوى..." style="min-height: 100px;"></textarea>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="form-actions" style="margin-top: 20px; text-align: left;">
-                            <button type="submit" class="update-btn" :disabled="isPhotoSaving">
-                                {{ isPhotoSaving ? 'جاري الحفظ...' : 'حفظ التغييرات' }}
-                            </button>
-                        </div>
-
+                
+                <!-- Manager Approval Controls -->
+                <div v-if="isManager && photographyForm.status === 'pending'" class="manager-actions-card" style="background: white; border: 1px solid #e5e7eb; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <h4 style="margin-top:0; color: #1f2937;">طلب موافقة على الصور</h4>
+                    <p style="color: #6b7280; font-size: 14px; margin-bottom: 15px;">قام المطور برفع صور جديدة. يرجى المراجعة واتخاذ القرار.</p>
+                    <div style="display: flex; gap: 10px;">
+                        <button @click="approvePhotography" class="btn-success" style="background: #10b981; color: white; padding: 8px 16px; border-radius: 6px; border:none; cursor: pointer; font-weight: bold;">قبول الصور</button>
+                        <button @click="openRejectModal" class="btn-danger" style="background: #ef4444; color: white; padding: 8px 16px; border-radius: 6px; border:none; cursor: pointer; font-weight: bold;">رفض</button>
                     </div>
+                </div>
+
+                <form @submit.prevent="savePhotographyData">
+                    <fieldset :disabled="isPhotoSaving || (isManager && photographyForm.status === 'pending') || (photographyForm.status === 'approved' && !isManager)" style="border:none; padding:0;">
+                        <div class="form-grid" style="grid-template-columns: 1fr; gap: 20px;">
+                            
+                            <!-- Image URL -->
+                            <div class="form-group">
+                                <label>رابط الصورة (Image URL)</label>
+                                <div class="input-wrapper">
+                                    <input type="text" v-model="photographyForm.image_url" class="form-input" placeholder="https://..." required />
+                                </div>
+                            </div>
+
+                            <!-- Video URL -->
+                            <div class="form-group">
+                                <label>رابط الفيديو (Video URL)</label>
+                                <div class="input-wrapper">
+                                    <input type="text" v-model="photographyForm.video_url" class="form-input" placeholder="https://..." />
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="form-group">
+                                <label>وصف المحتوى (Description)</label>
+                                <textarea v-model="photographyForm.description" class="form-input" rows="4" placeholder="وصف للصور والمحتوى..." style="min-height: 100px;"></textarea>
+                            </div>
+
+                            <!-- Actions for Submitter -->
+                            <div class="form-actions" style="margin-top: 20px; text-align: left;">
+                                <button v-if="!isManager && photographyForm.status !== 'approved'" type="submit" class="update-btn" :disabled="isPhotoSaving">
+                                    {{ isPhotoSaving ? 'جاري الحفظ...' : (photographyForm.status === 'rejected' ? 'إعادة الإرسال للموافقة' : 'حفظ وإرسال للموافقة') }}
+                                </button>
+                                <p v-if="photographyForm.status === 'approved'" style="color: #10b981; font-weight: bold;">
+                                    ✓ تم اعتماد الصور
+                                </p>
+                            </div>
+
+                        </div>
+                    </fieldset>
                 </form>
+            </div>
+            
+            <!-- Rejection Modal -->
+            <div v-if="showRejectModal" class="modal-overlay">
+                <div class="modal-content">
+                    <h3>رفض الصور</h3>
+                    <p>يرجى ذكر سبب الرفض ليتمكن المطور من التعديل:</p>
+                    <textarea v-model="rejectReasonInput" class="form-input" rows="3" placeholder="سبب الرفض..." style="width: 100%; margin-bottom: 15px;"></textarea>
+                    <div class="modal-actions">
+                        <button class="btn-text" @click="showRejectModal = false">إلغاء</button>
+                        <button class="btn-danger" @click="rejectPhotography" style="background: #ef4444; color: white; padding: 8px 16px; border-radius: 6px; border:none;">تأكيد الرفض</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -467,6 +518,9 @@ export default {
              photographyForm.image_url = p.image_url || ''
              photographyForm.video_url = p.video_url || ''
              photographyForm.description = p.description || ''
+             photographyForm.status = p.status || 'pending' // Default to pending if exists but no status
+             photographyForm.rejection_reason = p.rejection_reason || null
+             
              if (p.updated_at) {
                  photographyForm.updated_at = new Date(p.updated_at).toLocaleDateString('ar-SA')
              } else if (p.created_at) {
@@ -586,34 +640,34 @@ export default {
     }
 
     // --- Photography Functions ---
+
+    const showRejectModal = ref(false)
+    const rejectReasonInput = ref('')
+
     const savePhotographyData = async () => {
         isPhotoSaving.value = true
         try {
-            // Try Store first, if it fails maybe Update?
-            // The user gave specific store API.
-            // But usually we need to know if it exists. 
-            // We'll try Store. usage of contractService.
-            
-            // Note: Since we don't have a GET for photography, we just send what we have.
-            // If the backend handles 'store' as 'create or update', great. 
-            // If not, we might need to handle errors.
-            // I'll try Store first.
-            
-            try {
-                await contractService.storePhotography(project.value.id, {
-                    ...photographyForm
-                })
-                alert('تم حفظ بيانات التصوير بنجاح')
-            } catch (err) {
-                // If 400 or 500, maybe try update?
-                // User provided update API too.
-                console.log('Store failed, trying update...', err)
-                await contractService.updatePhotography(project.value.id, {
-                    ...photographyForm
-                })
-                alert('تم تحديث بيانات التصوير بنجاح')
+            // When user saves, we reset status to 'pending' to request approval again
+            // unless it's the manager editing directly (which we assume managers don't do often here, they approve)
+            // But if a manager edits, maybe it stays pending/approved? 
+            // Stick to requirements: "if rejected... status... if entered links... wait acceptance"
+            const payload = {
+                ...photographyForm,
+                status: 'pending', // Always pending when updated by user
+                rejection_reason: null // Clear rejection reason
             }
-            // Update the date locally to show immediate feedback
+
+            try {
+                await contractService.storePhotography(project.value.id, payload)
+                alert('تم إرسال البيانات للموافقة بنجاح')
+            } catch (err) {
+                console.log('Store failed, trying update...', err)
+                await contractService.updatePhotography(project.value.id, payload)
+                alert('تم تحديث البيانات وإرسالها للموافقة')
+            }
+            // Update local state
+            photographyForm.status = 'pending'
+            photographyForm.rejection_reason = null
             photographyForm.updated_at = new Date().toLocaleDateString('ar-SA')
 
         } catch (error) {
@@ -622,6 +676,46 @@ export default {
             alert(`حدث خطأ أثناء حفظ البيانات: ${msg}`)
         } finally {
             isPhotoSaving.value = false
+        }
+    }
+
+    const approvePhotography = async () => {
+        if (!confirm('هل تأكيد قبول الصور؟')) return
+        try {
+             // We can use updatePhotography to update status
+            await contractService.updatePhotography(project.value.id, {
+                status: 'approved'
+            })
+            photographyForm.status = 'approved'
+            alert('تم قبول الصور بنجاح')
+        } catch (error) {
+            console.error(error)
+            alert('حدث خطأ أثناء القبول')
+        }
+    }
+
+    const openRejectModal = () => {
+        rejectReasonInput.value = ''
+        showRejectModal.value = true
+    }
+
+    const rejectPhotography = async () => {
+        if (!rejectReasonInput.value) {
+            alert('يرجى إدخال سبب الرفض')
+            return
+        }
+        try {
+             await contractService.updatePhotography(project.value.id, {
+                status: 'rejected',
+                rejection_reason: rejectReasonInput.value
+            })
+            photographyForm.status = 'rejected'
+            photographyForm.rejection_reason = rejectReasonInput.value
+            showRejectModal.value = false
+            alert('تم رفض الصور')
+        } catch (error) {
+             console.error(error)
+            alert('حدث خطأ أثناء الرفض')
         }
     }
 
@@ -748,6 +842,11 @@ export default {
        photographyForm,
        isPhotoSaving,
        savePhotographyData,
+       approvePhotography,
+       rejectPhotography,
+       showRejectModal,
+       rejectReasonInput,
+       openRejectModal,
         // Boards
         boardsFormData,
         boardsTabState,

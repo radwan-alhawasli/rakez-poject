@@ -6,7 +6,6 @@
         <h1 class="page-title">إدارة المشاريع</h1>
         <p class="page-subtitle">عرض وإدارة جميع المشاريع النشطة والمكتملة والمؤرشفة.</p>
       </div>
-
     </div>
 
     <!-- Filters and Search -->
@@ -33,10 +32,11 @@
       <button :class="['tab-btn', { active: activeTab === 'ready' }]" @click="activeTab = 'ready'">
         مشاريع جاهزة للتسويق ({{ readyCount }})
       </button>
+      
       <button :class="['tab-btn', { active: activeTab === 'photography' }]" @click="activeTab = 'photography'">
         التصوير ({{ photographyCount }})
       </button>
-       <button :class="['tab-btn', { active: activeTab === 'archive' }]" @click="activeTab = 'archive'">
+      <button :class="['tab-btn', { active: activeTab === 'archive' }]" @click="activeTab = 'archive'">
         الأرشيف ({{ archiveCount }})
       </button>
     </div>
@@ -56,9 +56,27 @@
         <div class="card-image">
           <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project Image" @error="$event.target.src='https://via.placeholder.com/400x300?text=No+Image'" />
           <div class="status-badge" :class="project.statusClass">{{ project.statusLabel }}</div>
-          <button class="menu-btn">
-             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-          </button>
+          
+          <!-- Context Menu Button -->
+          <div class="menu-container" @click.stop="toggleMenu(project.id)">
+               <button class="menu-btn">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+               </button>
+               <!-- Dropdown -->
+               <div v-if="activeMenuId === project.id" class="dropdown-menu">
+                   <div class="menu-item" @click.stop="openProjectDetails(project)">
+                       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                       عرض المشروع
+                   </div>
+                   <div v-if="isEditor" class="menu-item" @click.stop="openWorkspace(project)">
+                       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M2 12l5-5m-5 5l5 5"></path></svg>
+                       مساحة العمل (Workspace)
+                   </div>
+               </div>
+          </div>
+          <!-- Click outside to close helper (window listener generally better but simple here) -->
+          <div v-if="activeMenuId === project.id" class="menu-backdrop" @click.stop="activeMenuId = null"></div>
+
         </div>
         
         <div class="card-content">
@@ -88,20 +106,106 @@
       </div>
     </div>
 
+    <!-- Details Modal -->
+    <div v-if="showDetailsModal" class="modal-overlay" @click.self="closeDetailsModal">
+        <div class="modal-content large">
+            <h3>تفاصيل المشروع: {{ selectedProject?.name }}</h3>
+            
+            <div class="details-grid">
+                 <div class="detail-box">
+                     <span class="label">رقم المعلن</span>
+                     <span class="value">{{ selectedProject?.advertiser_number || 'غير متوفر' }}</span>
+                     <span class="status-mini" :class="selectedProject?.advertiser_number ? 'ok' : 'missing'">{{ selectedProject?.advertiser_number ? 'مكتمل' : 'غير مكتمل' }}</span>
+                 </div>
+                 
+                 <div class="detail-box">
+                     <span class="label">الصور و الوسائط</span>
+                     <span class="value">{{ selectedProject?.image ? 'يوجد صور' : 'لا يوجد' }}</span>
+                      <span class="status-mini" :class="selectedProject?.image ? 'ok' : 'missing'">{{ selectedProject?.image ? 'مكتمل' : 'غير مكتمل' }}</span>
+                 </div>
+
+                 <div class="detail-box">
+                     <span class="label">متوسط سعر الوحدات</span>
+                     <span class="value highlight">{{ selectedProject?.avgPrice ? formatCurrency(selectedProject.avgPrice) : '-' }}</span>
+                 </div>
+            </div>
+
+            <h4 style="margin-top:20px; border-bottom:1px solid #eee; padding-bottom:10px;">أسعار وعرض الوحدات</h4>
+            <div class="table-wrapper">
+                <table class="units-table">
+                    <thead>
+                        <tr>
+                            <th>رقم الوحدة</th>
+                            <th>النوع</th>
+                            <th>السعر</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="unit in selectedProject?.units || []" :key="unit.id">
+                            <td>{{ unit.unit_number }}</td>
+                            <td>{{ unit.unit_type }}</td>
+                            <td>{{ formatCurrency(unit.price) }}</td>
+                            <td>{{ unit.status }}</td>
+                        </tr>
+                        <tr v-if="!selectedProject?.units?.length">
+                            <td colspan="4" style="text-align:center;">لا توجد وحدات مضافة</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button class="close-modal-btn" @click="closeDetailsModal">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- Workspace Modal -->
+    <div v-if="showWorkspaceModal" class="modal-overlay" @click.self="closeWorkspaceModal">
+        <div class="modal-content">
+            <h3>مساحة العمل (Workspace)</h3>
+            <p>إضافة رابط (Story, Video, Image)</p>
+            
+            <div class="form-group">
+                <label>نوع الرابط</label>
+                <select v-model="workspaceForm.type" class="form-input">
+                    <option value="story">Story</option>
+                    <option value="video">Video</option>
+                    <option value="image">Image</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>الرابط (URL)</label>
+                <input v-model="workspaceForm.url" type="text" class="form-input" placeholder="https://" />
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-text" @click="closeWorkspaceModal">إلغاء</button>
+                <button class="btn-primary" @click="submitWorkspaceLink">إرسال وتنبيه الإدارة</button>
+            </div>
+        </div>
+    </div>
+
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import contractService from '../services/contractService'
-
+import authService from '../services/authService'
 
 export default {
   name: 'ProjectManagementView',
   setup() {
     const router = useRouter()
-    const route = useRoute() // Import this
+    const route = useRoute()
+    const userRole = computed(() => {
+        const u = authService.getCurrentUser()
+        return u ? u.type : 0
+    })
+    const isEditor = computed(() => userRole.value == 4)
+
     // Initialize activeTab based on query param if present
     const activeTab = ref(route.query.tab === 'photography' ? 'photography' : 'not_ready')
     const searchQuery = ref('')
@@ -109,10 +213,24 @@ export default {
     const isLoading = ref(false)
     const projects = ref([])
 
+    
+    const activeMenuId = ref(null)
+    const showDetailsModal = ref(false)
+    const showWorkspaceModal = ref(false)
+    const selectedProject = ref(null)
+    
+    const workspaceForm = reactive({
+        type: 'story',
+        url: ''
+    })
+
     const fetchProjects = async () => {
       isLoading.value = true
       try {
-        const data = await contractService.getContracts() // Fetching logic
+        // User requested "Same API" as Project Management (getContracts)
+        const data = await contractService.getContracts()
+        console.log('Fetched Projects:', data)
+
         // Transform data to match UI
         projects.value = (Array.isArray(data) ? data : []).map(p => ({
             id: p.id,
@@ -122,18 +240,23 @@ export default {
             statusLabel: p.status === 'Approved' ? 'Active' : p.status,
             statusClass: p.status === 'Approved' ? 'active' : 'pending',
             units: p.units || [],
+            advertiser_number: p.advertiser_number, // Ensure this exists or mock
             assignee: p.marketer,
             status: p.status, // raw status
+            // Computed fields
+            avgPrice: p.units && p.units.length ? p.units.reduce((a,b) => a + (Number(b.price)||0), 0) / p.units.length : 0,
+            
             // Mock data for UI demo if missing
             distance: '15',
             landmark: 'مطار الملك خالد'
         }))
       } catch (err) {
-        console.error(err)
+        console.error('Error fetching projects:', err)
       } finally {
         isLoading.value = false
       }
     }
+
 
     const filteredProjects = computed(() => {
       let filtered = projects.value
@@ -164,10 +287,44 @@ export default {
     const notReadyCount = computed(() => projects.value.filter(p => p.status !== 'Approved' || !p.units || p.units.length === 0).length)
     const readyCount = computed(() => projects.value.filter(p => p.status === 'Approved' && p.units && p.units.length > 0).length)
     const archiveCount = computed(() => projects.value.filter(p => p.status === 'Refused' || p.status === 'Rejected').length)
-    const photographyCount = computed(() => projects.value.filter(p => p.status === 'Approved').length) // Same logic as filter active
+    const photographyCount = computed(() => projects.value.filter(p => p.status === 'Approved').length) 
 
     const viewTracker = (project) => {
         router.push({ name: 'ProjectTracker', params: { id: project.id } })
+    }
+
+    const toggleMenu = (id) => {
+        activeMenuId.value = activeMenuId.value === id ? null : id
+    }
+
+    const openProjectDetails = (project) => {
+        selectedProject.value = project
+        showDetailsModal.value = true
+        activeMenuId.value = null
+    }
+
+    const openWorkspace = (project) => {
+        selectedProject.value = project
+        workspaceForm.url = ''
+        showWorkspaceModal.value = true
+        activeMenuId.value = null
+    }
+
+    const closeDetailsModal = () => showDetailsModal.value = false
+    const closeWorkspaceModal = () => showWorkspaceModal.value = false
+
+    const submitWorkspaceLink = async () => {
+        if (!workspaceForm.url) return alert('الرجاء إدخال الرابط')
+        // Mock API call
+        console.log(`Submitting workspace link for project ${selectedProject.value.id}:`, workspaceForm)
+        
+        // Simulate success and notification
+        alert('تم إضافة الرابط بنجاح وإشعار الإدارة ومدير المشاريع.')
+        closeWorkspaceModal()
+    }
+
+    const formatCurrency = (val) => {
+        return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR' }).format(val)
     }
 
     onMounted(fetchProjects)
@@ -175,7 +332,12 @@ export default {
     return {
       activeTab, searchQuery, teamFilter, isLoading,
       filteredProjects, notReadyCount, readyCount, archiveCount, photographyCount,
-      viewTracker
+      viewTracker, isEditor,
+      // Menu & Modal
+      activeMenuId, toggleMenu, 
+      showDetailsModal, selectedProject, openProjectDetails, closeDetailsModal,
+      showWorkspaceModal, workspaceForm, openWorkspace, closeWorkspaceModal, submitWorkspaceLink,
+      formatCurrency
     }
   }
 }
@@ -208,7 +370,7 @@ export default {
 .btn-primary {
   background: #B1A28F; color: white; border: none; padding: 10px 20px;
   border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;
-  text-decoration: none; transition: background 0.2s;
+  text-decoration: none; transition: background 0.2s; cursor: pointer;
 }
 .btn-primary:hover { background: #8c7851; }
 
@@ -255,13 +417,15 @@ export default {
 
 .project-card {
   background: white; border: 1px solid #e2e8f0; border-radius: 16px;
-  overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+  overflow: visible; /* Changed to visible for dropdown */
+  transition: transform 0.2s, box-shadow 0.2s;
   display: flex; flex-direction: column;
+  position: relative;
 }
 .project-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
 
 .card-image {
-  height: 180px; position: relative; background: #f1f5f9;
+  height: 180px; position: relative; background: #f1f5f9; border-radius: 16px 16px 0 0; overflow: hidden;
 }
 .card-image img { width: 100%; height: 100%; object-fit: cover; }
 .status-badge {
@@ -272,11 +436,31 @@ export default {
 .status-badge.active { background: #dcfce7; color: #166534; }
 .status-badge.pending { background: #fef9c3; color: #854d0e; }
 
+/* Menu */
+.menu-container {
+    position: absolute; top: 12px; left: 12px; z-index: 10;
+}
 .menu-btn {
-  position: absolute; top: 12px; left: 12px; width: 32px; height: 32px;
+  width: 32px; height: 32px;
   background: rgba(255,255,255,0.9); border-radius: 8px; border: none;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   color: #64748b;
+}
+.dropdown-menu {
+    position: absolute; top: 40px; left: 0;
+    background: white; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0; width: 180px; z-index: 100;
+    overflow: hidden;
+    animation: fadeIn 0.2s;
+}
+.menu-item {
+    padding: 10px 15px; font-size: 13px; color: #1e293b;
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer; transition: background 0.2s;
+}
+.menu-item:hover { background: #f8fafc; }
+.menu-backdrop {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; cursor: default;
 }
 
 .card-content { padding: 16px; flex: 1; display: flex; flex-direction: column; }
@@ -309,4 +493,55 @@ export default {
    border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Modals */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+}
+.modal-content {
+    background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px;
+    position: relative;
+    max-height: 90vh; overflow-y: auto;
+}
+.modal-content.large { max-width: 700px; }
+
+.details-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0;
+}
+.detail-box {
+    background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.detail-box .label { font-size: 12px; color: #64748b; margin-bottom: 5px; }
+.detail-box .value { font-weight: 700; color: #1e293b; font-size: 14px; }
+.value.highlight { color: #B1A28F; font-size: 16px; }
+
+.status-mini {
+    font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-top: 5px;
+}
+.status-mini.ok { background: #dcfce7; color: #166534; }
+.status-mini.missing { background: #fee2e2; color: #991b1b; }
+
+.table-wrapper { overflow-x: auto; margin-top: 15px; }
+.units-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+}
+.units-table th, .units-table td {
+    padding: 10px; border-bottom: 1px solid #f1f5f9; text-align: right;
+}
+.units-table th { color: #64748b; font-weight: 600; background: #f8fafc; }
+
+.close-modal-btn {
+    margin-top: 20px; width: 100%; padding: 10px; background: #f1f5f9; border: none;
+    border-radius: 8px; color: #64748b; cursor: pointer; font-weight: 600;
+}
+
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.btn-text { background: none; border: none; color: #64748b; cursor: pointer; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; color: #64748b; font-size: 13px; }
+.form-input { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; }
+
 </style>

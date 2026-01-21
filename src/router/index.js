@@ -73,13 +73,13 @@ const routes = [
                 name: 'Reservations',
                 component: () => import('../views/ReservationsView.vue')
             },
-/*
-            {
-                path: 'boards',
-                name: 'Boards',
-                component: () => import('../views/BoardsView.vue')
-            },
-*/
+            /*
+                        {
+                            path: 'boards',
+                            name: 'Boards',
+                            component: () => import('../views/BoardsView.vue')
+                        },
+            */
             {
                 path: 'cancelled-reservations',
                 name: 'CancelledReservations',
@@ -98,6 +98,7 @@ const routes = [
             {
                 path: 'hr',
                 name: 'HR',
+<<<<<<< Updated upstream
                 component: () => import('../views/HRView.vue'),
                 children: [
                     { path: '', redirect: { name: 'HRDashboard' } },
@@ -107,6 +108,14 @@ const routes = [
                     { path: 'employee-performance', name: 'HREmployeePerformance', component: () => import('../views/HRView.vue') },
                     { path: 'users', name: 'HRUsers', component: () => import('../views/HRView.vue') }
                 ]
+=======
+                component: () => import('../views/HRView.vue')
+            },
+            {
+                path: 'teams',
+                name: 'Teams',
+                component: () => import('../views/TeamsView.vue')
+>>>>>>> Stashed changes
             }
         ]
     },

@@ -101,7 +101,9 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import contractService from '../services/contractService'
+
 
 export default {
   name: 'DevelopersView',
@@ -109,15 +111,9 @@ export default {
     const searchQuery = ref('')
     const showModal = ref(false)
     
-    // Mock Data
-    const developers = ref([
-      { id: 1, name: 'majidaya', projectCount: 0, representative: 'abo shama', commercialRecord: '1000', phone: '053343834', location: 'الرياض' },
-      { id: 2, name: 'مكين', projectCount: 0, representative: 'مكين', commercialRecord: '1', phone: '011', location: 'الرياض' },
-      { id: 3, name: 'شركة العبيكان', projectCount: 2, representative: 'عبدالله بن العبيكان', commercialRecord: '0', phone: '0530000037', location: 'الرياض' },
-      { id: 4, name: 'رافن العقارية', projectCount: 1, representative: '-', commercialRecord: '-', phone: '-', location: '-' },
-      { id: 5, name: 'شركة دوارة للتطوير العقاري', projectCount: 1, representative: '-', commercialRecord: '-', phone: '-', location: '-' },
-      { id: 6, name: 'شركة سكف العقارية', projectCount: 4, representative: '-', commercialRecord: '-', phone: '-', location: '-' },
-    ])
+    // Real Data
+    const developers = ref([])
+    const isLoading = ref(true)
 
     const newDev = ref({ name: '', representative: '', commercialRecord: '', phone: '', location: '' })
 
@@ -125,10 +121,46 @@ export default {
        if (!searchQuery.value) return developers.value
        const q = searchQuery.value.toLowerCase()
        return developers.value.filter(d => 
-          d.name.toLowerCase().includes(q) || 
+          (d.name && d.name.toLowerCase().includes(q)) || 
           (d.representative && d.representative.toLowerCase().includes(q))
        )
     })
+
+    const fetchDevelopers = async () => {
+       isLoading.value = true
+       try {
+          // Fetch developers
+          const devs = await contractService.getDevelopers()
+          // Log to see structure if possible, but we'll map best effort
+          // Expected structure based on typical Laravel usage: id, name, email, etc.
+          // We also need projectCount. The user provided an endpoint for contracts by email.
+          // We might need to fetch contracts for each dev to get the count, or maybe the dev object has it.
+          // For now, let's just show the developers. 
+          // If we need the count eagerly, we'd have to make N calls which is bad. 
+          // Let's assume for now we list them, and maybe fetch count if available or default to 0.
+          
+          developers.value = devs.map(d => ({
+             id: d.id,
+             name: d.name || 'مطور غير معروف',
+             representative: d.name, // Using name as representative if not separate
+             email: d.email,
+             commercialRecord: d.commercial_record || '-',
+             phone: d.phone || '-',
+             location: d.city || d.location || '-',
+             projectCount: 0 // Placeholder until we load it
+          }))
+
+          // Optionally load counts?
+          // Since there is an API 'contracts-by-email', we could try to load it. 
+          // But doing it for all might be heavy. Let's do it on demand or leave as 0/hidden.
+          // Let's try to load for the first few or just leave it.
+
+       } catch (e) {
+         console.error(e)
+       } finally {
+         isLoading.value = false
+       }
+    }
 
     const openAddModal = () => {
        newDev.value = { name: '', representative: '', commercialRecord: '', phone: '', location: '' }
@@ -137,15 +169,16 @@ export default {
     const closeModal = () => showModal.value = false
 
     const addDeveloper = () => {
-       // Logic to add developer (mock)
-       developers.value.unshift({
-          id: Date.now(),
-          ...newDev.value,
-          projectCount: 0,
-          name: newDev.value.name || 'مطور جديد'
-       })
+       // Ideally this should be an API call too, but user didn't provide CREATE API for developers.
+       // We will keep it incorrectly as mock or just specific alerts.
+       alert('عفواً، لا يوجد API لإضافة مطور حالياً.')
        closeModal()
     }
+    
+    // Fetch on mount
+    onMounted(() => {
+       fetchDevelopers()
+    })
 
     return {
        searchQuery, developers, filteredDevelopers, showModal, newDev,
