@@ -105,11 +105,12 @@ export const linkMarketersToTeam = async (teamId, marketerIds) => {
 // ==================== Employee/User Management APIs ====================
 
 /**
- * Get all employees
+ * Get all employees with search support
+ * @param {Object} params - Query parameters including search term
  */
 export const getEmployees = async (params = {}) => {
     try {
-        const response = await apiClient.get('/hr/employees', { params })
+        const response = await apiClient.get('/hr/list_employees', { params })
         return response.data
     } catch (error) {
         console.error('Error fetching employees:', error)
@@ -122,7 +123,7 @@ export const getEmployees = async (params = {}) => {
  */
 export const getEmployeeById = async (employeeId) => {
     try {
-        const response = await apiClient.get(`/hr/employees/${employeeId}`)
+        const response = await apiClient.get(`/hr/show_employee/${employeeId}`)
         return response.data
     } catch (error) {
         console.error(`Error fetching employee ${employeeId}:`, error)
@@ -131,11 +132,16 @@ export const getEmployeeById = async (employeeId) => {
 }
 
 /**
- * Create new employee
+ * Create new employee with file uploads (CV and Contract)
+ * @param {FormData} employeeData - FormData containing employee info and files
  */
 export const createEmployee = async (employeeData) => {
     try {
-        const response = await apiClient.post('/hr/employees', employeeData)
+        const response = await apiClient.post('/hr/add_employee', employeeData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
         return response.data
     } catch (error) {
         console.error('Error creating employee:', error)
@@ -148,7 +154,7 @@ export const createEmployee = async (employeeData) => {
  */
 export const updateEmployee = async (employeeId, employeeData) => {
     try {
-        const response = await apiClient.put(`/hr/employees/${employeeId}`, employeeData)
+        const response = await apiClient.put(`/hr/update_employee/${employeeId}`, employeeData)
         return response.data
     } catch (error) {
         console.error(`Error updating employee ${employeeId}:`, error)
@@ -187,7 +193,7 @@ export const enableEmployee = async (employeeId) => {
  */
 export const deleteEmployee = async (employeeId) => {
     try {
-        const response = await apiClient.delete(`/hr/employees/${employeeId}`)
+        const response = await apiClient.delete(`/hr/delete_employee/${employeeId}`)
         return response.data
     } catch (error) {
         console.error(`Error deleting employee ${employeeId}:`, error)
@@ -497,5 +503,11 @@ export default {
     generateTeamPerformanceReport,
     generateMarketerReport,
     generateEmployeesReport,
-    generateExpiringContractsReport
+    generateExpiringContractsReport,
+
+    // Contract-Team Integration
+    getTeamContractLocations,
+    getTeamsForContract,
+    getTeamContracts,
+    getProjectTeams
 }

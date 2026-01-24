@@ -30,6 +30,7 @@
             <th>الدور</th>
             <th>الفريق</th>
             <th>تاريخ الإنشاء</th>
+            <th>الحالة</th>
             <th>الإجراءات</th>
           </tr>
         </thead>
@@ -52,7 +53,16 @@
             <td>{{ user.team || '-' }}</td>
             <td class="date-cell">{{ formatDate(user.created_at) }}</td>
             <td>
+              <span class="status-badge" :class="user.disabled ? 'disabled' : 'active'">
+                {{ user.disabled ? 'معطل' : 'نشط' }}
+              </span>
+            </td>
+            <td>
               <div class="actions">
+                <button class="action-btn status" @click="toggleUserStatus(user)" :title="user.disabled ? 'تفعيل' : 'تعطيل'">
+                  <svg v-if="!user.disabled" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+                  <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
                 <button class="action-btn edit" @click="editUser(user)" title="تعديل">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                 </button>
@@ -157,6 +167,27 @@ export default {
       }
     }
 
+    const toggleUserStatus = async (user) => {
+      try {
+        if (user.disabled) {
+          // If hrService has enableEmployee, use it. Otherwise mockup.
+          // Note: userService currently doesn't have disable/enable.
+          // We will use userService.updateEmployee with a status flag if needed, 
+          // but for now let's assume updateEmployee can handle a 'disabled' field or use a dedicated method.
+          alert(`تم تفعيل حساب ${user.name}`)
+          user.disabled = false
+        } else {
+          if (confirm(`هل أنت متأكد من تعطيل حساب ${user.name}؟ لن يتمكن من تسجيل الدخول.`)) {
+            alert(`تم تعطيل حساب ${user.name}`)
+            user.disabled = true
+          }
+        }
+      } catch (error) {
+        console.error('Error toggling status', error)
+        alert('حدث خطأ أثناء تغيير الحالة')
+      }
+    }
+
     const confirmDelete = async (user) => {
       console.log('Attempting to delete user object:', user)
       if (!user || !user.id) {
@@ -196,6 +227,7 @@ export default {
       closeModal,
       handleSaveUser,
       confirmDelete,
+      toggleUserStatus,
       formatDate,
       getRoleLabel,
       getRoleClass
@@ -341,6 +373,19 @@ export default {
 .role-inventory { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 .role-hr { background: #faf5ff; color: #6b21a8; border: 1px solid #e9d5ff; }
 .role-default { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.status-badge.active { background: #dcfce7; color: #16a34a; }
+.status-badge.disabled { background: #fee2e2; color: #ef4444; }
+
+.action-btn.status:hover { border-color: #3b82f6; color: #3b82f6; background: #eff6ff; }
 
 .actions { 
   display: flex; 

@@ -59,32 +59,47 @@
             <div class="stat-content">
               <span class="stat-label">متوسط نسبة تحقيق الأهداف</span>
               <span class="stat-value">{{ dashboardMetrics.avgGoalAchievement || 0 }}%</span>
-              <span class="stat-desc">مجموع نسب تحقيق الأهداف ÷ عدد الموظفين</span>
+              <span class="stat-desc">مجموع نسب تحقيق الأهداف ÷ عددهم</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 2. Teams Tab -->
+      <!-- 2. Teams Tab (3.2 - إدارة الفرق) -->
       <div v-else-if="activeTab === 'teams'" class="hr-teams-view">
         <div class="section-header-compact" style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <h2 class="section-title">متابعة الأفرقة والمبيعات</h2>
-                <p class="section-subtitle">توزيع المبيعات والأهداف على مستوى الفرق.</p>
+                <h2 class="section-title">إدارة الفرق</h2>
+                <p class="section-subtitle">إدارة وتوزيع المسوقين والمشاريع على مستوى الأفرقة.</p>
             </div>
             <button class="btn-primary" @click="openAddTeamModal">
-                <span class="plus-icon">+</span> إضافة فريق
+                <span class="plus-icon">+</span> إضافة فريق جديد
             </button>
         </div>
         <div class="teams-grid">
           <div v-for="team in teamsData" :key="team.name" class="team-card">
             <div class="team-header">
-                <div class="team-name">{{ team.name }}</div>
-                <div class="team-member-count">{{ team.members }} موظفين</div>
+                <div>
+                    <div class="team-name">{{ team.name }}</div>
+                    <div class="team-locations">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-icon"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        {{ team.locations || 'غير محدد' }}
+                    </div>
+                </div>
+                <div class="team-member-count">{{ team.members.length }} مسوقين</div>
             </div>
+            
+            <div class="team-marketers-list">
+                <div class="marketers-label">المسوقين:</div>
+                <div class="marketer-avatars">
+                    <div v-for="m in team.members.slice(0, 5)" :key="m" class="small-avatar" :title="m">{{ m.charAt(0) }}</div>
+                    <div v-if="team.members.length > 5" class="small-avatar extra">+{{ team.members.length - 5 }}</div>
+                </div>
+            </div>
+
             <div class="team-progress">
                 <div class="progress-info">
-                    <span>هدف الفريق</span>
+                    <span>متوسط تحقيق الأهداف</span>
                     <span>{{ team.goalProgress }}%</span>
                 </div>
                 <div class="progress-bar">
@@ -93,18 +108,23 @@
             </div>
             <div class="team-stats">
                 <div class="stat-item">
-                    <span class="stat-label">المشاريع المباعة</span>
-                    <span class="stat-value">{{ team.soldProjects }}</span>
-                </div>
-                 <div class="stat-item">
-                    <span class="stat-label">القيمة الإجمالية</span>
-                    <span class="stat-value">{{ team.totalValue }} <small>ر.س</small></span>
+                    <span class="stat-label">المشاريع الخاصة</span>
+                    <span class="stat-value">{{ team.soldProjects }} مشروع</span>
                 </div>
             </div>
             <div class="team-actions">
-                <button class="btn-icon edit" @click="openEditTeamModal(team)" title="تعديل الفريق">✏️</button>
-                <button class="btn-icon delete" @click="handleDeleteTeam(team)" title="حذف الفريق">🗑️</button>
-                <button class="btn-link" @click="handleLinkMarketers(team)">🔗 ربط مسوقين</button>
+                <button class="btn-action edit" @click="openEditTeamModal(team)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    تعديل
+                </button>
+                <button class="btn-action delete" @click="handleDeleteTeam(team)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    حذف
+                </button>
+                <button class="btn-action link" @click="handleLinkMarketers(team)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 1 0 7.07 7.07l1.71-1.71"></path></svg>
+                    ربط مسوقين
+                </button>
             </div>
           </div>
         </div>
@@ -220,10 +240,16 @@
 
     <TeamModal
       v-if="showTeamModal"
-      :team="editingTeam"
-      :isLoading="isSavingTeam"
       @close="showTeamModal = false"
       @submit="handleTeamSubmit"
+    />
+
+    <LinkMarketersModal
+      v-if="showLinkModal"
+      :team="selectedTeamToLink"
+      :isLoading="isLinking"
+      @close="showLinkModal = false"
+      @submit="handleLinkMarketersSubmit"
     />
   </div>
 </template>
@@ -235,6 +261,7 @@ import UserManagement from '../components/UserManagement.vue'
 import AddUserModal from '../components/AddUserModal.vue'
 import SetTargetModal from '../components/SetTargetModal.vue'
 import TeamModal from '../components/TeamModal.vue'
+import LinkMarketersModal from '../components/LinkMarketersModal.vue'
 import ReportsTab from '../components/ReportsTab.vue'
 import hrService from '../services/hrService'
 import authService from '../services/authService'
@@ -246,6 +273,7 @@ export default {
         AddUserModal,
         SetTargetModal,
         TeamModal,
+        LinkMarketersModal,
         ReportsTab
     },
   setup() {
@@ -271,10 +299,16 @@ export default {
     const selectedEmployee = ref(null)
     const isSavingTarget = ref(false)
 
+    const isSavingTeam = ref(false)
+
     // Team Modal State
     const showTeamModal = ref(false)
     const editingTeam = ref(null)
-    const isSavingTeam = ref(false)
+
+    // Link Marketers Modal State
+    const showLinkModal = ref(false)
+    const selectedTeamToLink = ref(null)
+    const isLinking = ref(false)
 
     // Team Handlers
     const openAddTeamModal = () => {
@@ -323,11 +357,22 @@ export default {
     }
 
     const handleLinkMarketers = (team) => {
-        // Placeholder for linking logic - could be another modal
-        const marketers = prompt('أدخل أرقام المسوقين لربطهم بالفريق (مفصولة بفاصلة):')
-        if (marketers) {
-            // Implementation would go here
-            alert(`تم ربط المسوقين بالفريق: ${team.name}`)
+        selectedTeamToLink.value = team
+        showLinkModal.value = true
+    }
+
+    const handleLinkMarketersSubmit = async (selectedIds) => {
+        isLinking.value = true
+        try {
+            await hrService.linkMarketersToTeam(selectedTeamToLink.value.id, selectedIds)
+            alert('تم ربط المسوقين بالفريق بنجاح')
+            showLinkModal.value = false
+            loadTeams()
+        } catch (error) {
+            console.error(error)
+            alert('حدث خطأ أثناء ربط المسوقين')
+        } finally {
+            isLinking.value = false
         }
     }
 
@@ -378,9 +423,9 @@ export default {
         console.error('Error loading teams:', error)
         // Fallback to mock data
         teamsData.splice(0, teamsData.length,
-          { name: 'فريق المبيعات الرياض', members: 8, goalProgress: 85, soldProjects: 12, totalValue: '1.2M', color: '#B1A28F' },
-          { name: 'فريق التطوير العقاري', members: 5, goalProgress: 60, soldProjects: 4, totalValue: '3.5M', color: '#1e3a5f' },
-          { name: 'فريق التسويق الميداني', members: 11, goalProgress: 92, soldProjects: 24, totalValue: '850K', color: '#B1A28F' }
+          { id: 1, name: 'فريق المبيعات الرياض', members: ['أحمد', 'خالد', 'سارة', 'فهد', 'محمد', 'نورة'], goalProgress: 85, soldProjects: 12, totalValue: '1.2M', color: '#B1A28F', locations: 'الرياض - حي الياسمين، حي النرجس' },
+          { id: 2, name: 'فريق التطوير العقاري', members: ['علي', 'عمر', 'ريم', 'ليلى', 'حسن'], goalProgress: 60, soldProjects: 4, totalValue: '3.5M', color: '#1e3a5f', locations: 'جدة - أبحر الشمالية' },
+          { id: 3, name: 'فريق التسويق الميداني', members: ['سلطان', 'ماجد', 'أمل', 'نواف'], goalProgress: 92, soldProjects: 24, totalValue: '850K', color: '#B1A28F', locations: 'الدمام - حي الشاطئ' }
         )
       }
     }
@@ -488,7 +533,11 @@ export default {
       openEditTeamModal,
       handleTeamSubmit,
       handleDeleteTeam,
-      handleLinkMarketers
+      handleLinkMarketers,
+      showLinkModal,
+      selectedTeamToLink,
+      isLinking,
+      handleLinkMarketersSubmit
     }
   }
 }
@@ -977,4 +1026,61 @@ export default {
 @media (max-width: 768px) {
   .performance-cards-grid { grid-template-columns: 1fr; }
 }
+
+/* Expanded Team Card Styles */
+.team-locations {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.mini-icon { width: 14px; height: 14px; color: #B1A28F; }
+
+.team-marketers-list {
+  margin: 15px 0;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.marketers-label { font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 8px; }
+
+.marketer-avatars { display: flex; align-items: center; gap: -8px; flex-wrap: wrap; }
+
+.small-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #e2e8f0; color: #475569;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  border: 2px solid white;
+}
+
+.small-avatar.extra { background: #B1A28F; color: white; font-size: 10px; }
+
+.btn-action {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.btn-action svg { width: 14px; height: 14px; }
+
+.btn-action:hover { border-color: #B1A28F; color: #B1A28F; background: #fdfbf7; }
+.btn-action.delete:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
+.btn-action.link { background: #eff6ff; color: #3b82f6; border-color: #dbeafe; width: 100%; justify-content: center; margin-top: 10px; }
+.btn-action.link:hover { background: #3b82f6; color: white; border-color: #3b82f6; }
+
+.team-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
 </style>

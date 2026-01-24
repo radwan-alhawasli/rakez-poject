@@ -133,15 +133,23 @@
               <textarea v-model="form.additional_benefits" class="input textarea" rows="3" placeholder="مثال: تأمين صحي، بدل سكن، بدل مواصلات..."></textarea>
             </div>
 
-            <!-- Team for Marketers Only -->
-            <div class="form-group" v-if="form.type == 0">
-              <label class="label">الفريق (للمسوقين فقط)</label>
-              <select v-model="form.team" class="input select">
-                <option value="">اختر فريقاً (اختياري)</option>
-                <option :value="1">الفريق الأول</option>
-                <option :value="2">الفريق الثاني</option>
-                <option :value="3">الفريق الثالث</option>
-              </select>
+            <!-- Team & Manager Status -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="label">الفريق</label>
+                <select v-model="form.team" class="input select">
+                  <option value="">لا يوجد فريق</option>
+                  <option :value="1">الفريق الأول</option>
+                  <option :value="2">الفريق الثاني</option>
+                  <option :value="3">الفريق الثالث</option>
+                </select>
+              </div>
+              <div class="form-group d-flex-center">
+                <label class="checkbox-label mt-20">
+                  <input type="checkbox" v-model="form.is_manager" class="checkbox" />
+                  <span class="fw-bold">هل هذا الموظف مدير (Manager)؟</span>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -386,7 +394,7 @@ export default {
         submissionData.is_manager = false
       } else {
         submissionData.type = parseInt(submissionData.type)
-        submissionData.is_manager = false
+        submissionData.is_manager = form.value.is_manager
       }
 
       // Format dates for API (DD-MM-YYYY)
@@ -799,4 +807,8 @@ export default {
     border-radius: 0;
   }
 }
+
+.d-flex-center { display: flex; align-items: center; }
+.mt-20 { margin-top: 20px; }
+.fw-bold { font-weight: 700; }
 </style>

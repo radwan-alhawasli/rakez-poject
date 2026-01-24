@@ -134,7 +134,7 @@ router.beforeEach((to, from, next) => {
         next('/login')
     } else if (to.name === 'Login' && isAuthenticated) {
         const user = authService.getCurrentUser()
-        if (user && user.type == 8) {  // HR role = 8 (matches backend)
+        if (user && user.type == 8) {  // HR role = 8
             next('/hr')
         } else {
             next('/dashboard')
