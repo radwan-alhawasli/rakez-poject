@@ -1,0 +1,32 @@
+name: 🚀 Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  deploy:
+    name: 🔨 Pull & Build on Server
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Deploy via SSH - pull and build on server
+      - name: 🚀 Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.REMOTE_PORT || '22' }}
+          script: |
+            cd /var/www/rakez-poject
+            echo "📥 Pulling latest changes..."
+            git pull origin main
+            echo "📦 Installing dependencies..."
+            npm install
+            echo "🔨 Building project..."
+            npm run build
+            echo "✅ Deployment complete!"
