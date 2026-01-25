@@ -77,12 +77,14 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import authService from '../services/authService'
 import contractService from '../services/contractService'
 
 export default {
   name: 'DashboardView',
   setup() {
+    const router = useRouter()
     const user = ref(authService.getCurrentUser())
     const userName = computed(() => user.value?.name || 'مستخدم')
     
@@ -143,7 +145,15 @@ export default {
       }
     }
 
-    onMounted(fetchData)
+    onMounted(() => {
+      // Redirect HR users to their specialized dashboard
+      const currentUser = authService.getCurrentUser()
+      if (currentUser?.type == 8) {
+          router.push('/hr/dashboard')
+          return
+      }
+      fetchData()
+    })
 
     return {
       userName,

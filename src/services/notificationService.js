@@ -64,14 +64,28 @@ const notificationService = {
      */
     async fetchAll() {
         try {
-            const [privateRes, publicRes] = await Promise.all([
+            const user = authService.getCurrentUser()
+            const isAdmin = user && user.type === 1
+
+            const requests = [
                 apiClient.get('/user/notifications/private'),
                 apiClient.get('/user/notifications/public')
-            ])
+            ]
+
+            if (isAdmin) {
+                requests.push(apiClient.get('/admin/notifications'))
+            }
+
+            const results = await Promise.all(requests)
+            
+            const privateNotifs = results[0].data.notifications || results[0].data || []
+            const publicNotifs = results[1].data.notifications || results[1].data || []
+            const adminNotifs = isAdmin ? (results[2].data.notifications || results[2].data || []) : []
 
             const all = [
-                ...(privateRes.data.notifications || []),
-                ...(publicRes.data.notifications || [])
+                ...privateNotifs,
+                ...publicNotifs,
+                ...adminNotifs
             ].map(n => ({
                 id: n.id,
                 title: n.message || n.title,
@@ -86,6 +100,58 @@ const notificationService = {
             this.updateUnreadCount()
         } catch (error) {
             console.error('Error fetching notifications:', error)
+        }
+    },
+
+    /**
+     * Send public notification (Admin only)
+     */
+    async sendPublicNotification(message) {
+        try {
+            const response = await apiClient.post('/admin/notifications/send-public', { message })
+            return response.data
+        } catch (error) {
+            console.error('Error sending public notification:', error)
+            throw error
+        }
+    },
+
+    /**
+     * Send notification to specific user (Admin only)
+     */
+    async sendUserNotification(userId, message) {
+        try {
+            const response = await apiClient.post('/admin/notifications/send-to-user', { user_id: userId, message })
+            return response.data
+        } catch (error) {
+            console.error(`Error sending notification to user ${userId}:`, error)
+            throw error
+        }
+    },
+
+    /**
+     * Get notifications for a specific user (Admin only)
+     */
+    async getUserNotifications(userId) {
+        try {
+            const response = await apiClient.get(`/admin/notifications/user/${userId}`)
+            return response.data
+        } catch (error) {
+            console.error(`Error fetching notifications for user ${userId}:`, error)
+            throw error
+        }
+    },
+
+    /**
+     * Get all public notifications (Admin only)
+     */
+    async getAdminPublicNotifications() {
+        try {
+            const response = await apiClient.get('/admin/notifications/public')
+            return response.data
+        } catch (error) {
+            console.error('Error fetching admin public notifications:', error)
+            throw error
         }
     },
 
