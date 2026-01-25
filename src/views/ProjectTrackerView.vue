@@ -10,7 +10,7 @@
       <!-- Project Header -->
       <div class="project-header">
         <div class="header-image-container">
-           <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project Image" class="header-image" @error="$event.target.src='https://via.placeholder.com/1200x300?text=Project+Image'" />
+           <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project Image" class="header-image" @error="$event.target.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%221200%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%221200%22%20height%3D%22300%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22%23666666%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E'" />
            <div class="header-overlay"></div>
            <div class="header-content">
              <div class="header-top">
@@ -44,6 +44,7 @@
             <!-- Tracker Header -->
             <div class="tracker-header-box">
             <h2 class="tracker-title">متتبع حالة المشروع</h2>
+            <h3 class="tracker-subtitle">{{ project.name }}</h3>
             <p class="tracker-desc">أكمل جميع المراحل لتمكين إضافة الوحدات. سيتم حفظ البيانات تلقائياً عند الإكمال.</p>
             
             <div class="progress-indicator">
@@ -88,7 +89,7 @@
                     <label>رابط المستند / الملف</label>
                     <div class="input-wrapper">
                         <!-- If completed, show disabled input or allow edit if needed. User asked for "locked". -->
-                        <input type="text" v-model="stages[activeStageIndex].value" class="form-input" placeholder="https://..." :disabled="stages[activeStageIndex].status === 'completed'" />
+                        <input :type="stages[activeStageIndex].inputType || 'text'" v-model="stages[activeStageIndex].value" class="form-input" :placeholder="stages[activeStageIndex].placeholder || 'https://...'" :disabled="stages[activeStageIndex].status === 'completed'" />
                         <button class="link-btn">
                             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                         </button>
@@ -152,7 +153,7 @@
                 </div>
 
                 <form @submit.prevent="savePhotographyData">
-                    <fieldset :disabled="isPhotoSaving || (isManager && photographyForm.status === 'pending') || (photographyForm.status === 'approved' && !isManager)" style="border:none; padding:0;">
+                    <fieldset :disabled="isPhotoSaving || (isManager && photographyForm.status === 'pending') || (photographyForm.status === 'approved' && !isManager) || (photographyForm.status === 'pending' && !isEditingPending)" style="border:none; padding:0;">
                         <div class="form-grid" style="grid-template-columns: 1fr; gap: 20px;">
                             
                             <!-- Image URL -->
@@ -179,9 +180,20 @@
 
                             <!-- Actions for Submitter -->
                             <div class="form-actions" style="margin-top: 20px; text-align: left;">
-                                <button v-if="!isManager && photographyForm.status !== 'approved'" type="submit" class="update-btn" :disabled="isPhotoSaving">
-                                    {{ isPhotoSaving ? 'جاري الحفظ...' : (photographyForm.status === 'rejected' ? 'إعادة الإرسال للموافقة' : 'حفظ وإرسال للموافقة') }}
-                                </button>
+                                <div v-if="!isManager && photographyForm.status !== 'approved'">
+                                    <!-- If Pending and NOT editing -> Show Edit Button -->
+                                    <button v-if="photographyForm.status === 'pending' && !isEditingPending" type="button" class="update-btn secondary" @click="isEditingPending = true">
+                                        تعديل الطلب
+                                    </button>
+                                    
+                                    <!-- Else (Rejected, New, or Editing Pending) -> Show Save -->
+                                    <button v-else type="submit" class="update-btn" :disabled="isPhotoSaving">
+                                        {{ isPhotoSaving ? 'جاري الحفظ...' : ((photographyForm.status === 'rejected' || isEditingPending) ? 'تحديث وإعادة الإرسال' : 'حفظ وإرسال للموافقة') }}
+                                    </button>
+                                    
+                                    <button v-if="isEditingPending" type="button" class="btn-text" @click="cancelPhotoEdit" style="margin-right:10px;">إلغاء</button>
+                                </div>
+
                                 <p v-if="photographyForm.status === 'approved'" style="color: #10b981; font-weight: bold;">
                                     ✓ تم اعتماد الصور
                                 </p>
@@ -381,6 +393,7 @@ export default {
         description: '',
         updated_at: null
     })
+    const isEditingPending = ref(false)
     
     const isManager = computed(() => {
         const user = authService.getCurrentUser()
@@ -444,7 +457,9 @@ export default {
         status: 'pending',
         apiKey: 'advertiser_section_url',
         value: '',
-        completedAt: null
+        completedAt: null,
+        inputType: 'number',
+        placeholder: 'أدخل رقم المعلن'
       }
     ])
 
@@ -475,9 +490,23 @@ export default {
           const id = route.params.id
           
           // 1. Fetch Contract Basics
-          const data = await contractService.getContractById(id)
+          const user = authService.getCurrentUser()
+          const isEditor = user && user.type == 4
+          
+          let data = null
+          try {
+             if (isEditor) {
+                 data = await contractService.getEditorContractById(id)
+             } else {
+                 data = await contractService.getContractById(id)
+             }
+          } catch(e) {
+             console.log('Main fetch failed, utilizing fallback')
+          }
+
           if (!data || !data.project_name) {
-             const all = await contractService.getContracts()
+             const apiCall = isEditor ? contractService.getEditorContracts() : contractService.getContracts()
+             const all = await apiCall
              const found = all.find(p => p.id == id)
              if (found) project.value = found
           } else {
@@ -669,28 +698,40 @@ export default {
             photographyForm.status = 'pending'
             photographyForm.rejection_reason = null
             photographyForm.updated_at = new Date().toLocaleDateString('ar-SA')
+            // Reset editing mode after successful save
+            isEditingPending.value = false
 
         } catch (error) {
             console.error('Photography save error:', error)
              const msg = error.response?.data?.message || error.message || 'خطأ غير معروف'
             alert(`حدث خطأ أثناء حفظ البيانات: ${msg}`)
+            isEditingPending.value = false
         } finally {
             isPhotoSaving.value = false
         }
+    }
+    
+    const cancelPhotoEdit = () => {
+        isEditingPending.value = false
+        // Optionally revert data to original logic if we kept a copy
     }
 
     const approvePhotography = async () => {
         if (!confirm('هل تأكيد قبول الصور؟')) return
         try {
-             // We can use updatePhotography to update status
-            await contractService.updatePhotography(project.value.id, {
-                status: 'approved'
-            })
+             // Send complete photography data with approved status
+             const payload = {
+                 image_url: photographyForm.image_url,
+                 video_url: photographyForm.video_url,
+                 description: photographyForm.description,
+                 status: 'approved'
+             }
+            await contractService.updatePhotography(project.value.id, payload)
             photographyForm.status = 'approved'
             alert('تم قبول الصور بنجاح')
         } catch (error) {
-            console.error(error)
-            alert('حدث خطأ أثناء القبول')
+            console.error('Approval error:', error)
+            alert('حدث خطأ أثناء القبول: ' + (error.response?.data?.message || error.message))
         }
     }
 
@@ -849,10 +890,11 @@ export default {
        openRejectModal,
         // Boards
         boardsFormData,
-        boardsTabState,
         isBoardSaving,
         saveBoard,
-        isManager
+        isManager,
+        isEditingPending,
+        cancelPhotoEdit
     }
   }
 }

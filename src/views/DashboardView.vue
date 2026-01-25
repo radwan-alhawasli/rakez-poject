@@ -98,10 +98,14 @@ export default {
         let apps = []
         // Check if user is admin (type 1)
         const isUserAdmin = user.value && (user.value.type === 1 || user.value.type === 'admin')
+        const isUserEditor = user.value && user.value.type === 4
         
         if (isUserAdmin) {
              console.log('Fetching Admin Contracts...')
              apps = await contractService.getAllContracts()
+        } else if (isUserEditor) {
+             console.log('Fetching Editor Contracts...')
+             apps = await contractService.getEditorContracts()
         } else {
              console.log('Fetching User Contracts...')
              apps = await contractService.getContracts()

@@ -26,19 +26,23 @@
 
     <!-- Tabs -->
     <div class="tabs-container">
-      <button :class="['tab-btn', { active: activeTab === 'not_ready' }]" @click="activeTab = 'not_ready'">
-        مشاريع غير جاهزة ({{ notReadyCount }})
+      <!-- Editor: Single Tab for All Projects -->
+      <button v-if="isEditor" :class="['tab-btn', { active: activeTab === 'all_projects' }]" @click="activeTab = 'all_projects'">
+        المشاريع ({{ allProjectsCount }})
       </button>
-      <button :class="['tab-btn', { active: activeTab === 'ready' }]" @click="activeTab = 'ready'">
-        مشاريع جاهزة للتسويق ({{ readyCount }})
-      </button>
-      
-      <button :class="['tab-btn', { active: activeTab === 'photography' }]" @click="activeTab = 'photography'">
-        التصوير ({{ photographyCount }})
-      </button>
-      <button :class="['tab-btn', { active: activeTab === 'archive' }]" @click="activeTab = 'archive'">
-        الأرشيف ({{ archiveCount }})
-      </button>
+
+      <!-- Standard Tabs for Non-Editors -->
+      <template v-else>
+        <button :class="['tab-btn', { active: activeTab === 'not_ready' }]" @click="activeTab = 'not_ready'">
+            مشاريع غير جاهزة ({{ notReadyCount }})
+        </button>
+        <button :class="['tab-btn', { active: activeTab === 'ready' }]" @click="activeTab = 'ready'">
+            مشاريع جاهزة للتسويق ({{ readyCount }})
+        </button>
+        <button :class="['tab-btn', { active: activeTab === 'archive' }]" @click="activeTab = 'archive'">
+            الأرشيف ({{ archiveCount }})
+        </button>
+      </template>
     </div>
 
     <!-- Projects Grid -->
@@ -54,7 +58,7 @@
     <div v-else class="projects-grid">
       <div v-for="project in filteredProjects" :key="project.id" class="project-card">
         <div class="card-image">
-          <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project Image" @error="$event.target.src='https://via.placeholder.com/400x300?text=No+Image'" />
+          <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project Image" @error="$event.target.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%23666666%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E'" />
           <div class="status-badge" :class="project.statusClass">{{ project.statusLabel }}</div>
           
           <!-- Context Menu Button -->
@@ -64,11 +68,21 @@
                </button>
                <!-- Dropdown -->
                <div v-if="activeMenuId === project.id" class="dropdown-menu">
-                   <div class="menu-item" @click.stop="openProjectDetails(project)">
+                    <div v-if="isEditor" class="menu-item" @click.stop="openProjectDetails(project)">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        التفاصيل
+                    </div>
+                    <div v-if="isEditor" class="menu-item" @click.stop="openMediaModal(project)">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
+                        الوسائط (Montage)
+                    </div>
+
+                    <!-- Non-Editor Options -->
+                   <div v-if="!isEditor" class="menu-item" @click.stop="openProjectDetails(project)">
                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                        عرض المشروع
                    </div>
-                   <div v-if="isEditor" class="menu-item" @click.stop="openWorkspace(project)">
+                   <div v-if="!isEditor && userRole !== 4" class="menu-item" @click.stop="openWorkspace(project)">
                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M2 12l5-5m-5 5l5 5"></path></svg>
                        مساحة العمل (Workspace)
                    </div>
@@ -99,7 +113,7 @@
             </div>
              <!-- Tracker Link or Info -->
             <button class="tracker-btn" @click="viewTracker(project)">
-               {{ activeTab === 'photography' ? 'متابعة التصوير' : 'عرض التفاصيل' }}
+               عرض التفاصيل
             </button>
           </div>
         </div>
@@ -111,49 +125,46 @@
         <div class="modal-content large">
             <h3>تفاصيل المشروع: {{ selectedProject?.name }}</h3>
             
-            <div class="details-grid">
+             <div class="details-grid">
                  <div class="detail-box">
                      <span class="label">رقم المعلن</span>
                      <span class="value">{{ selectedProject?.advertiser_number || 'غير متوفر' }}</span>
-                     <span class="status-mini" :class="selectedProject?.advertiser_number ? 'ok' : 'missing'">{{ selectedProject?.advertiser_number ? 'مكتمل' : 'غير مكتمل' }}</span>
+                     <span class="status-mini" :class="getStatusClass(selectedProject?.advertiser_number ? 'available' : 'notfound')">
+                        {{ selectedProject?.advertiser_number ? 'Available' : 'Not Found' }}
+                     </span>
                  </div>
                  
                  <div class="detail-box">
-                     <span class="label">الصور و الوسائط</span>
-                     <span class="value">{{ selectedProject?.image ? 'يوجد صور' : 'لا يوجد' }}</span>
-                      <span class="status-mini" :class="selectedProject?.image ? 'ok' : 'missing'">{{ selectedProject?.image ? 'مكتمل' : 'غير مكتمل' }}</span>
+                     <span class="label">متوسط سعر الوحدة</span>
+                     <span class="value highlight">{{ selectedProject?.avgPrice ? formatCurrency(selectedProject.avgPrice) : 'غير محسوب' }}</span>
+                      <span class="status-mini" :class="getStatusClass(selectedProject?.avgPrice ? 'available' : 'pending')">
+                        {{ selectedProject?.avgPrice ? 'Available' : 'Pending' }}
+                     </span>
                  </div>
 
+                 <div class="detail-box clickable" @click="goToUnits(selectedProject)">
+                     <span class="label">عرض سعر الوحدات</span>
+                     <span class="value link">انقر للعرض ↗</span>
+                      <span class="status-mini" :class="getStatusClass(selectedProject?.units?.length ? 'available' : 'notfound')">
+                        {{ selectedProject?.units?.length ? 'Available' : 'Not Found' }}
+                     </span>
+                 </div>
+
+                 <!-- Extra Details per requirement -->
                  <div class="detail-box">
-                     <span class="label">متوسط سعر الوحدات</span>
-                     <span class="value highlight">{{ selectedProject?.avgPrice ? formatCurrency(selectedProject.avgPrice) : '-' }}</span>
+                    <span class="label">تفاصيل المشروع</span>
+                    <span class="value">{{ selectedProject?.description ? 'مكتمل' : 'ناقص' }}</span>
+                    <span class="status-mini" :class="getStatusClass(selectedProject?.description ? 'available' : 'pending')">
+                        {{ selectedProject?.description ? 'Available' : 'Pending' }}
+                    </span>
                  </div>
             </div>
 
-            <h4 style="margin-top:20px; border-bottom:1px solid #eee; padding-bottom:10px;">أسعار وعرض الوحدات</h4>
-            <div class="table-wrapper">
-                <table class="units-table">
-                    <thead>
-                        <tr>
-                            <th>رقم الوحدة</th>
-                            <th>النوع</th>
-                            <th>السعر</th>
-                            <th>الحالة</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="unit in selectedProject?.units || []" :key="unit.id">
-                            <td>{{ unit.unit_number }}</td>
-                            <td>{{ unit.unit_type }}</td>
-                            <td>{{ formatCurrency(unit.price) }}</td>
-                            <td>{{ unit.status }}</td>
-                        </tr>
-                        <tr v-if="!selectedProject?.units?.length">
-                            <td colspan="4" style="text-align:center;">لا توجد وحدات مضافة</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <!-- Removed old Units Table inside modal as requested to Redirect instead -->
+            <!-- But keeping basic list if user wants quick glance, logic: 'when clicked it redirects him' -->
+            <!-- We kept the redirect button above. Hiding table or keeping it optional? User said 'redirects him'. -->
+             <!-- Units Table Removed as per user request to only have Redirect -->
+            <!-- <div class="table-wrapper">...</div> -->
 
             <button class="close-modal-btn" @click="closeDetailsModal">إغلاق</button>
         </div>
@@ -186,12 +197,42 @@
         </div>
     </div>
 
+    <!-- Media (Montage) Modal -->
+    <div v-if="showMediaModalState" class="modal-overlay" @click.self="closeMediaModalState">
+        <div class="modal-content">
+            <h3>إدارة الوسائط (Montage)</h3>
+            <p style="color:#666; font-size:13px; margin-bottom:15px">تحديث بيانات المونتاج للمشروع: {{ selectedProject?.name }}</p>
+            
+            <form @submit.prevent="submitMediaForm">
+                <div class="form-group">
+                    <label>رابط الصورة (Image URL)</label>
+                    <input v-model="mediaForm.image_url" type="text" class="form-input" placeholder="https://..." />
+                </div>
+                <div class="form-group">
+                    <label>رابط الفيديو (Video URL)</label>
+                    <input v-model="mediaForm.video_url" type="text" class="form-input" placeholder="https://..." />
+                </div>
+                <div class="form-group">
+                    <label>الوصف (Description)</label>
+                    <textarea v-model="mediaForm.description" class="form-input" rows="3"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-text" @click="closeMediaModalState">إلغاء</button>
+                    <button type="submit" class="btn-primary" :disabled="isMediaSaving">
+                        {{ isMediaSaving ? 'جاري الحفظ...' : 'حفظ التعديلات' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted, reactive } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import contractService from '../services/contractService'
 import authService from '../services/authService'
 
@@ -199,15 +240,18 @@ export default {
   name: 'ProjectManagementView',
   setup() {
     const router = useRouter()
-    const route = useRoute()
+    // const route = useRoute() // Unused now that we default activeTab
     const userRole = computed(() => {
         const u = authService.getCurrentUser()
         return u ? u.type : 0
     })
     const isEditor = computed(() => userRole.value == 4)
 
-    // Initialize activeTab based on query param if present
-    const activeTab = ref(route.query.tab === 'photography' ? 'photography' : 'not_ready')
+    // Initialize activeTab based on user role
+    const activeTab = ref(isEditor.value ? 'all_projects' : 'not_ready')
+    
+    // Watch role change to reset tab if necessary (optional)
+    
     const searchQuery = ref('')
     const teamFilter = ref('')
     const isLoading = ref(false)
@@ -224,12 +268,25 @@ export default {
         url: ''
     })
 
+    // Media Modal State
+    const showMediaModalState = ref(false)
+    const mediaForm = reactive({
+        image_url: '',
+        video_url: '',
+        description: ''
+    })
+    const isMediaSaving = ref(false)
+
     const fetchProjects = async () => {
       isLoading.value = true
       try {
-        // User requested "Same API" as Project Management (getContracts)
-        const data = await contractService.getContracts()
+        // All users use /contracts/index - editors will see all projects they have access to
+        // Editor Role (4) uses specific endpoint
+        const data = isEditor.value 
+            ? await contractService.getEditorContracts()
+            : await contractService.getContracts()
         console.log('Fetched Projects:', data)
+        console.log('User Role:', userRole.value, 'Is Editor:', isEditor.value)
 
         // Transform data to match UI
         projects.value = (Array.isArray(data) ? data : []).map(p => ({
@@ -240,13 +297,14 @@ export default {
             statusLabel: p.status === 'Approved' ? 'Active' : p.status,
             statusClass: p.status === 'Approved' ? 'active' : 'pending',
             units: p.units || [],
-            advertiser_number: p.advertiser_number, // Ensure this exists or mock
+            advertiser_number: p.advertiser_number, 
             assignee: p.marketer,
-            status: p.status, // raw status
+            status: p.status, 
+            description: p.description || p.details || '', // Ensure description
             // Computed fields
             avgPrice: p.units && p.units.length ? p.units.reduce((a,b) => a + (Number(b.price)||0), 0) / p.units.length : 0,
             
-            // Mock data for UI demo if missing
+            // Mock if missing
             distance: '15',
             landmark: 'مطار الملك خالد'
         }))
@@ -262,15 +320,17 @@ export default {
       let filtered = projects.value
       
       // Filter by Tab
-      if (activeTab.value === 'ready') {
+      if (activeTab.value === 'all_projects') {
+          // All active projects (regardless of ready/not ready), exclude archived/refused if desired, or include ALL.
+          // Requirement: "contain all the projects the ready and the not ready"
+          // Usually excludes rejected.
+          filtered = filtered.filter(p => p.status !== 'Rejected' && p.status !== 'Refused')
+      } else if (activeTab.value === 'ready') {
          // Ready = Has units AND Approved
          filtered = filtered.filter(p => p.status === 'Approved' && p.units && p.units.length > 0)
       } else if (activeTab.value === 'not_ready') {
          // Not Ready = Not Approved OR No Units (Tracker incomplete)
          filtered = filtered.filter(p => p.status !== 'Approved' || !p.units || p.units.length === 0)
-      } else if (activeTab.value === 'photography') {
-         // For now, treat approved projects as candidates for photography
-         filtered = filtered.filter(p => p.status === 'Approved')
       } else if (activeTab.value === 'archive') {
          filtered = filtered.filter(p => p.status === 'Refused' || p.status === 'Rejected')
       }
@@ -284,10 +344,11 @@ export default {
       return filtered
     })
 
+    // Removed photographyCount from logic as requested
     const notReadyCount = computed(() => projects.value.filter(p => p.status !== 'Approved' || !p.units || p.units.length === 0).length)
     const readyCount = computed(() => projects.value.filter(p => p.status === 'Approved' && p.units && p.units.length > 0).length)
-    const archiveCount = computed(() => projects.value.filter(p => p.status === 'Refused' || p.status === 'Rejected').length)
-    const photographyCount = computed(() => projects.value.filter(p => p.status === 'Approved').length) 
+    const archiveCount = computed(() => projects.value.filter(p => p.status === 'Refused' || p.status === 'Rejected').length) 
+    const allProjectsCount = computed(() => projects.value.filter(p => p.status !== 'Rejected' && p.status !== 'Refused').length) 
 
     const viewTracker = (project) => {
         router.push({ name: 'ProjectTracker', params: { id: project.id } })
@@ -297,10 +358,25 @@ export default {
         activeMenuId.value = activeMenuId.value === id ? null : id
     }
 
-    const openProjectDetails = (project) => {
+    const openProjectDetails = async (project) => {
         selectedProject.value = project
         showDetailsModal.value = true
         activeMenuId.value = null
+        
+        // Fetch additional details (Advertiser Number from Tracker)
+        try {
+            const trackerData = await contractService.getSecondPartyData(project.id)
+            if (trackerData && trackerData.data && trackerData.data.advertiser_section_url) {
+                // Update the reactive selectedProject with the fetched advertiser number
+                // We use 'advertiser_section_url' because that's the key defined in ProjectTrackerView for "رقم المعلن"
+                selectedProject.value = {
+                    ...selectedProject.value,
+                    advertiser_number: trackerData.data.advertiser_section_url 
+                }
+            }
+        } catch (e) {
+            console.error('Failed to fetch tracker data for details', e)
+        }
     }
 
     const openWorkspace = (project) => {
@@ -312,6 +388,66 @@ export default {
 
     const closeDetailsModal = () => showDetailsModal.value = false
     const closeWorkspaceModal = () => showWorkspaceModal.value = false
+    const closeMediaModalState = () => showMediaModalState.value = false
+
+    const openMediaModal = async (project) => {
+        selectedProject.value = project
+        // Fetch current montage data
+        try {
+           const montage = await contractService.getMontage(project.id)
+           if (montage && montage.data) {
+               mediaForm.image_url = montage.data.image_url || ''
+               mediaForm.video_url = montage.data.video_url || ''
+               mediaForm.description = montage.data.description || ''
+           } else {
+               // clear
+               mediaForm.image_url = ''
+               mediaForm.video_url = ''
+               mediaForm.description = ''
+           }
+        } catch (e) {
+            console.error(e)
+        }
+        showMediaModalState.value = true
+        activeMenuId.value = null
+    }
+
+    const submitMediaForm = async () => {
+        if (!selectedProject.value) return
+        isMediaSaving.value = true
+        try {
+            await contractService.storeMontage(selectedProject.value.id, mediaForm)
+             // or update if exists, handled by try/catch in service if store fails? 
+             // service logic above for Store is a simple POST.
+            alert('تم حفظ الوسائط بنجاح')
+            closeMediaModalState()
+        } catch (error) {
+             console.error('Failed store, trying update..')
+             try {
+                await contractService.updateMontage(selectedProject.value.id, mediaForm)
+                alert('تم تحديث الوسائط بنجاح')
+                closeMediaModalState()
+             } catch (e2) {
+                 alert('فشل الحفظ')
+             }
+        } finally {
+            isMediaSaving.value = false
+        }
+    }
+
+    const goToUnits = (project) => {
+        // Redirect to Tracker Units Tab
+        router.push({ name: 'ProjectTracker', params: { id: project.id }, query: { tab: 'units' } })
+    }
+
+    const getStatusClass = (status) => {
+        switch(status) {
+            case 'available': return 'ok'
+            case 'pending': return 'pending' 
+            case 'notfound': return 'missing'
+            default: return ''
+        }
+    }
 
     const submitWorkspaceLink = async () => {
         if (!workspaceForm.url) return alert('الرجاء إدخال الرابط')
@@ -331,13 +467,18 @@ export default {
 
     return {
       activeTab, searchQuery, teamFilter, isLoading,
-      filteredProjects, notReadyCount, readyCount, archiveCount, photographyCount,
+      filteredProjects, notReadyCount, readyCount, archiveCount,
       viewTracker, isEditor,
       // Menu & Modal
       activeMenuId, toggleMenu, 
       showDetailsModal, selectedProject, openProjectDetails, closeDetailsModal,
       showWorkspaceModal, workspaceForm, openWorkspace, closeWorkspaceModal, submitWorkspaceLink,
-      formatCurrency
+      formatCurrency,
+      // Editor Extras
+      allProjectsCount,
+      showMediaModalState, mediaForm, isMediaSaving,
+      openMediaModal, closeMediaModalState, submitMediaForm,
+      getStatusClass, goToUnits
     }
   }
 }

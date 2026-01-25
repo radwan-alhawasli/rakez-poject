@@ -91,6 +91,16 @@ const routes = [
                 component: () => import('../views/ProfileView.vue')
             },
             {
+                path: 'teams',
+                name: 'Teams',
+                component: () => import('../views/TeamsView.vue')
+            },
+            {
+                path: 'team-management',
+                name: 'TeamManagement',
+                component: () => import('../views/TeamManagementView.vue')
+            },
+            {
                 path: 'image-approval',
                 name: 'ImageApproval',
                 component: () => import('../views/ImageApprovalView.vue')
