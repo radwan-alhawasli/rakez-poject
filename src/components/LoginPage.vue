@@ -15,7 +15,7 @@
       
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
-          <label for="email" class="form-label">البريد majd</label>
+          <label for="email" class="form-label">البريد الإلكتروني</label>
           <input 
             type="email" 
             id="email" 
