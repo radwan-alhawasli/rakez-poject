@@ -503,11 +503,5 @@ export default {
     generateTeamPerformanceReport,
     generateMarketerReport,
     generateEmployeesReport,
-    generateExpiringContractsReport,
-
-    // Contract-Team Integration
-    getTeamContractLocations,
-    getTeamsForContract,
-    getTeamContracts,
-    getProjectTeams
+    generateExpiringContractsReport
 }
