@@ -38,16 +38,7 @@ const contractService = {
    * Payload: { status: 'approved' | 'rejected' }
    */
   async updateContractStatus(contractId, status) {
-    try {
-      const response = await apiClient.patch(
-        `/admin/contracts/adminUpdateStatus/${contractId}`,
-        { status }
-      )
-      return response.data
-    } catch (error) {
-      console.error('Error updating contract status:', error)
-      throw error
-    }
+    return this.updateContractStatusAdmin(contractId, status)
   },
 
   async approveContract(contractId) {
@@ -71,6 +62,23 @@ const contractService = {
       return response.data
     } catch (error) {
       console.error('Error updating contract status (PM):', error)
+      throw error
+    }
+  },
+
+  /**
+   * تحديث حالة العقد (للمسؤول)
+   * PATCH /admin/contracts/adminUpdateStatus/:id
+   */
+  async updateContractStatusAdmin(contractId, status) {
+    try {
+      const response = await apiClient.patch(
+        `/admin/contracts/adminUpdateStatus/${contractId}`,
+        { status }
+      )
+      return response.data
+    } catch (error) {
+      console.error('Error updating contract status (Admin):', error)
       throw error
     }
   },
@@ -213,9 +221,19 @@ const contractService = {
    * جلب وحدات العقد
    * GET /contracts/units/show/:id
    */
-  async getContractUnits(id) {
+  async getContractUnits(id, csvFile = null) {
     try {
-      const response = await apiClient.get(`/contracts/units/show/${id}`)
+      let response;
+      if (csvFile) {
+        const formData = new FormData();
+        formData.append('csv_file', csvFile);
+        response = await apiClient.get(`/contracts/units/show/${id}`, {
+          data: formData,
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      } else {
+        response = await apiClient.get(`/contracts/units/show/${id}`);
+      }
       const res = response.data
       let units = []
       if (Array.isArray(res)) {
@@ -248,14 +266,11 @@ const contractService = {
 
   /**
    * تحديث وحدة
-   * POST/PUT /contracts/units/update/:unitId
-   * Note: The user mentioned update url http://.../update/2
+   * PUT /contracts/units/update/:unitId
    */
   async updateContractUnit(unitId, payload) {
     try {
-      // Using POST or PUT depending on backend, robustly trying whatever works usually implies adhering to REST or confirmed docs.
-      // User said: http://143.198.24.230/api/contracts/units/update/2 with body
-      const response = await apiClient.post(`/contracts/units/update/${unitId}`, payload)
+      const response = await apiClient.put(`/contracts/units/update/${unitId}`, payload)
       return response.data
     } catch (error) {
       console.error('Error updating contract unit:', error)
@@ -360,11 +375,11 @@ const contractService = {
 
   /**
    * جلب مشاريع مطور بواسطة البريد الإلكتروني
-   * POST /second-party-data/contracts-by-email
+   * GET /second-party-data/contracts-by-email
    */
   async getDeveloperContractsByEmail(email) {
     try {
-      const response = await apiClient.post('/second-party-data/contracts-by-email', { email })
+      const response = await apiClient.get('/second-party-data/contracts-by-email', { params: { email } })
       return response.data
     } catch (error) {
       console.error('Error fetching developer contracts:', error)
