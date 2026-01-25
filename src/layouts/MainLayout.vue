@@ -56,7 +56,7 @@
           </div>
         </div>
         <div class="logo">
-           <span class="logo-ar">راكز العقارية</span>
+           <span class="logo-ar">majd العقارية</span>
            <span class="logo-sep">|</span>
            <span class="logo-en">Rakez Real Estate</span>
            <div class="logo-icon-bg"></div> 
