@@ -14,8 +14,13 @@ export default {
   setup() {
     const router = useRouter()
     
-    const onLoginSuccess = () => {
-      router.push('/dashboard')
+    const onLoginSuccess = (userData) => {
+      // Redirection based on user role after successful login
+      if (userData && (userData.type == 8 || userData.type == 9 || String(userData.type).toLowerCase() === 'hr')) {
+        router.push('/hr/dashboard')
+      } else {
+        router.push('/dashboard')
+      }
     }
 
     return {

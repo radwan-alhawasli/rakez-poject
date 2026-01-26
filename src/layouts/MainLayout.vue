@@ -3,6 +3,13 @@
     <!-- الهيدر العلوي -->
     <header class="top-header">
       <div class="header-left">
+        <button class="mobile-toggle" @click="toggleSidebar">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
         <button class="back-btn" @click="$router.back()">
           <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -64,9 +71,9 @@
       </div>
     </header>
 
-    <div class="main-wrapper">
+    <div class="main-wrapper" :class="{ 'sidebar-open': isSidebarOpen }">
       <!-- القائمة الجانبية -->
-      <aside class="sidebar">
+      <aside class="sidebar" :class="{ 'open': isSidebarOpen }">
         <div class="sidebar-header">
            <img src="/img/logo-circle.png" class="sidebar-logo-img" alt="Logo" />
            <div class="sidebar-logo-text">
@@ -609,6 +616,9 @@ export default {
     const route = useRoute()
     const router = useRouter()
     
+    const isSidebarOpen = ref(false)
+    const toggleSidebar = () => { isSidebarOpen.value = !isSidebarOpen.value }
+
     const user = computed(() => {
         route.path
         return authService.getCurrentUser()
@@ -692,6 +702,8 @@ export default {
       userRole,
       showNotifications,
       unreadCount,
+      isSidebarOpen,
+      toggleSidebar,
       toggleNotifications,
       markAsRead,
       markAllAsRead,
@@ -726,6 +738,16 @@ export default {
   left: 0;
   right: 260px;
   z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: #1e293b;
+  cursor: pointer;
+  padding: 5px;
 }
 
 .header-left { display: flex; align-items: center; gap: 20px; }
@@ -833,6 +855,11 @@ export default {
   position: fixed; top: 0; right: 0; width: 260px; height: 100vh;
   background: #1e293b; color: white; z-index: 200;
   display: flex; flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.sidebar.open {
+  right: 0 !important;
 }
 
 .sidebar-header {
@@ -889,7 +916,7 @@ export default {
 .logout-btn:hover { background: #ef4444; color: white; }
 
 /* Main Wrapper */
-.main-wrapper { margin-right: 260px; padding-top: 70px; min-height: 100vh; position: relative; }
+.main-wrapper { margin-right: 260px; padding-top: 70px; min-height: 100vh; position: relative; transition: all 0.3s ease; }
 .main-content { padding: 30px; position: relative; z-index: 5; }
 
 /* Watermark */
@@ -899,8 +926,51 @@ export default {
 }
 .logo-text-main { font-size: 100px; font-weight: 900; color: #B1A28F; font-family: 'Amiri', serif; }
 
-.footer { height: 50px; background: white; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; margin-right: 260px; }
+.footer { height: 50px; background: white; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; margin-right: 260px; transition: all 0.3s ease; }
 .copyright { color: #94a3b8; font-size: 12px; }
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .top-header {
+    right: 0;
+    padding: 0 15px;
+  }
+  
+  .sidebar {
+    right: -260px;
+  }
+  
+  .main-wrapper, .footer {
+    margin-right: 0;
+  }
+  
+  .mobile-toggle {
+    display: block;
+  }
+  
+  .header-right .update-info {
+    display: none;
+  }
+  
+  .logo-ar {
+    font-size: 16px;
+  }
+  
+  .logo-en, .logo-sep {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 15px;
+  }
+  
+  .notifications-dropdown {
+    width: 280px;
+    left: -50px;
+  }
+}
 
 /* Custom Scrollbar */
 .sidebar-nav::-webkit-scrollbar { width: 4px; }

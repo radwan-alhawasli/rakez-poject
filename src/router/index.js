@@ -132,10 +132,11 @@ router.beforeEach((to, from, next) => {
 
     if (!to.meta.public && !isAuthenticated) {
         next('/login')
-    } else if (to.name === 'Login' && isAuthenticated) {
+    } else if (to.path === '/' || (to.name === 'Login' && isAuthenticated)) {
         const user = authService.getCurrentUser()
-        if (user && user.type == 8) {  // HR role = 8
-            next('/hr')
+        // Redirection based on user role
+        if (user && (user.type == 8 || user.type == 9 || String(user.type).toLowerCase() === 'hr')) {
+            next('/hr/dashboard')
         } else {
             next('/dashboard')
         }

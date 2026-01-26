@@ -35,6 +35,12 @@ body {
   background-repeat: no-repeat;
 }
 
+@media (max-width: 768px) {
+  body {
+    background-size: cover;
+  }
+}
+
 #app {
   min-height: 100vh;
   position: relative;
