@@ -602,13 +602,16 @@ export default {
     // Load teams data
     const loadTeams = async () => {
       try {
+        console.log('🔄 Loading teams...')
         const params = {}
         if (teamSearchQuery.value) {
             params.search = teamSearchQuery.value
         }
         const data = await hrService.getTeams(params)
+        console.log('📥 Received teams data:', data)
         // Ensure data is an array - teams come with id and name
         const teams = Array.isArray(data) ? data : (data?.data || [])
+        console.log('🎯 Teams array:', teams, 'Count:', teams.length)
         
         // Display teams immediately with basic data
         const basicTeams = teams.map(team => ({
@@ -622,6 +625,7 @@ export default {
         }))
         
         teamsData.splice(0, teamsData.length, ...basicTeams)
+        console.log('✅ Teams displayed:', teamsData.length, 'teams')
         
         // Then enrich data in background (non-blocking)
         teams.forEach(async (team, index) => {
@@ -654,13 +658,16 @@ export default {
             }
         })
       } catch (error) {
-        console.error('Error loading teams:', error)
+        console.error('❌ Error loading teams:', error)
+        console.log('🔄 Using fallback mock data...')
         // Fallback to mock data
-        teamsData.splice(0, teamsData.length,
+        const mockTeams = [
           { id: 1, name: 'فريق المبيعات الرياض', members: ['أحمد', 'خالد', 'سارة', 'فهد', 'محمد', 'نورة'], goalProgress: 85, soldProjects: 12, totalValue: '1.2M', color: '#B1A28F', locations: 'الرياض - حي الياسمين، حي النرجس', salesAverage: 2.5 },
           { id: 2, name: 'فريق التطوير العقاري', members: ['علي', 'عمر', 'ريم', 'ليلى', 'حسن'], goalProgress: 60, soldProjects: 4, totalValue: '3.5M', color: '#1e3a5f', locations: 'جدة - أبحر الشمالية', salesAverage: 1.8 },
           { id: 3, name: 'فريق التسويق الميداني', members: ['سلطان', 'ماجد', 'أمل', 'نواف'], goalProgress: 92, soldProjects: 24, totalValue: '850K', color: '#B1A28F', locations: 'الدمام - حي الشاطئ', salesAverage: 3.2 }
-        )
+        ]
+        teamsData.splice(0, teamsData.length, ...mockTeams)
+        console.log('✅ Mock teams loaded:', mockTeams.length, 'teams')
       }
     }
 

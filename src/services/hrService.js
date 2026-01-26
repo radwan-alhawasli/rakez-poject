@@ -161,15 +161,18 @@ export const generateTeamPerformanceReport = async (month, year, format = 'pdf')
 /**
  * Filter teams by name (search)
  * GET /teams/index?search=name
- * This is the main "filter" endpoint for teams
+ * This is the main "filter" endpoint for teams from HR section
  */
 export const getTeams = async (params = {}) => {
     try {
         const response = await apiClient.get('/teams/index', { params })
+        console.log('📊 Teams API Response:', response.data)
         // Returns array of teams with id and name
-        return response.data.data || response.data || []
+        const teams = response.data.data || response.data || []
+        console.log('✅ Parsed teams:', teams)
+        return teams
     } catch (error) {
-        console.error('Error fetching teams:', error)
+        console.error('❌ Error fetching teams:', error)
         throw error
     }
 }
