@@ -1123,13 +1123,14 @@ export default {
 }
 
 .nav-item.active { 
-  background: linear-gradient(135deg, rgba(177, 162, 143, 0.2) 0%, rgba(177, 162, 143, 0.05) 100%); 
+  background: linear-gradient(135deg, rgba(177, 162, 143, 0.25) 0%, rgba(177, 162, 143, 0.1) 100%); 
   color: #d4c4a8; 
   font-weight: 700; 
-  border: 1px solid rgba(177, 162, 143, 0.3);
-  box-shadow: 0 0 20px rgba(177, 162, 143, 0.3),
+  border: 1px solid rgba(177, 162, 143, 0.4);
+  box-shadow: 0 0 15px rgba(177, 162, 143, 0.3),
               inset 0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
+  border-radius: 50%; /* Explicitly circular when closed */
 }
 
 .sidebar:hover .nav-item.active {
@@ -1140,6 +1141,7 @@ export default {
               inset 0 1px 0 rgba(255, 255, 255, 0.15),
               0 8px 25px rgba(177, 162, 143, 0.2);
   animation: glow-pulse 2.5s ease-in-out infinite;
+  border-radius: 12px; /* Rounded square when open */
 }
 
 /* إشعاع متوهج للعنصر النشط فقط عند فتح القائمة */

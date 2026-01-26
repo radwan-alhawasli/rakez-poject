@@ -9,11 +9,11 @@ import apiClient from '../api/apiClient'
 
 /**
  * Get dashboard KPIs and metrics
- * GET /project_management/dashboard
+ * GET /hr/dashboard
  */
 export const getDashboardMetrics = async () => {
     try {
-        const response = await apiClient.get('/project_management/dashboard')
+        const response = await apiClient.get('/hr/dashboard')
         return response.data
     } catch (error) {
         console.error('Error fetching dashboard metrics:', error)
@@ -25,12 +25,12 @@ export const getDashboardMetrics = async () => {
 
 /**
  * Get all employees with search support
- * GET /admin/employees/list_employees
+ * GET /hr/list_employees
  * @param {Object} params - Query parameters including search term
  */
 export const getEmployees = async (params = {}) => {
     try {
-        const response = await apiClient.get('/admin/employees/list_employees', { params })
+        const response = await apiClient.get('/hr/list_employees', { params })
         return response.data
     } catch (error) {
         console.error('Error fetching employees:', error)
@@ -40,11 +40,11 @@ export const getEmployees = async (params = {}) => {
 
 /**
  * Get employee by ID
- * GET /admin/employees/show_employee/:id
+ * GET /hr/show_employee/:id
  */
 export const getEmployeeById = async (employeeId) => {
     try {
-        const response = await apiClient.get(`/admin/employees/show_employee/${employeeId}`)
+        const response = await apiClient.get(`/hr/show_employee/${employeeId}`)
         return response.data
     } catch (error) {
         console.error(`Error fetching employee ${employeeId}:`, error)
@@ -54,12 +54,12 @@ export const getEmployeeById = async (employeeId) => {
 
 /**
  * Create new employee
- * POST /admin/employees/add_employee
+ * POST /hr/add_employee
  * @param {Object} employeeData - Employee info
  */
 export const createEmployee = async (employeeData) => {
     try {
-        const response = await apiClient.post('/admin/employees/add_employee', employeeData)
+        const response = await apiClient.post('/hr/add_employee', employeeData)
         return response.data
     } catch (error) {
         console.error('Error creating employee:', error)
@@ -69,11 +69,11 @@ export const createEmployee = async (employeeData) => {
 
 /**
  * Update employee
- * PUT /admin/employees/update_employee/:id
+ * PUT /hr/update_employee/:id
  */
 export const updateEmployee = async (employeeId, employeeData) => {
     try {
-        const response = await apiClient.put(`/admin/employees/update_employee/${employeeId}`, employeeData)
+        const response = await apiClient.put(`/hr/update_employee/${employeeId}`, employeeData)
         return response.data
     } catch (error) {
         console.error(`Error updating employee ${employeeId}:`, error)
@@ -83,11 +83,11 @@ export const updateEmployee = async (employeeId, employeeData) => {
 
 /**
  * Delete employee (hard delete)
- * DELETE /admin/employees/delete_employee/:id
+ * DELETE /hr/delete_employee/:id
  */
 export const deleteEmployee = async (employeeId) => {
     try {
-        const response = await apiClient.delete(`/admin/employees/delete_employee/${employeeId}`)
+        const response = await apiClient.delete(`/hr/delete_employee/${employeeId}`)
         return response.data
     } catch (error) {
         console.error(`Error deleting employee ${employeeId}:`, error)
@@ -156,6 +156,78 @@ export const generateTeamPerformanceReport = async (month, year, format = 'pdf')
     }
 }
 
+// ==================== Team Management APIs ====================
+
+/**
+ * Get all teams
+ * GET /project_management/teams/index
+ */
+export const getTeams = async (params = {}) => {
+    try {
+        const response = await apiClient.get('/project_management/teams/index', { params })
+        return response.data.data || response.data || []
+    } catch (error) {
+        console.error('Error fetching teams:', error)
+        throw error
+    }
+}
+
+/**
+ * Get team contracts (projects)
+ * GET /hr/teams/contracts/:id
+ */
+export const getTeamContracts = async (teamId) => {
+    try {
+        const response = await apiClient.get(`/hr/teams/contracts/${teamId}`)
+        return response.data.data || response.data || []
+    } catch (error) {
+        console.error(`Error fetching contracts for team ${teamId}:`, error)
+        throw error
+    }
+}
+
+/**
+ * Get team contract locations
+ * GET /hr/teams/contracts/locations/:id
+ */
+export const getTeamContractLocations = async (teamId) => {
+    try {
+        const response = await apiClient.get(`/hr/teams/contracts/locations/${teamId}`)
+        return response.data.data || response.data || []
+    } catch (error) {
+        console.error(`Error fetching locations for team ${teamId}:`, error)
+        throw error
+    }
+}
+
+/**
+ * Get teams for a specific contract
+ * GET /hr/teams/getTeamsForContract/:contractId
+ */
+export const getTeamsForContract = async (contractId) => {
+    try {
+        const response = await apiClient.get(`/hr/teams/getTeamsForContract/${contractId}`)
+        return response.data.data || response.data || []
+    } catch (error) {
+        console.error(`Error fetching teams for contract ${contractId}:`, error)
+        throw error
+    }
+}
+
+/**
+ * Get team sales average
+ * GET /hr/teams/sales-average/:teamId
+ */
+export const getTeamSalesAverage = async (teamId) => {
+    try {
+        const response = await apiClient.get(`/hr/teams/sales-average/${teamId}`)
+        return response.data.data || response.data || 0
+    } catch (error) {
+        console.error(`Error fetching sales average for team ${teamId}:`, error)
+        throw error
+    }
+}
+
 export default {
     // Dashboard
     getDashboardMetrics,
@@ -166,6 +238,13 @@ export default {
     createEmployee,
     updateEmployee,
     deleteEmployee,
+
+    // Teams
+    getTeams,
+    getTeamContracts,
+    getTeamContractLocations,
+    getTeamsForContract,
+    getTeamSalesAverage,
 
     // Performance
     getMarketerPerformance,

@@ -100,7 +100,7 @@
                 <div class="team-member-count">{{ team.members.length }} مسوقين</div>
             </div>
             
-            <div class="team-marketers-list">
+            <div class="team-marketers-list" @click="openMarketersModal(team)" style="cursor: pointer;">
                 <div class="marketers-label">المسوقين:</div>
                 <div class="marketer-avatars">
                     <div v-for="m in team.members.slice(0, 5)" :key="m" class="small-avatar" :title="m">{{ m.charAt(0) }}</div>
@@ -117,22 +117,22 @@
                     <div class="progress-fill" :style="{ width: team.goalProgress + '%', backgroundColor: team.color }"></div>
                 </div>
             </div>
-            <div class="team-stats">
+            <div class="team-stats" @click="openProjectsModal(team)" style="cursor: pointer;">
                 <div class="stat-item">
                     <span class="stat-label">المشاريع الخاصة</span>
                     <span class="stat-value">{{ team.soldProjects }} مشروع</span>
                 </div>
             </div>
             <div class="team-actions">
-                <button class="btn-action edit" @click="openEditTeamModal(team)">
+                <button v-if="!isHR" class="btn-action edit" @click="openEditTeamModal(team)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     تعديل
                 </button>
-                <button class="btn-action delete" @click="handleDeleteTeam(team)">
+                <button v-if="!isHR" class="btn-action delete" @click="handleDeleteTeam(team)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     حذف
                 </button>
-                <button class="btn-action link" @click="handleLinkMarketers(team)">
+                <button v-if="!isHR" class="btn-action link" @click="handleLinkMarketers(team)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 1 0 7.07 7.07l1.71-1.71"></path></svg>
                     ربط مسوقين
                 </button>
@@ -251,6 +251,8 @@
 
     <TeamModal
       v-if="showTeamModal"
+      :team="editingTeam"
+      :isHR="isHR"
       @close="showTeamModal = false"
       @submit="handleTeamSubmit"
     />
@@ -262,6 +264,58 @@
       @close="showLinkModal = false"
       @submit="handleLinkMarketersSubmit"
     />
+
+    <!-- Projects List Modal -->
+    <div v-if="showProjectsModal" class="modal-overlay" @click="showProjectsModal = false">
+      <div class="modal-content luxury-card" @click.stop>
+        <div class="modal-header">
+          <h3 class="modal-title">مشاريع فريق: {{ selectedTeamDetails?.name }}</h3>
+          <button class="close-btn" @click="showProjectsModal = false">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div v-if="isLoadingDetails" class="loading-state">
+            <div class="spinner"></div>
+            <p>جاري تحميل المشاريع...</p>
+          </div>
+          <div v-else-if="teamProjects.length === 0" class="empty-state">
+            <p>لا توجد مشاريع مرتبطة بهذا الفريق حالياً.</p>
+          </div>
+          <div v-else class="projects-list">
+            <div v-for="project in teamProjects" :key="project.id" class="project-item-mini">
+              <div class="project-info-mini">
+                <span class="project-name-mini">{{ project.name || project.contract_name || 'مشروع بدون اسم' }}</span>
+                <span class="project-location-mini">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-icon"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  {{ project.location || project.address || 'الموقع غير محدد' }}
+                </span>
+              </div>
+              <span class="project-status-tag" :class="project.status">{{ project.status_label || 'نشط' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Marketers List Modal -->
+    <div v-if="showMarketersModal" class="modal-overlay" @click="showMarketersModal = false">
+      <div class="modal-content luxury-card" @click.stop>
+        <div class="modal-header">
+          <h3 class="modal-title">مسوقي فريق: {{ selectedTeamDetails?.name }}</h3>
+          <button class="close-btn" @click="showMarketersModal = false">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div v-if="teamMarketers.length === 0" class="empty-state">
+            <p>لا يوجد مسوقين في هذا الفريق حالياً.</p>
+          </div>
+          <div v-else class="marketers-list-full">
+            <div v-for="marketer in teamMarketers" :key="marketer" class="marketer-item-full">
+              <div class="small-avatar">{{ marketer.charAt(0) }}</div>
+              <span class="marketer-name-full">{{ marketer }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -275,6 +329,7 @@ import TeamModal from '../components/TeamModal.vue'
 import LinkMarketersModal from '../components/LinkMarketersModal.vue'
 import ReportsTab from '../components/ReportsTab.vue'
 import hrService from '../services/hrService'
+import teamService from '../services/teamService'
 import authService from '../services/authService'
 
 export default {
@@ -291,8 +346,42 @@ export default {
     const route = useRoute()
     const user = ref(authService.getCurrentUser())
     const userName = computed(() => user.value?.name || 'الموارد البشرية')
+    const isHR = computed(() => {
+        const type = String(user.value?.type || '').toLowerCase()
+        return type === 'hr' || type === '8' || type === '9'
+    })
     const showAddUserModal = ref(false)
     const isLoading = ref(false)
+
+    // Modal states for projects and marketers
+    const showProjectsModal = ref(false)
+    const showMarketersModal = ref(false)
+    const selectedTeamDetails = ref(null)
+    const teamProjects = ref([])
+    const teamMarketers = ref([])
+    const isLoadingDetails = ref(false)
+
+    const openProjectsModal = async (team) => {
+        selectedTeamDetails.value = team
+        showProjectsModal.value = true
+        isLoadingDetails.value = true
+        try {
+            // Fetch contracts/projects for this team using HR specific endpoint
+            const data = await hrService.getTeamContracts(team.id)
+            teamProjects.value = data
+        } catch (error) {
+            console.error('Error fetching team projects:', error)
+            teamProjects.value = []
+        } finally {
+            isLoadingDetails.value = false
+        }
+    }
+
+    const openMarketersModal = (team) => {
+        selectedTeamDetails.value = team
+        teamMarketers.value = team.members || []
+        showMarketersModal.value = true
+    }
 
     const activeTab = computed(() => {
         const name = route.name
@@ -429,7 +518,9 @@ export default {
     const loadTeams = async () => {
       try {
         const data = await hrService.getTeams()
-        teamsData.splice(0, teamsData.length, ...data)
+        // Ensure data is an array
+        const teams = Array.isArray(data) ? data : (data?.data || [])
+        teamsData.splice(0, teamsData.length, ...teams)
       } catch (error) {
         console.error('Error loading teams:', error)
         // Fallback to mock data
@@ -549,7 +640,16 @@ export default {
       showLinkModal,
       selectedTeamToLink,
       isLinking,
-      handleLinkMarketersSubmit
+      handleLinkMarketersSubmit,
+      isHR,
+      showProjectsModal,
+      showMarketersModal,
+      selectedTeamDetails,
+      teamProjects,
+      teamMarketers,
+      isLoadingDetails,
+      openProjectsModal,
+      openMarketersModal
     }
   }
 }
@@ -1419,4 +1519,148 @@ export default {
 .btn-action.link:hover { background: #3b82f6; color: white; border-color: #3b82f6; }
 
 .team-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content.luxury-card {
+  background: white;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 24px;
+  padding: 30px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 15px;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1e3a5f;
+  font-family: 'Amiri', serif;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: #ef4444;
+}
+
+/* Projects List Mini */
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.project-item-mini {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s;
+}
+
+.project-item-mini:hover {
+  border-color: #B1A28F;
+  background: #fdfbf7;
+  transform: translateX(-5px);
+}
+
+.project-info-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.project-name-mini {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 15px;
+}
+
+.project-location-mini {
+  font-size: 12px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.project-status-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+/* Marketers List Full */
+.marketers-list-full {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 15px;
+}
+
+.marketer-item-full {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.marketer-name-full {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 </style>

@@ -57,7 +57,9 @@
             class="form-input"
             placeholder="مثال: 1000000"
             min="0"
+            :disabled="isHR"
           />
+          <small v-if="isHR" class="form-hint">لا يمكن للموارد البشرية تعديل هدف الفريق</small>
         </div>
 
         <!-- Team Description -->
@@ -97,6 +99,10 @@ export default {
       default: null
     },
     isLoading: {
+      type: Boolean,
+      default: false
+    },
+    isHR: {
       type: Boolean,
       default: false
     }
