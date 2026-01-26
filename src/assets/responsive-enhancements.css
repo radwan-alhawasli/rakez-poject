@@ -1,0 +1,510 @@
+/**
+ * Enhanced Responsive Design for All Screen Sizes
+ * Rakez Real Estate - Premium Edition
+ */
+
+/* ==========================================
+   FLEXIBLE GRID SYSTEM
+   ========================================== */
+
+.container-fluid {
+  width: 100%;
+  padding-right: clamp(15px, 3vw, 50px);
+  padding-left: clamp(15px, 3vw, 50px);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.col {
+  flex: 1 0 0%;
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+/* Responsive Columns */
+@media (min-width: 576px) {
+  .col-sm-6 { flex: 0 0 50%; max-width: 50%; }
+  .col-sm-12 { flex: 0 0 100%; max-width: 100%; }
+}
+
+@media (min-width: 768px) {
+  .col-md-4 { flex: 0 0 33.333333%; max-width: 33.333333%; }
+  .col-md-6 { flex: 0 0 50%; max-width: 50%; }
+  .col-md-8 { flex: 0 0 66.666667%; max-width: 66.666667%; }
+  .col-md-12 { flex: 0 0 100%; max-width: 100%; }
+}
+
+@media (min-width: 992px) {
+  .col-lg-3 { flex: 0 0 25%; max-width: 25%; }
+  .col-lg-4 { flex: 0 0 33.333333%; max-width: 33.333333%; }
+  .col-lg-6 { flex: 0 0 50%; max-width: 50%; }
+  .col-lg-8 { flex: 0 0 66.666667%; max-width: 66.666667%; }
+}
+
+/* ==========================================
+   RESPONSIVE TABLES
+   ========================================== */
+
+/* Mobile-First Table Design */
+@media (max-width: 767px) {
+  /* Stack Table on Mobile */
+  .table-mobile-stacked {
+    border: 0;
+  }
+  
+  .table-mobile-stacked thead {
+    display: none;
+  }
+  
+  .table-mobile-stacked tbody,
+  .table-mobile-stacked tr,
+  .table-mobile-stacked td {
+    display: block;
+    width: 100%;
+  }
+  
+  .table-mobile-stacked tr {
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(177, 162, 143, 0.12);
+  }
+  
+  .table-mobile-stacked td {
+    text-align: right;
+    padding: 10px 0;
+    border: none;
+    position: relative;
+    padding-right: 50%;
+  }
+  
+  .table-mobile-stacked td::before {
+    content: attr(data-label);
+    position: absolute;
+    right: 0;
+    width: 45%;
+    padding-left: 10px;
+    font-weight: 700;
+    color: #64748b;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+  
+  .table-mobile-stacked td:last-child {
+    border-bottom: 0;
+  }
+}
+
+/* Horizontal Scroll for Complex Tables */
+.table-scroll-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 991px) {
+  .table-scroll-wrapper table {
+    min-width: 800px;
+  }
+}
+
+@media (max-width: 767px) {
+  .table-scroll-wrapper table {
+    min-width: 600px;
+  }
+}
+
+/* ==========================================
+   RESPONSIVE IMAGES & MEDIA
+   ========================================== */
+
+.img-responsive {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.img-fluid {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Aspect Ratio Containers */
+.aspect-ratio-16-9 {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+  overflow: hidden;
+}
+
+.aspect-ratio-4-3 {
+  position: relative;
+  padding-bottom: 75%; /* 4:3 */
+  height: 0;
+  overflow: hidden;
+}
+
+.aspect-ratio-1-1 {
+  position: relative;
+  padding-bottom: 100%; /* 1:1 */
+  height: 0;
+  overflow: hidden;
+}
+
+.aspect-ratio-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ==========================================
+   RESPONSIVE TYPOGRAPHY UTILITIES
+   ========================================== */
+
+.text-responsive {
+  font-size: clamp(14px, 2.5vw, 18px);
+}
+
+.heading-responsive {
+  font-size: clamp(24px, 5vw, 42px);
+}
+
+.subheading-responsive {
+  font-size: clamp(18px, 3.5vw, 28px);
+}
+
+/* ==========================================
+   VISIBILITY UTILITIES
+   ========================================== */
+
+/* Hide on Mobile */
+@media (max-width: 767px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Show only on Mobile */
+@media (min-width: 768px) {
+  .show-mobile {
+    display: none !important;
+  }
+}
+
+/* Hide on Tablet */
+@media (min-width: 768px) and (max-width: 991px) {
+  .hide-tablet {
+    display: none !important;
+  }
+}
+
+/* Show only on Tablet */
+@media (max-width: 767px), (min-width: 992px) {
+  .show-tablet {
+    display: none !important;
+  }
+}
+
+/* Hide on Desktop */
+@media (min-width: 992px) {
+  .hide-desktop {
+    display: none !important;
+  }
+}
+
+/* Show only on Desktop */
+@media (max-width: 991px) {
+  .show-desktop {
+    display: none !important;
+  }
+}
+
+/* ==========================================
+   SPACING UTILITIES (Responsive)
+   ========================================== */
+
+/* Padding */
+.p-responsive {
+  padding: clamp(15px, 4vw, 40px);
+}
+
+.px-responsive {
+  padding-left: clamp(15px, 4vw, 40px);
+  padding-right: clamp(15px, 4vw, 40px);
+}
+
+.py-responsive {
+  padding-top: clamp(15px, 4vw, 40px);
+  padding-bottom: clamp(15px, 4vw, 40px);
+}
+
+/* Margin */
+.m-responsive {
+  margin: clamp(15px, 4vw, 40px);
+}
+
+.mx-responsive {
+  margin-left: clamp(15px, 4vw, 40px);
+  margin-right: clamp(15px, 4vw, 40px);
+}
+
+.my-responsive {
+  margin-top: clamp(15px, 4vw, 40px);
+  margin-bottom: clamp(15px, 4vw, 40px);
+}
+
+/* Gap */
+.gap-responsive {
+  gap: clamp(10px, 2vw, 24px);
+}
+
+/* ==========================================
+   BUTTON RESPONSIVE ENHANCEMENTS
+   ========================================== */
+
+@media (max-width: 767px) {
+  .btn-block-mobile {
+    display: block;
+    width: 100%;
+  }
+  
+  .btn-group-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .btn-group-mobile button {
+    width: 100%;
+  }
+}
+
+/* ==========================================
+   FORM RESPONSIVE ENHANCEMENTS
+   ========================================== */
+
+@media (max-width: 767px) {
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  select,
+  textarea {
+    width: 100%;
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 14px;
+  }
+  
+  label {
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  
+  .form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+}
+
+/* ==========================================
+   MODAL RESPONSIVE ENHANCEMENTS
+   ========================================== */
+
+@media (max-width: 767px) {
+  .modal-content {
+    max-width: 95vw;
+    margin: 20px auto;
+    border-radius: 20px;
+  }
+  
+  .modal-header {
+    padding: 20px 16px;
+  }
+  
+  .modal-body {
+    padding: 20px 16px;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+  }
+  
+  .modal-footer {
+    padding: 16px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .modal-footer button {
+    width: 100%;
+  }
+}
+
+/* ==========================================
+   CARD RESPONSIVE ENHANCEMENTS
+   ========================================== */
+
+@media (max-width: 575px) {
+  .card-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .card {
+    margin-bottom: 16px;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 991px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ==========================================
+   NAVIGATION RESPONSIVE ENHANCEMENTS
+   ========================================== */
+
+@media (max-width: 991px) {
+  .nav-tabs {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .nav-tabs::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .nav-tabs::-webkit-scrollbar-thumb {
+    background: #B1A28F;
+    border-radius: 2px;
+  }
+}
+
+/* ==========================================
+   FOOTER RESPONSIVE
+   ========================================== */
+
+@media (max-width: 767px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .footer-links {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* ==========================================
+   ACCESSIBILITY IMPROVEMENTS
+   ========================================== */
+
+/* Skip to Content Link */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #B1A28F;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 0 0 8px 0;
+  z-index: 100;
+  transition: top 0.3s ease;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* Focus Indicators */
+*:focus {
+  outline: 2px solid #B1A28F;
+  outline-offset: 2px;
+}
+
+/* ==========================================
+   PERFORMANCE OPTIMIZATIONS
+   ========================================== */
+
+/* Will-change for animations */
+.animate-on-scroll {
+  will-change: transform, opacity;
+}
+
+/* Contain paint for better performance */
+.stat-card,
+.content-section {
+  contain: layout style paint;
+}
+
+/* GPU Acceleration */
+.hardware-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* ==========================================
+   PRINT MEDIA QUERIES
+   ========================================== */
+
+@media print {
+  /* Hide non-printable elements */
+  .no-print,
+  .sidebar,
+  .header,
+  .footer,
+  .mobile-toggle,
+  button,
+  .nav-tabs {
+    display: none !important;
+  }
+  
+  /* Optimize for printing */
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  /* Page breaks */
+  .stat-card,
+  .content-section {
+    page-break-inside: avoid;
+  }
+  
+  /* Remove margins */
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Show URLs for links */
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+}
