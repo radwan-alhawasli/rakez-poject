@@ -12,10 +12,10 @@
 
 
       <!-- Available Units -->
-      <div class="stat-card">
+      <div class="stat-card animate-fade-in-up animate-stagger-1 hover-lift">
         <div class="stat-content">
           <span class="stat-label">الوحدات المتاحة</span>
-          <span class="stat-value">{{ availableUnits }}</span>
+          <span class="stat-value number">{{ availableUnits }}</span>
           <span class="stat-desc">وحدة سكنية جاهزة للبيع</span>
         </div>
         <div class="stat-icon-bg units">
@@ -24,10 +24,10 @@
       </div>
 
       <!-- Marketing Projects (Now Total Projects) -->
-      <div class="stat-card clickable" @click="$router.push('/project-management')">
+      <div class="stat-card clickable animate-fade-in-up animate-stagger-2 hover-lift hover-shine" @click="$router.push('/project-management')">
         <div class="stat-content">
           <span class="stat-label">مشاريع التسويق (إجمالي المشاريع)</span>
-          <span class="stat-value">{{ totalProjects }}</span>
+          <span class="stat-value number">{{ totalProjects }}</span>
           <span class="stat-desc">مشروع جاهز للتسويق - اضغط للعرض</span>
         </div>
         <div class="stat-icon-bg projects">
@@ -36,10 +36,10 @@
       </div>
 
        <!-- Ready Projects -->
-       <div class="stat-card">
+       <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift">
         <div class="stat-content">
           <span class="stat-label">المشاريع الجاهزة</span>
-          <span class="stat-value">{{ readyProjects }}</span>
+          <span class="stat-value number">{{ readyProjects }}</span>
           <span class="stat-desc">مشاريع مكتملة تحتوي على وحدات</span>
         </div>
         <div class="stat-icon-bg ready">
@@ -48,10 +48,10 @@
       </div>
       
        <!-- Not Ready Projects -->
-       <div class="stat-card">
+       <div class="stat-card animate-fade-in-up animate-stagger-4 hover-lift">
         <div class="stat-content">
           <span class="stat-label">المشاريع غير الجاهزة</span>
-          <span class="stat-value">{{ notReadyProjects }}</span>
+          <span class="stat-value number">{{ notReadyProjects }}</span>
           <span class="stat-desc">لم يكتمل المتتبع (Tracker)</span>
         </div>
         <div class="stat-icon-bg not-ready">

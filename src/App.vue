@@ -18,6 +18,7 @@ export default {
 
 <style>
 @import './assets/luxury-theme.css';
+@import './assets/global-luxury-styles.css';
 
 body {
   font-family: 'Cairo', 'Tajawal', sans-serif;

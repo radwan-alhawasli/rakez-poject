@@ -16,10 +16,10 @@
 
         <div class="stats-grid">
           <!-- KPI 1: متوسط مبيع الموظف الشهري -->
-          <div class="stat-card">
+          <div class="stat-card animate-fade-in-up animate-stagger-1 hover-lift">
             <div class="stat-content">
               <span class="stat-label">متوسط مبيع الموظف الشهري</span>
-              <span class="stat-value">{{ dashboardMetrics.avgEmployeeMonthlySales || '3.5' }}</span>
+              <span class="stat-value number">{{ dashboardMetrics.avgEmployeeMonthlySales || '3.5' }}</span>
               <span class="stat-desc">عدد المشاريع المباعة ÷ عدد الموظفين</span>
             </div>
             <div class="stat-icon-bg dollar">
@@ -28,10 +28,10 @@
           </div>
 
           <!-- KPI 2: متوسط بيع الفريق الشهري -->
-          <div class="stat-card">
+          <div class="stat-card animate-fade-in-up animate-stagger-2 hover-lift">
             <div class="stat-content">
               <span class="stat-label">متوسط بيع الفريق الشهري</span>
-              <span class="stat-value">{{ formatCurrency(dashboardMetrics.avgTeamMonthlySales || 145000) }}</span>
+              <span class="stat-value number">{{ formatCurrency(dashboardMetrics.avgTeamMonthlySales || 145000) }}</span>
               <span class="stat-desc">متوسط المبيعات الشهرية لكل الفرق</span>
             </div>
             <div class="stat-icon-bg units">
@@ -40,10 +40,10 @@
           </div>
 
           <!-- KPI 3: عدد الموظفين الحاليين -->
-          <div class="stat-card">
+          <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift">
             <div class="stat-content">
               <span class="stat-label">عدد الموظفين الحاليين</span>
-              <span class="stat-value">{{ dashboardMetrics.currentEmployeesCount || '24' }}</span>
+              <span class="stat-value number">{{ dashboardMetrics.currentEmployeesCount || '24' }}</span>
               <span class="stat-desc">العدد الإجمالي للموظفين النشطين</span>
             </div>
             <div class="stat-icon-bg projects">
@@ -52,10 +52,10 @@
           </div>
 
           <!-- KPI 4: متوسط نسبة تحقيق الأهداف -->
-          <div class="stat-card">
+          <div class="stat-card animate-fade-in-up animate-stagger-4 hover-lift">
             <div class="stat-content">
               <span class="stat-label">متوسط نسبة تحقيق الأهداف</span>
-              <span class="stat-value">{{ dashboardMetrics.avgGoalAchievement || '78' }}%</span>
+              <span class="stat-value number">{{ dashboardMetrics.avgGoalAchievement || '78' }}%</span>
               <span class="stat-desc">مجموع نسب تحقيق الأهداف ÷ عددهم</span>
             </div>
             <div class="stat-icon-bg ready">
@@ -496,7 +496,8 @@ export default {
     }
 
     const formatCurrency = (val) => {
-        return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR', maximumFractionDigits: 0 }).format(val)
+        // Force English/Western numerals by using 'en-US' locale
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR', maximumFractionDigits: 0 }).format(val)
     }
 
     const handleUserSubmit = async (userData) => {
