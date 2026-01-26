@@ -906,7 +906,7 @@ export default {
   position: fixed; 
   top: 0; 
   right: 0; 
-  width: 80px; 
+  width: 260px; 
   height: 100vh;
   background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
   color: white; 
@@ -933,13 +933,9 @@ export default {
   pointer-events: none;
 }
 
-.sidebar:hover {
-  width: 280px;
-}
-
 .sidebar.open {
   right: 0 !important;
-  width: 280px;
+  width: 260px;
 }
 
 .sidebar-header {
@@ -973,14 +969,9 @@ export default {
   font-size: 22px; 
   font-weight: 700; 
   font-family: 'Amiri', serif;
-  opacity: 0;
-  transform: translateX(20px);
-  transition: all 0.4s ease 0.1s;
-}
-
-.sidebar:hover .sidebar-logo-text {
   opacity: 1;
   transform: translateX(0);
+  transition: all 0.4s ease 0.1s;
 }
 
 .rakez-ar { color: #B1A28F; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
@@ -1086,43 +1077,16 @@ export default {
 }
 
 .nav-text {
-  opacity: 0;
-  transform: translateX(15px);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  font-weight: 500;
-  pointer-events: none;
-}
-
-.sidebar:hover .nav-text {
   opacity: 1;
   transform: translateX(0);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
   pointer-events: auto;
 }
 
-/* Luxury Tooltip for collapsed state */
+/* Luxury Tooltip - Disabled since sidebar is always open */
 .nav-item::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  right: 90px;
-  background: #B1A28F;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateX(10px);
-  transition: all 0.3s ease;
-  white-space: nowrap;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  z-index: 300;
-}
-
-.sidebar:not(:hover) .nav-item:hover::after {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(0);
+  display: none;
 }
 
 .sidebar-footer { 
@@ -1145,14 +1109,9 @@ export default {
 .user-info { 
   flex: 1; 
   text-align: right; 
-  opacity: 0;
-  transform: translateX(15px);
-  transition: all 0.4s ease 0.1s;
-}
-
-.sidebar:hover .user-info {
   opacity: 1;
   transform: translateX(0);
+  transition: all 0.4s ease 0.1s;
 }
 
 .user-name { 
@@ -1188,25 +1147,18 @@ export default {
   background: rgba(239, 68, 68, 0.05); 
   border: 1px solid rgba(239, 68, 68, 0.4); 
   color: #ef4444; 
-  width: 44px; 
+  width: 100%; 
   height: 44px; 
-  padding: 0; 
+  padding: 0 15px; 
   border-radius: 14px;
   cursor: pointer; 
   display: flex; 
   align-items: center; 
-  justify-content: center;
+  justify-content: flex-start;
+  gap: 15px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   overflow: hidden;
-  margin: 0 auto;
-}
-
-.sidebar:hover .logout-btn {
-  width: 100%;
-  padding: 0 15px;
-  justify-content: flex-start;
-  gap: 15px;
 }
 
 .logout-icon {
@@ -1218,21 +1170,16 @@ export default {
 }
 
 .logout-text {
-  opacity: 0;
-  transform: translateX(10px);
+  opacity: 1;
+  transform: translateX(0);
   transition: all 0.4s ease;
   font-weight: 600;
   font-size: 14px;
 }
 
-.sidebar:hover .logout-text {
-  opacity: 1;
-  transform: translateX(0);
-}
-
 /* Main Wrapper */
 .main-wrapper { 
-  margin-right: 80px; 
+  margin-right: 260px; 
   padding-top: 70px; 
   min-height: 100vh; 
   position: relative; 
@@ -1247,16 +1194,8 @@ export default {
 
 /* Adjust header width */
 .top-header {
-  right: 80px;
+  right: 260px;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sidebar:hover ~ .main-wrapper {
-  margin-right: 280px;
-}
-
-.sidebar:hover ~ .top-header {
-  right: 280px;
 }
 
 /* Watermark */
