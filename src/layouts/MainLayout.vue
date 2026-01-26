@@ -1097,34 +1097,44 @@ export default {
 }
 
 .logout-btn {
-  background: rgba(239, 68, 68, 0.08); 
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.05); 
+  border: 1px solid rgba(239, 68, 68, 0.4); 
   color: #ef4444; 
-  width: 100%; 
-  padding: 12px; 
-  border-radius: 12px;
+  width: 44px; 
+  height: 44px; 
+  padding: 0; 
+  border-radius: 14px;
   cursor: pointer; 
   display: flex; 
   align-items: center; 
   justify-content: center;
-  gap: 15px; 
-  font-size: 14px; 
-  font-weight: 600;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
+  overflow: hidden;
+  margin: 0 auto;
 }
 
-.logout-btn:hover { 
-  background: #ef4444; 
-  color: white; 
-  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
-  transform: translateY(-2px);
+.sidebar:hover .logout-btn {
+  width: 100%;
+  padding: 0 15px;
+  justify-content: flex-start;
+  gap: 15px;
+}
+
+.logout-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .logout-text {
   opacity: 0;
   transform: translateX(10px);
   transition: all 0.4s ease;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .sidebar:hover .logout-text {
@@ -1206,6 +1216,13 @@ export default {
   .nav-text, .user-info, .sidebar-logo-text, .logout-text {
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  .logout-btn {
+    width: 100% !important;
+    padding: 0 15px !important;
+    justify-content: flex-start !important;
+    gap: 15px !important;
   }
 
   .nav-item::after {
