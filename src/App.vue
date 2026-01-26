@@ -17,17 +17,21 @@ export default {
 </script>
 
 <style>
+@import './assets/luxury-theme.css';
+
 body {
-  font-family: 'Times New Roman', serif;
+  font-family: 'Cairo', 'Tajawal', sans-serif;
   direction: rtl;
   margin: 0;
   padding: 0;
   color: #1e293b;
-  line-height: 1.5;
+  line-height: 1.65;
   overflow-x: hidden;
   background-color: #fdfbf7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   
-  /* Custom Background Application - Enhanced */
+  /* Custom Background Application - Luxury Enhanced */
   background-image: url('./assets/rakez_custom_bg.png');
   background-size: contain;
   background-position: center center;
@@ -47,7 +51,7 @@ body {
   z-index: 1;
 }
 
-/* Overlay for better content visibility */
+/* Luxury Overlay for better content visibility */
 #app::before {
   content: '';
   position: fixed;
@@ -55,30 +59,9 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(253, 251, 247, 0.75);
+  background: rgba(253, 251, 247, 0.82);
+  backdrop-filter: blur(1px);
   z-index: -1;
   pointer-events: none;
-}
-
-
-
-/* Custom Scrollbar - Gold & Navy */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #B1A28F, #8c7851);
-  border-radius: 5px;
-  border: 2px solid #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #1e3a5f, #162c46);
 }
 </style>
