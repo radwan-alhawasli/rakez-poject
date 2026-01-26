@@ -12,6 +12,27 @@
     <div class="form-container">
       <form @submit.prevent="handleSubmit">
         
+        <!-- Section: Team Selection -->
+        <div class="form-section">
+          <h3 class="section-label">اختيار الفريق</h3>
+          
+          <div class="form-group-info">
+            <div class="input-row">
+              <div class="field-group full">
+                <label>الفريق</label>
+                <div class="select-wrapper">
+                  <select v-model="form.team_id" class="form-input">
+                    <option value="">لا يوجد فريق</option>
+                    <option v-for="team in teams" :key="team.id" :value="team.id">
+                      {{ team.name }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Section: Second Party Info -->
         <div class="form-section">
           <h3 class="section-label">بيانات الطرف الثاني</h3>
@@ -174,16 +195,21 @@
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import contractService from '../services/contractService'
+import hrService from '../services/hrService'
 import notificationService from '../services/notificationService'
 
 export default {
   name: 'ExclusiveProjectView',
   setup() {
     const isLoading = ref(false)
+    const teams = ref([])
 
     const form = reactive({
+      // Team Selection
+      team_id: '',
+      
       // Second Party Info
       second_party_name: '',
       second_party_id_number: '',
@@ -211,6 +237,23 @@ export default {
       // Agency Info
       agency_number: '',
       agency_date: ''
+    })
+
+    // Load teams on component mount
+    const loadTeams = async () => {
+      try {
+        console.log('📋 Loading teams for exclusive contract...')
+        const data = await hrService.getTeams()
+        teams.value = Array.isArray(data) ? data : (data?.data || [])
+        console.log('✅ Teams loaded:', teams.value.length, 'teams')
+      } catch (error) {
+        console.error('❌ Error loading teams:', error)
+        teams.value = []
+      }
+    }
+
+    onMounted(() => {
+      loadTeams()
     })
 
     const formatDateForAPI = (dateString) => {
@@ -248,6 +291,11 @@ export default {
           release_date: formatDateForAPI(form.release_date) || '12-3-2020'
         }
 
+        // Add team_id if selected
+        if (form.team_id) {
+          payload.team_id = form.team_id
+        }
+
         console.log('📤 Sending payload:', payload)
         
         // Get contract ID (assuming it's passed or selected)
@@ -264,6 +312,7 @@ export default {
         
         // Reset form
         Object.assign(form, {
+          team_id: '',
           second_party_name: '',
           second_party_id_number: '',
           second_party_phone: '',
@@ -295,6 +344,7 @@ export default {
 
     return {
       form,
+      teams,
       isLoading,
       handleSubmit
     }
