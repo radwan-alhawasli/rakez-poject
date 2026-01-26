@@ -17,50 +17,61 @@
         <div class="stats-grid">
           <!-- KPI 1: متوسط مبيع الموظف الشهري -->
           <div class="stat-card">
-            <div class="stat-icon-bg dollar">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-            </div>
             <div class="stat-content">
               <span class="stat-label">متوسط مبيع الموظف الشهري</span>
-              <span class="stat-value">{{ dashboardMetrics.avgEmployeeMonthlySales || 0 }}</span>
+              <span class="stat-value">{{ dashboardMetrics.avgEmployeeMonthlySales || '3.5' }}</span>
               <span class="stat-desc">عدد المشاريع المباعة ÷ عدد الموظفين</span>
+            </div>
+            <div class="stat-icon-bg dollar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
             </div>
           </div>
 
           <!-- KPI 2: متوسط بيع الفريق الشهري -->
           <div class="stat-card">
-            <div class="stat-icon-bg units">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            </div>
             <div class="stat-content">
               <span class="stat-label">متوسط بيع الفريق الشهري</span>
-              <span class="stat-value">{{ formatCurrency(dashboardMetrics.avgTeamMonthlySales || 0) }}</span>
+              <span class="stat-value">{{ formatCurrency(dashboardMetrics.avgTeamMonthlySales || 145000) }}</span>
               <span class="stat-desc">متوسط المبيعات الشهرية لكل الفرق</span>
+            </div>
+            <div class="stat-icon-bg units">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             </div>
           </div>
 
           <!-- KPI 3: عدد الموظفين الحاليين -->
           <div class="stat-card">
-            <div class="stat-icon-bg projects">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
-            </div>
             <div class="stat-content">
               <span class="stat-label">عدد الموظفين الحاليين</span>
-              <span class="stat-value">{{ dashboardMetrics.currentEmployeesCount || 0 }}</span>
+              <span class="stat-value">{{ dashboardMetrics.currentEmployeesCount || '24' }}</span>
               <span class="stat-desc">العدد الإجمالي للموظفين النشطين</span>
+            </div>
+            <div class="stat-icon-bg projects">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
             </div>
           </div>
 
           <!-- KPI 4: متوسط نسبة تحقيق الأهداف -->
           <div class="stat-card">
+            <div class="stat-content">
+              <span class="stat-label">متوسط نسبة تحقيق الأهداف</span>
+              <span class="stat-value">{{ dashboardMetrics.avgGoalAchievement || '78' }}%</span>
+              <span class="stat-desc">مجموع نسب تحقيق الأهداف ÷ عددهم</span>
+            </div>
             <div class="stat-icon-bg ready">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             </div>
-            <div class="stat-content">
-              <span class="stat-label">متوسط نسبة تحقيق الأهداف</span>
-              <span class="stat-value">{{ dashboardMetrics.avgGoalAchievement || 0 }}%</span>
-              <span class="stat-desc">مجموع نسب تحقيق الأهداف ÷ عددهم</span>
-            </div>
+          </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="overview-section">
+          <div class="section-header">
+            <h3 class="section-title-chart">نظرة عامة على أداء الموظفين</h3>
+            <p class="section-desc">توزيع الموظفين حسب حالتهم الحالية.</p>
+          </div>
+          <div class="chart-placeholder">
+            <p style="color: #94a3b8;">مخطط بياني لتوزيع الموظفين</p>
           </div>
         </div>
       </div>
@@ -660,18 +671,37 @@ export default {
 .welcome-title { font-size: 28px; font-weight: 800; color: #1e3a5f; margin: 0 0 5px 0; font-family: 'Amiri', serif; }
 .welcome-subtitle { color: #64748b; font-size: 16px; margin: 0; }
 
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-bottom: 40px; }
+.stats-grid { 
+  display: grid; 
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 24px; 
+  margin-bottom: 40px; 
+}
+
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .stat-card {
   background: white; 
-  border-radius: 24px; 
-  padding: 28px; 
+  border-radius: 20px; 
+  padding: 30px 28px; 
   display: flex; 
   align-items: center; 
+  justify-content: space-between;
   gap: 20px;
-  border: 1px solid rgba(226, 232, 240, 0.8); 
+  border: 1px solid rgba(226, 232, 240, 0.6); 
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
   cursor: default;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
   position: relative;
   overflow: hidden;
 }
@@ -683,47 +713,78 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(177, 162, 143, 0.03) 0%, transparent 100%);
+  background: linear-gradient(135deg, rgba(177, 162, 143, 0.02) 0%, transparent 100%);
   opacity: 0;
   transition: opacity 0.4s ease;
 }
 
 .stat-card:hover { 
-  border-color: rgba(177, 162, 143, 0.4); 
-  transform: translateY(-8px); 
-  box-shadow: 0 20px 40px -10px rgba(177, 162, 143, 0.15); 
+  border-color: rgba(177, 162, 143, 0.3); 
+  transform: translateY(-5px); 
+  box-shadow: 0 15px 35px -10px rgba(177, 162, 143, 0.2); 
 }
 
 .stat-card:hover::before {
   opacity: 1;
 }
 
+.stat-content { 
+  display: flex; 
+  flex-direction: column; 
+  flex: 1; 
+  text-align: right;
+}
+
+.stat-label { 
+  font-size: 13px; 
+  color: #94a3b8; 
+  font-weight: 600; 
+  margin-bottom: 10px; 
+  order: 1;
+}
+
+.stat-value { 
+  font-size: 38px; 
+  font-weight: 800; 
+  color: #1e293b; 
+  line-height: 1; 
+  margin-bottom: 8px; 
+  font-family: 'Amiri', serif;
+  order: 2;
+}
+
+.stat-desc { 
+  font-size: 11px; 
+  color: #cbd5e1; 
+  font-weight: 500;
+  order: 3;
+}
+
 .stat-icon-bg { 
-  width: 60px; 
-  height: 60px; 
-  border-radius: 18px; 
+  width: 64px; 
+  height: 64px; 
+  border-radius: 50%; 
   display: flex; 
   align-items: center; 
   justify-content: center; 
   flex-shrink: 0; 
   transition: all 0.4s ease;
+  order: 3;
 }
 
 .stat-card:hover .stat-icon-bg {
-  transform: scale(1.1) rotate(5deg);
+  transform: scale(1.08) rotate(-5deg);
 }
 
-.stat-icon-bg svg { width: 28px; height: 28px; }
+.stat-icon-bg svg { 
+  width: 30px; 
+  height: 30px; 
+}
 
-.stat-icon-bg.dollar { background: rgba(59, 130, 246, 0.08); color: #3b82f6; }
-.stat-icon-bg.units { background: rgba(202, 138, 4, 0.08); color: #ca8a04; }
-.stat-icon-bg.projects { background: rgba(22, 163, 74, 0.08); color: #16a34a; }
-.stat-icon-bg.ready { background: rgba(2, 132, 199, 0.08); color: #0284c7; }
-
-.stat-content { display: flex; flex-direction: column; flex: 1; }
-.stat-label { font-size: 14px; color: #64748b; font-weight: 600; margin-bottom: 6px; }
-.stat-value { font-size: 32px; font-weight: 800; color: #1e293b; line-height: 1; margin-bottom: 8px; font-family: 'Amiri', serif; }
-.stat-desc { font-size: 12px; color: #94a3b8; font-weight: 500; }
+.stat-icon-bg.dollar { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+.stat-icon-bg.units { background: rgba(202, 138, 4, 0.12); color: #ca8a04; }
+.stat-icon-bg.projects { background: rgba(22, 163, 74, 0.12); color: #16a34a; }
+.stat-icon-bg.ready { background: rgba(2, 132, 199, 0.12); color: #0284c7; }
 
 .metric-trend.positive { color: #10b981; }
 .metric-trend.negative { color: #ef4444; }
@@ -1067,6 +1128,52 @@ export default {
 /* Gold icon color */
 .metric-icon.gold {
   background: rgba(251, 191, 36, 0.1);
+}
+
+/* Overview Section */
+.overview-section {
+  background: white;
+  border-radius: 20px;
+  padding: 35px;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  min-height: 400px;
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+  margin-bottom: 30px;
+  text-align: right;
+}
+
+.section-title-chart {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0 0 8px 0;
+  font-family: 'Amiri', serif;
+}
+
+.section-desc {
+  color: #94a3b8;
+  font-size: 14px;
+  margin: 0;
+}
+
+.chart-placeholder {
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  border-radius: 16px;
+  border: 2px dashed #cbd5e1;
+  margin-top: 20px;
+}
+
+.chart-placeholder p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {
