@@ -383,29 +383,48 @@ export default {
     }, { immediate: true })
 
     const handleSubmit = () => {
-      const submissionData = { ...form.value, id: props.editUser?.id }
+      const submissionData = { 
+        id: props.editUser?.id,
+        name: form.value.name,
+        email: form.value.email,
+        phone: form.value.phone,
+        password: form.value.password,
+        identity_number: form.value.identity_number,
+        birthday: form.value.birthday,
+        date_of_works: form.value.date_of_works,
+        contract_type: form.value.contract_type,
+        salary: form.value.salary,
+        iban: form.value.iban,
+        marital_status: form.value.marital_status,
+        team: form.value.team,
+        is_manager: form.value.is_manager
+      }
 
       // Convert virtual PM types back to real type and is_manager flag
-      if (submissionData.type === 'pm_manager') {
+      if (form.value.type === 'pm_manager') {
         submissionData.type = 3
         submissionData.is_manager = true
-      } else if (submissionData.type === 'pm_employee') {
+      } else if (form.value.type === 'pm_employee') {
         submissionData.type = 3
         submissionData.is_manager = false
       } else {
-        submissionData.type = parseInt(submissionData.type)
-        submissionData.is_manager = form.value.is_manager
+        submissionData.type = parseInt(form.value.type)
       }
 
-      // Format dates for API (DD-MM-YYYY)
-      if (submissionData.birthday) {
-        const date = new Date(submissionData.birthday)
-        submissionData.birthday = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`
+      // Format dates for API (DD-MM-YYYY) as shown in Postman image
+      const formatDateForAPI = (dateStr) => {
+        if (!dateStr) return ''
+        const date = new Date(dateStr)
+        if (isNaN(date.getTime())) return dateStr // Already formatted or invalid
+        return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`
       }
 
-      if (submissionData.date_of_works) {
-        const date = new Date(submissionData.date_of_works)
-        submissionData.date_of_works = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`
+      submissionData.birthday = formatDateForAPI(submissionData.birthday)
+      submissionData.date_of_works = formatDateForAPI(submissionData.date_of_works)
+
+      // Only include password if it's not empty (for edit mode)
+      if (isEdit.value && !submissionData.password) {
+        delete submissionData.password
       }
 
       emit('submit', submissionData)

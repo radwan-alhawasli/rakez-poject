@@ -160,14 +160,28 @@ export const generateTeamPerformanceReport = async (month, year, format = 'pdf')
 
 /**
  * Get all teams
- * GET /project_management/teams/index
+ * GET /teams/index
  */
 export const getTeams = async (params = {}) => {
     try {
-        const response = await apiClient.get('/project_management/teams/index', { params })
+        const response = await apiClient.get('/teams/index', { params })
         return response.data.data || response.data || []
     } catch (error) {
         console.error('Error fetching teams:', error)
+        throw error
+    }
+}
+
+/**
+ * Get team details by ID
+ * GET /teams/show/:id
+ */
+export const getTeamById = async (teamId) => {
+    try {
+        const response = await apiClient.get(`/teams/show/${teamId}`)
+        return response.data.data || response.data
+    } catch (error) {
+        console.error(`Error fetching team ${teamId}:`, error)
         throw error
     }
 }
@@ -241,6 +255,7 @@ export default {
 
     // Teams
     getTeams,
+    getTeamById,
     getTeamContracts,
     getTeamContractLocations,
     getTeamsForContract,

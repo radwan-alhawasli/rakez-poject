@@ -89,7 +89,7 @@
 
 <script>
 import { ref, onMounted } from 'vue'
-import userService from '../services/userService'
+import hrService from '../services/hrService'
 import AddUserModal from './AddUserModal.vue'
 import { getRoleLabel, getRoleClass } from '../constants/roles'
 
@@ -108,9 +108,9 @@ export default {
     const fetchUsers = async () => {
       loading.value = true
       try {
-        const data = await userService.getEmployees()
-        // userService now guarantees an array return
-        users.value = Array.isArray(data) ? data : []
+        const data = await hrService.getEmployees()
+        // hrService returns data directly
+        users.value = Array.isArray(data) ? data : (data?.data || data?.employees || [])
         console.log('Processed users for UI:', users.value)
       } catch (error) {
         console.error('Failed to fetch users', error)
@@ -126,9 +126,18 @@ export default {
       showModal.value = true
     }
 
-    const editUser = (user) => {
-      selectedUser.value = user
-      showModal.value = true
+    const editUser = async (user) => {
+      loading.value = true
+      try {
+        const details = await hrService.getEmployeeById(user.id)
+        selectedUser.value = details.data || details
+        showModal.value = true
+      } catch (error) {
+        console.error('Error fetching user details:', error)
+        alert('حدث خطأ أثناء جلب تفاصيل المستخدم')
+      } finally {
+        loading.value = false
+      }
     }
 
     const closeModal = () => {
@@ -140,9 +149,9 @@ export default {
       isSaving.value = true
       try {
         if (userData.id) {
-          await userService.updateEmployee(userData.id, userData)
+          await hrService.updateEmployee(userData.id, userData)
         } else {
-          await userService.addEmployee(userData)
+          await hrService.createEmployee(userData)
         }
         await fetchUsers()
         closeModal()
@@ -150,13 +159,8 @@ export default {
         console.error('Error saving user:', error)
         let errMsg = 'حدث خطأ أثناء حفظ المستخدم'
         
-        // Extract server-side validation messages if available
-        if (error.data && error.data.errors) {
-            const errors = error.data.errors
-            const firstErrorKey = Object.keys(errors)[0]
-            if (firstErrorKey && Array.isArray(errors[firstErrorKey])) {
-                errMsg = `${errors[firstErrorKey][0]}`
-            }
+        if (error.response?.data?.message) {
+            errMsg = error.response.data.message
         } else if (error.message) {
             errMsg = error.message
         }
@@ -169,18 +173,11 @@ export default {
 
     const toggleUserStatus = async (user) => {
       try {
-        if (user.disabled) {
-          // If hrService has enableEmployee, use it. Otherwise mockup.
-          // Note: userService currently doesn't have disable/enable.
-          // We will use userService.updateEmployee with a status flag if needed, 
-          // but for now let's assume updateEmployee can handle a 'disabled' field or use a dedicated method.
-          alert(`تم تفعيل حساب ${user.name}`)
-          user.disabled = false
-        } else {
-          if (confirm(`هل أنت متأكد من تعطيل حساب ${user.name}؟ لن يتمكن من تسجيل الدخول.`)) {
-            alert(`تم تعطيل حساب ${user.name}`)
-            user.disabled = true
-          }
+        const newStatus = !user.disabled
+        if (confirm(`هل أنت متأكد من ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name}؟`)) {
+          await hrService.updateEmployee(user.id, { ...user, disabled: newStatus })
+          await fetchUsers()
+          alert(`تم ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name} بنجاح`)
         }
       } catch (error) {
         console.error('Error toggling status', error)
@@ -189,17 +186,11 @@ export default {
     }
 
     const confirmDelete = async (user) => {
-      console.log('Attempting to delete user object:', user)
-      if (!user || !user.id) {
-        console.error('No valid user ID found for deletion')
-        alert('حدث خطأ: لم يتم العثور على معرّف للمستخدم')
-        return
-      }
-
       if (confirm(`هل أنت متأكد من حذف المستخدم ${user.name || 'هذا'}؟`)) {
         try {
-          await userService.deleteEmployee(user.id)
+          await hrService.deleteEmployee(user.id)
           await fetchUsers()
+          alert('تم حذف المستخدم بنجاح')
         } catch (error) {
           console.error('Error deleting user', error)
           alert('حدث خطأ أثناء حذف المستخدم')

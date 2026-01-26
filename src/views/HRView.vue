@@ -15,51 +15,51 @@
         </div>
 
         <div class="stats-grid">
-          <!-- KPI 1: متوسط مبيع الموظف الشهري -->
+          <!-- KPI 1: إجمالي الموظفين -->
           <div class="stat-card animate-fade-in-up animate-stagger-1 hover-lift">
             <div class="stat-content">
-              <span class="stat-label">متوسط مبيع الموظف الشهري</span>
-              <span class="stat-value number">{{ dashboardMetrics.avgEmployeeMonthlySales || '3.5' }}</span>
-              <span class="stat-desc">عدد المشاريع المباعة ÷ عدد الموظفين</span>
-            </div>
-            <div class="stat-icon-bg dollar">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-            </div>
-          </div>
-
-          <!-- KPI 2: متوسط بيع الفريق الشهري -->
-          <div class="stat-card animate-fade-in-up animate-stagger-2 hover-lift">
-            <div class="stat-content">
-              <span class="stat-label">متوسط بيع الفريق الشهري</span>
-              <span class="stat-value number">{{ formatCurrency(dashboardMetrics.avgTeamMonthlySales || 145000) }}</span>
-              <span class="stat-desc">متوسط المبيعات الشهرية لكل الفرق</span>
+              <span class="stat-label">إجمالي الموظفين</span>
+              <span class="stat-value number">{{ dashboardMetrics.totalEmployees || '0' }}</span>
+              <span class="stat-desc">العدد الإجمالي للموظفين في الشركة</span>
             </div>
             <div class="stat-icon-bg units">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             </div>
           </div>
 
-          <!-- KPI 3: عدد الموظفين الحاليين -->
-          <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift">
+          <!-- KPI 2: إجمالي الوحدات -->
+          <div class="stat-card animate-fade-in-up animate-stagger-2 hover-lift">
             <div class="stat-content">
-              <span class="stat-label">عدد الموظفين الحاليين</span>
-              <span class="stat-value number">{{ dashboardMetrics.currentEmployeesCount || '24' }}</span>
-              <span class="stat-desc">العدد الإجمالي للموظفين النشطين</span>
+              <span class="stat-label">إجمالي الوحدات</span>
+              <span class="stat-value number">{{ dashboardMetrics.totalUnits || '0' }}</span>
+              <span class="stat-desc">إجمالي الوحدات السكنية المتاحة</span>
             </div>
             <div class="stat-icon-bg projects">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
             </div>
           </div>
 
-          <!-- KPI 4: متوسط نسبة تحقيق الأهداف -->
-          <div class="stat-card animate-fade-in-up animate-stagger-4 hover-lift">
+          <!-- KPI 3: الوحدات المباعة -->
+          <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift">
             <div class="stat-content">
-              <span class="stat-label">متوسط نسبة تحقيق الأهداف</span>
-              <span class="stat-value number">{{ dashboardMetrics.avgGoalAchievement || '78' }}%</span>
-              <span class="stat-desc">مجموع نسب تحقيق الأهداف ÷ عددهم</span>
+              <span class="stat-label">الوحدات المباعة</span>
+              <span class="stat-value number">{{ dashboardMetrics.soldUnits || '0' }}</span>
+              <span class="stat-desc">عدد الوحدات التي تم بيعها بنجاح</span>
             </div>
             <div class="stat-icon-bg ready">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+          </div>
+
+          <!-- KPI 4: متوسط مبيع الموظف -->
+          <div class="stat-card animate-fade-in-up animate-stagger-4 hover-lift">
+            <div class="stat-content">
+              <span class="stat-label">متوسط مبيع الموظف</span>
+              <span class="stat-value number">{{ dashboardMetrics.avgEmployeeSales || '0' }}</span>
+              <span class="stat-desc">الوحدات المباعة ÷ عدد موظفي المبيعات ({{ dashboardMetrics.salesEmployeesCount }})</span>
+            </div>
+            <div class="stat-icon-bg dollar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
             </div>
           </div>
         </div>
@@ -83,9 +83,20 @@
                 <h2 class="section-title">إدارة الفرق</h2>
                 <p class="section-subtitle">إدارة وتوزيع المسوقين والمشاريع على مستوى الأفرقة.</p>
             </div>
-            <button class="btn-primary" @click="openAddTeamModal">
-                <span class="plus-icon">+</span> إضافة فريق جديد
-            </button>
+            <div class="header-actions" style="display: flex; gap: 15px; align-items: center;">
+                <div class="search-box-mini">
+                    <input 
+                        v-model="teamSearchQuery" 
+                        type="text" 
+                        placeholder="بحث عن فريق..." 
+                        @input="loadTeams"
+                        class="search-input-mini"
+                    />
+                </div>
+                <button class="btn-primary" @click="openAddTeamModal">
+                    <span class="plus-icon">+</span> إضافة فريق جديد
+                </button>
+            </div>
         </div>
         <div class="teams-grid">
           <div v-for="team in teamsData" :key="team.name" class="team-card">
@@ -283,13 +294,33 @@
           <div v-else class="projects-list">
             <div v-for="project in teamProjects" :key="project.id" class="project-item-mini">
               <div class="project-info-mini">
-                <span class="project-name-mini">{{ project.name || project.contract_name || 'مشروع بدون اسم' }}</span>
-                <span class="project-location-mini">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-icon"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                  {{ project.location || project.address || 'الموقع غير محدد' }}
-                </span>
+                <span class="project-name-mini">{{ project.project_name || project.name || project.contract_name || 'مشروع بدون اسم' }}</span>
+                <div class="project-details-row-mini">
+                  <span class="project-location-mini">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-icon"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <template v-if="project.city || project.district">
+                      {{ project.city }}{{ project.district ? ' - ' + project.district : '' }}
+                    </template>
+                    <template v-else>
+                      {{ project.location || project.address || 'الموقع غير محدد' }}
+                    </template>
+                  </span>
+                  <span v-if="project.unit_count" class="project-units-mini">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-icon"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    {{ project.unit_count }} وحدات
+                  </span>
+                </div>
+                <div class="project-extra-info-mini" v-if="project.developer_name || project.total_price">
+                  <span v-if="project.developer_name" class="developer-name-mini">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-icon"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    {{ project.developer_name }}
+                  </span>
+                  <span v-if="project.total_price" class="price-tag-mini">
+                    {{ formatCurrency(project.total_price) }}
+                  </span>
+                </div>
               </div>
-              <span class="project-status-tag" :class="project.status">{{ project.status_label || 'نشط' }}</span>
+              <span class="project-status-tag" :class="project.status">{{ project.status_label || (project.status === 'completed' ? 'مكتمل' : 'نشط') }}</span>
             </div>
           </div>
         </div>
@@ -351,6 +382,7 @@ export default {
     })
     const showAddUserModal = ref(false)
     const isLoading = ref(false)
+    const teamSearchQuery = ref('')
 
     // Modal states for projects and marketers
     const showProjectsModal = ref(false)
@@ -366,8 +398,9 @@ export default {
         isLoadingDetails.value = true
         try {
             // Fetch contracts/projects for this team using HR specific endpoint
-            const data = await hrService.getTeamContracts(team.id)
-            teamProjects.value = data
+            const response = await hrService.getTeamContracts(team.id)
+            // Handle nested data structure as shown in Postman image
+            teamProjects.value = response.data || response || []
         } catch (error) {
             console.error('Error fetching team projects:', error)
             teamProjects.value = []
@@ -477,10 +510,11 @@ export default {
 
     // Dashboard Metrics (3.1)
     const dashboardMetrics = reactive({
-      avgEmployeeMonthlySales: 0,      // عدد المشاريع المباعة ÷ عدد الموظفين
-      avgTeamMonthlySales: 0,          // متوسط المبيعات الشهرية لكل الفرق
-      currentEmployeesCount: 0,        // العدد الإجمالي للموظفين النشطين
-      avgGoalAchievement: 0            // مجموع نسب تحقيق الأهداف ÷ عددهم
+      totalEmployees: 0,
+      totalUnits: 0,
+      salesEmployeesCount: 0,
+      soldUnits: 0,
+      avgEmployeeSales: 0
     })
 
     // Teams Data (3.2)
@@ -499,15 +533,24 @@ export default {
     const loadDashboardMetrics = async () => {
       isLoading.value = true
       try {
-        const data = await hrService.getDashboardMetrics()
-        Object.assign(dashboardMetrics, data)
+        const response = await hrService.getDashboardMetrics()
+        const data = response.data
+        
+        if (data) {
+          dashboardMetrics.totalEmployees = data.employees?.total_employees || 0
+          dashboardMetrics.totalUnits = data.units?.total_all_units || 0
+          dashboardMetrics.salesEmployeesCount = data.units?.sales_employees_count || 0
+          dashboardMetrics.soldUnits = data.units?.sold_units || 0
+          dashboardMetrics.avgEmployeeSales = data.units?.sold_units_per_sales_employee || 0
+        }
       } catch (error) {
         console.error('Error loading dashboard metrics:', error)
         // Set default values on error
-        dashboardMetrics.avgEmployeeMonthlySales = 3.5
-        dashboardMetrics.avgTeamMonthlySales = 145000
-        dashboardMetrics.currentEmployeesCount = 24
-        dashboardMetrics.avgGoalAchievement = 78
+        dashboardMetrics.totalEmployees = 19
+        dashboardMetrics.totalUnits = 10
+        dashboardMetrics.salesEmployeesCount = 4
+        dashboardMetrics.soldUnits = 2
+        dashboardMetrics.avgEmployeeSales = 0.5
       } finally {
         isLoading.value = false
       }
@@ -516,7 +559,11 @@ export default {
     // Load teams data
     const loadTeams = async () => {
       try {
-        const data = await hrService.getTeams()
+        const params = {}
+        if (teamSearchQuery.value) {
+            params.search = teamSearchQuery.value
+        }
+        const data = await hrService.getTeams(params)
         // Ensure data is an array
         const teams = Array.isArray(data) ? data : (data?.data || [])
         teamsData.splice(0, teamsData.length, ...teams)
@@ -621,6 +668,7 @@ export default {
       dashboardMetrics,
       marketerPerformanceData,
       isLoading,
+      teamSearchQuery,
       handleUserSubmit,
       showTargetModal,
       selectedEmployee,
@@ -1519,6 +1567,28 @@ export default {
 
 .team-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
 
+/* Search Box Mini */
+.search-box-mini {
+  position: relative;
+  width: 200px;
+}
+
+.search-input-mini {
+  width: 100%;
+  padding: 10px 15px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 13px;
+  font-family: 'Tajawal', sans-serif;
+  transition: all 0.2s;
+}
+
+.search-input-mini:focus {
+  outline: none;
+  border-color: #B1A28F;
+  box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.1);
+}
+
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
@@ -1604,7 +1674,18 @@ export default {
 .project-info-mini {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+}
+
+.project-details-row-mini,
+.project-extra-info-mini {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.project-extra-info-mini {
+  margin-top: 4px;
 }
 
 .project-name-mini {
@@ -1613,12 +1694,21 @@ export default {
   font-size: 15px;
 }
 
-.project-location-mini {
+.project-location-mini,
+.project-units-mini,
+.developer-name-mini {
   font-size: 12px;
   color: #64748b;
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+.price-tag-mini {
+  font-size: 13px;
+  font-weight: 800;
+  color: #B1A28F;
+  font-family: 'Cairo', sans-serif;
 }
 
 .project-status-tag {
