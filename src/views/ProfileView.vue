@@ -287,33 +287,43 @@ export default {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 20px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 16px;
+  background: white;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 20px;
+  padding: 20px;
   text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(177, 162, 143, 0.4);
+  box-shadow: 0 10px 25px rgba(177, 162, 143, 0.1);
 }
 
 .stat-value {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 800;
   color: #B1A28F;
   margin-bottom: 4px;
+  font-family: 'Amiri', serif;
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 13px;
   color: #64748b;
+  font-weight: 600;
 }
 
 /* Logout Button */
