@@ -289,11 +289,12 @@ export const getTeamsForContract = async (contractId) => {
 /**
  * Get team sales average
  * GET /hr/teams/sales-average/:teamId
+ * Returns: { average_sales: { sold_units_per_sales_employee: number } }
  */
 export const getTeamSalesAverage = async (teamId) => {
     try {
         const response = await apiClient.get(`/hr/teams/sales-average/${teamId}`)
-        return response.data.data || response.data || 0
+        return response.data.data || response.data || {}
     } catch (error) {
         console.error(`Error fetching sales average for team ${teamId}:`, error)
         throw error

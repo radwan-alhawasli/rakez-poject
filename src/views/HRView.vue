@@ -122,11 +122,11 @@
 
             <div class="team-progress">
                 <div class="progress-info">
-                    <span>متوسط مبيع الفريق</span>
-                    <span class="sales-average-value">{{ team.salesAverage || 0 }}</span>
+                    <span>متوسط مبيع الموظف</span>
+                    <span class="sales-average-value">{{ team.salesAverage || 0 }} وحدة</span>
                 </div>
                 <div class="progress-bar">
-                    <div class="progress-fill" :style="{ width: (team.goalProgress || 0) + '%', backgroundColor: team.color || '#B1A28F' }"></div>
+                    <div class="progress-fill" :style="{ width: Math.min((team.salesAverage || 0) * 10, 100) + '%', backgroundColor: team.color || '#B1A28F' }"></div>
                 </div>
             </div>
             <div class="team-stats clickable-stat" @click="openProjectsModal(team)" style="cursor: pointer;">
@@ -631,8 +631,9 @@ export default {
                 const contractsArray = Array.isArray(contracts) ? contracts : (contracts?.data || [])
                 
                 // Get team sales average
-                const salesAvg = await hrService.getTeamSalesAverage(team.id).catch(() => 0)
-                const avgValue = typeof salesAvg === 'number' ? salesAvg : (salesAvg?.average || salesAvg?.data?.average || 0)
+                const salesAvg = await hrService.getTeamSalesAverage(team.id).catch(() => ({}))
+                const avgValue = salesAvg?.average_sales?.sold_units_per_sales_employee || 
+                                 salesAvg?.data?.average_sales?.sold_units_per_sales_employee || 0
                 
                 // Get contract locations for display
                 const locations = await hrService.getTeamContractLocations(team.id).catch(() => [])
