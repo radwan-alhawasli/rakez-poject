@@ -741,23 +741,27 @@ export default {
 
 /* Header - Enhanced with Luxury Vitality */
 .top-header {
-  height: 70px;
+  height: 60px;
   background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 30px;
+  padding: 0 24px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.08), 
               0 2px 8px rgba(177, 162, 143, 0.12);
   border-bottom: 2px solid #B1A28F;
   position: fixed;
   top: 0;
   left: 0;
-  right: 260px;
+  right: 80px;
   z-index: 100;
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   backdrop-filter: blur(10px);
   animation: fadeInDown 0.5s ease-out;
+}
+
+.sidebar:hover ~ .top-header {
+  right: 260px;
 }
 
 .top-header::before {
@@ -785,8 +789,8 @@ export default {
 .back-btn, .notification-btn {
   background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
   border: 1.5px solid #e2e8f0;
-  width: 44px; height: 44px;
-  border-radius: 12px;
+  width: 38px; height: 38px;
+  border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; 
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -794,6 +798,12 @@ export default {
   color: #64748b;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   animation: scaleIn 0.4s ease-out;
+}
+
+.back-btn svg, .notification-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
 }
 
 .back-btn::before, .notification-btn::before {
@@ -824,11 +834,11 @@ export default {
 }
 
 .notification-badge {
-    position: absolute; top: -5px; right: -5px;
+    position: absolute; top: -4px; right: -4px;
     background: #ef4444; color: white; border-radius: 50%;
-    min-width: 18px; height: 18px; font-size: 10px; font-weight: 800;
+    min-width: 16px; height: 16px; font-size: 9px; font-weight: 800;
     display: flex; align-items: center; justify-content: center;
-    border: 2px solid white;
+    border: 1.5px solid white;
     box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);
     animation: pulse 2s infinite;
 }
@@ -842,13 +852,14 @@ export default {
 .header-right { display: flex; align-items: center; gap: 30px; }
 .update-info { text-align: left; font-size: 11px; color: #64748b; }
 .logo { display: flex; align-items: center; gap: 10px; color: #1e3a5f; }
-.logo-ar { font-weight: 700; font-size: 18px; font-family: 'Amiri', serif; }
+.logo-ar { font-weight: 700; font-size: 16px; font-family: 'Amiri', serif; }
+.logo-en { font-size: 12px; opacity: 0.7; margin-right: 5px; color: #f8fafc; }
 
 /* Notifications Dropdown */
 .notifications-dropdown {
-    position: absolute; top: 60px; left: 0;
-    width: 320px; background: white;
-    border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+    position: absolute; top: 50px; left: 0;
+    width: 300px; background: white;
+    border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
     border: 1px solid #e2e8f0; z-index: 1000; overflow: hidden;
     animation: slideDown 0.3s ease-out;
 }
@@ -859,19 +870,19 @@ export default {
 }
 
 .notifications-header {
-    padding: 15px 20px; background: #f8fafc;
+    padding: 12px 16px; background: #f8fafc;
     border-bottom: 1px solid #e2e8f0;
     display: flex; justify-content: space-between; align-items: center;
 }
 
-.notifications-title { font-size: 16px; font-weight: 700; color: #1e3a5f; margin: 0; }
-.mark-read-btn { font-size: 12px; color: #B1A28F; background: none; border: none; cursor: pointer; font-weight: 600; }
+.notifications-title { font-size: 14px; font-weight: 700; color: #1e3a5f; margin: 0; }
+.mark-read-btn { font-size: 11px; color: #B1A28F; background: none; border: none; cursor: pointer; font-weight: 600; }
 .mark-read-btn:hover { text-decoration: underline; }
 
 .notifications-list { max-height: 400px; overflow-y: auto; }
 
 .notification-item {
-    padding: 15px 20px; display: flex; gap: 15px;
+    padding: 12px 16px; display: flex; gap: 12px;
     cursor: pointer; transition: background 0.2s;
     border-bottom: 1px solid #f1f5f9; position: relative;
 }
@@ -879,7 +890,7 @@ export default {
 .notification-item.unread { background: rgba(161, 139, 92, 0.03); }
 
 .notification-icon-bg {
-    width: 36px; height: 36px; border-radius: 10px;
+    width: 32px; height: 32px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .notification-icon-bg.info { background: rgba(161, 139, 92, 0.1); color: #B1A28F; }
@@ -887,12 +898,13 @@ export default {
 .notification-icon-bg.warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
 
 .notification-content { flex: 1; }
-.notification-text { font-size: 13px; color: #1e293b; line-height: 1.4; margin-bottom: 4px; }
-.notification-time { font-size: 11px; color: #94a3b8; }
+.notification-text { font-size: 12px; color: #1e293b; line-height: 1.4; margin-bottom: 3px; }
+.notification-time { font-size: 10px; color: #94a3b8; }
 
 .unread-dot {
-    width: 6px; height: 6px; background: #B1A28F; border-radius: 50%;
-    position: absolute; top: 20px; left: 10px;
+    width: 5px; height: 5px; background: #B1A28F; border-radius: 50%;
+    position: absolute; top: 18px; left: 12px;
+    box-shadow: 0 0 8px rgba(177, 162, 143, 0.8);
 }
 
 .no-notifications {
@@ -945,22 +957,22 @@ export default {
 }
 
 .sidebar-header {
-  height: 90px; 
+  height: 70px; 
   display: flex; 
   align-items: center; 
-  padding: 0 20px; 
-  gap: 15px;
+  padding: 0 16px; 
+  gap: 10px;
   border-bottom: 1px solid rgba(177, 162, 143, 0.1);
   white-space: nowrap;
   background: rgba(255, 255, 255, 0.02);
 }
 
 .sidebar-logo-img {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     object-fit: cover;
-    border: 2px solid rgba(177, 162, 143, 0.4);
+    border: 1.5px solid rgba(177, 162, 143, 0.4);
     flex-shrink: 0;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     transition: all 0.3s ease;
@@ -974,7 +986,7 @@ export default {
 }
 
 .sidebar-logo-text { 
-  font-size: 22px; 
+  font-size: 16px; 
   font-weight: 700; 
   font-family: 'Amiri', serif;
   opacity: 0;
@@ -992,12 +1004,12 @@ export default {
 
 .sidebar-nav { 
   flex: 1; 
-  padding: 25px 12px; 
+  padding: 18px 10px; 
   overflow-y: auto; 
   overflow-x: hidden; 
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   scrollbar-width: thin;
   scrollbar-color: rgba(177, 162, 143, 0.5) rgba(177, 162, 143, 0.1);
 }
@@ -1026,12 +1038,12 @@ export default {
 .nav-item {
   display: flex; 
   align-items: center;
-  padding: 14px 16px; 
+  padding: 12px 14px; 
   color: #94a3b8; 
   text-decoration: none;
-  font-size: 15px; 
+  font-size: 14px; 
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-  border-radius: 14px; 
+  border-radius: 12px; 
   white-space: nowrap;
   position: relative;
   border: 1px solid transparent;
@@ -1080,21 +1092,27 @@ export default {
 }
 
 .nav-item.active { 
-  background: linear-gradient(135deg, rgba(177, 162, 143, 0.25) 0%, rgba(177, 162, 143, 0.1) 100%); 
+  background: linear-gradient(135deg, rgba(177, 162, 143, 0.2) 0%, rgba(177, 162, 143, 0.05) 100%); 
   color: #d4c4a8; 
   font-weight: 700; 
-  border: 1px solid rgba(177, 162, 143, 0.5);
-  box-shadow: 0 0 30px rgba(177, 162, 143, 0.5),
-              0 0 15px rgba(177, 162, 143, 0.4),
-              inset 0 1px 0 rgba(255, 255, 255, 0.2),
-              0 8px 25px rgba(177, 162, 143, 0.3);
+  border: 1px solid rgba(177, 162, 143, 0.3);
+  box-shadow: 0 0 20px rgba(177, 162, 143, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transform: translateX(-4px);
   position: relative;
+}
+
+.sidebar:hover .nav-item.active {
+  background: linear-gradient(135deg, rgba(177, 162, 143, 0.3) 0%, rgba(177, 162, 143, 0.1) 100%);
+  box-shadow: 0 0 30px rgba(177, 162, 143, 0.4),
+              0 0 15px rgba(177, 162, 143, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.15),
+              0 8px 25px rgba(177, 162, 143, 0.2);
   animation: glow-pulse 2.5s ease-in-out infinite;
 }
 
-/* إشعاع متوهج للعنصر النشط */
-.nav-item.active::after {
+/* إشعاع متوهج للعنصر النشط فقط عند فتح القائمة */
+.sidebar:hover .nav-item.active::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -1102,7 +1120,7 @@ export default {
   transform: translate(-50%, -50%);
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, rgba(177, 162, 143, 0.4) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(177, 162, 143, 0.3) 0%, transparent 70%);
   border-radius: 14px;
   opacity: 0;
   animation: pulse-glow 2.5s ease-in-out infinite;
@@ -1110,20 +1128,19 @@ export default {
 }
 
 .nav-item.active::before {
-  height: 80%;
+  height: 60%;
   opacity: 1;
-  width: 4px;
-  background: linear-gradient(180deg, #d4c4a8 0%, #B1A28F 50%, #d4c4a8 100%);
-  box-shadow: 0 0 15px rgba(177, 162, 143, 0.8),
-              0 0 8px rgba(177, 162, 143, 0.6);
-  animation: border-glow 2.5s ease-in-out infinite;
+  width: 3px;
+  background: linear-gradient(180deg, #d4c4a8 0%, #B1A28F 100%);
+  box-shadow: 0 0 10px rgba(177, 162, 143, 0.5);
 }
 
-.nav-item.active .nav-icon-svg {
-  color: #d4c4a8;
-  transform: scale(1.15);
-  filter: drop-shadow(0 0 10px rgba(177, 162, 143, 0.7))
-          drop-shadow(0 0 5px rgba(177, 162, 143, 0.5));
+.sidebar:hover .nav-item.active::before {
+  height: 80%;
+  width: 4px;
+  background: linear-gradient(180deg, #d4c4a8 0%, #B1A28F 50%, #d4c4a8 100%);
+  box-shadow: 0 0 15px rgba(177, 162, 143, 0.8);
+  animation: border-glow 2.5s ease-in-out infinite;
 }
 
 /* انيميشن التوهج */
@@ -1167,21 +1184,34 @@ export default {
 .nav-content { 
   display: flex; 
   align-items: center; 
-  gap: 24px; 
+  gap: 20px; 
   width: 100%; 
 }
 
 .nav-icon-svg { 
-  width: 24px; 
-  height: 24px; 
-  color: currentColor; 
-  stroke-width: 1.5; 
+  width: 20px; 
+  height: 20px; 
+  color: #d4c4a8; 
+  stroke-width: 2; 
   flex-shrink: 0; 
-  transition: transform 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  filter: drop-shadow(0 0 5px rgba(177, 162, 143, 0.6));
+}
+
+.sidebar:hover .nav-icon-svg {
+  color: #94a3b8;
+  filter: none;
+}
+
+.nav-item.active .nav-icon-svg {
+  color: #d4c4a8 !important;
+  filter: drop-shadow(0 0 8px rgba(177, 162, 143, 0.8)) !important;
+  transform: scale(1.1);
 }
 
 .nav-item:hover .nav-icon-svg {
-  transform: scale(1.1);
+  transform: scale(1.15);
+  color: #f8fafc;
 }
 
 .nav-text {
@@ -1202,23 +1232,22 @@ export default {
 .nav-item::after {
   content: attr(data-tooltip);
   position: absolute;
-  right: 90px;
+  right: 85px;
   background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
   color: white;
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: 600;
   opacity: 0;
   visibility: hidden;
   transform: translateX(10px);
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   white-space: nowrap;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25),
-              0 4px 10px rgba(177, 162, 143, 0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   z-index: 300;
   pointer-events: none;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .sidebar:not(:hover) .nav-item:hover::after {
@@ -1228,13 +1257,13 @@ export default {
 }
 
 .sidebar-footer { 
-  padding: 25px 15px; 
+  padding: 18px 12px; 
   border-top: 1px solid rgba(177, 162, 143, 0.1); 
   background: rgba(0,0,0,0.2);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
 }
 
 .user-profile { 
@@ -1259,22 +1288,22 @@ export default {
 
 .user-name { 
   font-weight: 600; 
-  font-size: 15px; 
+  font-size: 13px; 
   color: #f8fafc; 
   display: block; 
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .user-email { 
-  font-size: 12px; 
+  font-size: 11px; 
   color: #94a3b8; 
   display: block; 
 }
 
 .avatar {
-    width: 44px; 
-    height: 44px; 
-    border-radius: 14px;
+    width: 38px; 
+    height: 38px; 
+    border-radius: 10px;
     background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%); 
     display: flex; 
     align-items: center;
@@ -1298,15 +1327,15 @@ export default {
   background: rgba(239, 68, 68, 0.05); 
   border: 1px solid rgba(239, 68, 68, 0.4); 
   color: #ef4444; 
-  width: 44px; 
-  height: 44px; 
+  width: 38px; 
+  height: 38px; 
   padding: 0; 
-  border-radius: 14px;
+  border-radius: 10px;
   cursor: pointer; 
   display: flex; 
   align-items: center; 
   justify-content: center;
-  gap: 15px;
+  gap: 12px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   overflow: hidden;
@@ -1315,7 +1344,7 @@ export default {
 
 .sidebar:hover .logout-btn {
   width: 100%;
-  padding: 0 15px;
+  padding: 0 12px;
   justify-content: flex-start;
   margin: 0;
 }
@@ -1329,7 +1358,7 @@ export default {
 }
 
 .logout-icon {
-  font-size: 18px;
+  font-size: 16px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -1341,7 +1370,7 @@ export default {
   transform: translateX(10px);
   transition: all 0.4s ease;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .sidebar:hover .logout-text {
@@ -1352,7 +1381,7 @@ export default {
 /* Main Wrapper */
 .main-wrapper { 
   margin-right: 80px; 
-  padding-top: 70px; 
+  padding-top: 60px; 
   min-height: 100vh; 
   position: relative; 
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
@@ -1385,25 +1414,13 @@ export default {
 }
 .logo-text-main { font-size: 100px; font-weight: 900; color: #B1A28F; font-family: 'Amiri', serif; }
 
-.footer { 
-  height: 50px; 
-  background: white; 
-  border-top: 1px solid #e2e8f0; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  margin-right: 80px; 
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-}
+.footer { height: 40px; background: white; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; margin-right: 80px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
 .sidebar:hover ~ .footer {
   margin-right: 260px;
 }
 
-.copyright { 
-  color: #94a3b8; 
-  font-size: 12px; 
-}
+.copyright { color: #94a3b8; font-size: 11px; }
 
 /* Enhanced Responsive Design - All Screen Sizes */
 
