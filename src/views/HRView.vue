@@ -290,16 +290,12 @@
         <div class="modal-body">
           <div v-if="isLoadingDetails" class="loading-state">
             <div class="spinner"></div>
-            <p>جاري تحميل المشاريع من الخادم...</p>
+            <p>جاري تحميل المشاريع...</p>
           </div>
           <div v-else-if="teamProjects.length === 0" class="empty-state">
             <p>لا توجد مشاريع مرتبطة بهذا الفريق حالياً.</p>
           </div>
           <div v-else class="projects-list">
-            <div class="api-info-banner">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-              البيانات محملة من: GET /hr/teams/contracts/:id و GET /hr/teams/contracts/locations/:id
-            </div>
             <div v-for="project in teamProjects" :key="project.id" class="project-item-mini">
               <div class="project-info-mini">
                 <span class="project-name-mini">{{ project.project_name || project.name || project.contract_name || 'مشروع بدون اسم' }}</span>
@@ -1773,27 +1769,6 @@ export default {
   max-height: 400px;
   overflow-y: auto;
   padding-right: 5px;
-}
-
-.api-info-banner {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 15px;
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  border: 1px solid #bfdbfe;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #1e40af;
-  margin-bottom: 10px;
-  font-family: 'Cairo', sans-serif;
-}
-
-.api-info-banner .mini-icon {
-  width: 16px;
-  height: 16px;
-  color: #3b82f6;
 }
 
 .project-item-mini {
