@@ -122,17 +122,20 @@
 
             <div class="team-progress">
                 <div class="progress-info">
-                    <span>متوسط تحقيق الأهداف</span>
-                    <span>{{ team.goalProgress || 0 }}%</span>
+                    <span>متوسط مبيع الفريق</span>
+                    <span class="sales-average-value">{{ team.salesAverage || 0 }}</span>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" :style="{ width: (team.goalProgress || 0) + '%', backgroundColor: team.color || '#B1A28F' }"></div>
                 </div>
             </div>
-            <div class="team-stats" @click="openProjectsModal(team)" style="cursor: pointer;">
+            <div class="team-stats clickable-stat" @click="openProjectsModal(team)" style="cursor: pointer;">
                 <div class="stat-item">
-                    <span class="stat-label">المشاريع الخاصة</span>
-                    <span class="stat-value">{{ team.soldProjects || 0 }} مشروع</span>
+                    <span class="stat-label">المشاريع المرتبطة</span>
+                    <span class="stat-value projects-count">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-icon inline-icon"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        {{ team.soldProjects || 0 }} مشروع
+                    </span>
                 </div>
             </div>
             <div class="team-actions">
@@ -287,12 +290,16 @@
         <div class="modal-body">
           <div v-if="isLoadingDetails" class="loading-state">
             <div class="spinner"></div>
-            <p>جاري تحميل المشاريع...</p>
+            <p>جاري تحميل المشاريع من الخادم...</p>
           </div>
           <div v-else-if="teamProjects.length === 0" class="empty-state">
             <p>لا توجد مشاريع مرتبطة بهذا الفريق حالياً.</p>
           </div>
           <div v-else class="projects-list">
+            <div class="api-info-banner">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              البيانات محملة من: GET /hr/teams/contracts/:id و GET /hr/teams/contracts/locations/:id
+            </div>
             <div v-for="project in teamProjects" :key="project.id" class="project-item-mini">
               <div class="project-info-mini">
                 <span class="project-name-mini">{{ project.project_name || project.name || project.contract_name || 'مشروع بدون اسم' }}</span>
@@ -399,9 +406,33 @@ export default {
         isLoadingDetails.value = true
         try {
             // Fetch contracts/projects for this team using HR specific endpoint
-            const response = await hrService.getTeamContracts(team.id)
-            // Handle nested data structure as shown in Postman image
-            teamProjects.value = response.data || response || []
+            const contractsResponse = await hrService.getTeamContracts(team.id)
+            const contracts = contractsResponse.data || contractsResponse || []
+            
+            // For each contract, fetch location details
+            const enrichedContracts = await Promise.all(contracts.map(async (contract) => {
+                try {
+                    // Get contract location by team ID (assuming contract has location info)
+                    const locationsResponse = await hrService.getTeamContractLocations(team.id)
+                    const locations = locationsResponse.data || locationsResponse || []
+                    
+                    // Find matching location for this contract (if available by matching IDs or names)
+                    const contractLocation = locations.find(loc => loc.contract_id === contract.id) || locations[0] || {}
+                    
+                    return {
+                        ...contract,
+                        city: contractLocation.city || contract.city || '',
+                        district: contractLocation.district || contract.district || '',
+                        location: contractLocation.location || contract.location || '',
+                        address: contractLocation.address || contract.address || ''
+                    }
+                } catch (locErr) {
+                    console.error('Error fetching location for contract:', locErr)
+                    return contract
+                }
+            }))
+            
+            teamProjects.value = enrichedContracts
         } catch (error) {
             console.error('Error fetching team projects:', error)
             teamProjects.value = []
@@ -580,16 +611,56 @@ export default {
             params.search = teamSearchQuery.value
         }
         const data = await hrService.getTeams(params)
-        // Ensure data is an array
+        // Ensure data is an array - teams come with id and name
         const teams = Array.isArray(data) ? data : (data?.data || [])
-        teamsData.splice(0, teamsData.length, ...teams)
+        
+        // For each team, fetch additional data (contracts count and sales average)
+        const enrichedTeams = await Promise.all(teams.map(async (team) => {
+            try {
+                // Get team contracts to count projects
+                const contracts = await hrService.getTeamContracts(team.id)
+                const contractsArray = Array.isArray(contracts) ? contracts : (contracts?.data || [])
+                
+                // Get team sales average
+                const salesAvg = await hrService.getTeamSalesAverage(team.id)
+                const avgValue = typeof salesAvg === 'number' ? salesAvg : (salesAvg?.average || 0)
+                
+                // Get contract locations for display
+                const locations = await hrService.getTeamContractLocations(team.id)
+                const locationsArray = Array.isArray(locations) ? locations : (locations?.data || [])
+                const locationsText = locationsArray.map(loc => `${loc.city || ''} ${loc.district || ''}`).filter(Boolean).join('، ') || 'غير محدد'
+                
+                return {
+                    ...team,
+                    soldProjects: contractsArray.length,
+                    salesAverage: avgValue,
+                    locations: locationsText,
+                    goalProgress: 0, // Will be calculated based on sales average vs goal
+                    members: team.members || [],
+                    color: '#B1A28F'
+                }
+            } catch (err) {
+                console.error(`Error enriching team ${team.id}:`, err)
+                return {
+                    ...team,
+                    soldProjects: 0,
+                    salesAverage: 0,
+                    locations: 'غير محدد',
+                    goalProgress: 0,
+                    members: team.members || [],
+                    color: '#B1A28F'
+                }
+            }
+        }))
+        
+        teamsData.splice(0, teamsData.length, ...enrichedTeams)
       } catch (error) {
         console.error('Error loading teams:', error)
         // Fallback to mock data
         teamsData.splice(0, teamsData.length,
-          { id: 1, name: 'فريق المبيعات الرياض', members: ['أحمد', 'خالد', 'سارة', 'فهد', 'محمد', 'نورة'], goalProgress: 85, soldProjects: 12, totalValue: '1.2M', color: '#B1A28F', locations: 'الرياض - حي الياسمين، حي النرجس' },
-          { id: 2, name: 'فريق التطوير العقاري', members: ['علي', 'عمر', 'ريم', 'ليلى', 'حسن'], goalProgress: 60, soldProjects: 4, totalValue: '3.5M', color: '#1e3a5f', locations: 'جدة - أبحر الشمالية' },
-          { id: 3, name: 'فريق التسويق الميداني', members: ['سلطان', 'ماجد', 'أمل', 'نواف'], goalProgress: 92, soldProjects: 24, totalValue: '850K', color: '#B1A28F', locations: 'الدمام - حي الشاطئ' }
+          { id: 1, name: 'فريق المبيعات الرياض', members: ['أحمد', 'خالد', 'سارة', 'فهد', 'محمد', 'نورة'], goalProgress: 85, soldProjects: 12, totalValue: '1.2M', color: '#B1A28F', locations: 'الرياض - حي الياسمين، حي النرجس', salesAverage: 2.5 },
+          { id: 2, name: 'فريق التطوير العقاري', members: ['علي', 'عمر', 'ريم', 'ليلى', 'حسن'], goalProgress: 60, soldProjects: 4, totalValue: '3.5M', color: '#1e3a5f', locations: 'جدة - أبحر الشمالية', salesAverage: 1.8 },
+          { id: 3, name: 'فريق التسويق الميداني', members: ['سلطان', 'ماجد', 'أمل', 'نواف'], goalProgress: 92, soldProjects: 24, totalValue: '850K', color: '#B1A28F', locations: 'الدمام - حي الشاطئ', salesAverage: 3.2 }
         )
       }
     }
@@ -1119,6 +1190,13 @@ export default {
   color: #64748b;
 }
 
+.sales-average-value {
+  color: #B1A28F;
+  font-weight: 800;
+  font-size: 14px;
+  font-family: 'Cairo', sans-serif;
+}
+
 .progress-bar {
   height: 8px;
   background: #f1f5f9;
@@ -1135,9 +1213,39 @@ export default {
   border-top: 1px solid #f1f5f9;
 }
 
+.team-stats.clickable-stat {
+  border: 2px dashed #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 10px;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  transition: all 0.3s ease;
+}
+
+.team-stats.clickable-stat:hover {
+  border-color: #B1A28F;
+  background: linear-gradient(135deg, #fdfbf7 0%, #ffffff 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(177, 162, 143, 0.15);
+}
+
 .stat-item { display: flex; flex-direction: column; gap: 3px; }
 .stat-label { font-size: 10px; color: #94a3b8; font-weight: 600; }
 .stat-value { font-size: 14px; font-weight: 700; color: #1e293b; }
+
+.stat-value.projects-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #B1A28F;
+  font-size: 16px;
+}
+
+.inline-icon {
+  width: 18px;
+  height: 18px;
+  color: #B1A28F;
+}
 
 /* Performance Tables - Luxury Enhanced */
 .metrics-table-container {
@@ -1667,6 +1775,27 @@ export default {
   padding-right: 5px;
 }
 
+.api-info-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 10px;
+  font-family: 'Cairo', sans-serif;
+}
+
+.api-info-banner .mini-icon {
+  width: 16px;
+  height: 16px;
+  color: #3b82f6;
+}
+
 .project-item-mini {
   display: flex;
   justify-content: space-between;
@@ -1764,5 +1893,31 @@ export default {
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f1f5f9;
+  border-top-color: #B1A28F;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>
