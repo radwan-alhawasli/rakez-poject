@@ -18,8 +18,11 @@ export default {
 
 <style>
 @import './assets/luxury-theme.css';
+@import './assets/premium-typography.css';
+@import './assets/premium-spacing.css';
 @import './assets/global-luxury-styles.css';
 @import './assets/responsive-enhancements.css';
+@import './assets/ultra-luxury-override.css';
 
 body {
   font-family: 'Cairo', 'Tajawal', sans-serif;

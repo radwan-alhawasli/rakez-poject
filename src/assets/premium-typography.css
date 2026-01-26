@@ -1,0 +1,418 @@
+/**
+ * Premium Typography System
+ * World-class text rendering and sizing
+ */
+
+/* ==========================================
+   FONT OPTIMIZATION - CRYSTAL CLEAR
+   ========================================== */
+
+body {
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+  font-feature-settings: 'kern' 1, 'liga' 1 !important;
+}
+
+/* Better text on retina displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body {
+    -webkit-font-smoothing: subpixel-antialiased !important;
+  }
+}
+
+/* ==========================================
+   NUMBER DISPLAY - ALWAYS WESTERN
+   ========================================== */
+
+/* Critical: Force all numbers to Western numerals */
+html {
+  -webkit-locale: 'en-US' !important;
+}
+
+body {
+  font-feature-settings: 'lnum' 1, 'tnum' 1 !important;
+}
+
+/* Target all potential number containers */
+*[class*="value"],
+*[class*="count"],
+*[class*="number"],
+*[class*="price"],
+*[class*="amount"],
+*[class*="stat"],
+*[class*="metric"],
+*[class*="kpi"],
+td, th, span, div, p {
+  font-variant-numeric: lining-nums tabular-nums !important;
+  direction: ltr !important;
+  unicode-bidi: embed !important;
+}
+
+/* Input fields with numbers */
+input[type="number"],
+input[type="tel"],
+input[inputmode="numeric"] {
+  font-variant-numeric: lining-nums !important;
+  direction: ltr !important;
+}
+
+/* ==========================================
+   LUXURY FONT SIZES - BOLD STATEMENT
+   ========================================== */
+
+/* Hero Text */
+.hero-title,
+.display-title {
+  font-size: clamp(42px, 6vw, 72px) !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.04em !important;
+}
+
+/* Display Numbers - Extra Large */
+.display-number {
+  font-size: clamp(56px, 8vw, 96px) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+/* Section Headings - Clear Hierarchy */
+.heading-xl {
+  font-size: clamp(32px, 4vw, 48px) !important;
+  font-weight: 800 !important;
+}
+
+.heading-lg {
+  font-size: clamp(28px, 3.5vw, 42px) !important;
+  font-weight: 800 !important;
+}
+
+.heading-md {
+  font-size: clamp(24px, 3vw, 36px) !important;
+  font-weight: 700 !important;
+}
+
+.heading-sm {
+  font-size: clamp(20px, 2.5vw, 30px) !important;
+  font-weight: 700 !important;
+}
+
+/* Body Text - Comfortable Reading */
+.text-xl {
+  font-size: 20px !important;
+  line-height: 1.8 !important;
+}
+
+.text-lg {
+  font-size: 18px !important;
+  line-height: 1.7 !important;
+}
+
+.text-md {
+  font-size: 16px !important;
+  line-height: 1.65 !important;
+}
+
+.text-sm {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+
+.text-xs {
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+/* ==========================================
+   FONT WEIGHTS - CLEAR DISTINCTION
+   ========================================== */
+
+.font-light { font-weight: 300 !important; }
+.font-normal { font-weight: 400 !important; }
+.font-medium { font-weight: 500 !important; }
+.font-semibold { font-weight: 600 !important; }
+.font-bold { font-weight: 700 !important; }
+.font-extrabold { font-weight: 800 !important; }
+.font-black { font-weight: 900 !important; }
+
+/* ==========================================
+   TEXT COLORS - LUXURY PALETTE
+   ========================================== */
+
+.text-primary { color: #1e3a5f !important; }
+.text-gold { color: #B1A28F !important; }
+.text-secondary { color: #64748b !important; }
+.text-muted { color: #94a3b8 !important; }
+.text-light { color: #cbd5e1 !important; }
+.text-dark { color: #1e293b !important; }
+.text-white { color: #ffffff !important; }
+
+.text-success { color: #16a34a !important; }
+.text-warning { color: #f59e0b !important; }
+.text-danger { color: #ef4444 !important; }
+.text-info { color: #3b82f6 !important; }
+
+/* ==========================================
+   TEXT UTILITIES - PREMIUM POLISH
+   ========================================== */
+
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+.text-left { text-align: left !important; }
+
+.text-uppercase { text-transform: uppercase !important; }
+.text-lowercase { text-transform: lowercase !important; }
+.text-capitalize { text-transform: capitalize !important; }
+
+.text-italic { font-style: italic !important; }
+.text-normal { font-style: normal !important; }
+
+.text-underline { text-decoration: underline !important; }
+.text-no-decoration { text-decoration: none !important; }
+
+/* Letter Spacing */
+.tracking-tighter { letter-spacing: -0.04em !important; }
+.tracking-tight { letter-spacing: -0.02em !important; }
+.tracking-normal { letter-spacing: 0 !important; }
+.tracking-wide { letter-spacing: 0.02em !important; }
+.tracking-wider { letter-spacing: 0.04em !important; }
+.tracking-widest { letter-spacing: 0.08em !important; }
+
+/* Line Height */
+.leading-none { line-height: 1 !important; }
+.leading-tight { line-height: 1.25 !important; }
+.leading-snug { line-height: 1.4 !important; }
+.leading-normal { line-height: 1.65 !important; }
+.leading-relaxed { line-height: 1.8 !important; }
+.leading-loose { line-height: 2 !important; }
+
+/* ==========================================
+   TEXT EFFECTS - LUXURY POLISH
+   ========================================== */
+
+.text-shadow-sm {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.text-shadow-md {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+}
+
+.text-shadow-lg {
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+.text-shadow-gold {
+  text-shadow: 0 2px 8px rgba(177, 162, 143, 0.3) !important;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #B1A28F 0%, #d4c4a8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-navy {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c4a6f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ==========================================
+   READABLE LINE LENGTH - LUXURY CONTENT
+   ========================================== */
+
+.prose,
+.content-text,
+.article {
+  max-width: 75ch !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.prose-wide {
+  max-width: 85ch !important;
+}
+
+.prose-narrow {
+  max-width: 65ch !important;
+}
+
+/* ==========================================
+   EMPHASIS & HIGHLIGHTING
+   ========================================== */
+
+strong, b {
+  font-weight: 700 !important;
+  color: #1e3a5f !important;
+}
+
+em, i {
+  font-style: italic !important;
+  color: #64748b !important;
+}
+
+mark,
+.highlight {
+  background: linear-gradient(135deg, rgba(177, 162, 143, 0.15) 0%, rgba(177, 162, 143, 0.08) 100%) !important;
+  color: #1e3a5f !important;
+  padding: 2px 8px !important;
+  border-radius: 6px !important;
+}
+
+/* ==========================================
+   LINKS - ELEGANT STYLING
+   ========================================== */
+
+a:not(.nav-item):not(.btn):not([class*="button"]) {
+  color: #B1A28F !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  border-bottom: 1px solid transparent !important;
+}
+
+a:not(.nav-item):not(.btn):hover {
+  color: #8c7851 !important;
+  border-bottom-color: #B1A28F !important;
+}
+
+/* ==========================================
+   BLOCKQUOTES - PREMIUM
+   ========================================== */
+
+blockquote {
+  border-right: 4px solid #B1A28F !important;
+  padding: 24px 32px !important;
+  margin: 32px 0 !important;
+  background: linear-gradient(135deg, #fdfbf7 0%, #ffffff 100%) !important;
+  border-radius: 16px !important;
+  font-size: 18px !important;
+  font-style: italic !important;
+  color: #475569 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ==========================================
+   CODE & PREFORMATTED - ELEGANT
+   ========================================== */
+
+code {
+  background: rgba(177, 162, 143, 0.08) !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-family: 'Courier New', monospace !important;
+  color: #B1A28F !important;
+  font-weight: 600 !important;
+}
+
+pre {
+  background: #1e293b !important;
+  padding: 28px !important;
+  border-radius: 20px !important;
+  overflow-x: auto !important;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* ==========================================
+   LISTS - SPACIOUS & CLEAR
+   ========================================== */
+
+ul li::marker,
+ol li::marker {
+  color: #B1A28F !important;
+  font-weight: 700 !important;
+}
+
+/* ==========================================
+   SELECTION - BRANDED
+   ========================================== */
+
+::selection {
+  background: rgba(177, 162, 143, 0.25) !important;
+  color: #1e3a5f !important;
+}
+
+::-moz-selection {
+  background: rgba(177, 162, 143, 0.25) !important;
+  color: #1e3a5f !important;
+}
+
+/* ==========================================
+   PLACEHOLDER TEXT - ELEGANT
+   ========================================== */
+
+::placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.7 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em !important;
+}
+
+::-webkit-input-placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.7 !important;
+}
+
+::-moz-placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.7 !important;
+}
+
+:-ms-input-placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.7 !important;
+}
+
+/* ==========================================
+   RESPONSIVE TYPOGRAPHY
+   ========================================== */
+
+@media (max-width: 991px) {
+  .stat-value {
+    font-size: 46px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  h1, .page-title {
+    font-size: 32px !important;
+  }
+  
+  h2 {
+    font-size: 26px !important;
+  }
+  
+  .stat-value {
+    font-size: 40px !important;
+  }
+  
+  p {
+    font-size: 15px !important;
+  }
+}
+
+@media (max-width: 575px) {
+  h1, .page-title {
+    font-size: 28px !important;
+  }
+  
+  h2 {
+    font-size: 24px !important;
+  }
+  
+  .stat-value {
+    font-size: 36px !important;
+  }
+  
+  .welcome-subtitle,
+  .page-subtitle {
+    font-size: 16px !important;
+  }
+}
