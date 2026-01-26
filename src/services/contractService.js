@@ -88,10 +88,11 @@ const contractService = {
   /**
    * جلب قائمة العقود
    * GET /contracts/index
+   * @param {Object} filters - Optional filters like { status: 'completed', has_photography: 1 }
    */
-  async getContracts() {
+  async getContracts(filters = {}) {
     try {
-      const response = await apiClient.get('/contracts/index')
+      const response = await apiClient.get('/contracts/index', { params: filters })
       const res = response.data
       let contracts = []
       if (Array.isArray(res)) {
@@ -106,6 +107,45 @@ const contractService = {
       return Array.isArray(contracts) ? contracts : []
     } catch (error) {
       console.error('Error fetching contracts:', error)
+      throw error
+    }
+  },
+
+  /**
+   * جلب المشاريع للمحرر
+   * GET /editor/contracts/index
+   */
+  async getEditorContracts() {
+    try {
+      const response = await apiClient.get('/editor/contracts/index')
+      const res = response.data
+      let contracts = []
+      if (Array.isArray(res)) {
+        contracts = res
+      } else if (res && res.data && Array.isArray(res.data)) {
+        contracts = res.data
+      } else if (res && res.data && res.data.data && Array.isArray(res.data.data)) {
+        contracts = res.data.data
+      } else {
+        contracts = res.data || []
+      }
+      return Array.isArray(contracts) ? contracts : []
+    } catch (error) {
+      console.error('Error fetching editor contracts:', error)
+      throw error
+    }
+  },
+
+  /**
+   * جلب تفاصيل مشروع للمحرر
+   * GET /editor/contracts/show/:id
+   */
+  async getEditorContractById(id) {
+    try {
+      const response = await apiClient.get(`/editor/contracts/show/${id}`)
+      return response.data.data || response.data
+    } catch (error) {
+      console.error('Error fetching editor contract by id:', error)
       throw error
     }
   },
@@ -370,6 +410,52 @@ const contractService = {
     } catch (error) {
       console.error('Error fetching developers:', error)
       return []
+    }
+  },
+
+  /**
+   * جلب بيانات قسم المونتاج
+   * GET /montage-department/show/:id
+   */
+  async getMontage(id) {
+    try {
+      const response = await apiClient.get(`/montage-department/show/${id}`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching montage data:', error)
+      return null
+    }
+  },
+
+  /**
+   * حفظ بيانات قسم المونتاج
+   * POST /montage-department/store/:id
+   */
+  async storeMontage(id, payload) {
+    try {
+      const response = await apiClient.post(`/montage-department/store/${id}`, payload)
+      return response.data
+    } catch (error) {
+      console.error('Error storing montage data:', error)
+      throw error
+    }
+  },
+
+  /**
+   * تحديث بيانات قسم المونتاج
+   * POST /montage-department/update/:id
+   * (User request implies POST or PUT, keeping standard unless failed)
+   */
+  async updateMontage(id, payload) {
+    try {
+      // User specific endpoint example usually POST for updates in Laravel often?
+      // But adhering to REST for now or POST as per user implicit text.
+      // User text: {{server}}/montage-department/update/2
+      const response = await apiClient.post(`/montage-department/update/${id}`, payload)
+      return response.data
+    } catch (error) {
+      console.error('Error updating montage data:', error)
+      throw error
     }
   },
 

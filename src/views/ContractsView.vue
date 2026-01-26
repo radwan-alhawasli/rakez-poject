@@ -116,10 +116,16 @@ export default {
       try {
         // Dynamic service call based on role
         // Role 1 (Admin) uses adminIndex
+        // Role 4 (Editor) uses editor/contracts/index
         // Role 3 (Project Manager) and others use contracts/index
-        const serviceCall = (userRole.value == 1)
-          ? contractService.getAllContracts() 
-          : contractService.getContracts()
+        let serviceCall
+        if (userRole.value == 1) {
+          serviceCall = contractService.getAllContracts()
+        } else if (userRole.value == 4) {
+          serviceCall = contractService.getEditorContracts()
+        } else {
+          serviceCall = contractService.getContracts()
+        }
           
         const data = await serviceCall
         
@@ -174,7 +180,13 @@ export default {
     const viewContract = async (c) => {
       try {
         // جلب تفاصيل العقد الكاملة من API
-        const fullDetails = await contractService.getContractById(c.id)
+        let fullDetails
+        if (userRole.value == 4) {
+            fullDetails = await contractService.getEditorContractById(c.id)
+        } else {
+            fullDetails = await contractService.getContractById(c.id)
+        }
+        
         selectedContract.value = {
           ...c,
           ...fullDetails

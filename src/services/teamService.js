@@ -5,17 +5,29 @@ import apiClient from '../api/apiClient'
  */
 
 /**
- * Get all teams
+ * Get all teams with optional search
  * GET /project_management/teams/index
+ * @param {string} search - Optional search query
  */
-export const getAllTeams = async (searchTerm = '') => {
+export const getTeams = async (search = '') => {
     try {
-        const response = await apiClient.get('/project_management/teams/index', {
-            params: { search: searchTerm }
-        })
-        return response.data
+        const params = search ? { search } : {}
+        const response = await apiClient.get('/project_management/teams/index', { params })
+        const res = response.data
+
+        // Handle different response formats
+        let teams = []
+        if (Array.isArray(res)) {
+            teams = res
+        } else if (res && res.data && Array.isArray(res.data)) {
+            teams = res.data
+        } else {
+            teams = res.data || []
+        }
+
+        return Array.isArray(teams) ? teams : []
     } catch (error) {
-        console.error('Error fetching all teams:', error)
+        console.error('Error fetching teams:', error)
         throw error
     }
 }
@@ -42,7 +54,7 @@ export const createTeam = async (teamData) => {
  */
 export const updateTeam = async (id, teamData) => {
     try {
-        const response = await apiClient.put(`/project_management/teams/update/${id}`, teamData)
+        const response = await apiClient.post(`/project_management/teams/update/${id}`, teamData)
         return response.data
     } catch (error) {
         console.error(`Error updating team ${id}:`, error)
@@ -57,7 +69,7 @@ export const updateTeam = async (id, teamData) => {
 export const getTeamById = async (id) => {
     try {
         const response = await apiClient.get(`/project_management/teams/show/${id}`)
-        return response.data
+        return response.data.data || response.data
     } catch (error) {
         console.error(`Error fetching team ${id}:`, error)
         throw error
@@ -151,7 +163,7 @@ export const getContractTeams = async (contractId) => {
 }
 
 export default {
-    getAllTeams,
+    getTeams,
     createTeam,
     updateTeam,
     getTeamById,
