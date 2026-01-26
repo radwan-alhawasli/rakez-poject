@@ -329,7 +329,6 @@ import TeamModal from '../components/TeamModal.vue'
 import LinkMarketersModal from '../components/LinkMarketersModal.vue'
 import ReportsTab from '../components/ReportsTab.vue'
 import hrService from '../services/hrService'
-import teamService from '../services/teamService'
 import authService from '../services/authService'
 
 export default {
