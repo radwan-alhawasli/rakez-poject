@@ -187,6 +187,62 @@ export const getTeamById = async (teamId) => {
 }
 
 /**
+ * Create a new team
+ * POST /project_management/teams/store
+ */
+export const createTeam = async (teamData) => {
+    try {
+        const response = await apiClient.post('/project_management/teams/store', teamData)
+        return response.data
+    } catch (error) {
+        console.error('Error creating team:', error)
+        throw error
+    }
+}
+
+/**
+ * Update an existing team
+ * POST /project_management/teams/update/:id
+ */
+export const updateTeam = async (teamId, teamData) => {
+    try {
+        const response = await apiClient.post(`/project_management/teams/update/${teamId}`, teamData)
+        return response.data
+    } catch (error) {
+        console.error(`Error updating team ${teamId}:`, error)
+        throw error
+    }
+}
+
+/**
+ * Delete a team
+ * DELETE /project_management/teams/delete/:id
+ */
+export const deleteTeam = async (teamId) => {
+    try {
+        const response = await apiClient.delete(`/project_management/teams/delete/${teamId}`)
+        return response.data
+    } catch (error) {
+        console.error(`Error deleting team ${teamId}:`, error)
+        throw error
+    }
+}
+
+/**
+ * Link marketers to team
+ * POST /project_teams/teams/add/:teamId
+ */
+export const linkMarketersToTeam = async (teamId, marketerIds) => {
+    try {
+        const response = await apiClient.post(`/project_teams/teams/add/${teamId}`, { team_ids: marketerIds })
+        return response.data
+    } catch (error) {
+        console.error(`Error linking marketers to team ${teamId}:`, error)
+        throw error
+    }
+}
+
+/**
  * Get team contracts (projects)
  * GET /hr/teams/contracts/:id
  */
@@ -256,6 +312,10 @@ export default {
     // Teams
     getTeams,
     getTeamById,
+    createTeam,
+    updateTeam,
+    deleteTeam,
+    linkMarketersToTeam,
     getTeamContracts,
     getTeamContractLocations,
     getTeamsForContract,

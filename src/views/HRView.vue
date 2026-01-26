@@ -108,30 +108,31 @@
                         {{ team.locations || 'غير محدد' }}
                     </div>
                 </div>
-                <div class="team-member-count">{{ team.members.length }} مسوقين</div>
+                <div class="team-member-count">{{ team.members?.length || 0 }} مسوقين</div>
             </div>
             
             <div class="team-marketers-list" @click="openMarketersModal(team)" style="cursor: pointer;">
                 <div class="marketers-label">المسوقين:</div>
                 <div class="marketer-avatars">
-                    <div v-for="m in team.members.slice(0, 5)" :key="m" class="small-avatar" :title="m">{{ m.charAt(0) }}</div>
-                    <div v-if="team.members.length > 5" class="small-avatar extra">+{{ team.members.length - 5 }}</div>
+                    <div v-for="m in (team.members || []).slice(0, 5)" :key="m" class="small-avatar" :title="m">{{ m.charAt(0) }}</div>
+                    <div v-if="team.members?.length > 5" class="small-avatar extra">+{{ team.members.length - 5 }}</div>
+                    <div v-if="!team.members || team.members.length === 0" class="no-members-hint">لا يوجد مسوقين</div>
                 </div>
             </div>
 
             <div class="team-progress">
                 <div class="progress-info">
                     <span>متوسط تحقيق الأهداف</span>
-                    <span>{{ team.goalProgress }}%</span>
+                    <span>{{ team.goalProgress || 0 }}%</span>
                 </div>
                 <div class="progress-bar">
-                    <div class="progress-fill" :style="{ width: team.goalProgress + '%', backgroundColor: team.color }"></div>
+                    <div class="progress-fill" :style="{ width: (team.goalProgress || 0) + '%', backgroundColor: team.color || '#B1A28F' }"></div>
                 </div>
             </div>
             <div class="team-stats" @click="openProjectsModal(team)" style="cursor: pointer;">
                 <div class="stat-item">
                     <span class="stat-label">المشاريع الخاصة</span>
-                    <span class="stat-value">{{ team.soldProjects }} مشروع</span>
+                    <span class="stat-value">{{ team.soldProjects || 0 }} مشروع</span>
                 </div>
             </div>
             <div class="team-actions">
@@ -351,7 +352,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import UserManagement from '../components/UserManagement.vue'
 import AddUserModal from '../components/AddUserModal.vue'
@@ -424,6 +425,21 @@ export default {
         if (name === 'HRUsers') return 'users'
         if (name === 'HRReports') return 'reports'
         return 'dashboard'
+    })
+
+    // Watch for tab changes to reload data
+    watch(activeTab, (newTab) => {
+      if (newTab === 'dashboard') loadDashboardMetrics()
+      if (newTab === 'teams') loadTeams()
+      if (newTab === 'team-performance') loadTeamPerformance()
+      if (newTab === 'employee-performance') loadMarketerPerformance()
+    }, { immediate: true })
+
+    // Watch for team search query changes
+    watch(teamSearchQuery, () => {
+      if (activeTab.value === 'teams') {
+        loadTeams()
+      }
     })
     
     const isSavingUser = ref(false)
@@ -652,10 +668,7 @@ export default {
 
     // Load data on component mount
     onMounted(() => {
-      loadDashboardMetrics()
-      loadTeams()
-      loadTeamPerformance()
-      loadMarketerPerformance()
+      // Initial load handled by watch
     })
 
     return {
