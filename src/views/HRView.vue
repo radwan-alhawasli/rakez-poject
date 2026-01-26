@@ -610,46 +610,48 @@ export default {
         // Ensure data is an array - teams come with id and name
         const teams = Array.isArray(data) ? data : (data?.data || [])
         
-        // For each team, fetch additional data (contracts count and sales average)
-        const enrichedTeams = await Promise.all(teams.map(async (team) => {
+        // Display teams immediately with basic data
+        const basicTeams = teams.map(team => ({
+            ...team,
+            soldProjects: 0,
+            salesAverage: 0,
+            locations: 'جاري التحميل...',
+            goalProgress: 0,
+            members: team.members || [],
+            color: '#B1A28F'
+        }))
+        
+        teamsData.splice(0, teamsData.length, ...basicTeams)
+        
+        // Then enrich data in background (non-blocking)
+        teams.forEach(async (team, index) => {
             try {
                 // Get team contracts to count projects
-                const contracts = await hrService.getTeamContracts(team.id)
+                const contracts = await hrService.getTeamContracts(team.id).catch(() => [])
                 const contractsArray = Array.isArray(contracts) ? contracts : (contracts?.data || [])
                 
                 // Get team sales average
-                const salesAvg = await hrService.getTeamSalesAverage(team.id)
-                const avgValue = typeof salesAvg === 'number' ? salesAvg : (salesAvg?.average || 0)
+                const salesAvg = await hrService.getTeamSalesAverage(team.id).catch(() => 0)
+                const avgValue = typeof salesAvg === 'number' ? salesAvg : (salesAvg?.average || salesAvg?.data?.average || 0)
                 
                 // Get contract locations for display
-                const locations = await hrService.getTeamContractLocations(team.id)
+                const locations = await hrService.getTeamContractLocations(team.id).catch(() => [])
                 const locationsArray = Array.isArray(locations) ? locations : (locations?.data || [])
                 const locationsText = locationsArray.map(loc => `${loc.city || ''} ${loc.district || ''}`).filter(Boolean).join('، ') || 'غير محدد'
                 
-                return {
-                    ...team,
-                    soldProjects: contractsArray.length,
-                    salesAverage: avgValue,
-                    locations: locationsText,
-                    goalProgress: 0, // Will be calculated based on sales average vs goal
-                    members: team.members || [],
-                    color: '#B1A28F'
+                // Update the specific team in teamsData
+                if (teamsData[index]) {
+                    teamsData[index].soldProjects = contractsArray.length
+                    teamsData[index].salesAverage = avgValue
+                    teamsData[index].locations = locationsText
                 }
             } catch (err) {
                 console.error(`Error enriching team ${team.id}:`, err)
-                return {
-                    ...team,
-                    soldProjects: 0,
-                    salesAverage: 0,
-                    locations: 'غير محدد',
-                    goalProgress: 0,
-                    members: team.members || [],
-                    color: '#B1A28F'
+                if (teamsData[index]) {
+                    teamsData[index].locations = 'غير محدد'
                 }
             }
-        }))
-        
-        teamsData.splice(0, teamsData.length, ...enrichedTeams)
+        })
       } catch (error) {
         console.error('Error loading teams:', error)
         // Fallback to mock data
