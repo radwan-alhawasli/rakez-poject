@@ -4,7 +4,7 @@
     <div class="section-header">
       <div class="header-content">
         <h2 class="section-title">طلب اعتماد مشروع حصري</h2>
-        <p class="section-subtitle">أدخل بيانات المشروع الأولية لإرسال طلب اعتماده كفرصة حصرية لفريقك.</p>
+        <p class="section-subtitle">أدخل بيانات العقد الكاملة لإرسال طلب اعتماده كمشروع حصري.</p>
       </div>
     </div>
 
@@ -12,105 +12,149 @@
     <div class="form-container">
       <form @submit.prevent="handleSubmit">
         
-        <!-- Section: Developer Info -->
+        <!-- Section: Second Party Info -->
         <div class="form-section">
-          <h3 class="section-label">بيانات المشروع الحصري</h3>
+          <h3 class="section-label">بيانات الطرف الثاني</h3>
           
           <div class="form-group-info">
-            <h4 class="group-title">معلومات المطور</h4>
+            <h4 class="group-title">المعلومات الأساسية</h4>
             
             <div class="input-row">
-              <div class="field-group full">
-                <label>اختر مطوراً أو أضف جديداً</label>
-                <div class="select-wrapper">
-                  <select v-model="form.developer_id" class="form-input">
-                    <option value="">-- إضافة مطور جديد --</option>
-                    <option v-for="dev in developers" :key="dev.id" :value="dev.id">{{ dev.name }}</option>
-                  </select>
-                </div>
+              <div class="field-group">
+                <label>اسم الطرف الثاني <span class="required">*</span></label>
+                <input type="text" v-model="form.second_party_name" class="form-input" placeholder="أدخل الاسم" required />
+              </div>
+              <div class="field-group">
+                <label>رقم الهوية / الإقامة <span class="required">*</span></label>
+                <input type="text" v-model="form.second_party_id_number" class="form-input" placeholder="1234567890" required />
               </div>
             </div>
 
             <div class="input-row">
               <div class="field-group">
-                <label>رقم المطور (السجل التجاري)</label>
-                <input type="text" v-model="form.developer_number" class="form-input" placeholder="أدخل رقم السجل" />
+                <label>رقم الجوال <span class="required">*</span></label>
+                <input type="tel" v-model="form.second_party_phone" class="form-input" placeholder="0501234567" required />
               </div>
               <div class="field-group">
-                <label>المطور / الوكيل</label>
-                <input type="text" v-model="form.developer_name" class="form-input" placeholder="اسم المطور" />
+                <label>البريد الإلكتروني <span class="required">*</span></label>
+                <input type="email" v-model="form.second_party_email" class="form-input" placeholder="ahmed@example.com" required />
+              </div>
+            </div>
+
+            <div class="input-row">
+              <div class="field-group">
+                <label>العنوان</label>
+                <input type="text" v-model="form.second_party_address" class="form-input" placeholder="العنوان الكامل" />
+              </div>
+              <div class="field-group">
+                <label>رقم السجل التجاري</label>
+                <input type="text" v-model="form.second_party_cr_number" class="form-input" placeholder="0501234567" />
+              </div>
+            </div>
+
+            <div class="input-row">
+              <div class="field-group">
+                <label>المفوض بالتوقيع</label>
+                <input type="text" v-model="form.second_party_signatory" class="form-input" placeholder="اسم المفوض" />
+              </div>
+              <div class="field-group">
+                <label>الصفة <span class="required">*</span></label>
+                <select v-model="form.second_party_role" class="form-input" required>
+                  <option value="">-- اختر الصفة --</option>
+                  <option value="owner">مالك</option>
+                  <option value="buyer">مشتري</option>
+                </select>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Section: Project Info -->
+        <!-- Section: Contract Info -->
         <div class="form-section">
           <div class="form-group-info">
-            <h4 class="group-title">معلومات المشروع</h4>
+            <h4 class="group-title">معلومات العقد والموقع</h4>
             
             <div class="input-row">
-              <div class="field-group full">
-                <label>اسم المشروع</label>
-                <input type="text" v-model="form.project_name" class="form-input" placeholder="أدخل اسم المشروع" />
+              <div class="field-group">
+                <label>التاريخ الميلادي <span class="required">*</span></label>
+                <input type="date" v-model="form.gregorian_date" class="form-input" required />
+              </div>
+              <div class="field-group">
+                <label>التاريخ الهجري <span class="required">*</span></label>
+                <input type="text" v-model="form.hijri_date" class="form-input" placeholder="12-3-2020" required />
               </div>
             </div>
 
             <div class="input-row">
-                <div class="field-group">
-                <label>الحي</label>
-                <input type="text" v-model="form.district" class="form-input" placeholder="اسم الحي" />
+              <div class="field-group">
+                <label>مدينة العقد <span class="required">*</span></label>
+                <input type="text" v-model="form.contract_city" class="form-input" placeholder="الرياض" required />
               </div>
               <div class="field-group">
-                <label>المدينة</label>
-                <input type="text" v-model="form.city" class="form-input" placeholder="اختر المدينة" />
+                <label>مدة الاتفاقية (بالأيام) <span class="required">*</span></label>
+                <input type="number" v-model="form.agreement_duration_days" class="form-input" placeholder="3" required />
+              </div>
+            </div>
+
+            <div class="input-row">
+              <div class="field-group">
+                <label>خط العرض (Latitude)</label>
+                <input type="number" step="any" v-model="form.lat" class="form-input" placeholder="25.2048" />
+              </div>
+              <div class="field-group">
+                <label>خط الطول (Longitude)</label>
+                <input type="number" step="any" v-model="form.lng" class="form-input" placeholder="55.2708" />
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Section: Units Info -->
+        <!-- Section: Financial Info -->
         <div class="form-section">
           <div class="form-group-info">
-            <h4 class="group-title">معلومات الوحدات والمطتلبات</h4>
+            <h4 class="group-title">المعلومات المالية</h4>
             
-            <div v-for="(unit, index) in form.units" :key="index" class="unit-item">
-              <div class="input-row grid-3">
-                <div class="field-group">
-                  <label>سعر الوحدة</label>
-                  <input type="number" v-model="unit.price" class="form-input" placeholder="0" />
-                </div>
-                <div class="field-group">
-                  <label>نوع الوحدات</label>
-                  <select v-model="unit.type" class="form-input">
-                    <option value="">-- اختر نوعاً --</option>
-                    <option value="شقة">شقة</option>
-                    <option value="فيلا">فيلا</option>
-                    <option value="محل تجاري">محل تجاري</option>
-                    <option value="أراضي">أراضي</option>
-                  </select>
-                </div>
-                <div class="field-group">
-                  <label>عدد الوحدات</label>
-                  <input type="number" v-model="unit.count" class="form-input" placeholder="0" />
-                </div>
-                <button v-if="form.units.length > 1" type="button" class="remove-unit-btn" @click="removeUnit(index)">×</button>
+            <div class="input-row">
+              <div class="field-group">
+                <label>نسبة العمولة (%) <span class="required">*</span></label>
+                <input type="number" step="any" v-model="form.commission_percent" class="form-input" placeholder="5" required />
               </div>
-            </div>
-
-            <button type="button" class="add-unit-link" @click="addUnit">+ إضافة نوع وحدات آخر</button>
-
-            <div class="input-row mt-20">
-              <div class="field-group full">
-                <label>رابط صورة المشروع</label>
-                <input type="text" v-model="form.project_image_url" class="form-input" placeholder="https://example.com/image.jpg" />
+              <div class="field-group">
+                <label>العمولة من <span class="required">*</span></label>
+                <select v-model="form.commission_from" class="form-input" required>
+                  <option value="">-- اختر --</option>
+                  <option value="owner">المالك</option>
+                  <option value="buyer">المشتري</option>
+                </select>
               </div>
             </div>
 
             <div class="input-row">
-              <div class="field-group full">
-                <label>متطلبات المطور / ملاحظات إضافية</label>
-                <textarea v-model="form.developer_requiment" class="form-input text-area" placeholder="أدخل أي ملاحظات إضافية عن المشروع هنا..."></textarea>
+              <div class="field-group">
+                <label>متوسط قيمة العقار</label>
+                <input type="number" v-model="form.avg_property_value" class="form-input" placeholder="29" />
+              </div>
+              <div class="field-group">
+                <label>تاريخ الإصدار</label>
+                <input type="date" v-model="form.release_date" class="form-input" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Agency Info -->
+        <div class="form-section">
+          <div class="form-group-info">
+            <h4 class="group-title">معلومات الوكالة</h4>
+            
+            <div class="input-row">
+              <div class="field-group">
+                <label>رقم الوكالة</label>
+                <input type="text" v-model="form.agency_number" class="form-input" placeholder="234" />
+              </div>
+              <div class="field-group">
+                <label>تاريخ الوكالة</label>
+                <input type="date" v-model="form.agency_date" class="form-input" />
               </div>
             </div>
           </div>
@@ -120,7 +164,7 @@
         <div class="form-actions">
           <button type="submit" class="submit-btn" :disabled="isLoading">
             <span v-if="isLoading" class="spinner-small"></span>
-            إرسال الطلب
+            إرسال طلب العقد
           </button>
         </div>
 
@@ -138,77 +182,112 @@ export default {
   name: 'ExclusiveProjectView',
   setup() {
     const isLoading = ref(false)
-    const developers = ref([]) // To be fetched from API later
 
     const form = reactive({
-      developer_id: '',
-      developer_name: '',
-      developer_number: '',
-      project_name: '',
-      city: '',
-      district: '',
-      project_image_url: '',
-      developer_requiment: '',
-      units: [
-        { type: '', count: 0, price: 0 }
-      ]
+      // Second Party Info
+      second_party_name: '',
+      second_party_id_number: '',
+      second_party_phone: '',
+      second_party_email: '',
+      second_party_address: '',
+      second_party_cr_number: '',
+      second_party_signatory: '',
+      second_party_role: '', // owner or buyer
+      
+      // Contract & Location Info
+      gregorian_date: '',
+      hijri_date: '',
+      contract_city: '',
+      agreement_duration_days: '',
+      lat: '',
+      lng: '',
+      
+      // Financial Info
+      commission_percent: '',
+      commission_from: '', // owner or buyer
+      avg_property_value: '',
+      release_date: '',
+      
+      // Agency Info
+      agency_number: '',
+      agency_date: ''
     })
 
-    const addUnit = () => {
-      form.units.push({ type: '', count: 0, price: 0 })
-    }
-
-    const removeUnit = (index) => {
-      form.units.splice(index, 1)
+    const formatDateForAPI = (dateString) => {
+      if (!dateString) return ''
+      const [year, month, day] = dateString.split('-')
+      return `${day}-${month}-${year}`
     }
 
     const handleSubmit = async () => {
       isLoading.value = true
       try {
-        console.log('Submitting exclusive request:', form)
+        console.log('🚀 Submitting exclusive contract request:', form)
         
+        // Prepare payload matching API structure
         const payload = {
-            project_name: form.project_name,
-            developer_name: form.developer_name,
-            developer_number: form.developer_number,
-            city: form.city,
-            district: form.district,
-            developer_requiment: form.developer_requiment,
-            project_image_url: form.project_image_url,
-            note: form.developer_requiment, // Mapping to note as per API example usually having both
-            units: form.units.map(u => ({
-              type: u.type,
-              count: parseInt(u.count) || 0,
-              price: parseInt(u.price) || 0
-            }))
+          lat: parseFloat(form.lat) || 25.2048,
+          lng: parseFloat(form.lng) || 55.2708,
+          second_party_name: form.second_party_name,
+          second_party_id_number: form.second_party_id_number,
+          second_party_phone: form.second_party_phone,
+          second_party_email: form.second_party_email,
+          second_party_address: form.second_party_address || 'rayad',
+          second_party_cr_number: form.second_party_cr_number || '0501234567',
+          second_party_signatory: form.second_party_signatory || 'sasa',
+          second_party_role: form.second_party_role,
+          gregorian_date: formatDateForAPI(form.gregorian_date),
+          hijri_date: form.hijri_date,
+          contract_city: form.contract_city,
+          agreement_duration_days: form.agreement_duration_days,
+          commission_percent: form.commission_percent,
+          commission_from: form.commission_from,
+          agency_number: form.agency_number || '234',
+          agency_date: formatDateForAPI(form.agency_date) || '12-3-2020',
+          avg_property_value: form.avg_property_value || '29',
+          release_date: formatDateForAPI(form.release_date) || '12-3-2020'
         }
 
-        await contractService.createContract(payload)
+        console.log('📤 Sending payload:', payload)
+        
+        // Get contract ID (assuming it's passed or selected)
+        const contractId = 2 // You can make this dynamic
+        await contractService.completeContractInfo(contractId, payload)
         
         // Trigger notification
         notificationService.addNotification(
-           `تم إضافة مشروع جديد "${form.project_name}" بنجاح وهو الآن قيد المراجعة.`,
-           'info'
+           `تم إرسال طلب العقد لـ "${form.second_party_name}" بنجاح وهو الآن قيد المراجعة.`,
+           'success'
         )
 
-        alert('تم إرسال طلب اعتماد المشروع بنجاح!')
+        alert('✅ تم إرسال طلب العقد بنجاح!')
+        
         // Reset form
         Object.assign(form, {
-          developer_id: '',
-          developer_name: '',
-          developer_number: '',
-          project_name: '',
-          city: '',
-          district: '',
-          project_image_url: '',
-          developer_requiment: '',
-          units: [
-            { type: '', count: 0, price: 0 }
-          ]
+          second_party_name: '',
+          second_party_id_number: '',
+          second_party_phone: '',
+          second_party_email: '',
+          second_party_address: '',
+          second_party_cr_number: '',
+          second_party_signatory: '',
+          second_party_role: '',
+          gregorian_date: '',
+          hijri_date: '',
+          contract_city: '',
+          agreement_duration_days: '',
+          lat: '',
+          lng: '',
+          commission_percent: '',
+          commission_from: '',
+          avg_property_value: '',
+          release_date: '',
+          agency_number: '',
+          agency_date: ''
         })
       } catch (error) {
-        console.error('Submission failed', error)
-        alert('حدث خطأ أثناء إرسال الطلب')
+        console.error('❌ Submission failed', error)
+        alert('حدث خطأ أثناء إرسال الطلب: ' + (error.response?.data?.message || error.message))
       } finally {
         isLoading.value = false
       }
@@ -216,10 +295,7 @@ export default {
 
     return {
       form,
-      developers,
       isLoading,
-      addUnit,
-      removeUnit,
       handleSubmit
     }
   }
@@ -296,6 +372,11 @@ export default {
   margin-bottom: 20px;
 }
 
+.input-row.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+
 .input-row.grid-4 {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -319,6 +400,20 @@ export default {
   font-weight: 500;
 }
 
+.field-group label .required {
+  color: #ef4444;
+  margin-right: 4px;
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper select {
+  width: 100%;
+  cursor: pointer;
+}
+
 .form-input {
   padding: 12px 16px;
   border: 1px solid #e2e8f0;
@@ -336,6 +431,12 @@ export default {
   border-color: #B1A28F;
   box-shadow: 0 0 0 3px rgba(161, 139, 92, 0.1);
   background: white;
+}
+
+.form-input.text-area {
+  min-height: 100px;
+  resize: vertical;
+  font-family: 'Tajawal', sans-serif;
 }
 
 .unit-item {
@@ -383,6 +484,14 @@ export default {
     background: #f1f5f9;
     color: #64748b;
     cursor: default;
+}
+
+.form-actions {
+  margin-top: 40px;
+  display: flex;
+  justify-content: flex-start;
+  padding-top: 30px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .submit-btn {
@@ -433,6 +542,15 @@ export default {
 
 @media (max-width: 768px) {
   .input-row { flex-direction: column; }
+  .input-row.grid-3 { grid-template-columns: 1fr; }
   .input-row.grid-4 { grid-template-columns: 1fr; }
+  
+  .section-title {
+    font-size: 24px;
+  }
+  
+  .form-group-info {
+    padding: 20px;
+  }
 }
 </style>

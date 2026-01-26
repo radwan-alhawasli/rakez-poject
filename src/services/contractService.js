@@ -201,13 +201,22 @@ const contractService = {
    */
   async storeContractInfo(id, payload) {
     try {
-      console.log(`Storing contract info for ${id}:`, payload)
+      console.log(`📝 Storing contract info for ${id}:`, payload)
       const response = await apiClient.post(`/contracts/store/info/${id}`, payload)
+      console.log('✅ Contract info stored successfully:', response.data)
       return response.data
     } catch (error) {
-      console.error('Error storing contract info:', error)
+      console.error('❌ Error storing contract info:', error.response?.data || error)
       throw error
     }
+  },
+
+  /**
+   * Alias: استكمال بيانات العقد (نفس storeContractInfo)
+   * POST /contracts/store/info/:id
+   */
+  async completeContractInfo(id, payload) {
+    return this.storeContractInfo(id, payload)
   },
 
   /**
