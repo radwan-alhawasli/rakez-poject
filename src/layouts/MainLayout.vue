@@ -834,13 +834,18 @@ export default {
 }
 
 .notification-badge {
-    position: absolute; top: -4px; right: -4px;
+    position: absolute; top: -2px; right: -2px; /* Adjusted for circular item */
     background: #ef4444; color: white; border-radius: 50%;
     min-width: 16px; height: 16px; font-size: 9px; font-weight: 800;
     display: flex; align-items: center; justify-content: center;
     border: 1.5px solid white;
     box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);
     animation: pulse 2s infinite;
+}
+
+.sidebar:hover .notification-badge {
+  top: -4px;
+  right: -4px;
 }
 
 @keyframes pulse {
@@ -903,8 +908,13 @@ export default {
 
 .unread-dot {
     width: 5px; height: 5px; background: #B1A28F; border-radius: 50%;
-    position: absolute; top: 18px; left: 12px;
+    position: absolute; top: 12px; left: 12px; /* Adjusted for circular item */
     box-shadow: 0 0 8px rgba(177, 162, 143, 0.8);
+}
+
+.sidebar:hover .unread-dot {
+  top: 18px;
+  left: 12px;
 }
 
 .no-notifications {
@@ -970,7 +980,7 @@ export default {
 .sidebar-logo-img {
     width: 32px;
     height: 32px;
-    border-radius: 8px;
+    border-radius: 50%; /* Circular */
     object-fit: cover;
     border: 1.5px solid rgba(177, 162, 143, 0.4);
     flex-shrink: 0;
@@ -983,6 +993,7 @@ export default {
   transform: rotate(360deg) scale(1.1);
   box-shadow: 0 8px 20px rgba(177, 162, 143, 0.4),
               0 0 15px rgba(177, 162, 143, 0.3);
+  border-radius: 8px; /* Back to rounded square when expanded */
 }
 
 .sidebar-logo-text { 
@@ -1038,16 +1049,29 @@ export default {
 .nav-item {
   display: flex; 
   align-items: center;
-  padding: 12px 14px; 
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: 8px auto; /* Increased vertical spacing */
+  padding: 0;
   color: #94a3b8; 
   text-decoration: none;
   font-size: 14px; 
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-  border-radius: 12px; 
+  border-radius: 50%; 
   white-space: nowrap;
   position: relative;
   border: 1px solid transparent;
   animation: fadeInRight 0.5s ease-out backwards;
+}
+
+.sidebar:hover .nav-item {
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  padding: 0 16px;
+  justify-content: flex-start;
+  margin: 0;
 }
 
 /* Staggered Navigation Animation */
@@ -1082,6 +1106,9 @@ export default {
   border-color: rgba(177, 162, 143, 0.3);
   box-shadow: 0 8px 25px rgba(177, 162, 143, 0.2),
               0 0 15px rgba(177, 162, 143, 0.15);
+}
+
+.sidebar:hover .nav-item:hover {
   transform: translateX(-6px);
 }
 
@@ -1091,6 +1118,10 @@ export default {
   box-shadow: 0 0 10px rgba(177, 162, 143, 0.6);
 }
 
+.sidebar:not(:hover) .nav-item:hover::before {
+  display: none;
+}
+
 .nav-item.active { 
   background: linear-gradient(135deg, rgba(177, 162, 143, 0.2) 0%, rgba(177, 162, 143, 0.05) 100%); 
   color: #d4c4a8; 
@@ -1098,11 +1129,11 @@ export default {
   border: 1px solid rgba(177, 162, 143, 0.3);
   box-shadow: 0 0 20px rgba(177, 162, 143, 0.3),
               inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transform: translateX(-4px);
   position: relative;
 }
 
 .sidebar:hover .nav-item.active {
+  transform: translateX(-4px);
   background: linear-gradient(135deg, rgba(177, 162, 143, 0.3) 0%, rgba(177, 162, 143, 0.1) 100%);
   box-shadow: 0 0 30px rgba(177, 162, 143, 0.4),
               0 0 15px rgba(177, 162, 143, 0.3),
@@ -1133,9 +1164,11 @@ export default {
   width: 3px;
   background: linear-gradient(180deg, #d4c4a8 0%, #B1A28F 100%);
   box-shadow: 0 0 10px rgba(177, 162, 143, 0.5);
+  display: none; /* Hide side indicator when circular */
 }
 
 .sidebar:hover .nav-item.active::before {
+  display: block;
   height: 80%;
   width: 4px;
   background: linear-gradient(180deg, #d4c4a8 0%, #B1A28F 50%, #d4c4a8 100%);
@@ -1184,8 +1217,13 @@ export default {
 .nav-content { 
   display: flex; 
   align-items: center; 
-  gap: 20px; 
+  justify-content: center; /* Center icon when circular */
   width: 100%; 
+}
+
+.sidebar:hover .nav-content {
+  justify-content: flex-start;
+  gap: 20px;
 }
 
 .nav-icon-svg { 
@@ -1220,12 +1258,16 @@ export default {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   font-weight: 500;
   pointer-events: none;
+  position: absolute; /* Don't affect centering when collapsed */
+  right: 60px;
 }
 
 .sidebar:hover .nav-text {
   opacity: 1;
   transform: translateX(0);
   pointer-events: auto;
+  position: relative;
+  right: auto;
 }
 
 /* Luxury Tooltip for collapsed state */
@@ -1301,9 +1343,9 @@ export default {
 }
 
 .avatar {
-    width: 38px; 
-    height: 38px; 
-    border-radius: 10px;
+    width: 44px; 
+    height: 44px; 
+    border-radius: 50%; /* Make it circular */
     background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%); 
     display: flex; 
     align-items: center;
@@ -1321,16 +1363,17 @@ export default {
   border-color: rgba(177, 162, 143, 0.5);
   box-shadow: 0 8px 20px rgba(177, 162, 143, 0.4),
               0 0 15px rgba(177, 162, 143, 0.3);
+  border-radius: 12px; /* Back to rounded square when expanded */
 }
 
 .logout-btn {
   background: rgba(239, 68, 68, 0.05); 
   border: 1px solid rgba(239, 68, 68, 0.4); 
   color: #ef4444; 
-  width: 38px; 
-  height: 38px; 
+  width: 44px; /* Circular size */
+  height: 44px; 
   padding: 0; 
-  border-radius: 10px;
+  border-radius: 50%; /* Circular */
   cursor: pointer; 
   display: flex; 
   align-items: center; 
@@ -1344,9 +1387,11 @@ export default {
 
 .sidebar:hover .logout-btn {
   width: 100%;
-  padding: 0 12px;
+  height: 44px;
+  padding: 0 15px;
   justify-content: flex-start;
   margin: 0;
+  border-radius: 12px; /* Back to rounded square when expanded */
 }
 
 .logout-btn:hover {
