@@ -1,7 +1,12 @@
 import axios from 'axios'
 
+// Use different API URL for development vs production
+const API_URL = process.env.NODE_ENV === 'production' 
+    ? '/api'  // Production: nginx proxy
+    : 'http://143.198.24.230/api'  // Development: direct backend
+
 const apiClient = axios.create({
-    baseURL: '/api',
+    baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
