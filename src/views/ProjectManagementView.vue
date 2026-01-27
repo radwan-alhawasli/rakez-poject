@@ -517,10 +517,12 @@ export default {
 
 .controls-area {
   display: flex; gap: 15px; margin-bottom: 25px;
+  flex-wrap: wrap;
 }
 
 .search-box {
   flex: 1; position: relative;
+  min-width: 250px;
 }
 .search-icon {
   position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
@@ -533,9 +535,14 @@ export default {
 }
 .search-box input:focus { border-color: #B1A28F; }
 
+.filter-dropdown {
+  flex-shrink: 0;
+}
+
 .filter-dropdown select {
   padding: 12px 30px 12px 15px; border: 1px solid #e2e8f0; border-radius: 10px;
   background: white; cursor: pointer; font-family: inherit; outline: none;
+  min-width: 150px;
 }
 
 .tabs-container {
