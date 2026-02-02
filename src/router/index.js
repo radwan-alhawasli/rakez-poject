@@ -120,6 +120,18 @@ const routes = [
                 ]
             },
             {
+                path: 'marketing',
+                name: 'Marketing',
+                component: () => import('../views/MarketingView.vue'),
+                children: [
+                    { path: '', redirect: { name: 'MarketingDashboard' } },
+                    { path: 'dashboard', name: 'MarketingDashboard', component: () => import('../views/MarketingView.vue') },
+                    { path: 'projects', name: 'MarketingProjects', component: () => import('../views/MarketingView.vue') },
+                    { path: 'tasks', name: 'MarketingTasks', component: () => import('../views/MarketingView.vue') },
+                    { path: 'leads', name: 'MarketingLeads', component: () => import('../views/MarketingView.vue') }
+                ]
+            },
+            {
                 path: 'teams',
                 name: 'Teams',
                 component: () => import('../views/TeamsView.vue')
@@ -147,6 +159,8 @@ router.beforeEach((to, from, next) => {
         // Redirection based on user role
         if (user && (user.type == 8 || user.type == 9 || String(user.type).toLowerCase() === 'hr')) {
             next('/hr/dashboard')
+        } else if (user && (user.type == 0 || String(user.type).toLowerCase() === 'marketing')) {
+            next('/marketing/dashboard')
         } else {
             next('/dashboard')
         }

@@ -1,0 +1,4052 @@
+{
+  "info": {
+    "_postman_id": "9eb1f979-be71-4211-a904-a57cdaa2dec7",
+    "name": "rakez_back",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "log_in",
+          "id": "c6bb16ed-ad46-41f9-bb97-6e21b4764c01",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\" : \"admin@gmail.com\",\r\n    \"password\" : \"password\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{server}}/login",
+              "host": [
+                "{{server}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "logout",
+          "id": "58e64b5e-b9a2-4556-aba7-0cbda57977e6",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\" : \"alu@gmail.com\",\r\n    \"password\" : \"password\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{local}}/logout",
+              "host": [
+                "{{local}}"
+              ],
+              "path": [
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "b86cff27-f73d-43fc-9824-8710095a72c8"
+    },
+    {
+      "name": "admin",
+      "item": [
+        {
+          "name": "employee",
+          "item": [
+            {
+              "name": "add_employee",
+              "id": "b4e0c38a-825d-42f6-88bf-32003adb5a39",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "\r\n{\r\n    \"email\" : \"majssdE@gmail.com\",\r\n    \"password\" : \"password\",\r\n    \"phone\" : \"032932224327213\",\r\n    \"name\" : \"ali\",\r\n    \"type\" : 4,\r\n    \r\n    \"is_manager\": true ,\r\n\r\n    \"team\" : 1,\r\n    \"identity_number\" : \"0038262120a2S1\",\r\n    \"birthday\" : \"12-10-2002\",\r\n    \"date_of_works\" : \"12-10-2025\",\r\n    \"contract_type\" : \"full_time\",\r\n    \"salary\" : 2000,\r\n    \"iban\" : \"27162\",\r\n    \"marital_status\" : \"divorced\"         //married,divorced,widowed\r\n\r\n}\r\n\r\n/*\r\n$typeNames = [\r\n    0 => 'marketing',        // التسويق\r\n    1 => 'admin',            // الإدارة (الادمن)\r\n    2 => 'project_acquisition',        // العقود\r\n    3 => 'project_management', // إدارة المشاريع\r\n    is manger => true, // هل الشخص مدير؟\r\n    is manager => fulse, // هل الشخص مدير؟\r\n    4 => 'editor',           // المونتاج\r\n    5 => 'sales',            // المبيعات\r\n    6 => 'hr', // الموارد البشرية\r\n    7 => 'credit',           // الائتمان\r\n    8 => 'inventory', // المخزون\r\n    9 => 'hr', // الموارد البشرية\r\n    \r\n];\r\n*/",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/admin/employees/add_employee",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "employees",
+                    "add_employee"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "delete_employee",
+              "id": "2069aa38-9930-42fb-9229-ada1e27b2baf",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/admin/employees/delete_employee/4",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "employees",
+                    "delete_employee",
+                    "4"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "update_employee",
+              "id": "d673db9d-b05e-4a6d-ad3f-3a640dc9992c",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "\r\n{\r\n  //  \"email\" : \"frt@gmail.com\",\r\n //   \"password\" : \"password\",\r\n  //  \"phone\" : \"0375027213\",\r\n    \"name\" : \"majd\",\r\n   // \"type\" : 0,\r\n    \r\n     \"is_manager\": true ,\r\n\r\n    \"team\" : \"A\",\r\n    \"identity_number\" : \"19992921\",\r\n    \"birthday\" : \"12-10-2003\",\r\n    \"date_of_works\" : \"12-10-2022\",\r\n    \"contract_type\" : \"full_time\",\r\n    \"salary\" : 2000,\r\n    \"iban\" : \"27162\",\r\n    \"marital_status\" : \"divorced\"         //married,divorced,widowed\r\n}\r\n\r\n/*\r\n$typeNames = [\r\n    0 => 'marketing',        // التسويق\r\n    1 => 'admin',            // الإدارة (الادمن)\r\n    2 => 'project_acquisition',        // العقود\r\n    3 => 'project_management', // إدارة المشاريع\r\n    4 => 'editor',           // المونتاج\r\n    5 => 'sales',            // المبيعات\r\n    6 => 'accounting',       // المحاسبة\r\n    7 => 'credit',           // الائتمان\r\n];\r\n*/",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/admin/employees/update_employee/5",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "employees",
+                    "update_employee",
+                    "5"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "list_employees",
+              "id": "fc32d309-ad3c-40c2-a7ef-af6b53cb9449",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   // \"type\": \"marketing\",\r\n   // \"search\": \"ali\", //email or name\r\n\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/admin/employees/list_employees",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "employees",
+                    "list_employees"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "show_employee",
+              "id": "37cc4d19-779f-448a-ab31-700830c4c9d4",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/admin/employees/show_employee/5",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "employees",
+                    "show_employee",
+                    "5"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "b194d47e-e0cf-4be5-a6b2-88542a4106ad"
+        },
+        {
+          "name": "contract",
+          "item": [
+            {
+              "name": "adminIndex",
+              "id": "4ca62ba1-beb3-4a12-94a0-67b8ecb88d6d",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   /* \"developer_number\" : \"2312\",\r\n    \"city\" : \"damascuse\",\r\n    \"project_name\" : \"alsahm\",\r\n    \"district\" : \"alsahm\",\r\n    */\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/admin/contracts/adminIndex",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "contracts",
+                    "adminIndex"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "adminUpdateStatus",
+              "id": "af83a3ec-b614-4f2e-a547-b56d6930937f",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"status\" : \"approved\"\r\n}\r\n\r\n/*\r\n\r\nstatus' => 'required|in:approved,rejected',\r\n*/",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/admin/contracts/adminUpdateStatus/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "contracts",
+                    "adminUpdateStatus",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "show",
+              "id": "ad547483-1948-42dd-85b4-f37c3271ea58",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/contracts/show/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "contracts",
+                    "show",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "51ab396d-d056-4ac1-acba-e1b8817f79e5"
+        },
+        {
+          "name": "data_contract",
+          "item": [
+            {
+              "name": "upload_unit",
+              "item": [
+                {
+                  "name": "show_csv_unit_of_contract",
+                  "id": "c333b584-cb1e-42e9-806d-85f9777bbc6d",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{token}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "GET",
+                    "header": [],
+                    "body": {
+                      "mode": "formdata",
+                      "formdata": [
+                        {
+                          "key": "csv_file",
+                          "type": "file",
+                          "src": "/C:/Users/impos/Desktop/Projects/Rakez/rakez-erp/storage/app/samples/sample_units_english.csv"
+                        }
+                      ]
+                    },
+                    "url": {
+                      "raw": "{{server}}/contracts/units/show/2",
+                      "host": [
+                        "{{server}}"
+                      ],
+                      "path": [
+                        "contracts",
+                        "units",
+                        "show",
+                        "2"
+                      ]
+                    }
+                  },
+                  "response": []
+                }
+              ],
+              "id": "5ae88bc0-0ef6-4f84-9829-df9dec8fce4a"
+            },
+            {
+              "name": "show_data_of_contract",
+              "id": "145bf911-4858-4c73-a42e-c8fa00810da5",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/second-party-data/show/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "second-party-data",
+                    "show",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "0dd90632-4d4f-4255-9494-6ef29366b3d1"
+        },
+        {
+          "name": "Notification",
+          "item": [
+            {
+              "name": "get_all",
+              "id": "3129eacc-a0a6-4d71-91c8-fcfe881ed91f",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "\r\n{\r\n    \"email\" : \"mjul1w1od@gmail.com\",\r\n    \"password\" : \"password\",\r\n    \"phone\" : \"0399324327213\",\r\n    \"name\" : \"ali\",\r\n    \"type\" : 3,\r\n\r\n    \"team\" : \"A\",\r\n    \"identity_number\" : \"00382622721\",\r\n    \"birthday\" : \"12-10-2002\",\r\n    \"date_of_works\" : \"12-10-2025\",\r\n    \"contract_type\" : \"full_time\",\r\n    \"salary\" : 2000,\r\n    \"iban\" : \"27162\",\r\n    \"marital_status\" : \"divorced\"         //married,divorced,widowed\r\n\r\n}\r\n\r\n/*\r\n$typeNames = [\r\n    0 => 'marketing',        // التسويق\r\n    1 => 'admin',            // الإدارة (الادمن)\r\n    2 => 'project_acquisition',        // العقود\r\n    3 => 'project_management', // إدارة المشاريع\r\n    4 => 'editor',           // المونتاج\r\n    5 => 'sales',            // المبيعات\r\n    6 => 'accounting',       // المحاسبة\r\n    7 => 'credit',           // الائتمان\r\n];\r\n*/"
+                },
+                "url": {
+                  "raw": "{{local}}/admin/notifications",
+                  "host": [
+                    "{{local}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "notifications"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "send_to_public",
+              "id": "7feef174-a0ab-4c14-b457-22d9f10369fb",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"message\" : \"jfjjwlfwlfwljl\"\r\n}\r\n\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/admin/notifications/send-public",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "notifications",
+                    "send-public"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "send-to-user",
+              "id": "c9235702-58cb-49c6-9fc1-18a2c1132978",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"user_id\" : 2 ,\r\n    \"message\" : \"bayer\"\r\n}\r\n\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/admin/notifications/send-to-user",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "notifications",
+                    "send-to-user"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "get_user_notification",
+              "id": "a0fb5412-760a-471a-80c2-97a45872ad39",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"user_id\" : 9 ,\r\n    \"message\" : \"bayer\"\r\n}\r\n\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{local}}/admin/notifications/user/9",
+                  "host": [
+                    "{{local}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "notifications",
+                    "user",
+                    "9"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "get_public_notification",
+              "id": "ab7d06bb-aa17-4599-a803-d3d52036e00d",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"user_id\" : 9 ,\r\n    \"message\" : \"bayer\"\r\n}\r\n\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{local}}/admin/notifications/public",
+                  "host": [
+                    "{{local}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "notifications",
+                    "public"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "2965814c-a1ef-4293-a0cd-8845c2c80240"
+        },
+        {
+          "name": "Teams",
+          "item": [
+            {
+              "name": "store",
+              "id": "830f533c-2a08-4243-91ec-6794e1036a37",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n\r\n    \"name\" :  \"A\" ,\r\n    \"description\" : \"JSHSYSBWSBSH\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_management/teams/store",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_management",
+                    "teams",
+                    "store"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "UPDATE",
+              "id": "12043ecc-ce04-4b7f-9268-8513e25a4ee1",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n\r\n    \"name\" :  \"B\" ,\r\n    \"description\" : \"JSHSYSBWSBSH\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_management/teams/update/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_management",
+                    "teams",
+                    "update",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "filter",
+              "id": "0fa51200-76c7-4896-9636-bf9ca7fb1076",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_management/teams/index?search=A",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_management",
+                    "teams",
+                    "index"
+                  ],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "A"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Show",
+              "id": "6402ff61-c9ce-4879-b8da-f783435e8fc4",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_management/teams/show/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_management",
+                    "teams",
+                    "show",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "delete",
+              "id": "9ebe2a0d-8bc8-49ab-b955-39f66cecf936",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_management/teams/delete/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_management",
+                    "teams",
+                    "delete",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "f397108f-6f3c-404f-8449-dac127f10db4"
+        },
+        {
+          "name": "Devolper",
+          "item": [
+            {
+              "name": "get_all_secound_party",
+              "id": "262f4642-925f-419d-a69d-b1d8ad2d8b17",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{server}}/second-party-data/second-parties",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "second-party-data",
+                    "second-parties"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "contracts-by-email",
+              "id": "eb9b6444-db5e-402e-bd94-12f6688e0db1",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\" : \"majdbayer2@gmail.com\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{local}}/second-party-data/contracts-by-email",
+                  "host": [
+                    "{{local}}"
+                  ],
+                  "path": [
+                    "second-party-data",
+                    "contracts-by-email"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "36483c95-f854-4e95-9515-6dc563bee0b4"
+        }
+      ],
+      "id": "a7e67d1c-d52d-4716-b298-ca48795385fb"
+    },
+    {
+      "name": "website",
+      "item": [
+        {
+          "name": "create_contract",
+          "item": [
+            {
+              "name": "store",
+              "id": "324c809b-b9e6-4c11-8f8e-4de4f4329479",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"project_name\": \"مشروع برج الراكز\",\r\n  \"developer_name\": \"شركة التطوير السكني\",\r\n  \"developer_number\": \"DEV-l015-904\",\r\n  \"city\": \"الرياض\",\r\n  \"district\": \"الحمراء\",\r\n  \"developer_requiment\": \"متطلبات المشروع الخاصة\",\r\n  \"project_image_url\": \"https://example.com/image.jpg\",\r\n  \"note\": \"esciption\",\r\n  \"units\": [\r\n    {\r\n      \"type\": \"شقة\",\r\n      \"count\": 3,\r\n      \"price\": 500000\r\n    },\r\n    {\r\n      \"type\": \"فيلا\",\r\n      \"count\": 2,\r\n      \"price\": 1500000\r\n    },\r\n    {\r\n      \"type\": \"محل تجاري\",\r\n      \"count\": 5,\r\n      \"price\": 250000\r\n    }\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/contracts/store",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "contracts",
+                    "store"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "update",
+              "id": "c651ab93-a497-4dc1-9ac3-1106ab4a593e",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"project_name\": \"مشروع برج الراكز\",\r\n  \"developer_name\": \"شركة التطوير السكني\",\r\n  \"developer_number\": \"DEV-2025-001\",\r\n  \"city\": \"الرياض\",\r\n  \"district\": \"الحمراء\",\r\n  \"developer_requiment\": \"متطلبات المشروع الخاصة\",\r\n  \"project_image_url\": \"https://example.com/image.jpg\",\r\n  \"units\": [\r\n    {\r\n      \"type\": \"شقة\",\r\n      \"count\": 3,\r\n      \"price\": 500000\r\n    },\r\n    {\r\n      \"type\": \"فيلا\",\r\n      \"count\": 2,\r\n      \"price\": 1500000\r\n    },\r\n    {\r\n      \"type\": \"محل تجاري\",\r\n      \"count\": 5,\r\n      \"price\": 250000\r\n    }\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/contracts/update/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "contracts",
+                    "update",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "index",
+              "id": "698cbfb7-9a99-4d57-9bc1-32cd3325cc8e",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   /* \"developer_number\" : \"2312\",\r\n    \"city\" : \"damascuse\",\r\n    \"project_name\" : \"alsahm\",\r\n    \"district\" : \"alsahm\",\r\n    \"status\" : \"pending\",\r\n    */\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/contracts/index",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "contracts",
+                    "index"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "show",
+              "id": "ab0c6ffb-bc05-4966-870a-e05981bd2f4d",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/contracts/show/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "contracts",
+                    "show",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "complete_contract_info",
+              "id": "708074fc-0d50-4b0e-868f-f1c1d3b1abb6",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n\r\n    \"lat\": 25.2048,\r\n    \"lng\": 55.2708,\r\n\r\n    \"second_party_name\": \"أحمد محمد علي\",\r\n    \"second_party_id_number\": \"1234567890\",\r\n    \"second_party_phone\": \"0501234567\",\r\n    \"second_party_email\": \"ahmed@example.com\",\r\n    \"second_party_address\": \"rayad\",\r\n    \"second_party_cr_number\": \"0501234567\",\r\n    \"second_party_signatory\": \"sasa\",\r\n    \"second_party_role\": \"owner\",\r\n\r\n    \"gregorian_date\": \"12-3-2020\",\r\n    \"hijri_date\": \"12-3-2020\",\r\n\r\n    \"contract_city\": \"rayad\",\r\n    \"agreement_duration_days\": \"3\",\r\n    \"commission_percent\": \"5\",\r\n    \"commission_from\": \"owner\",   // buyer\r\n    \"agency_number\": \"234\",\r\n    \"agency_date\": \"12-3-2020\",\r\n    \"avg_property_value\": \"29\",\r\n    \"release_date\": \"12-3-2020\"\r\n  }",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/contracts/store/info/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "contracts",
+                    "store",
+                    "info",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "2eea2ba2-5775-4169-a481-860539465a12"
+        },
+        {
+          "name": "Teams",
+          "item": [
+            {
+              "name": "filter",
+              "id": "9540da52-f467-45b8-97ac-71412c7eee41",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/teams/index?search=B",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "teams",
+                    "index"
+                  ],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "B"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Show",
+              "id": "b120e490-abc9-4ede-b15f-d4f58179ce2d",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/teams/show/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "teams",
+                    "show",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "f8b71337-d4cf-4b91-9d89-b84679927dfd"
+        }
+      ],
+      "id": "9d83be00-bf77-4d2b-94cb-f13d01012b3d"
+    },
+    {
+      "name": "Project_Mangment",
+      "item": [
+        {
+          "name": "contract",
+          "item": [
+            {
+              "name": "all_contract",
+              "id": "d41bcfcf-76cd-42e4-9df0-260b86fd105b",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"status\" : \"completed\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/contracts/index",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "contracts",
+                    "index"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "approved",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "show_info_contract",
+              "id": "b44c4aac-58dd-45bf-b257-1829d67be2b4",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/contracts/show/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "contracts",
+                    "show",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "update-status",
+              "id": "613d8eb9-ee69-4d18-ac67-8ea6c984e86a",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"status\" : \"ready\"\r\n}\r\n\r\n\r\n//                'status' => 'required|string|in:ready,rejected',\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{local}}/contracts/update-status/1",
+                  "host": [
+                    "{{local}}"
+                  ],
+                  "path": [
+                    "contracts",
+                    "update-status",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "33eadb38-a633-4dd5-a0c3-12e1b6cb8e46"
+        },
+        {
+          "name": "data_contract",
+          "item": [
+            {
+              "name": "upload_unit",
+              "item": [
+                {
+                  "name": "store_csv_unit_file",
+                  "id": "b69bd984-cac9-41bb-aebc-77d72b28e047",
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{token}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "formdata",
+                      "formdata": [
+                        {
+                          "key": "csv_file",
+                          "type": "file",
+                          "src": "/C:/Users/impos/Desktop/Projects/Rakez/rakez-erp/storage/app/samples/sample_units.csv"
+                        }
+                      ]
+                    },
+                    "url": {
+                      "raw": "{{server}}/contracts/units/upload-csv/1",
+                      "host": [
+                        "{{server}}"
+                      ],
+                      "path": [
+                        "contracts",
+                        "units",
+                        "upload-csv",
+                        "1"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "store_one",
+                  "id": "b66a01f5-a2b0-4b85-b8be-4215131c99e1",
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{token}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json",
+                        "type": "text"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n                \"unit_type\": \"majd\",\r\n                \"unit_number\": \"A101\",\r\n                \"status\": \"pending\",\r\n                \"price\": 500000.00,\r\n                \"area\": \"120,4\",\r\n                \"description\": \"شقة غرفتين\"\r\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{server}}/contracts/units/store/2",
+                      "host": [
+                        "{{server}}"
+                      ],
+                      "path": [
+                        "contracts",
+                        "units",
+                        "store",
+                        "2"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "update",
+                  "id": "cd2de289-95b4-4c95-a1da-b31d7d528868",
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{token}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "PUT",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json",
+                        "type": "text"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n\r\n                \"price\": 22\r\n\r\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{server}}/contracts/units/update/11",
+                      "host": [
+                        "{{server}}"
+                      ],
+                      "path": [
+                        "contracts",
+                        "units",
+                        "update",
+                        "11"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "show_csv_unit_of_contract",
+                  "id": "4aee6165-3753-497b-be85-96f4734185f4",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{token}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "GET",
+                    "header": [],
+                    "body": {
+                      "mode": "formdata",
+                      "formdata": []
+                    },
+                    "url": {
+                      "raw": "{{server}}/contracts/units/show/2",
+                      "host": [
+                        "{{server}}"
+                      ],
+                      "path": [
+                        "contracts",
+                        "units",
+                        "show",
+                        "2"
+                      ]
+                    }
+                  },
+                  "response": []
+                }
+              ],
+              "id": "fe812869-0db9-4dd1-beed-c9faefa77a73"
+            },
+            {
+              "name": "store_data_of_contract",
+              "id": "0737f35e-1556-421a-8947-bcc7c2ee9d44",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"real_estate_papers_url\": \"https://example.com/papers.pdf\",\r\n    \"plans_equipment_docs_url\": \"https://example.com/plans.pdf\",\r\n    \"project_logo_url\": \"https://example.com/logo.png\",\r\n    \"prices_units_url\": \"https://example.com/prices.pdf\",\r\n    \"marketing_license_url\": \"https://example.com/license.pdf\",\r\n    \"advertiser_section_url\": \"98128128912\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/second-party-data/store/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "second-party-data",
+                    "store",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "update_data_of_contract",
+              "id": "923a8536-1950-49e7-a60c-498755a6d0c6",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"real_estate_papers_url\": \"https://www.tradingview.com/chart/YeaM7KnM/\",\r\n    \"plans_equipment_docs_url\": \"https://example.com/plans.pdf\",\r\n    \"project_logo_url\": \"https://example.com/logo.png\",\r\n    \"prices_units_url\": \"https://www.tradingview.com/chart/YeaM7KnM/\",\r\n    \"marketing_license_url\": \"https://example.com/license.pdf\",\r\n    \"advertiser_section_url\": \"98128128912\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{local}}/second-party-data/update/1",
+                  "host": [
+                    "{{local}}"
+                  ],
+                  "path": [
+                    "second-party-data",
+                    "update",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "show_data_of_contract",
+              "id": "56e3a82f-e118-4373-9bc4-5f9c0a6fa511",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/second-party-data/show/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "second-party-data",
+                    "show",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "4ac1f30d-a567-4bbb-a54b-eb22ddaf884f"
+        },
+        {
+          "name": "Devolper",
+          "item": [
+            {
+              "name": "get_all_secound_party",
+              "id": "d08d1daa-33a8-4ba2-955b-d5735aaa1b23",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{server}}/second-party-data/second-parties",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "second-party-data",
+                    "second-parties"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "contracts-by-email",
+              "id": "a25eedf9-d706-4721-91e2-c950bad7ce6d",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\" : \"majdbayer2@gmail.com\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{local}}/second-party-data/contracts-by-email",
+                  "host": [
+                    "{{local}}"
+                  ],
+                  "path": [
+                    "second-party-data",
+                    "contracts-by-email"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "6ff9c07e-35e1-4c9f-84d4-5b865df3b462"
+        },
+        {
+          "name": "photography-department",
+          "item": [
+            {
+              "name": "Store",
+              "id": "2e9ea992-e6b5-423a-972b-1c27400420f0",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"image_url\" : \"https://github.com/majdba123/Rakez/actions\",\r\n    \"video_url\" : \"https://github.com/majdba123/Rakez/actions\",\r\n    \"description\" : \"https://github.com/majdba123/Rakez/actions\"\r\n    \r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/photography-department/store/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "photography-department",
+                    "store",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update",
+              "id": "4ea8500a-63aa-4601-925c-0f06213651d9",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"image_url\" : \"https://chat.deepseek.com/a/chat/s/8989699b-2c6a-4a34-90f0-f0e6caf93ccf\",\r\n    \"video_url\" : \"https://chat.deepseek.com/a/chat/s/8989699b-2c6a-4a34-90f0-f0e6caf93ccf\",\r\n    \"description\" : \"https://chat.deepseek.com/a/chat/s/8989699b-2c6a-4a34-90f0-f0e6caf93ccf\"\r\n    \r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/photography-department/update/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "photography-department",
+                    "update",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "approve",
+              "id": "c6b76a80-70b1-4316-bb21-b5e5c1ba8f40",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/photography-department/approve/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "photography-department",
+                    "approve",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "show",
+              "id": "46e1f029-81c7-4a34-b4c0-c941e4a27ee0",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"image_url\" : \"https://github.com/majdba123/Rakez/actions\",\r\n    \"video_url\" : \"https://github.com/majdba123/Rakez/actions\",\r\n    \"description\" : \"https://github.com/majdba123/Rakez/actions\"\r\n    \r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/photography-department/show/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "photography-department",
+                    "show",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "7087de92-2908-4b92-bbfa-4eb0f20037c2"
+        },
+        {
+          "name": "boards-department",
+          "item": [
+            {
+              "name": "Store",
+              "id": "57b14fa5-15f3-48bf-9092-c7c7d9eb0d79",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"has_ads\" : \"1\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/boards-department/store/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "boards-department",
+                    "store",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update",
+              "id": "463eeeb4-3657-4510-82d7-1992ef08aa20",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"has_ads\" : \"0\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/boards-department/update/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "boards-department",
+                    "update",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "show",
+              "id": "ec4ee3e8-c58a-44d6-8531-c5fb474bb955",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"image_url\" : \"https://github.com/majdba123/Rakez/actions\",\r\n    \"video_url\" : \"https://github.com/majdba123/Rakez/actions\",\r\n    \"description\" : \"https://github.com/majdba123/Rakez/actions\"\r\n    \r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/boards-department/show/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "boards-department",
+                    "show",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "71b3d250-2f9e-4fc5-863c-60548d94fd3b"
+        },
+        {
+          "name": "Teams",
+          "item": [
+            {
+              "name": "store",
+              "id": "6670b807-7aa7-42c3-a887-1002724e1674",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n\r\n    \"name\" :  \"J\" ,\r\n    \"description\" : \"JSHSYSBWSBSH\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_management/teams/store",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_management",
+                    "teams",
+                    "store"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "UPDATE",
+              "id": "354760fa-dde1-4f4c-a621-8d29eff6dfd8",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n\r\n    \"name\" :  \"B\" ,\r\n    \"description\" : \"JSHSYSBWSBSH\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_management/teams/update/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_management",
+                    "teams",
+                    "update",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "filter",
+              "id": "57f4b478-ff08-4c88-8340-81c8254850a1",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_management/teams/index",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_management",
+                    "teams",
+                    "index"
+                  ],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "A",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get_Contract_BY_Team_id",
+              "id": "5bd3cc22-1484-4024-a31a-7efc089ec3ef",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   // \"status\" : \"pending\" ,\r\n    \"per_page\" : 1\r\n\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_management/teams/contracts/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_management",
+                    "teams",
+                    "contracts",
+                    "1"
+                  ],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "A",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get_Contract_Location__BY_Team_id",
+              "id": "72b48986-f85b-4fa4-b809-ee5535f61d6f",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   // \"status\" : \"pending\" ,\r\n    \"per_page\" : 4\r\n\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_management/teams/contracts/locations/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_management",
+                    "teams",
+                    "contracts",
+                    "locations",
+                    "1"
+                  ],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "A",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Show",
+              "id": "e51ebe2f-7292-4b9e-bceb-97bb1d1336ea",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_management/teams/show/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_management",
+                    "teams",
+                    "show",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "delete",
+              "id": "524f7b63-0300-4a4f-b788-309992e91cb1",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_management/teams/delete/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_management",
+                    "teams",
+                    "delete",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "eff3a0f0-a228-4533-81a6-7c4dcb149bab"
+        },
+        {
+          "name": "related_contracted_team",
+          "item": [
+            {
+              "name": "store_team_to_contract",
+              "id": "d7aa9141-507a-4334-9160-0edaa15aef9a",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"team_ids\" : [1]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_teams/teams/add/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_teams",
+                    "teams",
+                    "add",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "remove_team_to_contract",
+              "id": "e1e818d2-e80f-4d33-9043-80793393e393",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"team_ids\" : [3]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_teams/teams/remove/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_teams",
+                    "teams",
+                    "remove",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get_Teams_Of_Contract",
+              "id": "62fd4976-fb3c-439e-90e6-60185fab65cc",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"team_ids\" : [1,2,3]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/project_teams/teams/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "project_teams",
+                    "teams",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "1c2a6564-19f6-4589-840a-c7c91023e08a"
+        },
+        {
+          "name": "DashBoard",
+          "id": "651ce3c9-9dad-4b29-bfcb-20df57b75231",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{server}}/project_management/dashboard",
+              "host": [
+                "{{server}}"
+              ],
+              "path": [
+                "project_management",
+                "dashboard"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "45204883-7399-4fd3-a367-f66d3421646e"
+    },
+    {
+      "name": "Notification",
+      "item": [
+        {
+          "name": "get_my_notification",
+          "id": "d061d296-5ea8-42e0-a10d-1668481868a1",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{local}}/user/notifications/private",
+              "host": [
+                "{{local}}"
+              ],
+              "path": [
+                "user",
+                "notifications",
+                "private"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get_public_notification",
+          "id": "115bcb72-da31-4ab5-8562-ded4ddbc50e0",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{local}}/user/notifications/public",
+              "host": [
+                "{{local}}"
+              ],
+              "path": [
+                "user",
+                "notifications",
+                "public"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "mark-all-read",
+          "id": "21df0b7e-8bdd-4b9f-8ca1-9ab61f95d7a9",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{local}}/user/notifications/mark-all-read",
+              "host": [
+                "{{local}}"
+              ],
+              "path": [
+                "user",
+                "notifications",
+                "mark-all-read"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "read_by_id",
+          "id": "06167b57-6a14-40b9-a29d-dd8a7c0563b7",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{local}}/user/notifications/2/read",
+              "host": [
+                "{{local}}"
+              ],
+              "path": [
+                "user",
+                "notifications",
+                "2",
+                "read"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "51f9c62f-d726-489b-8a63-9a38a4e24bc1"
+    },
+    {
+      "name": "editor",
+      "item": [
+        {
+          "name": "contract",
+          "item": [
+            {
+              "name": "all_contract",
+              "id": "3d3a5066-a87f-4e3a-a375-f5378f96d9b3",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"status\" : \"completed\",\r\n    \"has_photography\" : 1,\r\n    \"has_montage\" : 0\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/editor/contracts/index",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "editor",
+                    "contracts",
+                    "index"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "approved",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "show_info_contract",
+              "id": "0a0a6e75-7333-4826-9353-36c1ab552dfa",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/editor/contracts/show/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "editor",
+                    "contracts",
+                    "show",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "0c09f7a1-72b9-41ac-90d3-139a79ee8709"
+        },
+        {
+          "name": "Store_Data_To_Contract",
+          "item": [
+            {
+              "name": "Store_data",
+              "id": "2bd9c5b9-6fb4-4158-b84a-325de5580b58",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"image_url\" : \"https://www.tradingview.com/chart/YeaM7KnM/\",\r\n    \"video_url\" : \"https://www.tradingview.com/chart/YeaM7KnM/\",\r\n    \"description\" : \"jalsjlasjlasjlaslj\"\r\n\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/montage-department/store/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "montage-department",
+                    "store",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "update",
+              "id": "33132cd6-00f7-4eea-a2d4-00c359c4efd5",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"image_url\" : \"https://www.tradingview.com/chart/YeaM7KnM/\",\r\n    \"video_url\" : \"https://www.tradingview.com/chart/YeaM7KnM/\",\r\n    \"description\" : \"jalsjlasjlasjlaslj\"\r\n\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/montage-department/update/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "montage-department",
+                    "update",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "show",
+              "id": "fae18da5-5bb3-4607-af24-57740bd00a34",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"image_url\" : \"https://www.tradingview.com/chart/YeaM7KnM/\",\r\n    \"video_url\" : \"https://www.tradingview.com/chart/YeaM7KnM/\",\r\n    \"description\" : \"jalsjlasjlasjlaslj\"\r\n\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/montage-department/show/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "montage-department",
+                    "show",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "882d7beb-0958-4b1c-a81b-238df9f5f005"
+        }
+      ],
+      "id": "181140df-a8eb-4569-98de-49ef968f576b"
+    },
+    {
+      "name": "Hr",
+      "item": [
+        {
+          "name": "employee",
+          "item": [
+            {
+              "name": "add_employee",
+              "id": "087d4099-5fda-4ec7-bcf4-a75823a6c3c7",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "cv",
+                      "type": "file",
+                      "src": "/C:/Users/impos/Downloads/Telegram Desktop/Majd_Bayer_Backend_Engineer_cv (2).docx"
+                    },
+                    {
+                      "key": "contract",
+                      "type": "file",
+                      "src": "/C:/Users/impos/Downloads/Telegram Desktop/Majd_Bayer_Backend_Engineer_cv.docx"
+                    },
+                    {
+                      "key": "email",
+                      "value": "maRRsSf@hotmai.com",
+                      "type": "text"
+                    },
+                    {
+                      "key": "name",
+                      "value": "majd",
+                      "type": "text"
+                    },
+                    {
+                      "key": "password",
+                      "value": "password",
+                      "type": "text"
+                    },
+                    {
+                      "key": "phone",
+                      "value": "09350272333",
+                      "type": "text"
+                    },
+                    {
+                      "key": "type",
+                      "value": "3",
+                      "type": "text"
+                    },
+                    {
+                      "key": "is_manager",
+                      "value": "1",
+                      "type": "text"
+                    },
+                    {
+                      "key": "team",
+                      "value": "2",
+                      "type": "text"
+                    },
+                    {
+                      "key": "identity_number",
+                      "value": "1231231222",
+                      "type": "text"
+                    },
+                    {
+                      "key": "contract_type",
+                      "value": "SAS",
+                      "type": "text"
+                    },
+                    {
+                      "key": "birthday",
+                      "value": "12-10-2002",
+                      "type": "text"
+                    },
+                    {
+                      "key": "date_of_works",
+                      "value": "12-10-2025",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{server}}/hr/add_employee",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "hr",
+                    "add_employee"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "delete_employee",
+              "id": "b860deab-f9d9-4863-add3-0899a853fc19",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/hr/delete_employee/4",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "hr",
+                    "delete_employee",
+                    "4"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "update_employee",
+              "id": "7f1cd42a-f511-4ddd-b0c0-2c6f552e975f",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "\r\n{\r\n  //  \"email\" : \"frt@gmail.com\",\r\n //   \"password\" : \"password\",\r\n  //  \"phone\" : \"0375027213\",\r\n    \"name\" : \"majd\",\r\n   // \"type\" : 0,\r\n    \r\n     \"is_manager\": true ,\r\n\r\n    \"team\" : \"A\",\r\n    \"identity_number\" : \"19992921\",\r\n    \"birthday\" : \"12-10-2003\",\r\n    \"date_of_works\" : \"12-10-2022\",\r\n    \"contract_type\" : \"full_time\",\r\n    \"salary\" : 2000,\r\n    \"iban\" : \"27162\",\r\n    \"marital_status\" : \"divorced\"         //married,divorced,widowed\r\n}\r\n\r\n/*\r\n$typeNames = [\r\n    0 => 'marketing',        // التسويق\r\n    1 => 'admin',            // الإدارة (الادمن)\r\n    2 => 'project_acquisition',        // العقود\r\n    3 => 'project_management', // إدارة المشاريع\r\n    4 => 'editor',           // المونتاج\r\n    5 => 'sales',            // المبيعات\r\n    6 => 'accounting',       // المحاسبة\r\n    7 => 'credit',           // الائتمان\r\n];\r\n*/",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/hr/update_employee/5",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "hr",
+                    "update_employee",
+                    "5"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "list_employees",
+              "id": "b74591a8-8f36-409d-91ab-7c44a76e8b1b",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   // \"type\": \"marketing\",\r\n   // \"search\": \"ali\", //email or name\r\n\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/hr/list_employees",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "hr",
+                    "list_employees"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "show_employee",
+              "id": "dcd3653d-1491-4ef5-ac68-05187a14d533",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/hr/show_employee/5",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "hr",
+                    "show_employee",
+                    "5"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "2afcc76e-8db2-4da3-9288-3b3c0b579ef0"
+        },
+        {
+          "name": "Teams",
+          "item": [
+            {
+              "name": "filter",
+              "id": "eb729186-ca26-43cb-ad0c-e79ed92806c2",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/teams/index?search=B",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "teams",
+                    "index"
+                  ],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "B"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Show",
+              "id": "f9cf18b2-fd14-415a-8981-eb3dd932691f",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/teams/show/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "teams",
+                    "show",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "7c1bf679-18f6-451c-a569-d7a093aa08e0"
+        },
+        {
+          "name": "GET_BY_TEAM",
+          "item": [
+            {
+              "name": "Get_Contract_BY_Team_id",
+              "id": "ef214655-eca4-40d3-8632-75626abd74c5",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   // \"status\" : \"pending\" ,\r\n    \"per_page\" : 1\r\n\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/hr/teams/contracts/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "hr",
+                    "teams",
+                    "contracts",
+                    "1"
+                  ],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "A",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "sales-average__BY_Team_id",
+              "id": "2c3dcbc0-39a4-4647-9b26-2a9341e815ba",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   // \"status\" : \"pending\" ,\r\n    \"per_page\" : 4\r\n\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/hr/teams/sales-average/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "hr",
+                    "teams",
+                    "sales-average",
+                    "1"
+                  ],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "A",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get_Teams_Of_Contract",
+              "id": "c78dadd5-b550-4fbc-bf91-3de90ed29258",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"team_ids\" : [1,2,3]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/hr/teams/getTeamsForContract/2",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "hr",
+                    "teams",
+                    "getTeamsForContract",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get_Contract_Location__BY_Team_id Copy",
+              "id": "9ca11b54-cf20-4bcd-96fb-7fe063a6c61c",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   // \"status\" : \"pending\" ,\r\n    \"per_page\" : 4\r\n\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{server}}/hr/teams/contracts/locations/1",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "hr",
+                    "teams",
+                    "contracts",
+                    "locations",
+                    "1"
+                  ],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "A",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "c0e43daf-e580-415e-9c36-1c65255d257e"
+        },
+        {
+          "name": "DashBoard",
+          "item": [
+            {
+              "name": "DashBoard",
+              "id": "51d806c5-1d0a-48c0-88da-4f21296bc9bb",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "\r\n{\r\n    \"email\" : \"majssdE@gmail.com\",\r\n    \"password\" : \"password\",\r\n    \"phone\" : \"03293a224327213\",\r\n    \"name\" : \"ali\",\r\n    \"type\" : 4,\r\n    \r\n    \"is_manager\": true ,\r\n\r\n    \"team\" : 1,\r\n    \"identity_number\" : \"003826220a2S1\",\r\n    \"birthday\" : \"12-10-2002\",\r\n    \"date_of_works\" : \"12-10-2025\",\r\n    \"contract_type\" : \"full_time\",\r\n    \"salary\" : 2000,\r\n    \"iban\" : \"27162\",\r\n    \"marital_status\" : \"divorced\"         //married,divorced,widowed\r\n\r\n}\r\n\r\n/*\r\n$typeNames = [\r\n    0 => 'marketing',        // التسويق\r\n    1 => 'admin',            // الإدارة (الادمن)\r\n    2 => 'project_acquisition',        // العقود\r\n    3 => 'project_management', // إدارة المشاريع\r\n    is manger => true, // هل الشخص مدير؟\r\n    is manager => fulse, // هل الشخص مدير؟\r\n    4 => 'editor',           // المونتاج\r\n    5 => 'sales',            // المبيعات\r\n    6 => 'hr', // الموارد البشرية\r\n    7 => 'credit',           // الائتمان\r\n    8 => 'inventory', // المخزون\r\n    9 => 'hr', // الموارد البشرية\r\n    \r\n];\r\n*/"
+                },
+                "url": {
+                  "raw": "{{server}}/hr/dashboard",
+                  "host": [
+                    "{{server}}"
+                  ],
+                  "path": [
+                    "hr",
+                    "dashboard"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "d7c14ee9-d52f-4a11-aa31-3e9a481120c4"
+        }
+      ],
+      "id": "3c0531e7-0f93-4a1c-8c62-e1450fa094b2"
+    }
+  ],
+  "variable": [
+    {
+      "id": "a34dd019-bb4a-48a4-8aa2-0135c6dc61cd",
+      "key": "local",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "id": "17e601a6-4040-4420-b8ff-46a01fd23a5c",
+      "key": "token",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "id": "cfe87d75-8f1b-4027-b773-efcad291939a",
+      "key": "local_1",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "id": "cc0b7897-cd44-4dee-a995-16367a4f3b06",
+      "key": "server",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "id": "b6cfa46e-d953-44d3-a39f-4aebc1d86812",
+      "key": "52|x0Gb03UtHGMSyfha6WD2o8qxhKCAdowdSFcSQBSQ96868846",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "id": "1746215b-bc0c-4151-bdc5-fe24af549f23",
+      "key": "{{token}}",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "id": "1377f5d1-edc3-43b7-a990-996ea5f8632b",
+      "key": "{{token}}",
+      "value": "",
+      "type": "default"
+    }
+  ]
+}
