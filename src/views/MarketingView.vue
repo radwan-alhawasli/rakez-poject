@@ -137,16 +137,23 @@
         </div>
       </div>
 
-      <!-- 3. Developer Plan Tab -->
-      <div v-else-if="activeTab === 'developer-plan'" class="marketing-developer-plan-view">
+      <!-- 3. Plans Tab -->
+      <div v-else-if="activeTab === 'plans'" class="marketing-plans-view">
         <div class="section-header-compact">
-          <h2 class="section-title">خطة التسويق الخاصة بالمطور</h2>
-          <p class="section-subtitle">إدخال متوسطات CPM/CPC وعرض مخرجات الخطة وفق المعادلات المعتمدة.</p>
+          <h2 class="section-title">خطط التسويق</h2>
+          <p class="section-subtitle">إدارة خطط المطورين وخطط الموظفين.</p>
         </div>
 
-        <div class="plan-grid">
+        <!-- Sub-tabs for Plans -->
+        <div class="plans-sub-tabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <button :class="['btn-tab-mini', { active: activePlanSubTab === 'developer' }]" @click="activePlanSubTab = 'developer'">خطة المطور</button>
+          <button :class="['btn-tab-mini', { active: activePlanSubTab === 'employee' }]" @click="activePlanSubTab = 'employee'">خطط الموظفين</button>
+        </div>
+
+        <!-- Developer Plan Sub-tab -->
+        <div v-if="activePlanSubTab === 'developer'" class="plan-grid">
           <div class="plan-card">
-            <h3 class="plan-card-title">إعدادات الخطة</h3>
+            <h3 class="plan-card-title">إعدادات خطة المطور</h3>
 
             <div class="form-grid">
               <div class="form-group">
@@ -245,89 +252,84 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- 4. Employee Plans Tab -->
-      <div v-else-if="activeTab === 'employee-plans'" class="marketing-employee-plan-view">
-        <div class="section-header-compact">
-          <h2 class="section-title">خطة التسويق الخاصة بالموظف</h2>
-          <p class="section-subtitle">عرض خطط الموظفين للمشروع وتوليد خطة تلقائية عبر الـ API.</p>
-        </div>
+        <!-- Employee Plans Sub-tab -->
+        <div v-else-if="activePlanSubTab === 'employee'" class="marketing-employee-plan-view">
+          <div class="plan-card">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>المشروع <span class="required">*</span></label>
+                <select v-model="employeePlansProjectId" class="form-input" @change="loadEmployeePlans">
+                  <option value="">-- اختر مشروعاً --</option>
+                  <option v-for="p in projects" :key="p.id" :value="p.id">
+                    {{ p.project_name || p.name || ('Project #' + p.id) }}
+                  </option>
+                </select>
+              </div>
 
-        <div class="plan-card">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>المشروع <span class="required">*</span></label>
-              <select v-model="employeePlansProjectId" class="form-input" @change="loadEmployeePlans">
-                <option value="">-- اختر مشروعاً --</option>
-                <option v-for="p in projects" :key="p.id" :value="p.id">
-                  {{ p.project_name || p.name || ('Project #' + p.id) }}
-                </option>
-              </select>
+              <div class="form-group">
+                <label>الموظف (Marketer) <span class="required">*</span></label>
+                <select v-model="employeePlanGenerateForm.user_id" class="form-input">
+                  <option value="">-- اختر موظفاً --</option>
+                  <option v-for="u in marketingEmployees" :key="u.id" :value="u.id">
+                    {{ u.name || u.full_name || ('User #' + u.id) }}
+                  </option>
+                </select>
+              </div>
             </div>
 
-            <div class="form-group">
-              <label>الموظف (Marketer) <span class="required">*</span></label>
-              <select v-model="employeePlanGenerateForm.user_id" class="form-input">
-                <option value="">-- اختر موظفاً --</option>
-                <option v-for="u in marketingEmployees" :key="u.id" :value="u.id">
-                  {{ u.name || u.full_name || ('User #' + u.id) }}
-                </option>
-              </select>
+            <div class="plan-actions">
+              <button class="btn-secondary" @click="loadEmployees" :disabled="isLoadingEmployees">
+                <span v-if="isLoadingEmployees" class="spinner-small"></span>
+                تحديث قائمة الموظفين
+              </button>
+              <button class="btn-primary" @click="autoGenerateEmployeePlan" :disabled="isSubmitting || !employeePlansProjectId || !employeePlanGenerateForm.user_id">
+                <span v-if="isSubmitting" class="spinner-small"></span>
+                إنشاء خطة تلقائياً
+              </button>
             </div>
           </div>
 
-          <div class="plan-actions">
-            <button class="btn-secondary" @click="loadEmployees" :disabled="isLoadingEmployees">
-              <span v-if="isLoadingEmployees" class="spinner-small"></span>
-              تحديث قائمة الموظفين
-            </button>
-            <button class="btn-primary" @click="autoGenerateEmployeePlan" :disabled="isSubmitting || !employeePlansProjectId || !employeePlanGenerateForm.user_id">
-              <span v-if="isSubmitting" class="spinner-small"></span>
-              إنشاء خطة تلقائياً
-            </button>
+          <div v-if="isLoadingEmployeePlans" class="loading-state">
+            <div class="spinner"></div>
+            <p>جاري تحميل خطط الموظفين...</p>
           </div>
-        </div>
 
-        <div v-if="isLoadingEmployeePlans" class="loading-state">
-          <div class="spinner"></div>
-          <p>جاري تحميل خطط الموظفين...</p>
-        </div>
+          <div v-else-if="employeePlans.length === 0" class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <p>لا توجد خطط موظفين لهذا المشروع</p>
+          </div>
 
-        <div v-else-if="employeePlans.length === 0" class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          <p>لا توجد خطط موظفين لهذا المشروع</p>
-        </div>
-
-        <div v-else class="leads-table-container">
-          <table class="luxury-table">
-            <thead>
-              <tr>
-                <th>الموظف</th>
-                <th>المنصة</th>
-                <th>الميزانية</th>
-                <th>التواصل المباشر</th>
-                <th>اليد</th>
-                <th>الانطباع</th>
-                <th>السيلز</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="plan in employeePlans" :key="plan.id" class="hover-row">
-                <td>{{ plan.user_name || plan.user?.name || '—' }}</td>
-                <td>{{ plan.platform || '—' }}</td>
-                <td class="number">{{ formatCurrency(plan.budget || plan.total_budget || 0) }}</td>
-                <td class="number">{{ formatNumber(plan.direct || plan.direct_communications || 0) }}</td>
-                <td class="number">{{ formatNumber(plan.hand || plan.hand_raises || 0) }}</td>
-                <td class="number">{{ formatNumber(plan.impressions || plan.impression_campaigns || 0) }}</td>
-                <td class="number">{{ formatNumber(plan.sales || plan.sales_campaigns || 0) }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div v-else class="leads-table-container">
+            <table class="luxury-table">
+              <thead>
+                <tr>
+                  <th>الموظف</th>
+                  <th>المنصة</th>
+                  <th>الميزانية</th>
+                  <th>التواصل المباشر</th>
+                  <th>اليد</th>
+                  <th>الانطباع</th>
+                  <th>السيلز</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="plan in employeePlans" :key="plan.id" class="hover-row">
+                  <td>{{ plan.user_name || plan.user?.name || '—' }}</td>
+                  <td>{{ plan.platform || '—' }}</td>
+                  <td class="number">{{ formatCurrency(plan.budget || plan.total_budget || 0) }}</td>
+                  <td class="number">{{ formatNumber(plan.direct || plan.direct_communications || 0) }}</td>
+                  <td class="number">{{ formatNumber(plan.hand || plan.hand_raises || 0) }}</td>
+                  <td class="number">{{ formatNumber(plan.impressions || plan.impression_campaigns || 0) }}</td>
+                  <td class="number">{{ formatNumber(plan.sales || plan.sales_campaigns || 0) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <!-- 3. Tasks Tab -->
+      <!-- 4. Tasks Tab -->
       <div v-else-if="activeTab === 'tasks'" class="marketing-tasks-view">
         <div class="section-header-compact">
           <h2 class="section-title">مهامي التسويقية</h2>
@@ -372,7 +374,7 @@
         </div>
       </div>
 
-      <!-- 4. Leads Tab -->
+      <!-- 5. Leads Tab -->
       <div v-else-if="activeTab === 'leads'" class="marketing-leads-view">
         <div class="section-header-compact" style="display: flex; justify-content: space-between; align-items: center;">
           <div>
@@ -436,7 +438,7 @@
         </div>
       </div>
 
-      <!-- 5. AI Assistant Tab -->
+      <!-- 6. AI Assistant Tab -->
       <div v-else-if="activeTab === 'ai-assistant'" class="marketing-ai-view">
         <div class="section-header-compact">
           <h2 class="section-title">المساعد الذكي (AI Assistant)</h2>
@@ -602,6 +604,7 @@ export default {
     
     // State
     const activeTab = ref('dashboard')
+    const activePlanSubTab = ref('developer')
     const userName = ref(localStorage.getItem('userName') || 'مستخدم')
     
     // Fixed percentages (Adjust to business rules if needed)
@@ -1070,7 +1073,7 @@ export default {
       // expected routes: /marketing/:tab
       const parts = String(route.path || '').split('/').filter(Boolean)
       const tab = parts[1] // ['marketing','dashboard']
-      if (tab && ['dashboard', 'projects', 'developer-plan', 'employee-plans', 'tasks', 'leads', 'ai-assistant'].includes(tab)) {
+      if (tab && ['dashboard', 'projects', 'plans', 'tasks', 'leads', 'ai-assistant'].includes(tab)) {
         activeTab.value = tab
       }
     }
@@ -1085,10 +1088,7 @@ export default {
         loadDashboard()
       } else if (newTab === 'projects') {
         loadProjects()
-      } else if (newTab === 'developer-plan') {
-        loadProjects()
-        loadEmployees()
-      } else if (newTab === 'employee-plans') {
+      } else if (newTab === 'plans') {
         loadProjects()
         loadEmployees()
       } else if (newTab === 'tasks') {
@@ -1248,6 +1248,7 @@ export default {
 
     return {
       activeTab,
+      activePlanSubTab,
       userName,
       dashboardMetrics,
       projects,
@@ -2427,15 +2428,42 @@ export default {
   font-family: 'Tajawal', sans-serif;
 }
 
-.empty-state svg {
-  width: 64px;
-  height: 64px;
-  color: #cbd5e1;
-  margin-bottom: 16px;
-}
+  .empty-state svg {
+    width: 64px;
+    height: 64px;
+    color: #cbd5e1;
+    margin-bottom: 16px;
+  }
 
-/* Modal */
-.modal-overlay {
+  /* Plans Sub-tabs */
+  .btn-tab-mini {
+    padding: 8px 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(177, 162, 143, 0.2);
+    background: white;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Tajawal', sans-serif;
+  }
+
+  .btn-tab-mini:hover {
+    background: #fdfbf7;
+    border-color: #B1A28F;
+    color: #B1A28F;
+  }
+
+  .btn-tab-mini.active {
+    background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+    color: white;
+    border-color: #B1A28F;
+    box-shadow: 0 4px 10px rgba(177, 162, 143, 0.2);
+  }
+
+  /* Modal */
+  .modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(30, 58, 95, 0.5);
