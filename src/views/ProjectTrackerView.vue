@@ -184,7 +184,7 @@
 
                     <!-- Actions for Submitter moved OUTSIDE disabled fieldset -->
                     <div class="form-actions" style="margin-top: 20px; text-align: left;">
-                        <div v-if="!isManager && photographyForm.status !== 'approved'">
+                        <div v-if="photographyForm.status !== 'approved'">
                             <!-- If Pending and NOT editing -> Show Edit Button -->
                             <button v-if="photographyForm.status === 'pending' && !isEditingPending" type="button" class="update-btn secondary" @click="isEditingPending = true">
                                 تعديل الطلب (Edit)
