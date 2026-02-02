@@ -179,29 +179,29 @@
                                 <textarea v-model="photographyForm.description" class="form-input" rows="4" placeholder="وصف للصور والمحتوى..." style="min-height: 100px;"></textarea>
                             </div>
 
-                            <!-- Actions for Submitter -->
-                            <div class="form-actions" style="margin-top: 20px; text-align: left;">
-                                <div v-if="!isManager && photographyForm.status !== 'approved'">
-                                    <!-- If Pending and NOT editing -> Show Edit Button -->
-                                    <button v-if="photographyForm.status === 'pending' && !isEditingPending" type="button" class="update-btn secondary" @click="isEditingPending = true">
-                                        تعديل الطلب
-                                    </button>
-                                    
-                                    <!-- Else (Rejected, New, or Editing Pending) -> Show Save -->
-                                    <button v-else type="submit" class="update-btn" :disabled="isPhotoSaving">
-                                        {{ isPhotoSaving ? 'جاري الحفظ...' : ((photographyForm.status === 'rejected' || isEditingPending) ? 'تحديث وإعادة الإرسال' : 'حفظ وإرسال للموافقة') }}
-                                    </button>
-                                    
-                                    <button v-if="isEditingPending" type="button" class="btn-text" @click="cancelPhotoEdit" style="margin-right:10px;">إلغاء</button>
-                                </div>
-
-                                <p v-if="photographyForm.status === 'approved'" style="color: #10b981; font-weight: bold;">
-                                    ✓ تم اعتماد الصور
-                                </p>
-                            </div>
-
                         </div>
                     </fieldset>
+
+                    <!-- Actions for Submitter moved OUTSIDE disabled fieldset -->
+                    <div class="form-actions" style="margin-top: 20px; text-align: left;">
+                        <div v-if="!isManager && photographyForm.status !== 'approved'">
+                            <!-- If Pending and NOT editing -> Show Edit Button -->
+                            <button v-if="photographyForm.status === 'pending' && !isEditingPending" type="button" class="update-btn secondary" @click="isEditingPending = true">
+                                تعديل الطلب (Edit)
+                            </button>
+                            
+                            <!-- Else (Rejected, New, or Editing Pending) -> Show Save -->
+                            <button v-else type="submit" class="update-btn" :disabled="isPhotoSaving">
+                                {{ isPhotoSaving ? 'جاري الحفظ...' : ((photographyForm.status === 'rejected' || isEditingPending) ? 'تحديث وإعادة الإرسال' : 'حفظ وإرسال للموافقة') }}
+                            </button>
+                            
+                            <button v-if="isEditingPending" type="button" class="btn-text" @click="cancelPhotoEdit" style="margin-right:10px;">إلغاء</button>
+                        </div>
+
+                        <p v-if="photographyForm.status === 'approved'" style="color: #10b981; font-weight: bold;">
+                            ✓ تم اعتماد الصور
+                        </p>
+                    </div>
                 </form>
             </div>
             
