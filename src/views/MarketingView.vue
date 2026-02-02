@@ -12,48 +12,48 @@
         </div>
 
         <div class="stats-grid">
-          <!-- KPI 1: إجمالي المشاريع -->
+          <!-- KPI 1: العملاء المحتملون -->
           <div class="stat-card animate-fade-in-up animate-stagger-1 hover-lift">
             <div class="stat-content">
-              <span class="stat-label">إجمالي المشاريع</span>
-              <span class="stat-value number">{{ dashboardMetrics.total_projects || '0' }}</span>
-              <span class="stat-desc">المشاريع التسويقية النشطة</span>
+              <span class="stat-label">العملاء المحتملون</span>
+              <span class="stat-value number">{{ dashboardMetrics.total_leads || '0' }}</span>
+              <span class="stat-desc">إجمالي العملاء المحتملين</span>
             </div>
             <div class="stat-icon-bg projects">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
             </div>
           </div>
 
-          <!-- KPI 2: العملاء المحتملون -->
+          <!-- KPI 2: قيمة الوحدات المتاحة -->
           <div class="stat-card animate-fade-in-up animate-stagger-2 hover-lift">
             <div class="stat-content">
-              <span class="stat-label">العملاء المحتملون</span>
-              <span class="stat-value number">{{ dashboardMetrics.total_leads || '0' }}</span>
-              <span class="stat-desc">إجمالي العملاء المحتملين الجدد</span>
+              <span class="stat-label">قيمة الوحدات المتاحة</span>
+              <span class="stat-value number">{{ formatCurrency(dashboardMetrics.available_units_value || 0) }}</span>
+              <span class="stat-desc">ريال سعودي</span>
             </div>
             <div class="stat-icon-bg units">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             </div>
           </div>
 
-          <!-- KPI 3: المهام النشطة -->
+          <!-- KPI 3: عدد الوحدات المتاحة -->
           <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift">
             <div class="stat-content">
-              <span class="stat-label">المهام النشطة</span>
-              <span class="stat-value number">{{ dashboardMetrics.active_tasks || '0' }}</span>
-              <span class="stat-desc">المهام قيد التنفيذ حالياً</span>
+              <span class="stat-label">عدد الوحدات المتاحة</span>
+              <span class="stat-value number">{{ dashboardMetrics.available_units_count || '0' }}</span>
+              <span class="stat-desc">عدد الوحدات المتاحة للبيع</span>
             </div>
             <div class="stat-icon-bg ready">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><polyline points="9 11 12 14 22 4"></polyline></svg>
             </div>
           </div>
 
-          <!-- KPI 4: إجمالي الميزانية -->
+          <!-- KPI 4: معدل إنجاز المهام -->
           <div class="stat-card animate-fade-in-up animate-stagger-4 hover-lift">
             <div class="stat-content">
-              <span class="stat-label">إجمالي الميزانية</span>
-              <span class="stat-value number">{{ formatCurrency(dashboardMetrics.total_budget || 0) }}</span>
-              <span class="stat-desc">ريال سعودي</span>
+              <span class="stat-label">معدل إنجاز المهام</span>
+              <span class="stat-value number">{{ Number(dashboardMetrics.daily_task_achievement_rate || 0) }}%</span>
+              <span class="stat-desc">اليوم</span>
             </div>
             <div class="stat-icon-bg dollar">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
@@ -107,8 +107,8 @@
                 <span class="detail-value">{{ project.city || 'غير محدد' }}</span>
               </div>
               <div class="detail-row">
-                <span class="detail-label">الميزانية:</span>
-                <span class="detail-value number">{{ formatCurrency(project.marketing_budget || 0) }} ريال</span>
+                <span class="detail-label">رقم العقد:</span>
+                <span class="detail-value number">{{ project.marketing_project?.contract_id ?? '—' }}</span>
               </div>
             </div>
             <div class="project-actions">
@@ -146,8 +146,8 @@
 
         <!-- Sub-tabs for Plans -->
         <div class="plans-sub-tabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
-          <button :class="['btn-tab-mini', { active: activePlanSubTab === 'developer' }]" @click="activePlanSubTab = 'developer'">خطة المطور</button>
-          <button :class="['btn-tab-mini', { active: activePlanSubTab === 'employee' }]" @click="activePlanSubTab = 'employee'">خطط الموظفين</button>
+          <button :class="['btn-tab-mini', { active: activePlanSubTab === 'developer' }]" @click="setPlanSubTab('developer')">خطة المطور</button>
+          <button :class="['btn-tab-mini', { active: activePlanSubTab === 'employee' }]" @click="setPlanSubTab('employee')">خطط الموظفين</button>
         </div>
 
         <!-- Developer Plan Sub-tab -->
@@ -261,7 +261,7 @@
                 <label>المشروع <span class="required">*</span></label>
                 <select v-model="employeePlansProjectId" class="form-input" @change="loadEmployeePlans">
                   <option value="">-- اختر مشروعاً --</option>
-                  <option v-for="p in projects" :key="p.id" :value="p.id">
+                  <option v-for="p in projects" :key="p.id" :value="getMarketingProjectId(p)">
                     {{ p.project_name || p.name || ('Project #' + p.id) }}
                   </option>
                 </select>
@@ -305,23 +305,21 @@
               <thead>
                 <tr>
                   <th>الموظف</th>
-                  <th>المنصة</th>
-                  <th>الميزانية</th>
-                  <th>التواصل المباشر</th>
-                  <th>اليد</th>
-                  <th>الانطباع</th>
-                  <th>السيلز</th>
+                  <th>قيمة التسويق</th>
+                  <th>قيمة العمولة</th>
+                  <th>توزيع المنصات</th>
+                  <th>توزيع الحملات</th>
+                  <th>التاريخ</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="plan in employeePlans" :key="plan.id" class="hover-row">
-                  <td>{{ plan.user_name || plan.user?.name || '—' }}</td>
-                  <td>{{ plan.platform || '—' }}</td>
-                  <td class="number">{{ formatCurrency(plan.budget || plan.total_budget || 0) }}</td>
-                  <td class="number">{{ formatNumber(plan.direct || plan.direct_communications || 0) }}</td>
-                  <td class="number">{{ formatNumber(plan.hand || plan.hand_raises || 0) }}</td>
-                  <td class="number">{{ formatNumber(plan.impressions || plan.impression_campaigns || 0) }}</td>
-                  <td class="number">{{ formatNumber(plan.sales || plan.sales_campaigns || 0) }}</td>
+                  <td>{{ plan.user?.name || plan.user_name || ('User #' + (plan.user_id ?? '—')) }}</td>
+                  <td class="number">{{ formatCurrency(plan.marketing_value || 0) }}</td>
+                  <td class="number">{{ formatCurrency(plan.commission_value || 0) }}</td>
+                  <td>{{ formatDistribution(plan.platform_distribution) }}</td>
+                  <td>{{ formatDistribution(plan.campaign_distribution) }}</td>
+                  <td class="number">{{ formatDate(plan.created_at) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -346,16 +344,16 @@
               </div>
               <div class="task-info">
                 <h4 class="task-title" :class="{ 'completed': task.status === 'completed' }">
-                  {{ task.title || task.name }}
+                  {{ task.task_name || task.title || task.name }}
                 </h4>
-                <p class="task-description">{{ task.description || 'لا يوجد وصف' }}</p>
+                <p class="task-description">{{ task.design_description || task.description || 'لا يوجد وصف' }}</p>
               </div>
               <span class="task-status-badge" :class="getTaskStatusClass(task.status)">
                 {{ getTaskStatusText(task.status) }}
               </span>
             </div>
             <div class="task-meta">
-              <span class="task-project">{{ task.project_name || 'مشروع غير محدد' }}</span>
+              <span class="task-project">{{ task.project?.project_name || task.project_name || (task.contract_id ? ('عقد #' + task.contract_id) : '—') }}</span>
               <span class="task-date">{{ formatDate(task.due_date || task.created_at) }}</span>
             </div>
           </div>
@@ -410,7 +408,7 @@
                     {{ lead.source }}
                   </span>
                 </td>
-                <td>{{ lead.project_name || 'غير محدد' }}</td>
+                <td>{{ lead.project?.project_name || lead.project_name || 'غير محدد' }}</td>
                 <td class="lead-date">{{ formatDate(lead.created_at) }}</td>
                 <td>
                   <button class="btn-icon" @click="viewLeadDetails(lead.id)" title="عرض التفاصيل">
@@ -454,11 +452,14 @@
             <div class="conversations-list-ai custom-scrollbar">
               <div v-if="isLoadingConversations" class="loading-ai">جاري التحميل...</div>
               <div v-else-if="conversations.length === 0" class="empty-ai">لا يوجد محادثات سابقة</div>
-              <div v-for="chat in conversations" :key="chat.id" 
-                class="conversation-item-ai" :class="{ active: currentSessionId === chat.id }"
-                @click="loadChatSession(chat.id)">
+              <div v-for="chat in conversations" :key="getConversationId(chat)" 
+                class="conversation-item-ai" :class="{ active: currentSessionId === getConversationId(chat) }"
+                @click="loadChatSession(getConversationId(chat))">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                <span>{{ chat.title || 'محادثة جديدة' }}</span>
+                <span style="flex: 1;">{{ chat.title || chat.name || 'محادثة' }}</span>
+                <button class="btn-icon" @click.stop="deleteChat(getConversationId(chat))" title="حذف المحادثة" style="width: 28px; height: 28px;">
+                  ×
+                </button>
               </div>
             </div>
           </div>
@@ -470,9 +471,12 @@
                 <h3>كيف يمكنني مساعدتك اليوم؟</h3>
                 <p>يمكنك سؤالي عن ميزانيات المشاريع، عدد العملاء المحتملين، أو أي بيانات أخرى موجودة في النظام.</p>
                 <div class="quick-prompts">
-                  <button @click="sendPrompt('ما هو إجمالي الميزانية التسويقية لجميع المشاريع؟')">الميزانية الإجمالية</button>
-                  <button @click="sendPrompt('كم عدد العملاء المحتملين الجدد هذا الشهر؟')">العملاء المحتملون</button>
-                  <button @click="sendPrompt('ما هي المشاريع الأكثر أداءً؟')">الأداء التسويقي</button>
+                  <button v-for="(s, i) in (currentAiSection?.suggestions || [])" :key="i" @click="sendPrompt(s)">{{ s }}</button>
+                  <template v-if="(currentAiSection?.suggestions || []).length === 0">
+                    <button @click="sendPrompt('ما هو إجمالي الميزانية التسويقية لجميع المشاريع؟')">الميزانية الإجمالية</button>
+                    <button @click="sendPrompt('كم عدد العملاء المحتملين الجدد هذا الشهر؟')">العملاء المحتملون</button>
+                    <button @click="sendPrompt('ما هي المشاريع الأكثر أداءً؟')">الأداء التسويقي</button>
+                  </template>
                 </div>
               </div>
               <div v-for="(msg, idx) in chatMessages" :key="idx" :class="['chat-bubble', msg.role]">
@@ -488,6 +492,18 @@
               </div>
             </div>
             <div class="chat-input-area">
+              <div style="display:flex; gap:12px; align-items:flex-end; margin-bottom: 12px; flex-wrap: wrap;">
+                <div style="min-width: 220px;">
+                  <label style="display:block; font-size: 12px; color:#64748b; margin-bottom:6px;">القسم</label>
+                  <select v-model="aiSelectedSectionKey" class="form-input" style="height: 44px;">
+                    <option v-for="s in aiSections" :key="s.key" :value="s.key">{{ s.label || s.key }}</option>
+                  </select>
+                </div>
+                <div v-for="key in (currentAiSection?.allowed_context_params || [])" :key="key" style="min-width: 220px;">
+                  <label style="display:block; font-size: 12px; color:#64748b; margin-bottom:6px;">{{ key }}</label>
+                  <input v-model="aiContext[key]" type="text" class="form-input" style="height: 44px;" :placeholder="key" />
+                </div>
+              </div>
               <div class="input-wrapper">
                 <textarea 
                   v-model="aiQuery" 
@@ -531,6 +547,151 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-left: 8px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
             حساب
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project Details Modal -->
+    <div v-if="showProjectDetailsModal" class="modal-overlay" @click.self="showProjectDetailsModal = false">
+      <div class="modal-content luxury-modal animate-scale-in" style="max-width: 980px;">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            تفاصيل المشروع:
+            {{ selectedProjectDetails?.project_name || selectedProjectDetails?.name || ('Project #' + (selectedProjectDetails?.id ?? '')) }}
+          </h3>
+          <button class="modal-close" @click="showProjectDetailsModal = false">×</button>
+        </div>
+
+        <div class="modal-body">
+          <div v-if="isLoadingProjectDetails" class="loading-state" style="padding: 20px;">
+            <div class="spinner"></div>
+            <p>جاري تحميل التفاصيل...</p>
+          </div>
+
+          <div v-else-if="!selectedProjectDetails" class="empty-state" style="padding: 20px;">
+            <p>لا توجد بيانات لهذا المشروع</p>
+          </div>
+
+          <div v-else>
+            <div class="details-grid">
+              <div class="detail-item">
+                <span class="detail-label">المطور</span>
+                <span class="detail-value">{{ selectedProjectDetails.developer_name || '—' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">المدينة</span>
+                <span class="detail-value">{{ selectedProjectDetails.city || '—' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">الحي</span>
+                <span class="detail-value">{{ selectedProjectDetails.district || '—' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">الحالة</span>
+                <span class="detail-value">
+                  <span class="project-status" :class="getStatusClass(selectedProjectDetails.status)">
+                    {{ getStatusText(selectedProjectDetails.status) }}
+                  </span>
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">رقم العقد</span>
+                <span class="detail-value number">{{ selectedProjectDetails.marketing_project?.contract_id ?? '—' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">حالة التسويق</span>
+                <span class="detail-value">
+                  <span class="project-status" :class="getStatusClass(selectedProjectDetails.marketing_project?.status)">
+                    {{ getStatusText(selectedProjectDetails.marketing_project?.status) }}
+                  </span>
+                </span>
+              </div>
+              <div class="detail-item" style="grid-column: 1 / -1;">
+                <span class="detail-label">ملاحظات</span>
+                <span class="detail-value">{{ selectedProjectDetails.notes || '—' }}</span>
+              </div>
+              <div class="detail-item" style="grid-column: 1 / -1;">
+                <span class="detail-label">متطلبات المطور</span>
+                <span class="detail-value">{{ selectedProjectDetails.developer_requirement || '—' }}</span>
+              </div>
+            </div>
+
+            <div class="overview-section" style="margin-top: 18px;">
+              <div class="section-header" style="margin-bottom: 14px;">
+                <h3 class="section-title-chart">الأفرقة المرتبطة</h3>
+                <p class="section-desc">حسب `marketing_project.teams` في API.</p>
+              </div>
+              <div v-if="(selectedProjectDetails.marketing_project?.teams || []).length === 0" style="color:#64748b;">—</div>
+              <div v-else class="details-teams">
+                <div v-for="t in selectedProjectDetails.marketing_project.teams" :key="t.id" class="team-pill">
+                  <span class="team-name">{{ t.user?.name || ('User #' + (t.user_id ?? '—')) }}</span>
+                  <span class="team-role">({{ t.role || 'member' }})</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="overview-section" style="margin-top: 18px;">
+              <div class="section-header" style="margin-bottom: 14px;">
+                <h3 class="section-title-chart">خطة المطور</h3>
+                <p class="section-desc">تعرض الحقول المتاحة من `developer_plan`.</p>
+              </div>
+
+              <div v-if="!selectedProjectDetails.developer_plan" style="color:#64748b;">لا توجد خطة مطور.</div>
+              <div v-else class="details-grid" style="margin-top: 10px;">
+                <div class="detail-item">
+                  <span class="detail-label">قيمة التسويق</span>
+                  <span class="detail-value number">{{ formatCurrency(selectedProjectDetails.developer_plan.marketing_value || 0) }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Average CPM</span>
+                  <span class="detail-value number">{{ selectedProjectDetails.developer_plan.average_cpm ?? '—' }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Average CPC</span>
+                  <span class="detail-value number">{{ selectedProjectDetails.developer_plan.average_cpc ?? '—' }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Expected Impressions</span>
+                  <span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_impressions || 0) }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Expected Clicks</span>
+                  <span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_clicks || 0) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="(selectedProjectDetails.employee_plans || []).length > 0" class="leads-table-container" style="margin-top: 18px;">
+              <div class="section-header" style="margin-bottom: 10px;">
+                <h3 class="section-title-chart" style="margin: 0;">خطط الموظفين</h3>
+                <p class="section-desc" style="margin: 6px 0 0;">حسب `employee_plans` في API.</p>
+              </div>
+              <table class="luxury-table">
+                <thead>
+                  <tr>
+                    <th>الموظف</th>
+                    <th>قيمة التسويق</th>
+                    <th>قيمة العمولة</th>
+                    <th>توزيع المنصات</th>
+                    <th>توزيع الحملات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="p in selectedProjectDetails.employee_plans" :key="p.id" class="hover-row">
+                    <td>{{ p.user?.name || ('User #' + (p.user_id ?? '—')) }}</td>
+                    <td class="number">{{ formatCurrency(p.marketing_value || 0) }}</td>
+                    <td class="number">{{ formatCurrency(p.commission_value || 0) }}</td>
+                    <td>{{ formatDistribution(p.platform_distribution) }}</td>
+                    <td>{{ formatDistribution(p.campaign_distribution) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-secondary" @click="showProjectDetailsModal = false">إغلاق</button>
         </div>
       </div>
     </div>
@@ -591,7 +752,7 @@
 
 <script>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import marketingService from '../services/marketingService'
 import notificationService from '../services/notificationService'
 import userService from '../services/userService'
@@ -601,6 +762,7 @@ export default {
   name: 'MarketingView',
   setup() {
     const route = useRoute()
+    const router = useRouter()
     
     // State
     const activeTab = ref('dashboard')
@@ -610,15 +772,16 @@ export default {
     // Fixed percentages (Adjust to business rules if needed)
     const MARKETING_PERCENT_FIXED = 0.1 // 10% (Fixed in SRS; adjust if backend uses different)
 
-    // Dashboard Metrics (SRS-aligned)
+    // Dashboard Metrics (API-aligned: GET /api/marketing/dashboard)
     const dashboardMetrics = reactive({
       total_leads: 0,
-      total_available_units_value: 0,
+      available_units_value: 0,
       available_units_count: 0,
       daily_task_achievement_rate: 0, // 0..100
       daily_deposits_count: 0,
-      total_daily_spend: 0,
-      deposit_cost: 0 // total_daily_spend / daily_deposits_count
+      deposit_cost: 0,
+      total_expected_bookings: 0,
+      total_expected_booking_value: 0
     })
 
     // Projects
@@ -660,6 +823,7 @@ export default {
 
     // Developer plan
     const isLoadingDeveloperPlan = ref(false)
+    const developerPlanSummary = ref(null)
     const developerPlanForm = reactive({
       project_id: '',
       contract_id: '',
@@ -687,8 +851,28 @@ export default {
     const currentSessionId = ref(null)
     const chatScrollRef = ref(null)
 
-    // Derived: developer plan outputs per SRS
+    const aiSections = ref([])
+    const isLoadingAiSections = ref(false)
+    const aiSelectedSectionKey = ref('general')
+    const aiContext = reactive({})
+
+    const currentAiSection = computed(() => {
+      const key = aiSelectedSectionKey.value
+      return (aiSections.value || []).find(s => String(s.key) === String(key)) || null
+    })
+
+    // Derived: developer plan outputs (prefer API computed outputs, fallback to local formulas)
     const devPlanOutputs = computed(() => {
+      if (developerPlanSummary.value) {
+        const s = developerPlanSummary.value
+        return {
+          totalBudget: Number(s.total_budget ?? s.totalBudget ?? s.raw_plan?.marketing_value ?? 0) || 0,
+          expectedImpressions: Number(s.expected_impressions ?? s.expectedImpressions ?? 0) || 0,
+          expectedClicks: Number(s.expected_clicks ?? s.expectedClicks ?? 0) || 0,
+          durationLabel: String(s.marketing_duration ?? s.durationLabel ?? '—')
+        }
+      }
+
       const marketingValue = Number(developerPlanForm.marketing_value) || 0
       const cpm = Number(developerPlanForm.average_cpm) || 0
       const cpc = Number(developerPlanForm.average_cpc) || 0
@@ -715,69 +899,32 @@ export default {
     const loadDashboard = async () => {
       try {
         console.log('📊 Loading marketing dashboard...')
-        // 1) Primary dashboard endpoint
         const data = await marketingService.getDashboard()
 
-        // 2) Fallback computations (only when fields are missing)
-        const [leadsData, projectsData, tasksData] = await Promise.all([
-          dashboardMetrics.total_leads ? Promise.resolve(null) : marketingService.getLeads().catch(() => []),
-          (dashboardMetrics.available_units_count || dashboardMetrics.total_available_units_value) ? Promise.resolve(null) : marketingService.getProjects().catch(() => []),
-          marketingService.getTasks().catch(() => [])
-        ])
-
-        // Leads
-        const totalLeads =
-          data.total_leads ??
-          data.leads_count ??
-          data.totalLeads ??
-          (Array.isArray(leadsData) ? leadsData.length : 0)
-
-        // Projects -> Available units count & value (best-effort)
-        const projectsArr = Array.isArray(projectsData) ? projectsData : []
-        const availableUnitsCount =
-          data.available_units_count ??
-          data.total_available_units ??
-          data.availableUnitsCount ??
-          projectsArr.reduce((sum, p) => sum + (Number(p.available_units_count ?? p.available_units ?? p.units_available ?? 0) || 0), 0)
-
-        const totalAvailableUnitsValue =
-          data.total_available_units_value ??
-          data.available_units_value ??
-          data.totalAvailableUnitsValue ??
-          projectsArr.reduce((sum, p) => sum + (Number(p.total_available_units_value ?? p.available_units_total_price ?? p.total_price_available ?? 0) || 0), 0)
-
-        // Tasks -> achievement rate
-        const tasksArr = Array.isArray(tasksData) ? tasksData : []
-        const completedCount = tasksArr.filter(t => normalizeTaskStatus(t.status) === 'completed').length
-        const achievementRate = tasksArr.length ? Math.round((completedCount / tasksArr.length) * 100) : 0
-
-        // Deposits (if backend provides)
-        const dailyDepositsCount = data.daily_deposits_count ?? data.deposits_today ?? data.dailyDepositsCount ?? 0
-        const totalDailySpend = data.total_daily_spend ?? data.daily_spend ?? data.totalDailySpend ?? 0
-        const depositCost = dailyDepositsCount ? Number(totalDailySpend) / Number(dailyDepositsCount) : 0
-
         Object.assign(dashboardMetrics, {
-          total_leads: Number(totalLeads) || 0,
-          total_available_units_value: Number(totalAvailableUnitsValue) || 0,
-          available_units_count: Number(availableUnitsCount) || 0,
-          daily_task_achievement_rate: Number.isFinite(achievementRate) ? achievementRate : 0,
-          daily_deposits_count: Number(dailyDepositsCount) || 0,
-          total_daily_spend: Number(totalDailySpend) || 0,
-          deposit_cost: Number(depositCost) || 0
+          total_leads: Number(data.total_leads ?? 0) || 0,
+          available_units_value: Number(data.available_units_value ?? 0) || 0,
+          available_units_count: Number(data.available_units_count ?? 0) || 0,
+          daily_task_achievement_rate: Number(data.daily_task_achievement_rate ?? 0) || 0,
+          daily_deposits_count: Number(data.daily_deposits_count ?? 0) || 0,
+          deposit_cost: Number(data.deposit_cost ?? 0) || 0,
+          total_expected_bookings: Number(data.total_expected_bookings ?? 0) || 0,
+          total_expected_booking_value: Number(data.total_expected_booking_value ?? 0) || 0
         })
 
         console.log('✅ Dashboard loaded')
       } catch (error) {
         console.error('❌ Error loading dashboard:', error)
-        // Keep zeros on error (avoid misleading mock business KPIs)
+        // Keep zeros on error
         Object.assign(dashboardMetrics, {
           total_leads: 0,
-          total_available_units_value: 0,
+          available_units_value: 0,
           available_units_count: 0,
           daily_task_achievement_rate: 0,
           daily_deposits_count: 0,
-          total_daily_spend: 0,
-          deposit_cost: 0
+          deposit_cost: 0,
+          total_expected_bookings: 0,
+          total_expected_booking_value: 0
         })
       }
     }
@@ -981,12 +1128,14 @@ export default {
     }
 
     const managePlan = (projectId) => {
-      activeTab.value = 'developer-plan'
+      activeTab.value = 'plans'
+      activePlanSubTab.value = 'developer'
       developerPlanForm.project_id = projectId
       // attempt to set contract_id from project list
       const p = projects.value.find(x => String(x.id) === String(projectId))
-      developerPlanForm.contract_id = String(p?.contract_id ?? p?.contractId ?? p?.id ?? '')
+      developerPlanForm.contract_id = String(p?.marketing_project?.contract_id ?? p?.contract_id ?? p?.contractId ?? p?.id ?? '')
       developerPlanForm.marketing_value = String(p?.marketing_value ?? p?.marketingValue ?? '')
+      router.push({ name: 'MarketingPlans', query: { sub: 'developer' } }).catch(() => {})
     }
 
     const viewLeadDetails = (leadId) => {
@@ -1015,23 +1164,27 @@ export default {
     }
 
     const getStatusClass = (status) => {
+      const s = String(status || '').toLowerCase()
       const statusMap = {
         'active': 'status-active',
+        'approved': 'status-active',
         'completed': 'status-completed',
         'pending': 'status-pending',
         'cancelled': 'status-cancelled'
       }
-      return statusMap[status] || 'status-pending'
+      return statusMap[s] || 'status-pending'
     }
 
     const getStatusText = (status) => {
+      const s = String(status || '').toLowerCase()
       const textMap = {
         'active': 'نشط',
+        'approved': 'معتمد',
         'completed': 'مكتمل',
         'pending': 'قيد الانتظار',
         'cancelled': 'ملغي'
       }
-      return textMap[status] || 'غير محدد'
+      return textMap[s] || 'غير محدد'
     }
 
     const getTaskStatusClass = (status) => {
@@ -1073,12 +1226,38 @@ export default {
       // expected routes: /marketing/:tab
       const parts = String(route.path || '').split('/').filter(Boolean)
       const tab = parts[1] // ['marketing','dashboard']
-      if (tab && ['dashboard', 'projects', 'plans', 'tasks', 'leads', 'ai-assistant'].includes(tab)) {
+      if (!tab) return
+
+      if (tab === 'developer-plan') {
+        activeTab.value = 'plans'
+        activePlanSubTab.value = 'developer'
+        return
+      }
+
+      if (tab === 'employee-plans') {
+        activeTab.value = 'plans'
+        activePlanSubTab.value = 'employee'
+        return
+      }
+
+      if (tab === 'plans') {
+        activeTab.value = 'plans'
+        const sub = String(route.query?.sub || '').toLowerCase()
+        if (sub === 'employee') activePlanSubTab.value = 'employee'
+        if (sub === 'developer') activePlanSubTab.value = 'developer'
+        return
+      }
+
+      if (tab && ['dashboard', 'projects', 'tasks', 'leads', 'ai-assistant'].includes(tab)) {
         activeTab.value = tab
       }
     }
 
     watch(() => route.path, () => {
+      syncTabFromRoute()
+    })
+
+    watch(() => route.query?.sub, () => {
       syncTabFromRoute()
     })
 
@@ -1114,11 +1293,14 @@ export default {
       isLoadingDeveloperPlan.value = true
       try {
         const plan = await marketingService.getDeveloperPlan(id)
-        // best-effort mapping
-        developerPlanForm.contract_id = String(plan.contract_id ?? developerPlanForm.contract_id ?? '')
-        developerPlanForm.marketing_value = String(plan.marketing_value ?? plan.marketingValue ?? developerPlanForm.marketing_value ?? '')
-        developerPlanForm.average_cpm = String(plan.average_cpm ?? plan.averageCPM ?? developerPlanForm.average_cpm ?? '')
-        developerPlanForm.average_cpc = String(plan.average_cpc ?? plan.averageCPC ?? developerPlanForm.average_cpc ?? '')
+        developerPlanSummary.value = plan || null
+        const raw = plan?.raw_plan || plan?.rawPlan || null
+        if (raw) {
+          developerPlanForm.contract_id = String(raw.contract_id ?? developerPlanForm.contract_id ?? '')
+          developerPlanForm.marketing_value = String(raw.marketing_value ?? developerPlanForm.marketing_value ?? '')
+          developerPlanForm.average_cpm = String(raw.average_cpm ?? developerPlanForm.average_cpm ?? '')
+          developerPlanForm.average_cpc = String(raw.average_cpc ?? developerPlanForm.average_cpc ?? '')
+        }
         notificationService.addNotification('تم جلب خطة المطور بنجاح', 'success')
       } catch (error) {
         console.error('❌ Error loading developer plan:', error)
@@ -1174,13 +1356,25 @@ export default {
     // --- AI Assistant Functions ---
     const loadAiDashboard = async () => {
       isLoadingConversations.value = true
+      isLoadingAiSections.value = true
       try {
-        const data = await aiService.getConversations()
-        conversations.value = data
+        const [convs, sections] = await Promise.all([
+          aiService.getConversations().catch(() => []),
+          aiService.getAvailableSections().catch(() => [])
+        ])
+
+        conversations.value = Array.isArray(convs) ? convs : []
+        aiSections.value = Array.isArray(sections) ? sections : []
+
+        // default section: prefer "general" if present
+        const hasGeneral = aiSections.value.some(s => String(s.key) === 'general')
+        if (hasGeneral) aiSelectedSectionKey.value = 'general'
+        else if (aiSections.value[0]?.key) aiSelectedSectionKey.value = aiSections.value[0].key
       } catch (error) {
         console.error('❌ Error loading AI conversations:', error)
       } finally {
         isLoadingConversations.value = false
+        isLoadingAiSections.value = false
       }
     }
 
@@ -1192,10 +1386,9 @@ export default {
 
     const loadChatSession = async (sessionId) => {
       currentSessionId.value = sessionId
-      // Mock loading history for now as specific session history GET might be needed
+      // لا يوجد endpoint ظاهر في الصور لقراءة سجل الجلسة، لذا نعرض رسالة إرشادية فقط
       chatMessages.value = [
-        { role: 'user', content: 'مرحباً، أريد مراجعة المحادثة السابقة.' },
-        { role: 'assistant', content: 'أهلاً بك! أنا تحت أمرك، تفضل بسؤالك.' }
+        { role: 'assistant', content: 'تم اختيار هذه المحادثة. يمكنك المتابعة بإرسال رسالة وسيتم ربطها بنفس session_id.' }
       ]
     }
 
@@ -1213,16 +1406,24 @@ export default {
       isAiTyping.value = true
 
       try {
+        const context = {}
+        const allowed = currentAiSection.value?.allowed_context_params || []
+        ;(allowed || []).forEach((k) => {
+          const v = aiContext[k]
+          if (v !== undefined && v !== null && String(v).trim() !== '') context[k] = v
+        })
+
         const payload = {
           message: text,
           session_id: currentSessionId.value,
-          section: 'marketing'
+          section: aiSelectedSectionKey.value || 'general',
+          ...(Object.keys(context).length ? { context } : {})
         }
         
         const response = await aiService.chat(payload)
         chatMessages.value.push({
           role: 'assistant',
-          content: response.reply || response.answer || response.message || 'عذراً، لم أتمكن من فهم طلبك.'
+          content: response.reply || response.answer || response.message || response.text || 'عذراً، لم أتمكن من فهم طلبك.'
         })
         
         if (response.session_id && !currentSessionId.value) {
@@ -1246,13 +1447,45 @@ export default {
       }
     }
 
+    const getConversationId = (chat) => chat?.session_id || chat?.id
+
+    const deleteChat = async (sessionId) => {
+      if (!sessionId) return
+      try {
+        await aiService.deleteConversation(sessionId)
+        if (String(currentSessionId.value) === String(sessionId)) startNewChat()
+        await loadAiDashboard()
+        notificationService.addNotification('تم حذف المحادثة', 'success')
+      } catch (error) {
+        console.error('❌ Error deleting conversation:', error)
+        alert('تعذر حذف المحادثة')
+      }
+    }
+
+    const setPlanSubTab = (sub) => {
+      activePlanSubTab.value = sub
+      router.replace({ name: 'MarketingPlans', query: { ...(route.query || {}), sub } }).catch(() => {})
+    }
+
+    const getMarketingProjectId = (p) => p?.marketing_project?.id ?? p?.marketing_project_id ?? p?.marketingProjectId ?? p?.id
+
+    const formatDistribution = (obj) => {
+      if (!obj || typeof obj !== 'object') return '—'
+      const entries = Object.entries(obj)
+      if (!entries.length) return '—'
+      return entries.map(([k, v]) => `${k}: ${v}`).join(' • ')
+    }
+
     return {
       activeTab,
       activePlanSubTab,
+      setPlanSubTab,
       userName,
       dashboardMetrics,
       projects,
       isLoadingProjects,
+      selectedProjectDetails,
+      isLoadingProjectDetails,
       tasks,
       isLoadingTasks,
       leads,
@@ -1260,6 +1493,7 @@ export default {
       showCalculateBudgetModal,
       showAddLeadModal,
       isSubmitting,
+      showProjectDetailsModal,
       budgetForm,
       leadForm,
       openCalculateBudgetModal,
@@ -1281,6 +1515,7 @@ export default {
       ,
       // developer plan
       developerPlanForm,
+      developerPlanSummary,
       devPlanOutputs,
       isLoadingDeveloperPlan,
       loadDeveloperPlan,
@@ -1295,6 +1530,8 @@ export default {
       loadEmployees,
       loadEmployeePlans,
       autoGenerateEmployeePlan,
+      getMarketingProjectId,
+      formatDistribution,
       // AI Assistant
       aiQuery,
       isAiTyping,
@@ -1306,7 +1543,14 @@ export default {
       startNewChat,
       loadChatSession,
       sendAiMessage,
-      sendPrompt
+      sendPrompt,
+      aiSections,
+      isLoadingAiSections,
+      aiSelectedSectionKey,
+      aiContext,
+      currentAiSection,
+      getConversationId,
+      deleteChat
     }
   }
 }
@@ -2361,6 +2605,48 @@ export default {
   color: #64748b;
 }
 
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+}
+
+.detail-item {
+  background: rgba(177, 162, 143, 0.04);
+  border: 1px solid rgba(177, 162, 143, 0.12);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.details-teams {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.team-pill {
+  background: rgba(30, 58, 95, 0.06);
+  border: 1px solid rgba(30, 58, 95, 0.12);
+  color: #1e3a5f;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.team-name {
+  font-weight: 700;
+}
+
+.team-role {
+  opacity: 0.8;
+}
+
 .btn-icon {
   background: rgba(177, 162, 143, 0.1);
   border: 1px solid rgba(177, 162, 143, 0.2);
@@ -2623,6 +2909,10 @@ export default {
 
   .luxury-table {
     min-width: 600px;
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -175,6 +175,22 @@ const marketingService = {
       console.log('✅ Task status updated:', response.data)
       return response.data?.data || response.data || {}
     } catch (error) {
+      // بعض بيئات الـ API قد تقبل status كـ query param بدلاً من body (حسب إعدادات الباك-إند)
+      if (error?.status === 400 || error?.status === 422) {
+        try {
+          const response = await apiClient.patch(
+            `/marketing/tasks/${taskId}/status`,
+            null,
+            { params: { status } }
+          )
+          console.log('✅ Task status updated (query param):', response.data)
+          return response.data?.data || response.data || {}
+        } catch (retryError) {
+          console.error('❌ Error updating task status (retry):', retryError)
+          throw retryError
+        }
+      }
+
       console.error('❌ Error updating task status:', error)
       throw error
     }

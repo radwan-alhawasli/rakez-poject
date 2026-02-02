@@ -58,7 +58,7 @@ const aiService = {
         try {
             console.log(`🤖 Deleting conversation ${sessionId}...`)
             const response = await apiClient.delete(`/ai/conversations/${sessionId}`)
-            return response.data
+            return response.data?.data || response.data || {}
         } catch (error) {
             console.error('❌ Error deleting conversation:', error)
             throw error

@@ -127,10 +127,16 @@ const routes = [
                     { path: '', redirect: { name: 'MarketingDashboard' } },
                     { path: 'dashboard', name: 'MarketingDashboard', component: () => import('../views/MarketingView.vue') },
                     { path: 'projects', name: 'MarketingProjects', component: () => import('../views/MarketingView.vue') },
-                    { path: 'developer-plan', name: 'MarketingDeveloperPlan', component: () => import('../views/MarketingView.vue') },
-                    { path: 'employee-plans', name: 'MarketingEmployeePlans', component: () => import('../views/MarketingView.vue') },
                     { path: 'tasks', name: 'MarketingTasks', component: () => import('../views/MarketingView.vue') },
-                    { path: 'leads', name: 'MarketingLeads', component: () => import('../views/MarketingView.vue') }
+                    { path: 'leads', name: 'MarketingLeads', component: () => import('../views/MarketingView.vue') },
+
+                    // New consolidated screens (MainLayout links rely on these)
+                    { path: 'plans', name: 'MarketingPlans', component: () => import('../views/MarketingView.vue') },
+                    { path: 'ai-assistant', name: 'MarketingAiAssistant', component: () => import('../views/MarketingView.vue') },
+
+                    // Backward-compatible routes -> redirect into /marketing/plans
+                    { path: 'developer-plan', name: 'MarketingDeveloperPlan', redirect: { name: 'MarketingPlans', query: { sub: 'developer' } } },
+                    { path: 'employee-plans', name: 'MarketingEmployeePlans', redirect: { name: 'MarketingPlans', query: { sub: 'employee' } } }
                 ]
             },
             {
