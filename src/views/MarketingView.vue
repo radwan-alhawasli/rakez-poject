@@ -137,6 +137,172 @@
         </div>
       </div>
 
+      <!-- 3. Developer Plan Tab -->
+      <div v-else-if="activeTab === 'developer-plan'" class="marketing-developer-plan-view">
+        <div class="section-header-compact">
+          <h2 class="section-title">خطة التسويق الخاصة بالمطور</h2>
+          <p class="section-subtitle">إدخال متوسطات CPM/CPC وعرض مخرجات الخطة وفق المعادلات المعتمدة.</p>
+        </div>
+
+        <div class="plan-grid">
+          <div class="plan-card">
+            <h3 class="plan-card-title">إعدادات الخطة</h3>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label>المشروع <span class="required">*</span></label>
+                <select v-model="developerPlanForm.project_id" class="form-input">
+                  <option value="">-- اختر مشروعاً --</option>
+                  <option v-for="p in projects" :key="p.id" :value="p.id">
+                    {{ p.project_name || p.name || ('Project #' + p.id) }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>رقم العقد (Contract ID) <span class="required">*</span></label>
+                <input type="number" v-model="developerPlanForm.contract_id" class="form-input" placeholder="1" />
+              </div>
+
+              <div class="form-group">
+                <label>قيمة التسويق (Marketing Value) <span class="required">*</span></label>
+                <input type="number" v-model="developerPlanForm.marketing_value" class="form-input" placeholder="35000" />
+              </div>
+
+              <div class="form-group">
+                <label>Average CPM <span class="required">*</span></label>
+                <input type="number" step="any" v-model="developerPlanForm.average_cpm" class="form-input" placeholder="25" />
+              </div>
+
+              <div class="form-group">
+                <label>Average CPC <span class="required">*</span></label>
+                <input type="number" step="any" v-model="developerPlanForm.average_cpc" class="form-input" placeholder="2.5" />
+              </div>
+            </div>
+
+            <div class="plan-actions">
+              <button class="btn-secondary" @click="loadDeveloperPlan" :disabled="isLoadingDeveloperPlan">
+                <span v-if="isLoadingDeveloperPlan" class="spinner-small"></span>
+                جلب الخطة
+              </button>
+              <button class="btn-primary" @click="saveDeveloperPlan" :disabled="isSubmitting">
+                <span v-if="isSubmitting" class="spinner-small"></span>
+                حفظ الخطة
+              </button>
+            </div>
+          </div>
+
+          <div class="plan-card plan-output">
+            <h3 class="plan-card-title">مخرجات الخطة (بدون منصات)</h3>
+
+            <div class="output-row">
+              <span class="output-label">الميزانية الإجمالية:</span>
+              <span class="output-value number">{{ formatCurrency(devPlanOutputs.totalBudget) }} ريال</span>
+            </div>
+            <div class="output-row">
+              <span class="output-label">المشاهدات المتوقعة:</span>
+              <span class="output-value number">≈ {{ formatNumber(devPlanOutputs.expectedImpressions) }}</span>
+            </div>
+            <div class="output-row">
+              <span class="output-label">النقرات المتوقعة:</span>
+              <span class="output-value number">≈ {{ formatNumber(devPlanOutputs.expectedClicks) }}</span>
+            </div>
+            <div class="output-row">
+              <span class="output-label">مدة التسويق:</span>
+              <span class="output-value">{{ devPlanOutputs.durationLabel }}</span>
+            </div>
+
+            <div class="hint-box">
+              <div class="hint-title">المعادلات</div>
+              <div class="hint-text">
+                المشاهدات = \( (قيمة التسويق ÷ CPM) × 1000 \) <br/>
+                النقرات = \( قيمة التسويق ÷ CPC \)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Employee Plans Tab -->
+      <div v-else-if="activeTab === 'employee-plans'" class="marketing-employee-plan-view">
+        <div class="section-header-compact">
+          <h2 class="section-title">خطة التسويق الخاصة بالموظف</h2>
+          <p class="section-subtitle">عرض خطط الموظفين للمشروع وتوليد خطة تلقائية عبر الـ API.</p>
+        </div>
+
+        <div class="plan-card">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>المشروع <span class="required">*</span></label>
+              <select v-model="employeePlansProjectId" class="form-input" @change="loadEmployeePlans">
+                <option value="">-- اختر مشروعاً --</option>
+                <option v-for="p in projects" :key="p.id" :value="p.id">
+                  {{ p.project_name || p.name || ('Project #' + p.id) }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>الموظف (Marketer) <span class="required">*</span></label>
+              <select v-model="employeePlanGenerateForm.user_id" class="form-input">
+                <option value="">-- اختر موظفاً --</option>
+                <option v-for="u in marketingEmployees" :key="u.id" :value="u.id">
+                  {{ u.name || u.full_name || ('User #' + u.id) }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="plan-actions">
+            <button class="btn-secondary" @click="loadEmployees" :disabled="isLoadingEmployees">
+              <span v-if="isLoadingEmployees" class="spinner-small"></span>
+              تحديث قائمة الموظفين
+            </button>
+            <button class="btn-primary" @click="autoGenerateEmployeePlan" :disabled="isSubmitting || !employeePlansProjectId || !employeePlanGenerateForm.user_id">
+              <span v-if="isSubmitting" class="spinner-small"></span>
+              إنشاء خطة تلقائياً
+            </button>
+          </div>
+        </div>
+
+        <div v-if="isLoadingEmployeePlans" class="loading-state">
+          <div class="spinner"></div>
+          <p>جاري تحميل خطط الموظفين...</p>
+        </div>
+
+        <div v-else-if="employeePlans.length === 0" class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <p>لا توجد خطط موظفين لهذا المشروع</p>
+        </div>
+
+        <div v-else class="leads-table-container">
+          <table class="luxury-table">
+            <thead>
+              <tr>
+                <th>الموظف</th>
+                <th>المنصة</th>
+                <th>الميزانية</th>
+                <th>التواصل المباشر</th>
+                <th>اليد</th>
+                <th>الانطباع</th>
+                <th>السيلز</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="plan in employeePlans" :key="plan.id" class="hover-row">
+                <td>{{ plan.user_name || plan.user?.name || '—' }}</td>
+                <td>{{ plan.platform || '—' }}</td>
+                <td class="number">{{ formatCurrency(plan.budget || plan.total_budget || 0) }}</td>
+                <td class="number">{{ formatNumber(plan.direct || plan.direct_communications || 0) }}</td>
+                <td class="number">{{ formatNumber(plan.hand || plan.hand_raises || 0) }}</td>
+                <td class="number">{{ formatNumber(plan.impressions || plan.impression_campaigns || 0) }}</td>
+                <td class="number">{{ formatNumber(plan.sales || plan.sales_campaigns || 0) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- 3. Tasks Tab -->
       <div v-else-if="activeTab === 'tasks'" class="marketing-tasks-view">
         <div class="section-header-compact">
@@ -332,10 +498,11 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import marketingService from '../services/marketingService'
 import notificationService from '../services/notificationService'
+import userService from '../services/userService'
 
 export default {
   name: 'MarketingView',
@@ -346,17 +513,25 @@ export default {
     const activeTab = ref('dashboard')
     const userName = ref(localStorage.getItem('userName') || 'مستخدم')
     
-    // Dashboard Metrics
+    // Fixed percentages (Adjust to business rules if needed)
+    const MARKETING_PERCENT_FIXED = 0.1 // 10% (Fixed in SRS; adjust if backend uses different)
+
+    // Dashboard Metrics (SRS-aligned)
     const dashboardMetrics = reactive({
-      total_projects: 0,
       total_leads: 0,
-      active_tasks: 0,
-      total_budget: 0
+      total_available_units_value: 0,
+      available_units_count: 0,
+      daily_task_achievement_rate: 0, // 0..100
+      daily_deposits_count: 0,
+      total_daily_spend: 0,
+      deposit_cost: 0 // total_daily_spend / daily_deposits_count
     })
 
     // Projects
     const projects = ref([])
     const isLoadingProjects = ref(false)
+    const selectedProjectDetails = ref(null)
+    const isLoadingProjectDetails = ref(false)
 
     // Tasks
     const tasks = ref([])
@@ -370,11 +545,16 @@ export default {
     const showCalculateBudgetModal = ref(false)
     const showAddLeadModal = ref(false)
     const isSubmitting = ref(false)
+    const showProjectDetailsModal = ref(false)
 
     // Forms
     const budgetForm = reactive({
       contract_id: '',
-      unit_price: ''
+      unit_price: '',
+      commission_percent: '', // "نسبة السعي/العمولة"
+      marketing_percent: MARKETING_PERCENT_FIXED,
+      contract_duration_days: '',
+      contract_duration_months: ''
     })
 
     const leadForm = reactive({
@@ -384,27 +564,117 @@ export default {
       project_id: ''
     })
 
+    // Developer plan
+    const isLoadingDeveloperPlan = ref(false)
+    const developerPlanForm = reactive({
+      project_id: '',
+      contract_id: '',
+      marketing_value: '',
+      average_cpm: '',
+      average_cpc: ''
+    })
+
+    // Employee plans
+    const marketingEmployees = ref([])
+    const isLoadingEmployees = ref(false)
+    const employeePlansProjectId = ref('')
+    const employeePlans = ref([])
+    const isLoadingEmployeePlans = ref(false)
+    const employeePlanGenerateForm = reactive({
+      user_id: ''
+    })
+
+    // Derived: developer plan outputs per SRS
+    const devPlanOutputs = computed(() => {
+      const marketingValue = Number(developerPlanForm.marketing_value) || 0
+      const cpm = Number(developerPlanForm.average_cpm) || 0
+      const cpc = Number(developerPlanForm.average_cpc) || 0
+
+      const expectedImpressions = cpm > 0 ? Math.round((marketingValue / cpm) * 1000) : 0
+      const expectedClicks = cpc > 0 ? Math.round(marketingValue / cpc) : 0
+
+      const durationDays =
+        Number(selectedProjectDetails.value?.agreement_duration_days || selectedProjectDetails.value?.duration_days || 0) ||
+        Number(budgetForm.contract_duration_days || 0)
+
+      const durationLabel = durationDays ? `${formatNumber(durationDays)} يوم` : 'حسب مدة العقد'
+
+      return {
+        totalBudget: marketingValue,
+        expectedImpressions,
+        expectedClicks,
+        durationLabel
+      }
+    })
+
     // --- Data Loading Functions ---
 
     const loadDashboard = async () => {
       try {
         console.log('📊 Loading marketing dashboard...')
+        // 1) Primary dashboard endpoint
         const data = await marketingService.getDashboard()
+
+        // 2) Fallback computations (only when fields are missing)
+        const [leadsData, projectsData, tasksData] = await Promise.all([
+          dashboardMetrics.total_leads ? Promise.resolve(null) : marketingService.getLeads().catch(() => []),
+          (dashboardMetrics.available_units_count || dashboardMetrics.total_available_units_value) ? Promise.resolve(null) : marketingService.getProjects().catch(() => []),
+          marketingService.getTasks().catch(() => [])
+        ])
+
+        // Leads
+        const totalLeads =
+          data.total_leads ??
+          data.leads_count ??
+          data.totalLeads ??
+          (Array.isArray(leadsData) ? leadsData.length : 0)
+
+        // Projects -> Available units count & value (best-effort)
+        const projectsArr = Array.isArray(projectsData) ? projectsData : []
+        const availableUnitsCount =
+          data.available_units_count ??
+          data.total_available_units ??
+          data.availableUnitsCount ??
+          projectsArr.reduce((sum, p) => sum + (Number(p.available_units_count ?? p.available_units ?? p.units_available ?? 0) || 0), 0)
+
+        const totalAvailableUnitsValue =
+          data.total_available_units_value ??
+          data.available_units_value ??
+          data.totalAvailableUnitsValue ??
+          projectsArr.reduce((sum, p) => sum + (Number(p.total_available_units_value ?? p.available_units_total_price ?? p.total_price_available ?? 0) || 0), 0)
+
+        // Tasks -> achievement rate
+        const tasksArr = Array.isArray(tasksData) ? tasksData : []
+        const completedCount = tasksArr.filter(t => normalizeTaskStatus(t.status) === 'completed').length
+        const achievementRate = tasksArr.length ? Math.round((completedCount / tasksArr.length) * 100) : 0
+
+        // Deposits (if backend provides)
+        const dailyDepositsCount = data.daily_deposits_count ?? data.deposits_today ?? data.dailyDepositsCount ?? 0
+        const totalDailySpend = data.total_daily_spend ?? data.daily_spend ?? data.totalDailySpend ?? 0
+        const depositCost = dailyDepositsCount ? Number(totalDailySpend) / Number(dailyDepositsCount) : 0
+
         Object.assign(dashboardMetrics, {
-          total_projects: data.total_projects || 0,
-          total_leads: data.total_leads || 0,
-          active_tasks: data.active_tasks || 0,
-          total_budget: data.total_budget || 0
+          total_leads: Number(totalLeads) || 0,
+          total_available_units_value: Number(totalAvailableUnitsValue) || 0,
+          available_units_count: Number(availableUnitsCount) || 0,
+          daily_task_achievement_rate: Number.isFinite(achievementRate) ? achievementRate : 0,
+          daily_deposits_count: Number(dailyDepositsCount) || 0,
+          total_daily_spend: Number(totalDailySpend) || 0,
+          deposit_cost: Number(depositCost) || 0
         })
+
         console.log('✅ Dashboard loaded')
       } catch (error) {
         console.error('❌ Error loading dashboard:', error)
-        // Use mock data on error
+        // Keep zeros on error (avoid misleading mock business KPIs)
         Object.assign(dashboardMetrics, {
-          total_projects: 12,
-          total_leads: 48,
-          active_tasks: 7,
-          total_budget: 350000
+          total_leads: 0,
+          total_available_units_value: 0,
+          available_units_count: 0,
+          daily_task_achievement_rate: 0,
+          daily_deposits_count: 0,
+          total_daily_spend: 0,
+          deposit_cost: 0
         })
       }
     }
@@ -419,6 +689,20 @@ export default {
         projects.value = []
       } finally {
         isLoadingProjects.value = false
+      }
+    }
+
+    const loadProjectDetails = async (projectId) => {
+      if (!projectId) return
+      isLoadingProjectDetails.value = true
+      try {
+        const details = await marketingService.getProjectById(projectId)
+        selectedProjectDetails.value = details
+      } catch (error) {
+        console.error('❌ Error loading project details:', error)
+        selectedProjectDetails.value = null
+      } finally {
+        isLoadingProjectDetails.value = false
       }
     }
 
@@ -448,6 +732,36 @@ export default {
       }
     }
 
+    const loadEmployees = async () => {
+      isLoadingEmployees.value = true
+      try {
+        const employees = await userService.getEmployees()
+        marketingEmployees.value = (employees || []).filter(e => String(e.type) === '0' || e.type === 0 || String(e.type).toLowerCase() === 'marketing')
+      } catch (error) {
+        console.error('❌ Error loading employees:', error)
+        marketingEmployees.value = []
+      } finally {
+        isLoadingEmployees.value = false
+      }
+    }
+
+    const loadEmployeePlans = async () => {
+      if (!employeePlansProjectId.value) {
+        employeePlans.value = []
+        return
+      }
+      isLoadingEmployeePlans.value = true
+      try {
+        const data = await marketingService.getEmployeePlans(employeePlansProjectId.value)
+        employeePlans.value = Array.isArray(data) ? data : []
+      } catch (error) {
+        console.error('❌ Error loading employee plans:', error)
+        employeePlans.value = []
+      } finally {
+        isLoadingEmployeePlans.value = false
+      }
+    }
+
     // --- Action Functions ---
 
     const openCalculateBudgetModal = () => {
@@ -469,8 +783,26 @@ export default {
           unit_price: parseFloat(budgetForm.unit_price)
         })
         
+        // Best-effort fields from backend, otherwise compute locally per SRS formulas
+        const unitPrice = Number(budgetForm.unit_price) || 0
+        const commissionPercent = Number(budgetForm.commission_percent) || 0
+        const marketingPercent = Number(budgetForm.marketing_percent) || MARKETING_PERCENT_FIXED
+
+        const commissionValue = result.commission_value ?? (unitPrice * (commissionPercent / 100))
+        const marketingValue = result.marketing_value ?? (Number(commissionValue) * marketingPercent)
+
+        const durationDays = Number(budgetForm.contract_duration_days) || Number(result.contract_duration_days) || 0
+        const durationMonths = Number(budgetForm.contract_duration_months) || Number(result.contract_duration_months) || 0
+
+        const dailyBudget = durationDays ? (Number(marketingValue) / durationDays) : (result.daily_budget ?? 0)
+        const monthlyBudget = durationMonths ? (Number(marketingValue) / durationMonths) : (result.monthly_budget ?? 0)
+
+        // Auto-fill developer plan if user wants
+        developerPlanForm.contract_id = developerPlanForm.contract_id || budgetForm.contract_id
+        developerPlanForm.marketing_value = developerPlanForm.marketing_value || String(Math.round(Number(marketingValue) || 0))
+
         notificationService.addNotification(
-          `تم حساب الميزانية بنجاح: ${formatCurrency(result.calculated_budget || 0)} ريال`,
+          `تم حساب الميزانية: إجمالي التسويق ${formatCurrency(marketingValue || 0)} ريال | يومي ${formatCurrency(dailyBudget || 0)} ريال`,
           'success'
         )
         
@@ -524,7 +856,8 @@ export default {
     }
 
     const toggleTaskStatus = async (task) => {
-      const newStatus = task.status === 'completed' ? 'in-progress' : 'completed'
+      const current = normalizeTaskStatus(task.status)
+      const newStatus = current === 'completed' ? 'in-progress' : (current === 'in-progress' ? 'completed' : 'in-progress')
       try {
         await marketingService.updateTaskStatus(task.id, newStatus)
         task.status = newStatus
@@ -540,13 +873,17 @@ export default {
     }
 
     const viewProjectDetails = (projectId) => {
-      console.log('View project details:', projectId)
-      // TODO: Navigate to project details page or open modal
+      showProjectDetailsModal.value = true
+      loadProjectDetails(projectId)
     }
 
     const managePlan = (projectId) => {
-      console.log('Manage plan for project:', projectId)
-      // TODO: Navigate to plan management page or open modal
+      activeTab.value = 'developer-plan'
+      developerPlanForm.project_id = projectId
+      // attempt to set contract_id from project list
+      const p = projects.value.find(x => String(x.id) === String(projectId))
+      developerPlanForm.contract_id = String(p?.contract_id ?? p?.contractId ?? p?.id ?? '')
+      developerPlanForm.marketing_value = String(p?.marketing_value ?? p?.marketingValue ?? '')
     }
 
     const viewLeadDetails = (leadId) => {
@@ -556,14 +893,22 @@ export default {
 
     // --- Utility Functions ---
 
-    const formatCurrency = (value) => {
-      return new Intl.NumberFormat('en-US').format(value)
-    }
+    const formatCurrency = (value) => new Intl.NumberFormat('en-US').format(Number(value) || 0)
+    const formatNumber = (value) => new Intl.NumberFormat('en-US').format(Number(value) || 0)
 
     const formatDate = (dateString) => {
       if (!dateString) return 'غير محدد'
       const date = new Date(dateString)
-      return new Intl.DateTimeFormat('ar-SA').format(date)
+      return new Intl.DateTimeFormat('en-GB').format(date) // English numerals
+    }
+
+    const normalizeTaskStatus = (status) => {
+      const s = String(status || '').toLowerCase()
+      if (s === 'completed' || s === 'done') return 'completed'
+      if (s === 'in-progress' || s === 'in_progress') return 'in-progress'
+      if (s === 'new') return 'pending'
+      if (s === 'pending') return 'pending'
+      return 'pending'
     }
 
     const getStatusClass = (status) => {
@@ -592,16 +937,17 @@ export default {
         'in-progress': 'task-in-progress',
         'pending': 'task-pending'
       }
-      return statusMap[status] || 'task-pending'
+      return statusMap[normalizeTaskStatus(status)] || 'task-pending'
     }
 
     const getTaskStatusText = (status) => {
+      const normalized = normalizeTaskStatus(status)
       const textMap = {
         'completed': 'مكتملة',
         'in-progress': 'قيد التنفيذ',
         'pending': 'معلقة'
       }
-      return textMap[status] || 'غير محدد'
+      return textMap[normalized] || 'غير محدد'
     }
 
     const getSourceClass = (source) => {
@@ -620,12 +966,31 @@ export default {
 
     // --- Lifecycle & Watchers ---
 
+    const syncTabFromRoute = () => {
+      // expected routes: /marketing/:tab
+      const parts = String(route.path || '').split('/').filter(Boolean)
+      const tab = parts[1] // ['marketing','dashboard']
+      if (tab && ['dashboard', 'projects', 'developer-plan', 'employee-plans', 'tasks', 'leads'].includes(tab)) {
+        activeTab.value = tab
+      }
+    }
+
+    watch(() => route.path, () => {
+      syncTabFromRoute()
+    })
+
     watch(activeTab, (newTab) => {
       console.log('🔄 Active tab changed to:', newTab)
       if (newTab === 'dashboard') {
         loadDashboard()
       } else if (newTab === 'projects') {
         loadProjects()
+      } else if (newTab === 'developer-plan') {
+        loadProjects()
+        loadEmployees()
+      } else if (newTab === 'employee-plans') {
+        loadProjects()
+        loadEmployees()
       } else if (newTab === 'tasks') {
         loadTasks()
       } else if (newTab === 'leads') {
@@ -634,14 +999,75 @@ export default {
     }, { immediate: true })
 
     onMounted(() => {
-      // Check route hash for tab
-      if (route.hash) {
-        const tabFromHash = route.hash.replace('#', '')
-        if (['dashboard', 'projects', 'tasks', 'leads'].includes(tabFromHash)) {
-          activeTab.value = tabFromHash
-        }
-      }
+      syncTabFromRoute()
+      loadEmployees()
     })
+
+    const loadDeveloperPlan = async () => {
+      const id = developerPlanForm.contract_id || developerPlanForm.project_id
+      if (!id) {
+        alert('اختر مشروعاً أو أدخل رقم العقد')
+        return
+      }
+      isLoadingDeveloperPlan.value = true
+      try {
+        const plan = await marketingService.getDeveloperPlan(id)
+        // best-effort mapping
+        developerPlanForm.contract_id = String(plan.contract_id ?? developerPlanForm.contract_id ?? '')
+        developerPlanForm.marketing_value = String(plan.marketing_value ?? plan.marketingValue ?? developerPlanForm.marketing_value ?? '')
+        developerPlanForm.average_cpm = String(plan.average_cpm ?? plan.averageCPM ?? developerPlanForm.average_cpm ?? '')
+        developerPlanForm.average_cpc = String(plan.average_cpc ?? plan.averageCPC ?? developerPlanForm.average_cpc ?? '')
+        notificationService.addNotification('تم جلب خطة المطور بنجاح', 'success')
+      } catch (error) {
+        console.error('❌ Error loading developer plan:', error)
+        alert('لم يتم العثور على خطة/حدث خطأ')
+      } finally {
+        isLoadingDeveloperPlan.value = false
+      }
+    }
+
+    const saveDeveloperPlan = async () => {
+      if (!developerPlanForm.contract_id || !developerPlanForm.marketing_value || !developerPlanForm.average_cpm || !developerPlanForm.average_cpc) {
+        alert('الرجاء إدخال جميع الحقول المطلوبة')
+        return
+      }
+      try {
+        isSubmitting.value = true
+        await marketingService.storeDeveloperPlan({
+          contract_id: Number(developerPlanForm.contract_id),
+          marketing_value: Number(developerPlanForm.marketing_value),
+          average_cpm: Number(developerPlanForm.average_cpm),
+          average_cpc: Number(developerPlanForm.average_cpc)
+        })
+        notificationService.addNotification('تم حفظ خطة المطور بنجاح', 'success')
+      } catch (error) {
+        console.error('❌ Error saving developer plan:', error)
+        alert('حدث خطأ أثناء حفظ خطة المطور')
+      } finally {
+        isSubmitting.value = false
+      }
+    }
+
+    const autoGenerateEmployeePlan = async () => {
+      if (!employeePlansProjectId.value || !employeePlanGenerateForm.user_id) {
+        alert('اختر مشروعاً وموظفاً')
+        return
+      }
+      try {
+        isSubmitting.value = true
+        await marketingService.autoGenerateEmployeePlan({
+          marketing_project_id: Number(employeePlansProjectId.value),
+          user_id: Number(employeePlanGenerateForm.user_id)
+        })
+        notificationService.addNotification('تم إنشاء خطة الموظف تلقائياً', 'success')
+        await loadEmployeePlans()
+      } catch (error) {
+        console.error('❌ Error auto-generating employee plan:', error)
+        alert('حدث خطأ أثناء إنشاء خطة الموظف')
+      } finally {
+        isSubmitting.value = false
+      }
+    }
 
     return {
       activeTab,
@@ -668,11 +1094,29 @@ export default {
       viewLeadDetails,
       formatCurrency,
       formatDate,
+      formatNumber,
       getStatusClass,
       getStatusText,
       getTaskStatusClass,
       getTaskStatusText,
       getSourceClass
+      ,
+      // developer plan
+      developerPlanForm,
+      devPlanOutputs,
+      isLoadingDeveloperPlan,
+      loadDeveloperPlan,
+      saveDeveloperPlan,
+      // employee plans
+      marketingEmployees,
+      isLoadingEmployees,
+      employeePlansProjectId,
+      employeePlans,
+      isLoadingEmployeePlans,
+      employeePlanGenerateForm,
+      loadEmployees,
+      loadEmployeePlans,
+      autoGenerateEmployeePlan
     }
   }
 }
