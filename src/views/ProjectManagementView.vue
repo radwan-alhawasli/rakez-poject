@@ -72,7 +72,7 @@
                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                          التفاصيل
                      </div>
-                     <div v-if="isEditor" class="menu-item" @click.stop="openMediaModal(project)">
+                     <div v-if="isEditor || isManager" class="menu-item" @click.stop="openMediaModal(project)">
                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
                          التصوير (Photography)
                      </div>
@@ -247,6 +247,10 @@ export default {
         return u ? u.type : 0
     })
     const isEditor = computed(() => userRole.value == 4)
+    const isManager = computed(() => {
+        const u = authService.getCurrentUser()
+        return (u && u.type == 1) || (u && u.type == 3 && u.is_manager)
+    })
 
     // Initialize activeTab based on user role
     const activeTab = ref(isEditor.value ? 'all_projects' : 'not_ready')
@@ -485,7 +489,10 @@ export default {
       allProjectsCount,
       showMediaModalState, mediaForm, isMediaSaving,
       openMediaModal, closeMediaModalState, submitMediaForm,
-      getStatusClass, goToUnits
+      allProjectsCount,
+      showMediaModalState, mediaForm, isMediaSaving,
+      openMediaModal, closeMediaModalState, submitMediaForm,
+      getStatusClass, goToUnits, isManager
     }
   }
 }
