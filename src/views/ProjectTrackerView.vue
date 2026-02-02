@@ -183,22 +183,23 @@
                     </fieldset>
 
                     <!-- Actions for Submitter moved OUTSIDE disabled fieldset -->
-                    <div class="form-actions" style="margin-top: 20px; text-align: left;">
-                        <div v-if="!isManager && photographyForm.status !== 'approved'">
+                    <div class="form-actions" style="margin-top: 20px; text-align: left; padding: 15px; background: #f9fafb; border-radius: 8px;">
+                        
+                        <div v-if="photographyForm.status !== 'approved'">
                             <!-- If Pending and NOT editing -> Show Edit Button -->
-                            <button v-if="photographyForm.status === 'pending' && !isEditingPending" type="button" class="update-btn secondary" @click="isEditingPending = true">
-                                تعديل الطلب (Edit)
+                            <button v-if="photographyForm.status === 'pending' && !isEditingPending" type="button" class="update-btn secondary" @click="isEditingPending = true" style="background: #64748b; color: white;">
+                                تعديل الطلب (Edit Request)
                             </button>
                             
                             <!-- Else (Rejected, New, or Editing Pending) -> Show Save -->
-                            <button v-else type="submit" class="update-btn" :disabled="isPhotoSaving">
-                                {{ isPhotoSaving ? 'جاري الحفظ...' : ((photographyForm.status === 'rejected' || isEditingPending) ? 'تحديث وإعادة الإرسال' : 'حفظ وإرسال للموافقة') }}
+                            <button v-else type="submit" class="update-btn" :disabled="isPhotoSaving" style="background: #B1A28F; color: white;">
+                                {{ isPhotoSaving ? 'جاري الحفظ...' : 'حفظ وإرسال للموافقة (Submit)' }}
                             </button>
                             
                             <button v-if="isEditingPending" type="button" class="btn-text" @click="cancelPhotoEdit" style="margin-right:10px;">إلغاء</button>
                         </div>
 
-                        <p v-if="photographyForm.status === 'approved'" style="color: #10b981; font-weight: bold;">
+                        <p v-if="photographyForm.status === 'approved'" style="color: #10b981; font-weight: bold; margin: 0;">
                             ✓ تم اعتماد الصور
                         </p>
                     </div>
@@ -443,7 +444,8 @@ export default {
         image_url: '',
         video_url: '',
         description: '',
-        updated_at: null
+        updated_at: null,
+        isExisting: false
     })
     const isEditingPending = ref(false)
     
@@ -615,6 +617,9 @@ export default {
              } else if (p.created_at) {
                  photographyForm.updated_at = new Date(p.created_at).toLocaleDateString('ar-SA')
              }
+             photographyForm.isExisting = true
+          } else {
+             photographyForm.isExisting = false
           }
 
        } catch (e) {
@@ -802,18 +807,19 @@ export default {
             // But if a manager edits, maybe it stays pending/approved? 
             // Stick to requirements: "if rejected... status... if entered links... wait acceptance"
             const payload = {
-                ...photographyForm,
-                status: 'pending', // Always pending when updated by user
-                rejection_reason: null // Clear rejection reason
+                image_url: photographyForm.image_url,
+                video_url: photographyForm.video_url,
+                description: photographyForm.description,
+                status: 'pending' // Always pending on user edit
             }
 
-            try {
-                await contractService.storePhotography(project.value.id, payload)
-                alert('تم إرسال البيانات للموافقة بنجاح')
-            } catch (err) {
-                console.log('Store failed, trying update...', err)
+            if (photographyForm.isExisting) {
                 await contractService.updatePhotography(project.value.id, payload)
                 alert('تم تحديث البيانات وإرسالها للموافقة')
+            } else {
+                await contractService.storePhotography(project.value.id, payload)
+                alert('تم إرسال البيانات للموافقة بنجاح')
+                photographyForm.isExisting = true
             }
             // Update local state
             photographyForm.status = 'pending'
