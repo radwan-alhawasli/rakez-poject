@@ -41,69 +41,54 @@
       <div class="tracker-container">
         
         <!-- PROGRESS TAB -->
-        <div v-if="activeTab === 'progress'">
-            <!-- Tracker Header -->
-            <div class="tracker-header-box">
-            <h2 class="tracker-title">متتبع حالة المشروع</h2>
-            <h3 class="tracker-subtitle">{{ project.name }}</h3>
-            <p class="tracker-desc">أكمل جميع المراحل لتمكين إضافة الوحدات. سيتم حفظ البيانات تلقائياً عند الإكمال.</p>
-            
-            <div class="progress-indicator">
-                <span class="progress-label">التقدم</span>
-                <span class="progress-val">{{ completedStages }}/{{ stages.length }}</span>
-            </div>
+        <!-- PROGRESS TAB (Refactored to Vertical List) -->
+        <div v-if="activeTab === 'progress'" class="tab-content">
+            <div class="tracker-header-simple" style="margin-bottom: 30px;">
+                <h2 style="font-family: 'Amiri', serif; color: #1e3a5f; margin-bottom: 10px;">وثائق ومراحل المشروع</h2>
+                <p style="color: #64748b;">قم برفع المستندات المطلوبة لكل مرحلة.</p>
             </div>
 
-            <!-- Stepper -->
-            <div class="stepper-wrapper">
-            <div class="stepper-line">
-                <div class="stepper-line-fill" :style="{ width: progressPercentage + '%' }"></div>
-            </div>
-            
-            <div class="steps-container">
-                <div v-for="(stage, index) in stages" :key="index" 
-                    class="step-item" 
-                    :class="{ 'completed': stage.status === 'completed', 'active': activeStageIndex === index }"
-                    @click="selectStage(index)">
-                    <div class="step-circle">
-                        <span v-if="stage.status === 'completed'">✓</span>
-                        <span v-else>{{ index + 1 }}</span>
+            <div class="stages-vertical-list" style="display: flex; flex-direction: column; gap: 20px;">
+                <div v-for="(stage, index) in stages" :key="index" class="stage-card" :class="{ 'completed': stage.status === 'completed' }" 
+                     style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; transition: all 0.3s ease;">
+                    
+                    <div class="stage-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="status-icon" style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"
+                                 :style="stage.status === 'completed' ? 'background: #10b981; color: white;' : 'background: #e2e8f0; color: #64748b;'">
+                                <span v-if="stage.status === 'completed'">✓</span>
+                                <span v-else>{{ index + 1 }}</span>
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; font-size: 16px; color: #1e3a5f;">{{ stage.name }}</h3>
+                                <span style="font-size: 13px; color: #64748b;">{{ stage.subLabel }}</span>
+                            </div>
+                        </div>
+                        <span v-if="stage.completedAt" style="font-size: 12px; color: #10b981; background: #d1fae5; padding: 4px 10px; border-radius: 20px;">
+                            تم الإنجاز: {{ stage.completedAt }}
+                        </span>
                     </div>
-                    <span class="step-label">{{ stage.name }}</span>
-                    <span class="step-sublabel">{{ stage.subLabel }}</span>
-                    <span v-if="stage.completedAt" class="step-date">{{ stage.completedAt }}</span>
-                </div>
-            </div>
-            </div>
 
-            <!-- Documents Section (Active Stage Content) -->
-            <div class="stage-content-area">
-                <h3 class="stage-section-title">
-                    {{ stages[activeStageIndex].name }}
-                    <span v-if="stages[activeStageIndex].completedAt" class="date-badge">
-                        تم الإنجاز
-                    </span>
-                </h3>
-
-                <!-- Default Stage Content -->
-                <div class="input-group">
-                    <label>رابط المستند / الملف</label>
-                    <div class="input-wrapper">
-                        <!-- If completed, show disabled input or allow edit if needed. User asked for "locked". -->
-                        <input :type="stages[activeStageIndex].inputType || 'text'" v-model="stages[activeStageIndex].value" class="form-input" :placeholder="stages[activeStageIndex].placeholder || 'https://...'" :disabled="stages[activeStageIndex].status === 'completed'" />
-                        <button class="link-btn">
-                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                        </button>
+                    <div class="stage-card-body">
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <div class="input-wrapper" style="display: flex; gap: 10px;">
+                                <input :type="stage.inputType || 'text'" 
+                                       v-model="stage.value" 
+                                       class="form-input" 
+                                       :placeholder="stage.placeholder || 'https://...'" 
+                                       :disabled="stage.status === 'completed'"
+                                       style="padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; transition: border-color 0.3s;"
+                                />
+                                <button v-if="stage.status !== 'completed'" class="btn-primary" @click="saveSingleStage(index)" 
+                                        style="background: #B1A28F; padding: 0 20px; white-space: nowrap;">
+                                    حفظ
+                                </button>
+                                <button v-else class="btn-text" @click="stage.status = 'pending'" style="color: #64748b; font-size: 13px;">
+                                    تعديل
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-
-                <div class="action-buttons">
-                    <button v-if="stages[activeStageIndex].status !== 'completed'" class="update-btn" @click="saveProgress">
-                        حفظ وإكمال
-                    </button>
-                    <button v-else class="update-btn secondary" @click="stages[activeStageIndex].status = 'pending'">
-                        تعديل الربط
-                    </button>
                 </div>
             </div>
         </div>
@@ -322,49 +307,62 @@
             </div>
         </div>
 
-        <!-- TEAMS TAB -->
+        <!-- TEAMS TAB (Refactored UI) -->
         <div v-else-if="activeTab === 'teams'" class="tab-content">
-            <div class="tracker-header-box">
-                <h2 class="tracker-title">تعيين فرق التسويق</h2>
-                <h3 class="tracker-subtitle">{{ project.name }}</h3>
-                <p class="tracker-desc">قم بتعيين الفرق المسؤولة عن تسويق هذا المشروع.</p>
+            <div class="tracker-header-simple" style="margin-bottom: 25px;">
+                <h2 style="font-family: 'Amiri', serif; color: #1e3a5f; margin-bottom: 10px;">فرق التسويق</h2>
+                <p style="color: #64748b;">إدارة الصلاحيات والوصول لفرق التسويق على هذا المشروع.</p>
             </div>
 
-            <div class="teams-assignment-area">
-                <!-- Add Team Form -->
-                <div class="add-team-card">
-                    <h4>إضافة فريق للمشروع</h4>
-                    <div class="add-team-form">
-                        <select v-model="selectedTeamId" class="team-select">
-                            <option value="" disabled>اختر فريقاً...</option>
-                            <option v-for="team in availableTeams" :key="team.id" :value="team.id">
-                                {{ team.name }}
-                            </option>
-                        </select>
-                        <button class="btn-primary" @click="assignTeam" :disabled="!selectedTeamId || isTeamActionLoading">
-                            {{ isTeamActionLoading ? 'جاري الإضافة...' : 'إضافة الفريق' }}
+            <div class="teams-container" style="display: grid; gap: 30px;">
+                
+                <!-- Add Team Card -->
+                <div class="add-team-card" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8f 100%); padding: 25px; border-radius: 16px; color: white; box-shadow: 0 10px 25px -5px rgba(30, 58, 95, 0.3);">
+                    <h4 style="margin: 0 0 15px 0; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" style="vertical-align: text-bottom; margin-left: 8px;"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                        إضافة فريق جديد
+                    </h4>
+                    
+                    <div class="add-team-form" style="display: flex; gap: 15px; align-items: center;">
+                        <div style="flex: 1; position: relative;">
+                            <select v-model="selectedTeamId" class="glass-select">
+                                <option value="" disabled selected>اختر الفريق من القائمة...</option>
+                                <option v-for="team in availableTeams" :key="team.id" :value="team.id" style="color: #1e3a5f;">
+                                    {{ team.name }}
+                                </option>
+                            </select>
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="white" stroke-width="2" fill="none" class="select-arrow"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+                        <button class="glass-btn" @click="assignTeam" :disabled="!selectedTeamId || isTeamActionLoading">
+                            {{ isTeamActionLoading ? 'جاري الإضافة...' : 'إضافة الفريق +' }}
                         </button>
                     </div>
                 </div>
 
-                <!-- Assigned Teams List -->
-                <div class="assigned-teams-list">
-                    <h4>الفرق المعينة حالياً</h4>
-                    <div v-if="assignedTeamsLoading" class="spinner-sm"></div>
-                    <div v-else-if="assignedTeams.length === 0" class="empty-state-sm">
-                        لا توجد فرق معينة لهذا المشروع.
+                <!-- Assigned Teams Grid -->
+                <div class="assigned-teams-section">
+                    <h4 style="color: #1e3a5f; margin-bottom: 15px; font-weight: bold; border-left: 4px solid #B1A28F; padding-left: 10px;">الفرق المعينة حالياً</h4>
+                    
+                    <div v-if="assignedTeamsLoading" class="loading-state">
+                        <div class="spinner"></div>
                     </div>
-                    <div v-else class="teams-grid">
-                        <div v-for="team in assignedTeams" :key="team.id" class="team-card-item">
-                            <div class="team-info">
-                                <span class="team-name">{{ team.name }}</span>
-                                <span class="team-desc">{{ team.description || 'لا يوجد وصف' }}</span>
+                    
+                    <div v-else-if="assignedTeams.length === 0" class="empty-state" style="background: #f8fafc; border: 2px dashed #e2e8f0; border-radius: 12px; padding: 40px; text-align: center;">
+                        <svg viewBox="0 0 24 24" width="48" height="48" stroke="#94a3b8" stroke-width="1.5" fill="none" style="margin-bottom: 15px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <p style="color: #64748b; margin: 0;">لا توجد فرق معينة لهذا المشروع حتى الآن.</p>
+                    </div>
+
+                    <div v-else class="teams-grid-luxury" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                        <div v-for="team in assignedTeams" :key="team.id" class="team-card-luxury">
+                            <div class="team-avatar">
+                                <span>{{ team.name.charAt(0) }}</span>
                             </div>
-                            <button class="btn-icon delete" @click="removeTeam(team)" title="إزالة الفريق" :disabled="isTeamActionLoading">
-                                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
+                            <div class="team-info">
+                                <h3>{{ team.name }}</h3>
+                                <p>{{ team.description || 'فريق تسويق معتمد' }}</p>
+                            </div>
+                            <button class="btn-remove" @click="removeTeam(team)" title="إنهاء تعيين الفريق" :disabled="isTeamActionLoading">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             </button>
                         </div>
                     </div>
@@ -729,25 +727,17 @@ export default {
         }
     }
 
-    const saveProgress = async () => {
-       const currentStage = stages[activeStageIndex.value]
-       
-       if (!currentStage.value) {
+    const saveSingleStage = async (index) => {
+       const stage = stages[index]
+       if (!stage.value) {
            alert('الرجاء إدخال الرابط قبل الحفظ')
            return
        }
 
        try {
-           const payload = {}
-           stages.forEach(stage => {
-               if (stage.apiKey) {
-                   payload[stage.apiKey] = stage.value || null
-               }
-           })
+           const payload = { [stage.apiKey]: stage.value }
            
-           console.log('Saving payload:', payload)
-
-            // Try Create first, then Update
+           // Try Create first, then Update
            try {
                await contractService.storeSecondPartyData(project.value.id, payload)
            } catch {
@@ -755,17 +745,16 @@ export default {
            }
 
            // Update local state
-           currentStage.status = 'completed'
-           currentStage.completedAt = new Date().toLocaleDateString('ar-SA')
+           stage.status = 'completed'
+           stage.completedAt = new Date().toLocaleDateString('ar-SA')
            
-           if (activeStageIndex.value < stages.length - 1) {
-               activeStageIndex.value++
-           } else {
-               alert('تهانينا! تم إكمال المتتبع، يمكنك الآن إدارة الوحدات.')
+           // Check for complete project
+           if (isTrackerCompleted.value) {
+              alert('تهانينا! تم إكمال جميع المتطلبات.')
            }
 
        } catch (error) {
-           console.error('Failed to save progress:', error)
+           console.error('Failed to save stage:', error)
            const errorMsg = error.response?.data?.message || error.message
            alert(`حدث خطأ أثناء حفظ البيانات: ${errorMsg}`)
        }
@@ -1725,4 +1714,147 @@ export default {
     50% { opacity: 0.7; transform: scale(0.95); }
     100% { opacity: 1; transform: scale(1); }
 }
+
+/* --- New Vertical Stages List --- */
+.stage-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    border-color: #cbd5e1 !important;
+    transform: translateY(-2px);
+}
+
+.stage-card.completed {
+    border-color: #10b981 !important;
+    background: #f0fdf4 !important;
+}
+
+/* --- Luxury Teams UI --- */
+.glass-select {
+    width: 100%;
+    padding: 12px 15px;
+    padding-left: 40px; /* For icon */
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1e3a5f;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.select-arrow {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    stroke: #1e3a5f; /* Overriding inline stroke for visibility on white */
+}
+
+.glass-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(5px);
+}
+
+.glass-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.glass-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.team-card-luxury {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.team-card-luxury::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0; width: 4px;
+    background: #B1A28F;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.team-card-luxury:hover {
+    box-shadow: 0 10px 20px -5px rgba(0,0,0,0.05);
+    transform: translateY(-3px);
+}
+
+.team-card-luxury:hover::before {
+    opacity: 1;
+}
+
+.team-avatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+.team-info h3 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    color: #1e293b;
+}
+
+.team-info p {
+    margin: 0;
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.btn-remove {
+    margin-right: auto; /* Push to far left in RTL */
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #fee2e2;
+    background: #fff5f5;
+    color: #ef4444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0; /* Hidden by default */
+}
+
+.team-card-luxury:hover .btn-remove {
+    opacity: 1;
+}
+
+.btn-remove:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
 </style>
