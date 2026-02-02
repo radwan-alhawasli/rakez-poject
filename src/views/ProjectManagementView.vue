@@ -74,7 +74,7 @@
                      </div>
                      <div v-if="isEditor" class="menu-item" @click.stop="openMediaModal(project)">
                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
-                         الوسائط (Montage)
+                         التصوير (Photography)
                      </div>
  
                      <!-- Non-Editor Options -->
@@ -198,10 +198,11 @@
     </div>
 
     <!-- Media (Montage) Modal -->
+    <!-- Photography (Was Montage) Modal -->
     <div v-if="showMediaModalState" class="modal-overlay" @click.self="closeMediaModalState">
         <div class="modal-content">
-            <h3>إدارة الوسائط (Montage)</h3>
-            <p style="color:#666; font-size:13px; margin-bottom:15px">تحديث بيانات المونتاج للمشروع: {{ selectedProject?.name }}</p>
+            <h3>إدارة التصوير (Photography)</h3>
+            <p style="color:#666; font-size:13px; margin-bottom:15px">تحديث صور وفيديوهات المشروع: {{ selectedProject?.name }}</p>
             
             <form @submit.prevent="submitMediaForm">
                 <div class="form-group">
@@ -220,7 +221,7 @@
                 <div class="modal-actions">
                     <button type="button" class="btn-text" @click="closeMediaModalState">إلغاء</button>
                     <button type="submit" class="btn-primary" :disabled="isMediaSaving">
-                        {{ isMediaSaving ? 'جاري الحفظ...' : 'حفظ التعديلات' }}
+                        {{ isMediaSaving ? 'جاري الإرسال...' : 'حفظ وإرسال للموافقة' }}
                     </button>
                 </div>
             </form>
@@ -392,13 +393,13 @@ export default {
 
     const openMediaModal = async (project) => {
         selectedProject.value = project
-        // Fetch current montage data
+        // Fetch current photography data using Photography Service
         try {
-           const montage = await contractService.getMontage(project.id)
-           if (montage && montage.data) {
-               mediaForm.image_url = montage.data.image_url || ''
-               mediaForm.video_url = montage.data.video_url || ''
-               mediaForm.description = montage.data.description || ''
+           const photoData = await contractService.getPhotography(project.id)
+           if (photoData && photoData.data) {
+               mediaForm.image_url = photoData.data.image_url || ''
+               mediaForm.video_url = photoData.data.video_url || ''
+               mediaForm.description = photoData.data.description || ''
            } else {
                // clear
                mediaForm.image_url = ''
@@ -407,6 +408,10 @@ export default {
            }
         } catch (e) {
             console.error(e)
+            // clear on error
+            mediaForm.image_url = ''
+            mediaForm.video_url = ''
+            mediaForm.description = ''
         }
         showMediaModalState.value = true
         activeMenuId.value = null
@@ -416,19 +421,21 @@ export default {
         if (!selectedProject.value) return
         isMediaSaving.value = true
         try {
-            await contractService.storeMontage(selectedProject.value.id, mediaForm)
-             // or update if exists, handled by try/catch in service if store fails? 
-             // service logic above for Store is a simple POST.
-            alert('تم حفظ الوسائط بنجاح')
+            // Include status: 'pending' to trigger approval workflow
+            const payload = { ...mediaForm, status: 'pending' }
+            
+            await contractService.storePhotography(selectedProject.value.id, payload)
+            alert('تم إرسال الصور للموافقة بنجاح')
             closeMediaModalState()
         } catch (error) {
              console.error('Failed store, trying update..')
              try {
-                await contractService.updateMontage(selectedProject.value.id, mediaForm)
-                alert('تم تحديث الوسائط بنجاح')
+                const payload = { ...mediaForm, status: 'pending' }
+                await contractService.updatePhotography(selectedProject.value.id, payload)
+                alert('تم تحديث الصور وإرسالها للموافقة بنجاح')
                 closeMediaModalState()
              } catch (e2) {
-                 alert('فشل الحفظ')
+                 alert('فشل الحفظ: ' + (e2.response?.data?.message || e2.message))
              }
         } finally {
             isMediaSaving.value = false
