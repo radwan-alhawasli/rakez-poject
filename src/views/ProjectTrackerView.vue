@@ -444,7 +444,8 @@ export default {
         image_url: '',
         video_url: '',
         description: '',
-        updated_at: null
+        updated_at: null,
+        isExisting: false
     })
     const isEditingPending = ref(false)
     
@@ -616,6 +617,9 @@ export default {
              } else if (p.created_at) {
                  photographyForm.updated_at = new Date(p.created_at).toLocaleDateString('ar-SA')
              }
+             photographyForm.isExisting = true
+          } else {
+             photographyForm.isExisting = false
           }
 
        } catch (e) {
@@ -803,18 +807,19 @@ export default {
             // But if a manager edits, maybe it stays pending/approved? 
             // Stick to requirements: "if rejected... status... if entered links... wait acceptance"
             const payload = {
-                ...photographyForm,
-                status: 'pending', // Always pending when updated by user
-                rejection_reason: null // Clear rejection reason
+                image_url: photographyForm.image_url,
+                video_url: photographyForm.video_url,
+                description: photographyForm.description,
+                status: 'pending' // Always pending on user edit
             }
 
-            try {
-                await contractService.storePhotography(project.value.id, payload)
-                alert('تم إرسال البيانات للموافقة بنجاح')
-            } catch (err) {
-                console.log('Store failed, trying update...', err)
+            if (photographyForm.isExisting) {
                 await contractService.updatePhotography(project.value.id, payload)
                 alert('تم تحديث البيانات وإرسالها للموافقة')
+            } else {
+                await contractService.storePhotography(project.value.id, payload)
+                alert('تم إرسال البيانات للموافقة بنجاح')
+                photographyForm.isExisting = true
             }
             // Update local state
             photographyForm.status = 'pending'
