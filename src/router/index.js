@@ -140,6 +140,17 @@ const routes = [
                 ]
             },
             {
+                path: 'sales',
+                name: 'Sales',
+                component: () => import('../views/SalesView.vue'),
+                children: [
+                    { path: '', redirect: { name: 'SalesDashboard' } },
+                    { path: 'dashboard', name: 'SalesDashboard', component: () => import('../views/SalesView.vue') },
+                    { path: 'projects', name: 'SalesProjects', component: () => import('../views/SalesView.vue') },
+                    { path: 'reservations', name: 'SalesReservations', component: () => import('../views/SalesView.vue') }
+                ]
+            },
+            {
                 path: 'teams',
                 name: 'Teams',
                 component: () => import('../views/TeamsView.vue')
@@ -169,6 +180,8 @@ router.beforeEach((to, from, next) => {
             next('/hr/dashboard')
         } else if (user && (user.type == 0 || String(user.type).toLowerCase() === 'marketing')) {
             next('/marketing/dashboard')
+        } else if (user && (user.type == 1 || String(user.type).toLowerCase() === 'sales')) {
+            next('/sales/dashboard')
         } else {
             next('/dashboard')
         }
