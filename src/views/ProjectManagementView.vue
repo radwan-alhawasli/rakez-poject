@@ -278,7 +278,8 @@ export default {
     const mediaForm = reactive({
         image_url: '',
         video_url: '',
-        description: ''
+        description: '',
+        isExisting: false
     })
     const isMediaSaving = ref(false)
 
@@ -404,11 +405,13 @@ export default {
                mediaForm.image_url = photoData.data.image_url || ''
                mediaForm.video_url = photoData.data.video_url || ''
                mediaForm.description = photoData.data.description || ''
+               mediaForm.isExisting = true
            } else {
                // clear
                mediaForm.image_url = ''
                mediaForm.video_url = ''
                mediaForm.description = ''
+               mediaForm.isExisting = false
            }
         } catch (e) {
             console.error(e)
@@ -416,6 +419,7 @@ export default {
             mediaForm.image_url = ''
             mediaForm.video_url = ''
             mediaForm.description = ''
+            mediaForm.isExisting = false
         }
         showMediaModalState.value = true
         activeMenuId.value = null
@@ -426,21 +430,26 @@ export default {
         isMediaSaving.value = true
         try {
             // Include status: 'pending' to trigger approval workflow
-            const payload = { ...mediaForm, status: 'pending' }
+            const payload = { 
+                image_url: mediaForm.image_url,
+                video_url: mediaForm.video_url,
+                description: mediaForm.description,
+                status: 'pending' 
+            }
             
-            await contractService.storePhotography(selectedProject.value.id, payload)
-            alert('تم إرسال الصور للموافقة بنجاح')
-            closeMediaModalState()
-        } catch (error) {
-             console.error('Failed store, trying update..')
-             try {
-                const payload = { ...mediaForm, status: 'pending' }
+            if (mediaForm.isExisting) {
                 await contractService.updatePhotography(selectedProject.value.id, payload)
                 alert('تم تحديث الصور وإرسالها للموافقة بنجاح')
-                closeMediaModalState()
-             } catch (e2) {
-                 alert('فشل الحفظ: ' + (e2.response?.data?.message || e2.message))
-             }
+            } else {
+                await contractService.storePhotography(selectedProject.value.id, payload)
+                alert('تم إرسال الصور للموافقة بنجاح')
+                mediaForm.isExisting = true // Mark as existing after successful store
+            }
+            closeMediaModalState()
+        } catch (error) {
+             console.error('Save failed:', error)
+             // Show actual error message
+             alert('فشل الحفظ: ' + (error.response?.data?.message || error.message))
         } finally {
             isMediaSaving.value = false
         }
