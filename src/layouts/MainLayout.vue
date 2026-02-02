@@ -430,6 +430,68 @@
             </router-link>
           </template>
           
+          <!-- Marketing Sidebar (Role 0) - Marketing Management View -->
+          <template v-else-if="userRole == 0">
+            <!-- 1. لوحة التحكم التسويقية -->
+            <router-link to="/marketing/dashboard" class="nav-item" active-class="active" data-tooltip="لوحة التحكم">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span class="nav-text">لوحة التحكم</span>
+              </div>
+            </router-link>
+
+            <!-- 2. الإشعارات -->
+            <router-link to="/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
+              <div class="nav-content">
+                <div class="icon-with-badge">
+                  <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                  <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
+                </div>
+                <span class="nav-text">الإشعارات</span>
+              </div>
+            </router-link>
+
+            <!-- 3. المشاريع التسويقية -->
+            <router-link to="/marketing/projects" class="nav-item" active-class="active" data-tooltip="المشاريع التسويقية">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span class="nav-text">المشاريع التسويقية</span>
+              </div>
+            </router-link>
+
+            <!-- 4. المهام التسويقية -->
+            <router-link to="/marketing/tasks" class="nav-item" active-class="active" data-tooltip="المهام التسويقية">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><polyline points="9 11 12 14 22 4"></polyline></svg>
+                <span class="nav-text">المهام التسويقية</span>
+              </div>
+            </router-link>
+
+            <!-- 5. العملاء المحتملون -->
+            <router-link to="/marketing/leads" class="nav-item" active-class="active" data-tooltip="العملاء المحتملون">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <span class="nav-text">العملاء المحتملون</span>
+              </div>
+            </router-link>
+
+            <!-- 6. طلباتي -->
+            <router-link to="/my-requests" class="nav-item" active-class="active" data-tooltip="طلباتي">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <span class="nav-text">طلباتي</span>
+              </div>
+            </router-link>
+
+            <!-- 7. الملف الشخصي -->
+            <router-link to="/profile" class="nav-item" active-class="active" data-tooltip="الملف الشخصي">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span class="nav-text">الملف الشخصي</span>
+              </div>
+            </router-link>
+          </template>
+
           <!-- HR Sidebar (Role 8) - Comprehensive Management & Employee View -->
           <template v-else-if="userRole == 8">
             <!-- 1. لوحة التحكم -->
