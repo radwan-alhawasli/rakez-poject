@@ -160,23 +160,23 @@
               </div>
 
               <div class="form-group">
-                <label>رقم العقد (Contract ID) <span class="required">*</span></label>
-                <input type="number" v-model="developerPlanForm.contract_id" class="form-input" placeholder="1" />
+                <label><svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> رقم العقد (Contract ID) <span class="required">*</span></label>
+                <input type="number" v-model="developerPlanForm.contract_id" class="form-input" placeholder="مثلاً: 123" />
               </div>
 
               <div class="form-group">
-                <label>قيمة التسويق (Marketing Value) <span class="required">*</span></label>
-                <input type="number" v-model="developerPlanForm.marketing_value" class="form-input" placeholder="35000" />
+                <label><svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> قيمة التسويق (Marketing Value) <span class="required">*</span></label>
+                <input type="number" v-model="developerPlanForm.marketing_value" class="form-input" placeholder="مثلاً: 35000" />
               </div>
 
               <div class="form-group">
-                <label>Average CPM <span class="required">*</span></label>
-                <input type="number" step="any" v-model="developerPlanForm.average_cpm" class="form-input" placeholder="25" />
+                <label><svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Average CPM <span class="required">*</span></label>
+                <input type="number" step="any" v-model="developerPlanForm.average_cpm" class="form-input" placeholder="مثلاً: 25" />
               </div>
 
               <div class="form-group">
-                <label>Average CPC <span class="required">*</span></label>
-                <input type="number" step="any" v-model="developerPlanForm.average_cpc" class="form-input" placeholder="2.5" />
+                <label><svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg> Average CPC <span class="required">*</span></label>
+                <input type="number" step="any" v-model="developerPlanForm.average_cpc" class="form-input" placeholder="مثلاً: 2.5" />
               </div>
             </div>
 
@@ -192,31 +192,55 @@
             </div>
           </div>
 
-          <div class="plan-card plan-output">
-            <h3 class="plan-card-title">مخرجات الخطة (بدون منصات)</h3>
+          <div class="plan-card plan-output-luxury">
+            <h3 class="plan-card-title">مخرجات الخطة المتوقعة</h3>
 
-            <div class="output-row">
-              <span class="output-label">الميزانية الإجمالية:</span>
-              <span class="output-value number">{{ formatCurrency(devPlanOutputs.totalBudget) }} ريال</span>
-            </div>
-            <div class="output-row">
-              <span class="output-label">المشاهدات المتوقعة:</span>
-              <span class="output-value number">≈ {{ formatNumber(devPlanOutputs.expectedImpressions) }}</span>
-            </div>
-            <div class="output-row">
-              <span class="output-label">النقرات المتوقعة:</span>
-              <span class="output-value number">≈ {{ formatNumber(devPlanOutputs.expectedClicks) }}</span>
-            </div>
-            <div class="output-row">
-              <span class="output-label">مدة التسويق:</span>
-              <span class="output-value">{{ devPlanOutputs.durationLabel }}</span>
+            <div class="premium-metrics-grid">
+              <div class="metric-mini-card">
+                <div class="metric-icon-small budget"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+                <div class="metric-info-small">
+                  <span class="m-label">الميزانية الإجمالية</span>
+                  <span class="m-value number">{{ formatCurrency(devPlanOutputs.totalBudget) }} ريال</span>
+                </div>
+              </div>
+
+              <div class="metric-mini-card">
+                <div class="metric-icon-small impressions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></div>
+                <div class="metric-info-small">
+                  <span class="m-label">المشاهدات المتوقعة</span>
+                  <span class="m-value number">≈ {{ formatNumber(devPlanOutputs.expectedImpressions) }}</span>
+                </div>
+              </div>
+
+              <div class="metric-mini-card">
+                <div class="metric-icon-small clicks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg></div>
+                <div class="metric-info-small">
+                  <span class="m-label">النقرات المتوقعة</span>
+                  <span class="m-value number">≈ {{ formatNumber(devPlanOutputs.expectedClicks) }}</span>
+                </div>
+              </div>
+
+              <div class="metric-mini-card">
+                <div class="metric-icon-small duration"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+                <div class="metric-info-small">
+                  <span class="m-label">مدة التسويق</span>
+                  <span class="m-value">{{ devPlanOutputs.durationLabel }}</span>
+                </div>
+              </div>
             </div>
 
-            <div class="hint-box">
-              <div class="hint-title">المعادلات</div>
-              <div class="hint-text">
-                المشاهدات = \( (قيمة التسويق ÷ CPM) × 1000 \) <br/>
-                النقرات = \( قيمة التسويق ÷ CPC \)
+            <div class="math-formulas-box">
+              <div class="formula-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                المعادلات المعتمدة
+              </div>
+              <div class="formula-item">
+                <span class="f-name">المشاهدات:</span>
+                <span class="f-math">(قيمة التسويق / CPM) × 1000</span>
+              </div>
+              <div class="formula-item">
+                <span class="f-name">النقرات:</span>
+                <span class="f-math">قيمة التسويق / CPC</span>
               </div>
             </div>
           </div>
@@ -412,6 +436,72 @@
         </div>
       </div>
 
+      <!-- 5. AI Assistant Tab -->
+      <div v-else-if="activeTab === 'ai-assistant'" class="marketing-ai-view">
+        <div class="section-header-compact">
+          <h2 class="section-title">المساعد الذكي (AI Assistant)</h2>
+          <p class="section-subtitle">اسأل المساعد الذكي عن المشاريع، التقارير أو البيانات التسويقية.</p>
+        </div>
+
+        <div class="ai-chat-container">
+          <div class="ai-sidebar">
+            <div class="sidebar-header-ai">
+              <h3>المحادثات السابقة</h3>
+              <button @click="startNewChat" class="btn-new-chat">+ محادثة جديدة</button>
+            </div>
+            <div class="conversations-list-ai custom-scrollbar">
+              <div v-if="isLoadingConversations" class="loading-ai">جاري التحميل...</div>
+              <div v-else-if="conversations.length === 0" class="empty-ai">لا يوجد محادثات سابقة</div>
+              <div v-for="chat in conversations" :key="chat.id" 
+                class="conversation-item-ai" :class="{ active: currentSessionId === chat.id }"
+                @click="loadChatSession(chat.id)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span>{{ chat.title || 'محادثة جديدة' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ai-main-chat">
+            <div class="chat-messages custom-scrollbar" ref="chatScrollRef">
+              <div v-if="chatMessages.length === 0" class="ai-welcome-box">
+                <div class="ai-avatar-large">🤖</div>
+                <h3>كيف يمكنني مساعدتك اليوم؟</h3>
+                <p>يمكنك سؤالي عن ميزانيات المشاريع، عدد العملاء المحتملين، أو أي بيانات أخرى موجودة في النظام.</p>
+                <div class="quick-prompts">
+                  <button @click="sendPrompt('ما هو إجمالي الميزانية التسويقية لجميع المشاريع؟')">الميزانية الإجمالية</button>
+                  <button @click="sendPrompt('كم عدد العملاء المحتملين الجدد هذا الشهر؟')">العملاء المحتملون</button>
+                  <button @click="sendPrompt('ما هي المشاريع الأكثر أداءً؟')">الأداء التسويقي</button>
+                </div>
+              </div>
+              <div v-for="(msg, idx) in chatMessages" :key="idx" :class="['chat-bubble', msg.role]">
+                <div class="bubble-content">
+                  <div class="bubble-sender">{{ msg.role === 'user' ? 'أنت' : 'المساعد الذكي' }}</div>
+                  <div class="bubble-text">{{ msg.content }}</div>
+                </div>
+              </div>
+              <div v-if="isAiTyping" class="chat-bubble assistant">
+                <div class="bubble-content">
+                  <div class="typing-indicator"><span></span><span></span><span></span></div>
+                </div>
+              </div>
+            </div>
+            <div class="chat-input-area">
+              <div class="input-wrapper">
+                <textarea 
+                  v-model="aiQuery" 
+                  placeholder="اكتب سؤالك هنا..." 
+                  @keydown.enter.prevent="sendAiMessage"
+                  rows="1"
+                ></textarea>
+                <button @click="sendAiMessage" :disabled="!aiQuery.trim() || isAiTyping" class="btn-send-ai">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Modals -->
@@ -503,6 +593,7 @@ import { useRoute } from 'vue-router'
 import marketingService from '../services/marketingService'
 import notificationService from '../services/notificationService'
 import userService from '../services/userService'
+import aiService from '../services/aiService'
 
 export default {
   name: 'MarketingView',
@@ -583,6 +674,15 @@ export default {
     const employeePlanGenerateForm = reactive({
       user_id: ''
     })
+
+    // AI Assistant state
+    const aiQuery = ref('')
+    const isAiTyping = ref(false)
+    const chatMessages = ref([])
+    const conversations = ref([])
+    const isLoadingConversations = ref(false)
+    const currentSessionId = ref(null)
+    const chatScrollRef = ref(null)
 
     // Derived: developer plan outputs per SRS
     const devPlanOutputs = computed(() => {
@@ -970,7 +1070,7 @@ export default {
       // expected routes: /marketing/:tab
       const parts = String(route.path || '').split('/').filter(Boolean)
       const tab = parts[1] // ['marketing','dashboard']
-      if (tab && ['dashboard', 'projects', 'developer-plan', 'employee-plans', 'tasks', 'leads'].includes(tab)) {
+      if (tab && ['dashboard', 'projects', 'developer-plan', 'employee-plans', 'tasks', 'leads', 'ai-assistant'].includes(tab)) {
         activeTab.value = tab
       }
     }
@@ -995,6 +1095,8 @@ export default {
         loadTasks()
       } else if (newTab === 'leads') {
         loadLeads()
+      } else if (newTab === 'ai-assistant') {
+        loadAiDashboard()
       }
     }, { immediate: true })
 
@@ -1069,6 +1171,81 @@ export default {
       }
     }
 
+    // --- AI Assistant Functions ---
+    const loadAiDashboard = async () => {
+      isLoadingConversations.value = true
+      try {
+        const data = await aiService.getConversations()
+        conversations.value = data
+      } catch (error) {
+        console.error('❌ Error loading AI conversations:', error)
+      } finally {
+        isLoadingConversations.value = false
+      }
+    }
+
+    const startNewChat = () => {
+      currentSessionId.value = null
+      chatMessages.value = []
+      aiQuery.value = ''
+    }
+
+    const loadChatSession = async (sessionId) => {
+      currentSessionId.value = sessionId
+      // Mock loading history for now as specific session history GET might be needed
+      chatMessages.value = [
+        { role: 'user', content: 'مرحباً، أريد مراجعة المحادثة السابقة.' },
+        { role: 'assistant', content: 'أهلاً بك! أنا تحت أمرك، تفضل بسؤالك.' }
+      ]
+    }
+
+    const sendPrompt = (text) => {
+      aiQuery.value = text
+      sendAiMessage()
+    }
+
+    const sendAiMessage = async () => {
+      if (!aiQuery.value.trim() || isAiTyping.value) return
+
+      const text = aiQuery.value
+      chatMessages.value.push({ role: 'user', content: text })
+      aiQuery.value = ''
+      isAiTyping.value = true
+
+      try {
+        const payload = {
+          message: text,
+          session_id: currentSessionId.value,
+          section: 'marketing'
+        }
+        
+        const response = await aiService.chat(payload)
+        chatMessages.value.push({
+          role: 'assistant',
+          content: response.reply || response.answer || response.message || 'عذراً، لم أتمكن من فهم طلبك.'
+        })
+        
+        if (response.session_id && !currentSessionId.value) {
+          currentSessionId.value = response.session_id
+          loadAiDashboard() // Refresh list
+        }
+      } catch (error) {
+        console.error('❌ Error sending AI message:', error)
+        chatMessages.value.push({
+          role: 'assistant',
+          content: 'عذراً، حدث خطأ أثناء الاتصال بالمساعد الذكي.'
+        })
+      } finally {
+        isAiTyping.value = false
+        // Scroll to bottom
+        setTimeout(() => {
+          if (chatScrollRef.value) {
+            chatScrollRef.value.scrollTop = chatScrollRef.value.scrollHeight
+          }
+        }, 100)
+      }
+    }
+
     return {
       activeTab,
       userName,
@@ -1116,7 +1293,19 @@ export default {
       employeePlanGenerateForm,
       loadEmployees,
       loadEmployeePlans,
-      autoGenerateEmployeePlan
+      autoGenerateEmployeePlan,
+      // AI Assistant
+      aiQuery,
+      isAiTyping,
+      chatMessages,
+      conversations,
+      isLoadingConversations,
+      currentSessionId,
+      chatScrollRef,
+      startNewChat,
+      loadChatSession,
+      sendAiMessage,
+      sendPrompt
     }
   }
 }
@@ -1796,6 +1985,319 @@ export default {
   font-weight: 600;
   color: #1e3a5f;
 }
+
+/* --- Premium Developer Plan Styles --- */
+.plan-output-luxury {
+  background: white;
+  border: 1px solid rgba(177, 162, 143, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.premium-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.metric-mini-card {
+  background: #fdfbf7;
+  padding: 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(177, 162, 143, 0.1);
+  transition: all 0.3s ease;
+}
+
+.metric-mini-card:hover {
+  background: white;
+  box-shadow: 0 4px 12px rgba(177, 162, 143, 0.1);
+}
+
+.metric-icon-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.metric-icon-small svg {
+  width: 20px;
+  height: 20px;
+}
+
+.metric-icon-small.budget { background: linear-gradient(135deg, #B1A28F, #8c7851); }
+.metric-icon-small.impressions { background: linear-gradient(135deg, #1e3a5f, #2d5a8f); }
+.metric-icon-small.clicks { background: linear-gradient(135deg, #10b981, #059669); }
+.metric-icon-small.duration { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+.m-label {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
+.m-value {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.math-formulas-box {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px dashed rgba(177, 162, 143, 0.3);
+}
+
+.formula-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #8c7851;
+  margin-bottom: 12px;
+}
+
+.formula-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: rgba(177, 162, 143, 0.05);
+  border-radius: 8px;
+}
+
+.f-name { color: #64748b; font-weight: 600; }
+.f-math { color: #1e3a5f; font-family: 'Amiri', serif; font-weight: 700; }
+
+.field-icon {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  margin-left: 8px;
+  color: #B1A28F;
+}
+
+/* --- AI Assistant Styles --- */
+.ai-chat-container {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  height: 600px;
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(177, 162, 143, 0.15);
+  box-shadow: 0 10px 30px rgba(177, 161, 142, 0.08);
+}
+
+.ai-sidebar {
+  background: #fdfbf7;
+  border-left: 1px solid rgba(177, 162, 143, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header-ai {
+  padding: 24px;
+  border-bottom: 1px solid rgba(177, 162, 143, 0.1);
+}
+
+.sidebar-header-ai h3 {
+  font-size: 16px;
+  color: #1e3a5f;
+  margin: 0 0 16px 0;
+}
+
+.btn-new-chat {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  background: white;
+  border: 2px dashed #B1A28F;
+  color: #B1A28F;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-new-chat:hover {
+  background: #B1A28F;
+  color: white;
+}
+
+.conversations-list-ai {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.conversation-item-ai {
+  padding: 12px 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 4px;
+  transition: all 0.2s ease;
+}
+
+.conversation-item-ai:hover { background: rgba(177, 162, 143, 0.1); color: #1e3a5f; }
+.conversation-item-ai.active { background: #B1A28F; color: white; }
+
+.ai-main-chat {
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-bubble {
+  max-width: 80%;
+  display: flex;
+}
+
+.chat-bubble.user { align-self: flex-end; }
+.chat-bubble.assistant { align-self: flex-start; }
+
+.bubble-content {
+  padding: 14px 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.user .bubble-content {
+  background: linear-gradient(135deg, #1e3a5f, #2d5a8f);
+  color: white;
+  border-bottom-left-radius: 4px;
+}
+
+.assistant .bubble-content {
+  background: #f1f5f9;
+  color: #1e3a5f;
+  border-bottom-right-radius: 4px;
+}
+
+.bubble-sender {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+
+.chat-input-area {
+  padding: 24px;
+  border-top: 1px solid rgba(177, 162, 143, 0.1);
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.input-wrapper textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 10px 0;
+  font-family: inherit;
+  resize: none;
+  max-height: 100px;
+}
+
+.btn-send-ai {
+  background: #1e3a5f;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.btn-send-ai:hover:not(:disabled) { transform: scale(1.05); background: #2d5a8f; }
+.btn-send-ai:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-send-ai svg { width: 20px; height: 20px; }
+
+.ai-welcome-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+  margin: auto;
+}
+
+.ai-avatar-large { font-size: 64px; margin-bottom: 20px; }
+.ai-welcome-box h3 { color: #1e3a5f; margin-bottom: 12px; }
+.ai-welcome-box p { color: #64748b; max-width: 400px; line-height: 1.6; }
+
+.quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.quick-prompts button {
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid rgba(177, 162, 143, 0.2);
+  color: #1e3a5f;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.quick-prompts button:hover {
+  border-color: #B1A28F;
+  background: #fdfbf7;
+}
+
+.typing-indicator { display: flex; gap: 4px; padding: 4px; }
+.typing-indicator span {
+  width: 8px; height: 8px; background: #64748b; border-radius: 50%;
+  animation: typing 1s infinite alternate;
+}
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing { from { opacity: 0.3; transform: translateY(0); } to { opacity: 1; transform: translateY(-4px); } }
 
 .lead-contact {
   direction: ltr;
