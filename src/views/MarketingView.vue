@@ -502,72 +502,6 @@
         </div>
       </div>
 
-      <!-- 5. AI Assistant Tab -->
-      <div v-else-if="activeTab === 'ai-assistant'" class="marketing-ai-view">
-        <div class="section-header-compact">
-          <h2 class="section-title">المساعد الذكي (AI Assistant)</h2>
-          <p class="section-subtitle">اسأل المساعد الذكي عن المشاريع، التقارير أو البيانات التسويقية.</p>
-        </div>
-
-        <div class="ai-chat-container">
-          <div class="ai-sidebar">
-            <div class="sidebar-header-ai">
-              <h3>المحادثات السابقة</h3>
-              <button @click="startNewChat" class="btn-new-chat">+ محادثة جديدة</button>
-            </div>
-            <div class="conversations-list-ai custom-scrollbar">
-              <div v-if="isLoadingConversations" class="loading-ai">جاري التحميل...</div>
-              <div v-else-if="conversations.length === 0" class="empty-ai">لا يوجد محادثات سابقة</div>
-              <div v-for="chat in conversations" :key="chat.id" 
-                class="conversation-item-ai" :class="{ active: currentSessionId === chat.id }"
-                @click="loadChatSession(chat.id)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                <span>{{ chat.title || 'محادثة جديدة' }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="ai-main-chat">
-            <div class="chat-messages custom-scrollbar" ref="chatScrollRef">
-              <div v-if="chatMessages.length === 0" class="ai-welcome-box">
-                <div class="ai-avatar-large">🤖</div>
-                <h3>كيف يمكنني مساعدتك اليوم؟</h3>
-                <p>يمكنك سؤالي عن ميزانيات المشاريع، عدد العملاء المحتملين، أو أي بيانات أخرى موجودة في النظام.</p>
-                <div class="quick-prompts">
-                  <button @click="sendPrompt('ما هو إجمالي الميزانية التسويقية لجميع المشاريع؟')">الميزانية الإجمالية</button>
-                  <button @click="sendPrompt('كم عدد العملاء المحتملين الجدد هذا الشهر؟')">العملاء المحتملون</button>
-                  <button @click="sendPrompt('ما هي المشاريع الأكثر أداءً؟')">الأداء التسويقي</button>
-                </div>
-              </div>
-              <div v-for="(msg, idx) in chatMessages" :key="idx" :class="['chat-bubble', msg.role]">
-                <div class="bubble-content">
-                  <div class="bubble-sender">{{ msg.role === 'user' ? 'أنت' : 'المساعد الذكي' }}</div>
-                  <div class="bubble-text">{{ msg.content }}</div>
-                </div>
-              </div>
-              <div v-if="isAiTyping" class="chat-bubble assistant">
-                <div class="bubble-content">
-                  <div class="typing-indicator"><span></span><span></span><span></span></div>
-                </div>
-              </div>
-            </div>
-            <div class="chat-input-area">
-              <div class="input-wrapper">
-                <textarea 
-                  v-model="aiQuery" 
-                  placeholder="اكتب سؤالك هنا..." 
-                  @keydown.enter.prevent="sendAiMessage"
-                  rows="1"
-                ></textarea>
-                <button @click="sendAiMessage" :disabled="!aiQuery.trim() || isAiTyping" class="btn-send-ai">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <!-- Modals -->
@@ -1357,8 +1291,6 @@ export default {
       employeePlans,
       isLoadingEmployeePlans,
       employeePlanGenerateForm,
-      loadEmployees,
-      loadEmployeePlans,
       loadEmployees,
       loadEmployeePlans,
       autoGenerateEmployeePlan,
