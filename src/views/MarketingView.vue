@@ -524,100 +524,6 @@
 
     <!-- Modals -->
     
-    <!-- Project Details Modal -->
-    <div v-if="showProjectDetailsModal" class="modal-overlay" @click.self="showProjectDetailsModal = false">
-      <div class="modal-content luxury-modal animate-scale-in large" style="max-width: 800px; width: 90%;">
-        <div class="modal-header">
-          <h3 class="modal-title">تفاصيل المشروع: {{ selectedProjectDetails?.project_name || selectedProjectDetails?.name }}</h3>
-          <button class="modal-close" @click="showProjectDetailsModal = false">×</button>
-        </div>
-        
-        <div class="modal-body">
-            <div v-if="isLoadingProjectDetails" class="loading-state">
-                <div class="spinner"></div>
-                <p>جاري تحميل التفاصيل...</p>
-            </div>
-            
-            <div v-else>
-                 <!-- Details Grid -->
-                 <div v-if="!showUnitsTable" class="details-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                     <div class="detail-box" style="background:#f8f9fa; padding:20px; border-radius:16px; text-align:center; border:1px solid rgba(177, 162, 143, 0.2);">
-                         <span class="label" style="display:block; color:#64748b; font-size:14px; margin-bottom:8px;">رقم المعلن</span>
-                         <span class="value" style="display:block; font-weight:700; color:#1e3a5f; font-size:18px; margin-bottom:8px;">{{ selectedProjectDetails?.advertiser_number || selectedProjectDetails?.advertiser_section_url || 'غير متوفر' }}</span>
-                         <span :class="['status-badge', selectedProjectDetails?.advertiser_number ? 'status-completed' : 'status-cancelled']" style="font-size: 12px; padding: 4px 8px; border-radius: 12px;">
-                            {{ selectedProjectDetails?.advertiser_number ? 'Available' : 'Not Found' }}
-                         </span>
-                     </div>
-                     
-                     <div class="detail-box" style="background:#f8f9fa; padding:20px; border-radius:16px; text-align:center; border:1px solid rgba(177, 162, 143, 0.2);">
-                         <span class="label" style="display:block; color:#64748b; font-size:14px; margin-bottom:8px;">متوسط سعر الوحدة</span>
-                         <span class="value highlight" style="display:block; font-weight:700; color:#d97706; font-size:18px; margin-bottom:8px;">{{ (selectedProjectDetails?.avg_price || selectedProjectDetails?.average_unit_price) ? formatCurrency(selectedProjectDetails.avg_price || selectedProjectDetails.average_unit_price) : 'غير محسوب' }}</span>
-                          <span :class="['status-badge', (selectedProjectDetails?.avg_price || selectedProjectDetails?.average_unit_price) ? 'status-completed' : 'status-pending']" style="font-size: 12px; padding: 4px 8px; border-radius: 12px;">
-                            {{ (selectedProjectDetails?.avg_price || selectedProjectDetails?.average_unit_price) ? 'Available' : 'Pending' }}
-                         </span>
-                     </div>
-
-                     <div class="detail-box clickable" @click="goToUnits(selectedProjectDetails.id)" style="background:#f8f9fa; padding:20px; border-radius:16px; text-align:center; border:1px solid rgba(177, 162, 143, 0.2); cursor:pointer; transition:all 0.2s;">
-                         <span class="label" style="display:block; color:#64748b; font-size:14px; margin-bottom:8px;">عرض سعر الوحدات</span>
-                         <span class="value link" style="display:block; font-weight:700; color:#2563eb; font-size:18px; margin-bottom:8px;">انقر للعرض ↗</span>
-                          <span :class="['status-badge', selectedProjectDetails?.units?.length ? 'status-completed' : 'status-cancelled']" style="font-size: 12px; padding: 4px 8px; border-radius: 12px;">
-                            {{ selectedProjectDetails?.units?.length ? 'Available' : 'Not Found' }}
-                         </span>
-                     </div>
-
-                     <div class="detail-box" style="background:#f8f9fa; padding:20px; border-radius:16px; text-align:center; border:1px solid rgba(177, 162, 143, 0.2);">
-                        <span class="label" style="display:block; color:#64748b; font-size:14px; margin-bottom:8px;">تفاصيل المشروع</span>
-                        <span class="value" style="display:block; font-weight:700; color:#1e3a5f; font-size:18px; margin-bottom:8px;">{{ selectedProjectDetails?.description || selectedProjectDetails?.project_description ? 'مكتمل' : 'ناقص' }}</span>
-                        <span :class="['status-badge', (selectedProjectDetails?.description || selectedProjectDetails?.project_description) ? 'status-completed' : 'status-pending']" style="font-size: 12px; padding: 4px 8px; border-radius: 12px;">
-                            {{ (selectedProjectDetails?.description || selectedProjectDetails?.project_description) ? 'Available' : 'Pending' }}
-                        </span>
-                     </div>
-                </div>
-
-                <!-- Units Table -->
-                <div v-else class="units-view">
-                    <div class="units-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <h4 style="margin:0; font-family:'Amiri'; color:#1e3a5f;">وحدات المشروع ({{ selectedProjectDetails?.units?.length || 0 }})</h4>
-                        <button class="btn-text" @click="showUnitsTable = false" style="background:none; border:none; color:#B1A28F; cursor:pointer; font-weight:bold;">← عودة للتفاصيل</button>
-                    </div>
-                    
-                    <div v-if="isLoadingUnits" class="loading-state">
-                        <div class="spinner"></div>
-                        <p>جاري تحميل الوحدات...</p>
-                    </div>
-                    <div v-else-if="!selectedProjectDetails?.units?.length" class="empty-state">
-                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                        <p>لا توجد وحدات مضافة.</p>
-                    </div>
-                    
-                    <div v-else class="table-wrapper" style="max-height: 400px; overflow-y: auto;">
-                        <table class="luxury-table" style="width:100%;">
-                            <thead>
-                                <tr>
-                                    <th>رقم الوحدة</th>
-                                    <th>الدور</th>
-                                    <th>الغرف</th>
-                                    <th>مساحة</th>
-                                    <th>السعر</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="unit in selectedProjectDetails.units" :key="unit.id" class="hover-row">
-                                    <td>{{ unit.unit_number || '-' }}</td>
-                                    <td>{{ unit.floor || '-' }}</td>
-                                    <td>{{ unit.rooms || '-' }}</td>
-                                    <td>{{ unit.area ? unit.area + ' م²' : '-' }}</td>
-                                    <td class="number">{{ unit.price ? formatCurrency(unit.price) : '-' }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Calculate Budget Modal -->
     <div v-if="showCalculateBudgetModal" class="modal-overlay" @click.self="showCalculateBudgetModal = false">
       <div class="modal-content luxury-modal animate-scale-in">
@@ -1666,28 +1572,7 @@ export default {
       startNewChat,
       loadChatSession,
       sendAiMessage,
-      sendPrompt,
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-      aiSections,
-      isLoadingAiSections,
-      aiSelectedSectionKey,
-      aiContext,
-      currentAiSection,
-      getConversationId,
-      deleteChat
-=======
-=======
->>>>>>> Stashed changes
-      showProjectDetailsModal,
-      selectedProjectDetails,
-      showUnitsTable,
-      isLoadingUnits,
-      goToUnits
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+      sendPrompt
     }
   }
 }
