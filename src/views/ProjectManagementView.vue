@@ -62,34 +62,34 @@
           <div class="status-badge" :class="project.statusClass">{{ project.statusLabel }}</div>
           
           <!-- Context Menu Button -->
-          <div class="menu-container" @click.stop="toggleMenu(project.id)">
-               <button class="menu-btn">
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-               </button>
-               <!-- Dropdown -->
-               <div v-if="activeMenuId === project.id" class="dropdown-menu">
-                    <div v-if="isEditor" class="menu-item" @click.stop="openProjectDetails(project)">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                        التفاصيل
+           <div class="menu-container" @click.stop="toggleMenu(project.id)">
+                <button class="menu-btn">
+                     <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                </button>
+                <!-- Dropdown -->
+                <div v-if="activeMenuId === project.id" class="dropdown-menu">
+                     <div v-if="isEditor" class="menu-item" @click.stop="openProjectDetails(project)">
+                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                         التفاصيل
+                     </div>
+                     <div v-if="isEditor" class="menu-item" @click.stop="openMediaModal(project)">
+                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
+                         الوسائط (Montage)
+                     </div>
+ 
+                     <!-- Non-Editor Options -->
+                    <div v-if="!isEditor" class="menu-item" @click.stop="openProjectDetails(project)">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        عرض المشروع
                     </div>
-                    <div v-if="isEditor" class="menu-item" @click.stop="openMediaModal(project)">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
-                        الوسائط (Montage)
+                    <div v-if="!isEditor && userRole !== 4" class="menu-item" @click.stop="openWorkspace(project)">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M2 12l5-5m-5 5l5 5"></path></svg>
+                        مساحة العمل (Workspace)
                     </div>
-
-                    <!-- Non-Editor Options -->
-                   <div v-if="!isEditor" class="menu-item" @click.stop="openProjectDetails(project)">
-                       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                       عرض المشروع
-                   </div>
-                   <div v-if="!isEditor && userRole !== 4" class="menu-item" @click.stop="openWorkspace(project)">
-                       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M2 12l5-5m-5 5l5 5"></path></svg>
-                       مساحة العمل (Workspace)
-                   </div>
-               </div>
-          </div>
-          <!-- Click outside to close helper (window listener generally better but simple here) -->
-          <div v-if="activeMenuId === project.id" class="menu-backdrop" @click.stop="activeMenuId = null"></div>
+                </div>
+           </div>
+           <!-- Click outside to close helper (window listener generally better but simple here) -->
+           <div v-if="activeMenuId === project.id" class="menu-backdrop" @click.stop="activeMenuId = null"></div>
 
         </div>
         
@@ -517,10 +517,12 @@ export default {
 
 .controls-area {
   display: flex; gap: 15px; margin-bottom: 25px;
+  flex-wrap: wrap;
 }
 
 .search-box {
-  flex: 1; position: relative;
+  width: 300px; flex: none; position: relative;
+  max-width: 100%;
 }
 .search-icon {
   position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
@@ -533,9 +535,14 @@ export default {
 }
 .search-box input:focus { border-color: #B1A28F; }
 
+.filter-dropdown {
+  flex-shrink: 0;
+}
+
 .filter-dropdown select {
   padding: 12px 30px 12px 15px; border: 1px solid #e2e8f0; border-radius: 10px;
   background: white; cursor: pointer; font-family: inherit; outline: none;
+  min-width: 150px;
 }
 
 .tabs-container {
@@ -566,9 +573,9 @@ export default {
 .project-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
 
 .card-image {
-  height: 180px; position: relative; background: #f1f5f9; border-radius: 16px 16px 0 0; overflow: hidden;
+  height: 180px; position: relative; background: #f1f5f9; border-radius: 16px 16px 0 0;
 }
-.card-image img { width: 100%; height: 100%; object-fit: cover; }
+.card-image img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px 16px 0 0; }
 .status-badge {
   position: absolute; top: 12px; right: 12px; padding: 4px 10px;
   border-radius: 20px; font-size: 11px; font-weight: 700;
@@ -590,7 +597,7 @@ export default {
 .dropdown-menu {
     position: absolute; top: 40px; left: 0;
     background: white; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-    border: 1px solid #e2e8f0; width: 180px; z-index: 100;
+    border: 1px solid #e2e8f0; width: 220px; z-index: 100;
     overflow: hidden;
     animation: fadeIn 0.2s;
 }
@@ -598,6 +605,7 @@ export default {
     padding: 10px 15px; font-size: 13px; color: #1e293b;
     display: flex; align-items: center; gap: 8px;
     cursor: pointer; transition: background 0.2s;
+    white-space: nowrap;
 }
 .menu-item:hover { background: #f8fafc; }
 .menu-backdrop {

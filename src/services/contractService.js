@@ -396,6 +396,23 @@ const contractService = {
     }
   },
 
+  /**
+   * اعتماد صور المشروع
+   * POST /photography-department/approve/:id
+   * Payload: { status: 'approved' | 'rejected', rejection_reason: string (optional) }
+   */
+  async approvePhotography(id, payload = {}) {
+    try {
+      // User specified {{server}}/photography-department/approve/1 
+      // likely expects a POST or GET. POST is safer for actions.
+      const response = await apiClient.post(`/photography-department/approve/${id}`, payload)
+      return response.data
+    } catch (error) {
+      console.error('Error approving photography:', error)
+      throw error
+    }
+  },
+
   // --- Developer / Second Party Endpoints ---
 
   /**

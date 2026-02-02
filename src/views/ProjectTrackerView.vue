@@ -30,6 +30,7 @@
         <button class="nav-tab" :class="{ active: activeTab === 'progress' }" @click="activeTab = 'progress'">تقدم المشروع والمستندات</button>
         <button class="nav-tab" :class="{ active: activeTab === 'photography' }" @click="activeTab = 'photography'">التصوير</button>
         <button class="nav-tab" :class="{ active: activeTab === 'boards' }" @click="activeTab = 'boards'">اللوحات</button>
+        <button class="nav-tab" :class="{ active: activeTab === 'teams' }" @click="selectTeamsTab">فرق التسويق</button>
         <button class="nav-tab" :class="{ active: activeTab === 'units' }" @click="selectUnitsTab" :disabled="!isTrackerCompleted">
             الوحدات 
             <span v-if="!isTrackerCompleted" style="font-size:10px; opacity:0.7">(مغلق)</span>
@@ -320,6 +321,56 @@
             </div>
         </div>
 
+        <!-- TEAMS TAB -->
+        <div v-else-if="activeTab === 'teams'" class="tab-content">
+            <div class="tracker-header-box">
+                <h2 class="tracker-title">تعيين فرق التسويق</h2>
+                <h3 class="tracker-subtitle">{{ project.name }}</h3>
+                <p class="tracker-desc">قم بتعيين الفرق المسؤولة عن تسويق هذا المشروع.</p>
+            </div>
+
+            <div class="teams-assignment-area">
+                <!-- Add Team Form -->
+                <div class="add-team-card">
+                    <h4>إضافة فريق للمشروع</h4>
+                    <div class="add-team-form">
+                        <select v-model="selectedTeamId" class="team-select">
+                            <option value="" disabled>اختر فريقاً...</option>
+                            <option v-for="team in availableTeams" :key="team.id" :value="team.id">
+                                {{ team.name }}
+                            </option>
+                        </select>
+                        <button class="btn-primary" @click="assignTeam" :disabled="!selectedTeamId || isTeamActionLoading">
+                            {{ isTeamActionLoading ? 'جاري الإضافة...' : 'إضافة الفريق' }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Assigned Teams List -->
+                <div class="assigned-teams-list">
+                    <h4>الفرق المعينة حالياً</h4>
+                    <div v-if="assignedTeamsLoading" class="spinner-sm"></div>
+                    <div v-else-if="assignedTeams.length === 0" class="empty-state-sm">
+                        لا توجد فرق معينة لهذا المشروع.
+                    </div>
+                    <div v-else class="teams-grid">
+                        <div v-for="team in assignedTeams" :key="team.id" class="team-card-item">
+                            <div class="team-info">
+                                <span class="team-name">{{ team.name }}</span>
+                                <span class="team-desc">{{ team.description || 'لا يوجد وصف' }}</span>
+                            </div>
+                            <button class="btn-icon delete" @click="removeTeam(team)" title="إزالة الفريق" :disabled="isTeamActionLoading">
+                                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
       </div>
     </template>
     
@@ -374,6 +425,7 @@
 import { ref, onMounted, computed, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import contractService from '../services/contractService'
+import teamService from '../services/teamService'
 import authService from '../services/authService'
 
 export default {
@@ -397,7 +449,8 @@ export default {
     
     const isManager = computed(() => {
         const user = authService.getCurrentUser()
-        return user?.type == 3 && user?.is_manager
+        // Allow pure Admin (1) OR Project Manager (3 with flag)
+        return (user?.type == 1) || (user?.type == 3 && user?.is_manager)
     })
     
     // Boards State
@@ -408,6 +461,13 @@ export default {
     const isBoardSaving = ref(false)
     const currentDate = new Date().toISOString().split('T')[0]
     const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+
+    // Teams State
+    const assignedTeams = ref([])
+    const availableTeams = ref([])
+    const selectedTeamId = ref('')
+    const assignedTeamsLoading = ref(false)
+    const isTeamActionLoading = ref(false)
 
     // Stages from user request with API keys - UPDATED: Removed Photography
     const stages = reactive([
@@ -600,7 +660,68 @@ export default {
             return
         }
         activeTab.value = 'units'
+        activeTab.value = 'units'
         loadUnits()
+    }
+
+    const selectTeamsTab = () => {
+        activeTab.value = 'teams'
+        loadTeamsData()
+    }
+
+    const loadTeamsData = async () => {
+        if (!project.value) return
+        assignedTeamsLoading.value = true
+        try {
+            // Fetch assigned teams
+            const assignedData = await teamService.getContractTeams(project.value.id)
+            assignedTeams.value = Array.isArray(assignedData) ? assignedData : (assignedData.data || [])
+
+            // Fetch all teams for selection
+            const allTeams = await teamService.getTeams()
+            
+            // Filter out already assigned teams from available list
+            const assignedIds = new Set(assignedTeams.value.map(t => t.id))
+            availableTeams.value = allTeams.filter(t => !assignedIds.has(t.id))
+
+        } catch (error) {
+            console.error('Error loading teams:', error)
+        } finally {
+            assignedTeamsLoading.value = false
+        }
+    }
+
+    const assignTeam = async () => {
+        if (!selectedTeamId.value) return
+        isTeamActionLoading.value = true
+        try {
+            // API expects { team_ids: [id] }
+            await teamService.addTeamsToContract(project.value.id, [selectedTeamId.value])
+            alert('تم تعيين الفريق بنجاح')
+            selectedTeamId.value = ''
+            loadTeamsData() // Reload lists
+        } catch (error) {
+            console.error('Error assigning team:', error)
+            alert('حدث خطأ أثناء تعيين الفريق')
+        } finally {
+            isTeamActionLoading.value = false
+        }
+    }
+
+    const removeTeam = async (team) => {
+        if (!confirm(`هل أنت متأكد من إزالة الفريق "${team.name}" من المشروع؟`)) return
+        isTeamActionLoading.value = true
+        try {
+            // API expects { team_ids: [id] }
+            await teamService.removeTeamsFromContract(project.value.id, [team.id])
+            alert('تم إزالة الفريق بنجاح')
+            loadTeamsData() // Reload lists
+        } catch (error) {
+            console.error('Error removing team:', error)
+            alert('حدث خطأ أثناء إزالة الفريق')
+        } finally {
+            isTeamActionLoading.value = false
+        }
     }
 
     const saveProgress = async () => {
@@ -721,12 +842,10 @@ export default {
         try {
              // Send complete photography data with approved status
              const payload = {
-                 image_url: photographyForm.image_url,
-                 video_url: photographyForm.video_url,
-                 description: photographyForm.description,
-                 status: 'approved'
+                 status: 'approved' // Set status explicitly
              }
-            await contractService.updatePhotography(project.value.id, payload)
+            // Use specific Approve endpoint as requested
+            await contractService.approvePhotography(project.value.id, payload)
             photographyForm.status = 'approved'
             alert('تم قبول الصور بنجاح')
         } catch (error) {
@@ -800,8 +919,8 @@ export default {
         unitForm.price = unit.price
         unitForm.total_price = unit.total_price || unit.price
         unitForm.area = unit.area
-        unitForm.description = unit.description || '' // Handle null description
-        unitForm.status = unit.status
+        unitForm.description = unit.description || ''
+        unitForm.status = unit.status || 'pending'
         showAddUnitModal.value = true
     }
 
@@ -894,7 +1013,10 @@ export default {
         saveBoard,
         isManager,
         isEditingPending,
-        cancelPhotoEdit
+        cancelPhotoEdit,
+        // Teams
+        assignedTeams, availableTeams, selectedTeamId, assignedTeamsLoading, isTeamActionLoading, assignTeam, removeTeam,
+        selectTeamsTab
     }
   }
 }
