@@ -43,52 +43,68 @@
         <!-- PROGRESS TAB -->
         <!-- PROGRESS TAB (Refactored to Vertical List) -->
         <div v-if="activeTab === 'progress'" class="tab-content">
-            <div class="tracker-header-simple" style="margin-bottom: 30px;">
-                <h2 style="font-family: 'Amiri', serif; color: #1e3a5f; margin-bottom: 10px;">وثائق ومراحل المشروع</h2>
-                <p style="color: #64748b;">قم برفع المستندات المطلوبة لكل مرحلة.</p>
+            <!-- Tracker Header -->
+            <div class="tracker-header-box">
+            <h2 class="tracker-title">متتبع حالة المشروع</h2>
+            <h3 class="tracker-subtitle">{{ project.name }}</h3>
+            <p class="tracker-desc">أكمل جميع المراحل لتمكين إضافة الوحدات. سيتم حفظ البيانات تلقائياً عند الإكمال.</p>
+            
+            <div class="progress-indicator">
+                <span class="progress-label">التقدم</span>
+                <span class="progress-val">{{ completedStages }}/{{ stages.length }}</span>
+            </div>
             </div>
 
-            <div class="stages-vertical-list" style="display: flex; flex-direction: column; gap: 20px;">
-                <div v-for="(stage, index) in stages" :key="index" class="stage-card" :class="{ 'completed': stage.status === 'completed' }" 
-                     style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; transition: all 0.3s ease;">
-                    
-                    <div class="stage-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div class="status-icon" style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"
-                                 :style="stage.status === 'completed' ? 'background: #10b981; color: white;' : 'background: #e2e8f0; color: #64748b;'">
-                                <span v-if="stage.status === 'completed'">✓</span>
-                                <span v-else>{{ index + 1 }}</span>
-                            </div>
-                            <div>
-                                <h3 style="margin: 0; font-size: 16px; color: #1e3a5f;">{{ stage.name }}</h3>
-                                <span style="font-size: 13px; color: #64748b;">{{ stage.subLabel }}</span>
-                            </div>
-                        </div>
-                        <span v-if="stage.completedAt" style="font-size: 12px; color: #10b981; background: #d1fae5; padding: 4px 10px; border-radius: 20px;">
-                            تم الإنجاز: {{ stage.completedAt }}
-                        </span>
+            <!-- Stepper -->
+            <div class="stepper-wrapper">
+            <div class="stepper-line">
+                <div class="stepper-line-fill" :style="{ width: progressPercentage + '%' }"></div>
+            </div>
+            
+            <div class="steps-container">
+                <div v-for="(stage, index) in stages" :key="index" 
+                    class="step-item" 
+                    :class="{ 'completed': stage.status === 'completed', 'active': activeStageIndex === index }"
+                    @click="selectStage(index)">
+                    <div class="step-circle">
+                        <span v-if="stage.status === 'completed'">✓</span>
+                        <span v-else>{{ index + 1 }}</span>
                     </div>
+                    <span class="step-label">{{ stage.name }}</span>
+                    <span class="step-sublabel">{{ stage.subLabel }}</span>
+                    <span v-if="stage.completedAt" class="step-date">{{ stage.completedAt }}</span>
+                </div>
+            </div>
+            </div>
 
-                    <div class="stage-card-body">
-                        <div class="input-group" style="margin-bottom: 0;">
-                            <div class="input-wrapper" style="display: flex; gap: 10px;">
-                                <input :type="stage.inputType || 'text'" 
-                                       v-model="stage.value" 
-                                       class="form-input" 
-                                       :placeholder="stage.placeholder || 'https://...'" 
-                                       :disabled="stage.status === 'completed'"
-                                       style="padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; transition: border-color 0.3s;"
-                                />
-                                <button v-if="stage.status !== 'completed'" class="btn-primary" @click="saveSingleStage(index)" 
-                                        style="background: #B1A28F; padding: 0 20px; white-space: nowrap;">
-                                    حفظ
-                                </button>
-                                <button v-else class="btn-text" @click="stage.status = 'pending'" style="color: #64748b; font-size: 13px;">
-                                    تعديل
-                                </button>
-                            </div>
-                        </div>
+            <!-- Documents Section (Active Stage Content) -->
+            <div class="stage-content-area">
+                <h3 class="stage-section-title">
+                    {{ stages[activeStageIndex].name }}
+                    <span v-if="stages[activeStageIndex].completedAt" class="date-badge">
+                        تم الإنجاز
+                    </span>
+                </h3>
+
+                <!-- Default Stage Content -->
+                <div class="input-group">
+                    <label>رابط المستند / الملف</label>
+                    <div class="input-wrapper">
+                        <!-- If completed, show disabled input or allow edit if needed. User asked for "locked". -->
+                        <input :type="stages[activeStageIndex].inputType || 'text'" v-model="stages[activeStageIndex].value" class="form-input" :placeholder="stages[activeStageIndex].placeholder || 'https://...'" :disabled="stages[activeStageIndex].status === 'completed'" />
+                        <button class="link-btn">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                        </button>
                     </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button v-if="stages[activeStageIndex].status !== 'completed'" class="update-btn" @click="saveProgress">
+                        حفظ وإكمال
+                    </button>
+                    <button v-else class="update-btn secondary" @click="stages[activeStageIndex].status = 'pending'">
+                        تعديل الربط
+                    </button>
                 </div>
             </div>
         </div>
@@ -727,17 +743,25 @@ export default {
         }
     }
 
-    const saveSingleStage = async (index) => {
-       const stage = stages[index]
-       if (!stage.value) {
+    const saveProgress = async () => {
+       const currentStage = stages[activeStageIndex.value]
+       
+       if (!currentStage.value) {
            alert('الرجاء إدخال الرابط قبل الحفظ')
            return
        }
 
        try {
-           const payload = { [stage.apiKey]: stage.value }
+           const payload = {}
+           stages.forEach(stage => {
+               if (stage.apiKey) {
+                   payload[stage.apiKey] = stage.value || null
+               }
+           })
            
-           // Try Create first, then Update
+           console.log('Saving payload:', payload)
+
+            // Try Create first, then Update
            try {
                await contractService.storeSecondPartyData(project.value.id, payload)
            } catch {
@@ -745,16 +769,17 @@ export default {
            }
 
            // Update local state
-           stage.status = 'completed'
-           stage.completedAt = new Date().toLocaleDateString('ar-SA')
+           currentStage.status = 'completed'
+           currentStage.completedAt = new Date().toLocaleDateString('ar-SA')
            
-           // Check for complete project
-           if (isTrackerCompleted.value) {
-              alert('تهانينا! تم إكمال جميع المتطلبات.')
+           if (activeStageIndex.value < stages.length - 1) {
+               activeStageIndex.value++
+           } else {
+               alert('تهانينا! تم إكمال المتتبع، يمكنك الآن إدارة الوحدات.')
            }
 
        } catch (error) {
-           console.error('Failed to save stage:', error)
+           console.error('Failed to save progress:', error)
            const errorMsg = error.response?.data?.message || error.message
            alert(`حدث خطأ أثناء حفظ البيانات: ${errorMsg}`)
        }

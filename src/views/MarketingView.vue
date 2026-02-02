@@ -629,14 +629,42 @@
 
                 <div class="overview-section" style="margin-top: 18px;">
                   <div class="section-header" style="margin-bottom: 14px;">
-                    <h3 class="section-title-chart">الأفرقة المرتبطة</h3>
-                    <p class="section-desc">حسب `marketing_project.teams` في API.</p>
+                    <h3 class="section-title-chart">إدارة فرق التسويق</h3>
+                    <p class="section-desc">تعيين الصلاحيات للفرق المسؤولة عن هذا المشروع.</p>
                   </div>
-                  <div v-if="(selectedProjectDetails.marketing_project?.teams || []).length === 0" style="color:#64748b;">—</div>
-                  <div v-else class="details-teams">
-                    <div v-for="t in selectedProjectDetails.marketing_project.teams" :key="t.id" class="team-pill">
-                      <span class="team-name">{{ t.user?.name || ('User #' + (t.user_id ?? '—')) }}</span>
-                      <span class="team-role">({{ t.role || 'member' }})</span>
+                  
+                  <!-- Add Team UI -->
+                  <div class="add-team-card-luxury" style="background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                    <div class="add-team-form" style="display: flex; gap: 10px; align-items: center;">
+                        <div style="flex: 1; position: relative;">
+                            <select v-model="selectedTeamIdToAdd" class="luxury-select" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                                <option value="" disabled selected>اختر فريقاً للإضافة...</option>
+                                <option v-for="team in availableTeams" :key="team.id" :value="team.id">
+                                    {{ team.name }}
+                                </option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" @click="assignTeamToProject" :disabled="!selectedTeamIdToAdd || isTeamActionLoading" style="white-space: nowrap;">
+                            {{ isTeamActionLoading ? 'جاري...' : 'إضافة +' }}
+                        </button>
+                    </div>
+                  </div>
+
+                  <!-- Teams List UI -->
+                  <div v-if="(selectedProjectDetails.marketing_project?.teams || []).length === 0" style="color:#64748b; text-align:center; padding: 20px;">
+                    لا توجد فرق معينة حالياً.
+                  </div>
+                  
+                  <div v-else class="teams-grid-luxury" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                    <div v-for="t in selectedProjectDetails.marketing_project.teams" :key="t.id" class="team-card-mini" 
+                         style="background: white; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; gap: 5px; position:relative;">
+                      <div style="display:flex; justify-content:space-between; align-items:start;">
+                          <span class="team-name" style="font-weight:bold; color:#1e3a5f;">{{ t.name || t.user?.name || ('Team #' + t.id) }}</span>
+                           <button @click="removeTeamFromProject(t)" class="btn-icon-mini" title="إزالة" :disabled="isTeamActionLoading" style="background:none; border:none; color:#ef4444; cursor:pointer;">
+                              <span style="font-size:16px;">×</span>
+                           </button>
+                      </div>
+                      <span class="team-role" style="font-size:12px; color:#64748b;">{{ t.description || 'فريق تسويق' }}</span>
                     </div>
                   </div>
                 </div>
@@ -810,6 +838,7 @@ import notificationService from '../services/notificationService'
 import userService from '../services/userService'
 import aiService from '../services/aiService'
 import contractService from '../services/contractService'
+import teamService from '../services/teamService'
 
 export default {
   name: 'MarketingView',
@@ -844,6 +873,11 @@ export default {
     const isLoadingProjectDetails = ref(false)
     const showUnitsTable = ref(false)
     const isLoadingUnits = ref(false)
+
+    // Team Management State
+    const availableTeams = ref([])
+    const selectedTeamIdToAdd = ref('')
+    const isTeamActionLoading = ref(false)
 
     // Tasks
     const tasks = ref([])
@@ -1177,11 +1211,62 @@ export default {
       }
     }
 
-    const viewProjectDetails = (projectId) => {
+    const loadAvailableTeams = async () => {
+        try {
+            const allTeams = await teamService.getTeams()
+            availableTeams.value = allTeams
+        } catch (error) {
+            console.error('Error loading teams:', error)
+        }
+    }
+
+    const viewProjectDetails = async (projectId) => {
       showProjectDetailsModal.value = true
       showUnitsTable.value = false
       isLoadingUnits.value = false
-      loadProjectDetails(projectId)
+      await loadProjectDetails(projectId)
+      loadAvailableTeams() // Load teams for the dropdown
+    }
+
+    const assignTeamToProject = async () => {
+        if (!selectedTeamIdToAdd.value || !selectedProjectDetails.value) return
+        
+        // Find the marketing_project ID or the main project ID depending on what the API expects
+        // Based on logic, we usually assign to the project ID and backend handles relation
+        const projectId = selectedProjectDetails.value.id
+        
+        isTeamActionLoading.value = true
+        try {
+            await teamService.addTeamsToContract(projectId, [selectedTeamIdToAdd.value])
+            notificationService.addNotification('تم إضافة الفريق للمشروع بنجاح', 'success')
+            selectedTeamIdToAdd.value = ''
+            // Reload details to verify
+            loadProjectDetails(projectId)
+        } catch (error) {
+            console.error('Error adding team:', error)
+            alert('تعذر إضافة الفريق')
+        } finally {
+            isTeamActionLoading.value = false
+        }
+    }
+
+    const removeTeamFromProject = async (team) => {
+        if (!confirm('هل أنت متأكد من إزالة هذا الفريق؟')) return
+        const projectId = selectedProjectDetails.value.id
+        const teamId = team.id
+
+        isTeamActionLoading.value = true
+        try {
+            await teamService.removeTeamsFromContract(projectId, [teamId])
+            notificationService.addNotification('تم إزالة الفريق بنجاح', 'success')
+            // Reload details
+            loadProjectDetails(projectId)
+        } catch (error) {
+             console.error('Error removing team:', error)
+             alert('تعذر إزالة الفريق')
+        } finally {
+             isTeamActionLoading.value = false
+        }
     }
 
     const goToUnits = async (project_id) => {
@@ -1627,7 +1712,13 @@ export default {
       startNewChat,
       loadChatSession,
       sendAiMessage,
-      sendPrompt
+      sendPrompt,
+      // Teams Management
+      availableTeams,
+      selectedTeamIdToAdd,
+      isTeamActionLoading,
+      assignTeamToProject,
+      removeTeamFromProject
     }
   }
 }
