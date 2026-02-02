@@ -127,6 +127,8 @@ const routes = [
                     { path: '', redirect: { name: 'MarketingDashboard' } },
                     { path: 'dashboard', name: 'MarketingDashboard', component: () => import('../views/MarketingView.vue') },
                     { path: 'projects', name: 'MarketingProjects', component: () => import('../views/MarketingView.vue') },
+                    { path: 'developer-plan', name: 'MarketingDeveloperPlan', component: () => import('../views/MarketingView.vue') },
+                    { path: 'employee-plans', name: 'MarketingEmployeePlans', component: () => import('../views/MarketingView.vue') },
                     { path: 'tasks', name: 'MarketingTasks', component: () => import('../views/MarketingView.vue') },
                     { path: 'leads', name: 'MarketingLeads', component: () => import('../views/MarketingView.vue') }
                 ]
