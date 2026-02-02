@@ -448,8 +448,12 @@ export default {
             closeMediaModalState()
         } catch (error) {
              console.error('Save failed:', error)
-             // Show actual error message
-             alert('فشل الحفظ: ' + (error.response?.data?.message || error.message))
+             const msg = error.response?.data?.message || error.message
+             if (msg && msg.includes('يجب أن يكون العقد لديه معلومات')) {
+                 alert('تنبيه: لا يمكن إضافة صور لهذا المشروع لأنه يفتقر إلى بيانات العقد الأساسية. يرجى إكمال بيانات المشروع أولاً (الطرف الثاني، المعلومات المالية) في صفحة التتبع.')
+             } else {
+                 alert('فشل الحفظ: ' + msg)
+             }
         } finally {
             isMediaSaving.value = false
         }
