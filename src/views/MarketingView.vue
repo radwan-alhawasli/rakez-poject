@@ -1668,6 +1668,7 @@ export default {
       sendAiMessage,
       sendPrompt,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       aiSections,
       isLoadingAiSections,
       aiSelectedSectionKey,
@@ -1676,11 +1677,16 @@ export default {
       getConversationId,
       deleteChat
 =======
+=======
+>>>>>>> Stashed changes
       showProjectDetailsModal,
       selectedProjectDetails,
       showUnitsTable,
       isLoadingUnits,
       goToUnits
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
   }
