@@ -365,23 +365,35 @@ export default {
     }
 
     const openProjectDetails = async (project) => {
+        // Start with basic info from the list to show immediately
         selectedProject.value = project
         showDetailsModal.value = true
         activeMenuId.value = null
         
-        // Fetch additional details (Advertiser Number from Tracker)
         try {
-            const trackerData = await contractService.getSecondPartyData(project.id)
-            if (trackerData && trackerData.data && trackerData.data.advertiser_section_url) {
-                // Update the reactive selectedProject with the fetched advertiser number
-                // We use 'advertiser_section_url' because that's the key defined in ProjectTrackerView for "رقم المعلن"
+            let details = null
+            // Use the "Essential API" requested by the user
+            if (isEditor.value) {
+                details = await contractService.getEditorContractById(project.id)
+            } else {
+                details = await contractService.getContractById(project.id)
+            }
+
+            if (details) {
+                console.log('Fetched Details:', details)
+                // Normalize and merge data
                 selectedProject.value = {
                     ...selectedProject.value,
-                    advertiser_number: trackerData.data.advertiser_section_url 
+                    ...details,
+                    // Map Backend keys to UI keys
+                    advertiser_number: details.advertiser_number || details.advertiser_section_url || null,
+                    avgPrice: details.average_unit_price || details.avg_price || null,
+                    description: details.description || details.project_description || null,
+                    units: details.units || []
                 }
             }
         } catch (e) {
-            console.error('Failed to fetch tracker data for details', e)
+            console.error('Failed to fetch detailed project info', e)
         }
     }
 
