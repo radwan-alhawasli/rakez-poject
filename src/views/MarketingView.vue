@@ -573,119 +573,171 @@
           </div>
 
           <div v-else>
-            <div class="details-grid">
-              <div class="detail-item">
-                <span class="detail-label">المطور</span>
-                <span class="detail-value">{{ selectedProjectDetails.developer_name || '—' }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">المدينة</span>
-                <span class="detail-value">{{ selectedProjectDetails.city || '—' }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">الحي</span>
-                <span class="detail-value">{{ selectedProjectDetails.district || '—' }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">الحالة</span>
-                <span class="detail-value">
-                  <span class="project-status" :class="getStatusClass(selectedProjectDetails.status)">
-                    {{ getStatusText(selectedProjectDetails.status) }}
-                  </span>
-                </span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">رقم العقد</span>
-                <span class="detail-value number">{{ selectedProjectDetails.marketing_project?.contract_id ?? '—' }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">حالة التسويق</span>
-                <span class="detail-value">
-                  <span class="project-status" :class="getStatusClass(selectedProjectDetails.marketing_project?.status)">
-                    {{ getStatusText(selectedProjectDetails.marketing_project?.status) }}
-                  </span>
-                </span>
-              </div>
-              <div class="detail-item" style="grid-column: 1 / -1;">
-                <span class="detail-label">ملاحظات</span>
-                <span class="detail-value">{{ selectedProjectDetails.notes || '—' }}</span>
-              </div>
-              <div class="detail-item" style="grid-column: 1 / -1;">
-                <span class="detail-label">متطلبات المطور</span>
-                <span class="detail-value">{{ selectedProjectDetails.developer_requirement || '—' }}</span>
-              </div>
+            <!-- Details View -->
+            <div v-if="!showUnitsTable">
+                <div class="details-grid">
+                  <div class="detail-item">
+                    <span class="detail-label">المطور</span>
+                    <span class="detail-value">{{ selectedProjectDetails.developer_name || '—' }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">المدينة</span>
+                    <span class="detail-value">{{ selectedProjectDetails.city || '—' }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">الحي</span>
+                    <span class="detail-value">{{ selectedProjectDetails.district || '—' }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">الحالة</span>
+                    <span class="detail-value">
+                      <span class="project-status" :class="getStatusClass(selectedProjectDetails.status)">
+                        {{ getStatusText(selectedProjectDetails.status) }}
+                      </span>
+                    </span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">رقم العقد</span>
+                    <span class="detail-value number">{{ selectedProjectDetails.marketing_project?.contract_id ?? '—' }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">حالة التسويق</span>
+                    <span class="detail-value">
+                      <span class="project-status" :class="getStatusClass(selectedProjectDetails.marketing_project?.status)">
+                        {{ getStatusText(selectedProjectDetails.marketing_project?.status) }}
+                      </span>
+                    </span>
+                  </div>
+                  
+                  <!-- View Units Button -->
+                  <div class="detail-item clickable" @click="goToUnits(selectedProjectDetails.id)" style="cursor: pointer; border-color: #2563eb; background: rgba(37, 99, 235, 0.05);">
+                     <span class="detail-label" style="color: #2563eb;">وحدات المشروع</span>
+                     <span class="detail-value link" style="color: #2563eb; font-weight: bold;">
+                        عرض الوحدات ({{ selectedProjectDetails?.units?.length || '?' }}) ↗
+                     </span>
+                  </div>
+
+                  <div class="detail-item" style="grid-column: 1 / -1;">
+                    <span class="detail-label">ملاحظات</span>
+                    <span class="detail-value">{{ selectedProjectDetails.notes || '—' }}</span>
+                  </div>
+                  <div class="detail-item" style="grid-column: 1 / -1;">
+                    <span class="detail-label">متطلبات المطور</span>
+                    <span class="detail-value">{{ selectedProjectDetails.developer_requirement || '—' }}</span>
+                  </div>
+                </div>
+
+                <div class="overview-section" style="margin-top: 18px;">
+                  <div class="section-header" style="margin-bottom: 14px;">
+                    <h3 class="section-title-chart">الأفرقة المرتبطة</h3>
+                    <p class="section-desc">حسب `marketing_project.teams` في API.</p>
+                  </div>
+                  <div v-if="(selectedProjectDetails.marketing_project?.teams || []).length === 0" style="color:#64748b;">—</div>
+                  <div v-else class="details-teams">
+                    <div v-for="t in selectedProjectDetails.marketing_project.teams" :key="t.id" class="team-pill">
+                      <span class="team-name">{{ t.user?.name || ('User #' + (t.user_id ?? '—')) }}</span>
+                      <span class="team-role">({{ t.role || 'member' }})</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="overview-section" style="margin-top: 18px;">
+                  <div class="section-header" style="margin-bottom: 14px;">
+                    <h3 class="section-title-chart">خطة المطور</h3>
+                    <p class="section-desc">تعرض الحقول المتاحة من `developer_plan`.</p>
+                  </div>
+
+                  <div v-if="!selectedProjectDetails.developer_plan" style="color:#64748b;">لا توجد خطة مطور.</div>
+                  <div v-else class="details-grid" style="margin-top: 10px;">
+                    <div class="detail-item">
+                      <span class="detail-label">قيمة التسويق</span>
+                      <span class="detail-value number">{{ formatCurrency(selectedProjectDetails.developer_plan.marketing_value || 0) }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Average CPM</span>
+                      <span class="detail-value number">{{ selectedProjectDetails.developer_plan.average_cpm ?? '—' }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Average CPC</span>
+                      <span class="detail-value number">{{ selectedProjectDetails.developer_plan.average_cpc ?? '—' }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Expected Impressions</span>
+                      <span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_impressions || 0) }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Expected Clicks</span>
+                      <span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_clicks || 0) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div v-if="(selectedProjectDetails.employee_plans || []).length > 0" class="leads-table-container" style="margin-top: 18px;">
+                  <div class="section-header" style="margin-bottom: 10px;">
+                    <h3 class="section-title-chart" style="margin: 0;">خطط الموظفين</h3>
+                    <p class="section-desc" style="margin: 6px 0 0;">حسب `employee_plans` في API.</p>
+                  </div>
+                  <table class="luxury-table">
+                    <thead>
+                      <tr>
+                        <th>الموظف</th>
+                        <th>قيمة التسويق</th>
+                        <th>قيمة العمولة</th>
+                        <th>توزيع المنصات</th>
+                        <th>توزيع الحملات</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="p in selectedProjectDetails.employee_plans" :key="p.id" class="hover-row">
+                        <td>{{ p.user?.name || ('User #' + (p.user_id ?? '—')) }}</td>
+                        <td class="number">{{ formatCurrency(p.marketing_value || 0) }}</td>
+                        <td class="number">{{ formatCurrency(p.commission_value || 0) }}</td>
+                        <td>{{ formatDistribution(p.platform_distribution) }}</td>
+                        <td>{{ formatDistribution(p.campaign_distribution) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
             </div>
 
-            <div class="overview-section" style="margin-top: 18px;">
-              <div class="section-header" style="margin-bottom: 14px;">
-                <h3 class="section-title-chart">الأفرقة المرتبطة</h3>
-                <p class="section-desc">حسب `marketing_project.teams` في API.</p>
-              </div>
-              <div v-if="(selectedProjectDetails.marketing_project?.teams || []).length === 0" style="color:#64748b;">—</div>
-              <div v-else class="details-teams">
-                <div v-for="t in selectedProjectDetails.marketing_project.teams" :key="t.id" class="team-pill">
-                  <span class="team-name">{{ t.user?.name || ('User #' + (t.user_id ?? '—')) }}</span>
-                  <span class="team-role">({{ t.role || 'member' }})</span>
+            <!-- Units Table View -->
+            <div v-else class="units-view">
+                <div class="units-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h4 style="margin:0; font-family:'Amiri'; color:#1e3a5f;">وحدات المشروع ({{ selectedProjectDetails?.units?.length || 0 }})</h4>
+                    <button class="btn-text" @click="showUnitsTable = false" style="background:none; border:none; color:#B1A28F; cursor:pointer; font-weight:bold;">← عودة للتفاصيل</button>
                 </div>
-              </div>
-            </div>
-
-            <div class="overview-section" style="margin-top: 18px;">
-              <div class="section-header" style="margin-bottom: 14px;">
-                <h3 class="section-title-chart">خطة المطور</h3>
-                <p class="section-desc">تعرض الحقول المتاحة من `developer_plan`.</p>
-              </div>
-
-              <div v-if="!selectedProjectDetails.developer_plan" style="color:#64748b;">لا توجد خطة مطور.</div>
-              <div v-else class="details-grid" style="margin-top: 10px;">
-                <div class="detail-item">
-                  <span class="detail-label">قيمة التسويق</span>
-                  <span class="detail-value number">{{ formatCurrency(selectedProjectDetails.developer_plan.marketing_value || 0) }}</span>
+                
+                <div v-if="isLoadingUnits" class="loading-state">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل الوحدات...</p>
                 </div>
-                <div class="detail-item">
-                  <span class="detail-label">Average CPM</span>
-                  <span class="detail-value number">{{ selectedProjectDetails.developer_plan.average_cpm ?? '—' }}</span>
+                <div v-else-if="!selectedProjectDetails?.units?.length" class="empty-state">
+                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <p>لا توجد وحدات مضافة.</p>
                 </div>
-                <div class="detail-item">
-                  <span class="detail-label">Average CPC</span>
-                  <span class="detail-value number">{{ selectedProjectDetails.developer_plan.average_cpc ?? '—' }}</span>
+                
+                <div v-else class="table-wrapper" style="max-height: 400px; overflow-y: auto;">
+                    <table class="luxury-table" style="width:100%;">
+                        <thead>
+                            <tr>
+                                <th>رقم الوحدة</th>
+                                <th>الدور</th>
+                                <th>الغرف</th>
+                                <th>مساحة</th>
+                                <th>السعر</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="unit in selectedProjectDetails.units" :key="unit.id" class="hover-row">
+                                <td>{{ unit.unit_number || '-' }}</td>
+                                <td>{{ unit.floor || '-' }}</td>
+                                <td>{{ unit.rooms || '-' }}</td>
+                                <td>{{ unit.area ? unit.area + ' م²' : '-' }}</td>
+                                <td class="number">{{ unit.price ? formatCurrency(unit.price) : '-' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="detail-item">
-                  <span class="detail-label">Expected Impressions</span>
-                  <span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_impressions || 0) }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Expected Clicks</span>
-                  <span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_clicks || 0) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div v-if="(selectedProjectDetails.employee_plans || []).length > 0" class="leads-table-container" style="margin-top: 18px;">
-              <div class="section-header" style="margin-bottom: 10px;">
-                <h3 class="section-title-chart" style="margin: 0;">خطط الموظفين</h3>
-                <p class="section-desc" style="margin: 6px 0 0;">حسب `employee_plans` في API.</p>
-              </div>
-              <table class="luxury-table">
-                <thead>
-                  <tr>
-                    <th>الموظف</th>
-                    <th>قيمة التسويق</th>
-                    <th>قيمة العمولة</th>
-                    <th>توزيع المنصات</th>
-                    <th>توزيع الحملات</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="p in selectedProjectDetails.employee_plans" :key="p.id" class="hover-row">
-                    <td>{{ p.user?.name || ('User #' + (p.user_id ?? '—')) }}</td>
-                    <td class="number">{{ formatCurrency(p.marketing_value || 0) }}</td>
-                    <td class="number">{{ formatCurrency(p.commission_value || 0) }}</td>
-                    <td>{{ formatDistribution(p.platform_distribution) }}</td>
-                    <td>{{ formatDistribution(p.campaign_distribution) }}</td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
           </div>
         </div>
@@ -790,6 +842,8 @@ export default {
     const isLoadingProjects = ref(false)
     const selectedProjectDetails = ref(null)
     const isLoadingProjectDetails = ref(false)
+    const showUnitsTable = ref(false)
+    const isLoadingUnits = ref(false)
 
     // Tasks
     const tasks = ref([])
@@ -804,8 +858,6 @@ export default {
     const showAddLeadModal = ref(false)
     const isSubmitting = ref(false)
     const showProjectDetailsModal = ref(false)
-    const showUnitsTable = ref(false)
-    const isLoadingUnits = ref(false)
 
     // Forms
     const budgetForm = reactive({
@@ -1515,6 +1567,9 @@ export default {
       isLoadingProjects,
       selectedProjectDetails,
       isLoadingProjectDetails,
+      showUnitsTable,
+      isLoadingUnits,
+      goToUnits,
       tasks,
       isLoadingTasks,
       leads,
