@@ -802,7 +802,7 @@ export default {
         developerPlanForm.marketing_value = developerPlanForm.marketing_value || String(Math.round(Number(marketingValue) || 0))
 
         notificationService.addNotification(
-          `تم حساب الميزانية: إجمالي التسويق ${formatCurrency(marketingValue || 0)} ريال | يومي ${formatCurrency(dailyBudget || 0)} ريال`,
+          `تم حساب الميزانية: إجمالي التسويق ${formatCurrency(marketingValue || 0)} ريال | يومي ${formatCurrency(dailyBudget || 0)} ريال | شهري ${formatCurrency(monthlyBudget || 0)} ريال`,
           'success'
         )
         

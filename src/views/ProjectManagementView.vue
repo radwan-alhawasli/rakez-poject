@@ -489,9 +489,6 @@ export default {
       allProjectsCount,
       showMediaModalState, mediaForm, isMediaSaving,
       openMediaModal, closeMediaModalState, submitMediaForm,
-      allProjectsCount,
-      showMediaModalState, mediaForm, isMediaSaving,
-      openMediaModal, closeMediaModalState, submitMediaForm,
       getStatusClass, goToUnits, isManager
     }
   }
