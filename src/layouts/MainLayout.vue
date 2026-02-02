@@ -459,23 +459,15 @@
               </div>
             </router-link>
 
-            <!-- 4. خطة المطور -->
-            <router-link to="/marketing/developer-plan" class="nav-item" active-class="active" data-tooltip="خطة المطور">
+            <!-- 4. خطط التسويق -->
+            <router-link to="/marketing/plans" class="nav-item" active-class="active" data-tooltip="خطط التسويق">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                <span class="nav-text">خطة المطور</span>
+                <span class="nav-text">خطط التسويق</span>
               </div>
             </router-link>
 
-            <!-- 5. خطة الموظف -->
-            <router-link to="/marketing/employee-plans" class="nav-item" active-class="active" data-tooltip="خطة الموظف">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span class="nav-text">خطة الموظف</span>
-              </div>
-            </router-link>
-
-            <!-- 4. المهام التسويقية -->
+            <!-- 5. المهام التسويقية -->
             <router-link to="/marketing/tasks" class="nav-item" active-class="active" data-tooltip="المهام التسويقية">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><polyline points="9 11 12 14 22 4"></polyline></svg>
@@ -483,7 +475,7 @@
               </div>
             </router-link>
 
-            <!-- 5. العملاء المحتملون -->
+            <!-- 6. العملاء المحتملون -->
             <router-link to="/marketing/leads" class="nav-item" active-class="active" data-tooltip="العملاء المحتملون">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
@@ -491,7 +483,15 @@
               </div>
             </router-link>
 
-            <!-- 6. طلباتي -->
+            <!-- 7. المساعد الذكي -->
+            <router-link to="/marketing/ai-assistant" class="nav-item" active-class="active" data-tooltip="المساعد الذكي">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"></path><path d="M12 6a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"></path></svg>
+                <span class="nav-text">المساعد الذكي</span>
+              </div>
+            </router-link>
+
+            <!-- 8. طلباتي -->
             <router-link to="/my-requests" class="nav-item" active-class="active" data-tooltip="طلباتي">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
@@ -499,7 +499,7 @@
               </div>
             </router-link>
 
-            <!-- 7. الملف الشخصي -->
+            <!-- 9. الملف الشخصي -->
             <router-link to="/profile" class="nav-item" active-class="active" data-tooltip="الملف الشخصي">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
