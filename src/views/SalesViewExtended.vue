@@ -1,34 +1,14 @@
 <template>
   <div class="sales-view">
-    <!-- Header -->
-    <div class="view-header">
-      <div class="header-content">
-        <h1 class="view-title">مبيعات العقارات</h1>
-        <p class="view-subtitle">إدارة شاملة للمبيعات والأهداف والحضور</p>
-      </div>
-    </div>
-
-    <!-- Tabs Navigation -->
-    <div class="tabs-nav">
-      <button 
-        v-for="tab in visibleTabs" 
-        :key="tab.id"
-        class="nav-tab" 
-        :class="{ active: activeTab === tab.id }"
-        @click="switchTab(tab.id)"
-      >
-        <svg v-html="tab.icon" class="tab-icon"></svg>
-        {{ tab.label }}
-      </button>
-    </div>
-
-    <!-- Tab Content -->
     <div class="tab-content">
       
       <!-- TARGETS TAB (الأهداف) -->
       <div v-if="activeTab === 'targets'" class="targets-tab">
-        <div class="section-header">
-          <h2>أهدافي</h2>
+        <div class="page-header">
+          <div class="header-content">
+            <h1 class="page-title">أهدافي البيعية</h1>
+            <p class="page-subtitle">متابعة الأداء والأهداف المحددة للمبيعات.</p>
+          </div>
           <button v-if="isLeader" @click="showCreateTargetModal = true" class="btn-add">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -44,12 +24,7 @@
         </div>
 
         <div v-else-if="targets.length === 0" class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <circle cx="12" cy="12" r="6"></circle>
-            <circle cx="12" cy="12" r="2"></circle>
-          </svg>
-          <p>لا توجد أهداف محددة</p>
+          <p>لا توجد أهداف محددة للعرض حالياً.</p>
         </div>
 
         <div v-else class="targets-grid">
@@ -90,6 +65,13 @@
 
       <!-- PROJECTS TAB (المشاريع) -->
       <div v-else-if="activeTab === 'projects'" class="projects-tab">
+        <div class="page-header">
+          <div class="header-content">
+            <h1 class="page-title">المشاريع المتاحة</h1>
+            <p class="pane-subtitle" style="font-size: 14px; color: #64748b; margin-top: 4px;">تصفح وإدارة جميع المشاريع المتاحة لك للمبيعات.</p>
+          </div>
+        </div>
+
         <div class="controls-area">
           <div class="search-box">
              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -103,8 +85,7 @@
         </div>
 
         <div v-else-if="filteredProjects.length === 0" class="empty-state">
-           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-           <p>لا توجد مشاريع مطابقة</p>
+           <p>لا توجد مشاريع مطابقة للعرض حالياً.</p>
         </div>
 
         <div v-else class="projects-grid">
@@ -112,9 +93,18 @@
             <div class="card-image">
                <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project Image" style="object-fit: cover; width: 100%; height: 100%; border-radius: 16px 16px 0 0;" @error="$event.target.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%23999999%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E'" />
                <div class="status-badge" :class="project.statusClass">{{ project.statusLabel }}</div>
-               <button class="menu-btn-card" @click.stop>
-                 <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-               </button>
+               <div class="menu-container" @click.stop="toggleMenu(project.id)">
+                 <button class="menu-btn-card">
+                   <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                 </button>
+                 <div v-if="activeMenuId === project.id" class="dropdown-menu">
+                    <div class="menu-item" @click.stop="viewProjectDetails(project.id)">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        عرض المشروع
+                    </div>
+                 </div>
+               </div>
+               <div v-if="activeMenuId === project.id" class="menu-backdrop" @click.stop="activeMenuId = null"></div>
             </div>
             
             <div class="card-content">
@@ -122,15 +112,9 @@
               <p class="project-location">{{ project.location }}</p>
               
               <div class="project-details">
-                <span class="detail-item" v-if="project.developer_name">
-                   المطور: {{ project.developer_name }}
-                </span>
-                 <span class="detail-item">
-                   القرب من 15 دقيقة
-                </span>
-                 <span class="detail-item">
-                   مطار الملك خالد
-                </span>
+                <span class="detail-item" v-if="project.developer_name">المطور: {{ project.developer_name }}</span>
+                <span class="detail-item" v-if="project.distance">القرب من {{ project.distance }} دقيقة</span>
+                <span class="detail-item" v-if="project.landmark">{{ project.landmark }}</span>
               </div>
 
               <div class="card-footer">
@@ -837,7 +821,7 @@ export default {
       participating_marketers_count: 1
     })
 
-    // Projects
+    // Projects tab logic
     const projects = ref([])
     const isLoadingProjects = ref(false)
     const searchQuery = ref('')
@@ -846,8 +830,11 @@ export default {
     const isLoadingProjectDetails = ref(false)
     const projectUnits = ref([])
     const isLoadingUnits = ref(false)
+    const activeMenuId = ref(null)
 
-    // ... (reservations state) ...
+    const toggleMenu = (id) => {
+       activeMenuId.value = activeMenuId.value === id ? null : id
+    }
 
     const loadProjects = async () => {
       isLoadingProjects.value = true
@@ -867,11 +854,13 @@ export default {
           ...p,
           name: p.project_name || p.name || `مشروع #${p.id}`,
           location: [p.city, p.district].filter(Boolean).join(' - ') || 'الرياض',
-          image: p.project_image_url || p.image,
+          image: p.project_image_url || p.image || '/img/placeholder-project.jpg',
           developer_name: p.developer_name || p.developer,
-          statusLabel: p.status === 'Approved' ? 'approved' : (p.status || 'approved'), // Image shows 'approved'
-          statusClass: p.status === 'Approved' ? 'status-active' : 'status-active', // Image shows yellow 'approved'
+          statusLabel: p.status === 'Approved' ? 'approved' : (p.status || 'approved'), 
+          statusClass: p.status === 'Approved' ? 'status-active' : 'status-active', 
           assignee: p.marketer_name || p.marketer || 'غير معين',
+          distance: p.distance || p.proximity_distance, // Use real data or nothing
+          landmark: p.landmark || p.nearby_landmark,   // Use real data or nothing
           description: p.description || p.details || 'لا يوجد وصف متاح لهذا المشروع حالياً.'
         }))
       } catch (error) {
@@ -1340,107 +1329,65 @@ export default {
 .sales-view {
   direction: rtl;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: 20px;
-}
-
-/* Header */
-.view-header {
-  background: white;
-  padding: 30px;
-  border-radius: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.view-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1e3a5f;
-  margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
-}
-
-.view-subtitle {
-  font-size: 16px;
-  color: #64748b;
-  margin: 0;
-}
-
-/* Tabs */
-.tabs-nav {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  background: white;
-  padding: 10px;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  flex-wrap: wrap;
-}
-
-.nav-tab {
-  flex: 1;
-  min-width: 150px;
-  padding: 12px 20px;
-  border: none;
-  background: transparent;
-  color: #64748b;
-  font-size: 15px;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.nav-tab:hover {
-  background: #f1f5f9;
-  color: #1e3a5f;
-}
-
-.nav-tab.active {
-  background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8f 100%);
-  color: white;
-}
-
-.tab-icon {
-  width: 18px;
-  height: 18px;
+  background: #f8fafc;
+  padding: 20px 30px;
+  font-family: 'Tajawal', sans-serif;
 }
 
 /* Tab Content */
 .tab-content {
-  background: white;
-  border-radius: 16px;
-  padding: 30px;
-  min-height: 500px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: transparent;
+  min-height: auto;
 }
 
-/* Section Header */
-.section-header {
+
+/* Page Header Logic (Inspired by Project Management) */
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 30px;
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
 }
 
-.section-header h2 {
-  margin: 0;
-  font-size: 24px;
+.page-title {
+  font-size: 28px;
+  font-weight: 800;
   color: #1e3a5f;
+  margin: 0 0 5px 0;
   font-family: 'Amiri', serif;
+}
+
+.page-subtitle { color: #64748b; font-size: 15px; margin: 0; }
+
+/* Menu Styles on Cards */
+.menu-container {
+    position: absolute; top: 12px; left: 12px; z-index: 10;
+}
+.dropdown-menu {
+    position: absolute; top: 40px; left: 0;
+    background: white; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0; width: 180px; z-index: 100;
+    overflow: hidden;
+    animation: fadeIn 0.2s;
+}
+.menu-item {
+    padding: 12px 16px; font-size: 13px; color: #1e293b;
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; transition: all 0.2s;
+    white-space: nowrap; font-weight: 500;
+}
+.menu-item:hover { background: #f8fafc; color: #B1A28F; }
+.menu-backdrop {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; cursor: default;
 }
 
 .btn-add {
   padding: 10px 20px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -1454,7 +1401,7 @@ export default {
 
 .btn-add:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px rgba(177, 162, 143, 0.4);
 }
 
 .btn-add svg {
@@ -2052,44 +1999,60 @@ export default {
 
 .project-card {
   background: white; border: 1px solid #e2e8f0; border-radius: 16px;
-  overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+  overflow: visible; transition: all 0.3s ease;
   display: flex; flex-direction: column; position: relative;
+  cursor: pointer;
 }
-.project-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+.project-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.08); border-color: #B1A28F; }
 
 .card-image {
-  height: 180px; position: relative; background: #f1f5f9;
+  height: 180px; position: relative; background: #f1f5f9; border-radius: 16px 16px 0 0;
 }
 .status-badge {
-  position: absolute; top: 12px; right: 12px; padding: 4px 10px;
+  position: absolute; top: 12px; right: 12px; padding: 6px 12px;
   border-radius: 20px; font-size: 11px; font-weight: 700;
-  background: rgba(0,0,0,0.5); color: white; backdrop-filter: blur(4px);
+  background: rgba(0,0,0,0.5); color: white; backdrop-filter: blur(8px);
+  z-index: 2;
 }
-.status-badge.status-active { background: #fef9c3; color: #854d0e; }
+.status-badge.status-active { background: #fef9c3; color: #854d0e; border: 1px solid rgba(133, 77, 14, 0.2); }
 .status-badge.status-pending { background: #fef9c3; color: #854d0e; }
 
-.card-content { padding: 16px; flex: 1; display: flex; flex-direction: column; }
-.project-name { font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0; }
-.project-location { color: #64748b; font-size: 13px; margin: 0 0 12px 0; }
+.card-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+.project-name { font-size: 18px; font-weight: 800; color: #1e3a5f; margin: 0 0 6px 0; font-family: 'Amiri', serif; }
+.project-location { color: #64748b; font-size: 14px; margin: 0 0 16px 0; display: flex; align-items: center; gap: 4px; }
 
-.project-details { margin-bottom: 15px; }
+.project-details { margin-bottom: 20px; display: flex; flex-direction: column; gap: 6px; }
 .detail-item {
-  display: block; font-size: 12px; color: #94a3b8; margin-bottom: 4px;
+  display: block; font-size: 12px; color: #94a3b8; font-weight: 500;
 }
 
 .card-footer {
-  margin-top: auto; padding-top: 15px; border-top: 1px solid #f1f5f9;
-  display: flex; justify-content: flex-end; align-items: center;
+  margin-top: auto; padding-top: 16px; border-top: 1px solid #f1f5f9;
+  display: flex; justify-content: space-between; align-items: center;
 }
 
 .tracker-btn {
     background: #f8fafc; border: 1px solid #e2e8f0; color: #1e3a5f;
-    padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700;
     cursor: pointer; transition: all 0.2s;
 }
-.tracker-btn:hover { background: #e2e8f0; }
+.tracker-btn:hover { background: #B1A28F; color: white; border-color: #B1A28F; }
 
-/* Project Modal */
+/* Project Modal Enhancements */
+.project-modal {
+    max-width: 900px !important;
+    width: 95% !important;
+    border-radius: 20px !important;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: #1e3a5f;
+    font-family: 'Amiri', serif;
+}
+
 .project-info-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
