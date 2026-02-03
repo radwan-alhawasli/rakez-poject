@@ -513,36 +513,59 @@
           </div>
 
           <div v-else-if="selectedProject">
+            <!-- Project Banner Container -->
+            <div class="project-banner">
+                <img :src="selectedProject.image || '/img/placeholder-project.jpg'" alt="Project Image" class="banner-img" />
+                <div class="banner-overlay">
+                    <div class="banner-text">
+                        <span class="banner-location"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> {{ selectedProject.location || 'الرياض' }}</span>
+                        <h2 class="banner-title">{{ selectedProject.name }}</h2>
+                    </div>
+                </div>
+            </div>
+
             <!-- Project Overview Boxes -->
             <div class="details-grid">
                  <div class="detail-box">
                      <span class="label">رقم المعلن</span>
-                     <span class="value">{{ selectedProject.advertiser_number || '—' }}</span>
-                     <span class="status-mini" :class="selectedProject.advertiser_number ? 'ok' : 'missing'">
-                        {{ selectedProject.advertiser_number ? 'Available' : 'Not Found' }}
+                     <span class="value">{{ selectedProject.advertiser_number }}</span>
+                     <span class="status-mini" :class="selectedProject.advertiser_number !== '—' ? 'ok' : 'missing'">
+                        {{ selectedProject.advertiser_number !== '—' ? 'Ready' : 'Not Set' }}
                      </span>
                  </div>
                  
+                 <div class="detail-box">
+                     <span class="label">إجمالي الوحدات</span>
+                     <span class="value">{{ selectedProject.total_units }}</span>
+                     <span class="status-mini ok">Inventory</span>
+                 </div>
+
                  <div class="detail-box">
                      <span class="label">متوسط سعر الوحدة</span>
                      <span class="value highlight">
                         {{ selectedProject.avg_unit_price ? formatCurrency(selectedProject.avg_unit_price) : '—' }}
                       </span>
                       <span class="status-mini" :class="selectedProject.avg_unit_price ? 'ok' : 'pending'">
-                        {{ selectedProject.avg_unit_price ? 'Available' : 'Pending' }}
+                        {{ selectedProject.avg_unit_price ? 'Updated' : 'Pending' }}
                      </span>
                  </div>
 
                  <div class="detail-box">
-                     <span class="label">الموقع</span>
-                     <span class="value">{{ selectedProject.district || '—' }} - {{ selectedProject.city || '—' }}</span>
-                      <span class="status-mini ok">Verified</span>
+                     <span class="label">الوحدات المتاحة</span>
+                     <span class="value" style="color: #059669;">{{ selectedProject.available_units }}</span>
+                      <span class="status-mini ok">Available</span>
                  </div>
 
                  <div class="detail-box">
                     <span class="label">المطور العقاري</span>
-                    <span class="value">{{ selectedProject.developer_name || 'غير محدد' }}</span>
-                    <span class="status-mini ok">Active Partner</span>
+                    <span class="value">{{ selectedProject.developer_name || '—' }}</span>
+                    <span class="status-mini ok">Partner</span>
+                 </div>
+
+                 <div class="detail-box">
+                     <span class="label">حالة المشروع</span>
+                     <span class="value" style="color: #B1A28F;">{{ selectedProject.statusLabel }}</span>
+                      <span class="status-mini ok">Active</span>
                  </div>
             </div>
 
@@ -550,6 +573,34 @@
             <div class="description-card">
                <h4>وصف المشروع</h4>
                <p>{{ selectedProject.description || 'لا يوجد وصف متاح لهذا المشروع حالياً.' }}</p>
+            </div>
+
+            <!-- Documents & Media Quick Access -->
+            <div v-if="selectedProject.marketing_license || selectedProject.project_plans || selectedProject.promo_video" class="media-quick-access">
+                <h4 class="section-title-sm">المستندات والوسائط</h4>
+                <div class="media-links-grid">
+                    <a v-if="selectedProject.marketing_license" :href="selectedProject.marketing_license" target="_blank" class="media-link-card">
+                        <div class="link-icon license">📜</div>
+                        <div class="link-info">
+                            <span class="link-label">رخصة التسويق</span>
+                            <span class="link-action">عرض المستند ↗</span>
+                        </div>
+                    </a>
+                    <a v-if="selectedProject.project_plans" :href="selectedProject.project_plans" target="_blank" class="media-link-card">
+                        <div class="link-icon plans">🏗️</div>
+                        <div class="link-info">
+                            <span class="link-label">المخططات الهندسية</span>
+                            <span class="link-action">تحميل الملف ↗</span>
+                        </div>
+                    </a>
+                    <a v-if="selectedProject.promo_video" :href="selectedProject.promo_video" target="_blank" class="media-link-card">
+                        <div class="link-icon video">🎥</div>
+                        <div class="link-info">
+                            <span class="link-label">فيديو المشروع</span>
+                            <span class="link-action">مشاهدة العرض ↗</span>
+                        </div>
+                    </a>
+                </div>
             </div>
 
             <!-- Units List Table -->
@@ -950,12 +1001,25 @@ export default {
               ...data,
               // Map all possible variations for high-priority fields
               name: data.project_name || data.name || selectedProject.value?.name,
-              advertiser_number: data.advertiser_number || data.advertiser_section_url || data.advertiser_id || data.advertiser_num_id,
+              advertiser_number: data.advertiser_number || data.advertiser_section_url || data.advertiser_id || data.advertiser_num_id || '—',
               avg_unit_price: data.average_unit_price || data.avg_unit_price || data.price_starting_from || data.fixed_price || data.price,
               developer_name: data.developer_name || data.developer || data.developer_info?.name || selectedProject.value?.developer_name,
               city: data.city || data.location_city || selectedProject.value?.city,
               district: data.district || data.location_district || selectedProject.value?.district,
               description: data.description || data.project_description || data.details || selectedProject.value?.description,
+              
+              // New fields for Sales visibility
+              total_units: data.total_units || data.units_count || (Array.isArray(data.units) ? data.units.length : 0) || '—',
+              available_units: data.available_units || data.available_units_count || '—',
+              sold_units: data.sold_units || data.sold_units_count || '—',
+              reserved_units: data.reserved_units || data.reserved_units_count || '—',
+              
+              // Documentation & Media
+              marketing_license: data.marketing_license_url || data.marketing_license,
+              project_plans: data.plans_equipment_docs_url || data.plans_url,
+              legal_papers: data.real_estate_papers_url || data.papers_url,
+              promo_video: data.video_url || data.promotion_video_url,
+              
               statusLabel: 'approved'
             }
           }
@@ -2129,10 +2193,76 @@ export default {
 /* High-End Details Grid (Project Management Style) */
 .details-grid {
     display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+    grid-template-columns: repeat(3, 1fr); 
     gap: 16px; 
     margin: 24px 0;
 }
+
+.project-banner {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+.banner-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.banner-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%);
+    display: flex;
+    align-items: flex-end;
+    padding: 24px;
+}
+.banner-text { color: white; }
+.banner-location { 
+    display: flex; align-items: center; gap: 6px; 
+    font-size: 13px; font-weight: 500; opacity: 0.9;
+}
+.banner-title { 
+    margin: 8px 0 0 0; font-size: 24px; font-weight: 800; 
+    font-family: 'Amiri', serif;
+}
+
+/* Media Quick Access */
+.media-quick-access {
+    margin-bottom: 24px;
+}
+.section-title-sm {
+    font-size: 16px; font-weight: 700; color: #1e3a5f; margin: 0 0 16px 0;
+}
+.media-links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+.media-link-card {
+    display: flex; align-items: center; gap: 12px;
+    background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 12px; text-decoration: none; transition: all 0.2s;
+}
+.media-link-card:hover {
+    border-color: #B1A28F; transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.link-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+}
+.link-icon.license { background: #fff7ed; }
+.link-icon.plans { background: #f0f9ff; }
+.link-icon.video { background: #fef2f2; }
+
+.link-info { display: flex; flex-direction: column; }
+.link-label { font-size: 13px; font-weight: 700; color: #1e293b; }
+.link-action { font-size: 11px; color: #B1A28F; font-weight: 600; margin-top: 2px; }
 .detail-box {
     background: #f8fafc; 
     padding: 20px; 
