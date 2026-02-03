@@ -513,28 +513,37 @@
           </div>
 
           <div v-else>
-            <!-- Project Info -->
-            <div class="project-info-grid">
-              <div class="info-item">
-                <span class="info-label">المطور</span>
-                <span class="info-value">{{ selectedProject?.developer_name || '—' }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">المدينة</span>
-                <span class="info-value">{{ selectedProject?.city || '—' }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">الحي</span>
-                <span class="info-value">{{ selectedProject?.district || '—' }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">الحالة</span>
-                <span class="info-value">
-                  <span class="project-status" :class="getStatusClass(selectedProject?.status)">
-                    {{ getStatusText(selectedProject?.status) }}
-                  </span>
-                </span>
-              </div>
+            <!-- Project Overview Boxes (Matched with Project Management style) -->
+            <div class="details-grid">
+                 <div class="detail-box">
+                     <span class="label">رقم المعلن</span>
+                     <span class="value">{{ selectedProject?.advertiser_number || 'غير متوفر' }}</span>
+                     <span class="status-mini" :class="(selectedProject?.advertiser_number || selectedProject?.advertiser_id) ? 'ok' : 'missing'">
+                        {{ (selectedProject?.advertiser_number || selectedProject?.advertiser_id) ? 'Available' : 'Not Found' }}
+                     </span>
+                 </div>
+                 
+                 <div class="detail-box">
+                     <span class="label">متوسط سعر الوحدة</span>
+                     <span class="value highlight">
+                        {{ selectedProject?.avg_unit_price ? formatCurrency(selectedProject.avg_unit_price) : (selectedProject?.price_starting_from ? formatCurrency(selectedProject.price_starting_from) : 'غير محسوب') }}
+                      </span>
+                      <span class="status-mini" :class="selectedProject?.avg_unit_price ? 'ok' : 'pending'">
+                        {{ selectedProject?.avg_unit_price ? 'Available' : 'Pending' }}
+                     </span>
+                 </div>
+
+                 <div class="detail-box">
+                     <span class="label">الموقع</span>
+                     <span class="value">{{ selectedProject?.district || '—' }} - {{ selectedProject?.city || '—' }}</span>
+                      <span class="status-mini ok">Verified</span>
+                 </div>
+
+                 <div class="detail-box">
+                    <span class="label">المطور العقاري</span>
+                    <span class="value">{{ selectedProject?.developer_name || selectedProject?.developer || 'غير محدد' }}</span>
+                    <span class="status-mini ok">Active Partner</span>
+                 </div>
             </div>
 
             <!-- Description Card -->
@@ -922,8 +931,24 @@ export default {
       isLoadingUnits.value = true
       
       try {
-        selectedProject.value = await salesService.getProjectDetails(projectId)
-        projectUnits.value = await salesService.getProjectUnits(projectId)
+        const detRes = await salesService.getProjectDetails(projectId)
+        const unitsRes = await salesService.getProjectUnits(projectId)
+        
+        const detData = detRes.data?.data || detRes.data || detRes
+        selectedProject.value = {
+          ...detData,
+          name: detData.project_name || detData.name || `Project #${projectId}`,
+          developer_name: detData.developer_name || detData.developer,
+          statusLabel: detData.status === 'Approved' ? 'approved' : (detData.status || 'Active')
+        }
+
+        const unitsData = unitsRes.data?.data || unitsRes.data || unitsRes
+        projectUnits.value = Array.isArray(unitsData) ? unitsData : []
+        
+        // Debugging logs to help with API verification
+        console.log('Project Details Loaded:', selectedProject.value)
+        console.log('Units Loaded:', projectUnits.value)
+        
       } catch (error) {
         console.error('Error loading project details:', error)
       } finally {
@@ -2045,6 +2070,14 @@ export default {
     border-radius: 20px !important;
 }
 
+.modal-header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
 .modal-header h3 {
     margin: 0;
     font-size: 20px;
@@ -2053,33 +2086,79 @@ export default {
     font-family: 'Amiri', serif;
 }
 
-.project-info-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-  padding: 20px;
-  background: #f8fafc;
-  border-radius: 12px;
+.modal-close {
+    background: #f1f5f9;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.modal-close:hover {
+    background: #fee2e2;
+    color: #991b1b;
 }
 
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+
+/* High-End Details Grid (Project Management Style) */
+.details-grid {
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+    gap: 16px; 
+    margin: 24px 0;
+}
+.detail-box {
+    background: #f8fafc; 
+    padding: 20px; 
+    border-radius: 16px; 
+    border: 1px solid #e2e8f0;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    text-align: center;
+    transition: all 0.3s ease;
+}
+.detail-box:hover { 
+    transform: translateY(-4px); 
+    border-color: #B1A28F; 
+    background: white; 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
+}
+.detail-box .label { 
+    font-size: 12px; 
+    color: #64748b; 
+    margin-bottom: 8px; 
+    font-weight: 700; 
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.detail-box .value { 
+    font-weight: 800; 
+    color: #1e3a5f; 
+    font-size: 16px; 
+    margin-bottom: 8px;
+    font-family: 'Amiri', serif;
+}
+.detail-box .value.highlight { 
+    color: #B1A28F; 
+    font-size: 18px; 
 }
 
-.info-label {
-  font-size: 13px;
-  color: #64748b;
-  font-weight: 600;
+.status-mini {
+    font-size: 10px; 
+    padding: 4px 12px; 
+    border-radius: 20px; 
+    font-weight: 800;
 }
-
-.info-value {
-  font-size: 15px;
-  color: #1e3a5f;
-  font-weight: 600;
-}
+.status-mini.ok { background: #dcfce7; color: #166534; }
+.status-mini.missing { background: #fee2e2; color: #991b1b; }
+.status-mini.pending { background: #fef9c3; color: #854d0e; }
 
 .units-section {
   margin-top: 24px;
