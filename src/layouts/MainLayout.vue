@@ -510,15 +510,39 @@
 
           <!-- Sales Sidebar (Role 5) - Sales Management View -->
           <template v-else-if="userRole == 5">
-            <!-- 1. لوحة التحكم -->
-            <router-link to="/sales/dashboard" class="nav-item" active-class="active" data-tooltip="لوحة التحكم">
+            <!-- 1. الأهداف -->
+            <router-link to="/sales/targets" class="nav-item" active-class="active" data-tooltip="الأهداف">
               <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                <span class="nav-text">لوحة التحكم</span>
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+                <span class="nav-text">الأهداف</span>
               </div>
             </router-link>
 
-            <!-- 2. الإشعارات -->
+            <!-- 2. دوامي -->
+            <router-link to="/sales/attendance" class="nav-item" active-class="active" data-tooltip="دوامي">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span class="nav-text">دوامي</span>
+              </div>
+            </router-link>
+
+            <!-- 3. الفريق (Leader Only) -->
+            <router-link v-if="user?.is_leader" to="/sales/team" class="nav-item" active-class="active" data-tooltip="الفريق">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <span class="nav-text">الفريق</span>
+              </div>
+            </router-link>
+
+            <!-- 4. المهام (Leader Only) -->
+            <router-link v-if="user?.is_leader" to="/sales/tasks" class="nav-item" active-class="active" data-tooltip="المهام">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><polyline points="9 11 12 14 22 4"></polyline></svg>
+                <span class="nav-text">المهام</span>
+              </div>
+            </router-link>
+
+            <!-- 5. الإشعارات -->
             <router-link to="/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
               <div class="nav-content">
                 <div class="icon-with-badge">
@@ -529,23 +553,7 @@
               </div>
             </router-link>
 
-            <!-- 3. المشاريع -->
-            <router-link to="/sales/projects" class="nav-item" active-class="active" data-tooltip="المشاريع">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                <span class="nav-text">المشاريع</span>
-              </div>
-            </router-link>
-
-            <!-- 4. الحجوزات -->
-            <router-link to="/sales/reservations" class="nav-item" active-class="active" data-tooltip="الحجوزات">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span class="nav-text">الحجوزات</span>
-              </div>
-            </router-link>
-
-            <!-- 5. طلباتي -->
+            <!-- 6. طلباتي -->
             <router-link to="/my-requests" class="nav-item" active-class="active" data-tooltip="طلباتي">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
@@ -553,7 +561,7 @@
               </div>
             </router-link>
 
-            <!-- 6. الملف الشخصي -->
+            <!-- 7. الملف الشخصي -->
             <router-link to="/profile" class="nav-item" active-class="active" data-tooltip="الملف الشخصي">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>

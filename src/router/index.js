@@ -142,12 +142,13 @@ const routes = [
             {
                 path: 'sales',
                 name: 'Sales',
-                component: () => import('../views/SalesView.vue'),
+                component: () => import('../views/SalesViewExtended.vue'),
                 children: [
-                    { path: '', redirect: { name: 'SalesDashboard' } },
-                    { path: 'dashboard', name: 'SalesDashboard', component: () => import('../views/SalesView.vue') },
-                    { path: 'projects', name: 'SalesProjects', component: () => import('../views/SalesView.vue') },
-                    { path: 'reservations', name: 'SalesReservations', component: () => import('../views/SalesView.vue') }
+                    { path: '', redirect: { name: 'SalesTargets' } },
+                    { path: 'targets', name: 'SalesTargets', component: () => import('../views/SalesViewExtended.vue') },
+                    { path: 'attendance', name: 'SalesAttendance', component: () => import('../views/SalesViewExtended.vue') },
+                    { path: 'team', name: 'SalesTeam', component: () => import('../views/SalesViewExtended.vue') },
+                    { path: 'tasks', name: 'SalesTasks', component: () => import('../views/SalesViewExtended.vue') }
                 ]
             },
             {
@@ -181,7 +182,7 @@ router.beforeEach((to, from, next) => {
         } else if (user && (user.type == 0 || String(user.type).toLowerCase() === 'marketing')) {
             next('/marketing/dashboard')
         } else if (user && (user.type == 1 || String(user.type).toLowerCase() === 'sales')) {
-            next('/sales/dashboard')
+            next('/sales/targets')
         } else {
             next('/dashboard')
         }
