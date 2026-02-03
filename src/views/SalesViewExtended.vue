@@ -507,41 +507,41 @@
         </div>
 
         <div class="modal-body">
-          <div v-if="isLoadingProjectDetails" class="loading-state">
+          <div v-if="isLoadingProjectDetails && !selectedProject" class="loading-state">
             <div class="spinner"></div>
-            <p>جاري التحميل...</p>
+            <p>جاري تحميل البيانات...</p>
           </div>
 
-          <div v-else>
-            <!-- Project Overview Boxes (Matched with Project Management style) -->
+          <div v-else-if="selectedProject">
+            <!-- Project Overview Boxes -->
             <div class="details-grid">
                  <div class="detail-box">
                      <span class="label">رقم المعلن</span>
-                     <span class="value">{{ selectedProject?.advertiser_number || 'غير متوفر' }}</span>
-                     <span class="status-mini" :class="(selectedProject?.advertiser_number || selectedProject?.advertiser_id) ? 'ok' : 'missing'">
-                        {{ (selectedProject?.advertiser_number || selectedProject?.advertiser_id) ? 'Available' : 'Not Found' }}
+                     <span class="value">{{ selectedProject.advertiser_number || '—' }}</span>
+                     <span class="status-mini" :class="selectedProject.advertiser_number ? 'ok' : 'missing'">
+                        {{ selectedProject.advertiser_number ? 'Available' : 'Not Found' }}
                      </span>
                  </div>
                  
                  <div class="detail-box">
                      <span class="label">متوسط سعر الوحدة</span>
                      <span class="value highlight">
-                        {{ selectedProject?.avg_unit_price ? formatCurrency(selectedProject.avg_unit_price) : (selectedProject?.price_starting_from ? formatCurrency(selectedProject.price_starting_from) : 'غير محسوب') }}
+                        {{ selectedProject.avg_unit_price ? formatCurrency(selectedProject.avg_unit_price) : '—' }}
                       </span>
-                      <span class="status-mini" :class="selectedProject?.avg_unit_price ? 'ok' : 'pending'">
-                        {{ selectedProject?.avg_unit_price ? 'Available' : 'Pending' }}
+                      <span class="status-mini" :class="selectedProject.avg_unit_price ? 'ok' : 'pending'">
+                        {{ selectedProject.avg_unit_price ? 'Available' : 'Pending' }}
                      </span>
                  </div>
 
                  <div class="detail-box">
                      <span class="label">الموقع</span>
-                     <span class="value">{{ selectedProject?.district || '—' }} - {{ selectedProject?.city || '—' }}</span>
+                     <span class="value">{{ selectedProject.district || '—' }} - {{ selectedProject.city || '—' }}</span>
                       <span class="status-mini ok">Verified</span>
                  </div>
 
                  <div class="detail-box">
                     <span class="label">المطور العقاري</span>
-                    <span class="value">{{ selectedProject?.developer_name || selectedProject?.developer || 'غير محدد' }}</span>
+                    <span class="value">{{ selectedProject.developer_name || 'غير محدد' }}</span>
                     <span class="status-mini ok">Active Partner</span>
                  </div>
             </div>
@@ -549,7 +549,7 @@
             <!-- Description Card -->
             <div class="description-card">
                <h4>وصف المشروع</h4>
-               <p>{{ selectedProject?.description || 'لا يوجد وصف متاح' }}</p>
+               <p>{{ selectedProject.description || 'لا يوجد وصف متاح لهذا المشروع حالياً.' }}</p>
             </div>
 
             <!-- Units List Table -->
@@ -560,10 +560,11 @@
               
               <div v-if="isLoadingUnits" class="loading-state">
                 <div class="spinner"></div>
+                <p>جاري تحميل الوحدات...</p>
               </div>
 
               <div v-else-if="projectUnits.length === 0" class="empty-state">
-                <p>لا توجد وحدات متاحة</p>
+                <p>لا توجد وحدات متاحة للعرض لهذا المشروع.</p>
               </div>
 
               <div v-else class="table-wrapper">
@@ -580,10 +581,10 @@
                   </thead>
                   <tbody>
                     <tr v-for="unit in projectUnits" :key="unit.id">
-                      <td style="font-weight: 700; color: #1e3a5f;">{{ unit.unit_number || unit.name }}</td>
-                       <td>{{ unit.type || '—' }}</td>
-                      <td style="font-weight: 700; color: #059669;">{{ formatCurrency(unit.price) }}</td>
-                      <td>{{ unit.area }} م²</td>
+                      <td style="font-weight: 700; color: #1e3a5f;">{{ unit.unit_number || unit.name || unit.number }}</td>
+                       <td>{{ unit.unit_type || unit.type || '—' }}</td>
+                      <td style="font-weight: 700; color: #059669;">{{ formatCurrency(unit.price || unit.total_price) }}</td>
+                      <td>{{ unit.area || unit.space || unit.size }} م²</td>
                       <td>
                         <span class="unit-status-badge" :class="getUnitStatusClass(unit.status)">
                           {{ getUnitStatusText(unit.status) }}
@@ -849,31 +850,25 @@ export default {
       isLoadingProjects.value = true
       try {
         const response = await salesService.getProjects()
-        // Extract data properly: it could be response, response.data, or response.data.data
-        let rawData = response.data || response
-        if (rawData && rawData.data && Array.isArray(rawData.data)) {
-          rawData = rawData.data
-        } else if (rawData && Array.isArray(rawData)) {
-          // kept as is
-        } else {
-          rawData = []
-        }
+        let rawData = response?.data?.data || response?.data || response
+        if (!Array.isArray(rawData) && rawData?.data) rawData = rawData.data
+        if (!Array.isArray(rawData)) rawData = []
 
         projects.value = rawData.map(p => ({
           ...p,
           name: p.project_name || p.name || `مشروع #${p.id}`,
-          location: [p.city, p.district].filter(Boolean).join(' - ') || 'الرياض',
+          location: [p.city || p.location_city, p.district || p.location_district].filter(Boolean).join(' - '),
           image: p.project_image_url || p.image || '/img/placeholder-project.jpg',
-          developer_name: p.developer_name || p.developer,
-          statusLabel: p.status === 'Approved' ? 'approved' : (p.status || 'approved'), 
-          statusClass: p.status === 'Approved' ? 'status-active' : 'status-active', 
+          developer_name: p.developer_name || p.developer || p.developer_info?.name,
+          statusLabel: (p.status === 'Approved' || p.status === 'approved') ? 'approved' : (p.status || 'approved'), 
+          statusClass: 'status-active', // Consistent with yellow 'approved' badge
           assignee: p.marketer_name || p.marketer || 'غير معين',
-          distance: p.distance || p.proximity_distance, // Use real data or nothing
-          landmark: p.landmark || p.nearby_landmark,   // Use real data or nothing
-          description: p.description || p.details || 'لا يوجد وصف متاح لهذا المشروع حالياً.'
+          distance: p.distance || p.proximity_distance || p.proximity,
+          landmark: p.landmark || p.nearby_landmark || p.nearby_location,
+          description: p.description || p.details || p.project_description || 'لا يوجد وصف متاح لهذا المشروع حالياً.'
         }))
       } catch (error) {
-        console.error('Error loading projects:', error)
+        console.error('Error loading projects list:', error)
       } finally {
         isLoadingProjects.value = false
       }
@@ -926,31 +921,56 @@ export default {
 
 
     const viewProjectDetails = async (projectId) => {
+      // Find project in the current list to show basic info immediately
+      const existing = projects.value.find(p => p.id === projectId)
+      if (existing) {
+        selectedProject.value = { ...existing }
+      } else {
+        selectedProject.value = null
+      }
+      
       showProjectModal.value = true
       isLoadingProjectDetails.value = true
       isLoadingUnits.value = true
       
       try {
-        const detRes = await salesService.getProjectDetails(projectId)
-        const unitsRes = await salesService.getProjectUnits(projectId)
+        const [detRes, unitsRes] = await Promise.all([
+          salesService.getProjectDetails(projectId).catch(e => { console.error('P-Details Error', e); return null; }),
+          salesService.getProjectUnits(projectId).catch(e => { console.error('Units Error', e); return null; })
+        ])
         
-        const detData = detRes.data?.data || detRes.data || detRes
-        selectedProject.value = {
-          ...detData,
-          name: detData.project_name || detData.name || `Project #${projectId}`,
-          developer_name: detData.developer_name || detData.developer,
-          statusLabel: detData.status === 'Approved' ? 'approved' : (detData.status || 'Active')
+        // 1. Process Project Details
+        if (detRes?.data) {
+          const body = detRes.data
+          const data = body.data || body.project || body.contract || body
+          
+          if (data && typeof data === 'object') {
+            selectedProject.value = {
+              ...(selectedProject.value || {}),
+              ...data,
+              // Map all possible variations for high-priority fields
+              name: data.project_name || data.name || selectedProject.value?.name,
+              advertiser_number: data.advertiser_number || data.advertiser_section_url || data.advertiser_id || data.advertiser_num_id,
+              avg_unit_price: data.average_unit_price || data.avg_unit_price || data.price_starting_from || data.fixed_price || data.price,
+              developer_name: data.developer_name || data.developer || data.developer_info?.name || selectedProject.value?.developer_name,
+              city: data.city || data.location_city || selectedProject.value?.city,
+              district: data.district || data.location_district || selectedProject.value?.district,
+              description: data.description || data.project_description || data.details || selectedProject.value?.description,
+              statusLabel: 'approved'
+            }
+          }
         }
 
-        const unitsData = unitsRes.data?.data || unitsRes.data || unitsRes
-        projectUnits.value = Array.isArray(unitsData) ? unitsData : []
+        // 2. Process Units
+        if (unitsRes?.data) {
+          const body = unitsRes.data
+          const data = body.data || body.units || body
+          projectUnits.value = Array.isArray(data) ? data : (Array.isArray(body) ? body : [])
+        }
         
-        // Debugging logs to help with API verification
-        console.log('Project Details Loaded:', selectedProject.value)
-        console.log('Units Loaded:', projectUnits.value)
-        
+        console.log('Final Normalized Project Data:', selectedProject.value)
       } catch (error) {
-        console.error('Error loading project details:', error)
+        console.error('Error in viewProjectDetails:', error)
       } finally {
         isLoadingProjectDetails.value = false
         isLoadingUnits.value = false
