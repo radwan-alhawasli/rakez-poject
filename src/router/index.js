@@ -146,6 +146,8 @@ const routes = [
                 children: [
                     { path: '', redirect: { name: 'SalesTargets' } },
                     { path: 'targets', name: 'SalesTargets', component: () => import('../views/SalesViewExtended.vue') },
+                    { path: 'projects', name: 'SalesProjects', component: () => import('../views/SalesViewExtended.vue') },
+                    { path: 'reservations', name: 'SalesReservations', component: () => import('../views/SalesViewExtended.vue') },
                     { path: 'attendance', name: 'SalesAttendance', component: () => import('../views/SalesViewExtended.vue') },
                     { path: 'team', name: 'SalesTeam', component: () => import('../views/SalesViewExtended.vue') },
                     { path: 'tasks', name: 'SalesTasks', component: () => import('../views/SalesViewExtended.vue') }
