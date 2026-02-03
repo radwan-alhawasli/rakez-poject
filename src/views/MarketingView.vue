@@ -1613,21 +1613,6 @@ export default {
       }
     }
 
-    const getConversationId = (chat) => chat?.session_id || chat?.id
-
-    const deleteChat = async (sessionId) => {
-      if (!sessionId) return
-      try {
-        await aiService.deleteConversation(sessionId)
-        if (String(currentSessionId.value) === String(sessionId)) startNewChat()
-        await loadAiDashboard()
-        notificationService.addNotification('تم حذف المحادثة', 'success')
-      } catch (error) {
-        console.error('❌ Error deleting conversation:', error)
-        alert('تعذر حذف المحادثة')
-      }
-    }
-
     const setPlanSubTab = (sub) => {
       activePlanSubTab.value = sub
       router.replace({ name: 'MarketingPlans', query: { ...(route.query || {}), sub } }).catch(() => {})
