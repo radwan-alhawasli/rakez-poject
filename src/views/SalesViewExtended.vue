@@ -1379,6 +1379,8 @@ export default {
       showCreateTargetModal,
       targetForm,
       createTarget,
+      activeMenuId,
+      toggleMenu,
       projects,
       filteredProjects,
       isLoadingProjects,
