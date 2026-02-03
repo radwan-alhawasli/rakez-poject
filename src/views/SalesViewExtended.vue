@@ -90,8 +90,11 @@
 
       <!-- PROJECTS TAB (المشاريع) -->
       <div v-else-if="activeTab === 'projects'" class="projects-tab">
-        <div class="section-header">
-          <h2>المشاريع المتاحة</h2>
+        <div class="controls-area">
+          <div class="search-box">
+             <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+             <input v-model="searchQuery" type="text" placeholder="ابحث عن مشروع..." />
+          </div>
         </div>
 
         <div v-if="isLoadingProjects" class="loading-state">
@@ -99,41 +102,34 @@
           <p>جاري تحميل المشاريع...</p>
         </div>
 
-        <div v-else-if="projects.length === 0" class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-          </svg>
-          <p>لا توجد مشاريع متاحة</p>
+        <div v-else-if="filteredProjects.length === 0" class="empty-state">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+           <p>لا توجد مشاريع مطابقة</p>
         </div>
 
         <div v-else class="projects-grid">
-          <div v-for="project in projects" :key="project.id" class="project-card" @click="viewProjectDetails(project.id)">
-            <div class="project-header">
-              <h3>{{ project.project_name || project.name }}</h3>
-              <span class="project-status" :class="getStatusClass(project.status)">
-                {{ getStatusText(project.status) }}
-              </span>
+          <div v-for="project in filteredProjects" :key="project.id" class="project-card">
+            <div class="card-image">
+               <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project Image" style="object-fit: cover; width: 100%; height: 100%; border-radius: 16px 16px 0 0;" @error="$event.target.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%23666666%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E'" />
+               <div class="status-badge" :class="project.statusClass">{{ project.statusLabel }}</div>
             </div>
-            <div class="project-details">
-              <div class="detail-row">
-                <span class="detail-label">المطور:</span>
-                <span class="detail-value">{{ project.developer_name || '—' }}</span>
+            
+            <div class="card-content">
+              <h3 class="project-name">{{ project.name }}</h3>
+              <p class="project-location">{{ project.location }}</p>
+              
+              <div class="project-details">
+                <span class="detail-item" v-if="project.developer_name">
+                   المطور: {{ project.developer_name }}
+                </span>
               </div>
-              <div class="detail-row">
-                <span class="detail-label">الموقع:</span>
-                <span class="detail-value">{{ project.city || '—' }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">الوحدات المتاحة:</span>
-                <span class="detail-value">{{ project.available_units || 0 }}</span>
+
+              <div class="card-footer">
+                <button class="tracker-btn" @click="viewProjectDetails(project.id)">
+                   عرض التفاصيل
+                </button>
               </div>
             </div>
-            <button class="btn-view-project">
-              عرض التفاصيل
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 12h14M12 5l7 7-7 7"></path>
-              </svg>
-            </button>
           </div>
         </div>
       </div>
@@ -822,11 +818,43 @@ export default {
     // Projects
     const projects = ref([])
     const isLoadingProjects = ref(false)
+    const searchQuery = ref('')
     const selectedProject = ref(null)
     const showProjectModal = ref(false)
     const isLoadingProjectDetails = ref(false)
     const projectUnits = ref([])
     const isLoadingUnits = ref(false)
+
+    // ... (reservations state) ...
+
+    const loadProjects = async () => {
+      isLoadingProjects.value = true
+      try {
+        const data = await salesService.getProjects()
+        projects.value = (Array.isArray(data) ? data : []).map(p => ({
+          ...p,
+          name: p.project_name || p.name || `مشروع #${p.id}`,
+          location: [p.city, p.district].filter(Boolean).join(' - ') || 'الرياض',
+          image: p.project_image_url || p.image,
+          developer_name: p.developer_name || p.developer,
+          statusLabel: p.status === 'Approved' ? 'نشط' : (p.status || 'غير محدد'),
+          statusClass: p.status === 'Approved' ? 'status-active' : 'status-pending'
+        }))
+      } catch (error) {
+        console.error('Error loading projects:', error)
+      } finally {
+        isLoadingProjects.value = false
+      }
+    }
+
+    const filteredProjects = computed(() => {
+      if (!searchQuery.value) return projects.value
+      const q = searchQuery.value.toLowerCase()
+      return projects.value.filter(p => 
+        p.name.toLowerCase().includes(q) || 
+        (p.location && p.location.toLowerCase().includes(q))
+      )
+    })
 
     // Reservations
     const reservations = ref([])
@@ -863,16 +891,7 @@ export default {
       }
     }
 
-    const loadProjects = async () => {
-      isLoadingProjects.value = true
-      try {
-        projects.value = await salesService.getProjects()
-      } catch (error) {
-        console.error('Error loading projects:', error)
-      } finally {
-        isLoadingProjects.value = false
-      }
-    }
+
 
     const viewProjectDetails = async (projectId) => {
       showProjectModal.value = true
@@ -1229,7 +1248,9 @@ export default {
       targetForm,
       createTarget,
       projects,
+      filteredProjects,
       isLoadingProjects,
+      searchQuery,
       selectedProject,
       showProjectModal,
       isLoadingProjectDetails,
@@ -1972,116 +1993,67 @@ export default {
   }
 }
 
-/* Projects Grid */
+/* Search & Controls */
+.controls-area {
+  display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap;
+}
+.search-box {
+  width: 300px; flex: none; position: relative; max-width: 100%;
+}
+.search-icon {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  width: 18px; color: #94a3b8;
+}
+.search-box input {
+  width: 100%; padding: 12px 40px 12px 15px; border: 1px solid #e2e8f0;
+  border-radius: 10px; outline: none; transition: border-color 0.2s;
+  font-family: inherit;
+}
+.search-box input:focus { border-color: #B1A28F; }
+
+/* Enhanced Projects Grid */
 .projects-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;
 }
 
 .project-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  background: white; border: 1px solid #e2e8f0; border-radius: 16px;
+  overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+  display: flex; flex-direction: column; position: relative;
+}
+.project-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+
+.card-image {
+  height: 180px; position: relative; background: #f1f5f9;
+}
+.status-badge {
+  position: absolute; top: 12px; right: 12px; padding: 4px 10px;
+  border-radius: 20px; font-size: 11px; font-weight: 700;
+  background: rgba(0,0,0,0.5); color: white; backdrop-filter: blur(4px);
+}
+.status-badge.status-active { background: #dcfce7; color: #166534; }
+.status-badge.status-pending { background: #fef9c3; color: #854d0e; }
+
+.card-content { padding: 16px; flex: 1; display: flex; flex-direction: column; }
+.project-name { font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0; }
+.project-location { color: #64748b; font-size: 13px; margin: 0 0 12px 0; }
+
+.project-details { margin-bottom: 15px; }
+.detail-item {
+  display: block; font-size: 12px; color: #94a3b8; margin-bottom: 4px;
 }
 
-.project-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  border-color: #B1A28F;
+.card-footer {
+  margin-top: auto; padding-top: 15px; border-top: 1px solid #f1f5f9;
+  display: flex; justify-content: flex-end; align-items: center;
 }
 
-.project-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: start;
-  margin-bottom: 16px;
+.tracker-btn {
+    background: #f8fafc; border: 1px solid #e2e8f0; color: #1e3a5f;
+    padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
 }
-
-.project-header h3 {
-  margin: 0;
-  font-size: 18px;
-  color: #1e3a5f;
-  font-weight: 700;
-}
-
-.project-status {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.project-status.status-active {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.project-status.status-ready {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.project-status.status-not-ready {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.project-status.status-pending {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.project-details {
-  margin-bottom: 16px;
-}
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.detail-label {
-  color: #64748b;
-  font-size: 14px;
-}
-
-.detail-value {
-  color: #1e3a5f;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.btn-view-project {
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-}
-
-.btn-view-project:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(177, 162, 143, 0.3);
-}
-
-.btn-view-project svg {
-  width: 16px;
-  height: 16px;
-}
+.tracker-btn:hover { background: #e2e8f0; }
 
 /* Project Modal */
 .project-info-grid {
