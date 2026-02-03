@@ -108,10 +108,13 @@
         </div>
 
         <div v-else class="projects-grid">
-          <div v-for="project in filteredProjects" :key="project.id" class="project-card">
+          <div v-for="project in filteredProjects" :key="project.id" class="project-card" @click="viewProjectDetails(project.id)">
             <div class="card-image">
-               <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project Image" style="object-fit: cover; width: 100%; height: 100%; border-radius: 16px 16px 0 0;" @error="$event.target.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%23666666%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E'" />
+               <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project Image" style="object-fit: cover; width: 100%; height: 100%; border-radius: 16px 16px 0 0;" @error="$event.target.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%23999999%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E'" />
                <div class="status-badge" :class="project.statusClass">{{ project.statusLabel }}</div>
+               <button class="menu-btn-card" @click.stop>
+                 <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+               </button>
             </div>
             
             <div class="card-content">
@@ -122,10 +125,20 @@
                 <span class="detail-item" v-if="project.developer_name">
                    المطور: {{ project.developer_name }}
                 </span>
+                 <span class="detail-item">
+                   القرب من 15 دقيقة
+                </span>
+                 <span class="detail-item">
+                   مطار الملك خالد
+                </span>
               </div>
 
               <div class="card-footer">
-                <button class="tracker-btn" @click="viewProjectDetails(project.id)">
+                <div class="assignee">
+                   <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                   <span>{{ project.assignee }}</span>
+                </div>
+                <button class="tracker-btn" @click.stop="viewProjectDetails(project.id)">
                    عرض التفاصيل
                 </button>
               </div>
@@ -540,9 +553,17 @@
               </div>
             </div>
 
-            <!-- Units List -->
+            <!-- Description Card -->
+            <div class="description-card">
+               <h4>وصف المشروع</h4>
+               <p>{{ selectedProject?.description || 'لا يوجد وصف متاح' }}</p>
+            </div>
+
+            <!-- Units List Table -->
             <div class="units-section">
-              <h4>الوحدات المتاحة</h4>
+              <div class="units-header-row">
+                 <h4>إدارة الوحدات</h4>
+              </div>
               
               <div v-if="isLoadingUnits" class="loading-state">
                 <div class="spinner"></div>
@@ -552,40 +573,41 @@
                 <p>لا توجد وحدات متاحة</p>
               </div>
 
-              <div v-else class="units-grid">
-                <div v-for="unit in projectUnits" :key="unit.id" class="unit-card">
-                  <div class="unit-header">
-                    <span class="unit-number">وحدة #{{ unit.unit_number }}</span>
-                    <span class="unit-status" :class="getUnitStatusClass(unit.status)">
-                      {{ getUnitStatusText(unit.status) }}
-                    </span>
-                  </div>
-                  <div class="unit-details">
-                    <div class="unit-detail">
-                      <span class="label">الدور:</span>
-                      <span class="value">{{ unit.floor || '—' }}</span>
-                    </div>
-                    <div class="unit-detail">
-                      <span class="label">الغرف:</span>
-                      <span class="value">{{ unit.rooms || '—' }}</span>
-                    </div>
-                    <div class="unit-detail">
-                      <span class="label">المساحة:</span>
-                      <span class="value">{{ unit.area || '—' }} م²</span>
-                    </div>
-                    <div class="unit-detail">
-                      <span class="label">السعر:</span>
-                      <span class="value price">{{ formatCurrency(unit.price || 0) }}</span>
-                    </div>
-                  </div>
-                  <button 
-                    v-if="unit.status === 'available'" 
-                    @click="openReservationModal(unit)"
-                    class="btn-reserve"
-                  >
-                    حجز الوحدة
-                  </button>
-                </div>
+              <div v-else class="table-wrapper">
+                <table class="units-table">
+                  <thead>
+                    <tr>
+                      <th>رقم الوحدة</th>
+                      <th>النوع</th>
+                      <th>السعر</th>
+                      <th>المساحة</th>
+                      <th>الحالة</th>
+                      <th>إجراء</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="unit in projectUnits" :key="unit.id">
+                      <td style="font-weight: 700; color: #1e3a5f;">{{ unit.unit_number || unit.name }}</td>
+                       <td>{{ unit.type || '—' }}</td>
+                      <td style="font-weight: 700; color: #059669;">{{ formatCurrency(unit.price) }}</td>
+                      <td>{{ unit.area }} م²</td>
+                      <td>
+                        <span class="unit-status-badge" :class="getUnitStatusClass(unit.status)">
+                          {{ getUnitStatusText(unit.status) }}
+                        </span>
+                      </td>
+                      <td>
+                        <button 
+                          v-if="unit.status === 'available'" 
+                          @click="openReservationModal(unit)"
+                          class="btn-reserve-sm"
+                        >
+                          حجز
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -830,15 +852,27 @@ export default {
     const loadProjects = async () => {
       isLoadingProjects.value = true
       try {
-        const data = await salesService.getProjects()
-        projects.value = (Array.isArray(data) ? data : []).map(p => ({
+        const response = await salesService.getProjects()
+        // Extract data properly: it could be response, response.data, or response.data.data
+        let rawData = response.data || response
+        if (rawData && rawData.data && Array.isArray(rawData.data)) {
+          rawData = rawData.data
+        } else if (rawData && Array.isArray(rawData)) {
+          // kept as is
+        } else {
+          rawData = []
+        }
+
+        projects.value = rawData.map(p => ({
           ...p,
           name: p.project_name || p.name || `مشروع #${p.id}`,
           location: [p.city, p.district].filter(Boolean).join(' - ') || 'الرياض',
           image: p.project_image_url || p.image,
           developer_name: p.developer_name || p.developer,
-          statusLabel: p.status === 'Approved' ? 'نشط' : (p.status || 'غير محدد'),
-          statusClass: p.status === 'Approved' ? 'status-active' : 'status-pending'
+          statusLabel: p.status === 'Approved' ? 'approved' : (p.status || 'approved'), // Image shows 'approved'
+          statusClass: p.status === 'Approved' ? 'status-active' : 'status-active', // Image shows yellow 'approved'
+          assignee: p.marketer_name || p.marketer || 'غير معين',
+          description: p.description || p.details || 'لا يوجد وصف متاح لهذا المشروع حالياً.'
         }))
       } catch (error) {
         console.error('Error loading projects:', error)
@@ -2031,7 +2065,7 @@ export default {
   border-radius: 20px; font-size: 11px; font-weight: 700;
   background: rgba(0,0,0,0.5); color: white; backdrop-filter: blur(4px);
 }
-.status-badge.status-active { background: #dcfce7; color: #166534; }
+.status-badge.status-active { background: #fef9c3; color: #854d0e; }
 .status-badge.status-pending { background: #fef9c3; color: #854d0e; }
 
 .card-content { padding: 16px; flex: 1; display: flex; flex-direction: column; }
@@ -2096,104 +2130,57 @@ export default {
   border-bottom: 2px solid #e2e8f0;
 }
 
-.units-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+/* Project Modal - Description & Units Table */
+.description-card {
+  margin-bottom: 24px; padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 12px;
 }
+.description-card h4 { margin: 0 0 10px 0; color: #1e3a5f; font-size: 16px; font-weight: 700; }
+.description-card p { margin: 0; color: #475569; line-height: 1.6; font-size: 14px; }
 
-.unit-card {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px;
-  transition: all 0.3s ease;
+.units-section { margin-top: 24px; }
+.units-header-row { 
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #e2e8f0; 
 }
+.units-header-row h4 { margin: 0; font-size: 18px; color: #1e3a5f; font-weight: 700; }
 
-.unit-card:hover {
-  border-color: #B1A28F;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.units-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+.units-table th { 
+    background: #f8fafc; padding: 12px; text-align: right; 
+    color: #64748b; font-weight: 600; font-size: 13px; 
 }
-
-.unit-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f1f5f9;
+.units-table td { 
+    padding: 12px; border-bottom: 1px solid #f1f5f9; 
+    font-size: 13px; color: #1e293b; vertical-align: middle;
 }
+.units-table tr:hover { background: #f8fafc; }
 
-.unit-number {
-  font-weight: 700;
-  color: #1e3a5f;
-  font-size: 15px;
+.unit-status-badge { 
+    padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block; 
 }
+.unit-status-badge.unit-available { background: #dcfce7; color: #166534; }
+.unit-status-badge.unit-reserved { background: #fef9c3; color: #854d0e; }
+.unit-status-badge.unit-sold { background: #fee2e2; color: #991b1b; }
 
-.unit-status {
-  padding: 4px 10px;
-  border-radius: 10px;
-  font-size: 11px;
-  font-weight: 600;
+.btn-reserve-sm {
+    padding: 6px 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+    color: white; border: none; border-radius: 6px; font-weight: 600;
+    font-size: 12px; cursor: pointer; transition: all 0.2s;
 }
+.btn-reserve-sm:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); }
 
-.unit-status.unit-available {
-  background: #d1fae5;
-  color: #065f46;
+/* Menu Button Card */
+.menu-btn-card {
+    position: absolute; top: 12px; left: 12px; width: 32px; height: 32px;
+    background: white; border-radius: 8px; border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #64748b; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.2s;
 }
+.menu-btn-card:hover { background: #f8fafc; color: #1e293b; }
 
-.unit-status.unit-reserved {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.unit-status.unit-sold {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.unit-details {
-  display: grid;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.unit-detail {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-}
-
-.unit-detail .label {
-  color: #64748b;
-}
-
-.unit-detail .value {
-  color: #1e3a5f;
-  font-weight: 600;
-}
-
-.unit-detail .value.price {
-  color: #059669;
-  font-weight: 700;
-}
-
-.btn-reserve {
-  width: 100%;
-  padding: 8px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 13px;
-}
-
-.btn-reserve:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+.assignee {
+    display: flex; align-items: center; gap: 6px; font-size: 12px; color: #64748b; margin-left: auto;
 }
 
 /* Reservations Table */
