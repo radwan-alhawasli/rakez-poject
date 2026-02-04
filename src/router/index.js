@@ -184,7 +184,7 @@ router.beforeEach((to, from, next) => {
             next('/hr/dashboard')
         } else if (user && (user.type == 0 || String(user.type).toLowerCase() === 'marketing')) {
             next('/marketing/dashboard')
-        } else if (user && (user.type == 1 || String(user.type).toLowerCase() === 'sales')) {
+        } else if (user && (user.type == 5 || String(user.type).toLowerCase() === 'sales')) {
             next('/sales/dashboard')
         } else {
             next('/dashboard')

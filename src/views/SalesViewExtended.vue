@@ -65,6 +65,29 @@
             </div>
           </div>
         </div>
+
+        <!-- Dashboard Projects Section (Summary of Active Projects) -->
+        <div v-if="projects.length > 0" class="dashboard-projects animate-fade-in-up">
+          <div class="section-header">
+            <h3>المشاريع النشطة</h3>
+            <button class="btn-text-link" @click="activeTab = 'projects'">عرض الكل</button>
+          </div>
+          <div class="projects-mini-grid">
+            <div v-for="project in projects.slice(0, 4)" :key="project.id" class="mini-project-card" @click="viewTracker(project.id)">
+              <div class="p-image">
+                <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project">
+              </div>
+              <div class="p-info">
+                <h4>{{ project.name }}</h4>
+                <div class="p-stats">
+                  <span class="success">المتاحة: {{ project.available_units || 0 }}</span>
+                  <span class="warning">المحجوزة: {{ project.reserved_units || 0 }}</span>
+                </div>
+              </div>
+              <div class="p-arrow">←</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- TARGETS TAB (الأهداف) -->
@@ -957,6 +980,10 @@ export default {
       try {
         const response = await salesService.getDashboard(dashboardFilters)
         dashboardData.value = response?.data?.data || response?.data || response
+        // Also load projects if we don't have them
+        if (projects.value.length === 0) {
+            await loadProjects()
+        }
       } catch (error) {
         console.error('Error loading dashboard:', error)
       } finally {
@@ -1635,6 +1662,130 @@ export default {
 .tab-content {
   background: transparent;
   min-height: auto;
+}
+
+/* Dashboard Projects Summary */
+.dashboard-projects {
+  margin-top: 40px;
+  background: white;
+  padding: 30px;
+  border-radius: 24px;
+  box-shadow: 0 10px 25px rgba(30, 58, 95, 0.05);
+  border: 1px solid rgba(177, 162, 143, 0.1);
+}
+
+.dashboard-projects .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.dashboard-projects .section-header h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e3a5f;
+  margin: 0;
+  font-family: 'Amiri', serif;
+}
+
+.btn-text-link {
+  background: none;
+  border: none;
+  color: #B1A28F;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.btn-text-link:hover {
+  color: #1e3a5f;
+  text-decoration: underline;
+}
+
+.projects-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.mini-project-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px;
+  background: #fdfbf7;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(177, 162, 143, 0.05);
+}
+
+.mini-project-card:hover {
+  background: #fff;
+  border-color: rgba(177, 162, 143, 0.3);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 20px rgba(177, 162, 143, 0.15);
+}
+
+.mini-project-card .p-image {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.mini-project-card .p-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mini-project-card .p-info {
+  flex: 1;
+}
+
+.mini-project-card .p-info h4 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.p-stats {
+  display: flex;
+  gap: 15px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.p-stats .success { color: #10b981; }
+.p-stats .warning { color: #f59e0b; }
+
+.p-arrow {
+  color: #B1A28F;
+  font-size: 20px;
+  font-weight: bold;
+  opacity: 0.3;
+  transition: all 0.3s;
+  transform: scaleX(-1); /* RTL arrow reversal if needed, but here simple */
+}
+
+.mini-project-card:hover .p-arrow {
+  opacity: 1;
+  transform: translateX(-5px) scaleX(-1);
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 
