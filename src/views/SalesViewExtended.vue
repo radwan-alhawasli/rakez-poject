@@ -1649,6 +1649,7 @@ export default {
       getUnitStatusClass,
       getUnitStatusText,
       getReservationType,
+      getReservationStatusClass,
       getReservationStatusText,
       dashboardData,
       dashboardProjects,
