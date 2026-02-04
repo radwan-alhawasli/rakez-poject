@@ -2,8 +2,73 @@
   <div class="sales-view">
     <div class="tab-content">
       
+      <!-- DASHBOARD TAB (الرئيسية) -->
+      <div v-if="activeTab === 'dashboard'" class="dashboard-tab">
+        <div class="page-header">
+          <div class="header-content">
+            <h1 class="page-title">لوحة التحكم</h1>
+            <p class="page-subtitle">نظرة عامة على أدائك ونتائج المبيعات.</p>
+          </div>
+          <div class="date-filters">
+            <input type="date" v-model="dashboardFilters.from" @change="loadDashboard" class="date-input">
+            <span>إلى</span>
+            <input type="date" v-model="dashboardFilters.to" @change="loadDashboard" class="date-input">
+          </div>
+        </div>
+
+        <div v-if="isLoadingDashboard" class="loading-state">
+          <div class="spinner"></div>
+          <p>جاري تحميل البيانات...</p>
+        </div>
+
+        <div v-else-if="dashboardData" class="dashboard-grid">
+          <div class="stat-card">
+            <div class="stat-icon reserved">🏠</div>
+            <div class="stat-info">
+              <span class="stat-label">الوحدات المحجوزة</span>
+              <span class="stat-value">{{ dashboardData.reserved_units || 0 }}</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon available">🔓</div>
+            <div class="stat-info">
+              <span class="stat-label">الوحدات المتاحة</span>
+              <span class="stat-value">{{ dashboardData.available_units || 0 }}</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon marketing">📊</div>
+            <div class="stat-info">
+              <span class="stat-label">مشاريع تحت التسويق</span>
+              <span class="stat-value">{{ dashboardData.projects_under_marketing || 0 }}</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon confirmed">✅</div>
+            <div class="stat-info">
+              <span class="stat-label">حجوزات مؤكدة</span>
+              <span class="stat-value">{{ dashboardData.confirmed_reservations || 0 }}</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon negotiation">💬</div>
+            <div class="stat-info">
+              <span class="stat-label">حجوزات تحت التفاوض</span>
+              <span class="stat-value">{{ dashboardData.negotiation_reservations || 0 }}</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon ratio">📈</div>
+            <div class="stat-info">
+              <span class="stat-label">نسبة التأكيد</span>
+              <span class="stat-value">{{ dashboardData.percent_confirmed || 0 }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- TARGETS TAB (الأهداف) -->
-      <div v-if="activeTab === 'targets'" class="targets-tab">
+      <div v-else-if="activeTab === 'targets'" class="targets-tab">
         <div class="page-header">
           <div class="header-content">
             <h1 class="page-title">أهدافي البيعية</h1>
@@ -209,6 +274,16 @@
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                    <button 
+                      @click="logReservationAction(reservation.id)"
+                      class="btn-action log"
+                      title="سجل العمليات"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                       </svg>
                     </button>
                     <button 
@@ -540,13 +615,13 @@
                      <span class="status-mini ok">Inventory</span>
                  </div>
 
-                 <div class="detail-box">
+                 <div class="detail-box clickable" @click="scrollToUnits">
                      <span class="label">متوسط سعر الوحدة</span>
                      <span class="value highlight">
                         {{ selectedProject.avg_unit_price ? formatCurrency(selectedProject.avg_unit_price) : '—' }}
                       </span>
                       <span class="status-mini" :class="selectedProject.avg_unit_price ? 'ok' : 'pending'">
-                        {{ selectedProject.avg_unit_price ? 'Updated' : 'Pending' }}
+                        {{ selectedProject.avg_unit_price ? 'انقر لعرض الوحدات' : 'انتظار' }}
                      </span>
                  </div>
 
@@ -604,7 +679,7 @@
             </div>
 
             <!-- Units List Table -->
-            <div class="units-section">
+            <div class="units-section" id="units-section">
               <div class="units-header-row">
                  <h4>إدارة الوحدات</h4>
               </div>
@@ -684,7 +759,10 @@
                 </div>
                 <div class="form-group">
                   <label>الجنسية *</label>
-                  <input type="text" v-model="reservationForm.client_nationality" required class="form-input">
+                  <select v-if="reservationLookups?.nationalities" v-model="reservationForm.client_nationality" required class="form-input">
+                    <option v-for="nat in reservationLookups.nationalities" :key="nat" :value="nat">{{ nat }}</option>
+                  </select>
+                  <input v-else type="text" v-model="reservationForm.client_nationality" required class="form-input">
                 </div>
                 <div class="form-group">
                   <label>رقم الآيبان</label>
@@ -697,7 +775,10 @@
                 <h4>تفاصيل الحجز</h4>
                 <div class="form-group">
                   <label>نوع الحجز *</label>
-                  <select v-model="reservationForm.reservation_type" required class="form-input">
+                  <select v-if="reservationLookups?.reservation_types" v-model="reservationForm.reservation_type" required class="form-input">
+                    <option v-for="type in reservationLookups.reservation_types" :key="type.value" :value="type.value">{{ type.label }}</option>
+                  </select>
+                  <select v-else v-model="reservationForm.reservation_type" required class="form-input">
                     <option value="negotiation">تفاوض</option>
                     <option value="booking">حجز</option>
                     <option value="contract">عقد</option>
@@ -709,7 +790,10 @@
                 </div>
                 <div class="form-group">
                   <label>طريقة الدفع *</label>
-                  <select v-model="reservationForm.payment_method" required class="form-input">
+                  <select v-if="reservationLookups?.payment_methods" v-model="reservationForm.payment_method" required class="form-input">
+                    <option v-for="method in reservationLookups.payment_methods" :key="method.value" :value="method.value">{{ method.label }}</option>
+                  </select>
+                  <select v-else v-model="reservationForm.payment_method" required class="form-input">
                     <option value="bank_transfer">تحويل بنكي</option>
                     <option value="cash">نقدي</option>
                     <option value="check">شيك</option>
@@ -721,14 +805,20 @@
                 </div>
                 <div class="form-group">
                   <label>حالة الدفع *</label>
-                  <select v-model="reservationForm.down_payment_status" required class="form-input">
+                  <select v-if="reservationLookups?.down_payment_statuses" v-model="reservationForm.down_payment_status" required class="form-input">
+                    <option v-for="status in reservationLookups.down_payment_statuses" :key="status.value" :value="status.value">{{ status.label }}</option>
+                  </select>
+                  <select v-else v-model="reservationForm.down_payment_status" required class="form-input">
                     <option value="pending">معلق</option>
                     <option value="paid">مدفوع</option>
                   </select>
                 </div>
                 <div class="form-group">
                   <label>آلية الشراء *</label>
-                  <select v-model="reservationForm.purchase_mechanism" required class="form-input">
+                  <select v-if="reservationLookups?.purchase_mechanisms" v-model="reservationForm.purchase_mechanism" required class="form-input">
+                    <option v-for="mech in reservationLookups.purchase_mechanisms" :key="mech.value" :value="mech.value">{{ mech.label }}</option>
+                  </select>
+                  <select v-else v-model="reservationForm.purchase_mechanism" required class="form-input">
                     <option value="cash">نقدي</option>
                     <option value="installment">تقسيط</option>
                     <option value="mortgage">رهن عقاري</option>
@@ -794,6 +884,7 @@ export default {
     })
 
     const allTabs = [
+      { id: 'dashboard', label: 'الرئيسية', icon: '<rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect>', forAll: true },
       { id: 'targets', label: 'الأهداف', icon: '<circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle>', forAll: true },
       { id: 'projects', label: 'المشاريع', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>', forAll: true },
       { id: 'reservations', label: 'الحجوزات', icon: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>', forAll: true },
@@ -811,6 +902,7 @@ export default {
     // Methods
     const switchTab = (tabId) => {
       const routeMap = {
+        'dashboard': 'SalesDashboard',
         'targets': 'SalesTargets',
         'projects': 'SalesProjects',
         'reservations': 'SalesReservations',
@@ -822,7 +914,9 @@ export default {
     }
     
     const loadTabData = async (tabId) => {
-      if (tabId === 'targets' && targets.value.length === 0) {
+      if (tabId === 'dashboard') {
+        await loadDashboard()
+      } else if (tabId === 'targets' && targets.value.length === 0) {
         await loadTargets()
       } else if (tabId === 'projects' && projects.value.length === 0) {
         await loadProjects()
@@ -842,6 +936,27 @@ export default {
     onMounted(() => {
       loadTabData(activeTab.value)
     })
+
+    // Dashboard
+    const dashboardData = ref(null)
+    const isLoadingDashboard = ref(false)
+    const dashboardFilters = reactive({
+      scope: 'me',
+      from: '2026-01-01',
+      to: '2026-01-31'
+    })
+
+    const loadDashboard = async () => {
+      isLoadingDashboard.value = true
+      try {
+        const response = await salesService.getDashboard(dashboardFilters)
+        dashboardData.value = response?.data?.data || response?.data || response
+      } catch (error) {
+        console.error('Error loading dashboard:', error)
+      } finally {
+        isLoadingDashboard.value = false
+      }
+    }
 
     // Targets
     const targets = ref([])
@@ -940,6 +1055,7 @@ export default {
     const showReservationModal = ref(false)
     const selectedUnit = ref(null)
     const isSubmitting = ref(false)
+    const reservationLookups = ref(null)
     const reservationForm = reactive({
       contract_id: '',
       contract_unit_id: '',
@@ -1044,7 +1160,13 @@ export default {
     const loadReservations = async () => {
       isLoadingReservations.value = true
       try {
-        reservations.value = await salesService.getReservations()
+        const response = await salesService.getReservations()
+        let rawData = response?.data?.data || response?.data || response
+        if (rawData && !Array.isArray(rawData) && rawData.data) rawData = rawData.data
+        reservations.value = Array.isArray(rawData) ? rawData.map(r => ({
+          ...r,
+          id: r.reservation_id || r.id // normalize id
+        })) : []
       } catch (error) {
         console.error('Error loading reservations:', error)
       } finally {
@@ -1058,10 +1180,23 @@ export default {
       reservationForm.contract_id = unit.contract_id || selectedProject.value?.id
       
       try {
-        const context = await salesService.getReservationContext(unit.id)
-        // Pre-fill form with context data if available
-        if (context) {
-          // You can pre-fill additional fields here based on context
+        const response = await salesService.getReservationContext(unit.id)
+        if (response?.data?.data) {
+          reservationLookups.value = response.data.data.lookups
+          
+          // Pre-fill some defaults if they exist in lookups
+          if (reservationLookups.value?.reservation_types?.length > 0) {
+            reservationForm.reservation_type = reservationLookups.value.reservation_types[0].value
+          }
+          if (reservationLookups.value?.payment_methods?.length > 0) {
+            reservationForm.payment_method = reservationLookups.value.payment_methods[0].value
+          }
+           if (reservationLookups.value?.down_payment_statuses?.length > 0) {
+            reservationForm.down_payment_status = reservationLookups.value.down_payment_statuses[0].value
+          }
+           if (reservationLookups.value?.purchase_mechanisms?.length > 0) {
+            reservationForm.purchase_mechanism = reservationLookups.value.purchase_mechanisms[0].value
+          }
         }
       } catch (error) {
         console.error('Error loading reservation context:', error)
@@ -1140,6 +1275,19 @@ export default {
       } catch (error) {
         console.error('Error downloading voucher:', error)
         notificationService.addNotification('حدث خطأ أثناء تحميل الإيصال', 'error')
+      }
+    }
+
+    const logReservationAction = async (reservationId) => {
+      const note = prompt('أدخل ملاحظة العملية:')
+      if (!note) return
+      
+      try {
+        await salesService.logAction(reservationId, { note })
+        notificationService.addNotification('تم تسجيل العملية بنجاح', 'success')
+      } catch (error) {
+        console.error('Error logging action:', error)
+        notificationService.addNotification('حدث خطأ أثناء تسجيل العملية', 'error')
       }
     }
 
@@ -1430,7 +1578,17 @@ export default {
       getUnitStatusText,
       getReservationType,
       getReservationStatusClass,
-      getReservationStatusText
+      getReservationStatusText,
+      dashboardData,
+      isLoadingDashboard,
+      dashboardFilters,
+      loadDashboard,
+      reservationLookups,
+      scrollToUnits: () => {
+        const el = document.getElementById('units-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      },
+      logReservationAction
     }
   }
 }
@@ -1518,6 +1676,87 @@ export default {
 .btn-add svg {
   width: 16px;
   height: 16px;
+}
+
+/* Dashboard Styles */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.stat-card {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.stat-icon.reserved { background: #fee2e2; color: #991b1b; }
+.stat-icon.available { background: #d1fae5; color: #065f46; }
+.stat-icon.marketing { background: #dbeafe; color: #1e40af; }
+.stat-icon.confirmed { background: #fef3c7; color: #92400e; }
+.stat-icon.negotiation { background: #f3e8ff; color: #6b21a8; }
+.stat-icon.ratio { background: #ffedd5; color: #9a3412; }
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.date-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.date-input {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clickable:hover {
+  border-color: #B1A28F;
+  background-color: #f8fafc;
 }
 
 /* Targets Grid */

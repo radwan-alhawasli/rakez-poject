@@ -144,7 +144,8 @@ const routes = [
                 name: 'Sales',
                 component: () => import('../views/SalesViewExtended.vue'),
                 children: [
-                    { path: '', redirect: { name: 'SalesTargets' } },
+                    { path: '', redirect: { name: 'SalesDashboard' } },
+                    { path: 'dashboard', name: 'SalesDashboard', component: () => import('../views/SalesViewExtended.vue') },
                     { path: 'targets', name: 'SalesTargets', component: () => import('../views/SalesViewExtended.vue') },
                     { path: 'projects', name: 'SalesProjects', component: () => import('../views/SalesViewExtended.vue') },
                     { path: 'reservations', name: 'SalesReservations', component: () => import('../views/SalesViewExtended.vue') },
@@ -184,7 +185,7 @@ router.beforeEach((to, from, next) => {
         } else if (user && (user.type == 0 || String(user.type).toLowerCase() === 'marketing')) {
             next('/marketing/dashboard')
         } else if (user && (user.type == 1 || String(user.type).toLowerCase() === 'sales')) {
-            next('/sales/targets')
+            next('/sales/dashboard')
         } else {
             next('/dashboard')
         }
