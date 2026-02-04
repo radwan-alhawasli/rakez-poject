@@ -510,6 +510,14 @@
 
           <!-- Sales Sidebar (Role 5) - Sales Management View -->
           <template v-else-if="userRole == 5">
+            <!-- 0. الرئيسية (Dashboard) -->
+            <router-link to="/sales/dashboard" class="nav-item" active-class="active" data-tooltip="الرئيسية">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span class="nav-text">الرئيسية</span>
+              </div>
+            </router-link>
+
             <!-- 1. الأهداف -->
             <router-link to="/sales/targets" class="nav-item" active-class="active" data-tooltip="الأهداف">
               <div class="nav-content">

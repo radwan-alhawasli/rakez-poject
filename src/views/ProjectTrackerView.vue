@@ -31,9 +31,9 @@
         <button class="nav-tab" :class="{ active: activeTab === 'photography' }" @click="activeTab = 'photography'">التصوير</button>
         <button class="nav-tab" :class="{ active: activeTab === 'boards' }" @click="activeTab = 'boards'">اللوحات</button>
         <button class="nav-tab" :class="{ active: activeTab === 'teams' }" @click="selectTeamsTab">فرق التسويق</button>
-        <button class="nav-tab" :class="{ active: activeTab === 'units' }" @click="selectUnitsTab" :disabled="!isTrackerCompleted">
+        <button class="nav-tab" :class="{ active: activeTab === 'units' }" @click="selectUnitsTab" :disabled="!isTrackerCompleted && !isManager">
             الوحدات 
-            <span v-if="!isTrackerCompleted" style="font-size:10px; opacity:0.7">(مغلق)</span>
+            <span v-if="!isTrackerCompleted" style="font-size:10px; opacity:0.7">{{ isManager ? '(مفتوح للمدير)' : '(مغلق)' }}</span>
         </button>
       </div>
 
@@ -465,8 +465,8 @@ export default {
     
     const isManager = computed(() => {
         const user = authService.getCurrentUser()
-        // Allow pure Admin (1) OR Project Manager (3 with flag)
-        return (user?.type == 1) || (user?.type == 3 && user?.is_manager)
+        // Allow Admin (1), Project Manager (3), or PM Manager (10)
+        return (user?.type == 1) || (user?.type == 3) || (user?.type == 10)
     })
     
     // Boards State
@@ -674,11 +674,10 @@ export default {
     }
 
     const selectUnitsTab = () => {
-        if (!isTrackerCompleted.value) {
+        if (!isTrackerCompleted.value && !isManager.value) {
             alert('يجب إكمال جميع مراحل المتتبع أولاً')
             return
         }
-        activeTab.value = 'units'
         activeTab.value = 'units'
         loadUnits()
     }
