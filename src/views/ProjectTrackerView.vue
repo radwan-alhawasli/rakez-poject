@@ -803,11 +803,25 @@ export default {
           // 1. Fetch Contract Basics
           const user = authService.getCurrentUser()
           const isEditor = user && user.type == 4
+          const isSales = user && user.type == 5
           
           let data = null
           try {
              if (isEditor) {
                  data = await contractService.getEditorContractById(id)
+             } else if (isSales) {
+                 const res = await salesService.getProjectDetails(id)
+                 const raw = res.data?.data || res.data || res
+                 project.value = {
+                     ...raw,
+                     name: raw.project_name || raw.name,
+                     advertiser_number: raw.advertiser_number || raw.advertiser_section_url || raw.advertiser_num_id || '—',
+                     developer_name: raw.developer_name || raw.developer || raw.developer_info?.name,
+                     location: raw.location || [raw.city, raw.district].filter(Boolean).join(' - '),
+                     description: raw.description || raw.project_description || raw.details,
+                     avgPrice: raw.average_unit_price || raw.avg_unit_price || raw.price
+                 }
+                 data = project.value
              } else {
                  data = await contractService.getContractById(id)
              }
@@ -1022,8 +1036,22 @@ export default {
     // --- Units Functions ---
 
     const loadUnits = async () => {
+        if (!project.value?.id) return
         unitsLoading.value = true
-        units.value = await contractService.getContractUnits(project.value.id)
+        try {
+            const user = authService.getCurrentUser()
+            if (user && user.type == 5) {
+                const res = await salesService.getProjectUnits(project.value.id)
+                const body = res.data
+                const d = body?.data || body?.units || body
+                units.value = Array.isArray(d) ? d : (Array.isArray(body) ? body : [])
+            } else {
+                units.value = await contractService.getContractUnits(project.value.id)
+            }
+        } catch (error) {
+            console.error('Error loading units:', error)
+            units.value = []
+        }
         unitsLoading.value = false
     }
 
