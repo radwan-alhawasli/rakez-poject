@@ -31,6 +31,7 @@
         <button class="nav-tab" :class="{ active: activeTab === 'photography' }" @click="activeTab = 'photography'">التصوير</button>
         <button class="nav-tab" :class="{ active: activeTab === 'boards' }" @click="activeTab = 'boards'">اللوحات</button>
         <button class="nav-tab" :class="{ active: activeTab === 'teams' }" @click="selectTeamsTab">فرق التسويق</button>
+        <button class="nav-tab" :class="{ active: activeTab === 'reservations' }" @click="selectReservationsTab">الحجوزات</button>
         <button class="nav-tab" :class="{ active: activeTab === 'units' }" @click="selectUnitsTab" :disabled="!isTrackerCompleted && !isManager">
             الوحدات 
             <span v-if="!isTrackerCompleted" style="font-size:10px; opacity:0.7">{{ isManager ? '(مفتوح للمدير)' : '(مغلق)' }}</span>
@@ -40,7 +41,58 @@
       <!-- Main Content Area -->
       <div class="tracker-container">
         
-        <!-- PROGRESS TAB -->
+        <!-- NEW DASHBOARD SECTION (Based on Screenshot) -->
+        <div class="project-dashboard-section">
+            <div class="dashboard-header-simple">
+                 <div class="location-tag">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    {{ project.location || 'الرياض - حي الملقا' }}
+                 </div>
+                 <h1 class="main-project-title">{{ project.name }}</h1>
+            </div>
+
+            <div class="dashboard-stats-grid">
+                <div class="dash-stat-card">
+                    <span class="dash-label">رقم المعلن</span>
+                    <span class="dash-value">{{ project.advertiser_number || '--' }}</span>
+                    <span class="dash-badge ready">Ready</span>
+                </div>
+                <div class="dash-stat-card">
+                    <span class="dash-label">إجمالي الوحدات</span>
+                    <span class="dash-value">{{ units.length || project.total_units || '5' }}</span>
+                    <span class="dash-badge inventory">Inventory</span>
+                </div>
+                <div class="dash-stat-card">
+                    <span class="dash-label">متوسط سعر الوحدة</span>
+                    <span class="dash-value">{{ project.avgPrice ? formatCurrency(project.avgPrice) : '--' }}</span>
+                    <span class="dash-badge status">إنتظار</span>
+                </div>
+                <div class="dash-stat-card">
+                    <span class="dash-label">حالة المشروع</span>
+                    <span class="dash-value">{{ project.status || 'approved' }}</span>
+                    <span class="dash-badge active">Active</span>
+                </div>
+                <div class="dash-stat-card">
+                    <span class="dash-label">المطور العقاري</span>
+                    <span class="dash-value">{{ project.developer_name || '--' }}</span>
+                    <span class="dash-badge partner">Partner</span>
+                </div>
+                <div class="dash-stat-card">
+                    <span class="dash-label">الوحدات المتاحة</span>
+                    <span class="dash-value">{{ units.filter(u => u.status === 'available').length || '4' }}</span>
+                    <span class="dash-badge available">Available</span>
+                </div>
+            </div>
+
+            <div class="project-desc-card">
+                <h3>وصف المشروع</h3>
+                <p>{{ project.description || 'مشروع سكني فاخر يضم وحدات متنوعة' }}</p>
+            </div>
+
+            <div class="section-divider">
+                <h2>إدارة الوحدات</h2>
+            </div>
+        </div>
         <!-- PROGRESS TAB (Refactored to Vertical List) -->
         <div v-if="activeTab === 'progress'" class="tab-content">
             <!-- Tracker Header -->
@@ -315,7 +367,10 @@
                                 <span class="status-badge" :class="unit.status">{{ unit.status || 'pending' }}</span>
                             </td>
                             <td>
-                                <button class="btn-sm" @click="openEditUnit(unit)">تعديل</button>
+                                <div style="display: flex; gap: 5px;">
+                                    <button class="btn-sm" @click="openEditUnit(unit)">تعديل</button>
+                                    <button v-if="unit.status === 'available'" class="btn-sm reserve" @click="openReserveModal(unit)">حجز</button>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -386,6 +441,99 @@
             </div>
         </div>
 
+        <!-- PROJECT RESERVATIONS TAB -->
+        <div v-else-if="activeTab === 'reservations'" class="tab-content">
+            <div class="tracker-header-simple">
+                <h2 style="font-family: 'Amiri', serif; color: #1e3a5f; margin-bottom: 10px;">حجوزات المشروع</h2>
+                <p style="color: #64748b;">قائمة بجميع الحجوزات المسجلة لهذا المشروع.</p>
+            </div>
+
+            <div v-if="reservationsLoading" class="loading-state">
+                <div class="spinner"></div>
+            </div>
+
+            <div v-else-if="projectReservations.length === 0" class="empty-state">
+                <p>لا توجد حجوزات لهذا المشروع حالياً.</p>
+            </div>
+
+            <div v-else class="units-table-container">
+                <table class="units-table">
+                    <thead>
+                        <tr>
+                            <th>رقم الحجز</th>
+                            <th>العميل</th>
+                            <th>الوحدة</th>
+                            <th>المبلغ</th>
+                            <th>الحالة</th>
+                            <th>التاريخ</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="res in projectReservations" :key="res.id">
+                            <td>#{{ res.id }}</td>
+                            <td>{{ res.client_name }}</td>
+                            <td>{{ res.unit_number || '—' }}</td>
+                            <td>{{ formatCurrency(res.down_payment_amount) }}</td>
+                            <td>
+                                <span class="status-badge" :class="res.status">{{ res.status === 'confirmed' ? 'مؤكد' : (res.status === 'cancelled' ? 'ملغي' : 'معلق') }}</span>
+                            </td>
+                            <td>{{ res.contract_date }}</td>
+                            <td>
+                                <div style="display: flex; gap: 5px;">
+                                    <button class="btn-sm" @click="downloadVoucher(res.id)">⬇</button>
+                                    <button v-if="res.status === 'pending'" class="btn-sm success" @click="confirmReservation(res.id)">✓</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- RESERVATION MODAL -->
+        <div v-if="showReservationModal" class="modal-overlay" @click.self="showReservationModal = false">
+            <div class="modal-content" style="max-width: 600px;">
+                <h3>إنشاء حجز جديد: وحدة {{ selectedUnit?.unit_number }}</h3>
+                
+                <form @submit.prevent="submitReservation" class="reservation-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>اسم العميل *</label>
+                            <input v-model="reservationForm.client_name" required type="text" placeholder="الاسم الكامل">
+                        </div>
+                        <div class="form-group">
+                            <label>رقم الجوال *</label>
+                            <input v-model="reservationForm.client_mobile" required type="text" placeholder="05xxxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>نوع الحجز *</label>
+                            <select v-model="reservationForm.reservation_type">
+                                <option value="negotiation">تفاوض</option>
+                                <option value="booking">حجز مبدئي</option>
+                                <option value="contract">عقد</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>مبلغ العربون</label>
+                            <input v-model="reservationForm.down_payment_amount" type="number" min="0">
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>ملاحظات</label>
+                            <textarea v-model="reservationForm.negotiation_notes" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn-text" @click="showReservationModal = false">إلغاء</button>
+                        <button type="submit" class="btn-primary" :disabled="isSubmitting">
+                            {{ isSubmitting ? 'جاري الحجز...' : 'تأكيد الحجز' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
       </div>
     </template>
     
@@ -438,19 +586,107 @@
 
 <script>
 import { ref, onMounted, computed, reactive } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import contractService from '../services/contractService'
 import teamService from '../services/teamService'
 import authService from '../services/authService'
 
+import salesService from '../services/salesService'
+import notificationService from '../services/notificationService'
+
 export default {
-  name: 'ProjectTrackerView',
+  name: 'ProjectTracker',
   setup() {
     const route = useRoute()
+    const router = useRouter()
     // eslint-disable-next-line no-unused-vars
     const isLoading = ref(true)
-    const activeTab = ref('progress')
+    const activeTab = ref(route.query.tab || 'progress')
     const project = ref(null)
+    
+    // Reservations Logic
+    const projectReservations = ref([])
+    const reservationsLoading = ref(false)
+    const showReservationModal = ref(false)
+    const selectedUnit = ref(null)
+    const isSubmitting = ref(false)
+    const reservationForm = reactive({
+        contract_id: route.params.id,
+        contract_unit_id: '',
+        reservation_type: 'negotiation',
+        contract_date: new Date().toISOString().split('T')[0],
+        client_name: '',
+        client_mobile: '',
+        down_payment_amount: 0,
+        negotiation_notes: ''
+    })
+
+    const selectReservationsTab = () => {
+        activeTab.value = 'reservations'
+        loadProjectReservations()
+    }
+
+    const loadProjectReservations = async () => {
+        reservationsLoading.value = true
+        try {
+            const res = await salesService.getReservations() // Filtering to this project would be ideal if API supports it
+            const all = res.data?.data || res.data || []
+            projectReservations.value = all.filter(r => r.contract_id == route.params.id)
+        } catch (e) {
+            console.error(e)
+        } finally {
+            reservationsLoading.value = false
+        }
+    }
+
+    const openReserveModal = (unit) => {
+        selectedUnit.value = unit
+        reservationForm.contract_unit_id = unit.id
+        showReservationModal.value = true
+    }
+
+    const submitReservation = async () => {
+        isSubmitting.value = true
+        try {
+            await salesService.createReservation(reservationForm)
+            notificationService.addNotification('تم الحجز بنجاح', 'success')
+            showReservationModal.value = false
+            loadProjectReservations()
+            loadUnits() // Refresh unit status
+        } catch (e) {
+            console.error(e)
+            notificationService.addNotification('فشل الحجز', 'error')
+        } finally {
+            isSubmitting.value = false
+        }
+    }
+
+    const confirmReservation = async (id) => {
+        if (!confirm('تأكيد الحجز؟')) return
+        try {
+            await salesService.confirmReservation(id)
+            notificationService.addNotification('تم تأكيد الحجز بنجاح', 'success')
+            loadProjectReservations()
+        } catch (e) { 
+            console.error(e) 
+            notificationService.addNotification('فشل تأكيد الحجز', 'error')
+        }
+    }
+
+    const downloadVoucher = async (id) => {
+         try {
+            const blob = await salesService.downloadVoucher(id)
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `receipt-${id}.pdf`
+            a.click()
+            window.URL.revokeObjectURL(url) // Clean up the object URL
+        } catch (e) { 
+            console.error(e) 
+            notificationService.addNotification('فشل تنزيل الإيصال', 'error')
+        }
+    }
     
     // Photography State
     const isPhotoSaving = ref(false)
@@ -1034,8 +1270,10 @@ export default {
         isEditingPending,
         cancelPhotoEdit,
         // Teams
-        assignedTeams, availableTeams, selectedTeamId, assignedTeamsLoading, isTeamActionLoading, assignTeam, removeTeam,
-        selectTeamsTab
+        selectTeamsTab,
+        // Reservations
+        selectReservationsTab, projectReservations, reservationsLoading, showReservationModal, selectedUnit, isSubmitting, reservationForm,
+        openReserveModal, submitReservation, confirmReservation, downloadVoucher
     }
   }
 }
@@ -1152,8 +1390,142 @@ export default {
 .tracker-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 30px 20px;
   text-align: right;
+  direction: rtl;
+}
+
+/* Dashboard Section (Screenshot Style) */
+.project-dashboard-section {
+    margin-bottom: 40px;
+    animation: slideUp 0.6s ease-out;
+}
+
+.dashboard-header-simple {
+    text-align: right;
+    margin-bottom: 30px;
+    padding-right: 10px;
+}
+
+.location-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.main-project-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #1e3a5f;
+    font-family: 'Amiri', serif;
+    margin: 0;
+}
+
+.dashboard-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.dash-stat-card {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    border: 1px solid #f1f5f9;
+    transition: transform 0.3s;
+}
+
+.dash-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+}
+
+.dash-label {
+    font-size: 13px;
+    color: #1e3a5f;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.dash-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #B1A28F;
+    margin-bottom: 15px;
+    font-family: 'Amiri', serif;
+}
+
+.dash-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 12px;
+    text-transform: uppercase;
+}
+
+.dash-badge.ready { background: #dcfce7; color: #166534; }
+.dash-badge.inventory { background: #e0f2fe; color: #0369a1; }
+.dash-badge.status { background: #fef3c7; color: #92400e; }
+.dash-badge.active { background: #f0f9ff; color: #075985; }
+.dash-badge.partner { background: #f5f3ff; color: #5b21b6; }
+.dash-badge.available { background: #ecfdf5; color: #065f46; }
+
+.project-desc-card {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    border: 1px solid #f1f5f9;
+    margin-bottom: 40px;
+}
+
+.project-desc-card h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1e3a5f;
+    margin: 0 0 15px 0;
+    text-align: right;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+.project-desc-card p {
+    color: #64748b;
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.section-divider {
+    border-bottom: 2px solid #1e3a5f;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.section-divider h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1e3a5f;
+    margin: 0;
+    font-family: 'Amiri', serif;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .tracker-header-box {
@@ -1445,9 +1817,34 @@ export default {
     border-radius: 12px;
     font-size: 11px;
 }
+.btn-sm.reserve {
+    background: #1e3a5f;
+    color: white;
+}
+.btn-sm.reserve:hover {
+    background: #234775;
+}
+
+.btn-sm-action {
+    background: #f1f5f9;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.btn-sm-action.success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.reservation-form {
+    margin-top: 20px;
+}
+
 .status-badge.pending { background: #fef3c7; color: #d97706; }
-.status-badge.available { background: #dcfce7; color: #16a34a; }
-.status-badge.sold { background: #fee2e2; color: #dc2626; }
+.status-badge.confirmed { background: #dcfce7; color: #16a34a; }
+.status-badge.cancelled { background: #fee2e2; color: #dc2626; }
 
 /* Modal */
 .modal-overlay {

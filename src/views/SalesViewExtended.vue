@@ -132,16 +132,25 @@
       <div v-else-if="activeTab === 'projects'" class="projects-tab">
         <div class="page-header">
           <div class="header-content">
-            <h1 class="page-title">المشاريع المتاحة</h1>
-            <p class="pane-subtitle" style="font-size: 14px; color: #64748b; margin-top: 4px;">تصفح وإدارة جميع المشاريع المتاحة لك للمبيعات.</p>
+            <h1 class="page-title">إدارة المشاريع</h1>
+            <p class="page-subtitle">تصفح وإدارة المشاريع النشطة والمتاحة للمبيعات.</p>
           </div>
         </div>
 
         <div class="controls-area">
           <div class="search-box">
              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-             <input v-model="searchQuery" type="text" placeholder="ابحث عن مشروع..." />
+             <input v-model="searchQuery" type="text" placeholder="ابحث عن مشروع بالاسم أو الموقع..." />
           </div>
+        </div>
+
+        <div class="tabs-container">
+          <button :class="['tab-btn', { active: projectsTab === 'active' }]" @click="projectsTab = 'active'">
+            المشاريع النشطة ({{ activeProjectsCount }})
+          </button>
+          <button :class="['tab-btn', { active: projectsTab === 'archive' }]" @click="projectsTab = 'archive'">
+            الأرشيف ({{ archiveProjectsCount }})
+          </button>
         </div>
 
         <div v-if="isLoadingProjects" class="loading-state">
@@ -154,40 +163,37 @@
         </div>
 
         <div v-else class="projects-grid">
-          <div v-for="project in filteredProjects" :key="project.id" class="project-card" @click="viewProjectDetails(project.id)">
+          <div v-for="project in filteredProjects" :key="project.id" class="project-card luxury">
             <div class="card-image">
                <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project Image" style="object-fit: cover; width: 100%; height: 100%; border-radius: 16px 16px 0 0;" @error="$event.target.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%23999999%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E'" />
                <div class="status-badge" :class="project.statusClass">{{ project.statusLabel }}</div>
-               <div class="menu-container" @click.stop="toggleMenu(project.id)">
-                 <button class="menu-btn-card">
-                   <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                 </button>
-                 <div v-if="activeMenuId === project.id" class="dropdown-menu">
-                    <div class="menu-item" @click.stop="viewProjectDetails(project.id)">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                        عرض المشروع
-                    </div>
-                 </div>
-               </div>
-               <div v-if="activeMenuId === project.id" class="menu-backdrop" @click.stop="activeMenuId = null"></div>
+               <div class="overlay-gradient"></div>
             </div>
             
             <div class="card-content">
               <h3 class="project-name">{{ project.name }}</h3>
-              <p class="project-location">{{ project.location }}</p>
+              <p class="project-location">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                {{ project.location }}
+              </p>
               
-              <div class="project-details">
-                <span class="detail-item" v-if="project.developer_name">المطور: {{ project.developer_name }}</span>
-                <span class="detail-item" v-if="project.distance">القرب من {{ project.distance }} دقيقة</span>
-                <span class="detail-item" v-if="project.landmark">{{ project.landmark }}</span>
+              <div class="project-stats-mini">
+                <div class="mini-stat">
+                    <span class="l">وحدات</span>
+                    <span class="v">{{ project.total_units || '0' }}</span>
+                </div>
+                <div class="mini-stat">
+                    <span class="l">متاح</span>
+                    <span class="v success">{{ project.available_units || '0' }}</span>
+                </div>
               </div>
 
-              <div class="card-footer">
-                <div class="assignee">
-                   <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                   <span>{{ project.assignee }}</span>
+              <div class="card-footer-luxury">
+                <div class="developer-info">
+                   <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                   <span>{{ project.developer_name || '—' }}</span>
                 </div>
-                <button class="tracker-btn" @click.stop="viewProjectDetails(project.id)">
+                <button class="btn-view-tracker" @click.stop="viewTracker(project.id)">
                    عرض التفاصيل
                 </button>
               </div>
@@ -1041,13 +1047,27 @@ export default {
     }
 
     const filteredProjects = computed(() => {
-      if (!searchQuery.value) return projects.value
-      const q = searchQuery.value.toLowerCase()
-      return projects.value.filter(p => 
-        p.name.toLowerCase().includes(q) || 
-        (p.location && p.location.toLowerCase().includes(q))
-      )
+      let filtered = projects.value
+      
+      // Filter by Tab
+      if (projectsTab.value === 'active') {
+          filtered = filtered.filter(p => p.status === 'Approved')
+      } else if (projectsTab.value === 'archive') {
+          filtered = filtered.filter(p => p.status === 'Refused' || p.status === 'Rejected')
+      }
+
+      if (searchQuery.value) {
+        filtered = filtered.filter(p => 
+          p.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+          p.location.toLowerCase().includes(searchQuery.value.toLowerCase())
+        )
+      }
+      return filtered
     })
+
+    const viewTracker = (projectId) => {
+        router.push({ name: 'ProjectTracker', params: { id: projectId } })
+    }
 
     // Reservations
     const reservations = ref([])
@@ -1588,7 +1608,11 @@ export default {
         const el = document.getElementById('units-section');
         if (el) el.scrollIntoView({ behavior: 'smooth' });
       },
-      logReservationAction
+      logReservationAction,
+      projectsTab,
+      activeProjectsCount,
+      archiveProjectsCount,
+      viewTracker
     }
   }
 }
@@ -1628,6 +1652,162 @@ export default {
   color: #1e3a5f;
   margin: 0 0 5px 0;
   font-family: 'Amiri', serif;
+}
+
+/* Tabs Style (Like Project Management) */
+.tabs-container {
+  display: flex;
+  gap: 30px;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 30px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 12px 5px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.tab-btn.active {
+  color: #1e3a5f;
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: #B1A28F;
+  border-radius: 3px 3px 0 0;
+}
+
+/* Luxury Card Design */
+.project-card.luxury {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #f1f5f9;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.project-card.luxury:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(30, 58, 95, 0.08);
+}
+
+.card-image {
+    height: 200px;
+    position: relative;
+}
+
+.overlay-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
+}
+
+.card-content {
+    padding: 20px;
+}
+
+.project-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1e3a5f;
+    margin-bottom: 8px;
+    font-family: 'Amiri', serif;
+}
+
+.project-location {
+    font-size: 13px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.project-stats-mini {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    background: #f8fafc;
+    padding: 10px;
+    border-radius: 12px;
+}
+
+.mini-stat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-left: 1px solid #e2e8f0;
+}
+
+.mini-stat:last-child {
+    border-left: none;
+}
+
+.mini-stat .l {
+    font-size: 10px;
+    color: #94a3b8;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.mini-stat .v {
+    font-size: 15px;
+    font-weight: 800;
+    color: #1e3a5f;
+}
+
+.mini-stat .v.success {
+    color: #10b981;
+}
+
+.card-footer-luxury {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.developer-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.btn-view-tracker {
+    background: #1e3a5f;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-view-tracker:hover {
+    background: #234775;
+    transform: scale(1.05);
 }
 
 .page-subtitle { color: #64748b; font-size: 15px; margin: 0; }
