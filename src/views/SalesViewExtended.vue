@@ -73,7 +73,7 @@
             <button class="btn-text-link" @click="activeTab = 'projects'">عرض الكل</button>
           </div>
           <div class="projects-mini-grid">
-            <div v-for="project in projects.slice(0, 4)" :key="project.id" class="mini-project-card" @click="viewTracker(project.id)">
+            <div v-for="project in dashboardProjects" :key="project.id" class="mini-project-card" @click="viewTracker(project.id)">
               <div class="p-image">
                 <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project">
               </div>
@@ -1042,8 +1042,26 @@ export default {
     const activeMenuId = ref(null)
     const projectsTab = ref('active')
     
-    const activeProjectsCount = computed(() => projects.value.filter(p => p.status === 'Approved').length)
-    const archiveProjectsCount = computed(() => projects.value.filter(p => p.status === 'Refused' || p.status === 'Rejected').length)
+    const dashboardProjects = computed(() => {
+      return projects.value
+        .filter(p => {
+          const s = String(p.status || '').toLowerCase()
+          return s === 'approved' || s === 'active'
+        })
+        .slice(0, 4)
+    })
+    const activeProjectsCount = computed(() => {
+      return projects.value.filter(p => {
+        const s = String(p.status || '').toLowerCase()
+        return s === 'approved' || s === 'active'
+      }).length
+    })
+    const archiveProjectsCount = computed(() => {
+      return projects.value.filter(p => {
+        const s = String(p.status || '').toLowerCase()
+        return s === 'refused' || s === 'rejected' || s === 'archived'
+      }).length
+    })
 
     const toggleMenu = (id) => {
        activeMenuId.value = activeMenuId.value === id ? null : id
@@ -1081,10 +1099,17 @@ export default {
       let filtered = projects.value
       
       // Filter by Tab
+      // Filter by Tab
       if (projectsTab.value === 'active') {
-          filtered = filtered.filter(p => p.status === 'Approved')
+          filtered = filtered.filter(p => {
+            const s = String(p.status || '').toLowerCase()
+            return s === 'approved' || s === 'active'
+          })
       } else if (projectsTab.value === 'archive') {
-          filtered = filtered.filter(p => p.status === 'Refused' || p.status === 'Rejected')
+          filtered = filtered.filter(p => {
+            const s = String(p.status || '').toLowerCase()
+            return s === 'refused' || s === 'rejected' || s === 'archived'
+          })
       }
 
       if (searchQuery.value) {
@@ -1563,10 +1588,6 @@ export default {
       return statusMap[status] || status
     }
 
-    // Lifecycle
-    onMounted(() => {
-      loadTargets()
-    })
 
     return {
       activeTab,
@@ -1628,9 +1649,9 @@ export default {
       getUnitStatusClass,
       getUnitStatusText,
       getReservationType,
-      getReservationStatusClass,
       getReservationStatusText,
       dashboardData,
+      dashboardProjects,
       isLoadingDashboard,
       dashboardFilters,
       loadDashboard,
