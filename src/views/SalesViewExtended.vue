@@ -1013,6 +1013,10 @@ export default {
     const projectUnits = ref([])
     const isLoadingUnits = ref(false)
     const activeMenuId = ref(null)
+    const projectsTab = ref('active')
+    
+    const activeProjectsCount = computed(() => projects.value.filter(p => p.status === 'Approved').length)
+    const archiveProjectsCount = computed(() => projects.value.filter(p => p.status === 'Refused' || p.status === 'Rejected').length)
 
     const toggleMenu = (id) => {
        activeMenuId.value = activeMenuId.value === id ? null : id

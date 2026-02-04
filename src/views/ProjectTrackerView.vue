@@ -586,7 +586,7 @@
 
 <script>
 import { ref, onMounted, computed, reactive } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import contractService from '../services/contractService'
 import teamService from '../services/teamService'
 import authService from '../services/authService'
@@ -598,7 +598,6 @@ export default {
   name: 'ProjectTracker',
   setup() {
     const route = useRoute()
-    const router = useRouter()
     // eslint-disable-next-line no-unused-vars
     const isLoading = ref(true)
     const activeTab = ref(route.query.tab || 'progress')
@@ -1270,6 +1269,7 @@ export default {
         isEditingPending,
         cancelPhotoEdit,
         // Teams
+        assignedTeams, availableTeams, selectedTeamId, assignedTeamsLoading, isTeamActionLoading, assignTeam, removeTeam,
         selectTeamsTab,
         // Reservations
         selectReservationsTab, projectReservations, reservationsLoading, showReservationModal, selectedUnit, isSubmitting, reservationForm,
