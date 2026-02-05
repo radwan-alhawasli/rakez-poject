@@ -1046,14 +1046,16 @@ export default {
       return projects.value
         .filter(p => {
           const s = String(p.status || '').toLowerCase()
-          return s === 'approved' || s === 'active'
+          // Consider all non-archived projects as active for sales dashboard
+          return !(s === 'refused' || s === 'rejected' || s === 'archived')
         })
         .slice(0, 4)
     })
     const activeProjectsCount = computed(() => {
       return projects.value.filter(p => {
         const s = String(p.status || '').toLowerCase()
-        return s === 'approved' || s === 'active'
+        // Treat anything not explicitly archived/rejected as active
+        return !(s === 'refused' || s === 'rejected' || s === 'archived')
       }).length
     })
     const archiveProjectsCount = computed(() => {
@@ -1075,19 +1077,37 @@ export default {
         if (!Array.isArray(rawData) && rawData?.data) rawData = rawData.data
         if (!Array.isArray(rawData)) rawData = []
 
-        projects.value = rawData.map(p => ({
-          ...p,
-          name: p.project_name || p.name || `مشروع #${p.id}`,
-          location: [p.city || p.location_city, p.district || p.location_district].filter(Boolean).join(' - '),
-          image: p.project_image_url || p.image || '/img/placeholder-project.jpg',
-          developer_name: p.developer_name || p.developer || p.developer_info?.name,
-          statusLabel: (p.status === 'Approved' || p.status === 'approved') ? 'approved' : (p.status || 'approved'), 
-          statusClass: 'status-active', // Consistent with yellow 'approved' badge
-          assignee: p.marketer_name || p.marketer || 'غير معين',
-          distance: p.distance || p.proximity_distance || p.proximity,
-          landmark: p.landmark || p.nearby_landmark || p.nearby_location,
-          description: p.description || p.details || p.project_description || 'لا يوجد وصف متاح لهذا المشروع حالياً.'
-        }))
+        // Normalize shape from /api/sales/projects
+        projects.value = rawData.map(p => {
+          const id = p.contract_id || p.id
+          const salesStatus = (p.sales_status || p.status || 'available').toString().toLowerCase()
+
+          let statusClass = 'status-active'
+          if (salesStatus === 'archived' || salesStatus === 'rejected' || salesStatus === 'refused') {
+            statusClass = 'status-archived'
+          } else if (salesStatus === 'pending') {
+            statusClass = 'status-pending'
+          }
+
+          return {
+            ...p,
+            id,
+            name: p.project_name || p.name || `مشروع #${id || ''}`,
+            location: [p.city || p.location_city, p.district || p.location_district].filter(Boolean).join(' - '),
+            image: p.project_image_url || p.image || '/img/placeholder-project.jpg',
+            developer_name: p.developer_name || p.developer || p.developer_info?.name,
+            status: salesStatus,
+            statusLabel: salesStatus,
+            statusClass,
+            total_units: p.total_units ?? p.units_count ?? p.totalUnits,
+            available_units: p.available_units ?? p.availableUnits,
+            reserved_units: p.reserved_units ?? p.reservedUnits,
+            assignee: p.team_name || p.marketer_name || p.marketer || 'غير معين',
+            distance: p.distance || p.proximity_distance || p.proximity,
+            landmark: p.landmark || p.nearby_landmark || p.nearby_location,
+            description: p.description || p.details || p.project_description || 'لا يوجد وصف متاح لهذا المشروع حالياً.'
+          }
+        })
       } catch (error) {
         console.error('Error loading projects list:', error)
       } finally {
@@ -1099,11 +1119,10 @@ export default {
       let filtered = projects.value
       
       // Filter by Tab
-      // Filter by Tab
       if (projectsTab.value === 'active') {
           filtered = filtered.filter(p => {
             const s = String(p.status || '').toLowerCase()
-            return s === 'approved' || s === 'active'
+            return !(s === 'refused' || s === 'rejected' || s === 'archived')
           })
       } else if (projectsTab.value === 'archive') {
           filtered = filtered.filter(p => {
@@ -1221,7 +1240,21 @@ export default {
         if (unitsRes?.data) {
           const body = unitsRes.data
           const data = body.data || body.units || body
-          projectUnits.value = Array.isArray(data) ? data : (Array.isArray(body) ? body : [])
+          const rawUnits = Array.isArray(data) ? data : (Array.isArray(body) ? body : [])
+
+          // Normalize units from /api/sales/projects/{id}/units
+          projectUnits.value = rawUnits.map(u => {
+            const status = (u.computed_availability || u.unit_status || u.status || '').toString().toLowerCase()
+            return {
+              ...u,
+              id: u.unit_id || u.id,
+              unit_number: u.unit_number || u.number || u.name,
+              price: u.price || u.total_price,
+              // area_m2 from API + fallbacks
+              area: u.area_m2 || u.area || u.space || u.size,
+              status
+            }
+          })
         }
         
         console.log('Final Normalized Project Data:', selectedProject.value)
