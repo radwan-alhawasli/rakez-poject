@@ -73,7 +73,7 @@
             <button class="btn-text-link" @click="activeTab = 'projects'">عرض الكل</button>
           </div>
           <div class="projects-mini-grid">
-            <div v-for="project in dashboardProjects" :key="project.id" class="mini-project-card" @click="viewTracker(project.id)">
+            <div v-for="project in dashboardProjects" :key="project.id" class="mini-project-card" @click="viewProjectDetails(project.id)">
               <div class="p-image">
                 <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project">
               </div>
@@ -186,7 +186,7 @@
         </div>
 
         <div v-else class="projects-grid">
-          <div v-for="project in filteredProjects" :key="project.id" class="project-card luxury">
+          <div v-for="project in filteredProjects" :key="project.id" class="project-card luxury" @click="viewProjectDetails(project.id)">
             <div class="card-image">
                <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project Image" style="object-fit: cover; width: 100%; height: 100%; border-radius: 16px 16px 0 0;" @error="$event.target.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%23999999%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E'" />
                <div class="status-badge" :class="project.statusClass">{{ project.statusLabel }}</div>
@@ -216,8 +216,8 @@
                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                    <span>{{ project.developer_name || '—' }}</span>
                 </div>
-                <button class="btn-view-tracker" @click.stop="viewTracker(project.id)">
-                   عرض التفاصيل
+                <button class="btn-view-tracker" @click.stop="viewProjectDetails(project.id)">
+                  عرض التفاصيل
                 </button>
               </div>
             </div>
@@ -1596,9 +1596,10 @@ export default {
 
     const getReservationType = (type) => {
       const typeMap = {
-        'negotiation': 'تفاوض',
+        'negotiation': 'حجز للتفاوض',
         'booking': 'حجز',
-        'contract': 'عقد'
+        'contract': 'عقد',
+        'confirmed_reservation': 'حجز مؤكد'
       }
       return typeMap[type] || type
     }
@@ -1606,6 +1607,7 @@ export default {
     const getReservationStatusClass = (status) => {
       const statusMap = {
         'pending': 'res-pending',
+        'under_negotiation': 'res-pending',
         'confirmed': 'res-confirmed',
         'cancelled': 'res-cancelled'
       }
@@ -1615,6 +1617,7 @@ export default {
     const getReservationStatusText = (status) => {
       const statusMap = {
         'pending': 'معلق',
+        'under_negotiation': 'تحت التفاوض',
         'confirmed': 'مؤكد',
         'cancelled': 'ملغي'
       }
