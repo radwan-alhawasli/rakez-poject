@@ -1,8 +1,10 @@
 import axios from 'axios'
+import appConfig from '../config/appConfig'
+
+const apiBaseUrl = appConfig.apiBaseUrl || '/api'
 
 const apiClient = axios.create({
-    baseURL: '/api',
-    //baseURL: 'http://143.198.24.230/api',
+    baseURL: apiBaseUrl,
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
