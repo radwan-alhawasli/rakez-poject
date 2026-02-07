@@ -1,4 +1,5 @@
 import apiClient from '../api/apiClient'
+import logger from '../utils/logger'
 
 /**
  * خدمة المساعد الذكي - AI Assistant Service
@@ -11,11 +12,11 @@ const aiService = {
      */
     async askQuestion(payload) {
         try {
-            console.log('🤖 AI Ask:', payload)
+            logger.debug('AI Ask:', payload)
             const response = await apiClient.post('/ai/ask', payload)
             return response.data?.data || response.data || {}
         } catch (error) {
-            console.error('❌ Error in AI ask:', error)
+            logger.error('Error in AI ask:', error)
             throw error
         }
     },
@@ -26,11 +27,11 @@ const aiService = {
      */
     async chat(payload) {
         try {
-            console.log('🤖 AI Chat:', payload)
+            logger.debug('AI Chat:', payload)
             const response = await apiClient.post('/ai/chat', payload)
             return response.data?.data || response.data || {}
         } catch (error) {
-            console.error('❌ Error in AI chat:', error)
+            logger.error('Error in AI chat:', error)
             throw error
         }
     },
@@ -41,11 +42,11 @@ const aiService = {
      */
     async getConversations(perPage = 10) {
         try {
-            console.log('🤖 Fetching conversations...')
+            logger.debug('Fetching conversations...')
             const response = await apiClient.get(`/ai/conversations?per_page=${perPage}`)
             return response.data?.data || response.data || []
         } catch (error) {
-            console.error('❌ Error fetching conversations:', error)
+            logger.error('Error fetching conversations:', error)
             throw error
         }
     },
@@ -56,11 +57,11 @@ const aiService = {
      */
     async deleteConversation(sessionId) {
         try {
-            console.log(`🤖 Deleting conversation ${sessionId}...`)
+            logger.debug('Deleting conversation', sessionId)
             const response = await apiClient.delete(`/ai/conversations/${sessionId}`)
             return response.data?.data || response.data || {}
         } catch (error) {
-            console.error('❌ Error deleting conversation:', error)
+            logger.error('Error deleting conversation:', error)
             throw error
         }
     },
@@ -71,11 +72,11 @@ const aiService = {
      */
     async getAvailableSections() {
         try {
-            console.log('🤖 Fetching AI sections...')
+            logger.debug('Fetching AI sections...')
             const response = await apiClient.get('/ai/sections')
             return response.data?.data || response.data || []
         } catch (error) {
-            console.error('❌ Error fetching AI sections:', error)
+            logger.error('Error fetching AI sections:', error)
             throw error
         }
     }

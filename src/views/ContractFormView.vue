@@ -287,6 +287,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import contractService from '../services/contractService'
 import { downloadFilledContract } from '../services/pdfService'
+import logger from '../utils/logger'
 
 export default {
   name: 'ContractFormView',
@@ -428,7 +429,7 @@ export default {
                 }
             }
         } catch (error) {
-            console.error('Failed to fetch contract details', error)
+            logger.error('Failed to fetch contract details', error)
         }
     }
 
@@ -437,7 +438,7 @@ export default {
     const saveChanges = async () => {
       isSaving.value = true
       try {
-        console.log('Updating contract:', requestId, form)
+        logger.debug('Updating contract:', requestId, form)
         
         const payload = {
             // Second Party
@@ -474,7 +475,7 @@ export default {
         // router.push('/my-requests')
         showDownloadModal.value = true
       } catch (error) {
-        console.error('Save failed', error)
+        logger.error('Save failed', error)
         alert('حدث خطأ أثناء الحفظ')
       } finally {
         isSaving.value = false
@@ -491,7 +492,7 @@ export default {
             link.download = `contract-${requestId}.pdf`
             link.click()
         } catch (error) {
-            console.error('Download failed', error)
+            logger.error('Download failed', error)
             alert('فشل تحميل ملف PDF. يرجى المحاولة مرة أخرى.')
         } finally {
             isDownloading.value = false

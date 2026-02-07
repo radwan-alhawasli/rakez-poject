@@ -1,4 +1,5 @@
 import apiClient from '../api/apiClient'
+import logger from '../utils/logger'
 
 /**
  * Team Service - Manages team operations using project management endpoints
@@ -27,7 +28,7 @@ export const getTeams = async (search = '') => {
 
         return Array.isArray(teams) ? teams : []
     } catch (error) {
-        console.error('Error fetching teams:', error)
+        logger.error('Error fetching teams:', error)
         throw error
     }
 }
@@ -42,7 +43,7 @@ export const createTeam = async (teamData) => {
         const response = await apiClient.post('/project_management/teams/store', teamData)
         return response.data
     } catch (error) {
-        console.error('Error creating team:', error)
+        logger.error('Error creating team:', error)
         throw error
     }
 }
@@ -57,7 +58,7 @@ export const updateTeam = async (id, teamData) => {
         const response = await apiClient.post(`/project_management/teams/update/${id}`, teamData)
         return response.data
     } catch (error) {
-        console.error(`Error updating team ${id}:`, error)
+        logger.error(`Error updating team ${id}:`, error)
         throw error
     }
 }
@@ -71,7 +72,7 @@ export const getTeamById = async (id) => {
         const response = await apiClient.get(`/project_management/teams/show/${id}`)
         return response.data.data || response.data
     } catch (error) {
-        console.error(`Error fetching team ${id}:`, error)
+        logger.error(`Error fetching team ${id}:`, error)
         throw error
     }
 }
@@ -85,7 +86,7 @@ export const deleteTeam = async (id) => {
         const response = await apiClient.delete(`/project_management/teams/delete/${id}`)
         return response.data
     } catch (error) {
-        console.error(`Error deleting team ${id}:`, error)
+        logger.error(`Error deleting team ${id}:`, error)
         throw error
     }
 }
@@ -99,7 +100,7 @@ export const getTeamContracts = async (id, params = {}) => {
         const response = await apiClient.get(`/project_management/teams/contracts/${id}`, { params })
         return response.data
     } catch (error) {
-        console.error(`Error fetching contracts for team ${id}:`, error)
+        logger.error(`Error fetching contracts for team ${id}:`, error)
         throw error
     }
 }
@@ -113,7 +114,7 @@ export const getTeamContractLocations = async (id, params = {}) => {
         const response = await apiClient.get(`/project_management/teams/contracts/locations/${id}`, { params })
         return response.data
     } catch (error) {
-        console.error(`Error fetching contract locations for team ${id}:`, error)
+        logger.error(`Error fetching contract locations for team ${id}:`, error)
         throw error
     }
 }
@@ -128,7 +129,7 @@ export const addTeamsToContract = async (contractId, teamIds) => {
         const response = await apiClient.post(`/project_teams/teams/add/${contractId}`, { team_ids: teamIds })
         return response.data
     } catch (error) {
-        console.error(`Error adding teams to contract ${contractId}:`, error)
+        logger.error(`Error adding teams to contract ${contractId}:`, error)
         throw error
     }
 }
@@ -143,7 +144,7 @@ export const removeTeamsFromContract = async (contractId, teamIds) => {
         const response = await apiClient.post(`/project_teams/teams/remove/${contractId}`, { team_ids: teamIds })
         return response.data
     } catch (error) {
-        console.error(`Error removing teams from contract ${contractId}:`, error)
+        logger.error(`Error removing teams from contract ${contractId}:`, error)
         throw error
     }
 }
@@ -157,7 +158,7 @@ export const getContractTeams = async (contractId) => {
         const response = await apiClient.get(`/project_teams/teams/${contractId}`)
         return response.data
     } catch (error) {
-        console.error(`Error fetching teams for contract ${contractId}:`, error)
+        logger.error(`Error fetching teams for contract ${contractId}:`, error)
         throw error
     }
 }

@@ -880,6 +880,7 @@ import { useRoute, useRouter } from 'vue-router'
 import salesService from '../services/salesService'
 import notificationService from '../services/notificationService'
 import authService from '../services/authService'
+import logger from '../utils/logger'
 
 export default {
   name: 'SalesViewExtended',
@@ -985,7 +986,7 @@ export default {
             await loadProjects()
         }
       } catch (error) {
-        console.error('Error loading dashboard:', error)
+        logger.error('Error loading dashboard:', error)
       } finally {
         isLoadingDashboard.value = false
       }
@@ -1109,7 +1110,7 @@ export default {
           }
         })
       } catch (error) {
-        console.error('Error loading projects list:', error)
+        logger.error('Error loading projects list:', error)
       } finally {
         isLoadingProjects.value = false
       }
@@ -1174,7 +1175,7 @@ export default {
       try {
         targets.value = await salesService.getMyTargets()
       } catch (error) {
-        console.error('Error loading targets:', error)
+        logger.error('Error loading targets:', error)
       } finally {
         isLoadingTargets.value = false
       }
@@ -1197,8 +1198,8 @@ export default {
       
       try {
         const [detRes, unitsRes] = await Promise.all([
-          salesService.getProjectDetails(projectId).catch(e => { console.error('P-Details Error', e); return null; }),
-          salesService.getProjectUnits(projectId).catch(e => { console.error('Units Error', e); return null; })
+          salesService.getProjectDetails(projectId).catch(e => { logger.error('P-Details Error', e); return null }),
+          salesService.getProjectUnits(projectId).catch(e => { logger.error('Units Error', e); return null })
         ])
         
         // 1. Process Project Details
@@ -1257,9 +1258,9 @@ export default {
           })
         }
         
-        console.log('Final Normalized Project Data:', selectedProject.value)
+        logger.debug('Final Normalized Project Data:', selectedProject.value)
       } catch (error) {
-        console.error('Error in viewProjectDetails:', error)
+        logger.error('Error in viewProjectDetails:', error)
       } finally {
         isLoadingProjectDetails.value = false
         isLoadingUnits.value = false
@@ -1277,7 +1278,7 @@ export default {
           id: r.reservation_id || r.id // normalize id
         })) : []
       } catch (error) {
-        console.error('Error loading reservations:', error)
+        logger.error('Error loading reservations:', error)
       } finally {
         isLoadingReservations.value = false
       }
@@ -1308,7 +1309,7 @@ export default {
           }
         }
       } catch (error) {
-        console.error('Error loading reservation context:', error)
+        logger.error('Error loading reservation context:', error)
       }
       
       showReservationModal.value = true
@@ -1339,7 +1340,7 @@ export default {
           negotiation_notes: ''
         })
       } catch (error) {
-        console.error('Error creating reservation:', error)
+        logger.error('Error creating reservation:', error)
         notificationService.addNotification('حدث خطأ أثناء إنشاء الحجز', 'error')
       } finally {
         isSubmitting.value = false
@@ -1354,7 +1355,7 @@ export default {
         notificationService.addNotification('تم تأكيد الحجز بنجاح', 'success')
         loadReservations()
       } catch (error) {
-        console.error('Error confirming reservation:', error)
+        logger.error('Error confirming reservation:', error)
         notificationService.addNotification('حدث خطأ أثناء تأكيد الحجز', 'error')
       }
     }
@@ -1367,7 +1368,7 @@ export default {
         notificationService.addNotification('تم إلغاء الحجز', 'success')
         loadReservations()
       } catch (error) {
-        console.error('Error cancelling reservation:', error)
+        logger.error('Error cancelling reservation:', error)
         notificationService.addNotification('حدث خطأ أثناء إلغاء الحجز', 'error')
       }
     }
@@ -1382,7 +1383,7 @@ export default {
         link.click()
         window.URL.revokeObjectURL(url)
       } catch (error) {
-        console.error('Error downloading voucher:', error)
+        logger.error('Error downloading voucher:', error)
         notificationService.addNotification('حدث خطأ أثناء تحميل الإيصال', 'error')
       }
     }
@@ -1395,7 +1396,7 @@ export default {
         await salesService.logAction(reservationId, { note })
         notificationService.addNotification('تم تسجيل العملية بنجاح', 'success')
       } catch (error) {
-        console.error('Error logging action:', error)
+        logger.error('Error logging action:', error)
         notificationService.addNotification('حدث خطأ أثناء تسجيل العملية', 'error')
       }
     }
@@ -1407,7 +1408,7 @@ export default {
           ? await salesService.getTeamAttendance()
           : await salesService.getMyAttendance()
       } catch (error) {
-        console.error('Error loading attendance:', error)
+        logger.error('Error loading attendance:', error)
       } finally {
         isLoadingAttendance.value = false
       }
@@ -1418,7 +1419,7 @@ export default {
       try {
         teamMembers.value = await salesService.getTeamMembers()
       } catch (error) {
-        console.error('Error loading team members:', error)
+        logger.error('Error loading team members:', error)
       } finally {
         isLoadingTeam.value = false
       }
@@ -1429,7 +1430,7 @@ export default {
       try {
         teamProjects.value = await salesService.getTeamProjects()
       } catch (error) {
-        console.error('Error loading team projects:', error)
+        logger.error('Error loading team projects:', error)
       } finally {
         isLoadingTeamProjects.value = false
       }
@@ -1445,7 +1446,7 @@ export default {
           marketingTasks.value.push(...tasks)
         }
       } catch (error) {
-        console.error('Error loading tasks:', error)
+        logger.error('Error loading tasks:', error)
       } finally {
         isLoadingTasks.value = false
       }
@@ -1459,7 +1460,7 @@ export default {
         loadTargets()
         Object.assign(targetForm, { marketer_id: '', contract_id: '', target_value: 0, deadline: '' })
       } catch (error) {
-        console.error('Error creating target:', error)
+        logger.error('Error creating target:', error)
         notificationService.addNotification('حدث خطأ أثناء إنشاء الهدف', 'error')
       }
     }
@@ -1472,7 +1473,7 @@ export default {
         loadTasks()
         Object.assign(taskForm, { contract_id: '', task_name: '', marketer_id: '', participating_marketers_count: 1 })
       } catch (error) {
-        console.error('Error creating task:', error)
+        logger.error('Error creating task:', error)
         notificationService.addNotification('حدث خطأ أثناء إنشاء المهمة', 'error')
       }
     }
@@ -1485,7 +1486,7 @@ export default {
         loadAttendance()
         Object.assign(scheduleForm, { employee_id: '', date: '', start_time: '', end_time: '' })
       } catch (error) {
-        console.error('Error creating schedule:', error)
+        logger.error('Error creating schedule:', error)
         notificationService.addNotification('حدث خطأ أثناء إنشاء الجدول', 'error')
       }
     }
@@ -1496,7 +1497,7 @@ export default {
         notificationService.addNotification('تم تحديث حالة المهمة', 'success')
         loadTasks()
       } catch (error) {
-        console.error('Error updating task:', error)
+        logger.error('Error updating task:', error)
         notificationService.addNotification('حدث خطأ أثناء تحديث المهمة', 'error')
       }
     }

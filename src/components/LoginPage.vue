@@ -69,6 +69,7 @@
 <script>
 import { ref } from 'vue'
 import authService from '../services/authService'
+import logger from '../utils/logger'
 
 export default {
   name: 'LoginPage',
@@ -89,7 +90,7 @@ export default {
         const user = await authService.login(email.value, password.value)
         emit('login-success', user)
       } catch (err) {
-        console.error('Login failed', err)
+        logger.error('Login failed', err)
         error.value = 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
       } finally {
         isLoading.value = false

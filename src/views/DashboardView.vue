@@ -80,6 +80,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import authService from '../services/authService'
 import contractService from '../services/contractService'
+import logger from '../utils/logger'
 
 export default {
   name: 'DashboardView',
@@ -103,13 +104,10 @@ export default {
         const isUserEditor = user.value && user.value.type === 4
         
         if (isUserAdmin) {
-             console.log('Fetching Admin Contracts...')
              apps = await contractService.getAllContracts()
         } else if (isUserEditor) {
-             console.log('Fetching Editor Contracts...')
              apps = await contractService.getEditorContracts()
         } else {
-             console.log('Fetching User Contracts...')
              apps = await contractService.getContracts()
         }
 
@@ -141,7 +139,7 @@ export default {
         totalProjectValue.value = (valueSum / 1000000).toFixed(2)
 
       } catch (e) {
-        console.error('Error fetching dashboard data', e)
+        logger.error('Error fetching dashboard data', e)
       }
     }
 

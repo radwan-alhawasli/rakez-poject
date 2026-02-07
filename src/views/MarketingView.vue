@@ -837,6 +837,7 @@ import marketingService from '../services/marketingService'
 import notificationService from '../services/notificationService'
 import userService from '../services/userService'
 import aiService from '../services/aiService'
+import logger from '../utils/logger'
 import contractService from '../services/contractService'
 import teamService from '../services/teamService'
 
@@ -987,7 +988,7 @@ export default {
 
     const loadDashboard = async () => {
       try {
-        console.log('📊 Loading marketing dashboard...')
+        logger.debug('Loading marketing dashboard...')
         const data = await marketingService.getDashboard()
 
         Object.assign(dashboardMetrics, {
@@ -1001,9 +1002,9 @@ export default {
           total_expected_booking_value: Number(data.total_expected_booking_value ?? 0) || 0
         })
 
-        console.log('✅ Dashboard loaded')
+        logger.debug('Dashboard loaded')
       } catch (error) {
-        console.error('❌ Error loading dashboard:', error)
+        logger.error('Error loading dashboard:', error)
         // Keep zeros on error
         Object.assign(dashboardMetrics, {
           total_leads: 0,
@@ -1024,7 +1025,7 @@ export default {
         const data = await marketingService.getProjects()
         projects.value = data
       } catch (error) {
-        console.error('❌ Error loading projects:', error)
+        logger.error('Error loading projects:', error)
         projects.value = []
       } finally {
         isLoadingProjects.value = false
@@ -1038,7 +1039,7 @@ export default {
         const details = await marketingService.getProjectById(projectId)
         selectedProjectDetails.value = details
       } catch (error) {
-        console.error('❌ Error loading project details:', error)
+        logger.error('Error loading project details:', error)
         selectedProjectDetails.value = null
       } finally {
         isLoadingProjectDetails.value = false
@@ -1051,7 +1052,7 @@ export default {
         const data = await marketingService.getTasks()
         tasks.value = data
       } catch (error) {
-        console.error('❌ Error loading tasks:', error)
+        logger.error('Error loading tasks:', error)
         tasks.value = []
       } finally {
         isLoadingTasks.value = false
@@ -1064,7 +1065,7 @@ export default {
         const data = await marketingService.getLeads()
         leads.value = data
       } catch (error) {
-        console.error('❌ Error loading leads:', error)
+        logger.error('Error loading leads:', error)
         leads.value = []
       } finally {
         isLoadingLeads.value = false
@@ -1077,7 +1078,7 @@ export default {
         const employees = await userService.getEmployees()
         marketingEmployees.value = (employees || []).filter(e => String(e.type) === '0' || e.type === 0 || String(e.type).toLowerCase() === 'marketing')
       } catch (error) {
-        console.error('❌ Error loading employees:', error)
+        logger.error('Error loading employees:', error)
         marketingEmployees.value = []
       } finally {
         isLoadingEmployees.value = false
@@ -1094,7 +1095,7 @@ export default {
         const data = await marketingService.getEmployeePlans(employeePlansProjectId.value)
         employeePlans.value = Array.isArray(data) ? data : []
       } catch (error) {
-        console.error('❌ Error loading employee plans:', error)
+        logger.error('Error loading employee plans:', error)
         employeePlans.value = []
       } finally {
         isLoadingEmployeePlans.value = false
@@ -1148,7 +1149,7 @@ export default {
         showCalculateBudgetModal.value = false
         loadDashboard()
       } catch (error) {
-        console.error('❌ Error calculating budget:', error)
+        logger.error('Error calculating budget:', error)
         alert('حدث خطأ أثناء حساب الميزانية')
       } finally {
         isSubmitting.value = false
@@ -1187,7 +1188,7 @@ export default {
         loadLeads()
         loadDashboard()
       } catch (error) {
-        console.error('❌ Error saving lead:', error)
+        logger.error('Error saving lead:', error)
         alert('حدث خطأ أثناء حفظ العميل المحتمل')
       } finally {
         isSubmitting.value = false
@@ -1206,7 +1207,7 @@ export default {
         )
         loadDashboard()
       } catch (error) {
-        console.error('❌ Error updating task status:', error)
+        logger.error('Error updating task status:', error)
         alert('حدث خطأ أثناء تحديث حالة المهمة')
       }
     }
@@ -1216,7 +1217,7 @@ export default {
             const allTeams = await teamService.getTeams()
             availableTeams.value = allTeams
         } catch (error) {
-            console.error('Error loading teams:', error)
+            logger.error('Error loading teams:', error)
         }
     }
 
@@ -1243,7 +1244,7 @@ export default {
             // Reload details to verify
             loadProjectDetails(projectId)
         } catch (error) {
-            console.error('Error adding team:', error)
+            logger.error('Error adding team:', error)
             alert('تعذر إضافة الفريق')
         } finally {
             isTeamActionLoading.value = false
@@ -1262,7 +1263,7 @@ export default {
             // Reload details
             loadProjectDetails(projectId)
         } catch (error) {
-             console.error('Error removing team:', error)
+             logger.error('Error removing team:', error)
              alert('تعذر إزالة الفريق')
         } finally {
              isTeamActionLoading.value = false
@@ -1287,7 +1288,7 @@ export default {
           }
         }
       } catch (error) {
-        console.error('❌ Error loading units:', error)
+        logger.error('Error loading units:', error)
       } finally {
         isLoadingUnits.value = false
       }
@@ -1305,7 +1306,7 @@ export default {
     }
 
     const viewLeadDetails = (leadId) => {
-      console.log('View lead details:', leadId)
+      logger.debug('View lead details:', leadId)
       // TODO: Open lead details modal
     }
 
@@ -1428,7 +1429,7 @@ export default {
     })
 
     watch(activeTab, (newTab) => {
-      console.log('🔄 Active tab changed to:', newTab)
+      logger.debug('Active tab changed to:', newTab)
       if (newTab === 'dashboard') {
         loadDashboard()
       } else if (newTab === 'projects') {
@@ -1469,7 +1470,7 @@ export default {
         }
         notificationService.addNotification('تم جلب خطة المطور بنجاح', 'success')
       } catch (error) {
-        console.error('❌ Error loading developer plan:', error)
+        logger.error('Error loading developer plan:', error)
         alert('لم يتم العثور على خطة/حدث خطأ')
       } finally {
         isLoadingDeveloperPlan.value = false
@@ -1491,7 +1492,7 @@ export default {
         })
         notificationService.addNotification('تم حفظ خطة المطور بنجاح', 'success')
       } catch (error) {
-        console.error('❌ Error saving developer plan:', error)
+        logger.error('Error saving developer plan:', error)
         alert('حدث خطأ أثناء حفظ خطة المطور')
       } finally {
         isSubmitting.value = false
@@ -1512,7 +1513,7 @@ export default {
         notificationService.addNotification('تم إنشاء خطة الموظف تلقائياً', 'success')
         await loadEmployeePlans()
       } catch (error) {
-        console.error('❌ Error auto-generating employee plan:', error)
+        logger.error('Error auto-generating employee plan:', error)
         alert('حدث خطأ أثناء إنشاء خطة الموظف')
       } finally {
         isSubmitting.value = false
@@ -1537,7 +1538,7 @@ export default {
         if (hasGeneral) aiSelectedSectionKey.value = 'general'
         else if (aiSections.value[0]?.key) aiSelectedSectionKey.value = aiSections.value[0].key
       } catch (error) {
-        console.error('❌ Error loading AI conversations:', error)
+        logger.error('Error loading AI dashboard:', error)
       } finally {
         isLoadingConversations.value = false
         isLoadingAiSections.value = false
@@ -1597,7 +1598,7 @@ export default {
           loadAiDashboard() // Refresh list
         }
       } catch (error) {
-        console.error('❌ Error sending AI message:', error)
+        logger.error('Error sending AI message:', error)
         chatMessages.value.push({
           role: 'assistant',
           content: 'عذراً، حدث خطأ أثناء الاتصال بالمساعد الذكي.'

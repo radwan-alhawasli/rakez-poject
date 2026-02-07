@@ -103,6 +103,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import contractService from '../services/contractService'
+import logger from '../utils/logger'
 
 
 export default {
@@ -156,7 +157,7 @@ export default {
           // Let's try to load for the first few or just leave it.
 
        } catch (e) {
-         console.error(e)
+         logger.error('Failed to fetch developers', e)
        } finally {
          isLoading.value = false
        }

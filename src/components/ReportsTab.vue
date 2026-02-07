@@ -99,6 +99,7 @@
 <script>
 import { ref, reactive, onMounted } from 'vue'
 import hrService from '../services/hrService'
+import logger from '../utils/logger'
 
 export default {
   name: 'ReportsTab',
@@ -129,7 +130,7 @@ export default {
             const data = await hrService.getMarketerPerformance()
             marketers.value = data.map(m => ({ id: m.id, name: m.name }))
         } catch (error) {
-            console.error('Error loading marketers', error)
+            logger.error('Error loading marketers', error)
             // Mock capability if service fails
             marketers.value = [
                 { id: 1, name: 'أحمد العتيبي' },
@@ -144,7 +145,7 @@ export default {
         try {
             await hrService.generateTeamPerformanceReport(teamReport.month, teamReport.year)
         } catch (error) {
-            console.error(error)
+            logger.error('Error generating team report', error)
             alert('حدث خطأ أثناء إصدار التقرير')
         } finally {
             loading.team = false
@@ -157,7 +158,7 @@ export default {
         try {
             await hrService.generateMarketerReport(marketerReport.marketerId, marketerReport.month, marketerReport.year)
         } catch (error) {
-            console.error(error)
+            logger.error('Error generating marketer report', error)
             alert('حدث خطأ أثناء إصدار التقرير')
         } finally {
             loading.marketer = false
@@ -169,7 +170,7 @@ export default {
         try {
             await hrService.generateEmployeesReport()
         } catch (error) {
-            console.error(error)
+            logger.error('Error generating employees report', error)
             alert('حدث خطأ أثناء إصدار التقرير')
         } finally {
             loading.employees = false
@@ -181,7 +182,7 @@ export default {
         try {
             await hrService.generateExpiringContractsReport(contractsReport.days)
         } catch (error) {
-            console.error(error)
+            logger.error('Error generating contracts report', error)
             alert('حدث خطأ أثناء إصدار التقرير')
         } finally {
             loading.contracts = false

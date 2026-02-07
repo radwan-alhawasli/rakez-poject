@@ -1,6 +1,7 @@
 import apiClient from '../api/apiClient'
 
 import { ROLE_MAP } from '../constants/roles'
+import logger from '../utils/logger'
 
 const userService = {
     /**
@@ -38,7 +39,7 @@ const userService = {
                     : emp.type
             }))
         } catch (error) {
-            console.error('Error fetching employees:', error)
+            logger.error('Error fetching employees:', error)
             throw error
         }
     },
@@ -69,11 +70,10 @@ const userService = {
                 is_manager: !!employeeData.is_manager
             }
 
-            console.log('Adding employee payload:', payload)
             const response = await apiClient.post('/admin/employees/add_employee', payload)
             return response.data
         } catch (error) {
-            console.error('Add Employee API Error:', error.response?.data || error.message)
+            logger.error('Add Employee API Error:', error.response?.data || error.message)
             throw error
         }
     },
@@ -116,11 +116,10 @@ const userService = {
                 payload.password = employeeData.password
             }
 
-            console.log(`Updating employee ${id} payload:`, payload)
             const response = await apiClient.put(`/admin/employees/update_employee/${id}`, payload)
             return response.data
         } catch (error) {
-            console.error('Update Employee API Error:', error.response?.data || error.message)
+            logger.error('Update Employee API Error:', error.response?.data || error.message)
             throw error
         }
     },
@@ -133,11 +132,10 @@ const userService = {
      */
     async deleteEmployee(id) {
         try {
-            console.log(`Deleting employee ID: ${id}`)
             const response = await apiClient.delete(`/admin/employees/delete_employee/${id}`)
             return response.data
         } catch (error) {
-            console.error('Error deleting employee:', error)
+            logger.error('Error deleting employee:', error)
             throw error
         }
     },
@@ -153,7 +151,7 @@ const userService = {
             const response = await apiClient.get(`/admin/employees/show_employee/${id}`)
             return response.data
         } catch (error) {
-            console.error('Error fetching employee details:', error)
+            logger.error('Error fetching employee details:', error)
             throw error
         }
     }

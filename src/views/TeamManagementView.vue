@@ -127,6 +127,7 @@
 <script>
 import { ref, reactive, onMounted } from 'vue'
 import teamService from '../services/teamService'
+import logger from '../utils/logger'
 
 export default {
   name: 'TeamManagementView',
@@ -150,7 +151,7 @@ export default {
         const data = await teamService.getTeams(search)
         teams.value = data
       } catch (error) {
-        console.error('Error fetching teams:', error)
+        logger.error('Error fetching teams:', error)
         alert('حدث خطأ أثناء جلب البيانات')
       } finally {
         isLoading.value = false
@@ -200,7 +201,7 @@ export default {
         closeModal()
         fetchTeams(searchQuery.value)
       } catch (error) {
-        console.error('Error saving team:', error)
+        logger.error('Error saving team:', error)
         alert('حدث خطأ أثناء الحفظ: ' + (error.response?.data?.message || error.message))
       } finally {
         isSaving.value = false
@@ -215,7 +216,7 @@ export default {
         alert('تم حذف الفريق بنجاح')
         fetchTeams(searchQuery.value)
       } catch (error) {
-        console.error('Error deleting team:', error)
+        logger.error('Error deleting team:', error)
         alert('حدث خطأ أثناء الحذف: ' + (error.response?.data?.message || error.message))
       }
     }
@@ -223,11 +224,11 @@ export default {
     const viewTeam = async (team) => {
       try {
         const data = await teamService.getTeamById(team.id)
-        console.log('Team details:', data)
+        logger.debug('Team details:', data)
         // You can open a detail modal or navigate to a detail page here
         alert(`تفاصيل الفريق: ${team.name}\n\n${team.description || 'لا يوجد وصف'}`)
       } catch (error) {
-        console.error('Error viewing team:', error)
+        logger.error('Error viewing team:', error)
         alert('حدث خطأ أثناء عرض التفاصيل')
       }
     }

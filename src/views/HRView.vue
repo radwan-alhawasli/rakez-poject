@@ -365,6 +365,7 @@ import LinkMarketersModal from '../components/LinkMarketersModal.vue'
 import ReportsTab from '../components/ReportsTab.vue'
 import hrService from '../services/hrService'
 import authService from '../services/authService'
+import logger from '../utils/logger'
 
 export default {
     name: 'HRView',
@@ -423,14 +424,14 @@ export default {
                         address: contractLocation.address || contract.address || ''
                     }
                 } catch (locErr) {
-                    console.error('Error fetching location for contract:', locErr)
+                    logger.error('Error fetching location for contract:', locErr)
                     return contract
                 }
             }))
             
             teamProjects.value = enrichedContracts
         } catch (error) {
-            console.error('Error fetching team projects:', error)
+            logger.error('Error fetching team projects:', error)
             teamProjects.value = []
         } finally {
             isLoadingDetails.value = false
@@ -511,7 +512,7 @@ export default {
             showTeamModal.value = false
             loadTeams() // Refresh list
         } catch (error) {
-            console.error('Error saving team:', error)
+            logger.error('Error saving team:', error)
             alert('حدث خطأ أثناء حفظ بيانات الفريق')
         } finally {
             isSavingTeam.value = false
@@ -526,7 +527,7 @@ export default {
             alert('تم حذف الفريق بنجاح')
             loadTeams()
         } catch (error) {
-            console.error('Error deleting team:', error)
+            logger.error('Error deleting team:', error)
             alert('حدث خطأ أثناء حذف الفريق')
         }
     }
@@ -544,7 +545,7 @@ export default {
             showLinkModal.value = false
             loadTeams()
         } catch (error) {
-            console.error(error)
+            logger.error(error)
             alert('حدث خطأ أثناء ربط المسوقين')
         } finally {
             isLinking.value = false
@@ -587,7 +588,7 @@ export default {
           dashboardMetrics.avgEmployeeSales = data.units?.sold_units_per_sales_employee || 0
         }
       } catch (error) {
-        console.error('Error loading dashboard metrics:', error)
+        logger.error('Error loading dashboard metrics:', error)
         // Set default values on error
         dashboardMetrics.totalEmployees = 19
         dashboardMetrics.totalUnits = 10
@@ -602,16 +603,16 @@ export default {
     // Load teams data
     const loadTeams = async () => {
       try {
-        console.log('🔄 Loading teams...')
+        logger.debug('Loading teams...')
         const params = {}
         if (teamSearchQuery.value) {
             params.search = teamSearchQuery.value
         }
         const data = await hrService.getTeams(params)
-        console.log('📥 Received teams data:', data)
+        logger.debug('Received teams data:', data)
         // Ensure data is an array - teams come with id and name
         const teams = Array.isArray(data) ? data : (data?.data || [])
-        console.log('🎯 Teams array:', teams, 'Count:', teams.length)
+        logger.debug('Teams array:', teams, 'Count:', teams.length)
         
         // Display teams immediately with basic data
         const basicTeams = teams.map(team => ({
@@ -625,7 +626,7 @@ export default {
         }))
         
         teamsData.splice(0, teamsData.length, ...basicTeams)
-        console.log('✅ Teams displayed:', teamsData.length, 'teams')
+        logger.debug('Teams displayed:', teamsData.length, 'teams')
         
         // Then enrich data in background (non-blocking)
         teams.forEach(async (team, index) => {
@@ -651,15 +652,15 @@ export default {
                     teamsData[index].locations = locationsText
                 }
             } catch (err) {
-                console.error(`Error enriching team ${team.id}:`, err)
+                logger.error(`Error enriching team ${team.id}:`, err)
                 if (teamsData[index]) {
                     teamsData[index].locations = 'غير محدد'
                 }
             }
         })
       } catch (error) {
-        console.error('❌ Error loading teams:', error)
-        console.log('🔄 Using fallback mock data...')
+        logger.error('Error loading teams:', error)
+        logger.debug('Using fallback mock data...')
         // Fallback to mock data
         const mockTeams = [
           { id: 1, name: 'فريق المبيعات الرياض', members: ['أحمد', 'خالد', 'سارة', 'فهد', 'محمد', 'نورة'], goalProgress: 85, soldProjects: 12, totalValue: '1.2M', color: '#B1A28F', locations: 'الرياض - حي الياسمين، حي النرجس', salesAverage: 2.5 },
@@ -667,7 +668,7 @@ export default {
           { id: 3, name: 'فريق التسويق الميداني', members: ['سلطان', 'ماجد', 'أمل', 'نواف'], goalProgress: 92, soldProjects: 24, totalValue: '850K', color: '#B1A28F', locations: 'الدمام - حي الشاطئ', salesAverage: 3.2 }
         ]
         teamsData.splice(0, teamsData.length, ...mockTeams)
-        console.log('✅ Mock teams loaded:', mockTeams.length, 'teams')
+        logger.debug('Mock teams loaded:', mockTeams.length, 'teams')
       }
     }
 
@@ -677,7 +678,7 @@ export default {
         const data = await hrService.getTeamPerformance()
         performanceData.teams = data
       } catch (error) {
-        console.error('Error loading team performance:', error)
+        logger.error('Error loading team performance:', error)
         // Fallback to mock data
         performanceData.teams = [
           { name: 'مبيعات الوسطى', achievement: 94, productivity: 88, quality: 95, status: 'excellent', statusLabel: 'ممتاز' },
@@ -692,7 +693,7 @@ export default {
         const data = await hrService.getMarketerPerformance()
         marketerPerformanceData.splice(0, marketerPerformanceData.length, ...data)
       } catch (error) {
-        console.error('Error loading marketer performance:', error)
+        logger.error('Error loading marketer performance:', error)
         // Fallback to mock data
         marketerPerformanceData.splice(0, marketerPerformanceData.length,
           { id: 1, name: 'أحمد العتيبي', goalAchievement: 92, sponsorsCount: 5, warningsCount: 0 },
@@ -711,7 +712,7 @@ export default {
     const handleTargetSubmit = async (targetData) => {
         isSavingTarget.value = true
         try {
-            console.log('Setting target:', targetData)
+            logger.debug('Setting target:', targetData)
             await new Promise(r => setTimeout(r, 1000))
             
             // Update local state for demo
@@ -733,7 +734,7 @@ export default {
     const handleUserSubmit = async (userData) => {
         isSavingUser.value = true
         try {
-            console.log('Saving user with HR logic:', userData)
+            logger.debug('Saving user with HR logic:', userData)
             // Simulated delay for "notification and contract sending"
             await new Promise(r => setTimeout(r, 1500))
             alert(`تم إنشاء الموظف بنجاح! \nتم إرسال عقد العمل إلى: ${userData.email} \nتم إرسال إشعار لمدير القسم.`)

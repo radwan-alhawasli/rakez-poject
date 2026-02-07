@@ -199,6 +199,7 @@ import { ref, reactive, onMounted } from 'vue'
 import contractService from '../services/contractService'
 import hrService from '../services/hrService'
 import notificationService from '../services/notificationService'
+import logger from '../utils/logger'
 
 export default {
   name: 'ExclusiveProjectView',
@@ -242,12 +243,10 @@ export default {
     // Load teams on component mount
     const loadTeams = async () => {
       try {
-        console.log('📋 Loading teams for exclusive contract...')
         const data = await hrService.getTeams()
         teams.value = Array.isArray(data) ? data : (data?.data || [])
-        console.log('✅ Teams loaded:', teams.value.length, 'teams')
       } catch (error) {
-        console.error('❌ Error loading teams:', error)
+        logger.error('Error loading teams:', error)
         teams.value = []
       }
     }
@@ -265,8 +264,6 @@ export default {
     const handleSubmit = async () => {
       isLoading.value = true
       try {
-        console.log('🚀 Submitting exclusive contract request:', form)
-        
         // Prepare payload matching API structure
         const payload = {
           lat: parseFloat(form.lat) || 25.2048,
@@ -296,8 +293,6 @@ export default {
           payload.team_id = form.team_id
         }
 
-        console.log('📤 Sending payload:', payload)
-        
         // Get contract ID (assuming it's passed or selected)
         const contractId = 2 // You can make this dynamic
         await contractService.completeContractInfo(contractId, payload)
@@ -335,7 +330,7 @@ export default {
           agency_date: ''
         })
       } catch (error) {
-        console.error('❌ Submission failed', error)
+        logger.error('Submission failed', error)
         alert('حدث خطأ أثناء إرسال الطلب: ' + (error.response?.data?.message || error.message))
       } finally {
         isLoading.value = false

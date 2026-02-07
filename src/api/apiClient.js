@@ -1,5 +1,6 @@
 import axios from 'axios'
 import appConfig from '../config/appConfig'
+import logger from '../utils/logger'
 
 const apiBaseUrl = appConfig.apiBaseUrl || '/api'
 
@@ -32,12 +33,12 @@ apiClient.interceptors.response.use(
 
         if (status === 401) {
             // Unauthorized: Token might be expired
-            console.warn('Unauthorized access - potential token expiration')
+            logger.warn('Unauthorized access - potential token expiration')
             // authService.logout() // Optional: auto-logout on 401
         }
 
         const message = error.response?.data?.message || error.message || 'An unexpected error occurred'
-        console.error(`API Error [${status}]:`, message)
+        logger.error(`API Error [${status}]:`, message)
 
         return Promise.reject({
             status,

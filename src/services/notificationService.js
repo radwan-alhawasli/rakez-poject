@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import apiClient from '../api/apiClient'
 import authService from './authService'
 import { createPusher } from '../plugins/pusher'
+import logger from '../utils/logger'
 
 const notifications = ref([])
 const unreadCount = ref(0)
@@ -99,7 +100,7 @@ const notificationService = {
             notifications.value = all.sort((a, b) => new Date(b.time) - new Date(a.time))
             this.updateUnreadCount()
         } catch (error) {
-            console.error('Error fetching notifications:', error)
+            logger.error('Error fetching notifications:', error)
         }
     },
 
@@ -111,7 +112,7 @@ const notificationService = {
             const response = await apiClient.post('/admin/notifications/send-public', { message })
             return response.data
         } catch (error) {
-            console.error('Error sending public notification:', error)
+            logger.error('Error sending public notification:', error)
             throw error
         }
     },
@@ -124,7 +125,7 @@ const notificationService = {
             const response = await apiClient.post('/admin/notifications/send-to-user', { user_id: userId, message })
             return response.data
         } catch (error) {
-            console.error(`Error sending notification to user ${userId}:`, error)
+            logger.error(`Error sending notification to user ${userId}:`, error)
             throw error
         }
     },
@@ -137,7 +138,7 @@ const notificationService = {
             const response = await apiClient.get(`/admin/notifications/user/${userId}`)
             return response.data
         } catch (error) {
-            console.error(`Error fetching notifications for user ${userId}:`, error)
+            logger.error(`Error fetching notifications for user ${userId}:`, error)
             throw error
         }
     },
@@ -150,7 +151,7 @@ const notificationService = {
             const response = await apiClient.get('/admin/notifications/public')
             return response.data
         } catch (error) {
-            console.error('Error fetching admin public notifications:', error)
+            logger.error('Error fetching admin public notifications:', error)
             throw error
         }
     },
@@ -171,7 +172,7 @@ const notificationService = {
         this.updateUnreadCount()
         
         // Optional: Trigger a browser notification or toast here
-        console.log(`New ${source} notification received:`, data.message)
+        logger.debug(`New ${source} notification received:`, data.message)
     },
 
     async markAsRead(id) {
@@ -184,7 +185,7 @@ const notificationService = {
                 this.updateUnreadCount()
             }
         } catch (error) {
-            console.error('Error marking as read:', error)
+            logger.error('Error marking as read:', error)
         }
     },
 
@@ -197,7 +198,7 @@ const notificationService = {
             })
             this.updateUnreadCount()
         } catch (error) {
-            console.error('Error marking all as read:', error)
+            logger.error('Error marking all as read:', error)
         }
     },
 

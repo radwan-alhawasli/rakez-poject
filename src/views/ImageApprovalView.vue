@@ -94,6 +94,7 @@
 <script>
 import { ref, onMounted } from 'vue'
 import contractService from '../services/contractService'
+import logger from '../utils/logger'
 
 export default {
   name: 'ImageApprovalView',
@@ -145,7 +146,7 @@ export default {
             pendingImages.value = results.filter(item => item !== null)
 
         } catch (error) {
-            console.error('Error fetching requests:', error)
+            logger.error('Error fetching requests:', error)
         } finally {
             isLoading.value = false
         }
@@ -167,7 +168,7 @@ export default {
             pendingImages.value = pendingImages.value.filter(i => i.projectId !== img.projectId)
             alert('تمت الموافقة بنجاح')
         } catch (error) {
-            console.error(error)
+            logger.error('Error approving images:', error)
             alert('حدث خطأ أثناء الموافقة')
         }
     }
@@ -200,7 +201,7 @@ export default {
             alert('تم رفض الصور')
             closeRejectModal()
         } catch (error) {
-            console.error(error)
+            logger.error('Error rejecting images:', error)
             alert('حدث خطأ أثناء الرفض')
         }
     }

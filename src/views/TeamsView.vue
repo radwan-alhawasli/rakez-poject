@@ -97,6 +97,7 @@
 import { ref, onMounted, computed } from 'vue'
 import userService from '../services/userService'
 import { getRoleLabel } from '../constants/roles'
+import logger from '../utils/logger'
 
 export default {
   name: 'TeamsView',
@@ -114,7 +115,7 @@ export default {
             // The grouping logic will handle categorizing them.
             employees.value = data || [] 
         } catch (error) {
-            console.error(error)
+            logger.error('Failed to fetch employees:', error)
         } finally {
             isLoading.value = false
         }

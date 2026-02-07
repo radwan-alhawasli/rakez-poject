@@ -68,6 +68,7 @@
 import { ref, onMounted, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import contractService from '../services/contractService'
+import logger from '../utils/logger'
 
 export default {
   name: 'MyRequestsView',
@@ -119,7 +120,7 @@ export default {
                    }
                    return { ...item, status: 'Approved' } // Keep non-completed
                } catch (e) {
-                   console.error(`Failed to fetch details for ${item.id}`, e)
+                   logger.error(`Failed to fetch details for ${item.id}`, e)
                    return item // Keep if check fails, better safe than hidden
                }
            }
@@ -138,7 +139,7 @@ export default {
             status: item.status || 'Pending'
         }))
       } catch (error) {
-        console.error('Failed to fetch requests', error)
+        logger.error('Failed to fetch requests', error)
       } finally {
         isLoading.value = false
       }

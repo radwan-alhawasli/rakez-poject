@@ -1,5 +1,20 @@
-import { PDFDocument, rgb } from 'pdf-lib'
-import fontkit from '@pdf-lib/fontkit'
+import logger from '../utils/logger'
+
+let _pdfDepsPromise = null
+async function getPdfDeps() {
+    if (_pdfDepsPromise) return _pdfDepsPromise
+
+    _pdfDepsPromise = Promise.all([
+        import('pdf-lib'),
+        import('@pdf-lib/fontkit')
+    ]).then(([pdfLib, fontkitMod]) => ({
+        PDFDocument: pdfLib.PDFDocument,
+        rgb: pdfLib.rgb,
+        fontkit: fontkitMod?.default || fontkitMod
+    }))
+
+    return _pdfDepsPromise
+}
 
 // Helper function to extract day name from date
 function getDayName(dateString) {
@@ -22,7 +37,7 @@ function getDayName(dateString) {
         const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
         return days[date.getDay()];
     } catch (e) {
-        console.error('Error parsing date for day name:', e);
+        logger.error('Error parsing date for day name:', e)
         return '';
     }
 }
@@ -67,6 +82,7 @@ function getCommissionFromArabic(value) {
 
 export const downloadFilledContract = async (contractData) => {
     try {
+        const { PDFDocument, rgb, fontkit } = await getPdfDeps()
         // Use the new template
         const existingPdfBytes = await fetch('/contract_template_v2.pdf').then(res => res.arrayBuffer())
 
@@ -201,7 +217,7 @@ export const downloadFilledContract = async (contractData) => {
         const pdfBytes = await pdfDoc.save()
         return pdfBytes
     } catch (error) {
-        console.error('PDF Generation Error:', error)
+        logger.error('PDF Generation Error:', error)
         throw error
     }
 }

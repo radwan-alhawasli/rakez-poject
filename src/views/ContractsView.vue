@@ -88,6 +88,7 @@ import { ref, computed, onMounted } from 'vue'
 import ContractModal from '../components/ContractModal.vue'
 import contractService from '../services/contractService'
 import authService from '../services/authService'
+import logger from '../utils/logger'
 
 export default {
   name: 'ContractsView',
@@ -147,7 +148,7 @@ export default {
           }
         })
       } catch (err) {
-        console.error('Error fetching contracts:', err)
+        logger.error('Error fetching contracts:', err)
         error.value = 'فشل تحميل العقود. يرجى التأكد من الصلاحيات.'
       } finally { isLoading.value = false }
     }
@@ -193,7 +194,7 @@ export default {
         }
         showModal.value = true
       } catch (error) {
-        console.error('Error fetching contract details:', error)
+        logger.error('Error fetching contract details:', error)
         // في حالة الخطأ، استخدم البيانات الأساسية
         selectedContract.value = c
         showModal.value = true
@@ -211,7 +212,7 @@ export default {
         fetchContracts()
         closeModal()
       } catch (err) {
-        console.error('Error approving contract:', err)
+        logger.error('Error approving contract:', err)
         alert('حدث خطأ أثناء اعتماد العقد')
       }
     }
@@ -226,7 +227,7 @@ export default {
         fetchContracts()
         closeModal()
       } catch (err) {
-        console.error('Error rejecting contract:', err)
+        logger.error('Error rejecting contract:', err)
         alert('حدث خطأ أثناء رفض العقد')
       }
     }

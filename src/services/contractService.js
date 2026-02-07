@@ -1,4 +1,5 @@
 import apiClient from '../api/apiClient'
+import logger from '../utils/logger'
 
 /**
  * خدمة العقود - API Integration
@@ -27,7 +28,7 @@ const contractService = {
       }
       return Array.isArray(contracts) ? contracts : []
     } catch (error) {
-      console.error('Error fetching admin contracts:', error)
+      logger.error('Error fetching admin contracts:', error)
       throw error
     }
   },
@@ -61,7 +62,7 @@ const contractService = {
       )
       return response.data
     } catch (error) {
-      console.error('Error updating contract status (PM):', error)
+      logger.error('Error updating contract status (PM):', error)
       throw error
     }
   },
@@ -78,7 +79,7 @@ const contractService = {
       )
       return response.data
     } catch (error) {
-      console.error('Error updating contract status (Admin):', error)
+      logger.error('Error updating contract status (Admin):', error)
       throw error
     }
   },
@@ -106,7 +107,7 @@ const contractService = {
       }
       return Array.isArray(contracts) ? contracts : []
     } catch (error) {
-      console.error('Error fetching contracts:', error)
+      logger.error('Error fetching contracts:', error)
       throw error
     }
   },
@@ -131,7 +132,7 @@ const contractService = {
       }
       return Array.isArray(contracts) ? contracts : []
     } catch (error) {
-      console.error('Error fetching editor contracts:', error)
+      logger.error('Error fetching editor contracts:', error)
       throw error
     }
   },
@@ -145,7 +146,7 @@ const contractService = {
       const response = await apiClient.get(`/editor/contracts/show/${id}`)
       return response.data.data || response.data
     } catch (error) {
-      console.error('Error fetching editor contract by id:', error)
+      logger.error('Error fetching editor contract by id:', error)
       throw error
     }
   },
@@ -159,7 +160,7 @@ const contractService = {
       const response = await apiClient.get(`/contracts/show/${id}`)
       return response.data.data || response.data
     } catch (error) {
-      console.error('Error fetching contract by id:', error)
+      logger.error('Error fetching contract by id:', error)
       throw error
     }
   },
@@ -171,11 +172,11 @@ const contractService = {
    */
   async createContract(payload) {
     try {
-      console.log('Creating contract payload:', payload)
+      logger.debug('Creating contract payload:', payload)
       const response = await apiClient.post('/contracts/store', payload)
       return response.data
     } catch (error) {
-      console.error('Error creating contract:', error)
+      logger.error('Error creating contract:', error)
       throw error
     }
   },
@@ -189,7 +190,7 @@ const contractService = {
       const response = await apiClient.put(`/contracts/update/${id}`, payload)
       return response.data
     } catch (error) {
-      console.error('Error updating contract:', error)
+      logger.error('Error updating contract:', error)
       throw error
     }
   },
@@ -201,12 +202,11 @@ const contractService = {
    */
   async storeContractInfo(id, payload) {
     try {
-      console.log(`📝 Storing contract info for ${id}:`, payload)
+      logger.debug(`Storing contract info for ${id}:`, payload)
       const response = await apiClient.post(`/contracts/store/info/${id}`, payload)
-      console.log('✅ Contract info stored successfully:', response.data)
       return response.data
     } catch (error) {
-      console.error('❌ Error storing contract info:', error.response?.data || error)
+      logger.error('Error storing contract info:', error?.response?.data || error)
       throw error
     }
   },
@@ -225,11 +225,10 @@ const contractService = {
    */
   async storeSecondPartyData(id, payload) {
     try {
-      console.log(`Storing second party data for ${id}:`, payload)
       const response = await apiClient.post(`/second-party-data/store/${id}`, payload)
       return response.data
     } catch (error) {
-      console.error('Error storing second party data:', error)
+      logger.error('Error storing second party data:', error)
       throw error
     }
   },
@@ -240,11 +239,10 @@ const contractService = {
    */
   async updateSecondPartyData(id, payload) {
     try {
-      console.log(`Updating second party data for ${id}:`, payload)
       const response = await apiClient.put(`/second-party-data/update/${id}`, payload)
       return response.data
     } catch (error) {
-      console.error('Error updating second party data:', error)
+      logger.error('Error updating second party data:', error)
       throw error
     }
   },
@@ -258,7 +256,7 @@ const contractService = {
       const response = await apiClient.get(`/second-party-data/show/${id}`)
       return response.data
     } catch (error) {
-      console.error('Error fetching second party data:', error)
+      logger.error('Error fetching second party data:', error)
       // Allow 404/400 to pass gracefully as "no data found"
       return null
     }
@@ -294,7 +292,7 @@ const contractService = {
       }
       return Array.isArray(units) ? units : []
     } catch (error) {
-      console.error('Error fetching contract units:', error)
+      logger.error('Error fetching contract units:', error)
       return []
     }
   },
@@ -308,7 +306,7 @@ const contractService = {
       const response = await apiClient.post(`/contracts/units/store/${id}`, payload)
       return response.data
     } catch (error) {
-      console.error('Error adding contract unit:', error)
+      logger.error('Error adding contract unit:', error)
       throw error
     }
   },
@@ -322,7 +320,7 @@ const contractService = {
       const response = await apiClient.put(`/contracts/units/update/${unitId}`, payload)
       return response.data
     } catch (error) {
-      console.error('Error updating contract unit:', error)
+      logger.error('Error updating contract unit:', error)
       throw error
     }
   },
@@ -336,18 +334,7 @@ const contractService = {
       const response = await apiClient.post(`/contracts/units/upload-csv/${id}`, formData)
       return response.data
     } catch (error) {
-      console.error('Error uploading units CSV:', error)
-      throw error
-    }
-  },
-
-  /**
-  async uploadContractUnitsCsv(id, formData) {
-    try {
-      const response = await apiClient.post(`/contracts/units/upload-csv/${id}`, formData)
-      return response.data
-    } catch (error) {
-      console.error('Error uploading units CSV:', error)
+      logger.error('Error uploading units CSV:', error)
       throw error
     }
   },
@@ -362,7 +349,7 @@ const contractService = {
       const response = await apiClient.get(`/photography-department/show/${id}`)
       return response.data
     } catch (error) {
-      console.error('Error fetching photography data:', error)
+      logger.error('Error fetching photography data:', error)
       // Return null rather than throwing so we can handle empty state gracefully
       return null
     }
@@ -377,7 +364,7 @@ const contractService = {
       const response = await apiClient.post(`/photography-department/store/${id}`, payload)
       return response.data
     } catch (error) {
-      console.error('Error storing photography data:', error)
+      logger.error('Error storing photography data:', error)
       throw error
     }
   },
@@ -391,7 +378,7 @@ const contractService = {
       const response = await apiClient.put(`/photography-department/update/${id}`, payload)
       return response.data
     } catch (error) {
-      console.error('Error updating photography data:', error)
+      logger.error('Error updating photography data:', error)
       throw error
     }
   },
@@ -408,7 +395,7 @@ const contractService = {
       const response = await apiClient.post(`/photography-department/approve/${id}`, payload)
       return response.data
     } catch (error) {
-      console.error('Error approving photography:', error)
+      logger.error('Error approving photography:', error)
       throw error
     }
   },
@@ -434,7 +421,7 @@ const contractService = {
       }
       return Array.isArray(devs) ? devs : []
     } catch (error) {
-      console.error('Error fetching developers:', error)
+      logger.error('Error fetching developers:', error)
       return []
     }
   },
@@ -448,7 +435,7 @@ const contractService = {
       const response = await apiClient.get(`/montage-department/show/${id}`)
       return response.data
     } catch (error) {
-      console.error('Error fetching montage data:', error)
+      logger.error('Error fetching montage data:', error)
       return null
     }
   },
@@ -462,7 +449,7 @@ const contractService = {
       const response = await apiClient.post(`/montage-department/store/${id}`, payload)
       return response.data
     } catch (error) {
-      console.error('Error storing montage data:', error)
+      logger.error('Error storing montage data:', error)
       throw error
     }
   },
@@ -480,7 +467,7 @@ const contractService = {
       const response = await apiClient.post(`/montage-department/update/${id}`, payload)
       return response.data
     } catch (error) {
-      console.error('Error updating montage data:', error)
+      logger.error('Error updating montage data:', error)
       throw error
     }
   },
@@ -494,7 +481,7 @@ const contractService = {
       const response = await apiClient.get('/second-party-data/contracts-by-email', { params: { email } })
       return response.data
     } catch (error) {
-      console.error('Error fetching developer contracts:', error)
+      logger.error('Error fetching developer contracts:', error)
       return []
     }
   }

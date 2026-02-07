@@ -236,6 +236,7 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import contractService from '../services/contractService'
 import authService from '../services/authService'
+import logger from '../utils/logger'
 
 export default {
   name: 'ProjectManagementView',
@@ -291,8 +292,8 @@ export default {
         const data = isEditor.value 
             ? await contractService.getEditorContracts()
             : await contractService.getContracts()
-        console.log('Fetched Projects:', data)
-        console.log('User Role:', userRole.value, 'Is Editor:', isEditor.value)
+        logger.debug('Fetched Projects:', data)
+        logger.debug('User Role:', userRole.value, 'Is Editor:', isEditor.value)
 
         // Transform data to match UI
         projects.value = (Array.isArray(data) ? data : []).map(p => ({
@@ -315,7 +316,7 @@ export default {
             landmark: 'مطار الملك خالد'
         }))
       } catch (err) {
-        console.error('Error fetching projects:', err)
+        logger.error('Error fetching projects:', err)
       } finally {
         isLoading.value = false
       }
@@ -380,7 +381,7 @@ export default {
             }
 
             if (details) {
-                console.log('Fetched Details:', details)
+                logger.debug('Fetched Details:', details)
                 // Normalize and merge data
                 selectedProject.value = {
                     ...selectedProject.value,
@@ -393,7 +394,7 @@ export default {
                 }
             }
         } catch (e) {
-            console.error('Failed to fetch detailed project info', e)
+            logger.error('Failed to fetch detailed project info', e)
         }
     }
 
@@ -426,7 +427,7 @@ export default {
                mediaForm.isExisting = false
            }
         } catch (e) {
-            console.error(e)
+            logger.error(e)
             // clear on error
             mediaForm.image_url = ''
             mediaForm.video_url = ''
@@ -459,7 +460,7 @@ export default {
             }
             closeMediaModalState()
         } catch (error) {
-             console.error('Save failed:', error)
+             logger.error('Save failed:', error)
              const msg = error.response?.data?.message || error.message
              if (msg && msg.includes('يجب أن يكون العقد لديه معلومات')) {
                  alert('تنبيه: لا يمكن إضافة صور لهذا المشروع لأنه يفتقر إلى بيانات العقد الأساسية. يرجى إكمال بيانات المشروع أولاً (الطرف الثاني، المعلومات المالية) في صفحة التتبع.')
@@ -488,7 +489,7 @@ export default {
     const submitWorkspaceLink = async () => {
         if (!workspaceForm.url) return alert('الرجاء إدخال الرابط')
         // Mock API call
-        console.log(`Submitting workspace link for project ${selectedProject.value.id}:`, workspaceForm)
+        logger.debug(`Submitting workspace link for project ${selectedProject.value.id}:`, workspaceForm)
         
         // Simulate success and notification
         alert('تم إضافة الرابط بنجاح وإشعار الإدارة ومدير المشاريع.')

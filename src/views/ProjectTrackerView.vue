@@ -593,6 +593,7 @@ import authService from '../services/authService'
 
 import salesService from '../services/salesService'
 import notificationService from '../services/notificationService'
+import logger from '../utils/logger'
 
 export default {
   name: 'ProjectTracker',
@@ -632,7 +633,7 @@ export default {
             const all = res.data?.data || res.data || []
             projectReservations.value = all.filter(r => r.contract_id == route.params.id)
         } catch (e) {
-            console.error(e)
+            logger.error(e)
         } finally {
             reservationsLoading.value = false
         }
@@ -653,7 +654,7 @@ export default {
             loadProjectReservations()
             loadUnits() // Refresh unit status
         } catch (e) {
-            console.error(e)
+            logger.error(e)
             notificationService.addNotification('فشل الحجز', 'error')
         } finally {
             isSubmitting.value = false
@@ -667,7 +668,7 @@ export default {
             notificationService.addNotification('تم تأكيد الحجز بنجاح', 'success')
             loadProjectReservations()
         } catch (e) { 
-            console.error(e) 
+            logger.error(e) 
             notificationService.addNotification('فشل تأكيد الحجز', 'error')
         }
     }
@@ -682,7 +683,7 @@ export default {
             a.click()
             window.URL.revokeObjectURL(url) // Clean up the object URL
         } catch (e) { 
-            console.error(e) 
+            logger.error(e) 
             notificationService.addNotification('فشل تنزيل الإيصال', 'error')
         }
     }
@@ -826,7 +827,7 @@ export default {
                  data = await contractService.getContractById(id)
              }
           } catch(e) {
-             console.log('Main fetch failed, utilizing fallback')
+             logger.debug('Main fetch failed, utilizing fallback')
           }
 
           if (!data || !data.project_name) {
@@ -886,7 +887,7 @@ export default {
           }
 
        } catch (e) {
-         console.error('Error loading project view:', e)
+         logger.error('Error loading project view:', e)
        } finally {
          isLoading.value = false
        }
@@ -952,7 +953,7 @@ export default {
             availableTeams.value = allTeams.filter(t => !assignedIds.has(t.id))
 
         } catch (error) {
-            console.error('Error loading teams:', error)
+            logger.error('Error loading teams:', error)
         } finally {
             assignedTeamsLoading.value = false
         }
@@ -968,7 +969,7 @@ export default {
             selectedTeamId.value = ''
             loadTeamsData() // Reload lists
         } catch (error) {
-            console.error('Error assigning team:', error)
+            logger.error('Error assigning team:', error)
             alert('حدث خطأ أثناء تعيين الفريق')
         } finally {
             isTeamActionLoading.value = false
@@ -984,7 +985,7 @@ export default {
             alert('تم إزالة الفريق بنجاح')
             loadTeamsData() // Reload lists
         } catch (error) {
-            console.error('Error removing team:', error)
+            logger.error('Error removing team:', error)
             alert('حدث خطأ أثناء إزالة الفريق')
         } finally {
             isTeamActionLoading.value = false
@@ -1007,7 +1008,7 @@ export default {
                }
            })
            
-           console.log('Saving payload:', payload)
+           logger.debug('Saving payload:', payload)
 
             // Try Create first, then Update
            try {
@@ -1027,7 +1028,7 @@ export default {
            }
 
        } catch (error) {
-           console.error('Failed to save progress:', error)
+           logger.error('Failed to save progress:', error)
            const errorMsg = error.response?.data?.message || error.message
            alert(`حدث خطأ أثناء حفظ البيانات: ${errorMsg}`)
        }
@@ -1049,7 +1050,7 @@ export default {
                 units.value = await contractService.getContractUnits(project.value.id)
             }
         } catch (error) {
-            console.error('Error loading units:', error)
+            logger.error('Error loading units:', error)
             units.value = []
         }
         unitsLoading.value = false
@@ -1105,7 +1106,7 @@ export default {
             isEditingPending.value = false
 
         } catch (error) {
-            console.error('Photography save error:', error)
+            logger.error('Photography save error:', error)
              const msg = error.response?.data?.message || error.message || 'خطأ غير معروف'
             alert(`حدث خطأ أثناء حفظ البيانات: ${msg}`)
             isEditingPending.value = false
@@ -1131,7 +1132,7 @@ export default {
             photographyForm.status = 'approved'
             alert('تم قبول الصور بنجاح')
         } catch (error) {
-            console.error('Approval error:', error)
+            logger.error('Approval error:', error)
             alert('حدث خطأ أثناء القبول: ' + (error.response?.data?.message || error.message))
         }
     }
@@ -1156,7 +1157,7 @@ export default {
             showRejectModal.value = false
             alert('تم رفض الصور')
         } catch (error) {
-             console.error(error)
+             logger.error(error)
             alert('حدث خطأ أثناء الرفض')
         }
     }
@@ -1186,7 +1187,7 @@ export default {
             closeUnitModal()
             loadUnits()
         } catch (error) {
-            console.error(error)
+            logger.error(error)
             const msg = error.response?.data?.message || error.message || 'خطأ غير معروف'
             alert(`حدث خطأ أثناء حفظ الوحدة: ${msg}`)
         }
@@ -1218,7 +1219,7 @@ export default {
             alert('تم رفع ملف CSV بنجاح')
             loadUnits()
         } catch (error) {
-            console.error(error)
+            logger.error(error)
             const msg = error.response?.data?.message || error.message || 'خطأ غير معروف'
             alert(`فشل رفع الملف: ${msg}`)
         }
@@ -1243,7 +1244,7 @@ export default {
             boardsTabState.value = 'completed'
             alert('تم تأكيد إضافة اللوحات بنجاح')
         } catch (error) {
-            console.error('Error saving board:', error)
+            logger.error('Error saving board:', error)
             alert('حدث خطأ أثناء حفظ اللوحات')
         } finally {
             isBoardSaving.value = false

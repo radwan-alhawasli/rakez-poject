@@ -58,6 +58,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import userService from '../services/userService'
+import logger from '../utils/logger'
 
 export default {
   name: 'LinkMarketersModal',
@@ -83,7 +84,7 @@ export default {
             const data = await userService.getEmployees({ type: 0 })
             allMarketers.value = data
         } catch (error) {
-            console.error(error)
+            logger.error('Failed to fetch marketers:', error)
             // Mock if fails
             allMarketers.value = [
                 { id: 101, name: 'أحمد العتيبي', email: 'ahmad@rakez.sa', team: props.team.id },

@@ -1,5 +1,6 @@
 import apiClient from '../api/apiClient'
 import { ROLE_MAP } from '../constants/roles'
+import logger from '../utils/logger'
 
 const AUTH_TOKEN_KEY = 'authToken'
 const USER_INFO_KEY = 'userInfo'
@@ -13,12 +14,10 @@ const authService = {
      */
     async login(email, password) {
         try {
-            console.log('Attempting login for:', email)
             // Use the base URL from apiClient configuration
             const response = await apiClient.post('/login', { email, password })
 
             const { access_token, user } = response.data
-            console.log('Login response data:', response.data)
 
             if (access_token) {
                 localStorage.setItem(AUTH_TOKEN_KEY, access_token)
@@ -35,7 +34,6 @@ const authService = {
                     userData.type = ROLE_MAP[userData.type]
                 }
 
-                console.log('Saving normalized user data:', userData)
                 localStorage.setItem(USER_INFO_KEY, JSON.stringify(userData))
 
                 return userData
@@ -43,7 +41,7 @@ const authService = {
 
             throw new Error('No token received')
         } catch (error) {
-            console.error('Login error:', error)
+            logger.error('Login error:', error)
             throw error
         }
     },
@@ -55,7 +53,7 @@ const authService = {
         try {
             await apiClient.post('/logout')
         } catch (error) {
-            console.error('Logout error:', error)
+            logger.error('Logout error:', error)
             // We continue to clear local storage even if API call fails
         } finally {
             this.clearSession()

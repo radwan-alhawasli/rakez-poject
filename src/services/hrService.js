@@ -1,4 +1,5 @@
 import apiClient from '../api/apiClient'
+import logger from '../utils/logger'
 
 /**
  * HR Service - Manages all HR-related API calls using admin endpoints
@@ -16,7 +17,7 @@ export const getDashboardMetrics = async () => {
         const response = await apiClient.get('/hr/dashboard')
         return response.data
     } catch (error) {
-        console.error('Error fetching dashboard metrics:', error)
+        logger.error('Error fetching dashboard metrics:', error)
         throw error
     }
 }
@@ -33,7 +34,7 @@ export const getEmployees = async (params = {}) => {
         const response = await apiClient.get('/hr/list_employees', { params })
         return response.data
     } catch (error) {
-        console.error('Error fetching employees:', error)
+        logger.error('Error fetching employees:', error)
         throw error
     }
 }
@@ -47,7 +48,7 @@ export const getEmployeeById = async (employeeId) => {
         const response = await apiClient.get(`/hr/show_employee/${employeeId}`)
         return response.data
     } catch (error) {
-        console.error(`Error fetching employee ${employeeId}:`, error)
+        logger.error(`Error fetching employee ${employeeId}:`, error)
         throw error
     }
 }
@@ -62,7 +63,7 @@ export const createEmployee = async (employeeData) => {
         const response = await apiClient.post('/hr/add_employee', employeeData)
         return response.data
     } catch (error) {
-        console.error('Error creating employee:', error)
+        logger.error('Error creating employee:', error)
         throw error
     }
 }
@@ -76,7 +77,7 @@ export const updateEmployee = async (employeeId, employeeData) => {
         const response = await apiClient.put(`/hr/update_employee/${employeeId}`, employeeData)
         return response.data
     } catch (error) {
-        console.error(`Error updating employee ${employeeId}:`, error)
+        logger.error(`Error updating employee ${employeeId}:`, error)
         throw error
     }
 }
@@ -90,7 +91,7 @@ export const deleteEmployee = async (employeeId) => {
         const response = await apiClient.delete(`/hr/delete_employee/${employeeId}`)
         return response.data
     } catch (error) {
-        console.error(`Error deleting employee ${employeeId}:`, error)
+        logger.error(`Error deleting employee ${employeeId}:`, error)
         throw error
     }
 }
@@ -106,7 +107,7 @@ export const getMarketerPerformance = async (params = {}) => {
         const response = await apiClient.get('/admin/employees/performance', { params }).catch(() => ({ data: [] }))
         return response.data
     } catch (error) {
-        console.error('Error fetching marketer performance:', error)
+        logger.error('Error fetching marketer performance:', error)
         throw error
     }
 }
@@ -119,7 +120,7 @@ export const setMarketerGoal = async (marketerId, goalData) => {
         const response = await apiClient.post(`/admin/employees/${marketerId}/goal`, goalData).catch(() => ({ data: {} }))
         return response.data
     } catch (error) {
-        console.error(`Error setting goal for marketer ${marketerId}:`, error)
+        logger.error(`Error setting goal for marketer ${marketerId}:`, error)
         throw error
     }
 }
@@ -151,7 +152,7 @@ export const generateTeamPerformanceReport = async (month, year, format = 'pdf')
 
         return response.data
     } catch (error) {
-        console.error('Error generating team performance report:', error)
+        logger.error('Error generating team performance report:', error)
         throw error
     }
 }
@@ -166,13 +167,11 @@ export const generateTeamPerformanceReport = async (month, year, format = 'pdf')
 export const getTeams = async (params = {}) => {
     try {
         const response = await apiClient.get('/teams/index', { params })
-        console.log('📊 Teams API Response:', response.data)
         // Returns array of teams with id and name
         const teams = response.data.data || response.data || []
-        console.log('✅ Parsed teams:', teams)
         return teams
     } catch (error) {
-        console.error('❌ Error fetching teams:', error)
+        logger.error('Error fetching teams:', error)
         throw error
     }
 }
@@ -186,7 +185,7 @@ export const getTeamById = async (teamId) => {
         const response = await apiClient.get(`/teams/show/${teamId}`)
         return response.data.data || response.data
     } catch (error) {
-        console.error(`Error fetching team ${teamId}:`, error)
+        logger.error(`Error fetching team ${teamId}:`, error)
         throw error
     }
 }
@@ -200,7 +199,7 @@ export const createTeam = async (teamData) => {
         const response = await apiClient.post('/project_management/teams/store', teamData)
         return response.data
     } catch (error) {
-        console.error('Error creating team:', error)
+        logger.error('Error creating team:', error)
         throw error
     }
 }
@@ -214,7 +213,7 @@ export const updateTeam = async (teamId, teamData) => {
         const response = await apiClient.post(`/project_management/teams/update/${teamId}`, teamData)
         return response.data
     } catch (error) {
-        console.error(`Error updating team ${teamId}:`, error)
+        logger.error(`Error updating team ${teamId}:`, error)
         throw error
     }
 }
@@ -228,7 +227,7 @@ export const deleteTeam = async (teamId) => {
         const response = await apiClient.delete(`/project_management/teams/delete/${teamId}`)
         return response.data
     } catch (error) {
-        console.error(`Error deleting team ${teamId}:`, error)
+        logger.error(`Error deleting team ${teamId}:`, error)
         throw error
     }
 }
@@ -242,7 +241,7 @@ export const linkMarketersToTeam = async (teamId, marketerIds) => {
         const response = await apiClient.post(`/project_teams/teams/add/${teamId}`, { team_ids: marketerIds })
         return response.data
     } catch (error) {
-        console.error(`Error linking marketers to team ${teamId}:`, error)
+        logger.error(`Error linking marketers to team ${teamId}:`, error)
         throw error
     }
 }
@@ -256,7 +255,7 @@ export const getTeamContracts = async (teamId) => {
         const response = await apiClient.get(`/hr/teams/contracts/${teamId}`)
         return response.data.data || response.data || []
     } catch (error) {
-        console.error(`Error fetching contracts for team ${teamId}:`, error)
+        logger.error(`Error fetching contracts for team ${teamId}:`, error)
         throw error
     }
 }
@@ -270,7 +269,7 @@ export const getTeamContractLocations = async (teamId) => {
         const response = await apiClient.get(`/hr/teams/contracts/locations/${teamId}`)
         return response.data.data || response.data || []
     } catch (error) {
-        console.error(`Error fetching locations for team ${teamId}:`, error)
+        logger.error(`Error fetching locations for team ${teamId}:`, error)
         throw error
     }
 }
@@ -284,7 +283,7 @@ export const getTeamsForContract = async (contractId) => {
         const response = await apiClient.get(`/hr/teams/getTeamsForContract/${contractId}`)
         return response.data.data || response.data || []
     } catch (error) {
-        console.error(`Error fetching teams for contract ${contractId}:`, error)
+        logger.error(`Error fetching teams for contract ${contractId}:`, error)
         throw error
     }
 }
@@ -299,7 +298,7 @@ export const getTeamSalesAverage = async (teamId) => {
         const response = await apiClient.get(`/hr/teams/sales-average/${teamId}`)
         return response.data.data || response.data || {}
     } catch (error) {
-        console.error(`Error fetching sales average for team ${teamId}:`, error)
+        logger.error(`Error fetching sales average for team ${teamId}:`, error)
         throw error
     }
 }

@@ -92,6 +92,7 @@ import { ref, onMounted } from 'vue'
 import hrService from '../services/hrService'
 import AddUserModal from './AddUserModal.vue'
 import { getRoleLabel, getRoleClass } from '../constants/roles'
+import logger from '../utils/logger'
 
 export default {
   name: 'UserManagement',
@@ -111,9 +112,8 @@ export default {
         const data = await hrService.getEmployees()
         // hrService returns data directly
         users.value = Array.isArray(data) ? data : (data?.data || data?.employees || [])
-        console.log('Processed users for UI:', users.value)
       } catch (error) {
-        console.error('Failed to fetch users', error)
+        logger.error('Failed to fetch users', error)
         users.value = []
         alert('فشل في جلب البيانات من الخادم. يرجى التأكد من تسجيل الدخول.')
       } finally {
@@ -133,7 +133,7 @@ export default {
         selectedUser.value = details.data || details
         showModal.value = true
       } catch (error) {
-        console.error('Error fetching user details:', error)
+        logger.error('Error fetching user details:', error)
         alert('حدث خطأ أثناء جلب تفاصيل المستخدم')
       } finally {
         loading.value = false
@@ -156,7 +156,7 @@ export default {
         await fetchUsers()
         closeModal()
       } catch (error) {
-        console.error('Error saving user:', error)
+        logger.error('Error saving user:', error)
         let errMsg = 'حدث خطأ أثناء حفظ المستخدم'
         
         if (error.response?.data?.message) {
@@ -180,7 +180,7 @@ export default {
           alert(`تم ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name} بنجاح`)
         }
       } catch (error) {
-        console.error('Error toggling status', error)
+        logger.error('Error toggling status', error)
         alert('حدث خطأ أثناء تغيير الحالة')
       }
     }
@@ -192,7 +192,7 @@ export default {
           await fetchUsers()
           alert('تم حذف المستخدم بنجاح')
         } catch (error) {
-          console.error('Error deleting user', error)
+          logger.error('Error deleting user', error)
           alert('حدث خطأ أثناء حذف المستخدم')
         }
       }
