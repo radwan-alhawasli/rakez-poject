@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" :class="{ 'sidebar-open': isSidebarOpen, 'sidebar-hovered': isSidebarHovered }">
     <!-- الهيدر العلوي -->
     <header class="top-header">
       <div class="header-left">
@@ -73,7 +73,12 @@
 
     <div class="main-wrapper" :class="{ 'sidebar-open': isSidebarOpen }">
       <!-- القائمة الجانبية -->
-      <aside class="sidebar" :class="{ 'open': isSidebarOpen }">
+      <aside
+        class="sidebar"
+        :class="{ open: isSidebarOpen }"
+        @mouseenter="onSidebarEnter"
+        @mouseleave="onSidebarLeave"
+      >
         <div class="sidebar-header">
            <img src="/img/logo-circle.png" class="sidebar-logo-img" alt="Logo" />
            <div class="sidebar-logo-text">
@@ -799,6 +804,11 @@ export default {
     const isSidebarOpen = ref(false)
     const toggleSidebar = () => { isSidebarOpen.value = !isSidebarOpen.value }
 
+    // Used to "push" layout on hover for pointer devices
+    const isSidebarHovered = ref(false)
+    const onSidebarEnter = () => { isSidebarHovered.value = true }
+    const onSidebarLeave = () => { isSidebarHovered.value = false }
+
     const user = computed(() => {
         route.path
         return authService.getCurrentUser()
@@ -883,7 +893,10 @@ export default {
       showNotifications,
       unreadCount,
       isSidebarOpen,
+      isSidebarHovered,
       toggleSidebar,
+      onSidebarEnter,
+      onSidebarLeave,
       toggleNotifications,
       markAsRead,
       markAllAsRead,
@@ -2300,6 +2313,267 @@ export default {
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
   100% { transform: scale(1); }
+}
+
+/* ======================================================
+   Sidebar should NEVER disappear (all screen sizes)
+   - Always show a compact sidebar rail.
+   - Expand with toggle (adds .open class).
+   ====================================================== */
+
+.app-container {
+  --sidebar-collapsed-width: 80px;
+  --sidebar-expanded-width: 260px;
+  --sidebar-rail-padding-y: 14px;
+  --sidebar-rail-gap: 10px;
+  --sidebar-rail-item: 44px;
+}
+
+/* Compact rail on smaller screens */
+@media (max-width: 1199px) {
+  .app-container {
+    --sidebar-collapsed-width: 72px;
+    --sidebar-expanded-width: 280px;
+    --sidebar-rail-padding-y: 12px;
+    --sidebar-rail-gap: 9px;
+    --sidebar-rail-item: 42px;
+  }
+}
+
+@media (max-width: 575px) {
+  .app-container {
+    --sidebar-collapsed-width: 64px;
+    --sidebar-expanded-width: clamp(240px, 85vw, 320px);
+    --sidebar-rail-padding-y: 10px;
+    --sidebar-rail-gap: 8px;
+    --sidebar-rail-item: 40px;
+  }
+}
+
+/* Keep header/content/footer clear of the compact rail */
+.top-header {
+  right: var(--sidebar-collapsed-width) !important;
+}
+
+.main-wrapper {
+  margin-right: var(--sidebar-collapsed-width) !important;
+}
+
+.footer {
+  margin-right: var(--sidebar-collapsed-width) !important;
+}
+
+/* Sidebar is always on-screen; never off-canvas */
+.sidebar {
+  right: 0 !important;
+  width: var(--sidebar-collapsed-width) !important;
+}
+
+.sidebar:hover {
+  width: var(--sidebar-expanded-width) !important;
+}
+
+.sidebar.open {
+  width: var(--sidebar-expanded-width) !important;
+}
+
+/* ------------------------------------------------------
+   Rail mode (collapsed): center icons + tight spacing
+   Applies on ALL screen sizes, ensuring consistent look.
+   ------------------------------------------------------ */
+.sidebar:not(:hover):not(.open) .sidebar-nav {
+  padding: var(--sidebar-rail-padding-y) 0 !important;
+  gap: var(--sidebar-rail-gap) !important;
+  align-items: center !important;
+  overflow-x: hidden;
+  /* Prevent scrollbar from shifting centering */
+  scrollbar-width: none;
+}
+.sidebar:not(:hover):not(.open) .sidebar-nav::-webkit-scrollbar {
+  width: 0 !important;
+}
+
+.sidebar:not(:hover):not(.open) .nav-item {
+  width: var(--sidebar-rail-item) !important;
+  height: var(--sidebar-rail-item) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  justify-content: center !important;
+}
+
+.sidebar:not(:hover):not(.open) .nav-content {
+  justify-content: center !important;
+}
+
+.sidebar:not(:hover):not(.open) .nav-text {
+  display: none !important;
+}
+
+.sidebar:not(:hover):not(.open) .sidebar-header {
+  justify-content: center !important;
+  padding: 0 !important;
+  gap: 0 !important;
+}
+
+.sidebar:not(:hover):not(.open) .sidebar-logo-text {
+  /* Prevent the stray "ر" from peeking in collapsed mode */
+  display: none !important;
+}
+
+.sidebar:not(:hover):not(.open) .nav-item::after {
+  /* No tooltips in rail mode (prevents layout jitter on small screens) */
+  display: none !important;
+}
+
+.sidebar:not(:hover):not(.open) .sidebar-footer {
+  padding: 12px 8px !important;
+  align-items: center;
+}
+
+.sidebar:not(:hover):not(.open) .user-profile {
+  justify-content: center;
+  gap: 0 !important;
+}
+
+.sidebar:not(:hover):not(.open) .user-info {
+  /* Hide layout box too, not only opacity (fixes bottom cut text) */
+  display: none !important;
+}
+
+.sidebar:not(:hover):not(.open) .logout-text {
+  display: none !important;
+}
+
+.sidebar:not(:hover):not(.open) .logout-btn {
+  width: var(--sidebar-rail-item) !important;
+  height: var(--sidebar-rail-item) !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  margin: 0 auto !important;
+}
+
+/* When opened on mobile/tablet, don't block the page with overlay */
+.main-wrapper.sidebar-open::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Disable hover-expand on touch devices (use toggle only) */
+@media (hover: none) and (pointer: coarse) {
+  .sidebar:hover {
+    width: var(--sidebar-collapsed-width) !important;
+  }
+}
+
+/* Push layout on pointer devices (hover/open) */
+@media (min-width: 992px) {
+  .app-container.sidebar-open .top-header,
+  .app-container.sidebar-hovered .top-header {
+    right: var(--sidebar-expanded-width) !important;
+  }
+
+  .app-container.sidebar-open .main-wrapper,
+  .app-container.sidebar-hovered .main-wrapper {
+    margin-right: var(--sidebar-expanded-width) !important;
+  }
+
+  .app-container.sidebar-open .footer,
+  .app-container.sidebar-hovered .footer {
+    margin-right: var(--sidebar-expanded-width) !important;
+  }
+}
+
+/* Make "open" behave like hover (show texts/layout) */
+.sidebar.open .sidebar-logo-text,
+.sidebar.open .nav-text,
+.sidebar.open .user-info,
+.sidebar.open .logout-text {
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: auto;
+}
+
+.sidebar.open .nav-item {
+  width: 100% !important;
+  height: 48px !important;
+  border-radius: 12px !important;
+  padding: 0 16px !important;
+  justify-content: flex-start !important;
+  margin: 0 !important;
+}
+
+.sidebar.open .nav-content {
+  justify-content: flex-start !important;
+  gap: 20px !important;
+}
+
+.sidebar.open .nav-text {
+  position: relative !important;
+  right: auto !important;
+}
+
+.sidebar.open .logout-btn {
+  width: 100% !important;
+  padding: 0 15px !important;
+  justify-content: flex-start !important;
+  margin: 0 !important;
+  border-radius: 12px !important;
+}
+
+/* Make the compact rail look nicer on very small screens */
+@media (max-width: 575px) {
+  .sidebar-header {
+    height: 56px !important;
+    padding: 0 8px !important;
+    justify-content: center;
+  }
+
+  .sidebar-logo-text {
+    display: none !important;
+  }
+
+  .sidebar-logo-img {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 10px !important;
+  }
+
+  .sidebar-nav {
+    padding: 12px 6px !important;
+    gap: 4px !important;
+  }
+
+  .nav-item {
+    width: 40px !important;
+    height: 40px !important;
+    margin: 6px auto !important;
+  }
+
+  .nav-icon-svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .sidebar-footer {
+    padding: 10px 8px !important;
+    gap: 10px !important;
+  }
+
+  .avatar {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 12px !important;
+  }
+
+  .logout-btn {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .sidebar-nav::-webkit-scrollbar { width: 2px; }
+  .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); }
 }
 
 </style>
