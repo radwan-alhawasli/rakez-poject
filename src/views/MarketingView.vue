@@ -1730,7 +1730,8 @@ export default {
 .tab-content {
   padding: 30px;
   overflow-y: auto;
-  max-height: calc(100vh - 160px);
+  /* Use dynamic viewport units to avoid mobile URL-bar cutoffs */
+  max-height: calc(100dvh - 160px);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -2490,8 +2491,10 @@ export default {
 /* --- AI Assistant Styles --- */
 .ai-chat-container {
   display: grid;
-  grid-template-columns: 280px 1fr;
-  height: 600px;
+  grid-template-columns: minmax(260px, 320px) 1fr;
+  /* Never "hide" content: keep a responsive height and let inner areas scroll */
+  height: clamp(520px, 70dvh, 760px);
+  max-height: calc(100dvh - 220px);
   background: white;
   border-radius: 20px;
   overflow: hidden;
@@ -2504,6 +2507,8 @@ export default {
   border-left: 1px solid rgba(177, 162, 143, 0.15);
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  min-width: 0;
 }
 
 .sidebar-header-ai {
@@ -2538,6 +2543,7 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
+  min-height: 0;
 }
 
 .conversation-item-ai {
@@ -2560,6 +2566,8 @@ export default {
   display: flex;
   flex-direction: column;
   background: white;
+  min-height: 0;
+  min-width: 0;
 }
 
 .chat-messages {
@@ -2569,6 +2577,62 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
+}
+
+/* Responsive AI layout: stack panels instead of clipping */
+@media (max-width: 991px) {
+  .ai-chat-container {
+    grid-template-columns: 1fr;
+    height: auto;
+    max-height: none;
+  }
+
+  .ai-main-chat {
+    min-height: clamp(460px, 55dvh, 720px);
+  }
+
+  .chat-messages {
+    padding: 16px;
+  }
+
+  .chat-input-area {
+    padding: 16px;
+  }
+
+  .ai-sidebar {
+    border-left: none;
+    border-top: 1px solid rgba(177, 162, 143, 0.15);
+  }
+
+  .sidebar-header-ai {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .sidebar-header-ai h3 {
+    margin: 0;
+    font-size: 15px;
+  }
+
+  .btn-new-chat {
+    width: auto;
+    padding: 8px 12px;
+    white-space: nowrap;
+  }
+
+  .conversations-list-ai {
+    max-height: 220px;
+  }
+}
+
+@media (max-width: 575px) {
+  .conversations-list-ai {
+    max-height: 180px;
+  }
 }
 
 .chat-bubble {
