@@ -472,6 +472,14 @@
               </div>
             </router-link>
 
+            <!-- 4.6 إدارة الفريق والمشاريع -->
+            <router-link to="/marketing/team-projects" class="nav-item" active-class="active" data-tooltip="إدارة الفريق والمشاريع">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+                <span class="nav-text">إدارة الفريق والمشاريع</span>
+              </div>
+            </router-link>
+
             <!-- 5. المهام التسويقية -->
             <router-link to="/marketing/tasks" class="nav-item" active-class="active" data-tooltip="المهام التسويقية">
               <div class="nav-content">
@@ -493,6 +501,14 @@
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"></path><path d="M12 6a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"></path></svg>
                 <span class="nav-text">المساعد الذكي</span>
+              </div>
+            </router-link>
+
+            <!-- 7. التقارير والمخرجات -->
+            <router-link to="/marketing/reports-outputs" class="nav-item" active-class="active" data-tooltip="التقارير والمخرجات">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <span class="nav-text">التقارير والمخرجات</span>
               </div>
             </router-link>
 
@@ -777,7 +793,11 @@
       <main class="main-content">
         <router-view v-slot="{ Component }">
           <transition name="fade-slide" mode="out-in">
-            <component :is="Component" />
+            <component v-if="Component" :is="Component" />
+            <div v-else class="loading-state" style="padding: 24px; text-align: center;">
+              <div class="spinner" style="margin: 0 auto 10px;"></div>
+              <p style="color:#64748b; margin:0;">جاري تحميل الصفحة...</p>
+            </div>
           </transition>
         </router-view>
       </main>

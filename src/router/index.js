@@ -134,9 +134,14 @@ const routes = [
                     { path: 'plans', name: 'MarketingPlans', component: () => import('../views/MarketingView.vue') },
                     { path: 'ai-assistant', name: 'MarketingAiAssistant', component: () => import('../views/MarketingView.vue') },
 
+                    // New tabs requested (UI-first; API optional)
+                    { path: 'team-projects', name: 'MarketingTeamProjects', component: () => import('../views/MarketingView.vue') },
+                    { path: 'reports-outputs', name: 'MarketingReportsOutputs', component: () => import('../views/MarketingView.vue') },
+
                     // Backward-compatible routes -> redirect into /marketing/plans
                     { path: 'developer-plan', name: 'MarketingDeveloperPlan', redirect: { name: 'MarketingPlans', query: { sub: 'developer' } } },
-                    { path: 'employee-plans', name: 'MarketingEmployeePlans', redirect: { name: 'MarketingPlans', query: { sub: 'employee' } } }
+                    { path: 'employee-plans', name: 'MarketingEmployeePlans', redirect: { name: 'MarketingPlans', query: { sub: 'employee' } } },
+                    { path: 'expected-sales', name: 'MarketingExpectedSales', redirect: { name: 'MarketingPlans', query: { sub: 'expected-sales' } } }
                 ]
             },
             {

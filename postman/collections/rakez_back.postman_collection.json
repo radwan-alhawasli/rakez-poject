@@ -501,7 +501,9 @@
                         {
                           "key": "csv_file",
                           "type": "file",
-                          "src": "/C:/Users/impos/Desktop/Projects/Rakez/rakez-erp/storage/app/samples/sample_units_english.csv"
+                          "src": [
+                            "/C:/Users/impos/Desktop/Projects/Rakez/rakez-erp/storage/app/samples/sample_units_english.csv"
+                          ]
                         }
                       ]
                     },
@@ -1678,7 +1680,9 @@
                         {
                           "key": "csv_file",
                           "type": "file",
-                          "src": "/C:/Users/impos/Desktop/Projects/Rakez/rakez-erp/storage/app/samples/sample_units.csv"
+                          "src": [
+                            "/C:/Users/impos/Desktop/Projects/Rakez/rakez-erp/storage/app/samples/sample_units.csv"
+                          ]
                         }
                       ]
                     },
@@ -3363,12 +3367,16 @@
                     {
                       "key": "cv",
                       "type": "file",
-                      "src": "/C:/Users/impos/Downloads/Telegram Desktop/Majd_Bayer_Backend_Engineer_cv (2).docx"
+                      "src": [
+                        "/C:/Users/impos/Downloads/Telegram Desktop/Majd_Bayer_Backend_Engineer_cv (2).docx"
+                      ]
                     },
                     {
                       "key": "contract",
                       "type": "file",
-                      "src": "/C:/Users/impos/Downloads/Telegram Desktop/Majd_Bayer_Backend_Engineer_cv.docx"
+                      "src": [
+                        "/C:/Users/impos/Downloads/Telegram Desktop/Majd_Bayer_Backend_Engineer_cv.docx"
+                      ]
                     },
                     {
                       "key": "email",
