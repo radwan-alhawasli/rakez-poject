@@ -206,6 +206,24 @@ const notificationService = {
         unreadCount.value = notifications.value.filter(n => !n.read).length
     },
 
+    /**
+     * Lightweight toast-style notification helper used across views.
+     * Falls back to adding a simple in-memory notification entry.
+     */
+    addNotification(message, type = 'info') {
+        const id = Date.now()
+        notifications.value.unshift({
+            id,
+            title: message,
+            time: new Date().toISOString(),
+            read: false,
+            type,
+            actionRequired: false
+        })
+        this.updateUnreadCount()
+        logger.debug('Toast notification:', { id, message, type })
+    },
+
     disconnect() {
         if (pusher) {
             channels.forEach(c => c.unbind_all())

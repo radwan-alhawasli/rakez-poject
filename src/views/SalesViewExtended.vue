@@ -116,37 +116,28 @@
         </div>
 
         <div v-else class="targets-grid">
-          <div v-for="target in targets" :key="target.id" class="target-card">
+          <div v-for="target in targets" :key="target.target_id || target.id" class="target-card">
             <div class="target-header">
               <div class="target-info">
                 <h3>{{ target.project_name || 'هدف مبيعات' }}</h3>
-                <p class="target-marketer">{{ target.marketer_name }}</p>
+                <p class="target-marketer">{{ target.unit_number ? `الوحدة: ${target.unit_number}` : '' }} {{ target.assigned_by ? ` · معين من: ${target.assigned_by}` : (target.marketer_name || '') }}</p>
               </div>
-              <div class="target-value">{{ formatCurrency(target.target_value) }}</div>
-            </div>
-            
-            <div class="target-progress">
-              <div class="progress-bar">
-                <div class="progress-fill" :style="{ width: getProgressPercentage(target) + '%' }"></div>
-              </div>
-              <div class="progress-text">
-                <span>{{ formatCurrency(target.achieved_value || 0) }}</span>
-                <span>{{ getProgressPercentage(target) }}%</span>
-              </div>
+              <span class="target-status" :class="getTargetStatusClass(target)">{{ getTargetStatusText(target) }}</span>
             </div>
 
-            <div class="target-footer">
-              <div class="target-deadline">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
+            <div class="target-meta" v-if="target.start_date || target.end_date">
+              <div class="target-dates">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
-                الموعد النهائي: {{ formatDate(target.deadline) }}
+                {{ formatDate(target.start_date) }} – {{ formatDate(target.end_date) }}
               </div>
-              <span class="target-status" :class="getTargetStatusClass(target)">
-                {{ getTargetStatusText(target) }}
-              </span>
             </div>
+            <div class="target-type-badge" v-if="target.target_type">{{ getTargetTypeLabel(target.target_type) }}</div>
+            <p class="target-notes" v-if="target.leader_notes">{{ target.leader_notes }}</p>
           </div>
         </div>
       </div>
@@ -216,9 +207,14 @@
                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                    <span>{{ project.developer_name || '—' }}</span>
                 </div>
-                <button class="btn-view-tracker" @click.stop="viewProjectDetails(project.id)">
-                  عرض التفاصيل
-                </button>
+                <div class="project-actions">
+                  <button class="btn-view-tracker" @click.stop="viewProjectDetails(project.id)">
+                    عرض التفاصيل
+                  </button>
+                  <button class="btn-view-units" @click.stop="viewProjectUnits(project.id)">
+                    عرض الوحدات
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -360,24 +356,20 @@
               <tr>
                 <th v-if="isLeader">الموظف</th>
                 <th>التاريخ</th>
-                <th>وقت الدخول</th>
-                <th>وقت الخروج</th>
-                <th>الحالة</th>
-                <th>ساعات العمل</th>
+                <th>وقت البداية</th>
+                <th>وقت النهاية</th>
+                <th>المشروع</th>
+                <th>الموقع</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="record in attendanceRecords" :key="record.id">
-                <td v-if="isLeader">{{ record.employee_name }}</td>
-                <td>{{ formatDate(record.date) }}</td>
-                <td>{{ record.check_in_time || '—' }}</td>
-                <td>{{ record.check_out_time || '—' }}</td>
-                <td>
-                  <span class="attendance-status" :class="record.status">
-                    {{ getAttendanceStatusText(record.status) }}
-                  </span>
-                </td>
-                <td>{{ record.hours_worked || '—' }}</td>
+              <tr v-for="record in attendanceRecords" :key="record.schedule_id || record.id">
+                <td v-if="isLeader">{{ record.user_name || record.employee_name || '—' }}</td>
+                <td>{{ formatDate(record.schedule_date || record.date) }}</td>
+                <td>{{ formatTime(record.start_time || record.check_in_time) }}</td>
+                <td>{{ formatTime(record.end_time || record.check_out_time) }}</td>
+                <td>{{ record.project_name || '—' }}</td>
+                <td>{{ record.project_location || '—' }}</td>
               </tr>
             </tbody>
           </table>
@@ -707,58 +699,7 @@
                 </div>
             </div>
 
-            <!-- Units List Table -->
-            <div class="units-section" id="units-section">
-              <div class="units-header-row">
-                 <h4>إدارة الوحدات</h4>
-              </div>
-              
-              <div v-if="isLoadingUnits" class="loading-state">
-                <div class="spinner"></div>
-                <p>جاري تحميل الوحدات...</p>
-              </div>
-
-              <div v-else-if="projectUnits.length === 0" class="empty-state">
-                <p>لا توجد وحدات متاحة للعرض لهذا المشروع.</p>
-              </div>
-
-              <div v-else class="table-wrapper">
-                <table class="units-table">
-                  <thead>
-                    <tr>
-                      <th>رقم الوحدة</th>
-                      <th>النوع</th>
-                      <th>السعر</th>
-                      <th>المساحة</th>
-                      <th>الحالة</th>
-                      <th>إجراء</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="unit in projectUnits" :key="unit.id">
-                      <td style="font-weight: 700; color: #1e3a5f;">{{ unit.unit_number || unit.name || unit.number }}</td>
-                       <td>{{ unit.unit_type || unit.type || '—' }}</td>
-                      <td style="font-weight: 700; color: #059669;">{{ formatCurrency(unit.price || unit.total_price) }}</td>
-                      <td>{{ unit.area || unit.space || unit.size }} م²</td>
-                      <td>
-                        <span class="unit-status-badge" :class="getUnitStatusClass(unit.status)">
-                          {{ getUnitStatusText(unit.status) }}
-                        </span>
-                      </td>
-                      <td>
-                        <button 
-                          v-if="unit.status === 'available'" 
-                          @click="openReservationModal(unit)"
-                          class="btn-reserve-sm"
-                        >
-                          حجز
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <!-- تم نقل عرض الوحدات إلى شاشة تتبع المشروع (ProjectTracker) عبر زر \"عرض الوحدات\" -->
           </div>
         </div>
       </div>
@@ -833,7 +774,7 @@
                   <input type="number" v-model="reservationForm.down_payment_amount" required class="form-input" min="0">
                 </div>
                 <div class="form-group">
-                  <label>حالة الدفع *</label>
+                  <label>حالة العربون *</label>
                   <select v-if="reservationLookups?.down_payment_statuses" v-model="reservationForm.down_payment_status" required class="form-input">
                     <option v-for="status in reservationLookups.down_payment_statuses" :key="status.value" :value="status.value">{{ status.label }}</option>
                   </select>
@@ -1145,6 +1086,14 @@ export default {
         router.push({ name: 'ProjectTracker', params: { id: projectId } })
     }
 
+    const viewProjectUnits = (projectId) => {
+        router.push({ 
+          name: 'ProjectTracker', 
+          params: { id: projectId }, 
+          query: { tab: 'units' }
+        })
+    }
+
     // Reservations
     const reservations = ref([])
     const isLoadingReservations = ref(false)
@@ -1173,9 +1122,12 @@ export default {
     const loadTargets = async () => {
       isLoadingTargets.value = true
       try {
-        targets.value = await salesService.getMyTargets()
+        const res = await salesService.getMyTargets()
+        const raw = res?.data?.data ?? res?.data
+        targets.value = Array.isArray(raw) ? raw : []
       } catch (error) {
         logger.error('Error loading targets:', error)
+        targets.value = []
       } finally {
         isLoadingTargets.value = false
       }
@@ -1404,11 +1356,14 @@ export default {
     const loadAttendance = async () => {
       isLoadingAttendance.value = true
       try {
-        attendanceRecords.value = isLeader.value 
+        const res = isLeader.value
           ? await salesService.getTeamAttendance()
           : await salesService.getMyAttendance()
+        const raw = res?.data?.data ?? res?.data
+        attendanceRecords.value = Array.isArray(raw) ? raw : []
       } catch (error) {
         logger.error('Error loading attendance:', error)
+        attendanceRecords.value = []
       } finally {
         isLoadingAttendance.value = false
       }
@@ -1516,25 +1471,35 @@ export default {
       return new Date(dateString).toLocaleDateString('ar-SA')
     }
 
+    const formatTime = (timeString) => {
+      if (!timeString) return '—'
+      const s = String(timeString)
+      if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)) return s.slice(0, 5)
+      return s
+    }
+
     const getProgressPercentage = (target) => {
       if (!target.target_value) return 0
       return Math.min(Math.round((target.achieved_value || 0) / target.target_value * 100), 100)
     }
 
     const getTargetStatusClass = (target) => {
-      const percentage = getProgressPercentage(target)
-      if (percentage >= 100) return 'completed'
-      if (percentage >= 75) return 'on-track'
-      if (percentage >= 50) return 'in-progress'
+      const status = (target.status || '').toLowerCase()
+      if (status === 'completed') return 'completed'
+      if (status === 'in_progress') return 'in-progress'
       return 'at-risk'
     }
 
     const getTargetStatusText = (target) => {
-      const percentage = getProgressPercentage(target)
-      if (percentage >= 100) return 'مكتمل'
-      if (percentage >= 75) return 'على المسار الصحيح'
-      if (percentage >= 50) return 'قيد التنفيذ'
-      return 'يحتاج متابعة'
+      const status = (target.status || '').toLowerCase()
+      if (status === 'completed') return 'مكتمل'
+      if (status === 'in_progress') return 'قيد التنفيذ'
+      return status || '—'
+    }
+
+    const getTargetTypeLabel = (type) => {
+      const map = { reservation: 'حجز', contract: 'عقد', sale: 'بيع' }
+      return map[type] || type
     }
 
     const getAttendanceStatusText = (status) => {
@@ -1679,6 +1644,8 @@ export default {
       getProgressPercentage,
       getTargetStatusClass,
       getTargetStatusText,
+      getTargetTypeLabel,
+      formatTime,
       getAttendanceStatusText,
       getTaskStatusText,
       getStatusClass,
@@ -1695,14 +1662,20 @@ export default {
       loadDashboard,
       reservationLookups,
       scrollToUnits: () => {
-        const el = document.getElementById('units-section');
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
+        if (selectedProject.value?.id) {
+          router.push({ 
+            name: 'ProjectTracker', 
+            params: { id: selectedProject.value.id }, 
+            query: { tab: 'units' }
+          })
+        }
       },
       logReservationAction,
       projectsTab,
       activeProjectsCount,
       archiveProjectsCount,
-      viewTracker
+      viewTracker,
+      viewProjectUnits
     }
   }
 }
@@ -2007,6 +1980,11 @@ export default {
     color: #64748b;
 }
 
+.project-actions {
+    display: flex;
+    gap: 8px;
+}
+
 .btn-view-tracker {
     background: #1e3a5f;
     color: white;
@@ -2022,6 +2000,23 @@ export default {
 .btn-view-tracker:hover {
     background: #234775;
     transform: scale(1.05);
+}
+
+.btn-view-units {
+    background: #ffffff;
+    color: #1e3a5f;
+    border: 1px solid #d1d5db;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-view-units:hover {
+    background: #f9fafb;
+    border-color: #1e3a5f;
 }
 
 .page-subtitle { color: #64748b; font-size: 15px; margin: 0; }
@@ -2198,6 +2193,42 @@ export default {
   font-size: 20px;
   font-weight: 700;
   color: #059669;
+}
+
+.target-meta {
+  margin-bottom: 12px;
+}
+
+.target-dates {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.target-dates svg {
+  flex-shrink: 0;
+}
+
+.target-type-badge {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.target-notes {
+  margin: 0;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .target-progress {
@@ -3146,16 +3177,30 @@ export default {
 .reservation-form .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 32px 40px;
+  margin-bottom: 28px;
+}
+
+.reservation-form .form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reservation-form .form-section + .form-section {
+  margin-top: 8px;
 }
 
 .form-section h4 {
-  margin: 0 0 16px 0;
+  margin: 0 0 20px 0;
   font-size: 16px;
   color: #1e3a5f;
   padding-bottom: 12px;
   border-bottom: 2px solid #e2e8f0;
+}
+
+.reservation-form .form-group {
+  margin-bottom: 20px;
 }
 
 .form-group {
@@ -3166,9 +3211,10 @@ export default {
   grid-column: 1 / -1;
 }
 
-.form-group label {
+.form-group label,
+.reservation-form .form-group label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-size: 14px;
   font-weight: 600;
   color: #475569;
