@@ -18,6 +18,28 @@ const notificationService = {
     },
 
     /**
+     * Add a local in-app notification (toast-like).
+     * Used by views to give user feedback (success/error/warning/info).
+     *
+     * Note: marked as read by default so it won't inflate unread badge.
+     */
+    addNotification(message, type = 'info') {
+        const newNotif = {
+            id: Date.now(),
+            title: message,
+            time: new Date().toISOString(),
+            read: true,
+            type: type || 'info',
+            actionRequired: false,
+            _local: true
+        }
+
+        notifications.value.unshift(newNotif)
+        this.updateUnreadCount()
+        return newNotif
+    },
+
+    /**
      * Initialize notifications and WebSocket listeners
      */
     async init() {

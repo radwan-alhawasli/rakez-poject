@@ -59,6 +59,30 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
             </div>
           </div>
+
+          <!-- KPI 5: عدد العربون اليومي -->
+          <div class="stat-card animate-fade-in-up animate-stagger-5 hover-lift">
+            <div class="stat-content">
+              <span class="stat-label">عدد العربون اليومي</span>
+              <span class="stat-value number">{{ dashboardMetrics.daily_deposits_count ?? '—' }}</span>
+              <span class="stat-desc">اليوم</span>
+            </div>
+            <div class="stat-icon-bg ready">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"></path><path d="M4 12l8 6 8-6"></path><path d="M12 2v10"></path><path d="M8 6l4-4 4 4"></path></svg>
+            </div>
+          </div>
+
+          <!-- KPI 6: تكلفة العربون -->
+          <div class="stat-card animate-fade-in-up animate-stagger-6 hover-lift">
+            <div class="stat-content">
+              <span class="stat-label">تكلفة العربون</span>
+              <span class="stat-value number">{{ formatCurrency(dashboardMetrics.deposit_cost || 0) }}</span>
+              <span class="stat-desc">ريال سعودي</span>
+            </div>
+            <div class="stat-icon-bg units">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+          </div>
         </div>
 
         <!-- Chart Section -->
@@ -92,19 +116,40 @@
         <div v-if="!isLoadingProjects && projects.length > 0" class="projects-grid">
           <div v-for="project in projects" :key="project.id" class="project-card hover-lift animate-fade-in">
             <div class="project-header">
-              <h3 class="project-name">{{ project.project_name || project.name }}</h3>
+              <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+                <h3 class="project-name" style="min-width:0;">{{ project.project_name || project.name }}</h3>
+                <span class="timeline-badge" :class="getAgreementBadgeClass(project)">
+                  {{ getAgreementBadgeLabel(project) }}
+                </span>
+              </div>
               <span class="project-status" :class="getStatusClass(project.status)">
                 {{ getStatusText(project.status) }}
               </span>
             </div>
             <div class="project-details">
               <div class="detail-row">
+                <span class="detail-label">عدد الوحدات (متاح / معلّق):</span>
+                <span class="detail-value number">{{ getProjectUnitsSummary(project).available }} / {{ getProjectUnitsSummary(project).pending }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">متوسط سعر الوحدات:</span>
+                <span class="detail-value number">{{ formatCurrency(getProjectAvgUnitPrice(project)) }}</span>
+              </div>
+              <div class="detail-row">
                 <span class="detail-label">المطور:</span>
                 <span class="detail-value">{{ project.developer_name || 'غير محدد' }}</span>
               </div>
               <div class="detail-row">
-                <span class="detail-label">الموقع:</span>
-                <span class="detail-value">{{ project.city || 'غير محدد' }}</span>
+                <span class="detail-label">رقم المعلن (متاح / معلّق):</span>
+                <span class="detail-value number">{{ getProjectAdvertiserLabel(project) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">نسبة السعي:</span>
+                <span class="detail-value number">{{ getProjectSaiPercent(project) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">مجموع سعر الوحدات المتاحة:</span>
+                <span class="detail-value number">{{ formatCurrency(getProjectAvailableUnitsTotalPrice(project)) }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">رقم العقد:</span>
@@ -148,6 +193,7 @@
         <div class="plans-sub-tabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
           <button :class="['btn-tab-mini', { active: activePlanSubTab === 'developer' }]" @click="setPlanSubTab('developer')">خطة المطور</button>
           <button :class="['btn-tab-mini', { active: activePlanSubTab === 'employee' }]" @click="setPlanSubTab('employee')">خطط الموظفين</button>
+          <button :class="['btn-tab-mini', { active: activePlanSubTab === 'expected-sales' }]" @click="setPlanSubTab('expected-sales')">المبيعات المتوقعة</button>
         </div>
 
         <!-- Developer Plan Sub-tab -->
@@ -283,6 +329,9 @@
                 <span v-if="isLoadingEmployees" class="spinner-small"></span>
                 تحديث قائمة الموظفين
               </button>
+              <button class="btn-secondary" @click="openManualEmployeePlan" :disabled="!employeePlansProjectId || !employeePlanGenerateForm.user_id">
+                إنشاء خطة يدوية
+              </button>
               <button class="btn-primary" @click="autoGenerateEmployeePlan" :disabled="isSubmitting || !employeePlansProjectId || !employeePlanGenerateForm.user_id">
                 <span v-if="isSubmitting" class="spinner-small"></span>
                 إنشاء خطة تلقائياً
@@ -323,6 +372,288 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Expected Sales Sub-tab (4.5) -->
+        <div v-else-if="activePlanSubTab === 'expected-sales'" class="marketing-expected-sales-view">
+          <div class="plan-card">
+            <h3 class="plan-card-title">حساب المبيعات المتوقعة</h3>
+            <p class="section-desc" style="margin-top: 6px;">
+              يتم الاحتساب تلقائياً (عرض فقط) اعتماداً على ميزانية الحملة وتوزيع الحملات (التواصل المباشر + اليد) ونِسبة المبيعات الثابتة.
+            </p>
+          </div>
+
+          <div v-if="isLoadingProjects" class="loading-state">
+            <div class="spinner"></div>
+            <p>جاري تحميل المشاريع...</p>
+          </div>
+
+          <div v-else-if="projects.length === 0" class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <p>لا توجد مشاريع لاحتساب المبيعات المتوقعة</p>
+          </div>
+
+          <div v-else class="leads-table-container">
+            <div class="section-header" style="margin-bottom: 10px;">
+              <h3 class="section-title-chart" style="margin: 0;">ملخص المشاريع</h3>
+              <p class="section-desc" style="margin: 6px 0 0;">نسبة إجمالي المبيع تظهر لكل مشروع على حدة.</p>
+            </div>
+            <table class="luxury-table">
+              <thead>
+                <tr>
+                  <th>المشروع</th>
+                  <th>ميزانية الحملة</th>
+                  <th>نسبة إجمالي المبيع</th>
+                  <th>الحجوزات المتوقعة</th>
+                  <th>متوسط قيمة الحجز</th>
+                  <th>قيمة الحجوزات المتوقعة</th>
+                  <th>قيمة العربون الواحد</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="p in projects" :key="p.id" class="hover-row">
+                  <td>{{ p.project_name || p.name || ('Project #' + p.id) }}</td>
+                  <td class="number">{{ formatCurrency(getProjectCampaignBudget(p)) }}</td>
+                  <td class="number">{{ getSalesRatePercentForProject(p) }}%</td>
+                  <td class="number">{{ formatNumber(getExpectedBookingsForProject(p)) }}</td>
+                  <td class="number">{{ formatCurrency(getAvgBookingValueForProject(p)) }}</td>
+                  <td class="number">{{ formatCurrency(getExpectedBookingValueForProject(p)) }}</td>
+                  <td class="number">{{ formatCurrency(getDepositValueForProject(p)) }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td style="font-weight: 800;">الإجمالي</td>
+                  <td class="number" style="font-weight: 800;">{{ formatCurrency(totalExpectedSalesSummary.totalCampaignBudget) }}</td>
+                  <td></td>
+                  <td class="number" style="font-weight: 800;">{{ formatNumber(totalExpectedSalesSummary.totalExpectedBookings) }}</td>
+                  <td></td>
+                  <td class="number" style="font-weight: 800;">{{ formatCurrency(totalExpectedSalesSummary.totalExpectedBookingValue) }}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual Employee Plan Modal -->
+      <div v-if="showManualEmployeePlanModal" class="modal-overlay" @click.self="closeManualEmployeePlan">
+        <div class="modal-content luxury-modal animate-scale-in" style="max-width: 980px;">
+          <div class="modal-header">
+            <h3 class="modal-title">إنشاء خطة يدوية للموظف</h3>
+            <button class="modal-close" @click="closeManualEmployeePlan">×</button>
+          </div>
+
+          <div class="modal-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>المشروع</label>
+                <input class="form-input" :value="manualEmployeePlanPreview.projectLabel" disabled />
+              </div>
+              <div class="form-group">
+                <label>الموظف</label>
+                <input class="form-input" :value="manualEmployeePlanPreview.userLabel" disabled />
+              </div>
+              <div class="form-group">
+                <label>قيمة السعي</label>
+                <input class="form-input" type="number" min="0" step="any" v-model="manualEmployeePlanForm.commission_value" />
+              </div>
+              <div class="form-group">
+                <label>قيمة التسويق</label>
+                <input class="form-input" type="number" min="0" step="any" v-model="manualEmployeePlanForm.marketing_value" />
+              </div>
+            </div>
+
+            <div class="overview-section" style="margin-top: 16px;">
+              <div class="section-header" style="margin-bottom: 10px;">
+                <h3 class="section-title-chart" style="margin:0;">توزيع الميزانية على المنصات (Fixed)</h3>
+                <p class="section-desc" style="margin:6px 0 0;">يجب أن يكون المجموع 100%.</p>
+              </div>
+              <div class="form-grid">
+                <div v-for="pf in platformKeys" :key="pf.key" class="form-group">
+                  <label>{{ pf.label }}</label>
+                  <input class="form-input" type="number" min="0" max="100" step="any" v-model="manualEmployeePlanForm.platform_distribution[pf.key]" @blur="normalizePlatformDistribution" />
+                </div>
+              </div>
+            </div>
+
+            <div class="overview-section" style="margin-top: 16px;">
+              <div class="section-header" style="margin-bottom: 10px;">
+                <h3 class="section-title-chart" style="margin:0;">توزيع الحملات داخل كل منصة (Fixed)</h3>
+                <p class="section-desc" style="margin:6px 0 0;">يجب أن يكون المجموع 100%.</p>
+              </div>
+              <div class="form-grid">
+                <div v-for="ck in campaignKeys" :key="ck.key" class="form-group">
+                  <label>{{ ck.label }}</label>
+                  <input class="form-input" type="number" min="0" max="100" step="any" v-model="manualEmployeePlanForm.campaign_distribution[ck.key]" @blur="normalizeCampaignDistribution" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-secondary" @click="closeManualEmployeePlan">إلغاء</button>
+            <button class="btn-primary" @click="saveManualEmployeePlan" :disabled="isSavingManualEmployeePlan">
+              <span v-if="isSavingManualEmployeePlan" class="spinner-small"></span>
+              حفظ الخطة اليدوية
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3.5 Team & Projects Management Tab (4.6) -->
+      <div v-else-if="activeTab === 'team-projects'" class="marketing-team-projects-view">
+        <div class="section-header-compact">
+          <h2 class="section-title">إدارة الفريق والمشاريع</h2>
+          <p class="section-subtitle">عرض المسوقين المرتبطين بكل مشروع + تعيين موظف للتواصل + تتبع مدة الاتفاقية.</p>
+        </div>
+
+        <div v-if="isLoadingProjects" class="loading-state">
+          <div class="spinner"></div>
+          <p>جاري تحميل المشاريع...</p>
+        </div>
+
+        <div v-else-if="projects.length === 0" class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <p>لا توجد مشاريع لعرضها</p>
+        </div>
+
+        <div v-else class="projects-grid">
+          <div v-for="project in projects" :key="project.id" class="project-card hover-lift animate-fade-in">
+            <div class="project-header">
+              <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+                <h3 class="project-name" style="min-width:0;">{{ project.project_name || project.name }}</h3>
+                <span class="timeline-badge" :class="getAgreementBadgeClass(project)">
+                  {{ getAgreementBadgeLabel(project) }}
+                </span>
+              </div>
+              <span class="project-status" :class="getStatusClass(project.status)">
+                {{ getStatusText(project.status) }}
+              </span>
+            </div>
+
+            <div class="project-details">
+              <div class="detail-row">
+                <span class="detail-label">المسوقون المرتبطون:</span>
+                <span class="detail-value">
+                  {{ getProjectMarketersNames(project) }}
+                </span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">موظف للتواصل:</span>
+                <span class="detail-value" style="min-width: 200px;">
+                  <select class="form-input" style="padding: 8px 10px;" :value="getProjectCommunicator(project)" @change="setProjectCommunicator(project, $event.target.value)">
+                    <option value="">— غير محدد —</option>
+                    <option v-for="u in getProjectMarketers(project)" :key="u.id" :value="u.id">
+                      {{ u.name || u.full_name || ('User #' + u.id) }}
+                    </option>
+                  </select>
+                </span>
+              </div>
+            </div>
+
+            <div class="project-actions">
+              <button class="btn-view" @click="viewProjectDetails(project.id)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                عرض التفاصيل
+              </button>
+              <button class="btn-plan" @click="goToPlansSub('employee')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                خطط الموظفين
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3.6 Reports & Outputs Tab (7) -->
+      <div v-else-if="activeTab === 'reports-outputs'" class="marketing-reports-outputs-view">
+        <div class="section-header-compact">
+          <h2 class="section-title">التقارير والمخرجات</h2>
+          <p class="section-subtitle">تقارير أداء المشاريع والميزانيات والحجوزات المتوقعة وأداء الموظفين + ملفات الخطط.</p>
+        </div>
+
+        <div class="projects-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+          <div class="project-card hover-lift animate-fade-in">
+            <div class="project-header">
+              <h3 class="project-name">تقرير أداء المشاريع</h3>
+              <span class="project-status" style="background: rgba(177,162,143,0.12); color:#8c7851;">جاهز</span>
+            </div>
+            <div class="project-details">
+              <div class="detail-row"><span class="detail-label">الوصف:</span><span class="detail-value">مؤشرات الأداء لكل مشروع (KPI + الاتجاه).</span></div>
+            </div>
+            <div class="project-actions">
+              <button class="btn-view" @click="downloadPlaceholder('project-performance')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                تنزيل (PDF/Excel)
+              </button>
+            </div>
+          </div>
+
+          <div class="project-card hover-lift animate-fade-in">
+            <div class="project-header">
+              <h3 class="project-name">تقرير الميزانيات</h3>
+              <span class="project-status" style="background: rgba(177,162,143,0.12); color:#8c7851;">جاهز</span>
+            </div>
+            <div class="project-details">
+              <div class="detail-row"><span class="detail-label">الوصف:</span><span class="detail-value">إجمالي/يومي/شهري + توزيع المنصات والحملات.</span></div>
+            </div>
+            <div class="project-actions">
+              <button class="btn-view" @click="downloadPlaceholder('budgets')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                تنزيل (PDF/Excel)
+              </button>
+            </div>
+          </div>
+
+          <div class="project-card hover-lift animate-fade-in">
+            <div class="project-header">
+              <h3 class="project-name">تقرير الحجوزات المتوقعة</h3>
+              <span class="project-status" style="background: rgba(177,162,143,0.12); color:#8c7851;">جاهز</span>
+            </div>
+            <div class="project-details">
+              <div class="detail-row"><span class="detail-label">الوصف:</span><span class="detail-value">حسب تبويب “المبيعات المتوقعة”.</span></div>
+            </div>
+            <div class="project-actions">
+              <button class="btn-view" @click="downloadPlaceholder('expected-bookings')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                تنزيل (PDF/Excel)
+              </button>
+            </div>
+          </div>
+
+          <div class="project-card hover-lift animate-fade-in">
+            <div class="project-header">
+              <h3 class="project-name">تقرير أداء الموظفين</h3>
+              <span class="project-status" style="background: rgba(177,162,143,0.12); color:#8c7851;">جاهز</span>
+            </div>
+            <div class="project-details">
+              <div class="detail-row"><span class="detail-label">الوصف:</span><span class="detail-value">المهام + الخطط + النتائج المتوقعة.</span></div>
+            </div>
+            <div class="project-actions">
+              <button class="btn-view" @click="downloadPlaceholder('employee-performance')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                تنزيل (PDF/Excel)
+              </button>
+            </div>
+          </div>
+
+          <div class="project-card hover-lift animate-fade-in">
+            <div class="project-header">
+              <h3 class="project-name">ملفات خطط التسويق</h3>
+              <span class="project-status" style="background: rgba(177,162,143,0.12); color:#8c7851;">جاهز</span>
+            </div>
+            <div class="project-details">
+              <div class="detail-row"><span class="detail-label">التنسيقات:</span><span class="detail-value">PDF / Excel</span></div>
+            </div>
+            <div class="project-actions">
+              <button class="btn-view" @click="downloadPlaceholder('plans-files')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                تنزيل (PDF/Excel)
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -629,42 +960,152 @@
 
                 <div class="overview-section" style="margin-top: 18px;">
                   <div class="section-header" style="margin-bottom: 14px;">
-                    <h3 class="section-title-chart">إدارة فرق التسويق</h3>
-                    <p class="section-desc">تعيين الصلاحيات للفرق المسؤولة عن هذا المشروع.</p>
+                    <h3 class="section-title-chart">بيانات المشروع (بعد المونتاج + الميزانيات)</h3>
+                    <p class="section-desc">عرض القيم (مع قيم افتراضية عند عدم توفر بيانات من الـ API).</p>
                   </div>
-                  
-                  <!-- Add Team UI -->
-                  <div class="add-team-card-luxury" style="background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
-                    <div class="add-team-form" style="display: flex; gap: 10px; align-items: center;">
-                        <div style="flex: 1; position: relative;">
-                            <select v-model="selectedTeamIdToAdd" class="luxury-select" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
-                                <option value="" disabled selected>اختر فريقاً للإضافة...</option>
-                                <option v-for="team in availableTeams" :key="team.id" :value="team.id">
-                                    {{ team.name }}
-                                </option>
-                            </select>
+
+                  <div class="details-grid">
+                    <div class="detail-item" style="grid-column: 1 / -1;">
+                      <span class="detail-label">وصف المشروع</span>
+                      <span class="detail-value" style="white-space: pre-wrap;">{{ getProjectMetaDefaulted(selectedProjectDetails).project_description }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">رابط الصور بعد المونتاج</span>
+                      <span class="detail-value">
+                        <div class="meta-input-row">
+                          <input
+                            v-model="mediaLinksForm.media_images_url"
+                            type="url"
+                            class="form-input"
+                            placeholder="أدخل رابط الصور بعد المونتاج..."
+                            @blur="saveProjectMediaLinks"
+                          />
+                          <a
+                            v-if="mediaLinksForm.media_images_url"
+                            class="meta-link meta-link-mini"
+                            :href="mediaLinksForm.media_images_url"
+                            target="_blank"
+                            rel="noopener"
+                            title="فتح"
+                          >
+                            ↗
+                          </a>
                         </div>
-                        <button class="btn-primary" @click="assignTeamToProject" :disabled="!selectedTeamIdToAdd || isTeamActionLoading" style="white-space: nowrap;">
-                            {{ isTeamActionLoading ? 'جاري...' : 'إضافة +' }}
-                        </button>
+                      </span>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">رابط الفيديوهات بعد المونتاج</span>
+                      <span class="detail-value">
+                        <div class="meta-input-row">
+                          <input
+                            v-model="mediaLinksForm.media_videos_url"
+                            type="url"
+                            class="form-input"
+                            placeholder="أدخل رابط الفيديوهات بعد المونتاج..."
+                            @blur="saveProjectMediaLinks"
+                          />
+                          <a
+                            v-if="mediaLinksForm.media_videos_url"
+                            class="meta-link meta-link-mini"
+                            :href="mediaLinksForm.media_videos_url"
+                            target="_blank"
+                            rel="noopener"
+                            title="فتح"
+                          >
+                            ↗
+                          </a>
+                        </div>
+                      </span>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">ميزانية الحملة الكاملة</span>
+                      <span class="detail-value number">{{ formatCurrency(getProjectMetaDefaulted(selectedProjectDetails).campaign_budget_total) }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">الميزانية اليومية</span>
+                      <span class="detail-value number">{{ formatCurrency(getProjectMetaDefaulted(selectedProjectDetails).campaign_budget_daily) }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">الميزانية الشهرية</span>
+                      <span class="detail-value number">{{ formatCurrency(getProjectMetaDefaulted(selectedProjectDetails).campaign_budget_monthly) }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">نهاية الاتفاقية</span>
+                      <span class="detail-value">{{ getProjectMetaDefaulted(selectedProjectDetails).agreement_end_date_label }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">نسبة السعي</span>
+                      <span class="detail-value number">{{ getProjectMetaDefaulted(selectedProjectDetails).sai_percent_label }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">رقم المعلن (Available)</span>
+                      <span class="detail-value number">{{ getProjectMetaDefaulted(selectedProjectDetails).advertisers_available }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">رقم المعلن (Pending)</span>
+                      <span class="detail-value number">{{ getProjectMetaDefaulted(selectedProjectDetails).advertisers_pending }}</span>
                     </div>
                   </div>
 
-                  <!-- Teams List UI -->
-                  <div v-if="(selectedProjectDetails.marketing_project?.teams || []).length === 0" style="color:#64748b; text-align:center; padding: 20px;">
-                    لا توجد فرق معينة حالياً.
+                  <div class="plan-actions" style="margin-top: 10px;">
+                    <button class="btn-primary" @click="saveProjectMediaLinks">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-left: 8px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      حفظ روابط المونتاج
+                    </button>
+                  </div>
+                </div>
+
+                <div class="overview-section" style="margin-top: 18px;">
+                  <div class="section-header" style="margin-bottom: 14px;">
+                    <h3 class="section-title-chart">إدارة فرق التسويق</h3>
+                    <p class="section-desc">عرض الفرق المرتبطة بالمشروع وأعضاء كل فريق.</p>
                   </div>
                   
-                  <div v-else class="teams-grid-luxury" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
-                    <div v-for="t in selectedProjectDetails.marketing_project.teams" :key="t.id" class="team-card-mini" 
-                         style="background: white; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; gap: 5px; position:relative;">
-                      <div style="display:flex; justify-content:space-between; align-items:start;">
-                          <span class="team-name" style="font-weight:bold; color:#1e3a5f;">{{ t.name || t.user?.name || ('Team #' + t.id) }}</span>
-                           <button @click="removeTeamFromProject(t)" class="btn-icon-mini" title="إزالة" :disabled="isTeamActionLoading" style="background:none; border:none; color:#ef4444; cursor:pointer;">
-                              <span style="font-size:16px;">×</span>
-                           </button>
+                  <div v-if="isLoadingTeamMembers" class="loading-state" style="padding: 10px 0;">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل الفرق والأعضاء...</p>
+                  </div>
+
+                  <div v-else class="teams-grid-luxury" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px;">
+                    <div
+                      v-for="t in projectTeamsResolved"
+                      :key="t._key"
+                      class="team-card-mini"
+                      style="background: white; border: 1px solid #e2e8f0; padding: 16px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px;"
+                    >
+                      <div style="display:flex; justify-content:space-between; align-items:start; gap: 10px;">
+                        <div style="min-width:0;">
+                          <div class="team-name" style="font-weight:800; color:#1e3a5f; font-family:'Amiri',serif; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            {{ t.name }}
+                          </div>
+                          <div class="team-role" style="font-size:12px; color:#64748b; margin-top:4px;">
+                            {{ t.description }}
+                          </div>
+                        </div>
+                        <span v-if="t.isPlaceholder" class="project-status status-pending" style="align-self:flex-start;">افتراضي</span>
                       </div>
-                      <span class="team-role" style="font-size:12px; color:#64748b;">{{ t.description || 'فريق تسويق' }}</span>
+
+                      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <span
+                          v-for="m in t.members"
+                          :key="m._key"
+                          style="display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background: rgba(177,162,143,0.10); border:1px solid rgba(177,162,143,0.18); color:#1e3a5f; font-weight:700; font-size:12px;"
+                        >
+                          <span style="width:22px; height:22px; border-radius:50%; background: linear-gradient(135deg,#B1A28F 0%, #8c7851 100%); color:white; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:900;">
+                            {{ (m.name || 'A').charAt(0).toUpperCase() }}
+                          </span>
+                          <span style="max-width:160px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ m.name }}</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -867,6 +1308,420 @@ export default {
       total_expected_booking_value: 0
     })
 
+    // ---------------------------
+    // Expected Sales (4.5) - display only
+    // ---------------------------
+    const DEFAULT_SALES_RATE_PERCENT = 1 // fixed (per requirements), shown per project
+    const DEFAULT_AVG_CPC = 2.5
+
+    const LS_EXPECTED_SALES_KEY = 'marketing_expected_sales_v1'
+    const expectedSalesStore = ref({
+      campaign_budget_by_project_id: {},
+      communicator_by_project_id: {},
+      agreement_end_by_project_id: {},
+      project_meta_by_project_id: {}
+    })
+
+    const loadExpectedSalesStore = () => {
+      try {
+        const raw = localStorage.getItem(LS_EXPECTED_SALES_KEY)
+        if (!raw) return
+        const parsed = JSON.parse(raw)
+        if (parsed && typeof parsed === 'object') expectedSalesStore.value = { ...expectedSalesStore.value, ...parsed }
+      } catch (e) {
+        logger.warn('Failed to parse expected sales store:', e)
+      }
+    }
+
+    const persistExpectedSalesStore = () => {
+      try {
+        localStorage.setItem(LS_EXPECTED_SALES_KEY, JSON.stringify(expectedSalesStore.value || {}))
+      } catch (e) {
+        logger.warn('Failed to persist expected sales store:', e)
+      }
+    }
+
+    const toNum = (v, fallback = 0) => {
+      const n = Number(v)
+      return Number.isFinite(n) ? n : fallback
+    }
+
+    const clamp = (n, min, max) => Math.min(max, Math.max(min, n))
+
+    const toIsoDate = (d) => {
+      try {
+        const dt = d instanceof Date ? d : new Date(d)
+        if (Number.isNaN(dt.getTime())) return ''
+        const yyyy = dt.getFullYear()
+        const mm = String(dt.getMonth() + 1).padStart(2, '0')
+        const dd = String(dt.getDate()).padStart(2, '0')
+        return `${yyyy}-${mm}-${dd}`
+      } catch (e) {
+        return ''
+      }
+    }
+
+    // Default values when API doesn't provide project meta
+    const DEFAULT_PROJECT_META = Object.freeze({
+      project_description: 'وصف افتراضي للمشروع',
+      media_images_url: '',
+      media_videos_url: '',
+      campaign_budget_total: 35000,
+      campaign_budget_daily: 1200,
+      campaign_budget_monthly: 15000,
+      // default: 90 days from now
+      agreement_end_date: toIsoDate(new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)),
+      sai_percent: 2.5,
+      advertisers_available: 12,
+      advertisers_pending: 3
+    })
+
+    // (Campaign budget inputs removed in expected sales; budget is derived/displayed)
+
+    const getAgreementEndInput = (project) => {
+      const id = String(project?.id ?? '')
+      const meta = expectedSalesStore.value?.project_meta_by_project_id?.[id] || {}
+      return meta?.agreement_end_date ?? expectedSalesStore.value?.agreement_end_by_project_id?.[id] ?? ''
+    }
+
+    const setAgreementEndInput = (project, value) => {
+      const id = String(project?.id ?? '')
+      expectedSalesStore.value.agreement_end_by_project_id[id] = String(value || '')
+      // keep meta in sync if present
+      expectedSalesStore.value.project_meta_by_project_id[id] = {
+        ...(expectedSalesStore.value.project_meta_by_project_id[id] || {}),
+        agreement_end_date: String(value || '')
+      }
+      persistExpectedSalesStore()
+    }
+
+    // Project details cache (used to show marketer/team names if API provides)
+    const projectDetailsById = ref({})
+    const isLoadingProjectDetailsBatch = ref(false)
+
+    const ensureProjectDetailsCached = async (projectId) => {
+      const id = String(projectId ?? '')
+      if (!id) return null
+      if (projectDetailsById.value[id]) return projectDetailsById.value[id]
+      try {
+        const details = await marketingService.getProjectById(id)
+        projectDetailsById.value[id] = details || null
+        return details || null
+      } catch (e) {
+        logger.warn('Failed to load project details for cache:', projectId, e)
+        return null
+      }
+    }
+
+    const loadProjectDetailsBatch = async () => {
+      if (!projects.value?.length) return
+      isLoadingProjectDetailsBatch.value = true
+      try {
+        // Fetch a reasonable batch (avoid overloading API)
+        const ids = projects.value.slice(0, 30).map(p => p.id).filter(Boolean)
+        await Promise.all(ids.map(id => ensureProjectDetailsCached(id)))
+      } finally {
+        isLoadingProjectDetailsBatch.value = false
+      }
+    }
+
+    const getProjectCampaignBudget = (project) => {
+      const id = String(project?.id ?? '')
+      // prefer manual employee plans sum (if exists) to drive expected sales KPIs
+      const mpId = String(getMarketingProjectId(project) ?? '')
+      const manualSum = getManualEmployeePlansForMarketingProject(mpId).reduce((acc, x) => acc + toNum(x.marketing_value, 0), 0)
+      if (manualSum > 0) return manualSum
+
+      const meta = expectedSalesStore.value?.project_meta_by_project_id?.[id] || {}
+      const metaBudget = meta?.campaign_budget_total
+      if (metaBudget !== undefined && metaBudget !== '') return toNum(metaBudget, 0)
+      const override = expectedSalesStore.value?.campaign_budget_by_project_id?.[id]
+      if (override !== undefined && override !== '') return toNum(override, 0)
+      // Fallbacks from API-provided structures (if present)
+      const details = projectDetailsById.value?.[id]
+      const fromDeveloperPlan = toNum(details?.developer_plan?.marketing_value ?? details?.developer_plan?.raw_plan?.marketing_value, 0)
+      if (fromDeveloperPlan) return fromDeveloperPlan
+      const fromEmployeePlans = Array.isArray(details?.employee_plans) ? details.employee_plans[0]?.marketing_value : 0
+      return toNum(fromEmployeePlans, 0) || DEFAULT_PROJECT_META.campaign_budget_total
+    }
+
+    const getProjectMeta = (project) => {
+      const id = String(project?.id ?? '')
+      const stored = expectedSalesStore.value?.project_meta_by_project_id?.[id] || {}
+      // Keep defaults always present (as requested)
+      return { ...DEFAULT_PROJECT_META, ...stored }
+    }
+
+    const getProjectSaiPercent = (project) => {
+      const meta = getProjectMeta(project)
+      const v = meta?.sai_percent
+      if (v === undefined || v === '') return `${DEFAULT_PROJECT_META.sai_percent}%`
+      return `${toNum(v, 0)}%`
+    }
+
+    const getProjectAdvertiserLabel = (project) => {
+      const meta = getProjectMeta(project)
+      const a = meta?.advertisers_available
+      const p = meta?.advertisers_pending
+      if ((a === undefined || a === '') && (p === undefined || p === '')) return `${DEFAULT_PROJECT_META.advertisers_available} / ${DEFAULT_PROJECT_META.advertisers_pending}`
+      return `${toNum(a, 0)} / ${toNum(p, 0)}`
+    }
+
+    const getProjectMetaDefaulted = (projectLike) => {
+      const p = projectLike || {}
+      const meta = getProjectMeta(p)
+      const endRaw = meta.agreement_end_date
+      const endLabel = endRaw ? formatDate(endRaw) : '—'
+      return {
+        ...meta,
+        agreement_end_date_label: endLabel,
+        sai_percent_label: `${toNum(meta.sai_percent, DEFAULT_PROJECT_META.sai_percent)}%`
+      }
+    }
+
+    // Only editable fields (as requested): media links after montage
+    const mediaLinksForm = reactive({
+      project_id: '',
+      media_images_url: '',
+      media_videos_url: ''
+    })
+
+    const syncMediaLinksForm = (projectLike) => {
+      const id = String(projectLike?.id ?? '')
+      if (!id) return
+      const meta = getProjectMeta({ id })
+      mediaLinksForm.project_id = id
+      mediaLinksForm.media_images_url = meta.media_images_url || ''
+      mediaLinksForm.media_videos_url = meta.media_videos_url || ''
+    }
+
+    const saveProjectMediaLinks = () => {
+      const id = String(mediaLinksForm.project_id || selectedProjectDetails.value?.id || '')
+      if (!id) return
+      expectedSalesStore.value.project_meta_by_project_id[id] = {
+        ...(expectedSalesStore.value.project_meta_by_project_id[id] || {}),
+        media_images_url: String(mediaLinksForm.media_images_url || '').trim(),
+        media_videos_url: String(mediaLinksForm.media_videos_url || '').trim()
+      }
+      persistExpectedSalesStore()
+      notificationService.addNotification('تم حفظ روابط المونتاج', 'success')
+    }
+
+    const normalizeUnitStatus = (u) => {
+      const s = String(u?.status ?? u?.availability ?? u?.state ?? '').toLowerCase()
+      if (['available', 'ready', 'open', 'active'].includes(s)) return 'available'
+      if (['pending', 'reserved', 'hold', 'booked'].includes(s)) return 'pending'
+      return ''
+    }
+
+    const getProjectUnitsSummary = (project) => {
+      const id = String(project?.id ?? '')
+      const details = projectDetailsById.value?.[id]
+      const units = (details?.units || project?.units || [])
+      const arr = Array.isArray(units) ? units : []
+      let available = 0
+      let pending = 0
+      arr.forEach(u => {
+        const st = normalizeUnitStatus(u)
+        if (st === 'available') available += 1
+        else if (st === 'pending') pending += 1
+      })
+      return { available, pending, total: arr.length }
+    }
+
+    const getProjectAvgUnitPrice = (project) => {
+      const id = String(project?.id ?? '')
+      const details = projectDetailsById.value?.[id]
+      const units = (details?.units || project?.units || [])
+      const arr = Array.isArray(units) ? units : []
+      const prices = arr.map(u => toNum(u?.price, NaN)).filter(n => Number.isFinite(n) && n > 0)
+      if (!prices.length) return 0
+      const sum = prices.reduce((a, b) => a + b, 0)
+      return sum / prices.length
+    }
+
+    const getProjectAvailableUnitsTotalPrice = (project) => {
+      const id = String(project?.id ?? '')
+      const details = projectDetailsById.value?.[id]
+      const units = (details?.units || project?.units || [])
+      const arr = Array.isArray(units) ? units : []
+      return arr.reduce((acc, u) => {
+        const st = normalizeUnitStatus(u)
+        if (st !== 'available') return acc
+        return acc + toNum(u?.price, 0)
+      }, 0)
+    }
+
+    // Default fixed campaign distribution if none exists (sum = 100)
+    const DEFAULT_CAMPAIGN_DIST = Object.freeze({
+      direct_contact: 40,
+      hand: 25,
+      impression: 25,
+      sales: 10
+    })
+
+    const getCampaignDistributionForProject = (project) => {
+      const id = String(project?.id ?? '')
+      const details = projectDetailsById.value?.[id]
+      // prefer manual plan distribution (per marketing_project_id)
+      const mpId = String(getMarketingProjectId(project) ?? '')
+      const manual = getManualEmployeePlansForMarketingProject(mpId)[0]
+      const manualDist = manual?.campaign_distribution
+      if (manualDist && typeof manualDist === 'object') return manualDist
+
+      const firstEmployeePlan = Array.isArray(details?.employee_plans) ? details.employee_plans[0] : null
+      const dist = firstEmployeePlan?.campaign_distribution
+      if (dist && typeof dist === 'object') return dist
+      return DEFAULT_CAMPAIGN_DIST
+    }
+
+    const getDirectHandShare = (project) => {
+      const dist = getCampaignDistributionForProject(project)
+      const direct = toNum(dist.direct_contact ?? dist.direct ?? 0, 0)
+      const hand = toNum(dist.hand ?? 0, 0)
+      const sum = toNum(direct + hand, 0)
+      const normalized = clamp(sum / 100, 0, 1)
+      return normalized || 0
+    }
+
+    const getAverageCpcForProject = (project) => {
+      const id = String(project?.id ?? '')
+      const details = projectDetailsById.value?.[id]
+      const cpc = details?.developer_plan?.average_cpc ?? details?.developer_plan?.raw_plan?.average_cpc
+      return toNum(cpc, 0) || DEFAULT_AVG_CPC
+    }
+
+    const getSalesRatePercentForProject = () => {
+      return DEFAULT_SALES_RATE_PERCENT
+    }
+
+    const getAvgBookingValueForProject = (project) => {
+      const avgUnit = toNum(getProjectAvgUnitPrice(project), 0)
+      return avgUnit > 0 ? avgUnit : 0
+    }
+
+    const getExpectedBookingsForProject = (project) => {
+      const budget = getProjectCampaignBudget(project)
+      const cpc = getAverageCpcForProject(project)
+      const conversion = clamp(toNum(getSalesRatePercentForProject(project), DEFAULT_SALES_RATE_PERCENT) / 100, 0, 1)
+      const expectedClicks = cpc > 0 ? budget / cpc : 0
+      const directHandShare = getDirectHandShare(project)
+      const bookings = Math.round(expectedClicks * directHandShare * conversion)
+      return Math.max(0, bookings)
+    }
+
+    const getExpectedBookingValueForProject = (project) => {
+      const bookings = getExpectedBookingsForProject(project)
+      const avg = toNum(getAvgBookingValueForProject(project), 0)
+      return Math.max(0, bookings * avg)
+    }
+
+    const getDepositValueForProject = (project) => {
+      const budget = getProjectCampaignBudget(project)
+      const bookings = getExpectedBookingsForProject(project)
+      if (!bookings) return 0
+      return budget / bookings
+    }
+
+    const totalExpectedSalesSummary = computed(() => {
+      // Note: this block is defined before `projects` in setup(), so it must be defensive.
+      // `watch(..., { immediate: true })` would evaluate it too early and crash.
+      const list = Array.isArray(projects?.value) ? projects.value : []
+      const totalCampaignBudget = list.reduce((acc, p) => acc + getProjectCampaignBudget(p), 0)
+      const totalExpectedBookings = list.reduce((acc, p) => acc + getExpectedBookingsForProject(p), 0)
+      const totalExpectedBookingValue = list.reduce((acc, p) => acc + getExpectedBookingValueForProject(p), 0)
+      return {
+        totalCampaignBudget,
+        totalExpectedBookings,
+        totalExpectedBookingValue
+      }
+    })
+
+    watch(totalExpectedSalesSummary, (s) => {
+      // Feed dashboard KPIs even without API
+      dashboardMetrics.total_expected_bookings = toNum(s?.totalExpectedBookings, 0)
+      dashboardMetrics.total_expected_booking_value = toNum(s?.totalExpectedBookingValue, 0)
+      // "تكلفة العربون" على مستوى عام = ميزانية الحملة / الحجوزات المتوقعة
+      dashboardMetrics.deposit_cost = s?.totalExpectedBookings ? (toNum(s?.totalCampaignBudget, 0) / toNum(s?.totalExpectedBookings, 1)) : dashboardMetrics.deposit_cost
+    }, { deep: true })
+
+    // Team & projects: communicator assignment (UI-first)
+    const getProjectCommunicator = (project) => {
+      const id = String(project?.id ?? '')
+      return expectedSalesStore.value?.communicator_by_project_id?.[id] ?? ''
+    }
+    const setProjectCommunicator = (project, userId) => {
+      const id = String(project?.id ?? '')
+      expectedSalesStore.value.communicator_by_project_id[id] = String(userId || '')
+      persistExpectedSalesStore()
+      notificationService.addNotification('تم تحديث موظف التواصل لهذا المشروع', 'success')
+    }
+
+    const getProjectMarketers = (project) => {
+      const id = String(project?.id ?? '')
+      const details = projectDetailsById.value?.[id] || project
+      const teams = details?.marketing_project?.teams || details?.marketing_project?.team || []
+      const arr = Array.isArray(teams) ? teams : []
+      const users = arr
+        .map(t => t?.user || t?.marketer || t?.member || null)
+        .filter(Boolean)
+      // If API returns teams as users directly
+      const directUsers = arr.filter(x => x && (x.name || x.full_name || x.email))
+      const merged = [...users, ...directUsers]
+      // Deduplicate by id when possible
+      const seen = new Set()
+      return merged.filter(u => {
+        const key = String(u?.id ?? u?.email ?? u?.name ?? Math.random())
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+    }
+
+    const getProjectMarketersNames = (project) => {
+      const list = getProjectMarketers(project)
+      if (!list.length) return '—'
+      return list.map(u => u.name || u.full_name || ('User #' + (u.id ?? '—'))).join('، ')
+    }
+
+    // Agreement timeline badge (4.6.3) - based on end date if provided
+    const getAgreementRemainingDays = (project) => {
+      const endRaw = getAgreementEndInput(project) || project?.marketing_project?.end_date || projectDetailsById.value?.[String(project?.id ?? '')]?.marketing_project?.end_date
+      if (!endRaw) return null
+      const end = new Date(endRaw)
+      if (Number.isNaN(end.getTime())) return null
+      const now = new Date()
+      const diff = end.getTime() - now.getTime()
+      return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
+    }
+
+    const getAgreementBadgeClass = (project) => {
+      const days = getAgreementRemainingDays(project)
+      if (days === null) return 'timeline-neutral'
+      if (days < 30) return 'timeline-red'
+      if (days < 90) return 'timeline-orange'
+      return 'timeline-green'
+    }
+
+    const getAgreementBadgeLabel = (project) => {
+      const days = getAgreementRemainingDays(project)
+      if (days === null) return '—'
+      if (days < 30) return `${days} يوم`
+      const months = Math.ceil(days / 30)
+      return `${months} شهر • ${days} يوم`
+    }
+
+    const goToPlansSub = (sub) => {
+      activeTab.value = 'plans'
+      setPlanSubTab(sub)
+      router.push({ name: 'MarketingPlans', query: { ...(route.query || {}), sub } }).catch(() => {})
+    }
+
+    const downloadPlaceholder = (key) => {
+      logger.debug('Download placeholder:', key)
+      notificationService.addNotification('سيتم تفعيل تنزيل التقارير (PDF/Excel) عند توفر خدمة التصدير.', 'warning')
+    }
+
     // Projects
     const projects = ref([])
     const isLoadingProjects = ref(false)
@@ -875,10 +1730,10 @@ export default {
     const showUnitsTable = ref(false)
     const isLoadingUnits = ref(false)
 
-    // Team Management State
-    const availableTeams = ref([])
-    const selectedTeamIdToAdd = ref('')
-    const isTeamActionLoading = ref(false)
+    // Team display state (show teams + members)
+    const isLoadingTeamMembers = ref(false)
+    const teamDetailsById = ref({})
+    const projectTeamsResolved = ref([])
 
     // Tasks
     const tasks = ref([])
@@ -931,6 +1786,164 @@ export default {
     const employeePlanGenerateForm = reactive({
       user_id: ''
     })
+
+    // Manual employee plans (local-only)
+    const LS_MANUAL_EMPLOYEE_PLANS_KEY = 'marketing_employee_plans_manual_v1'
+    const showManualEmployeePlanModal = ref(false)
+    const isSavingManualEmployeePlan = ref(false)
+
+    const platformKeys = [
+      { key: 'tiktok', label: 'تيكتوك' },
+      { key: 'meta', label: 'ميتا' },
+      { key: 'snap', label: 'سناب' },
+      { key: 'youtube', label: 'يوتيوب' },
+      { key: 'linkedin', label: 'لينكد إن' },
+      { key: 'x', label: 'إكس' }
+    ]
+
+    const campaignKeys = [
+      { key: 'direct_contact', label: 'التواصل المباشر' },
+      { key: 'hand', label: 'اليد' },
+      { key: 'impression', label: 'الانطباع (Impression)' },
+      { key: 'sales', label: 'السيلز' }
+    ]
+
+    const manualEmployeePlanForm = reactive({
+      marketing_project_id: '',
+      user_id: '',
+      commission_value: 0,
+      marketing_value: 0,
+      platform_distribution: {
+        tiktok: 25,
+        meta: 25,
+        snap: 20,
+        youtube: 15,
+        linkedin: 10,
+        x: 5
+      },
+      campaign_distribution: {
+        direct_contact: 40,
+        hand: 25,
+        impression: 25,
+        sales: 10
+      }
+    })
+
+    const readManualEmployeePlansStore = () => {
+      try {
+        const raw = localStorage.getItem(LS_MANUAL_EMPLOYEE_PLANS_KEY)
+        if (!raw) return {}
+        const parsed = JSON.parse(raw)
+        return parsed && typeof parsed === 'object' ? parsed : {}
+      } catch (e) {
+        logger.warn('Failed to read manual employee plans store:', e)
+        return {}
+      }
+    }
+
+    const writeManualEmployeePlansStore = (storeObj) => {
+      try {
+        localStorage.setItem(LS_MANUAL_EMPLOYEE_PLANS_KEY, JSON.stringify(storeObj || {}))
+      } catch (e) {
+        logger.warn('Failed to write manual employee plans store:', e)
+      }
+    }
+
+    const getManualEmployeePlansForMarketingProject = (marketingProjectId) => {
+      const mpId = String(marketingProjectId || '')
+      if (!mpId) return []
+      const store = readManualEmployeePlansStore()
+      const arr = store?.[mpId]
+      return Array.isArray(arr) ? arr : []
+    }
+
+    const normalizePercentObject = (obj) => {
+      const keys = Object.keys(obj || {})
+      const nums = keys.map(k => Math.max(0, toNum(obj[k], 0)))
+      const sum = nums.reduce((a, b) => a + b, 0)
+      if (!sum) {
+        // if everything is zero, keep as-is
+        keys.forEach(k => { obj[k] = 0 })
+        return
+      }
+      keys.forEach((k, i) => {
+        obj[k] = Math.round((nums[i] / sum) * 1000) / 10 // 1 decimal
+      })
+      // fix rounding drift to exactly 100 by adjusting first key
+      const newSum = keys.reduce((a, k) => a + toNum(obj[k], 0), 0)
+      const diff = Math.round((100 - newSum) * 10) / 10
+      if (keys[0]) obj[keys[0]] = Math.round((toNum(obj[keys[0]], 0) + diff) * 10) / 10
+    }
+
+    const normalizePlatformDistribution = () => {
+      normalizePercentObject(manualEmployeePlanForm.platform_distribution)
+    }
+    const normalizeCampaignDistribution = () => {
+      normalizePercentObject(manualEmployeePlanForm.campaign_distribution)
+    }
+
+    const manualEmployeePlanPreview = computed(() => {
+      const mpId = String(employeePlansProjectId.value || '')
+      const p = (projects.value || []).find(x => String(getMarketingProjectId(x)) === mpId) || null
+      const u = (marketingEmployees.value || []).find(x => String(x.id) === String(employeePlanGenerateForm.user_id)) || null
+      return {
+        projectLabel: p ? (p.project_name || p.name || `Project #${p.id}`) : (mpId ? `Project #${mpId}` : '—'),
+        userLabel: u ? (u.name || u.full_name || `User #${u.id}`) : (employeePlanGenerateForm.user_id ? `User #${employeePlanGenerateForm.user_id}` : '—')
+      }
+    })
+
+    const openManualEmployeePlan = () => {
+      if (!employeePlansProjectId.value || !employeePlanGenerateForm.user_id) return
+      manualEmployeePlanForm.marketing_project_id = String(employeePlansProjectId.value)
+      manualEmployeePlanForm.user_id = String(employeePlanGenerateForm.user_id)
+      // keep defaults normalized
+      normalizePlatformDistribution()
+      normalizeCampaignDistribution()
+      showManualEmployeePlanModal.value = true
+    }
+
+    const closeManualEmployeePlan = () => {
+      showManualEmployeePlanModal.value = false
+    }
+
+    const saveManualEmployeePlan = async () => {
+      const mpId = String(manualEmployeePlanForm.marketing_project_id || '')
+      const userId = String(manualEmployeePlanForm.user_id || '')
+      if (!mpId || !userId) return
+
+      normalizePlatformDistribution()
+      normalizeCampaignDistribution()
+
+      isSavingManualEmployeePlan.value = true
+      try {
+        const store = readManualEmployeePlansStore()
+        const arr = Array.isArray(store[mpId]) ? store[mpId] : []
+
+        const userObj = (marketingEmployees.value || []).find(u => String(u.id) === userId) || null
+        const plan = {
+          id: `manual-${Date.now()}`,
+          user_id: toNum(userId, null),
+          user: userObj ? { id: userObj.id, name: userObj.name || userObj.full_name } : null,
+          marketing_value: toNum(manualEmployeePlanForm.marketing_value, 0),
+          commission_value: toNum(manualEmployeePlanForm.commission_value, 0),
+          platform_distribution: { ...(manualEmployeePlanForm.platform_distribution || {}) },
+          campaign_distribution: { ...(manualEmployeePlanForm.campaign_distribution || {}) },
+          created_at: new Date().toISOString(),
+          _source: 'manual'
+        }
+
+        store[mpId] = [plan, ...arr]
+        writeManualEmployeePlansStore(store)
+        notificationService.addNotification('تم إنشاء الخطة اليدوية بنجاح', 'success')
+        closeManualEmployeePlan()
+        await loadEmployeePlans()
+      } catch (e) {
+        logger.error('Failed to save manual employee plan:', e)
+        alert('حدث خطأ أثناء حفظ الخطة اليدوية')
+      } finally {
+        isSavingManualEmployeePlan.value = false
+      }
+    }
 
     // AI Assistant state
     const aiQuery = ref('')
@@ -1038,6 +2051,8 @@ export default {
       try {
         const details = await marketingService.getProjectById(projectId)
         selectedProjectDetails.value = details
+        projectDetailsById.value[String(projectId)] = details || null
+        syncMediaLinksForm(details || { id: projectId })
       } catch (error) {
         logger.error('Error loading project details:', error)
         selectedProjectDetails.value = null
@@ -1092,8 +2107,21 @@ export default {
       }
       isLoadingEmployeePlans.value = true
       try {
-        const data = await marketingService.getEmployeePlans(employeePlansProjectId.value)
-        employeePlans.value = Array.isArray(data) ? data : []
+        const [apiPlans, manualPlans] = await Promise.all([
+          marketingService.getEmployeePlans(employeePlansProjectId.value).catch(() => []),
+          Promise.resolve(getManualEmployeePlansForMarketingProject(employeePlansProjectId.value))
+        ])
+
+        const normalizedManual = (manualPlans || []).map(p => ({
+          ...p,
+          user_name: p?.user?.name,
+          created_at: p.created_at || new Date().toISOString()
+        }))
+
+        employeePlans.value = [
+          ...normalizedManual,
+          ...(Array.isArray(apiPlans) ? apiPlans : [])
+        ]
       } catch (error) {
         logger.error('Error loading employee plans:', error)
         employeePlans.value = []
@@ -1212,13 +2240,133 @@ export default {
       }
     }
 
-    const loadAvailableTeams = async () => {
-        try {
-            const allTeams = await teamService.getTeams()
-            availableTeams.value = allTeams
-        } catch (error) {
-            logger.error('Error loading teams:', error)
+    const normalizeMember = (m, idx = 0) => {
+      const name = m?.name || m?.full_name || m?.title || (typeof m === 'string' ? m : '')
+      return {
+        _key: String(m?.id ?? m?.email ?? name ?? idx),
+        id: m?.id,
+        name: name || `عضو ${idx + 1}`
+      }
+    }
+
+    const getDefaultTeamsPlaceholder = (projectId) => {
+      const pid = String(projectId ?? '')
+      const mkMembers = (teamIdx) => ([
+        { name: `عضو ${teamIdx}-1` },
+        { name: `عضو ${teamIdx}-2` },
+        { name: `عضو ${teamIdx}-3` }
+      ]).map(normalizeMember)
+      return [
+        {
+          _key: `ph-${pid}-1`,
+          id: null,
+          name: 'فريق التسويق A',
+          description: 'فريق افتراضي (لا توجد بيانات من API)',
+          isPlaceholder: true,
+          members: mkMembers(1)
+        },
+        {
+          _key: `ph-${pid}-2`,
+          id: null,
+          name: 'فريق التسويق B',
+          description: 'فريق افتراضي (لا توجد بيانات من API)',
+          isPlaceholder: true,
+          members: mkMembers(2)
         }
+      ]
+    }
+
+    const extractTeamsFromProjectDetails = (details) => {
+      const raw = details?.marketing_project?.teams || details?.marketing_project?.team || []
+      const arr = Array.isArray(raw) ? raw : []
+      // If backend returns users instead of teams, wrap them into a single placeholder team
+      const looksLikeUser = (x) => x && (x.email || x.full_name || x.name) && !x.team_id && !x.description && !x.members
+      if (arr.length && arr.every(looksLikeUser)) {
+        return [{
+          _key: `u-team-${details?.id ?? 'x'}`,
+          id: null,
+          name: 'أعضاء التسويق',
+          description: 'تم جلب الأعضاء بدون بيانات فريق',
+          isPlaceholder: true,
+          members: arr.map(normalizeMember)
+        }]
+      }
+      return arr.map((t, idx) => ({
+        _key: String(t?.id ?? t?.team_id ?? idx),
+        id: t?.id ?? t?.team_id ?? null,
+        name: t?.name || t?.title || (t?.user?.name ? `فريق ${t.user.name}` : `Team #${t?.id ?? idx + 1}`),
+        description: t?.description || 'فريق تسويق',
+        isPlaceholder: false,
+        _raw: t
+      }))
+    }
+
+    const extractMembersFromTeamDetails = (teamDetails) => {
+      const candidates = teamDetails?.members || teamDetails?.users || teamDetails?.team_members || teamDetails?.teamMembers || []
+      const arr = Array.isArray(candidates) ? candidates : []
+      if (arr.length) return arr.map(normalizeMember)
+      // Sometimes backend nests members
+      const nested = teamDetails?.data?.members || []
+      if (Array.isArray(nested) && nested.length) return nested.map(normalizeMember)
+      return []
+    }
+
+    const ensureTeamDetails = async (teamId) => {
+      const id = String(teamId ?? '')
+      if (!id) return null
+      if (teamDetailsById.value[id]) return teamDetailsById.value[id]
+      try {
+        const data = await teamService.getTeamById(id)
+        teamDetailsById.value[id] = data || null
+        return data || null
+      } catch (e) {
+        logger.warn('Failed to load team details:', id, e)
+        teamDetailsById.value[id] = null
+        return null
+      }
+    }
+
+    const loadProjectTeamsMembers = async () => {
+      const details = selectedProjectDetails.value
+      const projectId = details?.id
+      const baseTeams = extractTeamsFromProjectDetails(details)
+      if (!baseTeams.length) {
+        projectTeamsResolved.value = getDefaultTeamsPlaceholder(projectId)
+        return
+      }
+
+      isLoadingTeamMembers.value = true
+      try {
+        const resolved = await Promise.all(baseTeams.map(async (t) => {
+          // If already has members in raw object, use them
+          const rawMembers = t?._raw?.members || t?._raw?.users || t?._raw?.team_members
+          if (Array.isArray(rawMembers) && rawMembers.length) {
+            return { ...t, members: rawMembers.map(normalizeMember) }
+          }
+
+          if (t.id) {
+            const teamDetails = await ensureTeamDetails(t.id)
+            const members = extractMembersFromTeamDetails(teamDetails)
+            if (members.length) return { ...t, members }
+          }
+
+          // Fallback placeholder members
+          return {
+            ...t,
+            isPlaceholder: true,
+            description: t.description || 'فريق افتراضي (لا توجد بيانات أعضاء من API)',
+            members: [
+              { name: 'عضو 1' },
+              { name: 'عضو 2' },
+              { name: 'عضو 3' }
+            ].map(normalizeMember)
+          }
+        }))
+
+        projectTeamsResolved.value = resolved
+      } finally {
+        isLoadingTeamMembers.value = false
+      }
     }
 
     const viewProjectDetails = async (projectId) => {
@@ -1226,48 +2374,7 @@ export default {
       showUnitsTable.value = false
       isLoadingUnits.value = false
       await loadProjectDetails(projectId)
-      loadAvailableTeams() // Load teams for the dropdown
-    }
-
-    const assignTeamToProject = async () => {
-        if (!selectedTeamIdToAdd.value || !selectedProjectDetails.value) return
-        
-        // Find the marketing_project ID or the main project ID depending on what the API expects
-        // Based on logic, we usually assign to the project ID and backend handles relation
-        const projectId = selectedProjectDetails.value.id
-        
-        isTeamActionLoading.value = true
-        try {
-            await teamService.addTeamsToContract(projectId, [selectedTeamIdToAdd.value])
-            notificationService.addNotification('تم إضافة الفريق للمشروع بنجاح', 'success')
-            selectedTeamIdToAdd.value = ''
-            // Reload details to verify
-            loadProjectDetails(projectId)
-        } catch (error) {
-            logger.error('Error adding team:', error)
-            alert('تعذر إضافة الفريق')
-        } finally {
-            isTeamActionLoading.value = false
-        }
-    }
-
-    const removeTeamFromProject = async (team) => {
-        if (!confirm('هل أنت متأكد من إزالة هذا الفريق؟')) return
-        const projectId = selectedProjectDetails.value.id
-        const teamId = team.id
-
-        isTeamActionLoading.value = true
-        try {
-            await teamService.removeTeamsFromContract(projectId, [teamId])
-            notificationService.addNotification('تم إزالة الفريق بنجاح', 'success')
-            // Reload details
-            loadProjectDetails(projectId)
-        } catch (error) {
-             logger.error('Error removing team:', error)
-             alert('تعذر إزالة الفريق')
-        } finally {
-             isTeamActionLoading.value = false
-        }
+      await loadProjectTeamsMembers()
     }
 
     const goToUnits = async (project_id) => {
@@ -1412,10 +2519,11 @@ export default {
         const sub = String(route.query?.sub || '').toLowerCase()
         if (sub === 'employee') activePlanSubTab.value = 'employee'
         if (sub === 'developer') activePlanSubTab.value = 'developer'
+        if (sub === 'expected-sales' || sub === 'expected_sales' || sub === 'expected') activePlanSubTab.value = 'expected-sales'
         return
       }
 
-      if (tab && ['dashboard', 'projects', 'tasks', 'leads', 'ai-assistant'].includes(tab)) {
+      if (tab && ['dashboard', 'projects', 'tasks', 'leads', 'ai-assistant', 'team-projects', 'reports-outputs'].includes(tab)) {
         activeTab.value = tab
       }
     }
@@ -1437,16 +2545,25 @@ export default {
       } else if (newTab === 'plans') {
         loadProjects()
         loadEmployees()
+        loadProjectDetailsBatch()
       } else if (newTab === 'tasks') {
         loadTasks()
       } else if (newTab === 'leads') {
         loadLeads()
       } else if (newTab === 'ai-assistant') {
         loadAiDashboard()
+      } else if (newTab === 'team-projects') {
+        loadProjects()
+        loadEmployees()
+        loadProjectDetailsBatch()
+      } else if (newTab === 'reports-outputs') {
+        loadProjects()
+        loadProjectDetailsBatch()
       }
     }, { immediate: true })
 
     onMounted(() => {
+      loadExpectedSalesStore()
       syncTabFromRoute()
       loadEmployees()
     })
@@ -1632,6 +2749,7 @@ export default {
       activeTab,
       activePlanSubTab,
       setPlanSubTab,
+      goToPlansSub,
       userName,
       dashboardMetrics,
       projects,
@@ -1687,6 +2805,49 @@ export default {
       autoGenerateEmployeePlan,
       getMarketingProjectId,
       formatDistribution,
+      // Expected Sales (4.5)
+      totalExpectedSalesSummary,
+      getProjectCampaignBudget,
+      getExpectedBookingsForProject,
+      getSalesRatePercentForProject,
+      getAvgBookingValueForProject,
+      getExpectedBookingValueForProject,
+      getDepositValueForProject,
+      // Projects UI summary (4.2 + timeline)
+      getProjectUnitsSummary,
+      getProjectAvgUnitPrice,
+      getProjectAvailableUnitsTotalPrice,
+      getProjectSaiPercent,
+      getProjectAdvertiserLabel,
+      getProjectMetaDefaulted,
+      mediaLinksForm,
+      saveProjectMediaLinks,
+      // Manual employee plan (4.4.2 - 4.4.3)
+      showManualEmployeePlanModal,
+      isSavingManualEmployeePlan,
+      platformKeys,
+      campaignKeys,
+      manualEmployeePlanForm,
+      manualEmployeePlanPreview,
+      openManualEmployeePlan,
+      closeManualEmployeePlan,
+      saveManualEmployeePlan,
+      normalizePlatformDistribution,
+      normalizeCampaignDistribution,
+      // Team & Projects (4.6)
+      getProjectMarketers,
+      getProjectMarketersNames,
+      getProjectCommunicator,
+      setProjectCommunicator,
+      getAgreementBadgeClass,
+      getAgreementBadgeLabel,
+      setAgreementEndInput,
+      getAgreementEndInput,
+      // Project details: teams + members
+      isLoadingTeamMembers,
+      projectTeamsResolved,
+      // Reports & Outputs
+      downloadPlaceholder,
       // AI Assistant
       aiQuery,
       isAiTyping,
@@ -1699,12 +2860,7 @@ export default {
       loadChatSession,
       sendAiMessage,
       sendPrompt,
-      // Teams Management
-      availableTeams,
-      selectedTeamIdToAdd,
-      isTeamActionLoading,
-      assignTeamToProject,
-      removeTeamFromProject
+      // (Add/Remove team UI removed per request)
     }
   }
 }
@@ -2094,6 +3250,76 @@ export default {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* Agreement timeline badge (4.6.3) */
+.timeline-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #64748b;
+  background: rgba(148, 163, 184, 0.08);
+  max-width: 100%;
+}
+
+.timeline-neutral {
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #64748b;
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.timeline-red {
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.timeline-orange {
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.10);
+}
+
+.timeline-green {
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #047857;
+  background: rgba(16, 185, 129, 0.10);
+}
+
+.meta-link {
+  color: #2563eb;
+  font-weight: 700;
+  text-decoration: none;
+}
+.meta-link:hover {
+  text-decoration: underline;
+}
+.meta-link-mini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  background: rgba(37, 99, 235, 0.06);
+  text-decoration: none !important;
+}
+.meta-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.meta-input-row .form-input {
+  flex: 1;
+  min-width: 0;
 }
 
 .status-active {
