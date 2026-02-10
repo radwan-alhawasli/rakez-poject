@@ -675,13 +675,18 @@ export default {
 
     const downloadVoucher = async (id) => {
          try {
-            const blob = await salesService.downloadVoucher(id)
-            const url = window.URL.createObjectURL(blob)
+            const res = await salesService.downloadVoucher(id)
+            const data = res?.data
+            if (!data || !(data instanceof Blob)) {
+                notificationService.addNotification('فشل تنزيل الإيصال', 'error')
+                return
+            }
+            const url = window.URL.createObjectURL(data)
             const a = document.createElement('a')
             a.href = url
             a.download = `receipt-${id}.pdf`
             a.click()
-            window.URL.revokeObjectURL(url) // Clean up the object URL
+            window.URL.revokeObjectURL(url)
         } catch (e) { 
             logger.error(e) 
             notificationService.addNotification('فشل تنزيل الإيصال', 'error')

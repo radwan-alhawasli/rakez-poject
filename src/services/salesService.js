@@ -15,8 +15,10 @@ const salesService = {
         return apiClient.get(`/sales/projects/${projectId}`)
     },
 
+    /** Get units for a project by its id. API: GET /sales/projects/:id/units */
     getProjectUnits(projectId) {
-        return apiClient.get(`/sales/projects/${projectId}/units`)
+        const id = projectId != null ? String(projectId) : ''
+        return apiClient.get(`/sales/projects/${id}/units`)
     },
 
     getEmergencyContacts(projectId) {

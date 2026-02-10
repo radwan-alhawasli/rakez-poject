@@ -101,9 +101,10 @@ const notificationService = {
 
             const results = await Promise.all(requests)
             
-            const privateNotifs = results[0].data.notifications || results[0].data || []
-            const publicNotifs = results[1].data.notifications || results[1].data || []
-            const adminNotifs = isAdmin ? (results[2].data.notifications || results[2].data || []) : []
+            const toArray = (val) => (Array.isArray(val) ? val : [])
+            const privateNotifs = toArray(results[0]?.data?.notifications ?? results[0]?.data)
+            const publicNotifs = toArray(results[1]?.data?.notifications ?? results[1]?.data)
+            const adminNotifs = isAdmin ? toArray(results[2]?.data?.notifications ?? results[2]?.data) : []
 
             const all = [
                 ...privateNotifs,

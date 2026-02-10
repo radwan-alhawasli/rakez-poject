@@ -1,6 +1,62 @@
 <template>
   <div class="sales-view">
-    <div class="tab-content">
+    <!-- Full-page Units View (route: /sales/projects/:id/units) -->
+    <div v-if="isUnitsPage" class="units-page">
+      <!-- Hero section -->
+      <div class="units-hero" :style="unitsPageProject?.image ? { backgroundImage: `url(${unitsPageProject.image})` } : {}">
+        <div class="units-hero-overlay"></div>
+        <div class="units-hero-content">
+          <button class="btn-back btn-back-hero" @click="goBackToProjects">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            رجوع للمشاريع
+          </button>
+          <p class="units-hero-location">{{ unitsPageProject?.location || '—' }}</p>
+          <h1 class="units-hero-title">{{ unitsPageProjectName }}</h1>
+        </div>
+      </div>
+
+      <!-- Units table section -->
+      <section class="units-table-section">
+        <h2 class="units-table-heading">جدول الوحدات</h2>
+        <div class="units-filter-tabs">
+          <button
+            v-for="tab in [{ id: 'all', label: 'الجميع' }, { id: 'available', label: 'متاح' }, { id: 'sold', label: 'مباع' }, { id: 'reserved', label: 'محجوز' }]"
+            :key="tab.id"
+            type="button"
+            class="units-tab"
+            :class="{ active: unitsFilter === tab.id }"
+            @click="unitsFilter = tab.id"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+        <div v-if="isLoadingUnits" class="loading-state">
+          <div class="spinner"></div>
+          <p>جاري تحميل الوحدات...</p>
+        </div>
+        <div v-else-if="filteredProjectUnits.length === 0" class="empty-state">
+          <p>{{ unitsFilter === 'all' ? 'لا توجد وحدات لهذا المشروع.' : `لا توجد وحدات بحالة «${unitsFilter === 'available' ? 'متاح' : unitsFilter === 'sold' ? 'مباع' : 'محجوز'}».` }}</p>
+        </div>
+        <div v-else class="units-grid units-page-grid">
+          <div v-for="(unit, idx) in filteredProjectUnits" :key="unit.id != null ? unit.id : idx" class="unit-card-v2">
+            <span class="unit-card-v2-status" :class="getUnitStatusClass(unit.status)">{{ getUnitStatusText(unit.status) }}</span>
+            <span class="unit-card-v2-number">#{{ unit.unit_number || unit.id || (idx + 1) }}</span>
+            <div class="unit-card-v2-price">{{ formatCurrency(unit.price) }}</div>
+            <p v-if="unit.unit_type" class="unit-card-v2-type">{{ unit.unit_type }}</p>
+            <div class="unit-card-v2-specs">
+              <span v-if="unit.area" class="spec-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>{{ unit.area }} م²</span>
+              <span v-if="unit.rooms" class="spec-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/><path d="M3 9l3-4h12l3 4"/></svg>{{ unit.rooms }}</span>
+              <span v-if="unit.bathrooms" class="spec-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-2-2L3 5"/><path d="m3 5 2 2"/><path d="M3 9v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9"/></svg>{{ unit.bathrooms }}</span>
+            </div>
+            <button type="button" class="btn-unit-details" @click="openUnitDetails(unit)">
+              شاهد التفاصيل
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div v-else class="tab-content">
       
       <!-- DASHBOARD TAB (الرئيسية) -->
       <div v-if="activeTab === 'dashboard'" class="dashboard-tab">
@@ -75,7 +131,7 @@
           <div class="projects-mini-grid">
             <div v-for="project in dashboardProjects" :key="project.id" class="mini-project-card" @click="viewProjectDetails(project.id)">
               <div class="p-image">
-                <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project">
+                <img :src="project.image || projectImagePlaceholder" alt="Project">
               </div>
               <div class="p-info">
                 <h4>{{ project.name }}</h4>
@@ -179,7 +235,7 @@
         <div v-else class="projects-grid">
           <div v-for="project in filteredProjects" :key="project.id" class="project-card luxury" @click="viewProjectDetails(project.id)">
             <div class="card-image">
-               <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project Image" style="object-fit: cover; width: 100%; height: 100%; border-radius: 16px 16px 0 0;" @error="$event.target.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%23999999%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E'" />
+               <img :src="project.image || projectImagePlaceholder" alt="Project Image" style="object-fit: cover; width: 100%; height: 100%; border-radius: 16px 16px 0 0;" @error="$event.target.src=projectImagePlaceholder" />
                <div class="status-badge" :class="project.statusClass">{{ project.statusLabel }}</div>
                <div class="overlay-gradient"></div>
             </div>
@@ -227,19 +283,28 @@
           <h2>الحجوزات</h2>
         </div>
 
+        <div class="tabs-container reservations-sub-tabs">
+          <button :class="['tab-btn', { active: reservationsSubTab === 'active' }]" @click="reservationsSubTab = 'active'">
+            الحجوزات ({{ activeReservationsCount }})
+          </button>
+          <button :class="['tab-btn', { active: reservationsSubTab === 'cancelled' }]" @click="reservationsSubTab = 'cancelled'">
+            الحجوزات الملغاة ({{ cancelledReservationsCount }})
+          </button>
+        </div>
+
         <div v-if="isLoadingReservations" class="loading-state">
           <div class="spinner"></div>
           <p>جاري تحميل الحجوزات...</p>
         </div>
 
-        <div v-else-if="reservations.length === 0" class="empty-state">
+        <div v-else-if="filteredReservations.length === 0" class="empty-state">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="16" y1="2" x2="16" y2="6"></line>
             <line x1="8" y1="2" x2="8" y2="6"></line>
             <line x1="3" y1="10" x2="21" y2="10"></line>
           </svg>
-          <p>لا توجد حجوزات</p>
+          <p>{{ reservationsSubTab === 'cancelled' ? 'لا توجد حجوزات ملغاة' : 'لا توجد حجوزات' }}</p>
         </div>
 
         <div v-else class="reservations-table-container">
@@ -258,7 +323,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="reservation in reservations" :key="reservation.id" class="reservation-row">
+              <tr v-for="reservation in filteredReservations" :key="reservation.id" class="reservation-row">
                 <td>#{{ reservation.id }}</td>
                 <td>
                   <div class="client-info">
@@ -332,8 +397,11 @@
 
       <!-- ATTENDANCE TAB (دوامي) -->
       <div v-else-if="activeTab === 'attendance'" class="attendance-tab">
-        <div class="section-header">
-          <h2>{{ isLeader ? 'حضور الفريق' : 'دوامي' }}</h2>
+        <div class="page-header attendance-header">
+          <div class="header-content">
+            <h1 class="page-title">{{ isLeader ? 'حضور الفريق' : 'دوامي' }}</h1>
+            <p class="page-subtitle">{{ isLeader ? 'جدول حضور أعضاء الفريق' : 'جدول دوامك والمشاريع المحددة.' }}</p>
+          </div>
           <button v-if="isLeader" @click="showScheduleModal = true" class="btn-add">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -350,29 +418,31 @@
           <p>جاري تحميل البيانات...</p>
         </div>
 
-        <div v-else class="attendance-table-container">
-          <table class="attendance-table">
-            <thead>
-              <tr>
-                <th v-if="isLeader">الموظف</th>
-                <th>التاريخ</th>
-                <th>وقت البداية</th>
-                <th>وقت النهاية</th>
-                <th>المشروع</th>
-                <th>الموقع</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="record in attendanceRecords" :key="record.schedule_id || record.id">
-                <td v-if="isLeader">{{ record.user_name || record.employee_name || '—' }}</td>
-                <td>{{ formatDate(record.schedule_date || record.date) }}</td>
-                <td>{{ formatTime(record.start_time || record.check_in_time) }}</td>
-                <td>{{ formatTime(record.end_time || record.check_out_time) }}</td>
-                <td>{{ record.project_name || '—' }}</td>
-                <td>{{ record.project_location || '—' }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-else-if="attendanceRecords.length === 0" class="empty-state">
+          <div class="empty-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <p>لا توجد سجلات حضور للعرض.</p>
+        </div>
+
+        <div v-else class="attendance-cards">
+          <div v-for="record in attendanceRecords" :key="record.schedule_id || record.id" class="attendance-card">
+            <div class="attendance-card-header">
+              <span class="attendance-date">{{ formatDate(record.schedule_date || record.date) }}</span>
+              <span class="attendance-time-range">{{ formatTime(record.start_time) }} – {{ formatTime(record.end_time) }}</span>
+            </div>
+            <div v-if="isLeader" class="attendance-card-user">
+              <span class="attendance-user-label">الموظف</span>
+              <span class="attendance-user-name">{{ record.user_name || record.employee_name || '—' }}</span>
+            </div>
+            <div class="attendance-card-project">
+              <span class="attendance-project-name">{{ record.project_name || '—' }}</span>
+              <span v-if="record.project_location" class="attendance-project-location">{{ record.project_location }}</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -611,7 +681,7 @@
           <div v-else-if="selectedProject">
             <!-- Project Banner Container -->
             <div class="project-banner">
-                <img :src="selectedProject.image || '/img/placeholder-project.jpg'" alt="Project Image" class="banner-img" />
+                <img :src="selectedProject.image || projectImagePlaceholder" alt="Project Image" class="banner-img" @error="$event.target.src=projectImagePlaceholder" />
                 <div class="banner-overlay">
                     <div class="banner-text">
                         <span class="banner-location"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> {{ selectedProject.location || 'الرياض' }}</span>
@@ -811,6 +881,46 @@
           </form>
         </div>
       </div>
+
+    <!-- Units Modal (عرض الوحدات) -->
+    <div v-if="showUnitsModal" class="modal-overlay" @click.self="closeUnitsModal">
+      <div class="modal-content units-modal">
+        <div class="modal-header">
+          <h3>جدول الوحدات — {{ selectedProjectForUnits?.name || 'المشروع' }}</h3>
+          <button class="modal-close" @click="closeUnitsModal">×</button>
+        </div>
+        <div class="modal-body units-modal-body">
+          <div v-if="isLoadingUnits" class="loading-state">
+            <div class="spinner"></div>
+            <p>جاري تحميل الوحدات...</p>
+          </div>
+          <div v-else-if="projectUnits.length === 0" class="empty-state">
+            <p>لا توجد وحدات متاحة لهذا المشروع.</p>
+          </div>
+          <div v-else class="units-grid">
+            <div v-for="(unit, idx) in projectUnits" :key="unit.id != null ? unit.id : idx" class="unit-card">
+              <span class="unit-card-status" :class="getUnitStatusClass(unit.status)">{{ getUnitStatusText(unit.status) }}</span>
+              <span class="unit-card-number">#{{ unit.unit_number || unit.id || (idx + 1) }}</span>
+              <div class="unit-card-price">{{ formatCurrency(unit.price) }}</div>
+              <div class="unit-card-meta">
+                <span v-if="unit.unit_type">{{ unit.unit_type }}</span>
+                <span v-if="unit.floor"> · {{ unit.floor }}</span>
+                <span v-if="unit.area"> · {{ unit.area }} م²</span>
+                <span v-if="unit.rooms"> · {{ unit.rooms }} غرف</span>
+              </div>
+              <div v-if="unit.description" class="unit-card-desc">{{ unit.description }}</div>
+              <button
+                v-if="unit.status === 'available'"
+                @click="openReservationFromUnit(unit)"
+                class="btn-unit-reserve"
+              >
+                حجز
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     </div>
   </div>
 </template>
@@ -830,8 +940,36 @@ export default {
     const router = useRouter()
     const user = authService.getCurrentUser()
     const isLeader = ref(user?.is_leader || false)
+
+    const projectImagePlaceholder = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23e2e8f0%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%23999999%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E'
     
     // Initialize active tab from route
+    const isUnitsPage = computed(() => route.name === 'SalesProjectUnits')
+    const unitsPageProjectName = computed(() => {
+      const q = route.query?.name
+      if (q) return q
+      const id = route.params?.id
+      const p = projects.value.find(pr => pr.id == id || pr.contract_id == id || pr.project_id == id)
+      return p?.name || (id ? `مشروع #${id}` : 'المشروع')
+    })
+    const unitsPageProject = computed(() => selectedProjectForUnits.value)
+
+    const unitsFilter = ref('all') // 'all' | 'available' | 'sold' | 'reserved'
+    const filteredProjectUnits = computed(() => {
+      const list = projectUnits.value || []
+      if (unitsFilter.value === 'all') return list
+      return list.filter(u => (u.status || '').toLowerCase() === unitsFilter.value)
+    })
+
+    const openUnitDetails = (unit) => {
+      if ((unit.status || '').toLowerCase() === 'available') {
+        openReservationFromUnit(unit)
+      } else {
+        // Could open a read-only detail modal later
+        notificationService.addNotification(`الوحدة #${unit.unit_number || unit.id} — ${getUnitStatusText(unit.status)}`, 'info')
+      }
+    }
+
     const getTabFromRoute = () => {
       const name = route.name
       if (name === 'SalesTargets') return 'targets'
@@ -905,8 +1043,21 @@ export default {
 
     // Lifecycle
     onMounted(() => {
-      loadTabData(activeTab.value)
+      if (route.name === 'SalesProjectUnits') {
+        loadUnitsForPage()
+      } else {
+        loadTabData(activeTab.value)
+      }
     })
+
+    watch(
+      () => [route.name, route.params.id],
+      () => {
+        if (route.name === 'SalesProjectUnits' && route.params?.id) {
+          loadUnitsForPage()
+        }
+      }
+    )
 
     // Dashboard
     const dashboardData = ref(null)
@@ -1034,9 +1185,11 @@ export default {
           return {
             ...p,
             id,
+            contract_id: p.contract_id ?? p.project_id ?? p.id ?? id,
+            project_id: p.project_id ?? p.contract_id ?? p.id ?? id,
             name: p.project_name || p.name || `مشروع #${id || ''}`,
             location: [p.city || p.location_city, p.district || p.location_district].filter(Boolean).join(' - '),
-            image: p.project_image_url || p.image || '/img/placeholder-project.jpg',
+            image: p.project_image_url || p.image || projectImagePlaceholder,
             developer_name: p.developer_name || p.developer || p.developer_info?.name,
             status: salesStatus,
             statusLabel: salesStatus,
@@ -1086,16 +1239,101 @@ export default {
         router.push({ name: 'ProjectTracker', params: { id: projectId } })
     }
 
+    const showUnitsModal = ref(false)
+    const selectedProjectForUnits = ref(null)
+
     const viewProjectUnits = (projectId) => {
-        router.push({ 
-          name: 'ProjectTracker', 
-          params: { id: projectId }, 
-          query: { tab: 'units' }
+      const project = projects.value.find(p => p.id === projectId || p.id == projectId || p.contract_id == projectId)
+      if (!project) {
+        notificationService.addNotification('المشروع غير موجود', 'error')
+        return
+      }
+      const idToUse = project.id ?? project.contract_id ?? project.project_id ?? projectId
+      if (idToUse === undefined || idToUse === null || String(idToUse).trim() === '') {
+        notificationService.addNotification('معرف المشروع غير متوفر', 'error')
+        return
+      }
+      router.push({
+        name: 'SalesProjectUnits',
+        params: { id: idToUse },
+        query: { name: project.name || project.project_name || '' }
+      })
+    }
+
+    const goBackToProjects = () => {
+      router.push({ name: 'SalesProjects' })
+    }
+
+    const loadUnitsForPage = async () => {
+      const id = route.params?.id
+      if (!id) return
+      const project = projects.value.find(p => p.id == id || p.contract_id == id || p.project_id == id) || { id: id, contract_id: id, name: route.query?.name || `مشروع #${id}` }
+      selectedProjectForUnits.value = project
+      isLoadingUnits.value = true
+      projectUnits.value = []
+      try {
+        const unitsRes = await salesService.getProjectUnits(id)
+        const body = unitsRes?.data
+        let rawUnits = []
+        if (body && typeof body === 'object' && Array.isArray(body.data)) {
+          rawUnits = body.data
+        } else if (body && typeof body === 'object') {
+          if (Array.isArray(body)) rawUnits = body
+          else if (Array.isArray(body.units)) rawUnits = body.units
+          else if (Array.isArray(body.items)) rawUnits = body.items
+          else {
+            const firstArray = Object.values(body).find(v => Array.isArray(v))
+            if (firstArray) rawUnits = firstArray
+          }
+        }
+        const normalized = rawUnits.map((u, index) => {
+          if (!u || typeof u !== 'object') return null
+          const rawStatus = String(u.computed_availability || u.unit_status || u.status || u.availability || '').toLowerCase()
+          let status = 'available'
+          if (/sold|مباع|sale/.test(rawStatus)) status = 'sold'
+          else if (/reserv|محجوز|booked/.test(rawStatus)) status = 'reserved'
+          else if (/available|متاح|free/.test(rawStatus) || rawStatus) status = rawStatus || 'available'
+          const uid = u.unit_id ?? u.id ?? u.contract_unit_id ?? index
+          return {
+            ...u,
+            id: uid,
+            contract_id: u.contract_id ?? project.id ?? project.contract_id ?? id,
+            unit_number: u.unit_number ?? u.number ?? u.name ?? u.unit_number_display ?? String(uid),
+            price: u.price ?? u.total_price ?? u.unit_price ?? 0,
+            area: u.area_m2 ?? u.area ?? u.space ?? u.size ?? u.sqm ?? '',
+            unit_type: u.unit_type ?? u.type ?? '',
+            floor: u.floor ?? u.floor_number ?? '',
+            rooms: u.rooms ?? u.bedrooms ?? u.room_count ?? '',
+            bathrooms: u.bathrooms ?? u.bathroom_count ?? u.baths ?? '',
+            description: u.description ?? u.unit_description ?? '',
+            status
+          }
         })
+        projectUnits.value = normalized.filter(Boolean)
+      } catch (e) {
+        logger.error('Error loading units', e)
+        const errMsg = e?.message || e?.response?.data?.message || (e?.response?.status ? `خطأ ${e.response.status}` : 'فشل تحميل الوحدات')
+        notificationService.addNotification(errMsg, 'error')
+      } finally {
+        isLoadingUnits.value = false
+      }
+    }
+
+    const closeUnitsModal = () => {
+      showUnitsModal.value = false
+      selectedProjectForUnits.value = null
+      projectUnits.value = []
+    }
+
+    const openReservationFromUnit = (unit) => {
+      selectedProject.value = selectedProjectForUnits.value
+      if (!isUnitsPage.value) closeUnitsModal()
+      openReservationModal(unit)
     }
 
     // Reservations
     const reservations = ref([])
+    const reservationsSubTab = ref('active') // 'active' | 'cancelled'
     const isLoadingReservations = ref(false)
     const showReservationModal = ref(false)
     const selectedUnit = ref(null)
@@ -1147,11 +1385,11 @@ export default {
       showProjectModal.value = true
       isLoadingProjectDetails.value = true
       isLoadingUnits.value = true
-      
+      const projectIdForUnits = existing?.id ?? projectId
       try {
         const [detRes, unitsRes] = await Promise.all([
           salesService.getProjectDetails(projectId).catch(e => { logger.error('P-Details Error', e); return null }),
-          salesService.getProjectUnits(projectId).catch(e => { logger.error('Units Error', e); return null })
+          salesService.getProjectUnits(projectIdForUnits).catch(e => { logger.error('Units Error', e); return null })
         ])
         
         // 1. Process Project Details
@@ -1235,6 +1473,15 @@ export default {
         isLoadingReservations.value = false
       }
     }
+
+    const filteredReservations = computed(() => {
+      const cancelled = (reservations.value || []).filter(r => (r.status || '').toString().toLowerCase() === 'cancelled')
+      const active = (reservations.value || []).filter(r => (r.status || '').toString().toLowerCase() !== 'cancelled')
+      if (reservationsSubTab.value === 'cancelled') return cancelled
+      return active
+    })
+    const activeReservationsCount = computed(() => reservations.value.filter(r => (r.status || '').toString().toLowerCase() !== 'cancelled').length)
+    const cancelledReservationsCount = computed(() => reservations.value.filter(r => (r.status || '').toString().toLowerCase() === 'cancelled').length)
 
     const openReservationModal = async (unit) => {
       selectedUnit.value = unit
@@ -1327,8 +1574,13 @@ export default {
 
     const downloadVoucher = async (reservationId) => {
       try {
-        const blob = await salesService.downloadVoucher(reservationId)
-        const url = window.URL.createObjectURL(blob)
+        const res = await salesService.downloadVoucher(reservationId)
+        const data = res?.data
+        if (!data || !(data instanceof Blob)) {
+          notificationService.addNotification('حدث خطأ أثناء تحميل الإيصال', 'error')
+          return
+        }
+        const url = window.URL.createObjectURL(data)
         const link = document.createElement('a')
         link.href = url
         link.download = `voucher-${reservationId}.pdf`
@@ -1592,6 +1844,14 @@ export default {
 
 
     return {
+      projectImagePlaceholder,
+      isUnitsPage,
+      unitsPageProjectName,
+      unitsPageProject,
+      unitsFilter,
+      filteredProjectUnits,
+      openUnitDetails,
+      goBackToProjects,
       activeTab,
       visibleTabs,
       isLeader,
@@ -1614,6 +1874,10 @@ export default {
       isLoadingUnits,
       viewProjectDetails,
       reservations,
+      reservationsSubTab,
+      filteredReservations,
+      activeReservationsCount,
+      cancelledReservationsCount,
       isLoadingReservations,
       showReservationModal,
       selectedUnit,
@@ -1663,11 +1927,8 @@ export default {
       reservationLookups,
       scrollToUnits: () => {
         if (selectedProject.value?.id) {
-          router.push({ 
-            name: 'ProjectTracker', 
-            params: { id: selectedProject.value.id }, 
-            query: { tab: 'units' }
-          })
+          showProjectModal.value = false
+          viewProjectUnits(selectedProject.value.id)
         }
       },
       logReservationAction,
@@ -1675,7 +1936,11 @@ export default {
       activeProjectsCount,
       archiveProjectsCount,
       viewTracker,
-      viewProjectUnits
+      viewProjectUnits,
+      showUnitsModal,
+      selectedProjectForUnits,
+      closeUnitsModal,
+      openReservationFromUnit
     }
   }
 }
@@ -3040,6 +3305,213 @@ export default {
 .assignee {
     display: flex; align-items: center; gap: 6px; font-size: 12px; color: #64748b; margin-left: auto;
 }
+
+/* Units Page (full-page route) */
+.units-page { padding: 0; max-width: 1400px; margin: 0 auto; min-height: 100vh; }
+.btn-back {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  font-size: 14px; font-weight: 600; color: #1e3a5f; cursor: pointer; transition: all 0.2s;
+}
+.btn-back:hover { background: #f8fafc; border-color: #B1A28F; color: #8C7A64; }
+
+/* Units Hero */
+.units-hero {
+  position: relative; min-height: 280px; background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 50%, #3d5a7f 100%);
+  background-size: cover; background-position: center; border-radius: 0 0 20px 20px; display: flex; align-items: flex-end;
+}
+.units-hero-overlay {
+  position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 50%, transparent 100%); border-radius: 0 0 20px 20px;
+}
+.units-hero-content { position: relative; z-index: 1; width: 100%; padding: 24px 30px 28px; }
+.btn-back-hero { background: rgba(255,255,255,0.95); margin-bottom: 16px; }
+.units-hero-location { margin: 0 0 4px; font-size: 14px; color: rgba(255,255,255,0.9); font-weight: 500; }
+.units-hero-title { margin: 0 0 16px; font-size: 22px; font-weight: 800; color: #fff; font-family: 'Amiri', serif; line-height: 1.3; max-width: 70%; }
+/* Units table section */
+.units-table-section { padding: 28px 30px 40px; }
+.units-table-heading {
+  margin: 0 0 8px; font-size: 22px; font-weight: 800; color: #1e3a5f; font-family: 'Amiri', serif;
+  padding-bottom: 10px; border-bottom: 4px solid #B1A28F; width: fit-content; width: -webkit-fit-content;
+}
+.units-filter-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+.units-tab {
+  padding: 10px 20px; border: 1px solid #e2e8f0; background: #fff; border-radius: 10px;
+  font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s;
+}
+.units-tab:hover { border-color: #B1A28F; color: #1e3a5f; }
+.units-tab.active { background: #e8e2d8; border-color: #B1A28F; color: #5c5248; }
+.units-page-grid { margin-top: 8px; }
+
+/* Unit cards v2 (screenshot style) */
+.units-grid.units-page-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px;
+}
+.unit-card-v2 {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;
+  position: relative; transition: all 0.2s; display: flex; flex-direction: column;
+}
+.unit-card-v2:hover { border-color: #B1A28F; box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+.unit-card-v2-status {
+  position: absolute; top: 14px; left: 14px; padding: 5px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 700;
+}
+.unit-card-v2-status.unit-available { background: #dcfce7; color: #166534; }
+.unit-card-v2-status.unit-reserved { background: #fef9c3; color: #854d0e; }
+.unit-card-v2-status.unit-sold { background: #fee2e2; color: #991b1b; }
+.unit-card-v2-number { font-size: 15px; font-weight: 800; color: #1e3a5f; margin-bottom: 10px; }
+.unit-card-v2-price { font-size: 20px; font-weight: 800; color: #1e3a5f; margin-bottom: 8px; }
+.unit-card-v2-type { margin: 0 0 12px; font-size: 14px; color: #64748b; font-weight: 500; }
+.unit-card-v2-specs {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.unit-card-v2-specs .spec-item {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: #475569;
+}
+.unit-card-v2-specs .spec-item svg { flex-shrink: 0; color: #94a3b8; }
+.btn-unit-details {
+  width: 100%; margin-top: auto; padding: 12px 16px; background: #e8e2d8; color: #5c5248;
+  border: 1px solid #B1A28F; border-radius: 10px; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-unit-details:hover { background: #B1A28F; color: #fff; }
+
+/* Units Modal */
+.units-modal { max-width: 900px; z-index: 1001; }
+.units-modal-body { max-height: 70vh; overflow-y: auto; min-height: 120px; }
+.units-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+.unit-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+  transition: all 0.2s;
+}
+.unit-card:hover { border-color: #B1A28F; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.unit-card-status {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.unit-card-number {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+.unit-card-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: #059669;
+  margin-bottom: 8px;
+}
+.unit-card-meta {
+  font-size: 13px;
+  color: #475569;
+  margin-bottom: 8px;
+}
+.unit-card-desc {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 12px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.btn-unit-reserve {
+  width: 100%;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-unit-reserve:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* Reservations sub-tabs */
+.reservations-sub-tabs { margin-bottom: 20px; }
+
+/* Attendance cards (دوامي) */
+.attendance-header { margin-bottom: 24px; }
+.attendance-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+.attendance-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.2s;
+}
+.attendance-card:hover {
+  border-color: #B1A28F;
+  box-shadow: 0 8px 24px rgba(30, 58, 95, 0.08);
+}
+.attendance-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.attendance-date {
+  font-weight: 700;
+  font-size: 15px;
+  color: #1e3a5f;
+}
+.attendance-time-range {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+.attendance-card-user {
+  margin-bottom: 12px;
+}
+.attendance-user-label {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.attendance-user-name { font-weight: 600; color: #1e3a5f; }
+.attendance-card-project { }
+.attendance-project-name {
+  display: block;
+  font-weight: 700;
+  font-size: 15px;
+  color: #1e3a5f;
+  margin-bottom: 4px;
+}
+.attendance-project-location {
+  font-size: 13px;
+  color: #64748b;
+}
+.empty-icon-wrap {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  color: #cbd5e1;
+}
+.empty-icon-wrap svg { width: 100%; height: 100%; }
 
 /* Reservations Table */
 .reservations-table-container {

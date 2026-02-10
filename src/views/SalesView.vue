@@ -617,8 +617,13 @@ export default {
 
     const downloadVoucher = async (reservationId) => {
       try {
-        const blob = await salesService.downloadVoucher(reservationId)
-        const url = window.URL.createObjectURL(blob)
+        const res = await salesService.downloadVoucher(reservationId)
+        const data = res?.data
+        if (!data || !(data instanceof Blob)) {
+          notificationService.addNotification('حدث خطأ أثناء تحميل الإيصال', 'error')
+          return
+        }
+        const url = window.URL.createObjectURL(data)
         const link = document.createElement('a')
         link.href = url
         link.download = `voucher-${reservationId}.pdf`
