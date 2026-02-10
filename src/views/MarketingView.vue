@@ -292,7 +292,6 @@
         <div class="plans-sub-tabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
           <button :class="['btn-tab-mini', { active: activePlanSubTab === 'developer' }]" @click="setPlanSubTab('developer')">خطة المطور</button>
           <button :class="['btn-tab-mini', { active: activePlanSubTab === 'employee' }]" @click="setPlanSubTab('employee')">خطط الموظفين</button>
-          <button :class="['btn-tab-mini', { active: activePlanSubTab === 'expected-sales' }]" @click="setPlanSubTab('expected-sales')">المبيعات المتوقعة</button>
         </div>
 
         <!-- Developer Plan Sub-tab -->
@@ -474,67 +473,6 @@
           </div>
         </div>
 
-        <!-- Expected Sales Sub-tab (4.5) -->
-        <div v-else-if="activePlanSubTab === 'expected-sales'" class="marketing-expected-sales-view">
-          <div class="plan-card">
-            <h3 class="plan-card-title">حساب المبيعات المتوقعة</h3>
-            <p class="section-desc" style="margin-top: 6px;">
-              يتم الاحتساب تلقائياً (عرض فقط) اعتماداً على ميزانية الحملة وتوزيع الحملات (التواصل المباشر + اليد) ونِسبة المبيعات الثابتة.
-            </p>
-          </div>
-
-          <div v-if="isLoadingProjects" class="loading-state">
-            <div class="spinner"></div>
-            <p>جاري تحميل المشاريع...</p>
-          </div>
-
-          <div v-else-if="projects.length === 0" class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            <p>لا توجد مشاريع لاحتساب المبيعات المتوقعة</p>
-          </div>
-
-          <div v-else class="leads-table-container">
-            <div class="section-header" style="margin-bottom: 10px;">
-              <h3 class="section-title-chart" style="margin: 0;">ملخص المشاريع</h3>
-              <p class="section-desc" style="margin: 6px 0 0;">نسبة إجمالي المبيع تظهر لكل مشروع على حدة.</p>
-            </div>
-            <table class="luxury-table">
-              <thead>
-                <tr>
-                  <th>المشروع</th>
-                  <th>ميزانية الحملة</th>
-                  <th>نسبة إجمالي المبيع</th>
-                  <th>الحجوزات المتوقعة</th>
-                  <th>متوسط قيمة الحجز</th>
-                  <th>قيمة الحجوزات المتوقعة</th>
-                  <th>قيمة العربون الواحد</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="p in projects" :key="p.id" class="hover-row">
-                  <td>{{ p.project_name || p.name || ('Project #' + p.id) }}</td>
-                  <td class="number">{{ formatCurrency(getProjectCampaignBudget(p)) }}</td>
-                  <td class="number">{{ getSalesRatePercentForProject(p) }}%</td>
-                  <td class="number">{{ formatNumber(getExpectedBookingsForProject(p)) }}</td>
-                  <td class="number">{{ formatCurrency(getAvgBookingValueForProject(p)) }}</td>
-                  <td class="number">{{ formatCurrency(getExpectedBookingValueForProject(p)) }}</td>
-                  <td class="number">{{ formatCurrency(getDepositValueForProject(p)) }}</td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td style="font-weight: 800;">الإجمالي</td>
-                  <td class="number" style="font-weight: 800;">{{ formatCurrency(totalExpectedSalesSummary.totalCampaignBudget) }}</td>
-                  <td></td>
-                  <td class="number" style="font-weight: 800;">{{ formatNumber(totalExpectedSalesSummary.totalExpectedBookings) }}</td>
-                  <td></td>
-                  <td class="number" style="font-weight: 800;">{{ formatCurrency(totalExpectedSalesSummary.totalExpectedBookingValue) }}</td>
-                  <td></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
       </div>
 
       <!-- Manual Employee Plan Modal -->
@@ -2834,7 +2772,7 @@ export default {
         const sub = String(route.query?.sub || '').toLowerCase()
         if (sub === 'employee') activePlanSubTab.value = 'employee'
         if (sub === 'developer') activePlanSubTab.value = 'developer'
-        if (sub === 'expected-sales' || sub === 'expected_sales' || sub === 'expected') activePlanSubTab.value = 'expected-sales'
+        if (sub === 'expected-sales' || sub === 'expected_sales' || sub === 'expected') activePlanSubTab.value = 'developer'
         return
       }
 
