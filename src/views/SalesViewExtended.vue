@@ -559,8 +559,8 @@
               <label>المشروع *</label>
               <select v-model="targetForm.contract_id" required class="form-input">
                 <option value="">اختر المشروع</option>
-                <option v-for="project in teamProjects" :key="project.id" :value="project.id">
-                  {{ project.project_name }}
+                <option v-for="project in teamProjects" :key="project.contract_id || project.id" :value="project.contract_id ?? project.id">
+                  {{ project.project_name || project.name }}
                 </option>
               </select>
             </div>
@@ -625,7 +625,7 @@
       </div>
     </div>
 
-    <!-- Create Schedule Modal -->
+    <!-- Create Schedule Modal (leader: user_id, contract_id, date, shift) -->
     <div v-if="showScheduleModal" class="modal-overlay" @click.self="showScheduleModal = false">
       <div class="modal-content">
         <div class="modal-header">
@@ -636,10 +636,19 @@
           <form @submit.prevent="createSchedule" class="form">
             <div class="form-group">
               <label>الموظف *</label>
-              <select v-model="scheduleForm.employee_id" required class="form-input">
+              <select v-model="scheduleForm.user_id" required class="form-input">
                 <option value="">اختر الموظف</option>
                 <option v-for="member in teamMembers" :key="member.id" :value="member.id">
                   {{ member.name }}
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>المشروع *</label>
+              <select v-model="scheduleForm.contract_id" required class="form-input">
+                <option value="">اختر المشروع</option>
+                <option v-for="project in teamProjects" :key="project.contract_id || project.id" :value="project.contract_id ?? project.id">
+                  {{ project.project_name || project.name }}
                 </option>
               </select>
             </div>
@@ -648,12 +657,11 @@
               <input type="date" v-model="scheduleForm.date" required class="form-input">
             </div>
             <div class="form-group">
-              <label>وقت البداية *</label>
-              <input type="time" v-model="scheduleForm.start_time" required class="form-input">
-            </div>
-            <div class="form-group">
-              <label>وقت النهاية *</label>
-              <input type="time" v-model="scheduleForm.end_time" required class="form-input">
+              <label>الوردية *</label>
+              <select v-model="scheduleForm.shift" required class="form-input">
+                <option value="morning">صباحي</option>
+                <option value="evening">مسائي</option>
+              </select>
             </div>
             <div class="form-actions">
               <button type="button" @click="showScheduleModal = false" class="btn-secondary">إلغاء</button>
@@ -1025,14 +1033,22 @@ export default {
     const loadTabData = async (tabId) => {
       if (tabId === 'dashboard') {
         await loadDashboard()
-      } else if (tabId === 'targets' && targets.value.length === 0) {
-        await loadTargets()
+      } else if (tabId === 'targets') {
+        if (targets.value.length === 0) await loadTargets()
+        if (isLeader.value) {
+          if (teamMembers.value.length === 0) await loadTeamMembers()
+          if (teamProjects.value.length === 0) await loadTeamProjects()
+        }
       } else if (tabId === 'projects' && projects.value.length === 0) {
         await loadProjects()
       } else if (tabId === 'reservations' && reservations.value.length === 0) {
         await loadReservations()
-      } else if (tabId === 'attendance' && attendanceRecords.value.length === 0) {
+      } else if (tabId === 'attendance') {
         await loadAttendance()
+        if (isLeader.value) {
+          if (teamMembers.value.length === 0) await loadTeamMembers()
+          if (teamProjects.value.length === 0) await loadTeamProjects()
+        }
       } else if (tabId === 'team') {
         if (teamMembers.value.length === 0) await loadTeamMembers()
         if (teamProjects.value.length === 0) await loadTeamProjects()
@@ -1100,10 +1116,10 @@ export default {
     const isLoadingAttendance = ref(false)
     const showScheduleModal = ref(false)
     const scheduleForm = reactive({
-      employee_id: '',
+      user_id: '',
+      contract_id: '',
       date: '',
-      start_time: '',
-      end_time: ''
+      shift: 'morning'
     })
 
     // Team
@@ -1624,9 +1640,12 @@ export default {
     const loadTeamMembers = async () => {
       isLoadingTeam.value = true
       try {
-        teamMembers.value = await salesService.getTeamMembers()
+        const res = await salesService.getTeamMembers()
+        const raw = res?.data?.data ?? res?.data
+        teamMembers.value = Array.isArray(raw) ? raw : []
       } catch (error) {
         logger.error('Error loading team members:', error)
+        teamMembers.value = []
       } finally {
         isLoadingTeam.value = false
       }
@@ -1635,9 +1654,12 @@ export default {
     const loadTeamProjects = async () => {
       isLoadingTeamProjects.value = true
       try {
-        teamProjects.value = await salesService.getTeamProjects()
+        const res = await salesService.getTeamProjects()
+        const raw = res?.data?.data ?? res?.data
+        teamProjects.value = Array.isArray(raw) ? raw : []
       } catch (error) {
         logger.error('Error loading team projects:', error)
+        teamProjects.value = []
       } finally {
         isLoadingTeamProjects.value = false
       }
@@ -1661,7 +1683,13 @@ export default {
 
     const createTarget = async () => {
       try {
-        await salesService.createTarget(targetForm)
+        const payload = {
+          marketer_id: Number(targetForm.marketer_id) || targetForm.marketer_id,
+          contract_id: Number(targetForm.contract_id) || targetForm.contract_id,
+          target_value: Number(targetForm.target_value) || 0,
+          deadline: targetForm.deadline
+        }
+        await salesService.createTarget(payload)
         notificationService.addNotification('تم إنشاء الهدف بنجاح', 'success')
         showCreateTargetModal.value = false
         loadTargets()
@@ -1687,11 +1715,17 @@ export default {
 
     const createSchedule = async () => {
       try {
-        await salesService.createSchedule(scheduleForm)
+        const payload = {
+          user_id: Number(scheduleForm.user_id) || scheduleForm.user_id,
+          contract_id: Number(scheduleForm.contract_id) || scheduleForm.contract_id,
+          date: scheduleForm.date,
+          shift: scheduleForm.shift || 'morning'
+        }
+        await salesService.createSchedule(payload)
         notificationService.addNotification('تم إنشاء الجدول بنجاح', 'success')
         showScheduleModal.value = false
         loadAttendance()
-        Object.assign(scheduleForm, { employee_id: '', date: '', start_time: '', end_time: '' })
+        Object.assign(scheduleForm, { user_id: '', contract_id: '', date: '', shift: 'morning' })
       } catch (error) {
         logger.error('Error creating schedule:', error)
         notificationService.addNotification('حدث خطأ أثناء إنشاء الجدول', 'error')
