@@ -381,7 +381,7 @@
         <!-- TEAMS TAB (Refactored UI) -->
         <div v-else-if="activeTab === 'teams'" class="tab-content">
             <div class="tracker-header-simple" style="margin-bottom: 25px;">
-                <h2 style="font-family: 'Amiri', serif; color: #1e3a5f; margin-bottom: 10px;">فرق التسويق</h2>
+                <h2 style="font-family: 'Cairo', sans-serif; color: #1e3a5f; margin-bottom: 10px;">فرق التسويق</h2>
                 <p style="color: #64748b;">إدارة الصلاحيات والوصول لفرق التسويق على هذا المشروع.</p>
             </div>
 
@@ -444,7 +444,7 @@
         <!-- PROJECT RESERVATIONS TAB -->
         <div v-else-if="activeTab === 'reservations'" class="tab-content">
             <div class="tracker-header-simple">
-                <h2 style="font-family: 'Amiri', serif; color: #1e3a5f; margin-bottom: 10px;">حجوزات المشروع</h2>
+                <h2 style="font-family: 'Cairo', sans-serif; color: #1e3a5f; margin-bottom: 10px;">حجوزات المشروع</h2>
                 <p style="color: #64748b;">قائمة بجميع الحجوزات المسجلة لهذا المشروع.</p>
             </div>
 
@@ -1368,7 +1368,7 @@ export default {
   font-size: 36px;
   font-weight: 800;
   margin: 0 0 5px 0;
-  font-family: 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
 }
 
 .project-subtitle-large {
@@ -1454,7 +1454,7 @@ export default {
     font-size: 32px;
     font-weight: 800;
     color: #1e3a5f;
-    font-family: 'Amiri', serif;
+    font-family: 'Cairo', sans-serif;
     margin: 0;
 }
 
@@ -1496,7 +1496,7 @@ export default {
     font-weight: 800;
     color: #B1A28F;
     margin-bottom: 15px;
-    font-family: 'Amiri', serif;
+    font-family: 'Cairo', sans-serif;
 }
 
 .dash-badge {
@@ -1554,7 +1554,7 @@ export default {
     font-weight: 800;
     color: #1e3a5f;
     margin: 0;
-    font-family: 'Amiri', serif;
+    font-family: 'Cairo', sans-serif;
 }
 
 @keyframes slideUp {
@@ -1572,7 +1572,7 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0 0 10px 0;
-  font-family: 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
 }
 
 .tracker-desc {
@@ -1697,7 +1697,7 @@ export default {
   color: #1e3a5f;
   font-size: 18px;
   margin: 0 0 20px 0;
-  font-family: 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
 }
 
 .date-badge {
@@ -1951,7 +1951,7 @@ export default {
     text-align: center;
     font-size: 18px;
     font-weight: 800;
-    font-family: 'Amiri', serif;
+    font-family: 'Cairo', sans-serif;
 }
 
 .form-container {
@@ -2120,7 +2120,7 @@ export default {
     font-weight: 800;
     color: #1e3a5f;
     margin-bottom: 12px;
-    font-family: 'Amiri', serif;
+    font-family: 'Cairo', sans-serif;
 }
 
 .cta-description {

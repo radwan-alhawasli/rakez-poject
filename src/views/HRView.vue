@@ -814,7 +814,7 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin-bottom: 5px;
-  font-family: 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
 }
 
 .view-subtitle {
@@ -1184,7 +1184,7 @@ export default {
   margin-bottom: 20px;
 }
 
-.team-name { font-weight: 800; font-family: 'Amiri', serif; font-size: 18px; }
+.team-name { font-weight: 800; font-family: 'Cairo', sans-serif; font-size: 18px; }
 .team-member-count { font-size: 12px; color: #94a3b8; }
 
 .team-progress { margin-bottom: 20px; }
@@ -1383,7 +1383,7 @@ export default {
   box-shadow: 0 8px 16px rgba(30, 58, 95, 0.2);
 }
 
-.emp-info .name { margin: 0; font-size: 20px; color: #1e3a5f; font-family: 'Amiri', serif; }
+.emp-info .name { margin: 0; font-size: 20px; color: #1e3a5f; font-family: 'Cairo', sans-serif; }
 .emp-info .team-tag { font-size: 13px; color: #94a3b8; font-weight: 600; }
 
 .achievement-ring {

@@ -3202,7 +3202,7 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0 0 10px 0;
-  font-family: 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
   background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8f 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -3313,7 +3313,7 @@ export default {
   font-size: 36px;
   font-weight: 700;
   color: #1e3a5f;
-  font-family: 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
   line-height: 1;
 }
 
@@ -3392,7 +3392,7 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
 }
 
 .section-desc {
@@ -3422,7 +3422,7 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
 }
 
 .section-subtitle {
@@ -3525,7 +3525,7 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0;
-  font-family: 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
   flex: 1;
 }
 
@@ -3591,7 +3591,7 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin: 0;
-  font-family: 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
   line-height: 1.2;
 }
 

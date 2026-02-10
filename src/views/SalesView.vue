@@ -789,7 +789,7 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
 }
 
 .view-subtitle {
@@ -1215,7 +1215,7 @@ export default {
   margin: 0;
   font-size: 24px;
   color: #1e3a5f;
-  font-family: 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
 }
 
 .modal-close {

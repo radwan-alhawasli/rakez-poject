@@ -182,7 +182,7 @@ export default {
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 .page-header { margin-bottom: 30px; }
-.page-title { font-size: 28px; font-weight: 800; color: #1e3a5f; margin: 0 0 5px 0; font-family: 'Amiri', serif; }
+.page-title { font-size: 28px; font-weight: 800; color: #1e3a5f; margin: 0 0 5px 0; font-family: 'Cairo', sans-serif; }
 .page-subtitle { color: #64748b; font-size: 15px; margin: 0; }
 
 .team-section {
@@ -236,7 +236,7 @@ export default {
     position: relative;
 }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-.modal-header h3 { margin: 0; color: #1e3a5f; font-family: 'Amiri', serif; }
+.modal-header h3 { margin: 0; color: #1e3a5f; font-family: 'Cairo', sans-serif; }
 .close-btn { background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; }
 
 .profile-header {

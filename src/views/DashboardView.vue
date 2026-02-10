@@ -188,7 +188,7 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin: 0 0 10px 0;
-  font-family: 'Cairo', 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
@@ -311,7 +311,7 @@ export default {
   color: #1e293b;
   line-height: 1;
   margin: 8px 0;
-  font-family: 'Cairo', 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
   order: 2;
   letter-spacing: -0.03em;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
@@ -436,7 +436,7 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin: 0 0 10px 0;
-  font-family: 'Cairo', 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
   letter-spacing: -0.02em;
   line-height: 1.3;
 }

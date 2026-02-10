@@ -13,16 +13,24 @@ body * {
 }
 
 /* But keep numbers LTR */
-.number, .stat-value, .metric-value, .count, .price,
-input[type="number"], input[type="tel"],
-[class*="value"], [class*="count"], [class*="stat"] {
+.number,
+.stat-value,
+.metric-value,
+.count,
+.price,
+input[type="number"],
+input[type="tel"],
+[class*="value"],
+[class*="count"],
+[class*="stat"] {
   direction: ltr !important;
   unicode-bidi: embed !important;
   font-variant-numeric: lining-nums !important;
 }
 
 /* Premium Page Transitions */
-.page-enter-active, .page-leave-active {
+.page-enter-active,
+.page-leave-active {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -54,7 +62,7 @@ input[type="number"], input[type="tel"],
   font-weight: 800;
   color: #1e3a5f;
   margin: 0 0 10px 0;
-  font-family: 'Cairo', 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
   letter-spacing: -0.02em;
   line-height: 1.2;
   animation: fadeInLeft 0.6s ease-out;
@@ -139,8 +147,8 @@ input[type="number"], input[type="tel"],
 .stat-card:hover {
   border-color: rgba(177, 162, 143, 0.35);
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 50px -12px rgba(177, 162, 143, 0.25), 
-              0 8px 20px rgba(30, 58, 95, 0.12);
+  box-shadow: 0 20px 50px -12px rgba(177, 162, 143, 0.25),
+    0 8px 20px rgba(30, 58, 95, 0.12);
 }
 
 .stat-card:hover::before {
@@ -186,7 +194,7 @@ input[type="number"], input[type="tel"],
   color: #1e293b !important;
   line-height: 1 !important;
   margin: 8px 0 !important;
-  font-family: 'Cairo', 'Amiri', serif !important;
+  font-family: 'Cairo', sans-serif !important;
   order: 2;
   letter-spacing: -0.03em !important;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
@@ -252,7 +260,7 @@ input[type="number"], input[type="tel"],
   inset: -2px;
   border-radius: 50%;
   padding: 2px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -443,7 +451,7 @@ input[type="number"], input[type="tel"],
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
   opacity: 0;
   transition: opacity 0.4s ease;
 }
@@ -469,12 +477,10 @@ input[type="number"], input[type="tel"],
 
 /* Loading States */
 .loading-skeleton {
-  background: linear-gradient(
-    90deg,
-    #f1f5f9 25%,
-    #e2e8f0 50%,
-    #f1f5f9 75%
-  );
+  background: linear-gradient(90deg,
+      #f1f5f9 25%,
+      #e2e8f0 50%,
+      #f1f5f9 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 12px;
@@ -510,21 +516,22 @@ input[type="number"], input[type="tel"],
 
 /* Extra Large Screens (1920px+) */
 @media (min-width: 1920px) {
+
   .welcome-title,
   .page-title,
   .main-title {
     font-size: 38px;
   }
-  
+
   .stat-value {
     font-size: 48px !important;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(4, 1fr);
     gap: 32px;
   }
-  
+
   .content-section,
   .overview-section,
   .data-section {
@@ -538,7 +545,7 @@ input[type="number"], input[type="tel"],
     grid-template-columns: repeat(4, 1fr);
     gap: 28px;
   }
-  
+
   .stat-value {
     font-size: 44px !important;
   }
@@ -550,7 +557,7 @@ input[type="number"], input[type="tel"],
     grid-template-columns: repeat(4, 1fr);
     gap: 24px;
   }
-  
+
   .stat-card {
     padding: 28px 24px;
   }
@@ -558,38 +565,39 @@ input[type="number"], input[type="tel"],
 
 /* Tablet Landscape (992px - 1199px) */
 @media (min-width: 992px) and (max-width: 1199px) {
+
   .welcome-title,
   .page-title,
   .main-title {
     font-size: 28px;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
-  
+
   .stat-card {
     padding: 24px 20px;
   }
-  
+
   .stat-value {
     font-size: 38px !important;
   }
-  
+
   .content-section,
   .overview-section,
   .data-section {
     padding: 32px;
   }
-  
+
   .luxury-table th,
   .metrics-table th,
   .data-table th {
     padding: 18px 20px;
     font-size: 12px;
   }
-  
+
   .luxury-table td,
   .metrics-table td,
   .data-table td {
@@ -600,85 +608,86 @@ input[type="number"], input[type="tel"],
 
 /* Tablet Portrait (768px - 991px) */
 @media (min-width: 768px) and (max-width: 991px) {
+
   .welcome-header,
   .page-header,
   .section-header-main {
     margin-bottom: 30px;
     padding-bottom: 20px;
   }
-  
+
   .welcome-title,
   .page-title,
   .main-title {
     font-size: 26px;
   }
-  
+
   .welcome-subtitle,
   .page-subtitle,
   .main-subtitle {
     font-size: 14px;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 18px;
     margin-bottom: 30px;
   }
-  
+
   .stat-card {
     padding: 22px 18px;
     border-radius: 20px;
   }
-  
+
   .stat-value {
     font-size: 36px !important;
   }
-  
+
   .stat-label {
     font-size: 13px;
   }
-  
+
   .stat-desc {
     font-size: 11px;
   }
-  
+
   .stat-icon-bg {
     width: 60px !important;
     height: 60px !important;
   }
-  
+
   .stat-icon-bg svg {
     width: 28px !important;
     height: 28px !important;
   }
-  
+
   .content-section,
   .overview-section,
   .data-section {
     padding: 28px;
     border-radius: 24px;
   }
-  
+
   .btn-luxury-primary,
   .btn-primary,
   .primary-btn {
     padding: 12px 24px;
     font-size: 14px;
   }
-  
+
   .luxury-table-container,
   .metrics-table-container,
   .data-table-container {
     border-radius: 20px;
   }
-  
+
   .luxury-table th,
   .metrics-table th,
   .data-table th {
     padding: 16px 18px;
     font-size: 11px;
   }
-  
+
   .luxury-table td,
   .metrics-table td,
   .data-table td {
@@ -689,60 +698,61 @@ input[type="number"], input[type="tel"],
 
 /* Mobile Landscape (576px - 767px) */
 @media (min-width: 576px) and (max-width: 767px) {
+
   .welcome-header,
   .page-header,
   .section-header-main {
     margin-bottom: 25px;
     padding-bottom: 15px;
   }
-  
+
   .welcome-title,
   .page-title,
   .main-title {
     font-size: 24px;
   }
-  
+
   .welcome-subtitle,
   .page-subtitle,
   .main-subtitle {
     font-size: 13px;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
     gap: 16px;
     margin-bottom: 25px;
   }
-  
+
   .stat-card {
     padding: 20px 16px;
     border-radius: 18px;
     gap: 20px;
   }
-  
+
   .stat-value {
     font-size: 34px !important;
     margin: 6px 0 !important;
   }
-  
+
   .stat-label {
     font-size: 13px;
   }
-  
+
   .stat-desc {
     font-size: 11px;
   }
-  
+
   .stat-icon-bg {
     width: 56px !important;
     height: 56px !important;
   }
-  
+
   .stat-icon-bg svg {
     width: 26px !important;
     height: 26px !important;
   }
-  
+
   .content-section,
   .overview-section,
   .data-section {
@@ -750,7 +760,7 @@ input[type="number"], input[type="tel"],
     border-radius: 20px;
     margin-bottom: 20px;
   }
-  
+
   .btn-luxury-primary,
   .btn-primary,
   .primary-btn {
@@ -759,27 +769,27 @@ input[type="number"], input[type="tel"],
     width: 100%;
     justify-content: center;
   }
-  
+
   .luxury-table-container,
   .metrics-table-container,
   .data-table-container {
     border-radius: 18px;
     overflow-x: auto;
   }
-  
+
   .luxury-table,
   .metrics-table,
   .data-table {
     min-width: 600px;
   }
-  
+
   .luxury-table th,
   .metrics-table th,
   .data-table th {
     padding: 14px 16px;
     font-size: 11px;
   }
-  
+
   .luxury-table td,
   .metrics-table td,
   .data-table td {
@@ -790,32 +800,33 @@ input[type="number"], input[type="tel"],
 
 /* Mobile Portrait (320px - 575px) */
 @media (max-width: 575px) {
+
   .welcome-header,
   .page-header,
   .section-header-main {
     margin-bottom: 20px;
     padding-bottom: 12px;
   }
-  
+
   .welcome-title,
   .page-title,
   .main-title {
     font-size: 22px;
     line-height: 1.3;
   }
-  
+
   .welcome-subtitle,
   .page-subtitle,
   .main-subtitle {
     font-size: 12px;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
     gap: 14px;
     margin-bottom: 20px;
   }
-  
+
   .stat-card {
     padding: 18px 14px;
     border-radius: 16px;
@@ -823,37 +834,37 @@ input[type="number"], input[type="tel"],
     flex-direction: column;
     text-align: center;
   }
-  
+
   .stat-content {
     text-align: center;
     order: 2;
   }
-  
+
   .stat-icon-bg {
     width: 52px !important;
     height: 52px !important;
     order: 1;
     margin: 0 auto 10px;
   }
-  
+
   .stat-icon-bg svg {
     width: 24px !important;
     height: 24px !important;
   }
-  
+
   .stat-value {
     font-size: 32px !important;
     margin: 6px 0 !important;
   }
-  
+
   .stat-label {
     font-size: 12px;
   }
-  
+
   .stat-desc {
     font-size: 10px;
   }
-  
+
   .content-section,
   .overview-section,
   .data-section {
@@ -861,14 +872,14 @@ input[type="number"], input[type="tel"],
     border-radius: 18px;
     margin-bottom: 16px;
   }
-  
+
   .content-section::before,
   .overview-section::before,
   .data-section::before {
     width: 200px;
     height: 200px;
   }
-  
+
   .btn-luxury-primary,
   .btn-primary,
   .primary-btn {
@@ -878,7 +889,7 @@ input[type="number"], input[type="tel"],
     justify-content: center;
     gap: 8px;
   }
-  
+
   .luxury-table-container,
   .metrics-table-container,
   .data-table-container {
@@ -886,13 +897,13 @@ input[type="number"], input[type="tel"],
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  
+
   .luxury-table,
   .metrics-table,
   .data-table {
     min-width: 550px;
   }
-  
+
   .luxury-table th,
   .metrics-table th,
   .data-table th {
@@ -900,27 +911,27 @@ input[type="number"], input[type="tel"],
     font-size: 10px;
     letter-spacing: 0.03em;
   }
-  
+
   .luxury-table td,
   .metrics-table td,
   .data-table td {
     padding: 10px 14px;
     font-size: 12px;
   }
-  
+
   .empty-state {
     padding: 40px 15px;
   }
-  
+
   .empty-state-icon {
     font-size: 48px;
     margin-bottom: 15px;
   }
-  
+
   .empty-state-text {
     font-size: 14px;
   }
-  
+
   .empty-state-subtext {
     font-size: 12px;
   }
@@ -928,20 +939,21 @@ input[type="number"], input[type="tel"],
 
 /* Extra Small Devices (< 320px) */
 @media (max-width: 319px) {
+
   .welcome-title,
   .page-title,
   .main-title {
     font-size: 20px;
   }
-  
+
   .stat-value {
     font-size: 28px !important;
   }
-  
+
   .stat-card {
     padding: 16px 12px;
   }
-  
+
   .content-section,
   .overview-section,
   .data-section {
@@ -951,20 +963,21 @@ input[type="number"], input[type="tel"],
 
 /* Landscape Orientation Fix for Small Devices */
 @media (max-height: 500px) and (orientation: landscape) {
+
   .welcome-header,
   .page-header {
     margin-bottom: 15px;
     padding-bottom: 10px;
   }
-  
+
   .stat-card {
     padding: 14px 16px;
   }
-  
+
   .stat-value {
     font-size: 28px !important;
   }
-  
+
   .content-section,
   .overview-section,
   .data-section {
@@ -974,17 +987,18 @@ input[type="number"], input[type="tel"],
 
 /* Touch Device Optimizations */
 @media (hover: none) and (pointer: coarse) {
+
   .stat-card,
   .btn-luxury-primary,
   .btn-primary,
   .primary-btn {
     -webkit-tap-highlight-color: rgba(177, 162, 143, 0.2);
   }
-  
+
   .stat-card:active {
     transform: scale(0.98);
   }
-  
+
   .btn-luxury-primary:active,
   .btn-primary:active,
   .primary-btn:active {

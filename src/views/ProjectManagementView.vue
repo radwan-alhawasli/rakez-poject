@@ -540,7 +540,7 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin: 0 0 5px 0;
-  font-family: 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
 }
 
 .page-subtitle { color: #64748b; font-size: 15px; margin: 0; }

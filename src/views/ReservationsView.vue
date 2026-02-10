@@ -796,7 +796,7 @@ export default {
   font-size: 28px;
   font-weight: 700;
   margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
+  font-family: 'Cairo', sans-serif;
 }
 
 .page-subtitle {
