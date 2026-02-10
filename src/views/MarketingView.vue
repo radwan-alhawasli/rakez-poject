@@ -15,8 +15,8 @@
           <!-- KPI 1: العملاء المحتملون -->
           <div class="stat-card animate-fade-in-up animate-stagger-1 hover-lift">
             <div class="stat-content">
-              <span class="stat-label">العملاء المحتملون</span>
-              <span class="stat-value number">{{ dashboardMetrics.total_leads || '0' }}</span>
+              <span class="stat-label">إجمالي عدد (leads)</span>
+              <span class="stat-value number">{{ formatNumber(dashboardMetrics.total_leads || 0) }}</span>
               <span class="stat-desc">إجمالي العملاء المحتملين</span>
             </div>
             <div class="stat-icon-bg projects">
@@ -40,7 +40,7 @@
           <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift">
             <div class="stat-content">
               <span class="stat-label">عدد الوحدات المتاحة</span>
-              <span class="stat-value number">{{ dashboardMetrics.available_units_count || '0' }}</span>
+              <span class="stat-value number">{{ formatNumber(dashboardMetrics.available_units_count || 0) }}</span>
               <span class="stat-desc">عدد الوحدات المتاحة للبيع</span>
             </div>
             <div class="stat-icon-bg ready">
@@ -64,7 +64,7 @@
           <div class="stat-card animate-fade-in-up animate-stagger-5 hover-lift">
             <div class="stat-content">
               <span class="stat-label">عدد العربون اليومي</span>
-              <span class="stat-value number">{{ dashboardMetrics.daily_deposits_count ?? '—' }}</span>
+              <span class="stat-value number">{{ formatNumber(dashboardMetrics.daily_deposits_count || 0) }}</span>
               <span class="stat-desc">اليوم</span>
             </div>
             <div class="stat-icon-bg ready">
@@ -81,6 +81,30 @@
             </div>
             <div class="stat-icon-bg units">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+          </div>
+
+          <!-- KPI 7: إجمالي الحجوزات المتوقعة -->
+          <div class="stat-card animate-fade-in-up animate-stagger-7 hover-lift">
+            <div class="stat-content">
+              <span class="stat-label">إجمالي الحجوزات المتوقعة</span>
+              <span class="stat-value number">{{ formatNumber(dashboardMetrics.total_expected_bookings || 0) }}</span>
+              <span class="stat-desc">حجز متوقع</span>
+            </div>
+            <div class="stat-icon-bg ready">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>
+            </div>
+          </div>
+
+          <!-- KPI 8: إجمالي قيمة الحجوزات المتوقعة -->
+          <div class="stat-card animate-fade-in-up animate-stagger-8 hover-lift">
+            <div class="stat-content">
+              <span class="stat-label">إجمالي قيمة الحجوزات المتوقعة</span>
+              <span class="stat-value number">{{ formatCurrency(dashboardMetrics.total_expected_booking_value || 0) }}</span>
+              <span class="stat-desc">ريال سعودي</span>
+            </div>
+            <div class="stat-icon-bg dollar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line><path d="M16 16.2c-1.2.8-2.6 1.2-4 1.2-3.3 0-6-2.7-6-6s2.7-6 6-6c1.1 0 2.1.3 3 1" /></svg>
             </div>
           </div>
         </div>
@@ -114,56 +138,109 @@
 
         <!-- Projects Grid -->
         <div v-if="!isLoadingProjects && projects.length > 0" class="projects-grid">
-          <div v-for="project in projects" :key="project.id" class="project-card hover-lift animate-fade-in">
-            <div class="project-header">
-              <div style="display:flex; align-items:center; gap:10px; min-width:0;">
-                <h3 class="project-name" style="min-width:0;">{{ project.project_name || project.name }}</h3>
-                <span class="timeline-badge" :class="getAgreementBadgeClass(project)">
-                  {{ getAgreementBadgeLabel(project) }}
-                </span>
-              </div>
-              <span class="project-status" :class="getStatusClass(project.status)">
+          <div 
+            v-for="(project, index) in projects" 
+            :key="project.id" 
+            class="project-card luxury-card hover-glow animate-fade-in-up"
+            :style="{ animationDelay: (index * 0.05) + 's' }"
+          >
+            <div class="project-card-top-header">
+              <span class="location-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 14px; height: 14px; margin-left: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <a 
+                  v-if="project.city || projectDetailsById[project.id]?.city"
+                  :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((project.city || projectDetailsById[project.id]?.city || '') + ' ' + (project.district || projectDetailsById[project.id]?.district || ''))}`"
+                  target="_blank"
+                  class="location-link"
+                  @click.stop
+                >
+                  {{ project.city || projectDetailsById[project.id]?.city || '—' }} - {{ project.district || projectDetailsById[project.id]?.district || '—' }}
+                </a>
+                <span v-else>— - —</span>
+              </span>
+              <span class="project-status-badge" :class="getStatusClass(project.status)">
                 {{ getStatusText(project.status) }}
               </span>
             </div>
-            <div class="project-details">
-              <div class="detail-row">
-                <span class="detail-label">عدد الوحدات (متاح / معلّق):</span>
-                <span class="detail-value number">{{ getProjectUnitsSummary(project).available }} / {{ getProjectUnitsSummary(project).pending }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">متوسط سعر الوحدات:</span>
-                <span class="detail-value number">{{ formatCurrency(getProjectAvgUnitPrice(project)) }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">المطور:</span>
-                <span class="detail-value">{{ project.developer_name || 'غير محدد' }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">رقم المعلن (متاح / معلّق):</span>
-                <span class="detail-value number">{{ getProjectAdvertiserLabel(project) }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">نسبة السعي:</span>
-                <span class="detail-value number">{{ getProjectSaiPercent(project) }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">مجموع سعر الوحدات المتاحة:</span>
-                <span class="detail-value number">{{ formatCurrency(getProjectAvailableUnitsTotalPrice(project)) }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">رقم العقد:</span>
-                <span class="detail-value number">{{ project.marketing_project?.contract_id ?? '—' }}</span>
+
+            <div class="project-header">
+              <div class="project-title-group">
+                <h3 class="project-name-premium">{{ project.project_name || project.name }}</h3>
+                <span class="timeline-badge-premium" :class="getAgreementBadgeClass(project)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 12px; height: 12px; margin-left: 4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  {{ getAgreementBadgeLabel(project) }}
+                </span>
               </div>
             </div>
-            <div class="project-actions">
-              <button class="btn-view" @click="viewProjectDetails(project.id)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                عرض التفاصيل
-              </button>
-              <button class="btn-plan" @click="managePlan(project.id)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                إدارة الخطة
+
+            <div class="project-metrics-grid">
+              <div class="metric-item">
+                <span class="metric-label">المطور</span>
+                <span class="metric-value">{{ project.developer_name || '—' }}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">رقم المعلن</span>
+                <span class="metric-value number" :class="{ 'text-muted': !project.developer_number }">
+                  {{ project.developer_number || '⏳ قيد الانتظار' }}
+                </span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">الوحدات</span>
+                <span class="metric-value number highlight" v-if="project.units && project.units.length > 0">
+                  {{ project.units.length }}
+                </span>
+                <span class="metric-value text-muted" v-else>
+                  ⏳ قيد الانتظار
+                </span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">قيمة التسويق</span>
+                <span class="metric-value number gold">
+                  {{ project.marketing_project?.developer_plan?.marketing_value ? formatCurrency(project.marketing_project.developer_plan.marketing_value) : '—' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Interactive Teams Section -->
+            <div class="teams-collapsible-premium">
+              <div class="teams-trigger-premium" @click="toggleProjectTeams(project.id)" :class="{ 'active': expandedProjectTeams === project.id }">
+                <div class="trigger-left">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                  <span>الفرق التسويقية ({{ project.marketing_project?.teams?.length || 0 }})</span>
+                </div>
+                <svg class="chevron-icon" :class="{ 'rotate': expandedProjectTeams === project.id }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              
+              <div v-if="expandedProjectTeams === project.id" class="teams-content-panel animate-slide-down">
+                <div v-if="project.marketing_project?.teams?.length" class="teams-inner-list">
+                  <div v-for="team in project.marketing_project.teams" :key="team.id" class="team-group-item">
+                    <div class="team-sub-header" @click="toggleTeamMembers(team.id)">
+                      <span class="team-bullet"></span>
+                      <span class="team-label-text">{{ team.user?.name || team.role || 'فريق' }}</span>
+                      <svg class="chevron-mini" :class="{ 'rotate': expandedTeamMembers === team.id }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+
+                    <div v-if="expandedTeamMembers === team.id" class="members-inner-grid animate-fade-in">
+                      <div v-if="team.user" class="member-pill">
+                        <div class="member-circle">{{ (team.user.name || 'M').charAt(0).toUpperCase() }}</div>
+                        <div class="member-meta">
+                          <span class="m-name">{{ team.user.name }}</span>
+                          <span class="m-rating">⭐ 4.8</span>
+                        </div>
+                      </div>
+                      <div v-else class="no-data-small">لا يوجد تفاصيل للأعضاء</div>
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="no-data-small">لا يوجد فرق مرتبطة حالياً</div>
+              </div>
+            </div>
+
+            <div class="card-footer-actions">
+              <button class="btn-premium-action" @click="viewProjectDetails(project.id)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-left: 8px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                عرض كامل التفاصيل
+                <span class="glow-effect"></span>
               </button>
             </div>
           </div>
@@ -521,46 +598,50 @@
         </div>
 
         <div v-else class="projects-grid">
-          <div v-for="project in projects" :key="project.id" class="project-card hover-lift animate-fade-in">
+          <div 
+            v-for="(project, index) in projects" 
+            :key="project.id" 
+            class="project-card luxury-card hover-glow animate-fade-in-up"
+            :style="{ animationDelay: (index * 0.05) + 's' }"
+          >
             <div class="project-header">
-              <div style="display:flex; align-items:center; gap:10px; min-width:0;">
-                <h3 class="project-name" style="min-width:0;">{{ project.project_name || project.name }}</h3>
-                <span class="timeline-badge" :class="getAgreementBadgeClass(project)">
+              <div class="project-title-group">
+                <h3 class="project-name-premium">{{ project.project_name || project.name }}</h3>
+                <span class="timeline-badge-premium" :class="getAgreementBadgeClass(project)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 12px; height: 12px; margin-left: 4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                   {{ getAgreementBadgeLabel(project) }}
                 </span>
               </div>
-              <span class="project-status" :class="getStatusClass(project.status)">
+              <span class="project-status-badge" :class="getStatusClass(project.status)">
                 {{ getStatusText(project.status) }}
               </span>
             </div>
 
-            <div class="project-details">
-              <div class="detail-row">
-                <span class="detail-label">المسوقون المرتبطون:</span>
-                <span class="detail-value">
-                  {{ getProjectMarketersNames(project) }}
-                </span>
+            <div class="project-metrics-grid">
+              <div class="metric-item full-width">
+                <span class="metric-label">المسوقون المرتبطون</span>
+                <span class="metric-value">{{ getProjectMarketersNames(project) }}</span>
               </div>
-              <div class="detail-row">
-                <span class="detail-label">موظف للتواصل:</span>
-                <span class="detail-value" style="min-width: 200px;">
-                  <select class="form-input" style="padding: 8px 10px;" :value="getProjectCommunicator(project)" @change="setProjectCommunicator(project, $event.target.value)">
+              <div class="metric-item full-width">
+                <span class="metric-label">موظف للتواصل</span>
+                <div class="select-wrapper-premium">
+                  <select class="form-input-premium" :value="getProjectCommunicator(project)" @change="setProjectCommunicator(project, $event.target.value)">
                     <option value="">— غير محدد —</option>
                     <option v-for="u in getProjectMarketers(project)" :key="u.id" :value="u.id">
                       {{ u.name || u.full_name || ('User #' + u.id) }}
                     </option>
                   </select>
-                </span>
+                </div>
               </div>
             </div>
 
-            <div class="project-actions">
-              <button class="btn-view" @click="viewProjectDetails(project.id)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                عرض التفاصيل
+            <div class="card-footer-actions dual">
+              <button class="btn-premium-action outline" @click="viewProjectDetails(project.id)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-left: 8px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                التفاصيل
               </button>
-              <button class="btn-plan" @click="goToPlansSub('employee')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              <button class="btn-premium-action" @click="goToPlansSub('employee')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-left: 8px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
                 خطط الموظفين
               </button>
             </div>
@@ -905,267 +986,338 @@
 
           <div v-else>
             <!-- Details View -->
-            <div v-if="!showUnitsTable">
-                <div class="details-grid">
-                  <div class="detail-item">
-                    <span class="detail-label">المطور</span>
-                    <span class="detail-value">{{ selectedProjectDetails.developer_name || '—' }}</span>
+            <div v-if="!showUnitsTable" class="modal-body-scrollable">
+                <!-- Section 1: General Info -->
+                <div class="modal-section luxury-card animate-fade-in-up" style="animation-delay: 0.1s;">
+                  <div class="section-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="section-icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    معلومات عامة
                   </div>
-                  <div class="detail-item">
-                    <span class="detail-label">المدينة</span>
-                    <span class="detail-value">{{ selectedProjectDetails.city || '—' }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="detail-label">الحي</span>
-                    <span class="detail-value">{{ selectedProjectDetails.district || '—' }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="detail-label">الحالة</span>
-                    <span class="detail-value">
-                      <span class="project-status" :class="getStatusClass(selectedProjectDetails.status)">
-                        {{ getStatusText(selectedProjectDetails.status) }}
-                      </span>
-                    </span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="detail-label">رقم العقد</span>
-                    <span class="detail-value number">{{ selectedProjectDetails.marketing_project?.contract_id ?? '—' }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="detail-label">حالة التسويق</span>
-                    <span class="detail-value">
-                      <span class="project-status" :class="getStatusClass(selectedProjectDetails.marketing_project?.status)">
-                        {{ getStatusText(selectedProjectDetails.marketing_project?.status) }}
-                      </span>
-                    </span>
-                  </div>
-                  
-                  <!-- View Units Button -->
-                  <div class="detail-item clickable" @click="goToUnits(selectedProjectDetails.id)" style="cursor: pointer; border-color: #2563eb; background: rgba(37, 99, 235, 0.05);">
-                     <span class="detail-label" style="color: #2563eb;">وحدات المشروع</span>
-                     <span class="detail-value link" style="color: #2563eb; font-weight: bold;">
-                        عرض الوحدات ({{ selectedProjectDetails?.units?.length || '?' }}) ↗
-                     </span>
-                  </div>
-
-                  <div class="detail-item" style="grid-column: 1 / -1;">
-                    <span class="detail-label">ملاحظات</span>
-                    <span class="detail-value">{{ selectedProjectDetails.notes || '—' }}</span>
-                  </div>
-                  <div class="detail-item" style="grid-column: 1 / -1;">
-                    <span class="detail-label">متطلبات المطور</span>
-                    <span class="detail-value">{{ selectedProjectDetails.developer_requirement || '—' }}</span>
-                  </div>
-                </div>
-
-                <div class="overview-section" style="margin-top: 18px;">
-                  <div class="section-header" style="margin-bottom: 14px;">
-                    <h3 class="section-title-chart">بيانات المشروع (بعد المونتاج + الميزانيات)</h3>
-                    <p class="section-desc">عرض القيم (مع قيم افتراضية عند عدم توفر بيانات من الـ API).</p>
-                  </div>
-
-                  <div class="details-grid">
-                    <div class="detail-item" style="grid-column: 1 / -1;">
-                      <span class="detail-label">وصف المشروع</span>
-                      <span class="detail-value" style="white-space: pre-wrap;">{{ getProjectMetaDefaulted(selectedProjectDetails).project_description }}</span>
+                  <div class="details-grid-new">
+                    <div class="grid-item">
+                      <span class="label">اسم المشروع</span>
+                      <span class="value">{{ selectedProjectDetails.project_name || '—' }}</span>
                     </div>
-
-                    <div class="detail-item">
-                      <span class="detail-label">رابط الصور بعد المونتاج</span>
-                      <span class="detail-value">
-                        <div class="meta-input-row">
-                          <input
-                            v-model="mediaLinksForm.media_images_url"
-                            type="url"
-                            class="form-input"
-                            placeholder="أدخل رابط الصور بعد المونتاج..."
-                            @blur="saveProjectMediaLinks"
-                          />
-                          <a
-                            v-if="mediaLinksForm.media_images_url"
-                            class="meta-link meta-link-mini"
-                            :href="mediaLinksForm.media_images_url"
+                    <div class="grid-item">
+                      <span class="label">المطور</span>
+                      <span class="value">{{ selectedProjectDetails.developer_name || '—' }}</span>
+                    </div>
+                    <div class="grid-item">
+                      <span class="label">رقم المطور</span>
+                      <span class="value number">{{ selectedProjectDetails.developer_number || '—' }}</span>
+                    </div>
+                  </div>
+                  <div class="details-grid-boxed">
+                    <div class="boxed-item">
+                      <span class="box-label">الموقع</span>
+                      <div class="box-value">
+                        <span class="location-badge">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 14px; height: 14px; margin-left: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                          <a 
+                            v-if="selectedProjectDetails.city || selectedProjectDetails.district"
+                            :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((selectedProjectDetails.city || '') + ' ' + (selectedProjectDetails.district || ''))}`"
                             target="_blank"
-                            rel="noopener"
-                            title="فتح"
+                            class="location-link"
                           >
-                            ↗
+                            {{ selectedProjectDetails.city || '—' }} - {{ selectedProjectDetails.district || '—' }}
                           </a>
-                        </div>
-                      </span>
-                    </div>
-
-                    <div class="detail-item">
-                      <span class="detail-label">رابط الفيديوهات بعد المونتاج</span>
-                      <span class="detail-value">
-                        <div class="meta-input-row">
-                          <input
-                            v-model="mediaLinksForm.media_videos_url"
-                            type="url"
-                            class="form-input"
-                            placeholder="أدخل رابط الفيديوهات بعد المونتاج..."
-                            @blur="saveProjectMediaLinks"
-                          />
-                          <a
-                            v-if="mediaLinksForm.media_videos_url"
-                            class="meta-link meta-link-mini"
-                            :href="mediaLinksForm.media_videos_url"
-                            target="_blank"
-                            rel="noopener"
-                            title="فتح"
-                          >
-                            ↗
-                          </a>
-                        </div>
-                      </span>
-                    </div>
-
-                    <div class="detail-item">
-                      <span class="detail-label">ميزانية الحملة الكاملة</span>
-                      <span class="detail-value number">{{ formatCurrency(getProjectMetaDefaulted(selectedProjectDetails).campaign_budget_total) }}</span>
-                    </div>
-
-                    <div class="detail-item">
-                      <span class="detail-label">الميزانية اليومية</span>
-                      <span class="detail-value number">{{ formatCurrency(getProjectMetaDefaulted(selectedProjectDetails).campaign_budget_daily) }}</span>
-                    </div>
-
-                    <div class="detail-item">
-                      <span class="detail-label">الميزانية الشهرية</span>
-                      <span class="detail-value number">{{ formatCurrency(getProjectMetaDefaulted(selectedProjectDetails).campaign_budget_monthly) }}</span>
-                    </div>
-
-                    <div class="detail-item">
-                      <span class="detail-label">نهاية الاتفاقية</span>
-                      <span class="detail-value">{{ getProjectMetaDefaulted(selectedProjectDetails).agreement_end_date_label }}</span>
-                    </div>
-
-                    <div class="detail-item">
-                      <span class="detail-label">نسبة السعي</span>
-                      <span class="detail-value number">{{ getProjectMetaDefaulted(selectedProjectDetails).sai_percent_label }}</span>
-                    </div>
-
-                    <div class="detail-item">
-                      <span class="detail-label">رقم المعلن (Available)</span>
-                      <span class="detail-value number">{{ getProjectMetaDefaulted(selectedProjectDetails).advertisers_available }}</span>
-                    </div>
-
-                    <div class="detail-item">
-                      <span class="detail-label">رقم المعلن (Pending)</span>
-                      <span class="detail-value number">{{ getProjectMetaDefaulted(selectedProjectDetails).advertisers_pending }}</span>
-                    </div>
-                  </div>
-
-                  <div class="plan-actions" style="margin-top: 10px;">
-                    <button class="btn-primary" @click="saveProjectMediaLinks">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-left: 8px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      حفظ روابط المونتاج
-                    </button>
-                  </div>
-                </div>
-
-                <div class="overview-section" style="margin-top: 18px;">
-                  <div class="section-header" style="margin-bottom: 14px;">
-                    <h3 class="section-title-chart">إدارة فرق التسويق</h3>
-                    <p class="section-desc">عرض الفرق المرتبطة بالمشروع وأعضاء كل فريق.</p>
-                  </div>
-                  
-                  <div v-if="isLoadingTeamMembers" class="loading-state" style="padding: 10px 0;">
-                    <div class="spinner"></div>
-                    <p>جاري تحميل الفرق والأعضاء...</p>
-                  </div>
-
-                  <div v-else class="teams-grid-luxury" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px;">
-                    <div
-                      v-for="t in projectTeamsResolved"
-                      :key="t._key"
-                      class="team-card-mini"
-                      style="background: white; border: 1px solid #e2e8f0; padding: 16px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px;"
-                    >
-                      <div style="display:flex; justify-content:space-between; align-items:start; gap: 10px;">
-                        <div style="min-width:0;">
-                          <div class="team-name" style="font-weight:800; color:#1e3a5f; font-family:'Amiri',serif; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                            {{ t.name }}
-                          </div>
-                          <div class="team-role" style="font-size:12px; color:#64748b; margin-top:4px;">
-                            {{ t.description }}
-                          </div>
-                        </div>
-                        <span v-if="t.isPlaceholder" class="project-status status-pending" style="align-self:flex-start;">افتراضي</span>
-                      </div>
-
-                      <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                        <span
-                          v-for="m in t.members"
-                          :key="m._key"
-                          style="display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background: rgba(177,162,143,0.10); border:1px solid rgba(177,162,143,0.18); color:#1e3a5f; font-weight:700; font-size:12px;"
-                        >
-                          <span style="width:22px; height:22px; border-radius:50%; background: linear-gradient(135deg,#B1A28F 0%, #8c7851 100%); color:white; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:900;">
-                            {{ (m.name || 'A').charAt(0).toUpperCase() }}
-                          </span>
-                          <span style="max-width:160px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ m.name }}</span>
+                          <span v-else>— - —</span>
                         </span>
                       </div>
                     </div>
+                    <div class="boxed-item">
+                      <span class="box-label">نوع المشروع</span>
+                      <span class="box-value">
+                        <span v-if="selectedProjectDetails.is_off_plan" class="badge-custom off-plan">على الخارطة (Off-Plan)</span>
+                        <span v-else class="badge-custom ready">جاهز</span>
+                      </span>
+                    </div>
+                    <div class="boxed-item">
+                      <span class="box-label">الحالة</span>
+                      <span class="box-value">
+                        <span class="project-status" :class="getStatusClass(selectedProjectDetails.status)">
+                          {{ getStatusText(selectedProjectDetails.status) }}
+                        </span>
+                      </span>
+                    </div>
+                    <div class="boxed-item">
+                      <span class="box-label">وحدات المشروع</span>
+                      <span class="box-value link-action hover-grow" @click="goToUnits(selectedProjectDetails.id)" v-if="selectedProjectDetails.units && selectedProjectDetails.units.length > 0">
+                        عرض الوحدات ({{ selectedProjectDetails.units.length }}) ↗
+                      </span>
+                      <span class="box-value status-pending-frame" v-else>
+                        Pending
+                      </span>
+                    </div>
+                    <div class="boxed-item">
+                      <span class="box-label">تاريخ الإنشاء</span>
+                      <span class="box-value number">{{ formatDate(selectedProjectDetails.created_at) }}</span>
+                    </div>
+                    <div class="boxed-item">
+                      <span class="box-label">آخر تحديث</span>
+                      <span class="box-value number">{{ formatDate(selectedProjectDetails.updated_at) }}</span>
+                    </div>
+                  </div>
+                   
+                   <!-- Info Section -->
+                   <div class="notes-area" v-if="selectedProjectDetails.info">
+                     <span class="label">معلومات إضافية</span>
+                     <p class="text-content">{{ selectedProjectDetails.info }}</p>
+                   </div>
+                 </div>
+
+                <!-- Section 2: Duration Status & Timeline -->
+                <div class="modal-section luxury-card animate-fade-in-up" style="animation-delay: 0.2s;">
+                  <div class="section-badge accent">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="section-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    حالة المدة الزمنية
+                  </div>
+                  <div class="details-grid-boxed">
+                    <div class="boxed-item">
+                      <span class="box-label">حالة المشروع الزمنية</span>
+                      <span class="box-value">
+                        <span :class="['duration-badge', getDurationStatusClass(selectedProjectDetails.duration_status?.status)]">
+                          {{ getDurationStatusText(selectedProjectDetails.duration_status?.status) }}
+                        </span>
+                      </span>
+                    </div>
+                    <div class="boxed-item">
+                      <span class="box-label">عدد الأيام المتبقية / المنقضية</span>
+                      <span class="box-value number">{{ selectedProjectDetails.duration_status?.days || '0' }} يوم</span>
+                    </div>
                   </div>
                 </div>
 
-                <div class="overview-section" style="margin-top: 18px;">
-                  <div class="section-header" style="margin-bottom: 14px;">
-                    <h3 class="section-title-chart">خطة المطور</h3>
-                    <p class="section-desc">تعرض الحقول المتاحة من `developer_plan`.</p>
+                <!-- Section 3: Contact & Security -->
+                <div class="modal-section luxury-card animate-fade-in-up" style="animation-delay: 0.3s;">
+                  <div class="section-badge info">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="section-icon"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    معلومات التواصل والأمن
                   </div>
-
-                  <div v-if="!selectedProjectDetails.developer_plan" style="color:#64748b;">لا توجد خطة مطور.</div>
-                  <div v-else class="details-grid" style="margin-top: 10px;">
-                    <div class="detail-item">
-                      <span class="detail-label">قيمة التسويق</span>
-                      <span class="detail-value number">{{ formatCurrency(selectedProjectDetails.developer_plan.marketing_value || 0) }}</span>
+                  <div class="details-grid-boxed">
+                    <div class="boxed-item">
+                      <span class="box-label">رقم الطوارئ</span>
+                      <span class="box-value number">{{ selectedProjectDetails.emergency_contact_number || '—' }}</span>
                     </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Average CPM</span>
-                      <span class="detail-value number">{{ selectedProjectDetails.developer_plan.average_cpm ?? '—' }}</span>
-                    </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Average CPC</span>
-                      <span class="detail-value number">{{ selectedProjectDetails.developer_plan.average_cpc ?? '—' }}</span>
-                    </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Expected Impressions</span>
-                      <span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_impressions || 0) }}</span>
-                    </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Expected Clicks</span>
-                      <span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_clicks || 0) }}</span>
+                    <div class="boxed-item">
+                      <span class="box-label">رقم الحارس الأمني</span>
+                      <span class="box-value number">{{ selectedProjectDetails.security_guard_number || '—' }}</span>
                     </div>
                   </div>
                 </div>
 
-                <div v-if="(selectedProjectDetails.employee_plans || []).length > 0" class="leads-table-container" style="margin-top: 18px;">
-                  <div class="section-header" style="margin-bottom: 10px;">
-                    <h3 class="section-title-chart" style="margin: 0;">خطط الموظفين</h3>
-                    <p class="section-desc" style="margin: 6px 0 0;">حسب `employee_plans` في API.</p>
+                <!-- Section 3: Marketing Project Details -->
+                <div class="modal-section luxury-card animate-fade-in-up" v-if="selectedProjectDetails.marketing_project" style="animation-delay: 0.4s;">
+                  <div class="section-badge secondary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="section-icon"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11"></polyline></svg>
+                    تفاصيل التسويق
                   </div>
-                  <table class="luxury-table">
-                    <thead>
-                      <tr>
-                        <th>الموظف</th>
-                        <th>قيمة التسويق</th>
-                        <th>قيمة العمولة</th>
-                        <th>توزيع المنصات</th>
-                        <th>توزيع الحملات</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="p in selectedProjectDetails.employee_plans" :key="p.id" class="hover-row">
-                        <td>{{ p.user?.name || ('User #' + (p.user_id ?? '—')) }}</td>
-                        <td class="number">{{ formatCurrency(p.marketing_value || 0) }}</td>
-                        <td class="number">{{ formatCurrency(p.commission_value || 0) }}</td>
-                        <td>{{ formatDistribution(p.platform_distribution) }}</td>
-                        <td>{{ formatDistribution(p.campaign_distribution) }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <div class="details-grid-boxed">
+                    <div class="boxed-item">
+                      <span class="box-label">رقم العقد</span>
+                      <span class="box-value number">{{ selectedProjectDetails.marketing_project.contract_id || '—' }}</span>
+                    </div>
+                    <div class="boxed-item">
+                      <span class="box-label">حالة التسويق</span>
+                      <span class="box-value">
+                        <span class="project-status" :class="getStatusClass(selectedProjectDetails.marketing_project.status)">
+                          {{ getStatusText(selectedProjectDetails.marketing_project.status) }}
+                        </span>
+                      </span>
+                    </div>
+                    <div class="boxed-item full-width">
+                      <span class="box-label">قائد الفريق المعين</span>
+                      <span class="box-value">{{ selectedProjectDetails.marketing_project.assigned_team_leader || '—' }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Team Frames (Professional Layout) -->
+                  <div class="team-frames-container" style="margin-top: 25px;">
+                    <span class="frame-title">الفرق التسويقية المعينة</span>
+                    
+                    <div v-if="selectedProjectDetails.marketing_project.teams?.length" class="frames-grid">
+                      <div class="team-frame luxury-frame hover-glow">
+                        <div class="frame-header">
+                           <span class="frame-icon">🛡️</span>
+                           <span class="frame-name">فريق التسويق الأساسي</span>
+                        </div>
+                        <div class="frame-members">
+                          <div 
+                            v-for="teamMember in selectedProjectDetails.marketing_project.teams" 
+                            :key="teamMember.id" 
+                            class="member-card-mini hover-lift"
+                            @click="openMemberDetails(teamMember.user)"
+                          >
+                            <div class="member-avatar">
+                              {{ (teamMember.user?.name || 'U').charAt(0) }}
+                            </div>
+                            <div class="member-info">
+                              <span class="member-name">{{ teamMember.user?.name || 'مسوق' }}</span>
+                              <span class="member-role">{{ teamMember.role === 'marketer' ? 'مسوق عقاري' : (teamMember.role || 'عضو فريق') }}</span>
+                            </div>
+                            <div class="member-action">
+                              <span class="info-icon">🛈</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div v-else class="empty-frame">
+                      <p>لا يوجد فرق تسويقية معينة حالياً.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section 4: Developer Plan -->
+                <div class="modal-section luxury-card animate-fade-in-up" v-if="selectedProjectDetails.marketing_project?.developer_plan" style="animation-delay: 0.5s;">
+                  <div class="section-badge accent">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="section-icon"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    خطة المطور
+                  </div>
+                  <div class="details-grid-boxed">
+                    <div class="boxed-item">
+                      <span class="box-label">إجمالي قيمة التسويق</span>
+                      <span class="box-value price-highlight">{{ formatCurrency(selectedProjectDetails.marketing_project.developer_plan.marketing_value) }}</span>
+                    </div>
+                    <div class="boxed-item">
+                      <span class="box-label">Average CPM</span>
+                      <span class="box-value number">{{ selectedProjectDetails.marketing_project.developer_plan.average_cpm }}</span>
+                    </div>
+                    <div class="boxed-item">
+                      <span class="box-label">Average CPC</span>
+                      <span class="box-value number">{{ selectedProjectDetails.marketing_project.developer_plan.average_cpc }}</span>
+                    </div>
+                    <div class="boxed-item">
+                      <span class="box-label">Impressions المتوقعة</span>
+                      <span class="box-value number">{{ formatNumber(selectedProjectDetails.marketing_project.developer_plan.expected_impressions) }}</span>
+                    </div>
+                    <div class="boxed-item">
+                      <span class="box-label">النقرات المتوقعة</span>
+                      <span class="box-value number">{{ formatNumber(selectedProjectDetails.marketing_project.developer_plan.expected_clicks) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section 5: Employee Plans -->
+                <div class="modal-section luxury-card animate-fade-in-up" v-if="selectedProjectDetails.marketing_project?.employee_plans?.length" style="animation-delay: 0.6s;">
+                  <div class="section-badge info">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="section-icon"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    خطط الموظفين
+                  </div>
+                  <div class="employee-plans-grid">
+                    <div v-for="plan in selectedProjectDetails.marketing_project.employee_plans" :key="plan.id" class="employee-plan-card luxury-card-inner">
+                      <!-- Card Header: Employee Info -->
+                      <div class="plan-header">
+                         <div class="employee-avatar-wrapper">
+                           <div class="employee-avatar">
+                             {{ (plan.user?.name || 'U').charAt(0) }}
+                           </div>
+                           <div class="employee-details">
+                             <span class="employee-name">{{ plan.user?.name || '—' }}</span>
+                             <span class="employee-role">مسوق عقاري</span>
+                           </div>
+                         </div>
+                         <div class="plan-actions">
+                           <!-- Placeholder for future actions if needed -->
+                         </div>
+                      </div>
+
+                      <!-- Key Metrics: Boxed Style -->
+                      <div class="plan-metrics-boxed">
+                        <div class="boxed-metric">
+                          <span class="metric-label">قيمة التسويق</span>
+                          <span class="metric-value primary">{{ formatCurrency(plan.marketing_value) }}</span>
+                        </div>
+                        <div class="boxed-metric">
+                          <span class="metric-label">العمولة</span>
+                          <span class="metric-value gold">{{ formatCurrency(plan.commission_value) }}</span>
+                        </div>
+                      </div>
+
+                      <!-- Distribution Tags -->
+                      <div class="plan-tags-section">
+                        <div class="tags-group">
+                          <span class="tags-label">المنصات:</span>
+                          <div class="tags-container">
+                            <template v-for="(value, key) in (plan.platform_distribution || {})" :key="key">
+                              <span v-if="value > 0" class="tag-pill platform-tag">
+                                {{ key }}: {{ value }}%
+                              </span>
+                            </template>
+                             <span v-if="!Object.keys(plan.platform_distribution || {}).length" class="text-muted small">لا يوجد توزيع</span>
+                          </div>
+                        </div>
+                        <div class="tags-group">
+                          <span class="tags-label">الحملات:</span>
+                          <div class="tags-container">
+                            <template v-for="(value, key) in (plan.campaign_distribution || {})" :key="key">
+                              <span v-if="value > 0" class="tag-pill campaign-tag">
+                                {{ key }}: {{ value }}%
+                              </span>
+                            </template>
+                            <span v-if="!Object.keys(plan.campaign_distribution || {}).length" class="text-muted small">لا يوجد توزيع</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section 6: Requirements & Notes -->
+                <div class="modal-section luxury-card animate-fade-in-up" style="animation-delay: 0.7s;">
+                  <div class="section-badge secondary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="section-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    المتطلبات والملاحظات
+                  </div>
+                  <div class="notes-area" v-if="selectedProjectDetails.notes" style="margin-top: 0; border: none;">
+                    <span class="label">ملاحظات المشروع</span>
+                    <p class="text-content">{{ selectedProjectDetails.notes }}</p>
+                  </div>
+                  <div class="notes-area" v-if="selectedProjectDetails.developer_requiment || selectedProjectDetails.developer_requirement" :style="{ marginTop: selectedProjectDetails.notes ? '20px' : '0', borderTop: selectedProjectDetails.notes ? '1px solid rgba(177, 162, 143, 0.1)' : 'none' }">
+                    <span class="label">متطلبات المطور</span>
+                    <p class="text-content">{{ selectedProjectDetails.developer_requiment || selectedProjectDetails.developer_requirement }}</p>
+                  </div>
+                  <div v-if="!selectedProjectDetails.notes && !selectedProjectDetails.developer_requiment && !selectedProjectDetails.developer_requirement" class="empty-state-mini">
+                    لا توجد ملاحظات أو متطلبات مضافة.
+                  </div>
+                </div>
+
+                <!-- Section 7: Project Media (من API) -->
+                <div class="modal-section luxury-card animate-fade-in-up" style="animation-delay: 0.8s;">
+                  <div class="section-badge success">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="section-icon"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    الوسائط والمرفقات
+                  </div>
+                  
+                  <div class="media-setup-grid">
+                    <div class="setup-item">
+                      <label>صورة المشروع الرئيسية</label>
+                      <div class="url-display-group">
+                        <span class="url-text" v-if="selectedProjectDetails.project_image_url">{{ selectedProjectDetails.project_image_url }}</span>
+                        <span class="url-text placeholder" v-else>لم يتم إضافة صورة بعد</span>
+                        <a v-if="selectedProjectDetails.project_image_url" :href="selectedProjectDetails.project_image_url" target="_blank" class="btn-link-mini hover-grow">↗</a>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Project Media Array -->
+                  <div style="margin-top: 20px;">
+                    <span class="label" style="display:block; margin-bottom:10px;">ملفات الوسائط المرفقة ({{ selectedProjectDetails.project_media?.length || 0 }})</span>
+                    <div v-if="selectedProjectDetails.project_media?.length" class="media-files-grid">
+                      <div v-for="(media, idx) in selectedProjectDetails.project_media" :key="idx" class="media-file-card hover-lift">
+                        <div class="media-icon">📎</div>
+                        <div class="media-info">
+                          <span class="media-name">{{ media.name || media.file_name || `ملف ${idx + 1}` }}</span>
+                          <span class="media-type">{{ media.type || media.mime_type || '—' }}</span>
+                        </div>
+                        <a v-if="media.url || media.path" :href="media.url || media.path" target="_blank" class="btn-link-mini hover-grow">↗</a>
+                      </div>
+                    </div>
+                    <div v-else class="empty-state-mini" style="margin-top: 10px;">
+                      لا توجد ملفات وسائط مرفقة حالياً.
+                    </div>
+                  </div>
                 </div>
             </div>
 
@@ -1264,6 +1416,56 @@
             <svg v-if="!isSubmitting" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-left: 8px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
             حفظ
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Member Details Modal -->
+    <div v-if="showMemberDetailsModal" class="modal-overlay" @click.self="showMemberDetailsModal = false">
+      <div class="modal-content luxury-modal animate-scale-in" style="max-width: 500px;">
+        <div class="modal-header">
+          <h3 class="modal-title">بيانات المسوق التفصيلية</h3>
+          <button class="modal-close" @click="showMemberDetailsModal = false">×</button>
+        </div>
+        <div class="modal-body" v-if="selectedMemberDetails">
+          <div class="member-profile-header">
+            <div class="large-avatar">{{ (selectedMemberDetails.name || 'U').charAt(0) }}</div>
+            <h4 class="profile-name">{{ selectedMemberDetails.name }}</h4>
+            <span class="profile-role badge-custom info">{{ selectedMemberDetails.type || 'Marketing' }}</span>
+          </div>
+          
+          <div class="details-grid-new" style="margin-top: 20px;">
+            <div class="grid-item">
+              <span class="label">البريد الإلكتروني</span>
+              <span class="value">{{ selectedMemberDetails.email || '—' }}</span>
+            </div>
+            <div class="grid-item">
+              <span class="label">رقم الجوال</span>
+              <span class="value number">{{ selectedMemberDetails.phone || '—' }}</span>
+            </div>
+            <div class="grid-item">
+              <span class="label">تاريخ الانضمام</span>
+              <span class="value number">{{ formatDate(selectedMemberDetails.created_at) }}</span>
+            </div>
+            <div class="grid-item">
+              <span class="label">الحالة</span>
+              <span class="value">
+                 <span :class="['status-dot', selectedMemberDetails.is_active ? 'active' : 'inactive']"></span>
+                 {{ selectedMemberDetails.is_active ? 'نشط' : 'غير نشط' }}
+              </span>
+            </div>
+             <div class="grid-item">
+              <span class="label">المسمى الوظيفي</span>
+              <span class="value">{{ selectedMemberDetails.job_title || '—' }}</span>
+            </div>
+             <div class="grid-item">
+              <span class="label">القسم</span>
+              <span class="value">{{ selectedMemberDetails.department || '—' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" @click="showMemberDetailsModal = false">إغلاق</button>
         </div>
       </div>
     </div>
@@ -1730,6 +1932,26 @@ export default {
     const showUnitsTable = ref(false)
     const isLoadingUnits = ref(false)
 
+    // Interactive Teams View State
+    const expandedProjectTeams = ref(null)
+    const expandedTeamMembers = ref(null)
+
+    const toggleProjectTeams = (projectId) => {
+      if (expandedProjectTeams.value === projectId) {
+        expandedProjectTeams.value = null
+      } else {
+        expandedProjectTeams.value = projectId
+      }
+    }
+
+    const toggleTeamMembers = (teamId) => {
+      if (expandedTeamMembers.value === teamId) {
+        expandedTeamMembers.value = null
+      } else {
+        expandedTeamMembers.value = teamId
+      }
+    }
+
     // Team display state (show teams + members)
     const isLoadingTeamMembers = ref(false)
     const teamDetailsById = ref({})
@@ -1748,6 +1970,13 @@ export default {
     const showAddLeadModal = ref(false)
     const isSubmitting = ref(false)
     const showProjectDetailsModal = ref(false)
+    const showMemberDetailsModal = ref(false)
+    const selectedMemberDetails = ref(null)
+
+    const openMemberDetails = (member) => {
+        selectedMemberDetails.value = member
+        showMemberDetailsModal.value = true
+    }
 
     // Forms
     const budgetForm = reactive({
@@ -2037,6 +2266,10 @@ export default {
       try {
         const data = await marketingService.getProjects()
         projects.value = data
+        // Fetch details for first batch to populate location/missing fields
+        if (data.length > 0) {
+          loadProjectDetailsBatch()
+        }
       } catch (error) {
         logger.error('Error loading projects:', error)
         projects.value = []
@@ -2419,8 +2652,29 @@ export default {
 
     // --- Utility Functions ---
 
-    const formatCurrency = (value) => new Intl.NumberFormat('en-US').format(Number(value) || 0)
-    const formatNumber = (value) => new Intl.NumberFormat('en-US').format(Number(value) || 0)
+    const formatCurrency = (value) => {
+      const num = Number(value) || 0
+      if (num >= 100000) {
+        return new Intl.NumberFormat('en-US', { 
+          notation: 'compact', 
+          compactDisplay: 'short',
+          maximumFractionDigits: 1 
+        }).format(num)
+      }
+      return new Intl.NumberFormat('en-US').format(num)
+    }
+
+    const formatNumber = (value) => {
+      const num = Number(value) || 0
+      if (num >= 100000) {
+        return new Intl.NumberFormat('en-US', { 
+          notation: 'compact', 
+          compactDisplay: 'short',
+          maximumFractionDigits: 1 
+        }).format(num)
+      }
+      return new Intl.NumberFormat('en-US').format(num)
+    }
 
     const formatDate = (dateString) => {
       if (!dateString) return 'غير محدد'
@@ -2481,17 +2735,36 @@ export default {
     }
 
     const getSourceClass = (source) => {
-      const sourceMap = {
-        'Snapchat': 'source-snapchat',
-        'Instagram': 'source-instagram',
-        'Twitter': 'source-twitter',
-        'Facebook': 'source-facebook',
-        'Google Ads': 'source-google',
-        'Website': 'source-website',
-        'Referral': 'source-referral',
-        'Other': 'source-other'
-      }
-      return sourceMap[source] || 'source-other'
+      const s = String(source || '').toLowerCase()
+      if (s.includes('snap')) return 'source-snapchat'
+      if (s.includes('insta')) return 'source-instagram'
+      if (s.includes('twitter') || s.includes('x')) return 'source-twitter'
+      if (s.includes('facebook') || s.includes('meta')) return 'source-facebook'
+      if (s.includes('google')) return 'source-google'
+      if (s.includes('website')) return 'source-website'
+      return 'source-other'
+    }
+
+    const getDurationStatusClass = (status) => {
+      const s = String(status || '').toLowerCase()
+      if (s === 'active' || s === 'ongoing') return 'status-active'
+      if (s === 'pending' || s === 'waiting') return 'status-pending'
+      if (s === 'completed' || s === 'finished') return 'status-completed'
+      if (s === 'expired') return 'status-expired'
+      return 'status-unknown'
+    }
+
+    const getDurationStatusText = (status) => {
+      const s = String(status || '').toLowerCase()
+      if (s === 'active') return 'نشط'
+      if (s === 'ongoing') return 'قيد التنفيذ'
+      if (s === 'pending') return 'قيد الانتظار'
+      if (s === 'waiting') return 'في الانتظار'
+      if (s === 'completed') return 'مكتمل'
+      if (s === 'finished') return 'منتهي'
+      if (s === 'expired') return 'منتهية الصلاحية'
+      if (s === 'unknown') return 'غير محدد'
+      return status || 'غير معروف'
     }
 
     // --- Lifecycle & Watchers ---
@@ -2763,10 +3036,13 @@ export default {
       isLoadingTasks,
       leads,
       isLoadingLeads,
-      showCalculateBudgetModal,
       showAddLeadModal,
       isSubmitting,
+      // Modals
       showProjectDetailsModal,
+      showMemberDetailsModal,
+      selectedMemberDetails,
+      openMemberDetails,
       budgetForm,
       leadForm,
       openCalculateBudgetModal,
@@ -2784,8 +3060,9 @@ export default {
       getStatusText,
       getTaskStatusClass,
       getTaskStatusText,
-      getSourceClass
-      ,
+      getSourceClass,
+      getDurationStatusClass,
+      getDurationStatusText,
       // developer plan
       developerPlanForm,
       developerPlanSummary,
@@ -2844,8 +3121,13 @@ export default {
       setAgreementEndInput,
       getAgreementEndInput,
       // Project details: teams + members
+      projectDetailsById,
       isLoadingTeamMembers,
       projectTeamsResolved,
+      expandedProjectTeams,
+      expandedTeamMembers,
+      toggleProjectTeams,
+      toggleTeamMembers,
       // Reports & Outputs
       downloadPlaceholder,
       // AI Assistant
@@ -3006,6 +3288,10 @@ export default {
 .animate-stagger-2 { animation-delay: 0.2s; }
 .animate-stagger-3 { animation-delay: 0.3s; }
 .animate-stagger-4 { animation-delay: 0.4s; }
+.animate-stagger-5 { animation-delay: 0.5s; }
+.animate-stagger-6 { animation-delay: 0.6s; }
+.animate-stagger-7 { animation-delay: 0.7s; }
+.animate-stagger-8 { animation-delay: 0.8s; }
 
 .stat-content {
   display: flex;
@@ -3252,21 +3538,682 @@ export default {
   letter-spacing: 0.5px;
 }
 
-/* Agreement timeline badge (4.6.3) */
-.timeline-badge {
+.project-status-badge {
+  padding: 5px 14px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  font-family: 'Tajawal', sans-serif;
+}
+
+/* Premium Project Card Styles */
+.luxury-card.project-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 24px;
+  background: linear-gradient(135deg, #ffffff 0%, #fcfaf5 100%);
+  border: 1px solid rgba(177, 162, 143, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.project-card-top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.location-badge {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 4px 10px;
-  border-radius: 999px;
   font-size: 12px;
-  font-weight: 800;
-  line-height: 1;
-  white-space: nowrap;
-  border: 1px solid rgba(148, 163, 184, 0.35);
   color: #64748b;
-  background: rgba(148, 163, 184, 0.08);
-  max-width: 100%;
+  font-weight: 600;
+  background: rgba(177, 162, 143, 0.08);
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.project-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.project-name-premium {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e3a5f;
+  margin: 0;
+  font-family: 'Amiri', serif;
+  line-height: 1.2;
+}
+
+.timeline-badge-premium {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 700;
+  background: white;
+  border: 1px solid rgba(177, 162, 143, 0.3);
+}
+
+.project-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 12px;
+  background: #ffffff;
+  border: 1px solid rgba(177, 162, 143, 0.25);
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(177, 162, 143, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #B1A28F, #8c7851);
+  opacity: 0.8;
+}
+
+.metric-item:hover {
+  transform: translateY(-3px);
+  border-color: rgba(177, 162, 143, 0.6);
+  box-shadow: 0 8px 20px rgba(177, 162, 143, 0.15);
+}
+
+.metric-item.full-width {
+  grid-column: span 2;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 12px 20px;
+  align-items: center;
+}
+
+.metric-item.full-width::before {
+  width: 4px;
+  height: 100%;
+  top: 0;
+  left: 0; /* RTL adjusted if needed, usually right in RTL but sticking to left for consistency or check direction */
+  right: 0;
+  left: auto;
+}
+
+.metric-label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0;
+}
+
+.metric-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1e3a5f;
+  font-family: 'Tajawal', sans-serif;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.text-muted {
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.metric-value.gold {
+  color: #b45309; /* Darker gold for better contrast on white */
+}
+
+.metric-value.highlight {
+  color: #1e3a5f;
+}
+
+/* Boxed Metrics for Modal */
+.details-grid-boxed {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.boxed-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background: white;
+  border: 1px solid rgba(177, 162, 143, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.04);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.boxed-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #1e3a5f, #B1A28F);
+  opacity: 0.7;
+}
+
+.boxed-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(30, 58, 95, 0.1);
+  border-color: rgba(177, 162, 143, 0.5);
+}
+
+.details-grid-new {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 25px;
+  background: rgba(177, 162, 143, 0.05);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(177, 162, 143, 0.1);
+}
+
+.grid-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.grid-item .label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.grid-item .value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.boxed-item.full-width {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  justify-content: space-between;
+  text-align: left;
+}
+
+.box-label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.location-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(30, 58, 95, 0.04);
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(30, 58, 95, 0.08);
+  transition: all 0.3s ease;
+}
+
+.location-badge:hover {
+  background: rgba(30, 58, 95, 0.08);
+  border-color: rgba(30, 58, 95, 0.15);
+  transform: translateY(-1px);
+}
+
+.location-link {
+  color: #1e3a5f;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  border-bottom: 1px dashed transparent;
+  transition: all 0.2s;
+}
+
+.location-link:hover {
+  border-bottom-color: #1e3a5f;
+}
+
+.box-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1e3a5f;
+  font-family: 'Tajawal', sans-serif;
+  text-align: center;
+}
+
+.status-pending-frame {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 2px solid #eab308;
+  border-radius: 8px;
+  color: #a16207;
+  font-weight: 800;
+  font-size: 14px;
+  background: rgba(234, 179, 8, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Employee Plans Grid Redesign */
+.employee-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.employee-plan-card {
+  background: #fff;
+  border: 1px solid rgba(177, 162, 143, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.employee-plan-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(30, 58, 95, 0.08);
+  border-color: rgba(177, 162, 143, 0.6);
+}
+
+.plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.employee-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.employee-avatar {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #1e3a5f, #2c5282);
+  color: #fff;
+  border-radius: 50%;
+  border: 2px solid #E4DCCF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 18px;
+  box-shadow: 0 4px 10px rgba(30, 58, 95, 0.2);
+}
+
+.employee-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.employee-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: #1e3a5f;
+}
+
+.employee-role {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Boxed Metrics in Plan Card */
+.plan-metrics-boxed {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.boxed-metric {
+  flex: 1;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.boxed-metric .metric-label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.boxed-metric .metric-value {
+  font-size: 15px;
+  font-weight: 800;
+  font-family: 'Tajawal', sans-serif;
+}
+
+.boxed-metric .metric-value.primary { color: #1e3a5f; }
+.boxed-metric .metric-value.gold { color: #b45309; }
+
+/* Tags Styling */
+.plan-tags-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tags-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tags-label {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag-pill {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+
+.platform-tag {
+  background: rgba(30, 58, 95, 0.08);
+  color: #1e3a5f;
+  border: 1px solid rgba(30, 58, 95, 0.1);
+}
+
+.campaign-tag {
+  background: rgba(177, 162, 143, 0.12);
+  color: #8c7b66;
+  border: 1px solid rgba(177, 162, 143, 0.2);
+}
+
+
+/* Premium Collapsible Teams */
+.teams-collapsible-premium {
+  margin-bottom: 24px;
+  border: 1px solid rgba(177, 162, 143, 0.15);
+  border-radius: 12px;
+  background: white;
+  overflow: hidden;
+}
+
+.teams-trigger-premium {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #fdfbf7;
+}
+
+.teams-trigger-premium:hover {
+  background: #fbf6ee;
+}
+
+.teams-trigger-premium.active {
+  background: #1e3a5f;
+  color: white;
+}
+
+.trigger-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.chevron-icon {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+}
+
+.chevron-icon.rotate {
+  transform: rotate(180deg);
+}
+
+.teams-content-panel {
+  padding: 16px;
+  background: white;
+}
+
+.team-group-item {
+  margin-bottom: 12px;
+}
+
+.team-group-item:last-child {
+  margin-bottom: 0;
+}
+
+.team-sub-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.team-sub-header:hover {
+  background: #f8fafc;
+}
+
+.team-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #B1A28F;
+}
+
+.team-label-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  flex: 1;
+}
+
+.chevron-mini {
+  width: 14px;
+  height: 14px;
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+}
+
+.chevron-mini.rotate {
+  transform: rotate(180deg);
+}
+
+.members-inner-grid {
+  padding: 8px 8px 8px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.member-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  background: #f8fafc;
+  border-radius: 50px;
+  border: 1px solid #f1f5f9;
+}
+
+.member-circle {
+  width: 24px;
+  height: 24px;
+  background: #1e3a5f;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.member-meta {
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+  align-items: center;
+}
+
+.m-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.m-rating {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+/* Card Actions */
+.card-footer-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.card-footer-actions.dual .btn-premium-action {
+  flex: 1;
+}
+
+.btn-premium-action {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  background: #1e3a5f;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.btn-premium-action.outline {
+  background: transparent;
+  color: #1e3a5f;
+  border: 2px solid #1e3a5f;
+}
+
+.btn-premium-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(30, 58, 95, 0.2);
+}
+
+.btn-premium-action.outline:hover {
+  background: rgba(30, 58, 95, 0.05);
+}
+
+.glow-effect {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.btn-premium-action:hover .glow-effect {
+  opacity: 1;
+}
+
+.select-wrapper-premium {
+  position: relative;
+  width: 100%;
+}
+
+.form-input-premium {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e3a5f;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231e3a5f'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 12px center;
+  background-size: 14px;
 }
 
 .timeline-neutral {
@@ -4358,6 +5305,508 @@ export default {
   .details-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* --- Overhaul Overrides & New Styles --- */
+.modal-body-scrollable {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: #B1A28F transparent;
+}
+
+.modal-section {
+  position: relative;
+  padding: 25px 20px 20px;
+  border: 1px solid rgba(177, 162, 143, 0.15);
+  border-radius: 16px;
+  background: white;
+  transition: all 0.3s ease;
+  margin-bottom: 5px;
+}
+
+.modal-section:hover {
+  border-color: rgba(177, 162, 143, 0.3);
+  box-shadow: 0 4px 12px rgba(177, 162, 143, 0.05);
+}
+
+.section-badge {
+  position: absolute;
+  top: -12px;
+  right: 20px;
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 800;
+  color: white;
+  background: linear-gradient(135deg, #1e3a5f 0%, #172c47 100%);
+  font-family: 'Tajawal', sans-serif;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.2);
+}
+
+.section-icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.5;
+}
+
+.section-badge.secondary { background: linear-gradient(135deg, #B1A28F, #8c7851); }
+.section-badge.accent { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.section-badge.info { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.section-badge.success { background: linear-gradient(135deg, #10b981, #059669); }
+
+.details-grid-new {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.grid-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.grid-item .label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.grid-item .value {
+  font-size: 15px;
+  color: #1e3a5f;
+  font-weight: 700;
+  transition: color 0.3s ease;
+}
+
+.price-highlight {
+  font-size: 18px !important;
+  color: #b45309 !important;
+  font-family: 'Amiri', serif;
+}
+
+.link-action {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.notes-area {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(177, 162, 143, 0.1);
+}
+
+.notes-area .label {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.text-content {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.7;
+  background: #f8fafc;
+  padding: 14px;
+  border-radius: 12px;
+  border-right: 3px solid #B1A28F;
+}
+
+.table-container-mini {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.simple-luxury-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.simple-luxury-table th {
+  background: #f1f5f9;
+  padding: 10px;
+  text-align: right;
+  font-size: 12px;
+  color: #1e3a5f;
+}
+
+.simple-luxury-table td {
+  padding: 12px 10px;
+  font-size: 13px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.media-setup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.setup-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.setup-item label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.url-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.form-input-mini {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.btn-link-mini {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  color: #B1A28F;
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-link-mini:hover {
+  background: #1e3a5f;
+  color: white;
+  border-color: #1e3a5f;
+  transform: scale(1.1);
+}
+
+/* --- Team Frames & Member Styles --- */
+.team-frames-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.frame-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.luxury-frame {
+  border: 1px solid rgba(177, 162, 143, 0.2);
+  border-radius: 12px;
+  background: #faf9f7;
+  overflow: hidden;
+}
+
+.frame-header {
+  background: linear-gradient(to right, #f1f5f9, #ffffff);
+  padding: 10px 15px;
+  border-bottom: 1px solid rgba(177, 162, 143, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.frame-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.frame-members {
+  padding: 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.member-card-mini {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  gap: 10px;
+}
+
+.member-card-mini:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border-color: #cbd5e1;
+}
+
+.member-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #1e3a5f;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.member-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.member-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.member-role {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.member-action {
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+/* Member Profile Modal */
+.member-profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.large-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e3a5f, #172c47);
+  color: white;
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(30, 58, 95, 0.2);
+}
+
+.profile-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e3a5f;
+  margin: 0;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-left: 6px;
+}
+.status-dot.active { background-color: #10b981; }
+.status-dot.inactive { background-color: #ef4444; }
+
+/* URL Display Styling */
+.url-display-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.url-text {
+  flex: 1;
+  font-size: 13px;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: ltr;
+  text-align: left;
+}
+
+.url-text.placeholder {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* Media Files Grid */
+.media-files-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.media-file-card {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.media-file-card:hover {
+  background: #f8f9fa;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.media-icon {
+  font-size: 24px;
+  opacity: 0.7;
+}
+
+.media-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.media-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e3a5f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.media-type {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* Duration Status Badges */
+.duration-badge {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.duration-badge.status-active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.duration-badge.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.duration-badge.status-completed {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.duration-badge.status-expired {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.duration-badge.status-unknown {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.badge-custom {
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+}
+
+.badge-custom.off-plan {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.05) 100%);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.badge-custom.ready {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.empty-state-mini {
+  padding: 20px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+  font-style: italic;
+  background: rgba(177, 162, 143, 0.03);
+  border-radius: 10px;
+  border: 1px dashed rgba(177, 162, 143, 0.2);
+}
+
+.btn-primary-mini {
+  padding: 8px 20px;
+  background: #1e3a5f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-primary-mini:hover {
+  background: #172c47;
+  transform: translateY(-1px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Dark Mode Support (Optional) */
