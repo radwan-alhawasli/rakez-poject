@@ -107,10 +107,9 @@ const routes = [
             },
             {
                 path: 'hr',
-                name: 'HR',
                 component: () => import('../views/HRView.vue'),
                 children: [
-                    { path: '', redirect: { name: 'HRDashboard' } },
+                    { path: '', name: 'HR', redirect: { name: 'HRDashboard' } },
                     { path: 'dashboard', name: 'HRDashboard', component: () => import('../views/HRView.vue') },
                     { path: 'teams', name: 'HRTeams', component: () => import('../views/HRView.vue') },
                     { path: 'team-performance', name: 'HRTeamPerformance', component: () => import('../views/HRView.vue') },
@@ -121,10 +120,9 @@ const routes = [
             },
             {
                 path: 'marketing',
-                name: 'Marketing',
                 component: () => import('../views/MarketingView.vue'),
                 children: [
-                    { path: '', redirect: { name: 'MarketingDashboard' } },
+                    { path: '', name: 'Marketing', redirect: { name: 'MarketingDashboard' } },
                     { path: 'dashboard', name: 'MarketingDashboard', component: () => import('../views/MarketingView.vue') },
                     { path: 'projects', name: 'MarketingProjects', component: () => import('../views/MarketingView.vue') },
                     { path: 'tasks', name: 'MarketingTasks', component: () => import('../views/MarketingView.vue') },
@@ -146,13 +144,13 @@ const routes = [
             },
             {
                 path: 'sales',
-                name: 'Sales',
                 component: () => import('../views/SalesViewExtended.vue'),
                 children: [
-                    { path: '', redirect: { name: 'SalesDashboard' } },
+                    { path: '', name: 'Sales', redirect: { name: 'SalesDashboard' } },
                     { path: 'dashboard', name: 'SalesDashboard', component: () => import('../views/SalesViewExtended.vue') },
                     { path: 'targets', name: 'SalesTargets', component: () => import('../views/SalesViewExtended.vue') },
                     { path: 'projects', name: 'SalesProjects', component: () => import('../views/SalesViewExtended.vue') },
+                    { path: 'projects/:id/units', name: 'SalesProjectUnits', component: () => import('../views/SalesViewExtended.vue') },
                     { path: 'reservations', name: 'SalesReservations', component: () => import('../views/SalesViewExtended.vue') },
                     { path: 'attendance', name: 'SalesAttendance', component: () => import('../views/SalesViewExtended.vue') },
                     { path: 'team', name: 'SalesTeam', component: () => import('../views/SalesViewExtended.vue') },

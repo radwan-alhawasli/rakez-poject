@@ -30,11 +30,11 @@
               <button v-if="unreadCount > 0" @click="markAllAsRead" class="mark-read-btn">تعيين الكل كمقروء</button>
             </div>
             <div class="notifications-list custom-scrollbar">
-              <div v-if="notifications.length === 0" class="no-notifications">
+              <div v-if="notificationsList.length === 0" class="no-notifications">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                 <p>لا يوجد إشعارات جديدة</p>
               </div>
-              <div v-for="notification in notifications" :key="notification.id"
+              <div v-for="notification in notificationsList" :key="notification.id"
                 :class="['notification-item', { unread: !notification.read }]" @click="markAsRead(notification.id)">
                 <div class="notification-icon-bg" :class="notification.type">
                   <svg v-if="notification.type==='success'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -82,7 +82,7 @@
         <div class="sidebar-header">
            <img src="/img/logo-circle.png" class="sidebar-logo-img" alt="Logo" />
            <div class="sidebar-logo-text">
-             <span class="rakez-ar">راكز</span> | <span class="rakez-en">Rakez</span>
+             <span class="rakez-en">Rakez</span>
            </div>
         </div>
         
@@ -839,10 +839,14 @@ export default {
       router.push('/login')
     }
     
-    // Use the comprehensive notification service
+    // Use the comprehensive notification service (guard against undefined .value)
     const notifications = notificationService.getAll()
-    
-    const unreadCount = computed(() => notifications.value.filter(n => !n.read).length)
+    const notificationsList = computed(() => {
+      const list = notifications?.value
+      return Array.isArray(list) ? list : []
+    })
+
+    const unreadCount = computed(() => notificationsList.value.filter(n => !n.read).length)
     
     const toggleNotifications = () => { showNotifications.value = !showNotifications.value }
     
@@ -911,6 +915,7 @@ export default {
       user,
       userRole,
       showNotifications,
+      notificationsList,
       unreadCount,
       isSidebarOpen,
       isSidebarHovered,
