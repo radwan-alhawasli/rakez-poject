@@ -199,6 +199,28 @@
                   {{ project.marketing_project?.developer_plan?.marketing_value ? formatCurrency(project.marketing_project.developer_plan.marketing_value) : '—' }}
                 </span>
               </div>
+              <div class="metric-item">
+                <span class="metric-label">نسبة التسويق</span>
+                <span class="metric-value number" v-if="getProjectMarketingPercent(project)">
+                  {{ getProjectMarketingPercent(project) }}%
+                </span>
+                <span class="metric-value text-muted" v-else-if="isMarketingUser">يرجى الإدخال</span>
+                <span class="metric-value text-muted" v-else>—</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">نسبة التواصل المباشر</span>
+                <span class="metric-value number" v-if="getProjectDirectCommunicationRatio(project)">
+                  {{ getProjectDirectCommunicationRatio(project) }}%
+                </span>
+                <span class="metric-value text-muted" v-else>يرجى إدخال قيمة</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">قيمة الحجوزات المتوقعة</span>
+                <span class="metric-value number gold" v-if="getProjectDirectCommunicationRatio(project) && getExpectedBookingsForProject(project) > 0">
+                  {{ formatCurrency(getExpectedBookingValueForProject(project)) }}
+                </span>
+                <span class="metric-value text-muted" v-else>يرجى إدخال قيمة</span>
+              </div>
             </div>
 
             <!-- Interactive Teams Section -->
@@ -618,6 +640,22 @@
             </div>
 
             <div class="project-metrics-grid">
+              <div class="metric-item">
+                <span class="metric-label">نسبة التواصل المباشر</span>
+                <span class="metric-value number" v-if="getProjectDirectCommunicationRatio(project)">{{ getProjectDirectCommunicationRatio(project) }}%</span>
+                <span class="metric-value text-muted" v-else>يرجى إدخال قيمة</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">قيمة الحجوزات المتوقعة</span>
+                <span class="metric-value number gold" v-if="getProjectDirectCommunicationRatio(project) && getExpectedBookingsForProject(project) > 0">{{ formatCurrency(getExpectedBookingValueForProject(project)) }}</span>
+                <span class="metric-value text-muted" v-else>يرجى إدخال قيمة</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">نسبة التسويق</span>
+                <span class="metric-value number" v-if="getProjectMarketingPercent(project)">{{ getProjectMarketingPercent(project) }}%</span>
+                <span class="metric-value text-muted" v-else-if="isMarketingUser">يرجى الإدخال</span>
+                <span class="metric-value text-muted" v-else>—</span>
+              </div>
               <div class="metric-item full-width">
                 <span class="metric-label">المسوقون المرتبطون</span>
                 <span class="metric-value">{{ getProjectMarketersNames(project) }}</span>
@@ -675,7 +713,7 @@
 
           <div class="project-card hover-lift animate-fade-in">
             <div class="project-header">
-              <h3 class="project-name">تقرير الميزانيات</h3>
+              <h3 class="project-name">تقرير الصرف</h3>
               <span class="project-status" style="background: rgba(177,162,143,0.12); color:#8c7851;">جاهز</span>
             </div>
             <div class="project-details">
@@ -683,38 +721,6 @@
             </div>
             <div class="project-actions">
               <button class="btn-view" @click="downloadPlaceholder('budgets')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                تنزيل (PDF/Excel)
-              </button>
-            </div>
-          </div>
-
-          <div class="project-card hover-lift animate-fade-in">
-            <div class="project-header">
-              <h3 class="project-name">تقرير الحجوزات المتوقعة</h3>
-              <span class="project-status" style="background: rgba(177,162,143,0.12); color:#8c7851;">جاهز</span>
-            </div>
-            <div class="project-details">
-              <div class="detail-row"><span class="detail-label">الوصف:</span><span class="detail-value">حسب تبويب “المبيعات المتوقعة”.</span></div>
-            </div>
-            <div class="project-actions">
-              <button class="btn-view" @click="downloadPlaceholder('expected-bookings')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                تنزيل (PDF/Excel)
-              </button>
-            </div>
-          </div>
-
-          <div class="project-card hover-lift animate-fade-in">
-            <div class="project-header">
-              <h3 class="project-name">تقرير أداء الموظفين</h3>
-              <span class="project-status" style="background: rgba(177,162,143,0.12); color:#8c7851;">جاهز</span>
-            </div>
-            <div class="project-details">
-              <div class="detail-row"><span class="detail-label">الوصف:</span><span class="detail-value">المهام + الخطط + النتائج المتوقعة.</span></div>
-            </div>
-            <div class="project-actions">
-              <button class="btn-view" @click="downloadPlaceholder('employee-performance')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 تنزيل (PDF/Excel)
               </button>
@@ -1283,6 +1289,41 @@
                   </div>
                 </div>
 
+                <!-- Section: نسبة التسويق ونسبة التواصل المباشر (قابل للتعديل من التفاصيل) -->
+                <div class="modal-section luxury-card animate-fade-in-up" style="animation-delay: 0.75s;">
+                  <div class="section-badge accent">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="section-icon"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    نسبة التسويق ونسبة التواصل المباشر
+                  </div>
+                  <div class="media-setup-grid" style="margin-top: 12px;">
+                    <div class="setup-item">
+                      <label>نسبة التسويق (%)</label>
+                      <input
+                        v-model="mediaLinksForm.marketing_percent"
+                        type="text"
+                        class="form-input"
+                        placeholder="مثال: 5 أو 10"
+                        style="max-width: 200px;"
+                      />
+                    </div>
+                    <div class="setup-item">
+                      <label>نسبة التواصل المباشر (%)</label>
+                      <input
+                        v-model="mediaLinksForm.direct_communication_ratio"
+                        type="text"
+                        class="form-input"
+                        placeholder="منه تُحسب الحجوزات المتوقعة"
+                        style="max-width: 200px;"
+                      />
+                    </div>
+                    <div class="setup-item" style="align-items: flex-end;">
+                      <button type="button" class="btn-primary" @click="saveProjectMediaLinks">
+                        حفظ
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Section 7: Project Media (من API) -->
                 <div class="modal-section luxury-card animate-fade-in-up" style="animation-delay: 0.8s;">
                   <div class="section-badge success">
@@ -1483,6 +1524,7 @@ import aiService from '../services/aiService'
 import logger from '../utils/logger'
 import contractService from '../services/contractService'
 import teamService from '../services/teamService'
+import authService from '../services/authService'
 
 export default {
   name: 'MarketingView',
@@ -1568,6 +1610,8 @@ export default {
       project_description: 'وصف افتراضي للمشروع',
       media_images_url: '',
       media_videos_url: '',
+      marketing_percent: '',
+      direct_communication_ratio: '',
       campaign_budget_total: 35000,
       campaign_budget_daily: 1200,
       campaign_budget_monthly: 15000,
@@ -1685,7 +1729,9 @@ export default {
     const mediaLinksForm = reactive({
       project_id: '',
       media_images_url: '',
-      media_videos_url: ''
+      media_videos_url: '',
+      marketing_percent: '',
+      direct_communication_ratio: ''
     })
 
     const syncMediaLinksForm = (projectLike) => {
@@ -1695,6 +1741,8 @@ export default {
       mediaLinksForm.project_id = id
       mediaLinksForm.media_images_url = meta.media_images_url || ''
       mediaLinksForm.media_videos_url = meta.media_videos_url || ''
+      mediaLinksForm.marketing_percent = meta.marketing_percent !== undefined && meta.marketing_percent !== null ? String(meta.marketing_percent) : ''
+      mediaLinksForm.direct_communication_ratio = meta.direct_communication_ratio !== undefined && meta.direct_communication_ratio !== null ? String(meta.direct_communication_ratio) : ''
     }
 
     const saveProjectMediaLinks = () => {
@@ -1703,11 +1751,34 @@ export default {
       expectedSalesStore.value.project_meta_by_project_id[id] = {
         ...(expectedSalesStore.value.project_meta_by_project_id[id] || {}),
         media_images_url: String(mediaLinksForm.media_images_url || '').trim(),
-        media_videos_url: String(mediaLinksForm.media_videos_url || '').trim()
+        media_videos_url: String(mediaLinksForm.media_videos_url || '').trim(),
+        marketing_percent: String(mediaLinksForm.marketing_percent || '').trim(),
+        direct_communication_ratio: String(mediaLinksForm.direct_communication_ratio || '').trim()
       }
       persistExpectedSalesStore()
-      notificationService.addNotification('تم حفظ روابط المونتاج', 'success')
+      notificationService.addNotification('تم الحفظ', 'success')
     }
+
+    const getProjectMarketingPercent = (project) => {
+      const id = String(project?.id ?? '')
+      const meta = getProjectMeta({ id })
+      const v = meta?.marketing_percent
+      if (v === undefined || v === null || String(v).trim() === '') return ''
+      return String(v).trim()
+    }
+
+    const getProjectDirectCommunicationRatio = (project) => {
+      const id = String(project?.id ?? '')
+      const meta = getProjectMeta({ id })
+      const v = meta?.direct_communication_ratio
+      if (v === undefined || v === null || String(v).trim() === '') return ''
+      return String(v).trim()
+    }
+
+    const isMarketingUser = computed(() => {
+      const user = authService.getCurrentUser()
+      return user && Number(user.type) === 0
+    })
 
     const normalizeUnitStatus = (u) => {
       const s = String(u?.status ?? u?.availability ?? u?.state ?? '').toLowerCase()
@@ -1754,38 +1825,6 @@ export default {
       }, 0)
     }
 
-    // Default fixed campaign distribution if none exists (sum = 100)
-    const DEFAULT_CAMPAIGN_DIST = Object.freeze({
-      direct_contact: 40,
-      hand: 25,
-      impression: 25,
-      sales: 10
-    })
-
-    const getCampaignDistributionForProject = (project) => {
-      const id = String(project?.id ?? '')
-      const details = projectDetailsById.value?.[id]
-      // prefer manual plan distribution (per marketing_project_id)
-      const mpId = String(getMarketingProjectId(project) ?? '')
-      const manual = getManualEmployeePlansForMarketingProject(mpId)[0]
-      const manualDist = manual?.campaign_distribution
-      if (manualDist && typeof manualDist === 'object') return manualDist
-
-      const firstEmployeePlan = Array.isArray(details?.employee_plans) ? details.employee_plans[0] : null
-      const dist = firstEmployeePlan?.campaign_distribution
-      if (dist && typeof dist === 'object') return dist
-      return DEFAULT_CAMPAIGN_DIST
-    }
-
-    const getDirectHandShare = (project) => {
-      const dist = getCampaignDistributionForProject(project)
-      const direct = toNum(dist.direct_contact ?? dist.direct ?? 0, 0)
-      const hand = toNum(dist.hand ?? 0, 0)
-      const sum = toNum(direct + hand, 0)
-      const normalized = clamp(sum / 100, 0, 1)
-      return normalized || 0
-    }
-
     const getAverageCpcForProject = (project) => {
       const id = String(project?.id ?? '')
       const details = projectDetailsById.value?.[id]
@@ -1802,13 +1841,16 @@ export default {
       return avgUnit > 0 ? avgUnit : 0
     }
 
+    /** Expected bookings = f(budget, cpc, conversion, direct_communication_ratio). Requires ratio to be entered. */
     const getExpectedBookingsForProject = (project) => {
+      const ratioStr = getProjectDirectCommunicationRatio(project)
+      if (ratioStr === undefined || ratioStr === null || String(ratioStr).trim() === '') return 0
+      const directShare = clamp(toNum(ratioStr, 0) / 100, 0, 1)
       const budget = getProjectCampaignBudget(project)
       const cpc = getAverageCpcForProject(project)
       const conversion = clamp(toNum(getSalesRatePercentForProject(project), DEFAULT_SALES_RATE_PERCENT) / 100, 0, 1)
       const expectedClicks = cpc > 0 ? budget / cpc : 0
-      const directHandShare = getDirectHandShare(project)
-      const bookings = Math.round(expectedClicks * directHandShare * conversion)
+      const bookings = Math.round(expectedClicks * directShare * conversion)
       return Math.max(0, bookings)
     }
 
@@ -3097,6 +3139,9 @@ export default {
       getProjectSaiPercent,
       getProjectAdvertiserLabel,
       getProjectMetaDefaulted,
+      getProjectMarketingPercent,
+      getProjectDirectCommunicationRatio,
+      isMarketingUser,
       mediaLinksForm,
       saveProjectMediaLinks,
       // Manual employee plan (4.4.2 - 4.4.3)
