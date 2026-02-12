@@ -111,9 +111,10 @@ export default {
         isLoading.value = true
         try {
             const data = await userService.getEmployees()
+            const normalizedEmployees = Array.isArray(data) ? data : (data?.items || [])
             // Relaxed filter: Show all employees to ensure sales teams (and others) are visible.
             // The grouping logic will handle categorizing them.
-            employees.value = data || [] 
+            employees.value = normalizedEmployees
         } catch (error) {
             logger.error('Failed to fetch employees:', error)
         } finally {

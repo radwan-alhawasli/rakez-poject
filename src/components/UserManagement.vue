@@ -84,6 +84,28 @@
       @close="closeModal"
       @submit="handleSaveUser"
     />
+
+    <!-- Confirm Modal -->
+    <ConfirmModal
+      v-if="showConfirmModal"
+      :title="getConfirmTitle()"
+      :message="getConfirmMessage()"
+      :type="confirmAction === 'delete' ? 'danger' : 'warning'"
+      :confirmText="confirmAction === 'delete' ? 'حذف' : 'تأكيد'"
+      @confirm="handleConfirm"
+      @cancel="handleCancelConfirm"
+      @close="handleCancelConfirm"
+    />
+
+    <!-- Pagination -->
+    <Pagination
+      v-if="totalItems > 0"
+      :current-page="currentPage"
+      :total-items="totalItems"
+      :per-page="perPage"
+      @page-change="handlePageChange"
+      @per-page-change="handlePerPageChange"
+    />
   </div>
 </template>
 
@@ -91,13 +113,19 @@
 import { ref, onMounted } from 'vue'
 import hrService from '../services/hrService'
 import AddUserModal from './AddUserModal.vue'
+import ConfirmModal from './ConfirmModal.vue'
+import Pagination from './Pagination.vue'
 import { getRoleLabel, getRoleClass } from '../constants/roles'
 import logger from '../utils/logger'
+import { handleError } from '../utils/errorHandler'
+import appConfig from '../config/appConfig'
 
 export default {
   name: 'UserManagement',
   components: {
-    AddUserModal
+    AddUserModal,
+    ConfirmModal,
+    Pagination
   },
   setup() {
     const users = ref([])
@@ -105,17 +133,48 @@ export default {
     const showModal = ref(false)
     const selectedUser = ref(null)
     const isSaving = ref(false)
+    const showConfirmModal = ref(false)
+    const confirmAction = ref(null)
+    const confirmData = ref(null)
+    const currentPage = ref(1)
+    const perPage = ref(25)
+
+    const totalItems = ref(0)
 
     const fetchUsers = async () => {
       loading.value = true
       try {
-        const data = await hrService.getEmployees()
-        // hrService returns data directly
-        users.value = Array.isArray(data) ? data : (data?.data || data?.employees || [])
+        const data = await hrService.getEmployees({
+          page: currentPage.value,
+          per_page: perPage.value
+        })
+        users.value = data?.items ?? (Array.isArray(data) ? data : (data?.data || data?.employees || []))
+        totalItems.value = data?.total ?? users.value.length
       } catch (error) {
         logger.error('Failed to fetch users', error)
         users.value = []
-        alert('فشل في جلب البيانات من الخادم. يرجى التأكد من تسجيل الدخول.')
+        totalItems.value = 0
+
+        // Use error handler to get appropriate message based on error type
+        const errorInfo = handleError(error, {
+          showNotification: false,
+          log: false // Already logged above
+        })
+        
+        // Show user-friendly message based on error type
+        const status = error?.response?.status || error?.status
+        
+        if (status === 404) {
+          alert('المورد المطلوب غير موجود. قد يكون هذا المسار غير متاح في الخادم حالياً.')
+        } else if (status === 401) {
+          alert('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.')
+        } else if (status === 403) {
+          alert('ليس لديك صلاحية للوصول إلى هذا المورد.')
+        } else if (errorInfo.message && !errorInfo.isExpected) {
+          alert(errorInfo.message)
+        } else {
+          alert('حدث خطأ أثناء جلب البيانات. يرجى المحاولة مرة أخرى.')
+        }
       } finally {
         loading.value = false
       }
@@ -171,36 +230,130 @@ export default {
       }
     }
 
-    const toggleUserStatus = async (user) => {
-      try {
-        const newStatus = !user.disabled
-        if (confirm(`هل أنت متأكد من ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name}؟`)) {
-          await hrService.updateEmployee(user.id, { ...user, disabled: newStatus })
-          await fetchUsers()
-          alert(`تم ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name} بنجاح`)
-        }
-      } catch (error) {
-        logger.error('Error toggling status', error)
-        alert('حدث خطأ أثناء تغيير الحالة')
-      }
+    const toggleUserStatus = (user) => {
+      const newStatus = !user.disabled
+      confirmData.value = { user, newStatus }
+      confirmAction.value = 'toggleStatus'
+      showConfirmModal.value = true
     }
 
-    const confirmDelete = async (user) => {
-      if (confirm(`هل أنت متأكد من حذف المستخدم ${user.name || 'هذا'}؟`)) {
-        try {
+    const confirmDelete = (user) => {
+      confirmData.value = { user }
+      confirmAction.value = 'delete'
+      showConfirmModal.value = true
+    }
+
+    const handleConfirm = async () => {
+      if (!confirmAction.value || !confirmData.value) return
+
+      try {
+        if (confirmAction.value === 'toggleStatus') {
+          const { user, newStatus } = confirmData.value
+          
+          // Log for debugging
+          if (appConfig.isDevelopment) {
+            logger.debug(`Toggling user status:`, { userId: user.id, currentStatus: user.disabled, newStatus })
+          }
+          
+          // Update local state immediately for better UX
+          const userIndex = users.value.findIndex(u => u.id === user.id)
+          if (userIndex !== -1) {
+            users.value[userIndex].disabled = newStatus
+          }
+          
+          // Try using the dedicated status toggle endpoint first
+          try {
+            await hrService.toggleUserStatus({
+              user_id: user.id,
+              disabled: newStatus ? 1 : 0  // Convert boolean to integer (0/1)
+            })
+          } catch (toggleError) {
+            // Fallback to updateEmployee if toggleUserStatus fails
+            if (appConfig.isDevelopment) {
+              logger.debug('toggleUserStatus failed, trying updateEmployee:', toggleError)
+            }
+            // Convert boolean to integer for API compatibility
+            await hrService.updateEmployee(user.id, { disabled: newStatus ? 1 : 0 })
+          }
+          
+          // Refresh from server to ensure consistency
+          await fetchUsers()
+          alert(`تم ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name} بنجاح`)
+        } else if (confirmAction.value === 'delete') {
+          const { user } = confirmData.value
           await hrService.deleteEmployee(user.id)
           await fetchUsers()
           alert('تم حذف المستخدم بنجاح')
-        } catch (error) {
-          logger.error('Error deleting user', error)
-          alert('حدث خطأ أثناء حذف المستخدم')
         }
+        showConfirmModal.value = false
+        confirmAction.value = null
+        confirmData.value = null
+      } catch (error) {
+        logger.error(`Error ${confirmAction.value}`, error)
+        let errorMsg = confirmAction.value === 'delete' 
+          ? 'حدث خطأ أثناء حذف المستخدم'
+          : 'حدث خطأ أثناء تغيير الحالة'
+        
+        // Check for foreign key constraint error
+        const errorMessage = error?.message || error?.response?.data?.message || ''
+        if (confirmAction.value === 'delete') {
+          if (errorMessage.includes('foreign key') || 
+              errorMessage.includes('Integrity constraint') ||
+              errorMessage.includes('Cannot delete or update a parent row')) {
+            errorMsg = 'لا يمكن حذف هذا المستخدم لأنه مرتبط ببيانات أخرى في النظام. يمكنك تعطيل الحساب بدلاً من ذلك.'
+          } else if (error?.response?.status === 500) {
+            errorMsg = 'حدث خطأ في الخادم أثناء محاولة الحذف. يرجى المحاولة لاحقاً.'
+          } else if (error?.response?.data?.message) {
+            errorMsg = error.response.data.message
+          }
+        } else if (error?.response?.data?.message) {
+          errorMsg = error.response.data.message
+        }
+        
+        alert(errorMsg)
       }
+    }
+
+    const handleCancelConfirm = () => {
+      showConfirmModal.value = false
+      confirmAction.value = null
+      confirmData.value = null
+    }
+
+    const getConfirmTitle = () => {
+      if (confirmAction.value === 'delete') {
+        return 'تأكيد الحذف'
+      }
+      return 'تأكيد التغيير'
+    }
+
+    const getConfirmMessage = () => {
+      if (!confirmData.value) return ''
+      
+      if (confirmAction.value === 'delete') {
+        return `هل أنت متأكد من حذف المستخدم ${confirmData.value.user.name || 'هذا'}؟ لا يمكن التراجع عن هذا الإجراء.`
+      } else if (confirmAction.value === 'toggleStatus') {
+        const { user, newStatus } = confirmData.value
+        return `هل أنت متأكد من ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name}؟`
+      }
+      return ''
     }
 
     const formatDate = (dateString) => {
       if (!dateString) return '-'
       return new Date(dateString).toISOString().split('T')[0]
+    }
+
+    const handlePageChange = (page) => {
+      currentPage.value = page
+      fetchUsers()
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
+    const handlePerPageChange = (newPerPage) => {
+      perPage.value = newPerPage
+      currentPage.value = 1
+      fetchUsers()
     }
 
     onMounted(() => {
@@ -209,16 +362,28 @@ export default {
 
     return {
       users,
+      totalItems,
       loading,
       showModal,
       selectedUser,
       isSaving,
+      showConfirmModal,
+      confirmAction,
+      confirmData,
+      currentPage,
+      perPage,
       openAddModal,
       editUser,
       closeModal,
       handleSaveUser,
       confirmDelete,
       toggleUserStatus,
+      handlePageChange,
+      handlePerPageChange,
+      handleConfirm,
+      handleCancelConfirm,
+      getConfirmTitle,
+      getConfirmMessage,
       formatDate,
       getRoleLabel,
       getRoleClass

@@ -1,5 +1,5 @@
 <template>
-  <div class="modal-overlay" @click.self="closeModal">
+  <div class="modal-overlay" @click.self="closeModal" @keydown.esc="closeModal" tabindex="-1">
     <div class="modal-container">
       <!-- رأس المودال -->
       <div class="modal-header">
@@ -77,7 +77,7 @@
         -->
        <div class="modal-footer-action">
            <button @click="closeModal" class="btn-close-large">إغلاق</button>
-           <div v-if="normalizedStatus === 'pending'" class="action-buttons">
+           <div v-if="normalizedStatus === 'pending' && hasPermission('contracts.approve')" class="action-buttons">
              <button @click="rejectContract" class="btn-reject">رفض العقد</button>
              <button @click="approveContract" class="btn-approve">الموافقة على العقد</button>
            </div>
@@ -88,7 +88,8 @@
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
+import { usePermissions } from '../composables/usePermissions'
 
 export default {
   name: 'ContractModal',
@@ -100,6 +101,25 @@ export default {
   },
   emits: ['close', 'approve', 'reject'],
   setup(props, { emit }) {
+    const { hasPermission } = usePermissions()
+
+    // Handle Escape key
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeModal()
+      }
+    }
+
+    // Lock body scroll when modal is open
+    onMounted(() => {
+      document.body.style.overflow = 'hidden'
+      document.addEventListener('keydown', handleEscape)
+    })
+
+    onUnmounted(() => {
+      document.body.style.overflow = ''
+      document.removeEventListener('keydown', handleEscape)
+    })
     // بيانات تفاصيل العقد المحددة - ربط صحيح مع API
     const contractDetails = computed(() => {
       const c = props.contract || {}
@@ -165,7 +185,8 @@ export default {
       closeModal,
       approveContract,
       rejectContract,
-      normalizedStatus
+      normalizedStatus,
+      hasPermission
     }
   }
 }
@@ -185,6 +206,16 @@ export default {
   z-index: 1000;
   padding: 20px;
   backdrop-filter: blur(2px);
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-overlay:focus {
+  outline: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-container {

@@ -1,7 +1,7 @@
 import apiClient from '../api/apiClient'
-
 import { ROLE_MAP } from '../constants/roles'
-import logger from '../utils/logger'
+import { handleServiceError } from '../utils/serviceErrorHandler'
+import { extractPaginatedData } from '../utils/paginationUtils'
 
 const userService = {
     /**
@@ -12,35 +12,16 @@ const userService = {
     async getEmployees(params = {}) {
         try {
             const response = await apiClient.get('/admin/employees/list_employees', { params })
-            const result = response.data
-            
-            let employees = []
-
-            if (result && result.employees && Array.isArray(result.employees)) {
-                employees = result.employees
-            } else if (result && result.data && Array.isArray(result.data)) {
-                employees = result.data
-            } else if (result && result.data && result.data.employees && Array.isArray(result.data.employees)) {
-                employees = result.data.employees
-            } else if (Array.isArray(result)) {
-                employees = result
-            } else if (result && typeof result === 'object') {
-                // Last resort: find first array value
-                const values = Object.values(result)
-                const found = values.find(v => Array.isArray(v))
-                if (found) employees = found
-            }
-
-            return employees.map(emp => ({
+            const { items, total } = extractPaginatedData(response, [])
+            const employees = items.map(emp => ({
                 ...emp,
-                // Ensure type is mapped correctly if it comes as string/int
                 type: (typeof emp.type === 'string' && ROLE_MAP[emp.type] !== undefined)
                     ? ROLE_MAP[emp.type]
                     : emp.type
             }))
+            return { items: employees, total }
         } catch (error) {
-            logger.error('Error fetching employees:', error)
-            throw error
+            return handleServiceError(error, 'Fetch employees', 'get') || { items: [], total: 0 }
         }
     },
 
@@ -73,8 +54,7 @@ const userService = {
             const response = await apiClient.post('/admin/employees/add_employee', payload)
             return response.data
         } catch (error) {
-            logger.error('Add Employee API Error:', error.response?.data || error.message)
-            throw error
+            return handleServiceError(error, 'Add employee', 'post')
         }
     },
 
@@ -119,8 +99,7 @@ const userService = {
             const response = await apiClient.put(`/admin/employees/update_employee/${id}`, payload)
             return response.data
         } catch (error) {
-            logger.error('Update Employee API Error:', error.response?.data || error.message)
-            throw error
+            return handleServiceError(error, 'Update employee', 'put')
         }
     },
 
@@ -135,8 +114,7 @@ const userService = {
             const response = await apiClient.delete(`/admin/employees/delete_employee/${id}`)
             return response.data
         } catch (error) {
-            logger.error('Error deleting employee:', error)
-            throw error
+            return handleServiceError(error, 'Delete employee', 'delete')
         }
     },
 
@@ -147,12 +125,38 @@ const userService = {
      * @returns {Promise<Object>} Employee details
      */
     async getEmployee(id) {
+        const response = await apiClient.get(`/admin/employees/show_employee/${id}`)
+        return response.data
+    },
+
+    /**
+     * List all roles
+     * GET /admin/employees/roles
+     * @param {Object} params - Query parameters
+     * @returns {Promise<Array>} List of roles
+     */
+    async listRoles(params = {}) {
         try {
-            const response = await apiClient.get(`/admin/employees/show_employee/${id}`)
-            return response.data
+            const response = await apiClient.get('/admin/employees/roles', { params })
+            const roles = response.data?.data || response.data || []
+            return Array.isArray(roles) ? roles : []
         } catch (error) {
-            logger.error('Error fetching employee details:', error)
-            throw error
+            return handleServiceError(error, 'Fetch roles', 'get', [])
+        }
+    },
+
+    /**
+     * Restore a deleted employee
+     * PATCH /admin/employees/restore
+     * @param {number|string} id - Employee ID
+     * @returns {Promise<Object>} Restored employee
+     */
+    async restoreEmployee(id) {
+        try {
+            const response = await apiClient.patch('/admin/employees/restore', { id })
+            return response.data?.data || response.data || {}
+        } catch (error) {
+            return handleServiceError(error, `Restore employee ${id}`, 'patch')
         }
     }
 }

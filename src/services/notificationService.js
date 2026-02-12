@@ -9,6 +9,19 @@ const unreadCount = ref(0)
 let pusher = null
 let channels = []
 
+const isNotFoundError = (error) => {
+    const status = error?.status || error?.response?.status
+    const message = String(error?.message || '').toLowerCase()
+    return status === 404 || message.includes('could not be found')
+}
+
+const normalizeNotifications = (response) => {
+    const data = response?.data?.data ?? response?.data?.notifications ?? response?.data ?? []
+    if (Array.isArray(data)) return data
+    if (Array.isArray(data?.items)) return data.items
+    return []
+}
+
 const notificationService = {
     state: notifications,
     unreadCount,
@@ -61,27 +74,34 @@ const notificationService = {
     },
 
     /**
-     * Fetch all notifications from API
+     * Fetch all notifications from API (collection-first)
+     * GET /notifications, /notifications/public, /admin/notifications (if admin)
+     * @returns {Promise<void>} Updates internal notifications state
      */
     async fetchAll() {
-        try {
-            const user = authService.getCurrentUser()
-            const isAdmin = user && user.type === 1
+        const user = authService.getCurrentUser()
+        const isAdmin = user && user.type === 1
+        const isAccounting = user && (user.type === 7 || String(user.type) === '7' || String(user.role || '').toLowerCase() === 'accounting')
 
-            const requests = [
-                apiClient.get('/user/notifications/private'),
-                apiClient.get('/user/notifications/public')
-            ]
-
-            if (isAdmin) {
-                requests.push(apiClient.get('/admin/notifications'))
+        const fetchSafe = async (path) => {
+            try {
+                const response = await apiClient.get(path)
+                return normalizeNotifications(response)
+            } catch (error) {
+                if (!isNotFoundError(error)) {
+                    logger.warn(`Notifications endpoint failed: ${path}`, error?.message || error)
+                }
+                return []
             }
+        }
 
-            const results = await Promise.all(requests)
-            
-            const privateNotifs = results[0].data.notifications || results[0].data || []
-            const publicNotifs = results[1].data.notifications || results[1].data || []
-            const adminNotifs = isAdmin ? (results[2].data.notifications || results[2].data || []) : []
+        try {
+            const privatePath = isAccounting ? '/accounting/notifications' : '/notifications'
+            const [privateNotifs, publicNotifs, adminNotifs] = await Promise.all([
+                fetchSafe(privatePath),
+                fetchSafe('/notifications/public'),
+                isAdmin ? fetchSafe('/admin/notifications') : Promise.resolve([])
+            ])
 
             const all = [
                 ...privateNotifs,
@@ -101,11 +121,16 @@ const notificationService = {
             this.updateUnreadCount()
         } catch (error) {
             logger.error('Error fetching notifications:', error)
+            notifications.value = []
+            this.updateUnreadCount()
         }
     },
 
     /**
      * Send public notification (Admin only)
+     * POST /admin/notifications/send-public
+     * @param {string} message - Notification message
+     * @returns {Promise<Object>} Sent notification data
      */
     async sendPublicNotification(message) {
         try {
@@ -119,6 +144,10 @@ const notificationService = {
 
     /**
      * Send notification to specific user (Admin only)
+     * POST /admin/notifications/send-to-user
+     * @param {number|string} userId - User ID
+     * @param {string} message - Notification message
+     * @returns {Promise<Object>} Sent notification data
      */
     async sendUserNotification(userId, message) {
         try {
@@ -132,6 +161,9 @@ const notificationService = {
 
     /**
      * Get notifications for a specific user (Admin only)
+     * GET /admin/notifications/user/:userId
+     * @param {number|string} userId - User ID
+     * @returns {Promise<Array>} List of user notifications
      */
     async getUserNotifications(userId) {
         try {
@@ -145,6 +177,8 @@ const notificationService = {
 
     /**
      * Get all public notifications (Admin only)
+     * GET /admin/notifications/public
+     * @returns {Promise<Array>} List of public notifications
      */
     async getAdminPublicNotifications() {
         try {
@@ -157,7 +191,29 @@ const notificationService = {
     },
 
     /**
+     * Add a local notification (for success/error toasts from UI actions)
+     * @param {string} message - Notification message
+     * @param {string} [type='info'] - Type: 'success', 'info', 'warning', 'error'
+     * @param {Object} [options={}] - Optional extra options (reserved for future use)
+     */
+    addNotification(message, type = 'info', options = {}) {
+        const newNotif = {
+            id: `local-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            title: message,
+            time: new Date().toISOString(),
+            read: false,
+            type: type || 'info',
+            actionRequired: false,
+            ...options
+        }
+        notifications.value.unshift(newNotif)
+        this.updateUnreadCount()
+    },
+
+    /**
      * Handle incoming WebSocket notification
+     * @param {Object} data - Notification data from Pusher
+     * @param {string} source - Notification source ('public', 'private', 'admin')
      */
     addReceivedNotification(data, source) {
         const newNotif = {
@@ -175,9 +231,18 @@ const notificationService = {
         logger.debug(`New ${source} notification received:`, data.message)
     },
 
+    /**
+     * Mark notification as read
+     * POST /notifications/:id/read
+     * @param {number|string} id - Notification ID
+     * @returns {Promise<void>}
+     */
     async markAsRead(id) {
+        const user = authService.getCurrentUser()
+        const isAccounting = user && (user.type === 7 || String(user.type) === '7' || String(user.role || '').toLowerCase() === 'accounting')
+        const endpoint = isAccounting ? `/accounting/notifications/${id}/read` : `/notifications/${id}/read`
         try {
-            await apiClient.patch(`/user/notifications/${id}/read`)
+            await apiClient.post(endpoint)
             const n = notifications.value.find(x => x.id === id)
             if (n) {
                 n.read = true
@@ -186,12 +251,27 @@ const notificationService = {
             }
         } catch (error) {
             logger.error('Error marking as read:', error)
+            // Fallback to optimistic local update to avoid UI crash on missing endpoint
+            const n = notifications.value.find(x => x.id === id)
+            if (n) {
+                n.read = true
+                n.actionRequired = false
+                this.updateUnreadCount()
+            }
         }
     },
 
+    /**
+     * Mark all notifications as read
+     * POST /notifications/read-all
+     * @returns {Promise<void>}
+     */
     async markAllAsRead() {
+        const user = authService.getCurrentUser()
+        const isAccounting = user && (user.type === 7 || String(user.type) === '7' || String(user.role || '').toLowerCase() === 'accounting')
+        const endpoint = isAccounting ? '/accounting/notifications/read-all' : '/notifications/read-all'
         try {
-            await apiClient.patch('/user/notifications/mark-all-read')
+            await apiClient.post(endpoint)
             notifications.value.forEach(n => {
                 n.read = true
                 n.actionRequired = false
@@ -199,19 +279,131 @@ const notificationService = {
             this.updateUnreadCount()
         } catch (error) {
             logger.error('Error marking all as read:', error)
+            notifications.value.forEach(n => {
+                n.read = true
+                n.actionRequired = false
+            })
+            this.updateUnreadCount()
         }
     },
 
+    /**
+     * Update unread notification count
+     * @returns {void}
+     */
     updateUnreadCount() {
         unreadCount.value = notifications.value.filter(n => !n.read).length
     },
 
+    /**
+     * Disconnect from Pusher WebSocket
+     * @returns {void}
+     */
     disconnect() {
         if (pusher) {
             channels.forEach(c => c.unbind_all())
             pusher.disconnect()
             pusher = null
             channels = []
+        }
+    },
+
+    // --- Missing Endpoints ---
+
+    /**
+     * Get my notifications
+     * GET /notifications
+     * @param {Object} params - Query parameters
+     * @returns {Promise<Array>} List of notifications
+     */
+    async getMyNotifications(params = {}) {
+        try {
+            const response = await apiClient.get('/notifications', { params })
+            const notifs = response.data?.data || response.data || []
+            return Array.isArray(notifs) ? notifs : []
+        } catch (error) {
+            logger.error('Error fetching my notifications:', error)
+            throw error
+        }
+    },
+
+    /**
+     * Mark notification as read (alternative endpoint)
+     * POST /notifications/read
+     * @param {number|string} id - Notification ID
+     * @returns {Promise<Object>} Response
+     */
+    async markNotificationAsRead(id) {
+        try {
+            const response = await apiClient.post(`/notifications/${id}/read`)
+            return response.data?.data || response.data || {}
+        } catch (error) {
+            logger.error(`Error marking notification ${id} as read:`, error)
+            throw error
+        }
+    },
+
+    /**
+     * Mark all notifications as read (alternative endpoint)
+     * POST /notifications/read-all
+     * @returns {Promise<Object>} Response
+     */
+    async markAllNotificationsAsRead() {
+        try {
+            const response = await apiClient.post('/notifications/read-all')
+            return response.data?.data || response.data || {}
+        } catch (error) {
+            logger.error('Error marking all notifications as read:', error)
+            throw error
+        }
+    },
+
+    /**
+     * Delete notification
+     * DELETE /notifications/:id
+     * @param {number|string} id - Notification ID
+     * @returns {Promise<Object>} Response
+     */
+    async deleteNotification(id) {
+        try {
+            const response = await apiClient.delete(`/notifications/${id}`)
+            return response.data?.data || response.data || {}
+        } catch (error) {
+            logger.error(`Error deleting notification ${id}:`, error)
+            throw error
+        }
+    },
+
+    /**
+     * Get public notifications
+     * GET /notifications/public
+     * @param {Object} params - Query parameters
+     * @returns {Promise<Array>} List of public notifications
+     */
+    async getPublicNotifications(params = {}) {
+        try {
+            const response = await apiClient.get('/notifications/public', { params })
+            const notifs = response.data?.data || response.data || []
+            return Array.isArray(notifs) ? notifs : []
+        } catch (error) {
+            logger.error('Error fetching public notifications:', error)
+            throw error
+        }
+    },
+
+    /**
+     * Send notification to role (Admin only)
+     * POST /admin/notifications/send-to-role
+     * @param {Object} data - Notification data (role, message, etc.)
+     * @returns {Promise<Object>} Response
+     */
+    async sendToRole(data) {
+        try {
+            const response = await apiClient.post('/admin/notifications/send-to-role', data)
+            return response.data?.data || response.data || {}
+        } catch (error) {
+            logger.error('Error sending notification to role:', error)
+            throw error
         }
     }
 }

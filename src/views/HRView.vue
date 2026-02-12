@@ -99,7 +99,7 @@
             </div>
         </div>
         <div class="teams-grid">
-          <div v-for="team in teamsData" :key="team.name" class="team-card">
+          <div v-for="team in teamsData" v-memo="[team.id, team.name, team.soldProjects, team.salesAverage]" :key="team.name" class="team-card">
             <div class="team-header">
                 <div>
                     <div class="team-name">{{ team.name }}</div>
@@ -296,7 +296,7 @@
             <p>لا توجد مشاريع مرتبطة بهذا الفريق حالياً.</p>
           </div>
           <div v-else class="projects-list">
-            <div v-for="project in teamProjects" :key="project.id" class="project-item-mini">
+            <div v-for="project in teamProjects" v-memo="[project.id, project.project_name, project.city]" :key="project.id" class="project-item-mini">
               <div class="project-info-mini">
                 <span class="project-name-mini">{{ project.project_name || project.name || project.contract_name || 'مشروع بدون اسم' }}</span>
                 <div class="project-details-row-mini">
@@ -355,7 +355,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, watch, shallowRef } from 'vue'
 import { useRoute } from 'vue-router'
 import UserManagement from '../components/UserManagement.vue'
 import AddUserModal from '../components/AddUserModal.vue'
@@ -561,8 +561,8 @@ export default {
       avgEmployeeSales: 0
     })
 
-    // Teams Data (3.2)
-    const teamsData = reactive([])
+    // Teams Data (3.2) - Using shallowRef for better performance with large arrays
+    const teamsData = shallowRef([])
 
     // Team Performance Data
     const performanceData = reactive({
@@ -610,8 +610,8 @@ export default {
         }
         const data = await hrService.getTeams(params)
         logger.debug('Received teams data:', data)
-        // Ensure data is an array - teams come with id and name
-        const teams = Array.isArray(data) ? data : (data?.data || [])
+        // Handle paginated response: { items, total } or legacy array
+        const teams = data?.items ?? (Array.isArray(data) ? data : (data?.data || []))
         logger.debug('Teams array:', teams, 'Count:', teams.length)
         
         // Display teams immediately with basic data
@@ -625,8 +625,8 @@ export default {
             color: '#B1A28F'
         }))
         
-        teamsData.splice(0, teamsData.length, ...basicTeams)
-        logger.debug('Teams displayed:', teamsData.length, 'teams')
+        teamsData.value = basicTeams
+        logger.debug('Teams displayed:', teamsData.value.length, 'teams')
         
         // Then enrich data in background (non-blocking)
         teams.forEach(async (team, index) => {
@@ -646,15 +646,25 @@ export default {
                 const locationsText = locationsArray.map(loc => `${loc.city || ''} ${loc.district || ''}`).filter(Boolean).join('، ') || 'غير محدد'
                 
                 // Update the specific team in teamsData
-                if (teamsData[index]) {
-                    teamsData[index].soldProjects = contractsArray.length
-                    teamsData[index].salesAverage = avgValue
-                    teamsData[index].locations = locationsText
+                if (teamsData.value[index]) {
+                    const updatedTeams = [...teamsData.value]
+                    updatedTeams[index] = {
+                        ...updatedTeams[index],
+                        soldProjects: contractsArray.length,
+                        salesAverage: avgValue,
+                        locations: locationsText
+                    }
+                    teamsData.value = updatedTeams
                 }
             } catch (err) {
                 logger.error(`Error enriching team ${team.id}:`, err)
-                if (teamsData[index]) {
-                    teamsData[index].locations = 'غير محدد'
+                if (teamsData.value[index]) {
+                    const updatedTeams = [...teamsData.value]
+                    updatedTeams[index] = {
+                        ...updatedTeams[index],
+                        locations: 'غير محدد'
+                    }
+                    teamsData.value = updatedTeams
                 }
             }
         })
@@ -667,7 +677,7 @@ export default {
           { id: 2, name: 'فريق التطوير العقاري', members: ['علي', 'عمر', 'ريم', 'ليلى', 'حسن'], goalProgress: 60, soldProjects: 4, totalValue: '3.5M', color: '#1e3a5f', locations: 'جدة - أبحر الشمالية', salesAverage: 1.8 },
           { id: 3, name: 'فريق التسويق الميداني', members: ['سلطان', 'ماجد', 'أمل', 'نواف'], goalProgress: 92, soldProjects: 24, totalValue: '850K', color: '#B1A28F', locations: 'الدمام - حي الشاطئ', salesAverage: 3.2 }
         ]
-        teamsData.splice(0, teamsData.length, ...mockTeams)
+        teamsData.value = mockTeams
         logger.debug('Mock teams loaded:', mockTeams.length, 'teams')
       }
     }

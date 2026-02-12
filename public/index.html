@@ -19,6 +19,14 @@
     <meta name="msapplication-navbutton-color" content="#B1A28F">
     <meta name="apple-mobile-web-app-status-bar-style" content="#B1A28F">
     
+    <!-- Security Headers -->
+    <!-- Note: X-Frame-Options should be set via HTTP headers on the server, not in meta tags -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://api.rakez.com.sa ws: ws://localhost:* http://localhost:* http://192.168.2.7:* wss: https://*.pusher.com https://*.pusherapp.com; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+    
     <!-- SEO Meta Tags -->
     <meta name="description" content="راكز العقارية - منصة عقارية فاخرة لإدارة المشاريع والعقود">
     <meta name="keywords" content="عقارات، راكز، مشاريع عقارية، إدارة عقارية">
@@ -36,9 +44,8 @@
     <meta name="twitter:description" content="منصة عقارية فاخرة لإدارة المشاريع والعقود">
     
     <!-- Favicon -->
-    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+    <link rel="icon" type="image/png" href="<%= BASE_URL %>img/logo-circle.png">
     <link rel="apple-touch-icon" sizes="180x180" href="<%= BASE_URL %>img/logo-circle.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="<%= BASE_URL %>favicon.ico">
     
     <!-- Preconnect to External Resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

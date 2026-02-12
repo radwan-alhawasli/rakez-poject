@@ -73,9 +73,9 @@
             <button class="btn-text-link" @click="activeTab = 'projects'">عرض الكل</button>
           </div>
           <div class="projects-mini-grid">
-            <div v-for="project in dashboardProjects" :key="project.id" class="mini-project-card" @click="viewProjectDetails(project.id)">
+            <div v-for="project in dashboardProjects" :key="project.id" class="mini-project-card" v-memo="[project.id, project.name, project.available_units, project.reserved_units]" @click="viewProjectDetails(project.id)">
               <div class="p-image">
-                <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project">
+                <img :src="project.image || '/img/placeholder-project.jpg'" :alt="project.name || 'Project'" loading="lazy">
               </div>
               <div class="p-info">
                 <h4>{{ project.name }}</h4>
@@ -97,7 +97,7 @@
             <h1 class="page-title">أهدافي البيعية</h1>
             <p class="page-subtitle">متابعة الأداء والأهداف المحددة للمبيعات.</p>
           </div>
-          <button v-if="isLeader" @click="showCreateTargetModal = true" class="btn-add">
+          <button v-if="hasPermission('sales.goals.create')" @click="showCreateTargetModal = true" class="btn-add">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -116,7 +116,7 @@
         </div>
 
         <div v-else class="targets-grid">
-          <div v-for="target in targets" :key="target.id" class="target-card">
+          <div v-for="target in targets" :key="target.id" class="target-card" v-memo="[target.id, target.target_value, target.deadline, target.status]">
             <div class="target-header">
               <div class="target-info">
                 <h3>{{ target.project_name || 'هدف مبيعات' }}</h3>
@@ -186,9 +186,9 @@
         </div>
 
         <div v-else class="projects-grid">
-          <div v-for="project in filteredProjects" :key="project.id" class="project-card luxury" @click="viewProjectDetails(project.id)">
+          <div v-for="project in filteredProjects" :key="project.id" class="project-card luxury" v-memo="[project.id, project.name, project.status, project.available_units, project.reserved_units]" @click="viewProjectDetails(project.id)">
             <div class="card-image">
-               <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project Image" style="object-fit: cover; width: 100%; height: 100%; border-radius: 16px 16px 0 0;" @error="$event.target.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%23999999%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E'" />
+               <img :src="project.image || '/img/placeholder-project.jpg'" alt="Project Image" loading="lazy" style="object-fit: cover; width: 100%; height: 100%; border-radius: 16px 16px 0 0;" @error="$event.target.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20fill%3D%22%23999999%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E'" />
                <div class="status-badge" :class="project.statusClass">{{ project.statusLabel }}</div>
                <div class="overlay-gradient"></div>
             </div>
@@ -262,7 +262,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="reservation in reservations" :key="reservation.id" class="reservation-row">
+              <tr v-for="reservation in paginatedReservations" :key="reservation.id" class="reservation-row" v-memo="[reservation.id, reservation.client_name, reservation.status, reservation.reservation_type]">
                 <td>#{{ reservation.id }}</td>
                 <td>
                   <div class="client-info">
@@ -326,19 +326,111 @@
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                       </svg>
                     </button>
+                    <button 
+                      v-if="isOffPlanReservation(reservation)"
+                      @click="openOffPlanOptions(reservation)"
+                      class="btn-action off-plan"
+                      title="خيارات المشروع على الخارطة"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                      </svg>
+                    </button>
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+        
+        <!-- Pagination for Reservations -->
+        <Pagination
+          v-if="reservationsTotal > 0 || reservations.length > 0"
+          :current-page="reservationsPage"
+          :total-items="reservationsTotal"
+          :per-page="reservationsPerPage"
+          @page-change="handleReservationsPageChange"
+          @per-page-change="handleReservationsPerPageChange"
+        />
+      </div>
+
+      <!-- NEGOTIATIONS TAB (التفاوضات المعلقة) -->
+      <div v-else-if="activeTab === 'negotiations'" class="negotiations-tab">
+        <div class="section-header">
+          <h2>التفاوضات المعلقة</h2>
+        </div>
+
+        <div v-if="isLoadingNegotiations" class="loading-state">
+          <div class="spinner"></div>
+          <p>جاري تحميل التفاوضات...</p>
+        </div>
+
+        <div v-else-if="pendingNegotiations.length === 0" class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <p>لا توجد تفاوضات معلقة</p>
+        </div>
+
+        <div v-else class="negotiations-table-container">
+          <table class="negotiations-table">
+            <thead>
+              <tr>
+                <th>رقم الحجز</th>
+                <th>اسم العميل</th>
+                <th>المشروع</th>
+                <th>السعر الأصلي</th>
+                <th>السعر المقترح</th>
+                <th>سبب التفاوض</th>
+                <th>تاريخ الطلب</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="negotiation in paginatedNegotiations" :key="negotiation.id" class="negotiation-row" v-memo="[negotiation.id, negotiation.client_name, negotiation.status, negotiation.contract_date]">
+                <td>#{{ negotiation.reservation_id || negotiation.id }}</td>
+                <td>{{ negotiation.client_name || '—' }}</td>
+                <td>{{ negotiation.project_name || '—' }}</td>
+                <td class="amount">{{ formatCurrency(negotiation.original_price || 0) }}</td>
+                <td class="amount highlight">{{ formatCurrency(negotiation.proposed_price || 0) }}</td>
+                <td>{{ negotiation.reason || negotiation.negotiation_reason || '—' }}</td>
+                <td>{{ formatDate(negotiation.created_at || negotiation.request_date) }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <button 
+                      @click="openNegotiationApproval(negotiation)"
+                      class="btn-action approve"
+                      title="مراجعة والموافقة/الرفض"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Pagination for Negotiations -->
+        <Pagination
+          v-if="pendingNegotiations.length > 0"
+          :current-page="negotiationsPage"
+          :total-items="pendingNegotiations.length"
+          :per-page="negotiationsPerPage"
+          @page-change="handleNegotiationsPageChange"
+          @per-page-change="handleNegotiationsPerPageChange"
+        />
       </div>
 
       <!-- ATTENDANCE TAB (دوامي) -->
       <div v-else-if="activeTab === 'attendance'" class="attendance-tab">
         <div class="section-header">
-          <h2>{{ isLeader ? 'حضور الفريق' : 'دوامي' }}</h2>
-          <button v-if="isLeader" @click="showScheduleModal = true" class="btn-add">
+          <h2>{{ hasPermission('sales.attendance.manage') ? 'حضور الفريق' : 'دوامي' }}</h2>
+          <button v-if="hasPermission('sales.attendance.manage')" @click="showScheduleModal = true" class="btn-add">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -358,7 +450,7 @@
           <table class="attendance-table">
             <thead>
               <tr>
-                <th v-if="isLeader">الموظف</th>
+                <th v-if="hasPermission('sales.attendance.manage')">الموظف</th>
                 <th>التاريخ</th>
                 <th>وقت الدخول</th>
                 <th>وقت الخروج</th>
@@ -367,8 +459,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="record in attendanceRecords" :key="record.id">
-                <td v-if="isLeader">{{ record.employee_name }}</td>
+              <tr v-for="record in paginatedAttendance" :key="record.id" v-memo="[record.id, record.date, record.start_time, record.end_time]">
+                <td v-if="hasPermission('sales.attendance.manage')">{{ record.employee_name }}</td>
                 <td>{{ formatDate(record.date) }}</td>
                 <td>{{ record.check_in_time || '—' }}</td>
                 <td>{{ record.check_out_time || '—' }}</td>
@@ -382,6 +474,16 @@
             </tbody>
           </table>
         </div>
+        
+        <!-- Pagination for Attendance -->
+        <Pagination
+          v-if="attendanceRecords.length > 0"
+          :current-page="attendancePage"
+          :total-items="attendanceRecords.length"
+          :per-page="attendancePerPage"
+          @page-change="handleAttendancePageChange"
+          @per-page-change="handleAttendancePerPageChange"
+        />
       </div>
 
       <!-- TEAM TAB (الفريق) - Leader Only -->
@@ -394,7 +496,7 @@
               <div class="spinner"></div>
             </div>
             <div v-else class="team-members-grid">
-              <div v-for="member in teamMembers" :key="member.id" class="member-card">
+              <div v-for="member in teamMembers" :key="member.id" class="member-card" v-memo="[member.id, member.name, member.email]">
                 <div class="member-avatar">{{ member.name.charAt(0) }}</div>
                 <div class="member-info">
                   <h4>{{ member.name }}</h4>
@@ -415,7 +517,7 @@
               <div class="spinner"></div>
             </div>
             <div v-else class="team-projects-list">
-              <div v-for="project in teamProjects" :key="project.id" class="team-project-card">
+              <div v-for="project in teamProjects" :key="project.id" class="team-project-card" v-memo="[project.id, project.name, project.status]">
                 <h4>{{ project.project_name }}</h4>
                 <div class="project-stats">
                   <div class="stat">
@@ -437,7 +539,7 @@
       <div v-else-if="activeTab === 'tasks'" class="tasks-tab">
         <div class="section-header">
           <h2>المهام التسويقية</h2>
-          <button @click="showCreateTaskModal = true" class="btn-add">
+          <button v-if="hasPermission('sales.tasks.create_for_marketing')" @click="showCreateTaskModal = true" class="btn-add">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -452,7 +554,7 @@
         </div>
 
         <div v-else class="tasks-list">
-          <div v-for="task in marketingTasks" :key="task.id" class="task-card">
+          <div v-for="task in marketingTasks" :key="task.id" class="task-card" v-memo="[task.id, task.task_name, task.status, task.contract_id]">
             <div class="task-header">
               <h3>{{ task.task_name }}</h3>
               <span class="task-status" :class="task.status">{{ getTaskStatusText(task.status) }}</span>
@@ -471,6 +573,117 @@
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- WAITING LIST TAB -->
+      <div v-else-if="activeTab === 'waiting-list'" class="reservations-tab">
+        <div class="section-header">
+          <h2>قائمة الانتظار</h2>
+        </div>
+
+        <div v-if="isLoadingWaitingList" class="loading-state">
+          <div class="spinner"></div>
+          <p>جاري تحميل قائمة الانتظار...</p>
+        </div>
+
+        <div v-else-if="waitingListEntries.length === 0" class="empty-state">
+          <p>لا توجد طلبات في قائمة الانتظار.</p>
+        </div>
+
+        <div v-else class="reservations-table-container">
+          <table class="reservations-table">
+            <thead>
+              <tr>
+                <th>العميل</th>
+                <th>الجوال</th>
+                <th>الوحدة</th>
+                <th>المشروع</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="entry in waitingListEntries" :key="entry.id">
+                <td>{{ entry.client_name || '—' }}</td>
+                <td>{{ entry.client_mobile || '—' }}</td>
+                <td>{{ entry.unit_number || '—' }}</td>
+                <td>{{ entry.project_name || '—' }}</td>
+                <td>{{ entry.status || 'pending' }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <button
+                      v-if="hasPermission('sales.waiting_list.convert')"
+                      @click="convertWaitingEntry(entry)"
+                      class="btn-action confirm"
+                      title="تحويل إلى حجز"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </button>
+                    <button
+                      v-if="hasAnyPermission(['sales.waiting_list.create', 'sales.waiting_list.convert'])"
+                      @click="removeWaitingEntry(entry)"
+                      class="btn-action cancel"
+                      title="إزالة من القائمة"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ASSIGNMENTS TAB -->
+      <div v-else-if="activeTab === 'assignments'" class="team-tab">
+        <div class="section-header">
+          <h2>توزيع الشفتات والمشاريع</h2>
+        </div>
+
+        <div v-if="isLoadingAssignments" class="loading-state">
+          <div class="spinner"></div>
+          <p>جاري تحميل التوزيعات...</p>
+        </div>
+
+        <div v-else-if="myAssignments.length === 0" class="empty-state">
+          <p>لا توجد توزيعات حالية.</p>
+        </div>
+
+        <div v-else class="team-projects-list">
+          <div v-for="assignment in myAssignments" :key="assignment.id || assignment.assignment_id" class="team-project-card">
+            <h4>{{ assignment.project_name || assignment.contract_name || `مشروع #${assignment.contract_id || ''}` }}</h4>
+            <div class="project-stats">
+              <div class="stat">
+                <span class="label">الموظف:</span>
+                <span class="value">{{ assignment.user_name || assignment.marketer_name || '—' }}</span>
+              </div>
+              <div class="stat">
+                <span class="label">من:</span>
+                <span class="value">{{ formatDate(assignment.start_date) }}</span>
+              </div>
+              <div class="stat">
+                <span class="label">إلى:</span>
+                <span class="value">{{ formatDate(assignment.end_date) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAYMENT PLANS TAB -->
+      <div v-else-if="activeTab === 'payment-plans'" class="tasks-tab">
+        <div class="section-header">
+          <h2>خطط الدفع</h2>
+        </div>
+        <div class="empty-state">
+          <p>إدارة خطط الدفع تتم من تبويب الحجوزات عبر زر خيارات المشاريع على الخارطة.</p>
         </div>
       </div>
     </div>
@@ -871,35 +1084,70 @@
         </div>
       </div>
     </div>
+
+    <!-- Payment Plan Modal -->
+    <PaymentPlanModal
+      v-if="showPaymentPlanModal"
+      :reservation-id="selectedReservationForOffPlan?.id"
+      @close="showPaymentPlanModal = false"
+      @saved="handlePaymentPlanSaved"
+    />
+
+    <!-- Title Transfer Date Modal -->
+    <TitleTransferDateModal
+      v-if="showTitleTransferModal"
+      :reservation-id="selectedReservationForOffPlan?.id"
+      :current-date="selectedReservationForOffPlan?.title_transfer_date"
+      @close="showTitleTransferModal = false"
+      @submit="handleTitleTransferDateSubmit"
+    />
+
+    <!-- Negotiation Approval Modal -->
+    <NegotiationApprovalModal
+      v-if="showNegotiationApprovalModal"
+      :negotiation="selectedNegotiation"
+      :is-loading="isSavingNegotiation"
+      @close="showNegotiationApprovalModal = false"
+      @approve="handleApproveNegotiation"
+      @reject="handleRejectNegotiation"
+    />
   </div>
 </template>
 
 <script>
-import { ref, reactive, onMounted, computed, watch } from 'vue'
+import { ref, reactive, onMounted, computed, watch, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import salesService from '../services/salesService'
 import notificationService from '../services/notificationService'
-import authService from '../services/authService'
 import logger from '../utils/logger'
+import { usePermissions } from '../composables/usePermissions'
+import PaymentPlanModal from '../components/sales/PaymentPlanModal.vue'
+import TitleTransferDateModal from '../components/sales/TitleTransferDateModal.vue'
+import NegotiationApprovalModal from '../components/sales/NegotiationApprovalModal.vue'
+import Pagination from '../components/Pagination.vue'
 
 export default {
   name: 'SalesViewExtended',
   setup() {
     const route = useRoute()
     const router = useRouter()
-    const user = authService.getCurrentUser()
-    const isLeader = ref(user?.is_leader || false)
+    const { hasPermission, hasAnyPermission } = usePermissions()
     
     // Initialize active tab from route
     const getTabFromRoute = () => {
       const name = route.name
+      if (name === 'SalesDashboard') return 'dashboard'
       if (name === 'SalesTargets') return 'targets'
       if (name === 'SalesProjects') return 'projects'
       if (name === 'SalesReservations') return 'reservations'
       if (name === 'SalesAttendance') return 'attendance'
       if (name === 'SalesTeam') return 'team'
       if (name === 'SalesTasks') return 'tasks'
-      return 'targets'
+      if (name === 'SalesNegotiations') return 'negotiations'
+      if (name === 'SalesWaitingList') return 'waiting-list'
+      if (name === 'SalesAssignments') return 'assignments'
+      if (name === 'SalesPaymentPlans') return 'payment-plans'
+      return 'dashboard'
     }
 
     const activeTab = ref(getTabFromRoute())
@@ -914,17 +1162,25 @@ export default {
     })
 
     const allTabs = [
-      { id: 'dashboard', label: 'الرئيسية', icon: '<rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect>', forAll: true },
-      { id: 'targets', label: 'الأهداف', icon: '<circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle>', forAll: true },
-      { id: 'projects', label: 'المشاريع', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>', forAll: true },
-      { id: 'reservations', label: 'الحجوزات', icon: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>', forAll: true },
-      { id: 'attendance', label: 'دوامي', icon: '<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>', forAll: true },
-      { id: 'team', label: 'الفريق', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', leaderOnly: true },
-      { id: 'tasks', label: 'المهام', icon: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><polyline points="9 11 12 14 22 4"></polyline>', leaderOnly: true }
+      { id: 'dashboard', label: 'Dashboard', icon: '<rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect>', requiredPermission: 'sales.dashboard.view' },
+      { id: 'targets', label: 'Targets', icon: '<circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle>', requiredPermission: 'sales.targets.view' },
+      { id: 'projects', label: 'Projects', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>', requiredPermission: 'sales.projects.view' },
+      { id: 'reservations', label: 'Reservations', icon: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>', requiredPermission: 'sales.reservations.view' },
+      { id: 'attendance', label: 'Attendance', icon: '<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>', requiredPermission: 'sales.attendance.view' },
+      { id: 'negotiations', label: 'Negotiations', icon: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>', requiredPermission: 'sales.negotiation.approve' },
+      { id: 'team', label: 'Team', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', requiredPermission: 'sales.team.manage' },
+      { id: 'tasks', label: 'Tasks', icon: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><polyline points="9 11 12 14 22 4"></polyline>', requiredPermission: 'sales.tasks.manage' },
+      { id: 'waiting-list', label: 'Waiting List', icon: '<path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>', requiredAny: ['sales.waiting_list.create', 'sales.waiting_list.convert'] },
+      { id: 'assignments', label: 'Assignments', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>', requiredPermission: 'sales.projects.allocate_shifts' },
+      { id: 'payment-plans', label: 'Payment Plans', icon: '<line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>', requiredPermission: 'sales.payment-plan.manage' }
     ]
 
     const visibleTabs = computed(() => {
-      return allTabs.filter(tab => tab.forAll || (tab.leaderOnly && isLeader.value))
+      return allTabs.filter(tab => {
+        if (tab.requiredPermission) return hasPermission(tab.requiredPermission)
+        if (tab.requiredAny) return hasAnyPermission(tab.requiredAny)
+        return true
+      })
     })
 
 
@@ -937,10 +1193,15 @@ export default {
         'projects': 'SalesProjects',
         'reservations': 'SalesReservations',
         'attendance': 'SalesAttendance',
+        'negotiations': 'SalesNegotiations',
         'team': 'SalesTeam',
-        'tasks': 'SalesTasks'
+        'tasks': 'SalesTasks',
+        'waiting-list': 'SalesWaitingList',
+        'assignments': 'SalesAssignments',
+        'payment-plans': 'SalesPaymentPlans'
       }
-      router.push({ name: routeMap[tabId] })
+      const targetRoute = routeMap[tabId]
+      if (targetRoute) router.push({ name: targetRoute })
     }
     
     const loadTabData = async (tabId) => {
@@ -959,6 +1220,12 @@ export default {
         if (teamProjects.value.length === 0) await loadTeamProjects()
       } else if (tabId === 'tasks' && marketingTasks.value.length === 0) {
         await loadTasks()
+      } else if (tabId === 'negotiations' && pendingNegotiations.value.length === 0) {
+        await loadPendingNegotiations()
+      } else if (tabId === 'waiting-list' && waitingListEntries.value.length === 0) {
+        await loadWaitingList()
+      } else if (tabId === 'assignments' && myAssignments.value.length === 0) {
+        await loadAssignments()
       }
     }
 
@@ -992,8 +1259,8 @@ export default {
       }
     }
 
-    // Targets
-    const targets = ref([])
+    // Targets - Using shallowRef for better performance with large arrays
+    const targets = shallowRef([])
     const isLoadingTargets = ref(false)
     const showCreateTargetModal = ref(false)
     const targetForm = reactive({
@@ -1003,8 +1270,8 @@ export default {
       deadline: ''
     })
 
-    // Attendance
-    const attendanceRecords = ref([])
+    // Attendance - Using shallowRef for better performance with large arrays
+    const attendanceRecords = shallowRef([])
     const isLoadingAttendance = ref(false)
     const showScheduleModal = ref(false)
     const scheduleForm = reactive({
@@ -1014,14 +1281,14 @@ export default {
       end_time: ''
     })
 
-    // Team
-    const teamMembers = ref([])
-    const teamProjects = ref([])
+    // Team - Using shallowRef for better performance with large arrays
+    const teamMembers = shallowRef([])
+    const teamProjects = shallowRef([])
     const isLoadingTeam = ref(false)
     const isLoadingTeamProjects = ref(false)
 
-    // Tasks
-    const marketingTasks = ref([])
+    // Tasks - Using shallowRef for better performance with large arrays
+    const marketingTasks = shallowRef([])
     const isLoadingTasks = ref(false)
     const showCreateTaskModal = ref(false)
     const taskForm = reactive({
@@ -1030,15 +1297,19 @@ export default {
       marketer_id: '',
       participating_marketers_count: 1
     })
+    const waitingListEntries = shallowRef([])
+    const isLoadingWaitingList = ref(false)
+    const myAssignments = shallowRef([])
+    const isLoadingAssignments = ref(false)
 
-    // Projects tab logic
-    const projects = ref([])
+    // Projects tab logic - Using shallowRef for better performance with large arrays
+    const projects = shallowRef([])
     const isLoadingProjects = ref(false)
     const searchQuery = ref('')
     const selectedProject = ref(null)
     const showProjectModal = ref(false)
     const isLoadingProjectDetails = ref(false)
-    const projectUnits = ref([])
+    const projectUnits = shallowRef([])
     const isLoadingUnits = ref(false)
     const activeMenuId = ref(null)
     const projectsTab = ref('active')
@@ -1145,13 +1416,83 @@ export default {
         router.push({ name: 'ProjectTracker', params: { id: projectId } })
     }
 
-    // Reservations
-    const reservations = ref([])
+    // Reservations - Using shallowRef for better performance with large arrays
+    const reservations = shallowRef([])
     const isLoadingReservations = ref(false)
     const showReservationModal = ref(false)
     const selectedUnit = ref(null)
     const isSubmitting = ref(false)
     const reservationLookups = ref(null)
+    
+    // Off-plan project modals
+    const showPaymentPlanModal = ref(false)
+    const showTitleTransferModal = ref(false)
+    const selectedReservationForOffPlan = ref(null)
+    
+    // Negotiations - Using shallowRef for better performance with large arrays
+    const pendingNegotiations = shallowRef([])
+    const isLoadingNegotiations = ref(false)
+    const showNegotiationApprovalModal = ref(false)
+    const selectedNegotiation = ref(null)
+    const isSavingNegotiation = ref(false)
+
+    // Pagination state
+    const reservationsPage = ref(1)
+    const reservationsPerPage = ref(25)
+    const reservationsTotal = ref(0)
+    const negotiationsPage = ref(1)
+    const negotiationsPerPage = ref(25)
+    const attendancePage = ref(1)
+    const attendancePerPage = ref(25)
+
+    // Paginated computed properties (reservations: server-side pagination - items are already current page)
+    const paginatedReservations = computed(() => reservations.value)
+
+    const paginatedNegotiations = computed(() => {
+      const start = (negotiationsPage.value - 1) * negotiationsPerPage.value
+      const end = start + negotiationsPerPage.value
+      return pendingNegotiations.value.slice(start, end)
+    })
+
+    const paginatedAttendance = computed(() => {
+      const start = (attendancePage.value - 1) * attendancePerPage.value
+      const end = start + attendancePerPage.value
+      return attendanceRecords.value.slice(start, end)
+    })
+
+    // Pagination handlers
+    const handleReservationsPageChange = (page) => {
+      reservationsPage.value = page
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      loadReservations()
+    }
+
+    const handleReservationsPerPageChange = (newPerPage) => {
+      reservationsPerPage.value = newPerPage
+      reservationsPage.value = 1
+      loadReservations()
+    }
+
+    const handleNegotiationsPageChange = (page) => {
+      negotiationsPage.value = page
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
+    const handleNegotiationsPerPageChange = (newPerPage) => {
+      negotiationsPerPage.value = newPerPage
+      negotiationsPage.value = 1
+    }
+
+    const handleAttendancePageChange = (page) => {
+      attendancePage.value = page
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
+    const handleAttendancePerPageChange = (newPerPage) => {
+      attendancePerPage.value = newPerPage
+      attendancePage.value = 1
+    }
+    
     const reservationForm = reactive({
       contract_id: '',
       contract_unit_id: '',
@@ -1270,15 +1611,19 @@ export default {
     const loadReservations = async () => {
       isLoadingReservations.value = true
       try {
-        const response = await salesService.getReservations()
-        let rawData = response?.data?.data || response?.data || response
-        if (rawData && !Array.isArray(rawData) && rawData.data) rawData = rawData.data
-        reservations.value = Array.isArray(rawData) ? rawData.map(r => ({
+        const { items, total } = await salesService.getReservations({
+          page: reservationsPage.value,
+          per_page: reservationsPerPage.value
+        })
+        reservations.value = Array.isArray(items) ? items.map(r => ({
           ...r,
           id: r.reservation_id || r.id // normalize id
         })) : []
+        reservationsTotal.value = total
       } catch (error) {
         logger.error('Error loading reservations:', error)
+        reservations.value = []
+        reservationsTotal.value = 0
       } finally {
         isLoadingReservations.value = false
       }
@@ -1401,10 +1746,103 @@ export default {
       }
     }
 
+    // Off-plan project functions
+    const isOffPlanReservation = (reservation) => {
+      // Check if reservation is confirmed, off-plan, and down payment is confirmed
+      const isConfirmed = reservation.status === 'confirmed' || reservation.status === 'confirmed_reservation'
+      const isOffPlan = reservation.is_off_plan === true || reservation.project_is_off_plan === true || reservation.contract_is_off_plan === true
+      const isDownPaymentConfirmed = reservation.down_payment_status === 'confirmed' || reservation.down_payment_confirmed === true
+      return isConfirmed && isOffPlan && isDownPaymentConfirmed
+    }
+
+    const openOffPlanOptions = (reservation) => {
+      selectedReservationForOffPlan.value = reservation
+      // Show a dropdown menu or modal with options
+      const option = prompt('اختر الخيار:\n1. إنشاء/تعديل خطة دفعات\n2. تحديد موعد إفراغ منفصل', '1')
+      
+      if (option === '1') {
+        showPaymentPlanModal.value = true
+      } else if (option === '2') {
+        showTitleTransferModal.value = true
+      }
+    }
+
+    const handlePaymentPlanSaved = () => {
+      loadReservations()
+    }
+
+    const handleTitleTransferDateSubmit = async (data) => {
+      try {
+        // Update reservation with title transfer date
+        // Note: This might need a specific API endpoint, for now we'll use logAction
+        await salesService.logAction(selectedReservationForOffPlan.value.id, {
+          note: `تم تحديد موعد الإفراغ المنفصل: ${data.title_transfer_date}${data.notes ? ' - ' + data.notes : ''}`
+        })
+        notificationService.addNotification('تم حفظ موعد الإفراغ بنجاح', 'success')
+        showTitleTransferModal.value = false
+        loadReservations()
+      } catch (error) {
+        logger.error('Error saving title transfer date:', error)
+        notificationService.addNotification('حدث خطأ أثناء حفظ موعد الإفراغ', 'error')
+      }
+    }
+
+    // Negotiations functions
+    const loadPendingNegotiations = async () => {
+      isLoadingNegotiations.value = true
+      try {
+        const data = await salesService.getPendingNegotiations()
+        pendingNegotiations.value = Array.isArray(data) ? data : []
+      } catch (error) {
+        logger.error('Error loading pending negotiations:', error)
+        pendingNegotiations.value = []
+      } finally {
+        isLoadingNegotiations.value = false
+      }
+    }
+
+    const openNegotiationApproval = (negotiation) => {
+      if (!ensurePermission('sales.negotiation.approve', 'غير مصرح لك بمراجعة التفاوضات')) return
+      selectedNegotiation.value = negotiation
+      showNegotiationApprovalModal.value = true
+    }
+
+    const handleApproveNegotiation = async (data) => {
+      if (!ensurePermission('sales.negotiation.approve', 'غير مصرح لك بالموافقة على التفاوضات')) return
+      isSavingNegotiation.value = true
+      try {
+        await salesService.approveNegotiation(selectedNegotiation.value.id, data)
+        notificationService.addNotification('تم الموافقة على التفاوض بنجاح', 'success')
+        showNegotiationApprovalModal.value = false
+        loadPendingNegotiations()
+      } catch (error) {
+        logger.error('Error approving negotiation:', error)
+        notificationService.addNotification('حدث خطأ أثناء الموافقة على التفاوض', 'error')
+      } finally {
+        isSavingNegotiation.value = false
+      }
+    }
+
+    const handleRejectNegotiation = async (data) => {
+      if (!ensurePermission('sales.negotiation.approve', 'غير مصرح لك برفض التفاوضات')) return
+      isSavingNegotiation.value = true
+      try {
+        await salesService.rejectNegotiation(selectedNegotiation.value.id, data)
+        notificationService.addNotification('تم رفض التفاوض', 'success')
+        showNegotiationApprovalModal.value = false
+        loadPendingNegotiations()
+      } catch (error) {
+        logger.error('Error rejecting negotiation:', error)
+        notificationService.addNotification('حدث خطأ أثناء رفض التفاوض', 'error')
+      } finally {
+        isSavingNegotiation.value = false
+      }
+    }
+
     const loadAttendance = async () => {
       isLoadingAttendance.value = true
       try {
-        attendanceRecords.value = isLeader.value 
+        attendanceRecords.value = hasPermission('sales.attendance.manage')
           ? await salesService.getTeamAttendance()
           : await salesService.getMyAttendance()
       } catch (error) {
@@ -1428,7 +1866,8 @@ export default {
     const loadTeamProjects = async () => {
       isLoadingTeamProjects.value = true
       try {
-        teamProjects.value = await salesService.getTeamProjects()
+        const data = await salesService.getTeamProjects()
+        teamProjects.value = data?.items ?? (Array.isArray(data) ? data : [])
       } catch (error) {
         logger.error('Error loading team projects:', error)
       } finally {
@@ -1452,7 +1891,75 @@ export default {
       }
     }
 
+    const ensurePermission = (permission, message = 'غير مصرح بهذا الإجراء') => {
+      if (hasPermission(permission)) return true
+      notificationService.addNotification(message, 'warning')
+      return false
+    }
+
+    const loadWaitingList = async () => {
+      isLoadingWaitingList.value = true
+      try {
+        const items = await salesService.getWaitingList()
+        waitingListEntries.value = Array.isArray(items)
+          ? items.map(item => ({
+            ...item,
+            id: item.id || item.waiting_list_id,
+            project_name: item.project_name || item.contract_name,
+            unit_number: item.unit_number || item.contract_unit_number
+          }))
+          : []
+      } catch (error) {
+        logger.error('Error loading waiting list:', error)
+        waitingListEntries.value = []
+      } finally {
+        isLoadingWaitingList.value = false
+      }
+    }
+
+    const convertWaitingEntry = async (entry) => {
+      if (!ensurePermission('sales.waiting_list.convert', 'غير مصرح لك بتحويل قائمة الانتظار')) return
+      try {
+        await salesService.convertToReservation(entry.id)
+        notificationService.addNotification('تم تحويل العنصر إلى حجز بنجاح', 'success')
+        await loadWaitingList()
+        await loadReservations()
+      } catch (error) {
+        logger.error('Error converting waiting list entry:', error)
+        notificationService.addNotification('حدث خطأ أثناء تحويل العنصر', 'error')
+      }
+    }
+
+    const removeWaitingEntry = async (entry) => {
+      if (!hasAnyPermission(['sales.waiting_list.create', 'sales.waiting_list.convert'])) {
+        notificationService.addNotification('غير مصرح لك بإدارة قائمة الانتظار', 'warning')
+        return
+      }
+      try {
+        await salesService.cancelWaitingListEntry(entry.id)
+        notificationService.addNotification('تم حذف العنصر من قائمة الانتظار', 'success')
+        await loadWaitingList()
+      } catch (error) {
+        logger.error('Error removing waiting list entry:', error)
+        notificationService.addNotification('حدث خطأ أثناء حذف العنصر', 'error')
+      }
+    }
+
+    const loadAssignments = async () => {
+      isLoadingAssignments.value = true
+      try {
+        const result = await salesService.getMyAssignments({ per_page: 30, page: 1 })
+        myAssignments.value = result?.items ?? (Array.isArray(result) ? result : [])
+      } catch (error) {
+        logger.error('Error loading assignments:', error)
+        myAssignments.value = []
+      } finally {
+        isLoadingAssignments.value = false
+      }
+    }
+
     const createTarget = async () => {
+      if (!ensurePermission('sales.goals.create', 'غير مصرح لك بإنشاء أهداف')) return
       try {
         await salesService.createTarget(targetForm)
         notificationService.addNotification('تم إنشاء الهدف بنجاح', 'success')
@@ -1466,6 +1973,7 @@ export default {
     }
 
     const createTask = async () => {
+      if (!ensurePermission('sales.tasks.create_for_marketing', 'غير مصرح لك بإنشاء مهام التسويق')) return
       try {
         await salesService.createMarketingTask(taskForm)
         notificationService.addNotification('تم إنشاء المهمة بنجاح', 'success')
@@ -1479,6 +1987,7 @@ export default {
     }
 
     const createSchedule = async () => {
+      if (!ensurePermission('sales.attendance.manage', 'غير مصرح لك بإدارة الدوام')) return
       try {
         await salesService.createSchedule(scheduleForm)
         notificationService.addNotification('تم إنشاء الجدول بنجاح', 'success')
@@ -1492,6 +2001,7 @@ export default {
     }
 
     const updateTask = async (taskId, status) => {
+      if (!ensurePermission('sales.tasks.manage', 'غير مصرح لك بتحديث حالة المهام')) return
       try {
         await salesService.updateTaskStatus(taskId, { status })
         notificationService.addNotification('تم تحديث حالة المهمة', 'success')
@@ -1629,7 +2139,8 @@ export default {
     return {
       activeTab,
       visibleTabs,
-      isLeader,
+      hasPermission,
+      hasAnyPermission,
       switchTab,
       targets,
       isLoadingTargets,
@@ -1674,6 +2185,12 @@ export default {
       taskForm,
       createTask,
       updateTask,
+      waitingListEntries,
+      isLoadingWaitingList,
+      convertWaitingEntry,
+      removeWaitingEntry,
+      myAssignments,
+      isLoadingAssignments,
       formatCurrency,
       formatDate,
       getProgressPercentage,
@@ -1702,8 +2219,51 @@ export default {
       projectsTab,
       activeProjectsCount,
       archiveProjectsCount,
-      viewTracker
+      viewTracker,
+      // Off-plan project functions
+      showPaymentPlanModal,
+      showTitleTransferModal,
+      selectedReservationForOffPlan,
+      isOffPlanReservation,
+      openOffPlanOptions,
+      handlePaymentPlanSaved,
+      handleTitleTransferDateSubmit,
+      // Negotiations
+      pendingNegotiations,
+      isLoadingNegotiations,
+      showNegotiationApprovalModal,
+      selectedNegotiation,
+      isSavingNegotiation,
+      loadPendingNegotiations,
+      openNegotiationApproval,
+      handleApproveNegotiation,
+      handleRejectNegotiation,
+      loadWaitingList,
+      loadAssignments,
+      // Pagination
+      paginatedReservations,
+      paginatedNegotiations,
+      paginatedAttendance,
+      reservationsPage,
+      reservationsPerPage,
+      reservationsTotal,
+      negotiationsPage,
+      negotiationsPerPage,
+      attendancePage,
+      attendancePerPage,
+      handleReservationsPageChange,
+      handleReservationsPerPageChange,
+      handleNegotiationsPageChange,
+      handleNegotiationsPerPageChange,
+      handleAttendancePageChange,
+      handleAttendancePerPageChange
     }
+  },
+  components: {
+    PaymentPlanModal,
+    TitleTransferDateModal,
+    NegotiationApprovalModal,
+    Pagination
   }
 }
 </script>
@@ -3142,6 +3702,70 @@ export default {
   background: #bfdbfe;
 }
 
+.btn-action.off-plan {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.btn-action.off-plan:hover {
+  background: #fde68a;
+}
+
+.btn-action.approve {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.btn-action.approve:hover {
+  background: #a7f3d0;
+}
+
+/* Negotiations Table */
+.negotiations-table-container {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.negotiations-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.negotiations-table thead {
+  background: #f8fafc;
+}
+
+.negotiations-table th {
+  padding: 16px;
+  text-align: right;
+  font-weight: 700;
+  color: #1e3a5f;
+  font-size: 14px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.negotiations-table td {
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+}
+
+.negotiations-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.negotiations-table .amount {
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+.negotiations-table .amount.highlight {
+  color: #059669;
+  font-weight: 700;
+}
+
 /* Reservation Form */
 .reservation-form .form-grid {
   display: grid;
@@ -3198,3 +3822,6 @@ textarea.form-input {
   min-height: 80px;
 }
 </style>
+
+
+

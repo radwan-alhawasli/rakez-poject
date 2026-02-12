@@ -1,0 +1,400 @@
+import apiClient from '../api/apiClient'
+import { handleServiceError } from '../utils/serviceErrorHandler'
+import { extractPaginatedData } from '../utils/paginationUtils'
+
+/**
+ * Commission & Deposits Service
+ * Manages commission calculations and deposit tracking
+ */
+const commissionService = {
+  /**
+   * Get list of commissions
+   * GET /commissions
+   * @param {Object} params - page, per_page
+   * @returns {Promise<{ items: Array, total: number }>}
+   */
+  async getCommissions(params = {}) {
+    try {
+      const response = await apiClient.get('/commissions', { params })
+      const { items, total } = extractPaginatedData(response, [])
+      return { items, total }
+    } catch (error) {
+      return handleServiceError(error, 'Fetch commissions', 'get') || { items: [], total: 0 }
+    }
+  },
+
+  /**
+   * Get commission details
+   * GET /commissions/:id
+   */
+  async getCommissionById(id) {
+    try {
+      const response = await apiClient.get(`/commissions/${id}`)
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, `Fetch commission ${id}`, 'get', {})
+    }
+  },
+
+  /**
+   * Create commission
+   * POST /commissions
+   */
+  async createCommission(commissionData) {
+    try {
+      const response = await apiClient.post('/commissions', commissionData)
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, 'Create commission', 'post')
+    }
+  },
+
+  /**
+   * Update commission
+   * PUT /commissions/:id
+   */
+  async updateCommission(id, commissionData) {
+    try {
+      const response = await apiClient.put(`/commissions/${id}`, commissionData)
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, `Update commission ${id}`, 'put')
+    }
+  },
+
+  /**
+   * Delete commission
+   * DELETE /commissions/:id
+   */
+  async deleteCommission(id) {
+    try {
+      const response = await apiClient.delete(`/commissions/${id}`)
+      return response.data
+    } catch (error) {
+      return handleServiceError(error, `Delete commission ${id}`, 'delete')
+    }
+  },
+
+  /**
+   * Calculate commission
+   * POST /commissions/calculate
+   */
+  async calculateCommission(calculationData) {
+    try {
+      const response = await apiClient.post('/commissions/calculate', calculationData)
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, 'Calculate commission', 'post')
+    }
+  },
+
+  /**
+   * Get list of deposits
+   * GET /deposits
+   * @param {Object} params - page, per_page
+   * @returns {Promise<{ items: Array, total: number }>}
+   */
+  async getDeposits(params = {}) {
+    try {
+      const response = await apiClient.get('/deposits', { params })
+      const { items, total } = extractPaginatedData(response, [])
+      return { items, total }
+    } catch (error) {
+      return handleServiceError(error, 'Fetch deposits', 'get') || { items: [], total: 0 }
+    }
+  },
+
+  /**
+   * Get deposit details
+   * GET /deposits/:id
+   */
+  async getDepositById(id) {
+    try {
+      const response = await apiClient.get(`/deposits/${id}`)
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, `Fetch deposit ${id}`, 'get', {})
+    }
+  },
+
+  /**
+   * Create deposit
+   * POST /deposits
+   */
+  async createDeposit(depositData) {
+    try {
+      const response = await apiClient.post('/deposits', depositData)
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, 'Create deposit', 'post')
+    }
+  },
+
+  /**
+   * Update deposit
+   * PUT /deposits/:id
+   */
+  async updateDeposit(id, depositData) {
+    try {
+      const response = await apiClient.put(`/deposits/${id}`, depositData)
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, `Update deposit ${id}`, 'put')
+    }
+  },
+
+  /**
+   * Delete deposit
+   * DELETE /deposits/:id
+   */
+  async deleteDeposit(id) {
+    try {
+      const response = await apiClient.delete(`/deposits/${id}`)
+      return response.data
+    } catch (error) {
+      return handleServiceError(error, `Delete deposit ${id}`, 'delete')
+    }
+  },
+
+  /**
+   * Process deposit payment
+   * POST /deposits/:id/process
+   */
+  async processDeposit(id, paymentData) {
+    try {
+      const response = await apiClient.post(`/deposits/${id}/process`, paymentData)
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, `Process deposit ${id}`, 'post')
+    }
+  },
+
+  /**
+   * Get commission report
+   * GET /commissions/report
+   */
+  async getCommissionReport(params = {}) {
+    try {
+      const response = await apiClient.get('/commissions/report', { params })
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, 'Fetch commission report', 'get', {})
+    }
+  },
+
+  /**
+   * Get deposit report
+   * GET /deposits/report
+   */
+  async getDepositReport(params = {}) {
+    try {
+      const response = await apiClient.get('/deposits/report', { params })
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, 'Fetch deposit report', 'get', {})
+    }
+  },
+
+  /**
+   * Get commission distributions
+   * GET /commissions/:commission_id/distributions
+   * @param {number|string} commissionId - Commission ID
+   * @param {Object} params - Query parameters
+   * @returns {Promise<Array>} List of distributions
+   */
+  async getDistributions(commissionId, params = {}) {
+    try {
+      const response = await apiClient.get(`/commissions/${commissionId}/distributions`, { params })
+      const distributions = response.data?.data || response.data || []
+      return Array.isArray(distributions) ? distributions : []
+    } catch (error) {
+      return handleServiceError(error, `Fetch distributions for commission ${commissionId}`, 'get', [])
+    }
+  },
+
+  /**
+   * Create commission distribution
+   * POST /commissions/:commission_id/distributions
+   * @param {number|string} commissionId - Commission ID
+   * @param {Object} data - Distribution data
+   * @returns {Promise<Object>} Created distribution
+   */
+  async createDistribution(commissionId, data) {
+    try {
+      const response = await apiClient.post(`/commissions/${commissionId}/distributions`, data)
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, `Create distribution for commission ${commissionId}`, 'post')
+    }
+  },
+
+  /**
+   * Update commission distribution
+   * PUT /commissions/distributions/:id
+   * @param {number|string} id - Distribution ID
+   * @param {Object} data - Distribution update data
+   * @returns {Promise<Object>} Updated distribution
+   */
+  async updateDistribution(id, data) {
+    try {
+      const response = await apiClient.put(`/commissions/distributions/${id}`, data)
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, `Update distribution ${id}`, 'put')
+    }
+  },
+
+  /**
+   * Approve commission distribution
+   * POST /commissions/distributions/:id/approve
+   * @param {number|string} id - Distribution ID
+   * @returns {Promise<Object>} Approved distribution
+   */
+  async approveDistribution(id) {
+    try {
+      const response = await apiClient.post(`/commissions/distributions/${id}/approve`)
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, `Approve distribution ${id}`, 'post')
+    }
+  },
+
+  /**
+   * Reject commission distribution
+   * POST /commissions/distributions/:id/reject
+   * @param {number|string} id - Distribution ID
+   * @param {string} reason - Rejection reason
+   * @returns {Promise<Object>} Rejected distribution
+   */
+  async rejectDistribution(id, reason = '') {
+    try {
+      const response = await apiClient.post(`/commissions/distributions/${id}/reject`, { reason })
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, `Reject distribution ${id}`, 'post')
+    }
+  },
+
+  /**
+   * Delete commission distribution
+   * DELETE /commissions/distributions/:id
+   * @param {number|string} id - Distribution ID
+   * @returns {Promise<Object>} Response
+   */
+  async deleteDistribution(id) {
+    try {
+      const response = await apiClient.delete(`/commissions/distributions/${id}`)
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, `Delete distribution ${id}`, 'delete')
+    }
+  },
+
+  /**
+   * Confirm deposit
+   * POST /deposits/:id/confirm
+   * @param {number|string} id - Deposit ID
+   * @returns {Promise<Object>} Confirmed deposit
+   */
+  async confirmDeposit(id) {
+    try {
+      const response = await apiClient.post(`/deposits/${id}/confirm`)
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, `Confirm deposit ${id}`, 'post')
+    }
+  },
+
+  /**
+   * Refund deposit
+   * POST /deposits/:id/refund
+   * @param {number|string} id - Deposit ID
+   * @param {Object} data - Refund data (refund_amount, refund_reason, refund_date)
+   * @returns {Promise<Object>} Refunded deposit
+   */
+  async refundDeposit(id, data) {
+    try {
+      const response = await apiClient.post(`/deposits/${id}/refund`, data)
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, `Refund deposit ${id}`, 'post')
+    }
+  },
+
+  /**
+   * Bulk approve commissions
+   * POST /commissions/bulk-approve
+   * @param {Array<number|string>} commissionIds - Array of commission IDs
+   * @returns {Promise<Object>} Bulk approval result
+   */
+  async bulkApproveCommissions(commissionIds) {
+    try {
+      const response = await apiClient.post('/commissions/bulk-approve', { commission_ids: commissionIds })
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, 'Bulk approve commissions', 'post')
+    }
+  },
+
+  /**
+   * Bulk confirm deposits
+   * POST /deposits/bulk-confirm
+   * @param {Array<number|string>} depositIds - Array of deposit IDs
+   * @returns {Promise<Object>} Bulk confirmation result
+   */
+  async bulkConfirmDeposits(depositIds) {
+    try {
+      const response = await apiClient.post('/deposits/bulk-confirm', { deposit_ids: depositIds })
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, 'Bulk confirm deposits', 'post')
+    }
+  },
+
+  /**
+   * Get commission statistics
+   * GET /commissions/stats
+   * @param {Object} params - Query parameters
+   * @returns {Promise<Object>} Commission statistics
+   */
+  async getCommissionStats(params = {}) {
+    try {
+      const response = await apiClient.get('/commissions/stats', { params })
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, 'Fetch commission statistics', 'get', {})
+    }
+  },
+
+  /**
+   * Get deposit statistics
+   * GET /deposits/stats
+   * @param {Object} params - Query parameters
+   * @returns {Promise<Object>} Deposit statistics
+   */
+  async getDepositStats(params = {}) {
+    try {
+      const response = await apiClient.get('/deposits/stats', { params })
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, 'Fetch deposit statistics', 'get', {})
+    }
+  },
+
+  /**
+   * Get commission analytics dashboard
+   * GET /commissions/analytics
+   * @param {Object} params - Query parameters
+   * @returns {Promise<Object>} Analytics dashboard data
+   */
+  async getCommissionAnalytics(params = {}) {
+    try {
+      const response = await apiClient.get('/commissions/analytics', { params })
+      return response.data?.data || response.data || {}
+    } catch (error) {
+      return handleServiceError(error, 'Fetch commission analytics', 'get', {})
+    }
+  }
+}
+
+export default commissionService

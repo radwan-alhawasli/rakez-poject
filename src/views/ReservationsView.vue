@@ -58,7 +58,7 @@
     <!-- Reservations List -->
     <div class="reservations-list">
       <div 
-        v-for="reservation in filteredReservations" 
+        v-for="reservation in paginatedReservations" 
         :key="reservation.id"
         class="reservation-card"
       >
@@ -255,14 +255,26 @@
         <p>لا توجد حجوزات في هذا القسم</p>
       </div>
     </div>
+
+    <!-- Pagination -->
+    <Pagination
+      v-if="filteredReservations.length > 0"
+      :current-page="currentPage"
+      :total-items="filteredReservations.length"
+      :per-page="perPage"
+      @page-change="handlePageChange"
+      @per-page-change="handlePerPageChange"
+    />
   </div>
 </template>
 
 <script>
 import { ref, computed } from 'vue'
+import Pagination from '../components/Pagination.vue'
 
 export default {
   name: 'ReservationsView',
+  components: { Pagination },
   setup() {
     const activeTab = ref('all')
     const expandedId = ref(null)
@@ -681,6 +693,25 @@ export default {
       
       return result
     })
+
+    const currentPage = ref(1)
+    const perPage = ref(25)
+
+    const paginatedReservations = computed(() => {
+      const start = (currentPage.value - 1) * perPage.value
+      const end = start + perPage.value
+      return filteredReservations.value.slice(start, end)
+    })
+
+    const handlePageChange = (page) => {
+      currentPage.value = page
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
+    const handlePerPageChange = (newPerPage) => {
+      perPage.value = newPerPage
+      currentPage.value = 1
+    }
     
     // Unique values for filters
     const uniqueProjects = computed(() => [...new Set(reservations.value.map(r => r.projectName))])
@@ -756,6 +787,7 @@ export default {
       progressSteps,
       reservations,
       filteredReservations,
+      paginatedReservations,
       getStatusLabel,
       formatCurrency,
       toggleExpand,
@@ -771,7 +803,12 @@ export default {
       exportData,
       showNotification,
       notificationMessage,
-      notificationType
+      notificationType,
+      // Pagination
+      currentPage,
+      perPage,
+      handlePageChange,
+      handlePerPageChange
     }
   }
 }

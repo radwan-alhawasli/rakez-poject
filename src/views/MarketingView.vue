@@ -59,6 +59,50 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
             </div>
           </div>
+
+          <div class="stat-card animate-fade-in-up animate-stagger-1 hover-lift">
+            <div class="stat-content">
+              <span class="stat-label">عدد الإيداعات اليومية</span>
+              <span class="stat-value number">{{ dashboardMetrics.daily_deposits_count || 0 }}</span>
+              <span class="stat-desc">إيداعات اليوم</span>
+            </div>
+            <div class="stat-icon-bg ready">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+          </div>
+
+          <div class="stat-card animate-fade-in-up animate-stagger-2 hover-lift">
+            <div class="stat-content">
+              <span class="stat-label">تكلفة الإيداع</span>
+              <span class="stat-value number">{{ formatCurrency(depositCostDisplay) }}</span>
+              <span class="stat-desc">إجمالي الصرف ÷ عدد الإيداعات</span>
+            </div>
+            <div class="stat-icon-bg dollar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"></path><path d="M8 21H3v-5"></path><path d="M21 3l-7 7"></path><path d="M3 21l7-7"></path></svg>
+            </div>
+          </div>
+
+          <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift">
+            <div class="stat-content">
+              <span class="stat-label">الحجوزات المتوقعة</span>
+              <span class="stat-value number">{{ dashboardMetrics.total_expected_bookings || 0 }}</span>
+              <span class="stat-desc">إجمالي كل المشاريع</span>
+            </div>
+            <div class="stat-icon-bg projects">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>
+            </div>
+          </div>
+
+          <div class="stat-card animate-fade-in-up animate-stagger-4 hover-lift">
+            <div class="stat-content">
+              <span class="stat-label">قيمة الحجوزات المتوقعة</span>
+              <span class="stat-value number">{{ formatCurrency(dashboardMetrics.total_expected_booking_value || 0) }}</span>
+              <span class="stat-desc">قيمة متوقعة مجمّعة</span>
+            </div>
+            <div class="stat-icon-bg units">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20"></path></svg>
+            </div>
+          </div>
         </div>
 
         <!-- Chart Section -->
@@ -81,7 +125,7 @@
             <p class="section-subtitle">إدارة المشاريع والخطط التسويقية وحساب الميزانيات.</p>
           </div>
           <div class="header-actions" style="display: flex; gap: 15px; align-items: center;">
-            <button class="btn-primary" @click="openCalculateBudgetModal">
+            <button v-if="hasPermission('marketing.budgets.manage')" class="btn-primary" @click="openCalculateBudgetModal">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-left: 8px;"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
               حساب الميزانية
             </button>
@@ -90,7 +134,7 @@
 
         <!-- Projects Grid -->
         <div v-if="!isLoadingProjects && projects.length > 0" class="projects-grid">
-          <div v-for="project in projects" :key="project.id" class="project-card hover-lift animate-fade-in">
+          <div v-for="project in projects" v-memo="[project.id, project.project_name, project.status]" :key="project.id" class="project-card hover-lift animate-fade-in">
             <div class="project-header">
               <h3 class="project-name">{{ project.project_name || project.name }}</h3>
               <span class="project-status" :class="getStatusClass(project.status)">
@@ -110,13 +154,29 @@
                 <span class="detail-label">رقم العقد:</span>
                 <span class="detail-value number">{{ project.marketing_project?.contract_id ?? '—' }}</span>
               </div>
+              <div class="detail-row">
+                <span class="detail-label">الوحدات (متاح/معلق):</span>
+                <span class="detail-value number">{{ project.available_units_count || 0 }} / {{ project.pending_units_count || 0 }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">متوسط سعر الوحدة:</span>
+                <span class="detail-value number">{{ formatCurrency(project.average_unit_price || 0) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">نسبة العمولة:</span>
+                <span class="detail-value number">{{ Number(project.commission_percentage || 0) }}%</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">قيمة الوحدات المتاحة:</span>
+                <span class="detail-value number">{{ formatCurrency(project.available_units_value || 0) }}</span>
+              </div>
             </div>
             <div class="project-actions">
               <button class="btn-view" @click="viewProjectDetails(project.id)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 عرض التفاصيل
               </button>
-              <button class="btn-plan" @click="managePlan(project.id)">
+              <button v-if="hasPermission('marketing.plans.create')" class="btn-plan" @click="managePlan(project.id)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
                 إدارة الخطة
               </button>
@@ -278,15 +338,56 @@
               </div>
             </div>
 
+            <div class="form-grid">
+              <div class="form-group">
+                <label>توزيع المنصات (%)</label>
+                <div class="details-grid">
+                  <div class="detail-item"><span>TikTok</span><input type="number" v-model.number="platformDistribution.tiktok" class="form-input" min="0" max="100" /></div>
+                  <div class="detail-item"><span>Meta</span><input type="number" v-model.number="platformDistribution.meta" class="form-input" min="0" max="100" /></div>
+                  <div class="detail-item"><span>Snapchat</span><input type="number" v-model.number="platformDistribution.snapchat" class="form-input" min="0" max="100" /></div>
+                  <div class="detail-item"><span>YouTube</span><input type="number" v-model.number="platformDistribution.youtube" class="form-input" min="0" max="100" /></div>
+                  <div class="detail-item"><span>LinkedIn</span><input type="number" v-model.number="platformDistribution.linkedin" class="form-input" min="0" max="100" /></div>
+                  <div class="detail-item"><span>X</span><input type="number" v-model.number="platformDistribution.x" class="form-input" min="0" max="100" /></div>
+                </div>
+                <p class="section-desc">المجموع: {{ platformDistributionSum }}%</p>
+              </div>
+
+              <div class="form-group">
+                <label>توزيع أنواع الحملات (%)</label>
+                <div class="details-grid">
+                  <div class="detail-item"><span>Direct</span><input type="number" v-model.number="campaignDistribution.direct_communication" class="form-input" min="0" max="100" /></div>
+                  <div class="detail-item"><span>Hand Raise</span><input type="number" v-model.number="campaignDistribution.hand_raise" class="form-input" min="0" max="100" /></div>
+                  <div class="detail-item"><span>Impression</span><input type="number" v-model.number="campaignDistribution.impression" class="form-input" min="0" max="100" /></div>
+                  <div class="detail-item"><span>Sales</span><input type="number" v-model.number="campaignDistribution.sales" class="form-input" min="0" max="100" /></div>
+                </div>
+                <p class="section-desc">المجموع: {{ campaignDistributionSum }}%</p>
+              </div>
+            </div>
+
             <div class="plan-actions">
               <button class="btn-secondary" @click="loadEmployees" :disabled="isLoadingEmployees">
                 <span v-if="isLoadingEmployees" class="spinner-small"></span>
                 تحديث قائمة الموظفين
               </button>
-              <button class="btn-primary" @click="autoGenerateEmployeePlan" :disabled="isSubmitting || !employeePlansProjectId || !employeePlanGenerateForm.user_id">
+              <button v-if="hasPermission('marketing.plans.create')" class="btn-secondary" @click="applyManualEmployeePlan" :disabled="isSubmitting || !employeePlansProjectId || !employeePlanGenerateForm.user_id">
+                تطبيق التوزيعات
+              </button>
+              <button v-if="hasPermission('marketing.plans.create')" class="btn-primary" @click="autoGenerateEmployeePlan" :disabled="isSubmitting || !employeePlansProjectId || !employeePlanGenerateForm.user_id">
                 <span v-if="isSubmitting" class="spinner-small"></span>
                 إنشاء خطة تلقائياً
               </button>
+            </div>
+
+            <div v-if="budgetDistributionResult" class="overview-section" style="margin-top: 14px;">
+              <div class="section-header">
+                <h3 class="section-title-chart">نتائج توزيع الميزانية</h3>
+              </div>
+              <div class="details-grid">
+                <div class="detail-item"><span class="detail-label">Leads</span><span class="detail-value number">{{ budgetDistributionResult.leads ?? '—' }}</span></div>
+                <div class="detail-item"><span class="detail-label">Direct Contacts</span><span class="detail-value number">{{ budgetDistributionResult.direct_contacts ?? '—' }}</span></div>
+                <div class="detail-item"><span class="detail-label">Opportunities</span><span class="detail-value number">{{ budgetDistributionResult.opportunities ?? '—' }}</span></div>
+                <div class="detail-item"><span class="detail-label">Bookings</span><span class="detail-value number">{{ budgetDistributionResult.bookings ?? '—' }}</span></div>
+              </div>
             </div>
           </div>
 
@@ -380,7 +481,7 @@
             <p class="section-subtitle">إدارة قاعدة بيانات العملاء المحتملين والفرص البيعية.</p>
           </div>
           <div class="header-actions">
-            <button class="btn-primary" @click="openAddLeadModal">
+            <button v-if="hasPermission('marketing.teams.manage')" class="btn-primary" @click="openAddLeadModal">
               <span class="plus-icon">+</span> إضافة عميل محتمل
             </button>
           </div>
@@ -430,13 +531,162 @@
         <div v-if="!isLoadingLeads && leads.length === 0" class="empty-state">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
           <p>لا يوجد عملاء محتملون حالياً</p>
-          <button class="btn-primary" @click="openAddLeadModal" style="margin-top: 20px;">
+          <button v-if="hasPermission('marketing.teams.manage')" class="btn-primary" @click="openAddLeadModal" style="margin-top: 20px;">
             <span class="plus-icon">+</span> إضافة عميل محتمل
           </button>
         </div>
       </div>
 
-      <!-- 6. AI Assistant Tab -->
+      <!-- 6. Expected Sales Tab -->
+      <div v-else-if="activeTab === 'expected-sales'" class="marketing-expected-sales-view">
+        <div class="section-header-compact">
+          <h2 class="section-title">المبيعات المتوقعة</h2>
+          <p class="section-subtitle">حساب الحجوزات المتوقعة وقيمتها وربطها بلوحة المؤشرات.</p>
+        </div>
+
+        <div class="plan-card" style="margin-bottom: 20px;">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>المشروع</label>
+              <select v-model="expectedSalesForm.project_id" class="form-input">
+                <option value="">-- اختر مشروعاً --</option>
+                <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.project_name || p.name || ('Project #' + p.id) }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Direct Communications</label>
+              <input type="number" v-model.number="expectedSalesForm.direct_communications" class="form-input" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Hand Raises</label>
+              <input type="number" v-model.number="expectedSalesForm.hand_raises" class="form-input" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Conversion Rate %</label>
+              <input type="number" step="0.01" v-model.number="expectedSalesForm.conversion_rate_percent" class="form-input" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Campaign Budget</label>
+              <input type="number" v-model.number="expectedSalesForm.campaign_budget" class="form-input" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Expected Booking Value</label>
+              <input type="number" v-model.number="expectedSalesForm.expected_booking_value" class="form-input" min="0" />
+            </div>
+          </div>
+          <div class="plan-actions">
+            <button class="btn-secondary" @click="loadExpectedSales">تحديث القائمة</button>
+            <button class="btn-primary" @click="saveExpectedSale" :disabled="isSubmitting">حفظ التوقع</button>
+          </div>
+        </div>
+
+        <div class="leads-table-container">
+          <table class="luxury-table">
+            <thead>
+              <tr>
+                <th>المشروع</th>
+                <th>Direct + Hand Raise</th>
+                <th>Conversion</th>
+                <th>Expected Bookings</th>
+                <th>Expected Value</th>
+                <th>Deposit/Booking</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in expectedSalesRows" :key="row.id || row.project_id">
+                <td>{{ row.project_name || ('Project #' + (row.project_id ?? '—')) }}</td>
+                <td class="number">{{ row.direct_communications || 0 }} + {{ row.hand_raises || 0 }}</td>
+                <td class="number">{{ Number(row.conversion_rate_percent ?? row.conversion_rate ?? 0).toFixed(2) }}%</td>
+                <td class="number">{{ row.expected_bookings || 0 }}</td>
+                <td class="number">{{ formatCurrency(row.expected_booking_value || 0) }}</td>
+                <td class="number">{{ formatCurrency(row.deposit_per_booking || 0) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 7. Reports Tab -->
+      <div v-else-if="activeTab === 'reports'" class="marketing-reports-view">
+        <div class="section-header-compact" style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <h2 class="section-title">تقارير التسويق</h2>
+            <p class="section-subtitle">تقارير الأداء والميزانية والحجوزات المتوقعة.</p>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn-secondary" @click="exportReportsExcel">Excel</button>
+            <button class="btn-primary" @click="exportReportsPdf">PDF</button>
+          </div>
+        </div>
+        <div class="plan-card" style="margin-bottom: 16px;">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>المشروع</label>
+              <select v-model="reportFilters.project_id" class="form-input">
+                <option value="">الكل</option>
+                <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.project_name || p.name || ('Project #' + p.id) }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>من تاريخ</label>
+              <input type="date" v-model="reportFilters.start_date" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label>إلى تاريخ</label>
+              <input type="date" v-model="reportFilters.end_date" class="form-input" />
+            </div>
+          </div>
+          <div class="plan-actions">
+            <button class="btn-primary" @click="loadReports">تحميل التقارير</button>
+          </div>
+        </div>
+        <div class="leads-table-container">
+          <table class="luxury-table">
+            <thead>
+              <tr>
+                <th>التقرير</th>
+                <th>الملخص</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>أداء المشاريع</td>
+                <td>{{ reportSummary.projectPerformance }}</td>
+              </tr>
+              <tr>
+                <td>تحليل الميزانية</td>
+                <td>{{ reportSummary.budgetAnalysis }}</td>
+              </tr>
+              <tr>
+                <td>إحصائيات الحجوزات</td>
+                <td>{{ reportSummary.bookingStats }}</td>
+              </tr>
+              <tr>
+                <td>أداء الموظفين</td>
+                <td>{{ reportSummary.employeePerformance }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="leads-table-container" style="margin-top: 12px;">
+          <table class="luxury-table">
+            <thead>
+              <tr>
+                <th>البند</th>
+                <th>القيمة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in reportRows" :key="`${row.section}-${row.name}`">
+                <td>{{ row.section }} / {{ row.name }}</td>
+                <td>{{ row.summary }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 8. AI Assistant Tab -->
       <div v-else-if="activeTab === 'ai-assistant'" class="marketing-ai-view">
         <div class="section-header-compact">
           <h2 class="section-title">المساعد الذكي (AI Assistant)</h2>
@@ -479,7 +729,7 @@
                   </template>
                 </div>
               </div>
-              <div v-for="(msg, idx) in chatMessages" :key="idx" :class="['chat-bubble', msg.role]">
+              <div v-for="(msg, idx) in chatMessages" v-memo="[msg.role, msg.content]" :key="idx" :class="['chat-bubble', msg.role]">
                 <div class="bubble-content">
                   <div class="bubble-sender">{{ msg.role === 'user' ? 'أنت' : 'المساعد الذكي' }}</div>
                   <div class="bubble-text">{{ msg.content }}</div>
@@ -539,6 +789,28 @@
           <div class="form-group">
             <label>سعر الوحدة <span class="required">*</span></label>
             <input type="number" v-model="budgetForm.unit_price" class="form-input" placeholder="أدخل سعر الوحدة" required />
+          </div>
+          <div class="form-group">
+            <label>نسبة العمولة %</label>
+            <input type="number" v-model="budgetForm.commission_percent" class="form-input" placeholder="مثال: 3" />
+          </div>
+          <div class="form-group">
+            <label>نسبة التسويق (ثابتة)</label>
+            <input type="number" step="0.01" v-model="budgetForm.marketing_percent" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label>مدة العقد (بالأيام)</label>
+            <input type="number" v-model="budgetForm.contract_duration_days" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label>مدة العقد (بالأشهر)</label>
+            <input type="number" v-model="budgetForm.contract_duration_months" class="form-input" />
+          </div>
+          <div v-if="budgetResult" class="details-grid">
+            <div class="detail-item"><span class="detail-label">Commission Value</span><span class="detail-value number">{{ formatCurrency(budgetResult.commission_value || 0) }}</span></div>
+            <div class="detail-item"><span class="detail-label">Marketing Value</span><span class="detail-value number">{{ formatCurrency(budgetResult.marketing_value || 0) }}</span></div>
+            <div class="detail-item"><span class="detail-label">Daily Budget</span><span class="detail-value number">{{ formatCurrency(budgetResult.daily_budget || 0) }}</span></div>
+            <div class="detail-item"><span class="detail-label">Monthly Budget</span><span class="detail-value number">{{ formatCurrency(budgetResult.monthly_budget || 0) }}</span></div>
           </div>
         </div>
         <div class="modal-footer">
@@ -608,6 +880,14 @@
                       </span>
                     </span>
                   </div>
+                  <div class="detail-item">
+                    <span class="detail-label">مدة العقد المتبقية</span>
+                    <span class="detail-value">
+                      <span class="project-status" :class="durationStatusClass(contractTimelineDaysLeft(selectedProjectDetails))">
+                        {{ contractTimelineLabel(selectedProjectDetails) }}
+                      </span>
+                    </span>
+                  </div>
                   
                   <!-- View Units Button -->
                   <div class="detail-item clickable" @click="goToUnits(selectedProjectDetails.id)" style="cursor: pointer; border-color: #2563eb; background: rgba(37, 99, 235, 0.05);">
@@ -631,6 +911,10 @@
                   <div class="section-header" style="margin-bottom: 14px;">
                     <h3 class="section-title-chart">إدارة فرق التسويق</h3>
                     <p class="section-desc">تعيين الصلاحيات للفرق المسؤولة عن هذا المشروع.</p>
+                  </div>
+                  <div class="detail-item" style="margin-bottom: 12px;">
+                    <span class="detail-label">الموظف المقترح للتواصل</span>
+                    <span class="detail-value">{{ getRecommendedEmployee(selectedProjectDetails) }}</span>
                   </div>
                   
                   <!-- Add Team UI -->
@@ -831,7 +1115,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, watch, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import marketingService from '../services/marketingService'
 import notificationService from '../services/notificationService'
@@ -840,20 +1124,24 @@ import aiService from '../services/aiService'
 import logger from '../utils/logger'
 import contractService from '../services/contractService'
 import teamService from '../services/teamService'
+import hrService from '../services/hrService'
+import { usePermissions } from '../composables/usePermissions'
+import { normalizeReportRows } from '../utils/marketingNormalizers'
 
 export default {
   name: 'MarketingView',
   setup() {
     const route = useRoute()
     const router = useRouter()
-    
+    const { hasPermission } = usePermissions()
+
     // State
     const activeTab = ref('dashboard')
     const activePlanSubTab = ref('developer')
     const userName = ref(localStorage.getItem('userName') || 'مستخدم')
     
     // Fixed percentages (Adjust to business rules if needed)
-    const MARKETING_PERCENT_FIXED = 0.1 // 10% (Fixed in SRS; adjust if backend uses different)
+    const MARKETING_PERCENT_FIXED = 10 // 10% (Fixed in SRS; adjust if backend uses different)
 
     // Dashboard Metrics (API-aligned: GET /api/marketing/dashboard)
     const dashboardMetrics = reactive({
@@ -864,11 +1152,13 @@ export default {
       daily_deposits_count: 0,
       deposit_cost: 0,
       total_expected_bookings: 0,
-      total_expected_booking_value: 0
+      total_expected_booking_value: 0,
+      total_daily_spend: 0
     })
 
     // Projects
-    const projects = ref([])
+    // Using shallowRef for better performance with large arrays
+    const projects = shallowRef([])
     const isLoadingProjects = ref(false)
     const selectedProjectDetails = ref(null)
     const isLoadingProjectDetails = ref(false)
@@ -883,6 +1173,7 @@ export default {
     // Tasks
     const tasks = ref([])
     const isLoadingTasks = ref(false)
+    const knownTaskIds = ref(new Set())
 
     // Leads
     const leads = ref([])
@@ -930,6 +1221,45 @@ export default {
     const isLoadingEmployeePlans = ref(false)
     const employeePlanGenerateForm = reactive({
       user_id: ''
+    })
+    const platformDistribution = reactive({
+      tiktok: 20,
+      meta: 30,
+      snapchat: 20,
+      youtube: 10,
+      linkedin: 10,
+      x: 10
+    })
+    const campaignDistribution = reactive({
+      direct_communication: 30,
+      hand_raise: 30,
+      impression: 20,
+      sales: 20
+    })
+    const budgetDistributionResult = ref(null)
+    const budgetResult = ref(null)
+
+    const expectedSalesRows = ref([])
+    const isLoadingExpectedSales = ref(false)
+    const expectedSalesForm = reactive({
+      project_id: '',
+      direct_communications: 0,
+      hand_raises: 0,
+      conversion_rate_percent: 1,
+      campaign_budget: 0,
+      expected_booking_value: 0
+    })
+
+    const reportFilters = reactive({
+      project_id: '',
+      start_date: '',
+      end_date: ''
+    })
+    const reportsData = reactive({
+      projectPerformance: {},
+      budgetAnalysis: {},
+      bookingStats: {},
+      employeePerformance: {}
     })
 
     // AI Assistant state
@@ -984,6 +1314,43 @@ export default {
       }
     })
 
+    const depositCostDisplay = computed(() => {
+      if (Number(dashboardMetrics.deposit_cost) > 0) return Number(dashboardMetrics.deposit_cost)
+      const spend = Number(dashboardMetrics.total_daily_spend || 0)
+      const deposits = Number(dashboardMetrics.daily_deposits_count || 0)
+      return deposits > 0 ? spend / deposits : 0
+    })
+
+    const platformDistributionSum = computed(() =>
+      Object.values(platformDistribution).reduce((acc, v) => acc + (Number(v) || 0), 0)
+    )
+    const campaignDistributionSum = computed(() =>
+      Object.values(campaignDistribution).reduce((acc, v) => acc + (Number(v) || 0), 0)
+    )
+
+    const reportSummary = computed(() => ({
+      projectPerformance: formatReportSummary(reportsData.projectPerformance),
+      budgetAnalysis: formatReportSummary(reportsData.budgetAnalysis),
+      bookingStats: formatReportSummary(reportsData.bookingStats),
+      employeePerformance: formatReportSummary(reportsData.employeePerformance)
+    }))
+
+    const reportRows = computed(() => {
+      const sections = [
+        { section: 'أداء المشاريع', value: reportsData.projectPerformance },
+        { section: 'تحليل الميزانية', value: reportsData.budgetAnalysis },
+        { section: 'إحصائيات الحجوزات', value: reportsData.bookingStats },
+        { section: 'أداء الموظفين', value: reportsData.employeePerformance }
+      ]
+
+      return sections.flatMap((item) =>
+        normalizeReportRows(item.value, item.section).map((row) => ({
+          section: item.section,
+          ...row
+        }))
+      )
+    })
+
     // --- Data Loading Functions ---
 
     const loadDashboard = async () => {
@@ -999,7 +1366,8 @@ export default {
           daily_deposits_count: Number(data.daily_deposits_count ?? 0) || 0,
           deposit_cost: Number(data.deposit_cost ?? 0) || 0,
           total_expected_bookings: Number(data.total_expected_bookings ?? 0) || 0,
-          total_expected_booking_value: Number(data.total_expected_booking_value ?? 0) || 0
+          total_expected_booking_value: Number(data.total_expected_booking_value ?? 0) || 0,
+          total_daily_spend: Number(data.total_daily_spend ?? 0) || 0
         })
 
         logger.debug('Dashboard loaded')
@@ -1014,7 +1382,8 @@ export default {
           daily_deposits_count: 0,
           deposit_cost: 0,
           total_expected_bookings: 0,
-          total_expected_booking_value: 0
+          total_expected_booking_value: 0,
+          total_daily_spend: 0
         })
       }
     }
@@ -1023,7 +1392,7 @@ export default {
       isLoadingProjects.value = true
       try {
         const data = await marketingService.getProjects()
-        projects.value = data
+        projects.value = data?.items ?? (Array.isArray(data) ? data : [])
       } catch (error) {
         logger.error('Error loading projects:', error)
         projects.value = []
@@ -1050,7 +1419,13 @@ export default {
       isLoadingTasks.value = true
       try {
         const data = await marketingService.getTasks()
-        tasks.value = data
+        tasks.value = data?.items ?? (Array.isArray(data) ? data : [])
+        const currentIds = new Set(knownTaskIds.value)
+        const newTask = tasks.value.find(t => !currentIds.has(t.id) && ['new', 'pending'].includes(String(t.status || '').toLowerCase()))
+        if (newTask) {
+          notificationService.addNotification('تمت إضافة مهمة يومية جديدة', 'info')
+        }
+        knownTaskIds.value = new Set(tasks.value.map(t => t.id))
       } catch (error) {
         logger.error('Error loading tasks:', error)
         tasks.value = []
@@ -1063,7 +1438,7 @@ export default {
       isLoadingLeads.value = true
       try {
         const data = await marketingService.getLeads()
-        leads.value = data
+        leads.value = data?.items ?? (Array.isArray(data) ? data : [])
       } catch (error) {
         logger.error('Error loading leads:', error)
         leads.value = []
@@ -1076,7 +1451,8 @@ export default {
       isLoadingEmployees.value = true
       try {
         const employees = await userService.getEmployees()
-        marketingEmployees.value = (employees || []).filter(e => String(e.type) === '0' || e.type === 0 || String(e.type).toLowerCase() === 'marketing')
+        const normalizedEmployees = Array.isArray(employees) ? employees : (employees?.items || [])
+        marketingEmployees.value = normalizedEmployees.filter(e => String(e.type) === '0' || e.type === 0 || String(e.type).toLowerCase() === 'marketing')
       } catch (error) {
         logger.error('Error loading employees:', error)
         marketingEmployees.value = []
@@ -1093,7 +1469,7 @@ export default {
       isLoadingEmployeePlans.value = true
       try {
         const data = await marketingService.getEmployeePlans(employeePlansProjectId.value)
-        employeePlans.value = Array.isArray(data) ? data : []
+        employeePlans.value = data?.items ?? (Array.isArray(data) ? data : [])
       } catch (error) {
         logger.error('Error loading employee plans:', error)
         employeePlans.value = []
@@ -1102,11 +1478,84 @@ export default {
       }
     }
 
+    const loadExpectedSales = async () => {
+      isLoadingExpectedSales.value = true
+      try {
+        const data = await marketingService.getExpectedSales({
+          project_id: expectedSalesForm.project_id || undefined,
+          per_page: 100
+        })
+        expectedSalesRows.value = data?.items ?? []
+      } catch (error) {
+        logger.error('Error loading expected sales:', error)
+        expectedSalesRows.value = []
+      } finally {
+        isLoadingExpectedSales.value = false
+      }
+    }
+
+    const saveExpectedSale = async () => {
+      if (!expectedSalesForm.project_id) {
+        alert('اختر مشروعاً أولاً')
+        return
+      }
+      try {
+        isSubmitting.value = true
+        const conversionRatePercent = Number(expectedSalesForm.conversion_rate_percent) || 0
+        const expectedBookings = Math.round(
+          (Number(expectedSalesForm.direct_communications) + Number(expectedSalesForm.hand_raises)) * (conversionRatePercent / 100)
+        )
+        await marketingService.createExpectedSale({
+          project_id: Number(expectedSalesForm.project_id),
+          direct_communications: Number(expectedSalesForm.direct_communications) || 0,
+          hand_raises: Number(expectedSalesForm.hand_raises) || 0,
+          conversion_rate: conversionRatePercent,
+          expected_bookings: expectedBookings,
+          expected_booking_value: Number(expectedSalesForm.expected_booking_value) || 0,
+          campaign_budget: Number(expectedSalesForm.campaign_budget) || 0
+        })
+        notificationService.addNotification('تم حفظ المبيعات المتوقعة بنجاح', 'success')
+        await Promise.all([loadExpectedSales(), loadDashboard()])
+      } catch (error) {
+        logger.error('Error saving expected sale:', error)
+        alert('حدث خطأ أثناء حفظ المبيعات المتوقعة')
+      } finally {
+        isSubmitting.value = false
+      }
+    }
+
+    const loadReports = async () => {
+      try {
+        const params = {
+          project_id: reportFilters.project_id || undefined,
+          start_date: reportFilters.start_date || undefined,
+          end_date: reportFilters.end_date || undefined
+        }
+        const [projectPerformance, budgetAnalysis, bookingStats, employeePerformance] = await Promise.all([
+          marketingService.getProjectPerformanceReport(params),
+          marketingService.getBudgetAnalysisReport(params),
+          marketingService.getBookingStatsReport(params),
+          hrService.getMarketerPerformanceReport(params)
+        ])
+        reportsData.projectPerformance = projectPerformance || {}
+        reportsData.budgetAnalysis = budgetAnalysis || {}
+        reportsData.bookingStats = bookingStats || {}
+        reportsData.employeePerformance = employeePerformance || {}
+      } catch (error) {
+        logger.error('Error loading reports:', error)
+      }
+    }
+
     // --- Action Functions ---
 
     const openCalculateBudgetModal = () => {
       budgetForm.contract_id = ''
       budgetForm.unit_price = ''
+      budgetForm.commission_percent = ''
+      budgetForm.marketing_percent = MARKETING_PERCENT_FIXED
+      budgetForm.contract_duration_days = ''
+      budgetForm.contract_duration_months = ''
+      budgetResult.value = null
       showCalculateBudgetModal.value = true
     }
 
@@ -1126,7 +1575,8 @@ export default {
         // Best-effort fields from backend, otherwise compute locally per SRS formulas
         const unitPrice = Number(budgetForm.unit_price) || 0
         const commissionPercent = Number(budgetForm.commission_percent) || 0
-        const marketingPercent = Number(budgetForm.marketing_percent) || MARKETING_PERCENT_FIXED
+        const rawMarketingPercent = Number(budgetForm.marketing_percent)
+        const marketingPercent = rawMarketingPercent > 1 ? (rawMarketingPercent / 100) : (rawMarketingPercent || MARKETING_PERCENT_FIXED)
 
         const commissionValue = result.commission_value ?? (unitPrice * (commissionPercent / 100))
         const marketingValue = result.marketing_value ?? (Number(commissionValue) * marketingPercent)
@@ -1136,6 +1586,12 @@ export default {
 
         const dailyBudget = durationDays ? (Number(marketingValue) / durationDays) : (result.daily_budget ?? 0)
         const monthlyBudget = durationMonths ? (Number(marketingValue) / durationMonths) : (result.monthly_budget ?? 0)
+        budgetResult.value = {
+          commission_value: Number(commissionValue) || 0,
+          marketing_value: Number(marketingValue) || 0,
+          daily_budget: Number(dailyBudget) || 0,
+          monthly_budget: Number(monthlyBudget) || 0
+        }
 
         // Auto-fill developer plan if user wants
         developerPlanForm.contract_id = developerPlanForm.contract_id || budgetForm.contract_id
@@ -1197,7 +1653,7 @@ export default {
 
     const toggleTaskStatus = async (task) => {
       const current = normalizeTaskStatus(task.status)
-      const newStatus = current === 'completed' ? 'in-progress' : (current === 'in-progress' ? 'completed' : 'in-progress')
+      const newStatus = current === 'completed' ? 'in_progress' : (current === 'in_progress' ? 'completed' : 'in_progress')
       try {
         await marketingService.updateTaskStatus(task.id, newStatus)
         task.status = newStatus
@@ -1324,7 +1780,7 @@ export default {
     const normalizeTaskStatus = (status) => {
       const s = String(status || '').toLowerCase()
       if (s === 'completed' || s === 'done') return 'completed'
-      if (s === 'in-progress' || s === 'in_progress') return 'in-progress'
+      if (s === 'in-progress' || s === 'in_progress') return 'in_progress'
       if (s === 'new') return 'pending'
       if (s === 'pending') return 'pending'
       return 'pending'
@@ -1357,7 +1813,7 @@ export default {
     const getTaskStatusClass = (status) => {
       const statusMap = {
         'completed': 'task-completed',
-        'in-progress': 'task-in-progress',
+        'in_progress': 'task-in-progress',
         'pending': 'task-pending'
       }
       return statusMap[normalizeTaskStatus(status)] || 'task-pending'
@@ -1367,7 +1823,7 @@ export default {
       const normalized = normalizeTaskStatus(status)
       const textMap = {
         'completed': 'مكتملة',
-        'in-progress': 'قيد التنفيذ',
+        'in_progress': 'قيد التنفيذ',
         'pending': 'معلقة'
       }
       return textMap[normalized] || 'غير محدد'
@@ -1391,9 +1847,15 @@ export default {
 
     const syncTabFromRoute = () => {
       // expected routes: /marketing/:tab
-      const parts = String(route.path || '').split('/').filter(Boolean)
-      const tab = parts[1] // ['marketing','dashboard']
-      if (!tab) return
+      const path = String(route.path || route.fullPath || '').replace(/\/$/, '')
+      const parts = path.split('/').filter(Boolean)
+      const tab = parts[1] // ['marketing','dashboard'] or ['marketing','plans']
+
+      if (!tab) {
+        // /marketing only - default to dashboard
+        activeTab.value = 'dashboard'
+        return
+      }
 
       if (tab === 'developer-plan') {
         activeTab.value = 'plans'
@@ -1415,14 +1877,14 @@ export default {
         return
       }
 
-      if (tab && ['dashboard', 'projects', 'tasks', 'leads', 'ai-assistant'].includes(tab)) {
+      if (['dashboard', 'projects', 'tasks', 'leads', 'expected-sales', 'reports', 'ai-assistant'].includes(tab)) {
         activeTab.value = tab
       }
     }
 
-    watch(() => route.path, () => {
+    watch(() => [route.path, route.fullPath], () => {
       syncTabFromRoute()
-    })
+    }, { immediate: true })
 
     watch(() => route.query?.sub, () => {
       syncTabFromRoute()
@@ -1441,6 +1903,12 @@ export default {
         loadTasks()
       } else if (newTab === 'leads') {
         loadLeads()
+      } else if (newTab === 'expected-sales') {
+        loadProjects()
+        loadExpectedSales()
+      } else if (newTab === 'reports') {
+        loadProjects()
+        loadReports()
       } else if (newTab === 'ai-assistant') {
         loadAiDashboard()
       }
@@ -1504,11 +1972,14 @@ export default {
         alert('اختر مشروعاً وموظفاً')
         return
       }
+      if (!validateDistributions()) return
       try {
         isSubmitting.value = true
         await marketingService.autoGenerateEmployeePlan({
           marketing_project_id: Number(employeePlansProjectId.value),
-          user_id: Number(employeePlanGenerateForm.user_id)
+          user_id: Number(employeePlanGenerateForm.user_id),
+          platform_distribution: { ...platformDistribution },
+          campaign_distribution: { ...campaignDistribution }
         })
         notificationService.addNotification('تم إنشاء خطة الموظف تلقائياً', 'success')
         await loadEmployeePlans()
@@ -1628,12 +2099,155 @@ export default {
       return entries.map(([k, v]) => `${k}: ${v}`).join(' • ')
     }
 
+    const getRecommendedEmployee = (project) => {
+      const plans = project?.employee_plans || []
+      if (!plans.length) return 'تقديريًا: أعلى أداء غير متاح'
+      const sorted = [...plans].sort((a, b) => (Number(b.marketing_value) || 0) - (Number(a.marketing_value) || 0))
+      const top = sorted[0]
+      const name = top?.user?.name || top?.user_name || `User #${top?.user_id ?? ''}`
+      return `${name} (Estimated by performance)`
+    }
+
+    const contractTimelineDaysLeft = (project) => {
+      if (!project) return null
+      const candidates = [
+        project.contract_end_date,
+        project.end_date,
+        project.agreement_end_date,
+        project.marketing_project?.contract_end_date
+      ]
+      const endDateRaw = candidates.find(Boolean)
+      if (!endDateRaw) return null
+      const endDate = new Date(endDateRaw)
+      if (Number.isNaN(endDate.getTime())) return null
+      return Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    }
+
+    const durationStatusClass = (daysLeft) => {
+      if (daysLeft === null) return 'status-pending'
+      if (daysLeft < 30) return 'status-cancelled'
+      if (daysLeft < 90) return 'status-pending'
+      return 'status-active'
+    }
+
+    const contractTimelineLabel = (project) => {
+      const daysLeft = contractTimelineDaysLeft(project)
+      if (daysLeft === null) return 'غير متاح'
+      if (daysLeft < 0) return 'منتهي'
+      if (daysLeft >= 90) return `${daysLeft} يوم (أخضر)`
+      if (daysLeft >= 30) return `${daysLeft} يوم (برتقالي)`
+      return `${daysLeft} يوم (أحمر)`
+    }
+
+    const formatReportSummary = (value) => {
+      if (!value) return '—'
+      if (Array.isArray(value)) return `${value.length} records`
+      if (typeof value === 'object') {
+        const keys = Object.keys(value)
+        if (!keys.length) return 'No data'
+        return keys.slice(0, 4).map((k) => `${k}: ${value[k]}`).join(' | ')
+      }
+      return String(value)
+    }
+
+    const validateDistributions = () => {
+      if (platformDistributionSum.value !== 100) {
+        alert('مجموع نسب المنصات يجب أن يساوي 100%')
+        return false
+      }
+      if (campaignDistributionSum.value !== 100) {
+        alert('مجموع نسب الحملات يجب أن يساوي 100%')
+        return false
+      }
+      return true
+    }
+
+    const applyManualEmployeePlan = async () => {
+      if (!employeePlansProjectId.value || !employeePlanGenerateForm.user_id) {
+        alert('اختر مشروعاً وموظفاً')
+        return
+      }
+      if (!validateDistributions()) return
+
+      try {
+        isSubmitting.value = true
+        await marketingService.createEmployeePlan({
+          marketing_project_id: Number(employeePlansProjectId.value),
+          user_id: Number(employeePlanGenerateForm.user_id),
+          platform_distribution: { ...platformDistribution },
+          campaign_distribution: { ...campaignDistribution }
+        })
+
+        const distribution = await marketingService.getBudgetDistributionByProject(employeePlansProjectId.value, {
+          plan_type: 'employee'
+        })
+        const distributionId = distribution?.id || distribution?.distribution_id
+        if (distributionId) {
+          await marketingService.calculateBudgetDistribution(distributionId, {
+            platform_distribution: { ...platformDistribution },
+            campaign_distribution: { ...campaignDistribution }
+          })
+          budgetDistributionResult.value = await marketingService.getBudgetDistributionResults(distributionId)
+        }
+
+        notificationService.addNotification('تم حفظ خطة الموظف مع التوزيعات', 'success')
+        await loadEmployeePlans()
+      } catch (error) {
+        logger.error('Error saving employee distribution:', error)
+        alert('تعذر حفظ خطة الموظف بالتوزيعات')
+      } finally {
+        isSubmitting.value = false
+      }
+    }
+
+    const exportReportsExcel = () => {
+      const rows = [['القسم', 'البند', 'القيمة']]
+      reportRows.value.forEach((row) => {
+        rows.push([row.section, row.name, row.summary])
+      })
+      const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
+      const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = `marketing_reports_${new Date().toISOString().split('T')[0]}.csv`
+      link.click()
+    }
+
+    const exportReportsPdf = async () => {
+      try {
+        const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib')
+        const pdfDoc = await PDFDocument.create()
+        const page = pdfDoc.addPage([595, 842])
+        const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+        let y = 800
+        const draw = (text, size = 12) => {
+          page.drawText(String(text), { x: 40, y, size, font, color: rgb(0.1, 0.2, 0.3) })
+          y -= size + 10
+        }
+
+        draw('Marketing Reports', 16)
+        draw(`Date: ${new Date().toISOString().slice(0, 10)}`)
+        reportRows.value.slice(0, 40).forEach((row) => {
+          draw(`${row.section} / ${row.name}: ${row.summary}`)
+        })
+        const pdfBytes = await pdfDoc.save()
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+        const link = document.createElement('a')
+        link.href = URL.createObjectURL(blob)
+        link.download = `marketing_reports_${new Date().toISOString().split('T')[0]}.pdf`
+        link.click()
+      } catch (error) {
+        logger.error('Error exporting PDF report:', error)
+      }
+    }
+
     return {
       activeTab,
       activePlanSubTab,
       setPlanSubTab,
       userName,
       dashboardMetrics,
+      depositCostDisplay,
       projects,
       isLoadingProjects,
       selectedProjectDetails,
@@ -1653,6 +2267,7 @@ export default {
       leadForm,
       openCalculateBudgetModal,
       calculateBudget,
+      budgetResult,
       openAddLeadModal,
       saveLead,
       toggleTaskStatus,
@@ -1668,6 +2283,19 @@ export default {
       getTaskStatusText,
       getSourceClass
       ,
+      // expected sales
+      expectedSalesRows,
+      expectedSalesForm,
+      isLoadingExpectedSales,
+      loadExpectedSales,
+      saveExpectedSale,
+      // reports
+      reportFilters,
+      reportSummary,
+      reportRows,
+      loadReports,
+      exportReportsExcel,
+      exportReportsPdf,
       // developer plan
       developerPlanForm,
       developerPlanSummary,
@@ -1685,8 +2313,18 @@ export default {
       loadEmployees,
       loadEmployeePlans,
       autoGenerateEmployeePlan,
+      platformDistribution,
+      campaignDistribution,
+      platformDistributionSum,
+      campaignDistributionSum,
+      applyManualEmployeePlan,
+      budgetDistributionResult,
       getMarketingProjectId,
       formatDistribution,
+      getRecommendedEmployee,
+      contractTimelineDaysLeft,
+      contractTimelineLabel,
+      durationStatusClass,
       // AI Assistant
       aiQuery,
       isAiTyping,
@@ -1704,7 +2342,8 @@ export default {
       selectedTeamIdToAdd,
       isTeamActionLoading,
       assignTeamToProject,
-      removeTeamFromProject
+      removeTeamFromProject,
+      hasPermission
     }
   }
 }
@@ -3139,3 +3778,5 @@ export default {
   /* يمكن إضافة دعم الوضع الداكن هنا إذا لزم الأمر */
 }
 </style>
+
+

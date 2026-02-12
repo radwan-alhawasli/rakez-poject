@@ -244,7 +244,7 @@ export default {
     const loadTeams = async () => {
       try {
         const data = await hrService.getTeams()
-        teams.value = Array.isArray(data) ? data : (data?.data || [])
+        teams.value = data?.items ?? (Array.isArray(data) ? data : (data?.data || []))
       } catch (error) {
         logger.error('Error loading teams:', error)
         teams.value = []

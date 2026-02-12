@@ -104,6 +104,21 @@
              <span class="detail-item" v-if="project.landmark">
                 {{ project.landmark }}
              </span>
+             <span class="detail-item">
+                الوحدات (متاح/معلق): {{ project.availableUnits }} / {{ project.pendingUnits }}
+             </span>
+             <span class="detail-item">
+                متوسط السعر: {{ formatCurrency(project.avgPrice || 0) }}
+             </span>
+             <span class="detail-item">
+                العمولة: {{ Number(project.commission_percentage || 0) }}%
+             </span>
+             <span class="detail-item">
+                القيمة المتاحة: {{ formatCurrency(project.availableUnitsValue || 0) }}
+             </span>
+             <span class="detail-item">
+                <strong :class="timelineClass(project.daysLeft)">{{ timelineLabel(project.daysLeft) }}</strong>
+             </span>
           </div>
 
           <div class="card-footer">
@@ -236,6 +251,7 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import contractService from '../services/contractService'
 import authService from '../services/authService'
+import notificationService from '../services/notificationService'
 import logger from '../utils/logger'
 
 export default {
@@ -310,6 +326,18 @@ export default {
             description: p.description || p.details || '', // Ensure description
             // Computed fields
             avgPrice: p.units && p.units.length ? p.units.reduce((a,b) => a + (Number(b.price)||0), 0) / p.units.length : 0,
+            commission_percentage: Number(p.commission_percentage || 0),
+            availableUnits: (p.units || []).filter(u => String(u.status || '').toLowerCase() === 'available' || !u.status).length,
+            pendingUnits: (p.units || []).filter(u => String(u.status || '').toLowerCase().includes('pending') || String(u.status || '').toLowerCase().includes('reserved')).length,
+            availableUnitsValue: (p.units || [])
+              .filter(u => String(u.status || '').toLowerCase() === 'available' || !u.status)
+              .reduce((acc, u) => acc + (Number(u.price) || 0), 0),
+            endDate: p.contract_end_date || p.end_date || p.agreement_end_date || null,
+            daysLeft: (() => {
+              const d = new Date(p.contract_end_date || p.end_date || p.agreement_end_date || 0)
+              if (Number.isNaN(d.getTime())) return null
+              return Math.ceil((d.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+            })(),
             
             // Mock if missing
             distance: '15',
@@ -452,10 +480,10 @@ export default {
             
             if (mediaForm.isExisting) {
                 await contractService.updatePhotography(selectedProject.value.id, payload)
-                alert('تم تحديث الصور وإرسالها للموافقة بنجاح')
+                notificationService.addNotification('تم تحديث الصور من قسم التحرير وإرسالها للموافقة', 'success')
             } else {
                 await contractService.storePhotography(selectedProject.value.id, payload)
-                alert('تم إرسال الصور للموافقة بنجاح')
+                notificationService.addNotification('تم رفع الصور من قسم التحرير وإرسالها للموافقة', 'success')
                 mediaForm.isExisting = true // Mark as existing after successful store
             }
             closeMediaModalState()
@@ -500,6 +528,21 @@ export default {
         return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR' }).format(val)
     }
 
+    const timelineClass = (daysLeft) => {
+        if (daysLeft === null) return ''
+        if (daysLeft < 30) return 'timeline-red'
+        if (daysLeft < 90) return 'timeline-orange'
+        return 'timeline-green'
+    }
+
+    const timelineLabel = (daysLeft) => {
+        if (daysLeft === null) return 'المدة غير متاحة'
+        if (daysLeft < 0) return 'العقد منتهي'
+        if (daysLeft < 30) return `أحمر: ${daysLeft} يوم`
+        if (daysLeft < 90) return `برتقالي: ${daysLeft} يوم`
+        return `أخضر: ${daysLeft} يوم`
+    }
+
     onMounted(fetchProjects)
 
     return {
@@ -515,7 +558,7 @@ export default {
       allProjectsCount,
       showMediaModalState, mediaForm, isMediaSaving,
       openMediaModal, closeMediaModalState, submitMediaForm,
-      getStatusClass, goToUnits, isManager
+      getStatusClass, goToUnits, isManager, timelineClass, timelineLabel
     }
   }
 }
@@ -657,6 +700,9 @@ export default {
 .detail-item {
   display:  block; font-size: 12px; color: #94a3b8; margin-bottom: 4px;
 }
+.timeline-red { color: #dc2626; }
+.timeline-orange { color: #d97706; }
+.timeline-green { color: #16a34a; }
 
 .card-footer {
   margin-top: auto; padding-top: 15px; border-top: 1px solid #f1f5f9;

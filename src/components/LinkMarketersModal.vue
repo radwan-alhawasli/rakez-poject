@@ -82,7 +82,7 @@ export default {
         try {
             // Fetch only marketers (type 0)
             const data = await userService.getEmployees({ type: 0 })
-            allMarketers.value = data
+            allMarketers.value = Array.isArray(data) ? data : (data?.items || [])
         } catch (error) {
             logger.error('Failed to fetch marketers:', error)
             // Mock if fails
