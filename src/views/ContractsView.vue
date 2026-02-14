@@ -62,7 +62,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="contract in filteredContracts" :key="contract.id">
+          <tr v-for="contract in paginatedContracts" :key="contract.id">
             <td><span class="badge-type">{{ contract.type }}</span></td>
             <td class="font-bold">{{ contract.number }}</td>
             <td class="dev-name">{{ contract.developer }}</td>
@@ -80,89 +80,109 @@
 
     <!-- مودال تفاصيل العقد -->
     <ContractModal v-if="showModal" :contract="selectedContract" @close="closeModal" @approve="handleApprove" @reject="handleReject" />
+
+    <!-- Pagination -->
+    <Pagination
+      v-if="totalCount > 0 || contracts.length > 0"
+      :current-page="currentPage"
+      :total-items="totalCount"
+      :per-page="perPage"
+      @page-change="handlePageChange"
+      @per-page-change="handlePerPageChange"
+    />
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import ContractModal from '../components/ContractModal.vue'
+import Pagination from '../components/Pagination.vue'
 import contractService from '../services/contractService'
 import authService from '../services/authService'
 import logger from '../utils/logger'
 
+const mapStatusForApi = (filter) => {
+  if (filter === 'pending') return 'pending'
+  if (filter === 'approved') return 'approved'
+  if (filter === 'archive') return 'rejected'
+  return ''
+}
+
+const mapContract = (c) => {
+  let statusRaw = c.status ? c.status.toLowerCase() : 'pending'
+  let status = 'Pending'
+  if (statusRaw === 'approved') status = 'Approved'
+  else if (statusRaw === 'rejected' || statusRaw === 'refused') status = 'Refused'
+  return {
+    ...c,
+    id: c.id,
+    type: c.type || (c.project_name ? 'Exclusive' : 'Full Contract'),
+    number: c.developer_number || c.id,
+    developer: c.project_name || c.name || 'غير محدد',
+    createdDate: c.created_at?.split('T')[0] || '-',
+    status,
+    marketer: c.marketer || c.created_by_name || 'System'
+  }
+}
+
 export default {
   name: 'ContractsView',
-  components: { ContractModal },
+  components: { ContractModal, Pagination },
   setup() {
     const activeFilter = ref('all')
     const searchQuery = ref('')
     const isLoading = ref(false)
     const error = ref(null)
     const contracts = ref([])
+    const totalFromApi = ref(0)
     const showModal = ref(false)
     const selectedContract = ref(null)
+    const currentPage = ref(1)
+    const perPage = ref(25)
     
     const user = ref(authService.getCurrentUser())
     const userRole = computed(() => {
       const type = user.value?.type
       if (type === 1 || type === 'admin' || user.value?.role === 'admin') return 1
-      // Check for Project Management (3)
       if (type == 3 || type === 'project_management') return 3
       return type ?? 0
     })
+
+    const isAdminWithPagination = computed(() => userRole.value == 1)
 
     const fetchContracts = async () => {
       isLoading.value = true
       error.value = null
       try {
-        // Dynamic service call based on role
-        // Role 1 (Admin) uses adminIndex
-        // Role 4 (Editor) uses editor/contracts/index
-        // Role 3 (Project Manager) and others use contracts/index
-        let serviceCall
         if (userRole.value == 1) {
-          serviceCall = contractService.getAllContracts()
-        } else if (userRole.value == 4) {
-          serviceCall = contractService.getEditorContracts()
-        } else {
-          serviceCall = contractService.getContracts()
-        }
-          
-        const data = await serviceCall
-        
-        contracts.value = data.map(c => {
-          let statusRaw = c.status ? c.status.toLowerCase() : 'pending'
-          let status = 'Pending'
-          if (statusRaw === 'approved') status = 'Approved'
-          else if (statusRaw === 'rejected' || statusRaw === 'refused') status = 'Refused'
-          
-          return {
-            ...c,
-            id: c.id,
-            type: c.type || (c.project_name ? 'Exclusive' : 'Full Contract'),
-            number: c.developer_number || c.id,
-            developer: c.project_name || c.name || 'غير محدد',
-            createdDate: c.created_at?.split('T')[0] || '-',
-            status: status,
-            marketer: c.marketer || c.created_by_name || 'System'
+          const params = {
+            page: currentPage.value,
+            per_page: perPage.value
           }
-        })
+          const status = mapStatusForApi(activeFilter.value)
+          if (status) params.status = status
+          const { items, total } = await contractService.getAllContracts(params)
+          contracts.value = items.map(mapContract)
+          totalFromApi.value = total
+        } else if (userRole.value == 4) {
+          const data = await contractService.getEditorContracts()
+          contracts.value = (Array.isArray(data) ? data : []).map(mapContract)
+          totalFromApi.value = contracts.value.length
+        } else {
+          const data = await contractService.getContracts()
+          contracts.value = (Array.isArray(data) ? data : []).map(mapContract)
+          totalFromApi.value = contracts.value.length
+        }
       } catch (err) {
         logger.error('Error fetching contracts:', err)
         error.value = 'فشل تحميل العقود. يرجى التأكد من الصلاحيات.'
+        contracts.value = []
+        totalFromApi.value = 0
       } finally { isLoading.value = false }
     }
 
     const filteredContracts = computed(() => {
       let filtered = contracts.value
-      
-      if (activeFilter.value === 'pending') filtered = filtered.filter(c => c.status === 'Pending')
-      else if (activeFilter.value === 'approved') filtered = filtered.filter(c => c.status === 'Approved')
-      else if (activeFilter.value === 'archive') filtered = filtered.filter(c => c.status === 'Refused')
-      else if (activeFilter.value === 'marketer_contracts') filtered = filtered.filter(c => c.type === 'Full Contract' || !c.type)
-      else if (activeFilter.value === 'exclusive_requests') filtered = filtered.filter(c => c.type === 'Exclusive')
-      else if (activeFilter.value === 'my_requests') filtered = filtered.filter(c => c.marketer === user.value?.name)
-      
       if (searchQuery.value) {
         const q = searchQuery.value.toLowerCase()
         filtered = filtered.filter(c => c.number?.toString().includes(q) || c.developer?.toLowerCase().includes(q))
@@ -170,7 +190,26 @@ export default {
       return filtered
     })
 
-    const totalCount = computed(() => contracts.value.length)
+    const paginatedContracts = computed(() => {
+      if (isAdminWithPagination.value) return filteredContracts.value
+      const start = (currentPage.value - 1) * perPage.value
+      const end = start + perPage.value
+      return filteredContracts.value.slice(start, end)
+    })
+
+    const handlePageChange = (page) => {
+      currentPage.value = page
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      if (isAdminWithPagination.value) fetchContracts()
+    }
+
+    const handlePerPageChange = (newPerPage) => {
+      perPage.value = newPerPage
+      currentPage.value = 1
+      if (isAdminWithPagination.value) fetchContracts()
+    }
+
+    const totalCount = computed(() => isAdminWithPagination.value ? totalFromApi.value : filteredContracts.value.length)
     const pendingCount = computed(() => contracts.value.filter(c => c.status === 'Pending').length)
     const approvedCount = computed(() => contracts.value.filter(c => c.status === 'Approved').length)
     const archiveCount = computed(() => contracts.value.filter(c => c.status === 'Refused').length)
@@ -232,14 +271,20 @@ export default {
       }
     }
 
+    watch(activeFilter, () => {
+      currentPage.value = 1
+      if (isAdminWithPagination.value) fetchContracts()
+    })
+
     onMounted(fetchContracts)
 
     return {
-      activeFilter, searchQuery, isLoading, error, filteredContracts,
+      activeFilter, searchQuery, isLoading, error, contracts, filteredContracts, paginatedContracts,
       totalCount, pendingCount, approvedCount, archiveCount,
       marketerCount, exclusiveCount, myRequestsCount,
       showModal, selectedContract, viewContract, closeModal,
-      handleApprove, handleReject, fetchContracts, userRole
+      handleApprove, handleReject, fetchContracts, userRole,
+      currentPage, perPage, handlePageChange, handlePerPageChange
     }
   }
 }

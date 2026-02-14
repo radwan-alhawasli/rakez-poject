@@ -1,210 +1,308 @@
 import apiClient from '../api/apiClient'
-import logger from '../utils/logger'
+import { handleServiceError } from '../utils/serviceErrorHandler'
+import { extractPaginatedData } from '../utils/paginationUtils'
+import {
+  normalizeMarketingDashboard,
+  normalizeProjectDetails,
+  normalizeExpectedSale,
+  normalizeListResponse
+} from '../utils/marketingNormalizers'
 
-/**
- * خدمة التسويق - Marketing Service
- * API Integration for Marketing Module
- */
+const unwrap = (response, fallback = {}) => response?.data?.data ?? response?.data ?? fallback
+
+const normalizePaginated = (response, itemNormalizer = (x) => x) => {
+  const { items, total } = extractPaginatedData(response, [])
+  return { items: normalizeListResponse(items).map(itemNormalizer), total: Number(total) || 0 }
+}
+
 const marketingService = {
-  // --- Dashboard ---
-
-  /**
-   * جلب إحصائيات لوحة التحكم التسويقية
-   * GET /api/marketing/dashboard
-   */
   async getDashboard() {
     try {
       const response = await apiClient.get('/marketing/dashboard')
-      return response.data?.data || response.data || {}
+      return normalizeMarketingDashboard(unwrap(response, {}))
     } catch (error) {
-      logger.error('Error fetching marketing dashboard:', error)
-      throw error
+      return handleServiceError(error, 'Fetch marketing dashboard', 'get', normalizeMarketingDashboard({}))
     }
   },
 
-  // --- Projects ---
-
-  /**
-   * جلب قائمة المشاريع التسويقية
-   * GET /api/marketing/projects
-   */
-  async getProjects() {
+  async getProjects(params = {}) {
     try {
-      const response = await apiClient.get('/marketing/projects')
-      const projects = response.data?.data || response.data || []
-      return Array.isArray(projects) ? projects : []
+      const response = await apiClient.get('/marketing/projects', { params })
+      return normalizePaginated(response, normalizeProjectDetails)
     } catch (error) {
-      logger.error('Error fetching projects:', error)
-      throw error
+      return handleServiceError(error, 'Fetch marketing projects', 'get', { items: [], total: 0 }) || { items: [], total: 0 }
     }
   },
 
-  /**
-   * جلب تفاصيل مشروع محدد
-   * GET /api/marketing/projects/:id
-   */
   async getProjectById(id) {
     try {
       const response = await apiClient.get(`/marketing/projects/${id}`)
-      return response.data?.data || response.data || {}
+      return normalizeProjectDetails(unwrap(response, {}))
     } catch (error) {
-      logger.error('Error fetching project details:', error)
-      throw error
+      return handleServiceError(error, 'Fetch marketing project by id', 'get', {})
     }
   },
 
-  /**
-   * حساب الميزانية التسويقية
-   * POST /api/marketing/projects/calculate-budget
-   * Payload: { contract_id, unit_price }
-   */
   async calculateBudget(payload) {
     try {
       const response = await apiClient.post('/marketing/projects/calculate-budget', payload)
-      return response.data?.data || response.data || {}
+      return unwrap(response, {})
     } catch (error) {
-      logger.error('Error calculating budget:', error)
-      throw error
+      return handleServiceError(error, 'Calculate marketing budget', 'post')
     }
   },
 
-  // --- Plans ---
-
-  /**
-   * جلب خطة المطور
-   * GET /api/marketing/developer-plans/:id
-   */
-  async getDeveloperPlan(id) {
+  async getDeveloperPlan(contractId) {
     try {
-      const response = await apiClient.get(`/marketing/developer-plans/${id}`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.get(`/marketing/plans/developer/${contractId}`)
+      return unwrap(response, {})
     } catch (error) {
-      logger.error('Error fetching developer plan:', error)
-      throw error
+      return handleServiceError(error, 'Fetch developer plan', 'get', {})
     }
   },
 
-  /**
-   * إنشاء خطة مطور جديدة
-   * POST /api/marketing/developer-plans
-   * Payload: { contract_id, marketing_value, average_cpm, average_cpc }
-   */
+  async getDeveloperPlans(params = {}) {
+    try {
+      const response = await apiClient.get('/marketing/plans/developer', { params })
+      return normalizeListResponse(unwrap(response, []))
+    } catch (error) {
+      return handleServiceError(error, 'Fetch developer plans list', 'get', [])
+    }
+  },
+
   async storeDeveloperPlan(payload) {
     try {
-      const response = await apiClient.post('/marketing/developer-plans', payload)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post('/marketing/plans/developer', payload)
+      return unwrap(response, {})
     } catch (error) {
-      logger.error('Error creating developer plan:', error)
-      throw error
+      return handleServiceError(error, 'Create developer plan', 'post')
     }
   },
 
-  /**
-   * جلب قائمة خطط الموظفين لمشروع معين
-   * GET /api/marketing/employee-plans/project/:projectId
-   */
-  async getEmployeePlans(projectId) {
+  async createDeveloperPlan(data) {
+    return this.storeDeveloperPlan(data)
+  },
+
+  async getEmployeePlans(projectId, params = {}) {
     try {
-      const response = await apiClient.get(`/marketing/employee-plans/project/${projectId}`)
-      const plans = response.data?.data || response.data || []
-      return Array.isArray(plans) ? plans : []
+      const requestParams = { ...params }
+      if (projectId) requestParams.project_id = projectId
+      const response = await apiClient.get('/marketing/plans/employee', { params: requestParams })
+      return normalizePaginated(response)
     } catch (error) {
-      logger.error('Error fetching employee plans:', error)
-      throw error
+      return handleServiceError(error, 'Fetch employee plans', 'get', { items: [], total: 0 }) || { items: [], total: 0 }
     }
   },
 
-  /**
-   * توليد خطة موظف تلقائياً
-   * POST /api/marketing/employee-plans/auto-generate
-   * Payload: { marketing_project_id, user_id }
-   */
+  async getEmployeePlansList(params = {}) {
+    try {
+      const response = await apiClient.get('/marketing/plans/employee', { params })
+      return normalizePaginated(response)
+    } catch (error) {
+      return handleServiceError(error, 'Fetch employee plans list', 'get', { items: [], total: 0 }) || { items: [], total: 0 }
+    }
+  },
+
+  async getEmployeePlanById(planId) {
+    try {
+      const response = await apiClient.get(`/marketing/plans/employee/${planId}`)
+      return unwrap(response, {})
+    } catch (error) {
+      return handleServiceError(error, 'Fetch employee plan', 'get', {})
+    }
+  },
+
+  async createEmployeePlan(data) {
+    try {
+      const payload = { ...data }
+      if (payload.project_id && !payload.marketing_project_id) {
+        payload.marketing_project_id = payload.project_id
+        delete payload.project_id
+      }
+      const response = await apiClient.post('/marketing/plans/employee', payload)
+      return unwrap(response, {})
+    } catch (error) {
+      return handleServiceError(error, 'Create employee plan', 'post')
+    }
+  },
+
   async autoGenerateEmployeePlan(payload) {
     try {
       const response = await apiClient.post('/marketing/employee-plans/auto-generate', payload)
-      return response.data?.data || response.data || {}
+      return unwrap(response, {})
     } catch (error) {
-      logger.error('Error auto-generating employee plan:', error)
-      throw error
+      return handleServiceError(error, 'Auto-generate employee plan', 'post')
     }
   },
 
-  // --- Tasks ---
-
-  /**
-   * جلب قائمة مهامي التسويقية
-   * GET /api/marketing/tasks
-   */
-  async getTasks() {
+  async getExpectedSales(params = {}) {
     try {
-      const response = await apiClient.get('/marketing/tasks')
-      const tasks = response.data?.data || response.data || []
-      return Array.isArray(tasks) ? tasks : []
+      const response = await apiClient.get('/marketing/expected-sales', { params })
+      const paginated = normalizePaginated(response, normalizeExpectedSale)
+      return paginated
     } catch (error) {
-      logger.error('Error fetching tasks:', error)
-      throw error
+      return handleServiceError(error, 'Fetch expected sales', 'get', { items: [], total: 0 }) || { items: [], total: 0 }
     }
   },
 
-  /**
-   * تحديث حالة مهمة
-   * PATCH /api/marketing/tasks/:id/status
-   * Payload: { status: 'completed' | 'in-progress' | 'pending' }
-   */
+  async createExpectedSale(data) {
+    try {
+      const response = await apiClient.post('/marketing/expected-sales', data)
+      return normalizeExpectedSale(unwrap(response, {}))
+    } catch (error) {
+      return handleServiceError(error, 'Create expected sale', 'post')
+    }
+  },
+
+  async getTasks(params = {}) {
+    try {
+      const response = await apiClient.get('/marketing/tasks', { params })
+      return normalizePaginated(response)
+    } catch (error) {
+      return handleServiceError(error, 'Fetch marketing tasks', 'get', { items: [], total: 0 }) || { items: [], total: 0 }
+    }
+  },
+
+  async createTask(data) {
+    try {
+      const response = await apiClient.post('/marketing/tasks', data)
+      return unwrap(response, {})
+    } catch (error) {
+      return handleServiceError(error, 'Create marketing task', 'post')
+    }
+  },
+
+  async updateTask(taskId, data) {
+    try {
+      const response = await apiClient.put(`/marketing/tasks/${taskId}`, data)
+      return unwrap(response, {})
+    } catch (error) {
+      return handleServiceError(error, `Update marketing task ${taskId}`, 'put')
+    }
+  },
+
   async updateTaskStatus(taskId, status) {
     try {
-      const response = await apiClient.patch(`/marketing/tasks/${taskId}/status`, { status })
-      return response.data?.data || response.data || {}
+      return await this.updateTask(taskId, { status })
     } catch (error) {
-      // بعض بيئات الـ API قد تقبل status كـ query param بدلاً من body (حسب إعدادات الباك-إند)
-      if (error?.status === 400 || error?.status === 422) {
-        try {
-          const response = await apiClient.patch(
-            `/marketing/tasks/${taskId}/status`,
-            null,
-            { params: { status } }
-          )
-          return response.data?.data || response.data || {}
-        } catch (retryError) {
-          logger.error('Error updating task status (retry):', retryError)
-          throw retryError
-        }
-      }
-
-      logger.error('Error updating task status:', error)
-      throw error
+      return handleServiceError(error, 'Update task status', 'put')
     }
   },
 
-  // --- Leads ---
-
-  /**
-   * جلب قائمة العملاء المحتملين
-   * GET /api/marketing/leads
-   */
-  async getLeads() {
+  async getLeads(params = {}) {
     try {
-      const response = await apiClient.get('/marketing/leads')
-      const leads = response.data?.data || response.data || []
-      return Array.isArray(leads) ? leads : []
+      const response = await apiClient.get('/marketing/leads', { params })
+      return normalizePaginated(response)
     } catch (error) {
-      logger.error('Error fetching leads:', error)
-      throw error
+      return handleServiceError(error, 'Fetch marketing leads', 'get', { items: [], total: 0 }) || { items: [], total: 0 }
     }
   },
 
-  /**
-   * إضافة عميل محتمل جديد
-   * POST /api/marketing/leads
-   * Payload: { name, contact_info, source, project_id }
-   */
   async storeLead(payload) {
     try {
       const response = await apiClient.post('/marketing/leads', payload)
-      return response.data?.data || response.data || {}
+      return unwrap(response, {})
     } catch (error) {
-      logger.error('Error creating lead:', error)
-      throw error
+      return handleServiceError(error, 'Create marketing lead', 'post')
+    }
+  },
+
+  async assignLead(leadId, payload) {
+    try {
+      const response = await apiClient.post(`/marketing/leads/${leadId}/assign`, payload)
+      return unwrap(response, {})
+    } catch (error) {
+      return handleServiceError(error, 'Assign lead', 'post')
+    }
+  },
+
+  async convertLead(leadId, payload = {}) {
+    try {
+      const response = await apiClient.post(`/marketing/leads/${leadId}/convert`, payload)
+      return unwrap(response, {})
+    } catch (error) {
+      return handleServiceError(error, 'Convert lead', 'post')
+    }
+  },
+
+  async getTeams(params = {}) {
+    try {
+      const response = await apiClient.get('/marketing/teams', { params })
+      return normalizePaginated(response)
+    } catch (error) {
+      return handleServiceError(error, 'Fetch marketing teams', 'get', { items: [], total: 0 }) || { items: [], total: 0 }
+    }
+  },
+
+  async assignCampaign(data) {
+    try {
+      const response = await apiClient.post('/marketing/teams/assign', data)
+      return unwrap(response, {})
+    } catch (error) {
+      return handleServiceError(error, 'Assign campaign to team', 'post')
+    }
+  },
+
+  async getProjectPerformanceReport(params = {}) {
+    try {
+      const response = await apiClient.get('/marketing/reports/project-performance', { params })
+      return unwrap(response, {})
+    } catch (error) {
+      return handleServiceError(error, 'Fetch project performance report', 'get', {})
+    }
+  },
+
+  async getBudgetAnalysisReport(params = {}) {
+    try {
+      const response = await apiClient.get('/marketing/reports/budget-analysis', { params })
+      return unwrap(response, {})
+    } catch (error) {
+      return handleServiceError(error, 'Fetch budget analysis report', 'get', {})
+    }
+  },
+
+  async getBookingStatsReport(params = {}) {
+    try {
+      const response = await apiClient.get('/marketing/reports/booking-stats', { params })
+      return unwrap(response, {})
+    } catch (error) {
+      return handleServiceError(error, 'Fetch booking stats report', 'get', {})
+    }
+  },
+
+  async getBudgetDistributions(params = {}) {
+    try {
+      const response = await apiClient.get('/marketing/budget-distributions', { params })
+      return normalizeListResponse(unwrap(response, []))
+    } catch (error) {
+      return handleServiceError(error, 'Fetch budget distributions', 'get', [])
+    }
+  },
+
+  async getBudgetDistributionByProject(projectId, params = {}) {
+    try {
+      const response = await apiClient.get(`/marketing/budget-distributions/${projectId}`, { params })
+      return unwrap(response, {})
+    } catch (error) {
+      return handleServiceError(error, `Fetch budget distribution for project ${projectId}`, 'get', {})
+    }
+  },
+
+  async calculateBudgetDistribution(distributionId, data = {}) {
+    try {
+      const response = await apiClient.post(`/marketing/budget-distributions/${distributionId}/calculate`, data)
+      return unwrap(response, {})
+    } catch (error) {
+      return handleServiceError(error, `Calculate budget distribution ${distributionId}`, 'post')
+    }
+  },
+
+  async getBudgetDistributionResults(distributionId) {
+    try {
+      const response = await apiClient.get(`/marketing/budget-distributions/${distributionId}/results`)
+      return unwrap(response, {})
+    } catch (error) {
+      return handleServiceError(error, `Fetch budget distribution results ${distributionId}`, 'get', {})
     }
   }
 }

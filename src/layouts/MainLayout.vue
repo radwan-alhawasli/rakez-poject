@@ -30,11 +30,11 @@
               <button v-if="unreadCount > 0" @click="markAllAsRead" class="mark-read-btn">تعيين الكل كمقروء</button>
             </div>
             <div class="notifications-list custom-scrollbar">
-              <div v-if="notificationsList.length === 0" class="no-notifications">
+              <div v-if="notifications.length === 0" class="no-notifications">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                 <p>لا يوجد إشعارات جديدة</p>
               </div>
-              <div v-for="notification in notificationsList" :key="notification.id"
+              <div v-for="notification in notifications" :key="notification.id"
                 :class="['notification-item', { unread: !notification.read }]" @click="markAsRead(notification.id)">
                 <div class="notification-icon-bg" :class="notification.type">
                   <svg v-if="notification.type==='success'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -82,7 +82,7 @@
         <div class="sidebar-header">
            <img src="/img/logo-circle.png" class="sidebar-logo-img" alt="Logo" />
            <div class="sidebar-logo-text">
-             <span class="rakez-en">Rakez</span>
+             <span class="rakez-ar">راكز</span> | <span class="rakez-en">Rakez</span>
            </div>
         </div>
         
@@ -142,6 +142,13 @@
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 <span class="nav-text">إدارة المستخدمين</span>
+              </div>
+            </router-link>
+
+            <router-link to="/commission-deposits/dashboard" class="nav-item" active-class="active" data-tooltip="العمولات والودائع">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                <span class="nav-text">العمولات والودائع</span>
               </div>
             </router-link>
             
@@ -241,279 +248,8 @@
               </div>
             </router-link>
 
-            <!-- 7. طلب مشروع حصري -->
-            <router-link to="/exclusive-request" class="nav-item" active-class="active" data-tooltip="طلب مشروع حصري">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-                <span class="nav-text">طلب مشروع حصري</span>
-              </div>
-            </router-link>
-
             <!-- 8. طلباتي -->
-            <router-link to="/my-requests" class="nav-item" active-class="active" data-tooltip="طلباتي">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                <span class="nav-text">طلباتي</span>
-              </div>
-            </router-link>
-
-            <!-- 9. الملف الشخصي -->
-            <router-link to="/profile" class="nav-item" active-class="active" data-tooltip="الملف الشخصي">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                <span class="nav-text">الملف الشخصي</span>
-              </div>
-            </router-link>
-
-
-            <!-- العقود (إضافي) -->
-            <router-link to="/contracts" class="nav-item" active-class="active" data-tooltip="العقود">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                <span class="nav-text">العقود</span>
-              </div>
-            </router-link>
-          </template>
-
-          <!-- Project Management Manager Sidebar (Role 10 - Placeholder) -->
-          <template v-else-if="userRole == 10">
-             <!-- 1. لوحة التحكم -->
-            <router-link to="/dashboard" class="nav-item" active-class="active" data-tooltip="لوحة التحكم">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                <span class="nav-text">لوحة التحكم</span>
-              </div>
-            </router-link>
-            
-            <!-- 2. الإشعارات -->
-            <router-link to="/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                <span class="nav-text">الإشعارات</span>
-              </div>
-            </router-link>
-
-            <!-- 3. إدارة المشاريع -->
-            <router-link to="/project-management" class="nav-item" active-class="active" data-tooltip="إدارة المشاريع">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                <span class="nav-text">إدارة المشاريع</span>
-              </div>
-            </router-link>
-
-             <!-- 4. إدارة الفرق (New) -->
-            <router-link to="/team-management" class="nav-item" active-class="active" data-tooltip="إدارة الفرق">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span class="nav-text">إدارة الفرق</span>
-              </div>
-            </router-link>
-
-            <!-- الموافقة على الصور (New) -->
-            <router-link to="/image-approval" class="nav-item" active-class="active" data-tooltip="الموافقة على الصور">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                <span class="nav-text">الموافقة على الصور</span>
-              </div>
-            </router-link>
-
-            <!-- 4. المطورون -->
-            <router-link to="/developers" class="nav-item" active-class="active" data-tooltip="المطورون">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span class="nav-text">المطورون</span>
-              </div>
-            </router-link>
-
-            <!-- 5. الحجوزات -->
-            <router-link to="/reservations" class="nav-item" active-class="active" data-tooltip="الحجوزات">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                <span class="nav-text">الحجوزات</span>
-              </div>
-            </router-link>
-
-            <!-- 6. الحجوزات الملغاة -->
-            <router-link to="/cancelled-reservations" class="nav-item" active-class="active" data-tooltip="الحجوزات الملغاة">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                <span class="nav-text">الحجوزات الملغاة</span>
-              </div>
-            </router-link>
-
-            <!-- 7. طلب مشروع حصري -->
-            <router-link to="/exclusive-request" class="nav-item" active-class="active" data-tooltip="طلب مشروع حصري">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-                <span class="nav-text">طلب مشروع حصري</span>
-              </div>
-            </router-link>
-
-             <!-- 8. طلباتي -->
-            <router-link to="/my-requests" class="nav-item" active-class="active" data-tooltip="طلباتي">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                <span class="nav-text">طلباتي</span>
-              </div>
-            </router-link>
-
-            <!-- 9. الملف الشخصي -->
-            <router-link to="/profile" class="nav-item" active-class="active" data-tooltip="الملف الشخصي">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                <span class="nav-text">الملف الشخصي</span>
-              </div>
-            </router-link>
-
-
-             <!-- العقود -->
-            <router-link to="/contracts" class="nav-item" active-class="active" data-tooltip="العقود">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                <span class="nav-text">العقود</span>
-              </div>
-            </router-link>
-
-          </template>
-
-          <!-- Editor Sidebar (Role 4) -->
-          <template v-else-if="userRole == 4">
-            <!-- 1. لوحة التحكم -->
-            <router-link to="/dashboard" class="nav-item" active-class="active" data-tooltip="لوحة التحكم">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                <span class="nav-text">لوحة التحكم</span>
-              </div>
-            </router-link>
-            
-            <!-- 2. الإشعارات -->
-            <router-link to="/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                <span class="nav-text">الإشعارات</span>
-              </div>
-            </router-link>
-
-            <!-- 3. مشاريع التسويق (Projects) -->
-            <router-link to="/project-management" class="nav-item" active-class="active" data-tooltip="مشاريع التسويق">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4"></path><line x1="5" y1="21" x2="5" y2="10"></line><line x1="9" y1="21" x2="9" y2="10"></line><line x1="13" y1="21" x2="13" y2="10"></line><line x1="17" y1="21" x2="17" y2="10"></line></svg>
-                <span class="nav-text">مشاريع التسويق</span>
-              </div>
-            </router-link>
-
-             <!-- 4. الأفرقة (Teams) -->
-            <router-link to="/teams" class="nav-item" active-class="active" data-tooltip="الأفرقة">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span class="nav-text">الأفرقة</span>
-              </div>
-            </router-link>
-
-            <!-- 5. طلب مشروع حصري -->
-            <router-link to="/exclusive-request" class="nav-item" active-class="active" data-tooltip="طلب مشروع حصري">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-                <span class="nav-text">طلب مشروع حصري</span>
-              </div>
-            </router-link>
-
-            <!-- 6. طلباتي -->
-            <router-link to="/my-requests" class="nav-item" active-class="active" data-tooltip="طلباتي">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                <span class="nav-text">طلباتي</span>
-              </div>
-            </router-link>
-
-            <!-- 7. الملف الشخصي -->
-            <router-link to="/profile" class="nav-item" active-class="active" data-tooltip="الملف الشخصي">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                <span class="nav-text">الملف الشخصي</span>
-              </div>
-            </router-link>
-          </template>
-          
-          <!-- Marketing Sidebar (Role 0) - Marketing Management View -->
-          <template v-else-if="userRole == 0">
-            <!-- 1. لوحة التحكم التسويقية -->
-            <router-link to="/marketing/dashboard" class="nav-item" active-class="active" data-tooltip="لوحة التحكم">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                <span class="nav-text">لوحة التحكم</span>
-              </div>
-            </router-link>
-
-            <!-- 2. الإشعارات -->
-            <router-link to="/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
-              <div class="nav-content">
-                <div class="icon-with-badge">
-                  <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                  <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
-                </div>
-                <span class="nav-text">الإشعارات</span>
-              </div>
-            </router-link>
-
-            <!-- 3. المشاريع التسويقية -->
-            <router-link to="/marketing/projects" class="nav-item" active-class="active" data-tooltip="المشاريع التسويقية">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                <span class="nav-text">المشاريع التسويقية</span>
-              </div>
-            </router-link>
-
-            <!-- 4. خطط التسويق -->
-            <router-link to="/marketing/plans" class="nav-item" active-class="active" data-tooltip="خطط التسويق">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                <span class="nav-text">خطط التسويق</span>
-              </div>
-            </router-link>
-
-            <!-- 4.6 إدارة الفريق والمشاريع -->
-            <router-link to="/marketing/team-projects" class="nav-item" active-class="active" data-tooltip="إدارة الفريق والمشاريع">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
-                <span class="nav-text">إدارة الفريق والمشاريع</span>
-              </div>
-            </router-link>
-
-            <!-- 5. المهام التسويقية -->
-            <router-link to="/marketing/tasks" class="nav-item" active-class="active" data-tooltip="المهام التسويقية">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><polyline points="9 11 12 14 22 4"></polyline></svg>
-                <span class="nav-text">المهام التسويقية</span>
-              </div>
-            </router-link>
-
-            <!-- 6. العملاء المحتملون -->
-            <router-link to="/marketing/leads" class="nav-item" active-class="active" data-tooltip="العملاء المحتملون">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span class="nav-text">العملاء المحتملون</span>
-              </div>
-            </router-link>
-
-            <!-- 7. المساعد الذكي -->
-            <router-link to="/marketing/ai-assistant" class="nav-item" active-class="active" data-tooltip="المساعد الذكي">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"></path><path d="M12 6a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"></path></svg>
-                <span class="nav-text">المساعد الذكي</span>
-              </div>
-            </router-link>
-
-            <!-- 7. التقارير والمخرجات -->
-            <router-link to="/marketing/reports-outputs" class="nav-item" active-class="active" data-tooltip="التقارير والمخرجات">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                <span class="nav-text">التقارير والمخرجات</span>
-              </div>
-            </router-link>
-
-            <!-- 8. طلباتي -->
-            <router-link to="/my-requests" class="nav-item" active-class="active" data-tooltip="طلباتي">
+            <router-link v-if="hasPermission('exclusive_projects.request')" to="/my-requests" class="nav-item" active-class="active" data-tooltip="طلباتي">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                 <span class="nav-text">طلباتي</span>
@@ -532,7 +268,7 @@
           <!-- Sales Sidebar (Role 5) - Sales Management View -->
           <template v-else-if="userRole == 5">
             <!-- 0. الرئيسية (Dashboard) -->
-            <router-link to="/sales/dashboard" class="nav-item" active-class="active" data-tooltip="الرئيسية">
+            <router-link v-if="hasPermission('sales.dashboard.view')" to="/sales/dashboard" class="nav-item" active-class="active" data-tooltip="الرئيسية">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                 <span class="nav-text">الرئيسية</span>
@@ -540,7 +276,7 @@
             </router-link>
 
             <!-- 1. الأهداف -->
-            <router-link to="/sales/targets" class="nav-item" active-class="active" data-tooltip="الأهداف">
+            <router-link v-if="hasPermission('sales.targets.view')" to="/sales/targets" class="nav-item" active-class="active" data-tooltip="الأهداف">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
                 <span class="nav-text">الأهداف</span>
@@ -548,7 +284,7 @@
             </router-link>
 
             <!-- 2. المشاريع -->
-            <router-link to="/sales/projects" class="nav-item" active-class="active" data-tooltip="المشاريع">
+            <router-link v-if="hasPermission('sales.projects.view')" to="/sales/projects" class="nav-item" active-class="active" data-tooltip="المشاريع">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                 <span class="nav-text">المشاريع</span>
@@ -556,7 +292,7 @@
             </router-link>
 
             <!-- 3. الحجوزات -->
-            <router-link to="/sales/reservations" class="nav-item" active-class="active" data-tooltip="الحجوزات">
+            <router-link v-if="hasPermission('sales.reservations.view')" to="/sales/reservations" class="nav-item" active-class="active" data-tooltip="الحجوزات">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                 <span class="nav-text">الحجوزات</span>
@@ -564,7 +300,7 @@
             </router-link>
 
             <!-- 4. دوامي -->
-            <router-link to="/sales/attendance" class="nav-item" active-class="active" data-tooltip="دوامي">
+            <router-link v-if="hasPermission('sales.attendance.view')" to="/sales/attendance" class="nav-item" active-class="active" data-tooltip="دوامي">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                 <span class="nav-text">دوامي</span>
@@ -572,7 +308,7 @@
             </router-link>
 
             <!-- 5. الفريق (Leader Only) -->
-            <router-link v-if="user?.is_leader" to="/sales/team" class="nav-item" active-class="active" data-tooltip="الفريق">
+            <router-link v-if="hasPermission('sales.team.manage')" to="/sales/team" class="nav-item" active-class="active" data-tooltip="الفريق">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                 <span class="nav-text">الفريق</span>
@@ -580,15 +316,47 @@
             </router-link>
 
             <!-- 6. المهام (Leader Only) -->
-            <router-link v-if="user?.is_leader" to="/sales/tasks" class="nav-item" active-class="active" data-tooltip="المهام">
+            <router-link v-if="hasPermission('sales.tasks.manage')" to="/sales/tasks" class="nav-item" active-class="active" data-tooltip="المهام">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><polyline points="9 11 12 14 22 4"></polyline></svg>
                 <span class="nav-text">المهام</span>
               </div>
             </router-link>
 
-            <!-- 7. الإشعارات -->
-            <router-link to="/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
+            <!-- 7. التفاوضات -->
+            <router-link v-if="hasPermission('sales.negotiation.approve')" to="/sales/negotiations" class="nav-item" active-class="active" data-tooltip="التفاوضات">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span class="nav-text">التفاوضات</span>
+              </div>
+            </router-link>
+
+            <!-- 8. قائمة الانتظار -->
+            <router-link v-if="hasAnyPermission(['sales.waiting_list.create', 'sales.waiting_list.convert'])" to="/sales/waiting-list" class="nav-item" active-class="active" data-tooltip="قائمة الانتظار">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                <span class="nav-text">قائمة الانتظار</span>
+              </div>
+            </router-link>
+
+            <!-- 9. توزيع الشفتات -->
+            <router-link v-if="hasPermission('sales.projects.allocate_shifts')" to="/sales/assignments" class="nav-item" active-class="active" data-tooltip="توزيع الشفتات">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span class="nav-text">توزيع الشفتات</span>
+              </div>
+            </router-link>
+
+            <!-- 10. خطط الدفع -->
+            <router-link v-if="hasPermission('sales.payment-plan.manage')" to="/sales/payment-plans" class="nav-item" active-class="active" data-tooltip="خطط الدفع">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                <span class="nav-text">خطط الدفع</span>
+              </div>
+            </router-link>
+
+            <!-- 11. الإشعارات -->
+            <router-link v-if="hasPermission('notifications.view')" to="/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
               <div class="nav-content">
                 <div class="icon-with-badge">
                   <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -599,7 +367,7 @@
             </router-link>
 
             <!-- 8. طلباتي -->
-            <router-link to="/my-requests" class="nav-item" active-class="active" data-tooltip="طلباتي">
+            <router-link v-if="hasPermission('exclusive_projects.request')" to="/my-requests" class="nav-item" active-class="active" data-tooltip="طلباتي">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                 <span class="nav-text">طلباتي</span>
@@ -618,7 +386,7 @@
           <!-- HR Sidebar (Role 8) - Comprehensive Management & Employee View -->
           <template v-else-if="userRole == 8">
             <!-- 1. لوحة التحكم -->
-            <router-link to="/hr/dashboard" class="nav-item" active-class="active" data-tooltip="لوحة التحكم">
+            <router-link v-if="hasPermission('hr.dashboard.view')" to="/hr/dashboard" class="nav-item" active-class="active" data-tooltip="لوحة التحكم">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                 <span class="nav-text">لوحة التحكم</span>
@@ -626,7 +394,7 @@
             </router-link>
 
             <!-- 2. الإشعارات -->
-            <router-link to="/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
+            <router-link v-if="hasPermission('notifications.view')" to="/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
               <div class="nav-content">
                 <div class="icon-with-badge">
                   <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -637,7 +405,7 @@
             </router-link>
 
             <!-- 3. إدارة الأفرقة (3.2) -->
-            <router-link to="/hr/teams" class="nav-item" active-class="active" data-tooltip="إدارة الفرق">
+            <router-link v-if="hasPermission('hr.teams.manage')" to="/hr/teams" class="nav-item" active-class="active" data-tooltip="إدارة الفرق">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                 <span class="nav-text">إدارة الفرق</span>
@@ -645,7 +413,7 @@
             </router-link>
 
             <!-- 4. أداء المسوقين (3.3) -->
-            <router-link to="/hr/employee-performance" class="nav-item" active-class="active" data-tooltip="أداء المسوقين">
+            <router-link v-if="hasPermission('hr.performance.view')" to="/hr/employee-performance" class="nav-item" active-class="active" data-tooltip="أداء المسوقين">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
                 <span class="nav-text">أداء المسوقين</span>
@@ -653,7 +421,7 @@
             </router-link>
 
             <!-- 5. إدارة المستخدمين (3.4) -->
-            <router-link to="/hr/users" class="nav-item" active-class="active" data-tooltip="إدارة المستخدمين">
+            <router-link v-if="hasPermission('hr.users.create')" to="/hr/users" class="nav-item" active-class="active" data-tooltip="إدارة المستخدمين">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 <span class="nav-text">إدارة المستخدمين</span>
@@ -661,7 +429,7 @@
             </router-link>
 
             <!-- 6. التقارير (5.0) -->
-            <router-link to="/hr/reports" class="nav-item" active-class="active" data-tooltip="التقارير">
+            <router-link v-if="hasPermission('hr.reports.view')" to="/hr/reports" class="nav-item" active-class="active" data-tooltip="التقارير">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 <span class="nav-text">التقارير</span>
@@ -677,6 +445,130 @@
             </router-link>
 
             <!-- 8. الملف الشخصي -->
+            <router-link to="/profile" class="nav-item" active-class="active" data-tooltip="الملف الشخصي">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span class="nav-text">الملف الشخصي</span>
+              </div>
+            </router-link>
+          </template>
+
+          <!-- Credit Sidebar (Role 6) -->
+          <template v-else-if="userRole == 6">
+            <router-link to="/credit/dashboard" class="nav-item" active-class="active" data-tooltip="لوحة التحكم">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span class="nav-text">لوحة التحكم</span>
+              </div>
+            </router-link>
+
+            <router-link to="/credit/bookings" class="nav-item" active-class="active" data-tooltip="الحجوزات">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                <span class="nav-text">الحجوزات</span>
+              </div>
+            </router-link>
+
+            <router-link to="/credit/financing" class="nav-item" active-class="active" data-tooltip="متتبع التمويل">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                <span class="nav-text">متتبع التمويل</span>
+              </div>
+            </router-link>
+
+            <router-link to="/credit/title-transfer" class="nav-item" active-class="active" data-tooltip="نقل الملكية">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                <span class="nav-text">نقل الملكية</span>
+              </div>
+            </router-link>
+
+            <router-link to="/credit/sold-projects" class="nav-item" active-class="active" data-tooltip="المشاريع المباعة">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span class="nav-text">المشاريع المباعة</span>
+              </div>
+            </router-link>
+
+            <router-link to="/credit/claim-files" class="nav-item" active-class="active" data-tooltip="ملفات المطالبة">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                <span class="nav-text">ملفات المطالبة</span>
+              </div>
+            </router-link>
+
+            <router-link to="/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
+              <div class="nav-content">
+                <div class="icon-with-badge">
+                  <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                  <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
+                </div>
+                <span class="nav-text">الإشعارات</span>
+              </div>
+            </router-link>
+
+            <router-link to="/profile" class="nav-item" active-class="active" data-tooltip="الملف الشخصي">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span class="nav-text">الملف الشخصي</span>
+              </div>
+            </router-link>
+          </template>
+
+          <!-- Accounting Sidebar (Role 7) -->
+          <template v-else-if="userRole == 7">
+            <router-link to="/accounting/dashboard" class="nav-item" active-class="active" data-tooltip="لوحة التحكم">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span class="nav-text">لوحة التحكم</span>
+              </div>
+            </router-link>
+
+            <router-link to="/accounting/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
+              <div class="nav-content">
+                <div class="icon-with-badge">
+                  <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                  <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
+                </div>
+                <span class="nav-text">الإشعارات</span>
+              </div>
+            </router-link>
+
+            <router-link to="/accounting/sold-units" class="nav-item" active-class="active" data-tooltip="الوحدات المباعة">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span class="nav-text">الوحدات المباعة</span>
+              </div>
+            </router-link>
+
+            <router-link to="/accounting/commissions" class="nav-item" active-class="active" data-tooltip="العمولات">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                <span class="nav-text">العمولات</span>
+              </div>
+            </router-link>
+
+            <router-link to="/accounting/deposits" class="nav-item" active-class="active" data-tooltip="الودائع">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span class="nav-text">الودائع</span>
+              </div>
+            </router-link>
+
+            <router-link to="/accounting/salaries" class="nav-item" active-class="active" data-tooltip="الرواتب">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <span class="nav-text">الرواتب</span>
+              </div>
+            </router-link>
+
+            <router-link to="/accounting/confirmations" class="nav-item" active-class="active" data-tooltip="التأكيدات">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span class="nav-text">التأكيدات</span>
+              </div>
+            </router-link>
+
             <router-link to="/profile" class="nav-item" active-class="active" data-tooltip="الملف الشخصي">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -793,11 +685,7 @@
       <main class="main-content">
         <router-view v-slot="{ Component }">
           <transition name="fade-slide" mode="out-in">
-            <component v-if="Component" :is="Component" />
-            <div v-else class="loading-state" style="padding: 24px; text-align: center;">
-              <div class="spinner" style="margin: 0 auto 10px;"></div>
-              <p style="color:#64748b; margin:0;">جاري تحميل الصفحة...</p>
-            </div>
+            <component :is="Component" />
           </transition>
         </router-view>
       </main>
@@ -814,6 +702,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import notificationService from '../services/notificationService'
 import authService from '../services/authService'
+import { usePermissions } from '../composables/usePermissions'
 
 export default {
   name: 'MainLayout',
@@ -833,20 +722,21 @@ export default {
         route.path
         return authService.getCurrentUser()
     })
+    const { hasPermission, hasAnyPermission } = usePermissions()
     const showNotifications = ref(false)
     
     if (!authService.isAuthenticated()) {
       router.push('/login')
     }
     
-    // Use the comprehensive notification service (guard against undefined .value)
-    const notifications = notificationService.getAll()
-    const notificationsList = computed(() => {
-      const list = notifications?.value
-      return Array.isArray(list) ? list : []
+    // Use the comprehensive notification service (ensure array for template safety)
+    const notifications = computed(() => {
+      const n = notificationService.getAll()
+      const val = n?.value ?? n
+      return Array.isArray(val) ? val : []
     })
 
-    const unreadCount = computed(() => notificationsList.value.filter(n => !n.read).length)
+    const unreadCount = computed(() => notifications.value.filter(n => !n.read).length)
     
     const toggleNotifications = () => { showNotifications.value = !showNotifications.value }
     
@@ -914,8 +804,10 @@ export default {
     return {
       user,
       userRole,
+      hasPermission,
+      hasAnyPermission,
+      notifications,
       showNotifications,
-      notificationsList,
       unreadCount,
       isSidebarOpen,
       isSidebarHovered,
@@ -2602,3 +2494,5 @@ export default {
 }
 
 </style>
+
+

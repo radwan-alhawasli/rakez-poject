@@ -436,6 +436,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import salesService from '../services/salesService'
 import notificationService from '../services/notificationService'
+import logger from '../utils/logger'
 
 export default {
   name: 'SalesView',
@@ -497,7 +498,7 @@ export default {
         const data = await salesService.getDashboard(dashboardFilters)
         Object.assign(dashboardMetrics, data)
       } catch (error) {
-        console.error('Error loading dashboard:', error)
+        logger.error('Error loading dashboard:', error)
       }
     }
 
@@ -506,7 +507,7 @@ export default {
       try {
         projects.value = await salesService.getProjects()
       } catch (error) {
-        console.error('Error loading projects:', error)
+        logger.error('Error loading projects:', error)
       } finally {
         isLoadingProjects.value = false
       }
@@ -521,7 +522,7 @@ export default {
         selectedProject.value = await salesService.getProjectDetails(projectId)
         projectUnits.value = await salesService.getProjectUnits(projectId)
       } catch (error) {
-        console.error('Error loading project details:', error)
+        logger.error('Error loading project details:', error)
       } finally {
         isLoadingProjectDetails.value = false
         isLoadingUnits.value = false
@@ -533,7 +534,7 @@ export default {
       try {
         reservations.value = await salesService.getReservations()
       } catch (error) {
-        console.error('Error loading reservations:', error)
+        logger.error('Error loading reservations:', error)
       } finally {
         isLoadingReservations.value = false
       }
@@ -551,7 +552,7 @@ export default {
           // You can pre-fill additional fields here based on context
         }
       } catch (error) {
-        console.error('Error loading reservation context:', error)
+        logger.error('Error loading reservation context:', error)
       }
       
       showReservationModal.value = true
@@ -582,7 +583,7 @@ export default {
           negotiation_notes: ''
         })
       } catch (error) {
-        console.error('Error creating reservation:', error)
+        logger.error('Error creating reservation:', error)
         notificationService.addNotification('حدث خطأ أثناء إنشاء الحجز', 'error')
       } finally {
         isSubmitting.value = false
@@ -597,7 +598,7 @@ export default {
         notificationService.addNotification('تم تأكيد الحجز بنجاح', 'success')
         loadReservations()
       } catch (error) {
-        console.error('Error confirming reservation:', error)
+        logger.error('Error confirming reservation:', error)
         notificationService.addNotification('حدث خطأ أثناء تأكيد الحجز', 'error')
       }
     }
@@ -610,7 +611,7 @@ export default {
         notificationService.addNotification('تم إلغاء الحجز', 'success')
         loadReservations()
       } catch (error) {
-        console.error('Error cancelling reservation:', error)
+        logger.error('Error cancelling reservation:', error)
         notificationService.addNotification('حدث خطأ أثناء إلغاء الحجز', 'error')
       }
     }
@@ -630,7 +631,7 @@ export default {
         link.click()
         window.URL.revokeObjectURL(url)
       } catch (error) {
-        console.error('Error downloading voucher:', error)
+        logger.error('Error downloading voucher:', error)
         notificationService.addNotification('حدث خطأ أثناء تحميل الإيصال', 'error')
       }
     }
@@ -1528,3 +1529,4 @@ textarea.form-input {
   }
 }
 </style>
+

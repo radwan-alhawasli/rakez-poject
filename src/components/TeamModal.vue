@@ -1,5 +1,5 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-overlay" @click.self="$emit('close')" @keydown.esc="$emit('close')" tabindex="-1">
     <div class="modal-container">
       <div class="modal-header">
         <h2 class="modal-title">{{ isEditMode ? 'تعديل الفريق' : 'إضافة فريق جديد' }}</h2>
@@ -89,7 +89,7 @@
 </template>
 
 <script>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, onMounted, onUnmounted } from 'vue'
 
 export default {
   name: 'TeamModal',
@@ -129,6 +129,24 @@ export default {
         Object.assign(formData, newTeam)
         isEditMode.value = true
       }
+    })
+
+    // Handle Escape key
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        emit('close')
+      }
+    }
+
+    // Lock body scroll when modal is open
+    onMounted(() => {
+      document.body.style.overflow = 'hidden'
+      document.addEventListener('keydown', handleEscape)
+    })
+
+    onUnmounted(() => {
+      document.body.style.overflow = ''
+      document.removeEventListener('keydown', handleEscape)
     })
 
     const handleSubmit = () => {

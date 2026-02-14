@@ -1,9 +1,7 @@
 import apiClient from '../api/apiClient'
 import { ROLE_MAP } from '../constants/roles'
-import logger from '../utils/logger'
-
-const AUTH_TOKEN_KEY = 'authToken'
-const USER_INFO_KEY = 'userInfo'
+import secureStorage from '../utils/secureStorage'
+import { handleServiceError } from '../utils/serviceErrorHandler'
 
 const authService = {
     /**
@@ -17,13 +15,22 @@ const authService = {
             // Use the base URL from apiClient configuration
             const response = await apiClient.post('/login', { email, password })
 
-            const { access_token, user } = response.data
+            // Support both: { data: { token, user } } (Postman) and { access_token, user }
+            const token = response.data?.data?.token ?? response.data?.access_token
+            const user = response.data?.data?.user ?? response.data?.user
+            const refresh_token = response.data?.data?.refresh_token ?? response.data?.refresh_token
 
-            if (access_token) {
-                localStorage.setItem(AUTH_TOKEN_KEY, access_token)
+            if (token) {
+                // Use secure storage for token
+                secureStorage.setToken(token)
+                
+                // Store refresh token if provided (for future use)
+                if (refresh_token) {
+                    secureStorage.setRefreshToken(refresh_token)
+                }
 
                 // If user object is returned, save it. Otherwise create a mock one based on email
-                const userData = user || {
+                const userData = user ? { ...user } : {
                     name: 'Admin',
                     email: email,
                     type: 1 // Default to admin if nothing returned
@@ -34,15 +41,19 @@ const authService = {
                     userData.type = ROLE_MAP[userData.type]
                 }
 
-                localStorage.setItem(USER_INFO_KEY, JSON.stringify(userData))
+                // Preserve permissions from API when provided (otherwise rbac.getUserPermissions derives from role)
+                if (user?.permissions) {
+                    userData.permissions = Array.isArray(user.permissions) ? user.permissions : []
+                }
+
+                secureStorage.setUserInfo(userData)
 
                 return userData
             }
 
             throw new Error('No token received')
         } catch (error) {
-            logger.error('Login error:', error)
-            throw error
+            return handleServiceError(error, 'Login', 'post', null)
         }
     },
 
@@ -53,19 +64,18 @@ const authService = {
         try {
             await apiClient.post('/logout')
         } catch (error) {
-            logger.error('Logout error:', error)
-            // We continue to clear local storage even if API call fails
+            // Logout errors are handled gracefully - we continue to clear session even if API call fails
+            handleServiceError(error, 'Logout', 'post', null)
         } finally {
             this.clearSession()
         }
     },
 
     /**
-     * Clear local storage session data
+     * Clear session data
      */
     clearSession() {
-        localStorage.removeItem(AUTH_TOKEN_KEY)
-        localStorage.removeItem(USER_INFO_KEY)
+        secureStorage.clearSession()
     },
 
     /**
@@ -73,8 +83,7 @@ const authService = {
      * @returns {Object|null}
      */
     getCurrentUser() {
-        const userStr = localStorage.getItem(USER_INFO_KEY)
-        return userStr ? JSON.parse(userStr) : null
+        return secureStorage.getUserInfo()
     },
 
     /**
@@ -82,7 +91,16 @@ const authService = {
      * @returns {boolean}
      */
     isAuthenticated() {
-        return !!localStorage.getItem(AUTH_TOKEN_KEY)
+        const token = secureStorage.getToken()
+        if (!token) return false
+        
+        // Check if session is expired
+        if (secureStorage.isSessionExpired()) {
+            this.clearSession()
+            return false
+        }
+        
+        return true
     },
 
     /**
@@ -90,7 +108,30 @@ const authService = {
      * @returns {string|null}
      */
     getToken() {
-        return localStorage.getItem(AUTH_TOKEN_KEY)
+        return secureStorage.getToken()
+    },
+
+    /**
+     * Check if session is about to expire
+     * @returns {boolean}
+     */
+    isSessionExpiring() {
+        return secureStorage.shouldShowWarning()
+    },
+
+    /**
+     * Get time until session expires
+     * @returns {number} Milliseconds until expiration
+     */
+    getTimeUntilExpiration() {
+        return secureStorage.getTimeUntilExpiration()
+    },
+
+    /**
+     * Extend session
+     */
+    extendSession() {
+        secureStorage.extendSession()
     }
 }
 

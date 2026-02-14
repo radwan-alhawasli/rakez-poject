@@ -5,26 +5,42 @@
   "scripts": {
     "serve": "vue-cli-service serve --open",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
     "axios": "^1.6.0",
+    "dompurify": "^3.3.1",
     "pdf-lib": "^1.17.1",
+    "pinia": "^3.0.4",
     "pusher-js": "^8.4.0",
     "vue": "^3.2.13",
     "vue-i18n": "^9.14.5",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "~5.0.0",
-    "@vue/cli-plugin-eslint": "~5.0.0",
+    "@testing-library/vue": "^8.0.0",
+    "@vitejs/plugin-vue": "^4.0.0",
+    "@vitest/coverage-v8": "^1.6.1",
+    "@vitest/ui": "^1.0.0",
+    "@vue/cli-plugin-babel": "^5.0.9",
+    "@vue/cli-plugin-eslint": "^5.0.9",
     "@vue/cli-service": "~5.0.0",
     "@vue/eslint-config-prettier": "^7.0.0",
+    "@vue/test-utils": "^2.4.0",
+    "axios-mock-adapter": "^1.22.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^3.4.1",
     "eslint-plugin-vue": "^8.0.3",
-    "prettier": "^2.5.1"
+    "jest-environment-jsdom": "^30.2.0",
+    "jsdom": "^22.0.0",
+    "msw": "^2.0.0",
+    "prettier": "^2.5.1",
+    "vitest": "^1.0.0"
   }
 }
