@@ -288,6 +288,7 @@ import { useRouter, useRoute } from 'vue-router'
 import contractService from '../services/contractService'
 import { downloadFilledContract } from '../services/pdfService'
 import logger from '../utils/logger'
+import { toast } from '../composables/useToast'
 
 export default {
   name: 'ContractFormView',
@@ -476,7 +477,7 @@ export default {
         showDownloadModal.value = true
       } catch (error) {
         logger.error('Save failed', error)
-        alert('حدث خطأ أثناء الحفظ')
+        toast.error('حدث خطأ أثناء الحفظ')
       } finally {
         isSaving.value = false
       }
@@ -493,7 +494,7 @@ export default {
             link.click()
         } catch (error) {
             logger.error('Download failed', error)
-            alert('فشل تحميل ملف PDF. يرجى المحاولة مرة أخرى.')
+            toast.error('فشل تحميل ملف PDF. يرجى المحاولة مرة أخرى.')
         } finally {
             isDownloading.value = false
         }

@@ -6,10 +6,11 @@ import { setupTokenRefreshInterceptor, initTokenRefresh } from '../utils/tokenRe
 import { setupCsrfInterceptor, initCsrf } from '../utils/csrf'
 
 const apiBaseUrl = appConfig.apiBaseUrl
+const apiTimeout = appConfig.apiTimeout ?? 30000
 
 // Log API base URL in development
 if (appConfig.isDevelopment) {
-    logger.debug(`[API Client] Initialized with baseURL: ${apiBaseUrl}`)
+    logger.debug(`[API Client] Initialized with baseURL: ${apiBaseUrl}, timeout: ${apiTimeout}ms`)
 }
 
 const apiClient = axios.create({
@@ -18,7 +19,7 @@ const apiClient = axios.create({
         'Content-Type': 'application/json',
         'Accept': 'application/json'
     },
-    timeout: 10000
+    timeout: apiTimeout
 })
 
 // Initialize utilities with apiClient instance (breaks circular dependency)
@@ -53,10 +54,11 @@ apiClient.interceptors.response.use(
         const url = error.config?.url || ''
         const message = error.response?.data?.message || error.message || 'An unexpected error occurred'
 
-        // Suppress logging for expected 404s (CSRF token, refresh token endpoints)
+        // Suppress logging for expected 404s (CSRF token, refresh token, optional notification endpoints)
         const isExpected404 = status === 404 && (
             url.includes('/csrf-token') || 
-            url.includes('/auth/refresh')
+            url.includes('/auth/refresh') ||
+            url.includes('/notifications/public')
         )
 
         // Suppress logging for 401 errors that are being handled by token refresh
@@ -68,7 +70,7 @@ apiClient.interceptors.response.use(
                                              error.message?.includes('Token refresh endpoint not available')
 
         if (status === 401) {
-            // Unauthorized: Token might be expired
+            // Unauthorized: Token might be expired or invalid
             // Only log if it's not from a refresh attempt (to avoid noise)
             if (!url.includes('/auth/refresh') && !is401FromRefreshAttempt) {
                 // Only log once per session to reduce noise
@@ -76,10 +78,14 @@ apiClient.interceptors.response.use(
                     logger.debug('Unauthorized access - potential token expiration')
                 }
             }
-            
-            // Check if session is expired
-            if (secureStorage.isSessionExpired()) {
+
+            // Redirect to login when 401 on protected endpoints (avoid loop for /login)
+            const isLoginRequest = url.includes('/login')
+            if (!isLoginRequest) {
                 secureStorage.clearSession()
+                if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+                    window.location.href = '/login'
+                }
             }
         }
 

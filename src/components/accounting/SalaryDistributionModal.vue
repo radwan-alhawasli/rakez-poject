@@ -6,6 +6,39 @@
         <button class="close-btn" @click="$emit('close')">×</button>
       </div>
       <form @submit.prevent="handleSubmit" class="modal-body" v-if="salary">
+        <div class="salary-detail-section">
+          <h3 class="detail-title">بيانات الموظف</h3>
+          <div class="detail-grid">
+            <div class="detail-row"><span class="detail-label">اسم الموظف:</span> {{ salary.employee_name || '—' }}</div>
+            <div class="detail-row"><span class="detail-label">الراتب حسب العقد:</span> {{ formatCurrency(salary.contract_salary || salary.base_salary) }}</div>
+            <div class="detail-row"><span class="detail-label">المسمى الوظيفي:</span> {{ salary.job_title || salary.title || '—' }}</div>
+          </div>
+        </div>
+
+        <div v-if="isSalesJob" class="sales-commission-section">
+          <h3 class="detail-title">تفاصيل عمولة المسوق (سيلز)</h3>
+          <div class="detail-grid">
+            <div class="detail-row"><span class="detail-label">نسبة العمولة:</span> {{ salary.commission_percentage ? salary.commission_percentage + '%' : '—' }}</div>
+            <div class="detail-row"><span class="detail-label">المشاريع المباعة:</span> {{ salary.sold_projects_count || salary.projects_count || 0 }}</div>
+            <div class="detail-row"><span class="detail-label">عدد الوحدات:</span> {{ salary.units_count || 0 }}</div>
+            <div class="detail-row"><span class="detail-label">صافي عمولة المسوق الشهرية:</span> {{ formatCurrency(salary.net_monthly_commission || salary.total_commissions) }}</div>
+          </div>
+          <div v-if="salary.unit_breakdown && salary.unit_breakdown.length" class="unit-breakdown">
+            <h4 class="breakdown-subtitle">سعر البيع النهائي ونسبة العمولة من كل مشروع</h4>
+            <table class="breakdown-table">
+              <thead><tr><th>المشروع</th><th>سعر البيع النهائي</th><th>نسبة العمولة</th><th>العمولة</th></tr></thead>
+              <tbody>
+                <tr v-for="(u, i) in salary.unit_breakdown" :key="i">
+                  <td>{{ u.project_name || '—' }}</td>
+                  <td>{{ formatCurrency(u.final_price) }}</td>
+                  <td>{{ u.percentage ? u.percentage + '%' : '—' }}</td>
+                  <td>{{ formatCurrency(u.commission_amount) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <div class="form-group">
           <label class="form-label">الشهر</label>
           <input v-model="formData.month" type="number" min="1" max="12" class="form-input" required />
@@ -34,7 +67,7 @@
 </template>
 
 <script>
-import { reactive, onMounted, onUnmounted } from 'vue'
+import { reactive, computed, onMounted, onUnmounted } from 'vue'
 
 export default {
   name: 'SalaryDistributionModal',
@@ -44,6 +77,15 @@ export default {
   },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
+    const isSalesJob = computed(() => {
+      const title = (props.salary?.job_title || props.salary?.title || '').toLowerCase()
+      return title.includes('سيلز') || title.includes('sales') || title.includes('مسوق')
+    })
+
+    const formatCurrency = (val) => {
+      if (!val) return '0 ر.س'
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR', maximumFractionDigits: 0 }).format(val)
+    }
     // Handle Escape key
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
@@ -72,7 +114,7 @@ export default {
       emit('submit', { action: props.salary?.distribution_id ? 'update' : 'create', ...formData })
     }
 
-    return { formData, handleSubmit }
+    return { formData, handleSubmit, isSalesJob, formatCurrency }
   }
 }
 </script>
@@ -137,6 +179,62 @@ export default {
 
 .close-btn:hover {
   color: #ef4444;
+}
+
+.salary-detail-section,
+.sales-commission-section {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.detail-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin-bottom: 12px;
+}
+
+.detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-row {
+  font-size: 14px;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #64748b;
+  margin-left: 8px;
+}
+
+.breakdown-subtitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin: 16px 0 8px;
+}
+
+.breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.breakdown-table th,
+.breakdown-table td {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  text-align: right;
+}
+
+.breakdown-table th {
+  background: #f1f5f9;
+  font-weight: 600;
 }
 
 .form-group {

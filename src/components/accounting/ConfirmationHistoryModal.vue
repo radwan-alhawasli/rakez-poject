@@ -17,8 +17,8 @@
             </thead>
             <tbody>
               <tr v-for="item in history" :key="item.id">
-                <td>{{ formatDate(item.confirmed_at) }}</td>
-                <td>{{ formatCurrency(item.amount) }}</td>
+                <td>{{ formatDate(getDateValue(item)) }}</td>
+                <td>{{ formatCurrency(item.amount ?? item.confirmed_amount ?? 0) }}</td>
                 <td><span class="status-tag excellent">مؤكد</span></td>
               </tr>
               <tr v-if="history.length === 0">
@@ -61,8 +61,10 @@ export default {
       document.body.style.overflow = 'hidden'
       document.addEventListener('keydown', handleEscape)
       try {
-        const data = await accountingService.getConfirmationHistory({ reservation_id: props.reservationId })
-        history.value = Array.isArray(data) ? data : []
+        const data = await accountingService.getConfirmationHistory(
+          props.reservationId != null ? { reservation_id: props.reservationId } : {}
+        )
+        history.value = data?.items ?? (Array.isArray(data) ? data : [])
       } catch (error) {
         logger.error('Error loading confirmation history:', error)
         history.value = []
@@ -79,16 +81,23 @@ export default {
       return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR', maximumFractionDigits: 0 }).format(val)
     }
 
+    const getDateValue = (item) => {
+      return item?.confirmed_at ?? item?.confirmation_date ?? item?.created_at ?? item?.date
+        ?? item?.confirmedAt ?? item?.confirmationDate ?? item?.createdAt
+    }
+
     const formatDate = (dateStr) => {
-      if (!dateStr) return 'غير محدد'
+      if (dateStr == null || dateStr === '') return 'غير محدد'
       try {
-        return new Date(dateStr).toLocaleDateString('ar-SA')
+        const d = new Date(dateStr)
+        if (Number.isNaN(d.getTime())) return 'غير محدد'
+        return d.toLocaleDateString('ar-SA')
       } catch {
-        return dateStr
+        return String(dateStr)
       }
     }
 
-    return { history, formatCurrency, formatDate }
+    return { history, formatCurrency, formatDate, getDateValue }
   }
 }
 </script>

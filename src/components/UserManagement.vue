@@ -119,6 +119,7 @@ import { getRoleLabel, getRoleClass } from '../constants/roles'
 import logger from '../utils/logger'
 import { handleError } from '../utils/errorHandler'
 import appConfig from '../config/appConfig'
+import { toast } from '../composables/useToast'
 
 export default {
   name: 'UserManagement',
@@ -165,15 +166,15 @@ export default {
         const status = error?.response?.status || error?.status
         
         if (status === 404) {
-          alert('المورد المطلوب غير موجود. قد يكون هذا المسار غير متاح في الخادم حالياً.')
+          toast.warning('المورد المطلوب غير موجود. قد يكون هذا المسار غير متاح في الخادم حالياً.')
         } else if (status === 401) {
-          alert('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.')
+          toast.warning('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.')
         } else if (status === 403) {
-          alert('ليس لديك صلاحية للوصول إلى هذا المورد.')
+          toast.warning('ليس لديك صلاحية للوصول إلى هذا المورد.')
         } else if (errorInfo.message && !errorInfo.isExpected) {
-          alert(errorInfo.message)
+          toast.error(errorInfo.message)
         } else {
-          alert('حدث خطأ أثناء جلب البيانات. يرجى المحاولة مرة أخرى.')
+          toast.error('حدث خطأ أثناء جلب البيانات. يرجى المحاولة مرة أخرى.')
         }
       } finally {
         loading.value = false
@@ -193,7 +194,7 @@ export default {
         showModal.value = true
       } catch (error) {
         logger.error('Error fetching user details:', error)
-        alert('حدث خطأ أثناء جلب تفاصيل المستخدم')
+        toast.error('حدث خطأ أثناء جلب تفاصيل المستخدم')
       } finally {
         loading.value = false
       }
@@ -224,7 +225,7 @@ export default {
             errMsg = error.message
         }
         
-        alert(errMsg)
+        toast.error(errMsg)
       } finally {
         isSaving.value = false
       }
@@ -278,12 +279,12 @@ export default {
           
           // Refresh from server to ensure consistency
           await fetchUsers()
-          alert(`تم ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name} بنجاح`)
+          toast.success(`تم ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name} بنجاح`)
         } else if (confirmAction.value === 'delete') {
           const { user } = confirmData.value
           await hrService.deleteEmployee(user.id)
           await fetchUsers()
-          alert('تم حذف المستخدم بنجاح')
+          toast.success('تم حذف المستخدم بنجاح')
         }
         showConfirmModal.value = false
         confirmAction.value = null
@@ -310,7 +311,7 @@ export default {
           errorMsg = error.response.data.message
         }
         
-        alert(errorMsg)
+        toast.error(errorMsg)
       }
     }
 

@@ -46,6 +46,9 @@ vi.mock('../../src/utils/secureStorage', () => ({
     getUserInfo: vi.fn(() => null),
     clearSession: vi.fn(),
     isSessionExpired: vi.fn(() => false),
+    shouldShowWarning: vi.fn(() => false),
+    getTimeUntilExpiration: vi.fn(() => 60000),
+    extendSession: vi.fn(),
     updateLastActivity: vi.fn()
   }
 }))

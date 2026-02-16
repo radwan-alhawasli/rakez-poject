@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import authService from '../services/authService'
-import { canAccessRoute, normalizeRole } from '../utils/rbac'
+import { canAccessRoute, normalizeRole, getDashboardPathForUser } from '../utils/rbac'
 import notificationService from '../services/notificationService'
 import logger from '../utils/logger'
 
@@ -33,7 +33,14 @@ const routes = [
             {
                 path: 'developers',
                 name: 'Developers',
-                component: () => import('../views/DevelopersView.vue')
+                component: () => import('../views/DevelopersView.vue'),
+                meta: { roles: [1, 3, 7] }
+            },
+            {
+                path: 'developers/:id',
+                name: 'DeveloperDetail',
+                component: () => import('../views/DeveloperDetailView.vue'),
+                meta: { roles: [1, 3, 7] }
             },
             {
                 path: 'notifications',
@@ -52,6 +59,12 @@ const routes = [
                 name: 'Users',
                 component: () => import('../views/UsersView.vue'),
                 meta: { roles: [1, 8], permissions: ['hr.users.create'] } // Admin and HR only
+            },
+            {
+                path: 'agents',
+                name: 'Agents',
+                component: () => import('../views/AgentsView.vue'),
+                meta: { roles: [1], permissions: ['agents.manage'] }
             },
             {
                 path: 'exclusive-request',
@@ -182,6 +195,7 @@ const routes = [
                 children: [
                     { path: '', redirect: { name: 'CreditDashboard' } },
                     { path: 'dashboard', name: 'CreditDashboard', component: () => import('../views/CreditView.vue'), meta: { permissions: ['credit.dashboard.view'] } },
+                    { path: 'notifications', name: 'CreditNotifications', component: () => import('../views/CreditView.vue'), meta: { permissions: ['credit.dashboard.view'] } },
                     { path: 'bookings', name: 'CreditBookings', component: () => import('../views/CreditView.vue'), meta: { permissions: ['credit.bookings.view'] } },
                     { path: 'financing', name: 'CreditFinancing', component: () => import('../views/CreditView.vue'), meta: { permissions: ['credit.financing.manage'] } },
                     { path: 'title-transfer', name: 'CreditTitleTransfer', component: () => import('../views/CreditView.vue'), meta: { permissions: ['credit.title_transfer.manage'] } },
@@ -302,37 +316,7 @@ router.beforeEach((to, from, next) => {
  * @param {Function} next - Router next function
  */
 function redirectByRole(user, next) {
-    if (!user) {
-        next('/dashboard')
-        return
-    }
-
-    // Normalize role type to ensure consistent comparison
-    const normalizedRole = normalizeRole(user.type)
-    
-    // Redirection based on user role (using normalized numeric values)
-    if (normalizedRole === 8 || normalizedRole === 9) {
-        // HR roles (8 and 9)
-        next('/hr/dashboard')
-    } else if (normalizedRole === 0) {
-        // Marketing
-        next('/marketing/dashboard')
-    } else if (normalizedRole === 5) {
-        // Sales
-        next('/sales/dashboard')
-    } else if (normalizedRole === 6) {
-        // Credit
-        next('/credit/dashboard')
-    } else if (normalizedRole === 7) {
-        // Accounting
-        next('/accounting/dashboard')
-    } else if (normalizedRole === 4) {
-        // Editor
-        next('/editor/contracts')
-    } else {
-        // Default dashboard for admin and other roles
-        next('/dashboard')
-    }
+    next(getDashboardPathForUser(user))
 }
 
 export default router

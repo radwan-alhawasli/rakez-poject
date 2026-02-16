@@ -145,6 +145,13 @@
               </div>
             </router-link>
 
+            <router-link to="/agents" class="nav-item" active-class="active" data-tooltip="الوكلاء">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span class="nav-text">الوكلاء / Agents</span>
+              </div>
+            </router-link>
+
             <router-link to="/commission-deposits/dashboard" class="nav-item" active-class="active" data-tooltip="العمولات والودائع">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
@@ -462,48 +469,27 @@
               </div>
             </router-link>
 
-            <router-link to="/credit/bookings" class="nav-item" active-class="active" data-tooltip="الحجوزات">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                <span class="nav-text">الحجوزات</span>
-              </div>
-            </router-link>
-
-            <router-link to="/credit/financing" class="nav-item" active-class="active" data-tooltip="متتبع التمويل">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                <span class="nav-text">متتبع التمويل</span>
-              </div>
-            </router-link>
-
-            <router-link to="/credit/title-transfer" class="nav-item" active-class="active" data-tooltip="نقل الملكية">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                <span class="nav-text">نقل الملكية</span>
-              </div>
-            </router-link>
-
-            <router-link to="/credit/sold-projects" class="nav-item" active-class="active" data-tooltip="المشاريع المباعة">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                <span class="nav-text">المشاريع المباعة</span>
-              </div>
-            </router-link>
-
-            <router-link to="/credit/claim-files" class="nav-item" active-class="active" data-tooltip="ملفات المطالبة">
-              <div class="nav-content">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                <span class="nav-text">ملفات المطالبة</span>
-              </div>
-            </router-link>
-
-            <router-link to="/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
+            <router-link to="/credit/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
               <div class="nav-content">
                 <div class="icon-with-badge">
                   <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                   <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
                 </div>
                 <span class="nav-text">الإشعارات</span>
+              </div>
+            </router-link>
+
+            <router-link to="/credit/bookings" class="nav-item" active-class="active" data-tooltip="إدارة الحجوزات">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                <span class="nav-text">إدارة الحجوزات</span>
+              </div>
+            </router-link>
+
+            <router-link to="/credit/claim-files" class="nav-item" active-class="active" data-tooltip="إصدار ملف المطالبة والإفراغات">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                <span class="nav-text">إصدار ملف المطالبة والإفراغات</span>
               </div>
             </router-link>
 
@@ -548,17 +534,17 @@
               </div>
             </router-link>
 
-            <router-link to="/accounting/deposits" class="nav-item" active-class="active" data-tooltip="الودائع">
+            <router-link to="/accounting/deposits" class="nav-item" active-class="active" data-tooltip="إدارة العربون والمتابعة">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <span class="nav-text">الودائع</span>
+                <span class="nav-text">إدارة العربون والمتابعة</span>
               </div>
             </router-link>
 
-            <router-link to="/accounting/salaries" class="nav-item" active-class="active" data-tooltip="الرواتب">
+            <router-link to="/accounting/salaries" class="nav-item" active-class="active" data-tooltip="الرواتب وتوزيع العمولات">
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span class="nav-text">الرواتب</span>
+                <span class="nav-text">الرواتب وتوزيع العمولات</span>
               </div>
             </router-link>
 
@@ -566,6 +552,13 @@
               <div class="nav-content">
                 <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 <span class="nav-text">التأكيدات</span>
+              </div>
+            </router-link>
+
+            <router-link to="/developers" class="nav-item" active-class="active" data-tooltip="عرض المطورين">
+              <div class="nav-content">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <span class="nav-text">عرض المطورين</span>
               </div>
             </router-link>
 
@@ -694,6 +687,22 @@
     <footer class="footer">
       <p class="copyright">جميع الحقوق محفوظة © شركة راكز العقارية 2025</p>
     </footer>
+
+    <!-- Floating circle button: open AI Chatbot modal (all users with AI access) -->
+    <button
+      v-if="canUseChatbot"
+      type="button"
+      class="fab-agent"
+      aria-label="المساعد الذكي"
+      @click="openChatbotModal"
+    >
+      <svg class="fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    </button>
+
+    <ChatbotModal
+      v-if="showChatbotModal"
+      @close="closeChatbotModal"
+    />
   </div>
 </template>
 
@@ -703,9 +712,11 @@ import { useRoute, useRouter } from 'vue-router'
 import notificationService from '../services/notificationService'
 import authService from '../services/authService'
 import { usePermissions } from '../composables/usePermissions'
+import ChatbotModal from '../components/ChatbotModal.vue'
 
 export default {
   name: 'MainLayout',
+  components: { ChatbotModal },
   setup() {
     const route = useRoute()
     const router = useRouter()
@@ -793,6 +804,17 @@ export default {
       router.push('/login')
     }
 
+    const canUseChatbot = computed(() => hasPermission('use-ai-assistant'))
+    const showChatbotModal = ref(false)
+
+    const openChatbotModal = () => {
+      showChatbotModal.value = true
+    }
+
+    const closeChatbotModal = () => {
+      showChatbotModal.value = false
+    }
+
     onMounted(() => {
       notificationService.init()
     })
@@ -817,7 +839,11 @@ export default {
       toggleNotifications,
       markAsRead,
       markAllAsRead,
-      handleLogout
+      handleLogout,
+      canUseChatbot,
+      showChatbotModal,
+      openChatbotModal,
+      closeChatbotModal
     }
   }
 }
@@ -2491,6 +2517,38 @@ export default {
 
   .sidebar-nav::-webkit-scrollbar { width: 2px; }
   .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); }
+}
+
+/* Floating circle button - bottom left - open Agent modal */
+.fab-agent {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 90;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--color-gold, #B1A28F) 0%, var(--color-gold-dark, #8c7851) 100%);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(177, 162, 143, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.fab-agent:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 24px rgba(177, 162, 143, 0.5);
+}
+.fab-agent:active {
+  transform: scale(1.02);
+}
+.fab-icon {
+  width: 26px;
+  height: 26px;
+  pointer-events: none;
 }
 
 </style>

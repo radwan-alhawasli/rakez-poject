@@ -40,6 +40,22 @@ global.ResizeObserver = class ResizeObserver {
   unobserve() {}
 }
 
+// Mock window.location to avoid jsdom "Not implemented: navigation" when apiClient redirects on 401
+let locationHref = 'http://localhost/'
+const locationMock = {
+  get href() { return locationHref },
+  set href(v) { locationHref = v },
+  pathname: '/',
+  assign: vi.fn(),
+  replace: vi.fn(),
+  reload: vi.fn()
+}
+Object.defineProperty(window, 'location', {
+  writable: true,
+  configurable: true,
+  value: locationMock
+})
+
 // Global test configuration
 config.global.mocks = {
   $t: (key) => key,

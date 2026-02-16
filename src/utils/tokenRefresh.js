@@ -26,6 +26,11 @@ export function isRefreshEndpointAvailable() {
  */
 export function initTokenRefresh(client) {
     apiClientInstance = client
+    // Skip refresh for localhost - backend may not implement /api/auth/refresh
+    const baseUrl = client?.defaults?.baseURL || ''
+    if (baseUrl.includes('localhost')) {
+        refreshEndpointAvailable = false
+    }
 }
 
 /**

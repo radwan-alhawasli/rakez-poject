@@ -200,6 +200,7 @@ import contractService from '../services/contractService'
 import hrService from '../services/hrService'
 import notificationService from '../services/notificationService'
 import logger from '../utils/logger'
+import { toast } from '../composables/useToast'
 
 export default {
   name: 'ExclusiveProjectView',
@@ -303,7 +304,7 @@ export default {
            'success'
         )
 
-        alert('✅ تم إرسال طلب العقد بنجاح!')
+        toast.success('تم إرسال طلب العقد بنجاح!')
         
         // Reset form
         Object.assign(form, {
@@ -331,7 +332,7 @@ export default {
         })
       } catch (error) {
         logger.error('Submission failed', error)
-        alert('حدث خطأ أثناء إرسال الطلب: ' + (error.response?.data?.message || error.message))
+        toast.error('حدث خطأ أثناء إرسال الطلب: ' + (error.response?.data?.message || error.message))
       } finally {
         isLoading.value = false
       }

@@ -96,53 +96,41 @@
         </div>
       </div>
 
-      <!-- Bookings - Confirmed Tab -->
-      <div v-else-if="activeTab === 'bookings-confirmed'" class="management-view">
-        <div class="section-header-compact" style="display: flex; justify-content: space-between; align-items: center;">
+      <!-- Tab 2: Notifications (الإشعارات) -->
+      <div v-else-if="activeTab === 'notifications'" class="management-view">
+        <div class="section-header-compact" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div>
-            <h2 class="section-title">الحجوزات المؤكدة</h2>
-            <p class="section-subtitle">قائمة بجميع الحجوزات المؤكدة.</p>
+            <h2 class="section-title">الإشعارات</h2>
+            <p class="section-subtitle">استقبال إشعارات: حجز تفاوض جديد، الموافقة أو الرفض على السعر، تأكيد العربون، انتقال الحجز إلى مؤكد، انتهاء مهلة أي إجراء، اكتمال الإفراغ.</p>
           </div>
-          <div class="header-actions" style="display: flex; gap: 15px; align-items: center;">
-            <div class="search-box-mini">
-              <input 
-                v-model="searchQuery" 
-                type="text" 
-                placeholder="بحث..." 
-                @input="loadConfirmedBookings"
-                class="search-input-mini"
-              />
-            </div>
-          </div>
+          <button v-if="creditNotifications.some(n => !n.read)" class="btn-primary" :disabled="isLoading" @click="markAllCreditNotificationsRead">
+            تعيين الكل كمقروء
+          </button>
         </div>
         <div class="metrics-table-container">
           <table class="metrics-table">
             <thead>
               <tr>
-                <th>رقم الحجز</th>
-                <th>اسم العميل</th>
-                <th>المشروع</th>
-                <th>تاريخ الحجز</th>
+                <th>التاريخ</th>
+                <th>نوع الإشعار</th>
+                <th>العنوان</th>
                 <th>الحالة</th>
                 <th>الإجراءات</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="booking in confirmedBookings" :key="booking.id">
-                <td>{{ booking.id }}</td>
-                <td>{{ booking.customer_name || 'غير محدد' }}</td>
-                <td>{{ booking.project_name || 'غير محدد' }}</td>
-                <td>{{ formatDate(booking.created_at) }}</td>
-                <td><span class="status-tag excellent">مؤكد</span></td>
-                <td>
-                  <button class="btn-action edit" @click="viewBookingDetail(booking)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    عرض التفاصيل
-                  </button>
-                </td>
+              <tr v-if="creditNotifications.length === 0 && !isLoading">
+                <td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">لا توجد إشعارات.</td>
               </tr>
-              <tr v-if="confirmedBookings.length === 0 && !isLoading">
-                <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">لا توجد حجوزات مؤكدة</td>
+              <tr v-for="n in creditNotifications" :key="n.id">
+                <td>{{ formatDate(n.created_at || n.date) }}</td>
+                <td>{{ n.type_label || n.type || '—' }}</td>
+                <td>{{ n.title || n.message || '—' }}</td>
+                <td><span class="status-tag" :class="n.read ? 'excellent' : 'good'">{{ n.read ? 'مقروء' : 'جديد' }}</span></td>
+                <td>
+                  <button v-if="!n.read" type="button" class="btn-action edit" @click="markCreditNotificationRead(n.id)">تعيين كمقروء</button>
+                  <span v-else style="color: #94a3b8;">—</span>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -157,107 +145,99 @@
         />
       </div>
 
-      <!-- Bookings - Negotiation Tab -->
-      <div v-else-if="activeTab === 'bookings-negotiation'" class="management-view">
+      <!-- Bookings: single block with 6 tabs + inline detail panel (design 100%) -->
+      <div v-else-if="activeTab === 'bookings'" class="management-view credit-bookings-management">
         <div class="section-header-compact">
           <div>
-            <h2 class="section-title">الحجوزات قيد التفاوض</h2>
-            <p class="section-subtitle">قائمة بالحجوزات التي تحتاج إلى تحديث حالة التفاوض.</p>
+            <h2 class="section-title">إدارة الحجوزات</h2>
+            <p class="section-subtitle">مراجعة واعتماد وتتبع طلبات الحجز المقدمة من المسوقين.</p>
           </div>
         </div>
-        <div class="metrics-table-container">
-          <table class="metrics-table">
-            <thead>
-              <tr>
-                <th>رقم الحجز</th>
-                <th>اسم العميل</th>
-                <th>المشروع</th>
-                <th>حالة التفاوض</th>
-                <th>الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="booking in negotiationBookings" :key="booking.id">
-                <td>{{ booking.id }}</td>
-                <td>{{ booking.customer_name || 'غير محدد' }}</td>
-                <td>{{ booking.project_name || 'غير محدد' }}</td>
-                <td><span class="status-tag good">{{ booking.negotiation_status || 'قيد التفاوض' }}</span></td>
-                <td>
-                  <button class="btn-action edit" @click="openNegotiationUpdate(booking)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    تحديث
-                  </button>
-                </td>
-              </tr>
-              <tr v-if="negotiationBookings.length === 0 && !isLoading">
-                <td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">لا توجد حجوزات قيد التفاوض</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="credit-bookings-six-tabs">
+          <button type="button" :class="['btn-tab-booking', { active: bookingsSubTab === 'all' }]" @click="setBookingsSubTab('all')">الكل</button>
+          <button type="button" :class="['btn-tab-booking', { active: bookingsSubTab === 'confirmed' }]" @click="setBookingsSubTab('confirmed')">الحجوزات المؤكدة</button>
+          <button type="button" :class="['btn-tab-booking', { active: bookingsSubTab === 'negotiation' }]" @click="setBookingsSubTab('negotiation')">حجوزات التفاوض</button>
+          <button type="button" :class="['btn-tab-booking', { active: bookingsSubTab === 'waiting' }]" @click="setBookingsSubTab('waiting')">حجوزات الانتظار</button>
+          <button type="button" :class="['btn-tab-booking', { active: bookingsSubTab === 'sold' }]" @click="setBookingsSubTab('sold')">مباعة</button>
+          <button type="button" :class="['btn-tab-booking', { active: bookingsSubTab === 'rejected' }]" @click="setBookingsSubTab('rejected')">مرفوضة / ملغاة</button>
         </div>
-        <Pagination
-          v-if="creditTotalItems > 0"
-          :current-page="creditCurrentPage"
-          :total-items="creditTotalItems"
-          :per-page="creditPerPage"
-          @page-change="handleCreditPageChange"
-          @per-page-change="handleCreditPerPageChange"
-        />
-      </div>
-
-      <!-- Bookings - Waiting Tab -->
-      <div v-else-if="activeTab === 'bookings-waiting'" class="management-view">
-        <div class="section-header-compact">
-          <div>
-            <h2 class="section-title">الحجوزات المنتظرة</h2>
-            <p class="section-subtitle">قائمة بالحجوزات المنتظرة للمعالجة.</p>
+        <div v-if="selectedBooking" class="booking-detail-inline">
+          <div class="booking-detail-header">
+            <button type="button" class="btn-back-list" @click="clearSelectedBooking">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              عودة للقائمة
+            </button>
           </div>
+          <div v-if="!selectedBookingId()" class="booking-no-id-message">
+            <p>لا يوجد حجز محدد. اختر حجزاً من القائمة.</p>
+          </div>
+          <CreditBookingDetailPanel
+            v-else
+            :booking="selectedBooking"
+            :financing-tracker="selectedFinancingTracker"
+            @evacuation="onBookingEvacuation"
+            @delete="onBookingDelete"
+            @edit="onBookingEdit"
+            @schedule="onBookingSchedule"
+            @cancel="onBookingCancel"
+            @next-stage="onBookingNextStage"
+            @reject-financing="onBookingRejectFinancing"
+          />
         </div>
-        <div class="metrics-table-container">
-          <table class="metrics-table">
-            <thead>
-              <tr>
-                <th>رقم الحجز</th>
-                <th>اسم العميل</th>
-                <th>المشروع</th>
-                <th>تاريخ الانتظار</th>
-                <th>الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="booking in waitingBookings" :key="booking.id">
-                <td>{{ booking.id }}</td>
-                <td>{{ booking.customer_name || 'غير محدد' }}</td>
-                <td>{{ booking.project_name || 'غير محدد' }}</td>
-                <td>{{ formatDate(booking.created_at) }}</td>
-                <td>
-                  <button class="btn-action edit" @click="openProcessWaiting(booking)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    معالجة
-                  </button>
-                </td>
-              </tr>
-              <tr v-if="waitingBookings.length === 0 && !isLoading">
-                <td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">لا توجد حجوزات منتظرة</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <Pagination
-          v-if="creditTotalItems > 0"
-          :current-page="creditCurrentPage"
-          :total-items="creditTotalItems"
-          :per-page="creditPerPage"
-          @page-change="handleCreditPageChange"
-          @per-page-change="handleCreditPerPageChange"
-        />
+        <template v-else>
+          <div class="search-box-mini" v-if="bookingsSubTab !== 'sold' && bookingsSubTab !== 'rejected'">
+            <input v-model="searchQuery" type="text" placeholder="بحث..." @input="loadBookingsForCurrentTab" class="search-input-mini" />
+          </div>
+          <div class="metrics-table-container">
+            <table class="metrics-table">
+              <thead>
+                <tr>
+                  <th>رقم الحجز</th>
+                  <th>اسم العميل</th>
+                  <th>المشروع</th>
+                  <th>تاريخ الحجز</th>
+                  <th>الحالة</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="booking in currentBookingsList" :key="booking.id">
+                  <td>{{ booking.id }}</td>
+                  <td>{{ booking.customer_name || 'غير محدد' }}</td>
+                  <td>{{ booking.project_name || 'غير محدد' }}</td>
+                  <td>{{ formatDate(booking.created_at) }}</td>
+                  <td><span class="status-tag" :class="getBookingStatusClass(booking)">{{ getBookingStatusLabel(booking) }}</span></td>
+                  <td>
+                    <button class="btn-action edit" @click="viewBookingDetail(booking)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      عرض التفاصيل
+                    </button>
+                    <button v-if="bookingsSubTab === 'negotiation'" class="btn-action edit" @click="openNegotiationUpdate(booking)">تحديث</button>
+                    <button v-if="bookingsSubTab === 'waiting'" class="btn-action edit" @click="openProcessWaiting(booking)">معالجة</button>
+                  </td>
+                </tr>
+                <tr v-if="currentBookingsList.length === 0 && !isLoading">
+                  <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">{{ emptyBookingsMessage }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <Pagination
+            v-if="creditTotalItems > 0 && !selectedBooking"
+            :current-page="creditCurrentPage"
+            :total-items="creditTotalItems"
+            :per-page="creditPerPage"
+            @page-change="handleCreditPageChange"
+            @per-page-change="handleCreditPerPageChange"
+          />
+        </template>
       </div>
 
-      <!-- Financing Tab -->
+      <!-- Financing Tab (route only; not in sidebar) -->
       <div v-else-if="activeTab === 'financing'" class="management-view">
         <div class="section-header-compact" style="display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <h2 class="section-title">متتبع التمويل</h2>
+            <h2 class="section-title">طلبات التمويل</h2>
             <p class="section-subtitle">إدارة طلبات التمويل وتتبع حالتها.</p>
           </div>
         </div>
@@ -485,6 +465,22 @@
       @submit="handleProcessWaiting"
     />
 
+    <!-- تأكيد الانتقال للمرحلة التالية -->
+    <div v-if="showAdvanceConfirmModal" class="modal-overlay" @click.self="showAdvanceConfirmModal = false">
+      <div class="modal-card advance-confirm-modal">
+        <h3 class="modal-title">تأكيد الانتقال للمرحلة التالية؟</h3>
+        <p class="modal-body">
+          هل تريد تحديث حالة الائتمان إلى «{{ nextStageLabel }}»؟ سيؤدي هذا إلى إعادة تعيين عداد الوقت.
+        </p>
+        <div class="modal-actions">
+          <button type="button" class="btn-modal-cancel" @click="showAdvanceConfirmModal = false">إلغاء</button>
+          <button type="button" class="btn-modal-confirm" :disabled="isAdvancing" @click="onAdvanceConfirm">
+            {{ isAdvancing ? 'جاري التنفيذ...' : 'تأكيد' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <FinancingDetailModal
       v-if="showFinancingModal"
       :financing="selectedFinancing"
@@ -513,12 +509,14 @@
 
 <script>
 import { ref, reactive, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import creditService from '../services/creditService'
 import Pagination from '../components/Pagination.vue'
 import authService from '../services/authService'
 import logger from '../utils/logger'
+import { toast } from '../composables/useToast'
 import BookingDetailModal from '../components/credit/BookingDetailModal.vue'
+import CreditBookingDetailPanel from '../components/credit/CreditBookingDetailPanel.vue'
 import NegotiationUpdateModal from '../components/credit/NegotiationUpdateModal.vue'
 import ProcessWaitingModal from '../components/credit/ProcessWaitingModal.vue'
 import FinancingDetailModal from '../components/credit/FinancingDetailModal.vue'
@@ -530,6 +528,7 @@ export default {
   components: {
     Pagination,
     BookingDetailModal,
+    CreditBookingDetailPanel,
     NegotiationUpdateModal,
     ProcessWaitingModal,
     FinancingDetailModal,
@@ -538,6 +537,7 @@ export default {
   },
   setup() {
     const route = useRoute()
+    const router = useRouter()
     const user = ref(authService.getCurrentUser())
     const userName = computed(() => user.value?.name || 'قسم الائتمان')
     const isLoading = ref(false)
@@ -560,6 +560,7 @@ export default {
     const titleTransfers = ref([])
     const soldProjects = ref([])
     const claimFiles = ref([])
+    const creditNotifications = ref([])
 
     // Pagination state (shared across list tabs)
     const creditCurrentPage = ref(1)
@@ -573,6 +574,8 @@ export default {
     const showFinancingModal = ref(false)
     const showTitleTransferModal = ref(false)
     const showClaimModal = ref(false)
+    const showAdvanceConfirmModal = ref(false)
+    const isAdvancing = ref(false)
     const selectedBooking = ref(null)
     const selectedFinancing = ref(null)
     const selectedTransfer = ref(null)
@@ -586,13 +589,8 @@ export default {
     const activeTab = computed(() => {
       const name = route.name
       if (name === 'CreditDashboard') return 'dashboard'
-      if (name === 'CreditBookings') {
-        // Check query params or default to confirmed
-        const subTab = route.query.tab || 'confirmed'
-        if (subTab === 'negotiation') return 'bookings-negotiation'
-        if (subTab === 'waiting') return 'bookings-waiting'
-        return 'bookings-confirmed'
-      }
+      if (name === 'CreditNotifications') return 'notifications'
+      if (name === 'CreditBookings') return 'bookings'
       if (name === 'CreditFinancing') return 'financing'
       if (name === 'CreditTitleTransfer') return 'title-transfer'
       if (name === 'CreditSoldProjects') return 'sold-projects'
@@ -600,17 +598,76 @@ export default {
       return 'dashboard'
     })
 
+    const bookingsSubTab = computed(() => {
+      if (route.name !== 'CreditBookings') return 'confirmed'
+      const t = route.query.tab || 'all'
+      const allowed = ['all', 'confirmed', 'negotiation', 'waiting', 'sold', 'rejected']
+      return allowed.includes(t) ? t : 'all'
+    })
+
+    const setBookingsSubTab = (tab) => {
+      router.push({ name: 'CreditBookings', query: { ...route.query, tab } })
+    }
+
+    const currentBookingsList = computed(() => {
+      const tab = bookingsSubTab.value
+      if (tab === 'all') return [...confirmedBookings.value, ...negotiationBookings.value, ...waitingBookings.value]
+      if (tab === 'confirmed') return confirmedBookings.value
+      if (tab === 'negotiation') return negotiationBookings.value
+      if (tab === 'waiting') return waitingBookings.value
+      if (tab === 'sold') return soldBookings.value
+      if (tab === 'rejected') return rejectedBookings.value
+      return []
+    })
+
+    const emptyBookingsMessage = computed(() => {
+      const tab = bookingsSubTab.value
+      const messages = {
+        all: 'لا توجد حجوزات',
+        confirmed: 'لا توجد حجوزات مؤكدة',
+        negotiation: 'لا توجد حجوزات قيد التفاوض',
+        waiting: 'لا توجد حجوزات منتظرة',
+        sold: 'لا توجد حجوزات مباعة',
+        rejected: 'لا توجد حجوزات مرفوضة أو ملغاة'
+      }
+      return messages[tab] || 'لا توجد حجوزات'
+    })
+
+    const selectedFinancingTracker = ref(null)
+    const soldBookings = ref([])
+    const rejectedBookings = ref([])
+
+    const TRACKER_LABELS = ['رفع الطلب للبنك', 'صدور التقييم', 'زيارة المقيم للمشروع', 'إجراءات بنكية وعقود', 'تنفيذ العقود', 'فتره التجهيز قبل الافراغ']
+    const advanceCompletedCount = computed(() => {
+      const steps = selectedBooking.value?.credit_procedure_steps
+      if (Array.isArray(steps) && steps.length > 0) {
+        return steps.filter(s => s.status === 'completed' || s.status === 'done' || s.completed).length
+      }
+      const t = selectedFinancingTracker.value
+      const stages = t?.stages ?? []
+      const completed = t?.completed_stages
+      if (typeof completed === 'number') return completed
+      return stages.filter(s => s?.completed || s?.done).length
+    })
+    const nextStageLabel = computed(() => {
+      const steps = selectedBooking.value?.credit_procedure_steps
+      const n = advanceCompletedCount.value
+      if (Array.isArray(steps) && steps[n]) return steps[n].label_ar || steps[n].label || TRACKER_LABELS[n] || ''
+      return TRACKER_LABELS[n] || ''
+    })
+
     // Load functions
     const loadDashboardMetrics = async () => {
       isLoading.value = true
       try {
         const data = await creditService.getDashboard()
-        dashboardMetrics.confirmedBookings = data.confirmed_bookings || 0
-        dashboardMetrics.pendingNegotiations = data.pending_negotiations || 0
-        dashboardMetrics.waitingBookings = data.waiting_bookings || 0
-        dashboardMetrics.activeFinancing = data.active_financing || 0
-        dashboardMetrics.titleTransfers = data.title_transfers || 0
-        dashboardMetrics.pendingClaims = data.pending_claims || 0
+        const kpis = data.kpis ?? data
+        dashboardMetrics.confirmedBookings = kpis.confirmed_bookings_count ?? kpis.confirmed_bookings ?? data.confirmed_bookings ?? 0
+        dashboardMetrics.pendingNegotiations = kpis.negotiation_bookings_count ?? kpis.pending_negotiations ?? data.pending_negotiations ?? 0
+        dashboardMetrics.waitingBookings = kpis.waiting_bookings_count ?? kpis.waiting_bookings ?? data.waiting_bookings ?? 0
+        dashboardMetrics.activeFinancing = kpis.projects_in_progress_count ?? kpis.active_financing ?? data.active_financing ?? 0
+        dashboardMetrics.titleTransfers = kpis.in_title_transfer_count ?? kpis.title_transfers ?? data.title_transfers ?? 0
+        dashboardMetrics.pendingClaims = kpis.pending_accounting_confirmation ?? kpis.pending_claims ?? data.pending_claims ?? 0
       } catch (error) {
         logger.error('Error loading dashboard metrics:', error)
       } finally {
@@ -673,6 +730,54 @@ export default {
       }
     }
 
+    /** Tab مباعة: GET /credit/sold-projects (Postman 06 - List Sold Projects) */
+    const loadSoldBookings = async () => {
+      isLoading.value = true
+      try {
+        const data = await creditService.getSoldProjects({
+          page: creditCurrentPage.value,
+          per_page: creditPerPage.value
+        })
+        const raw = data?.items ?? (Array.isArray(data) ? data : [])
+        soldBookings.value = raw.map((r) => ({
+          id: r.reservation_id ?? r.id,
+          customer_name: r.client_name ?? 'غير محدد',
+          project_name: r.project_name ?? 'غير محدد',
+          unit_number: r.unit_number,
+          created_at: r.completed_date ?? r.created_at,
+          credit_status: 'sold',
+          ...r
+        }))
+        creditTotalItems.value = data?.total ?? soldBookings.value.length
+      } catch (error) {
+        logger.error('Error loading sold bookings:', error)
+        soldBookings.value = []
+        creditTotalItems.value = 0
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    /** Tab مرفوضة/ملغاة: GET /credit/bookings/confirmed?credit_status=rejected (Postman 03 - List Confirmed) */
+    const loadRejectedBookings = async () => {
+      isLoading.value = true
+      try {
+        const data = await creditService.getConfirmedBookings({
+          credit_status: 'rejected',
+          page: creditCurrentPage.value,
+          per_page: creditPerPage.value
+        })
+        rejectedBookings.value = data?.items ?? (Array.isArray(data) ? data : [])
+        creditTotalItems.value = data?.total ?? rejectedBookings.value.length
+      } catch (error) {
+        logger.error('Error loading rejected bookings:', error)
+        rejectedBookings.value = []
+        creditTotalItems.value = 0
+      } finally {
+        isLoading.value = false
+      }
+    }
+
     const loadFinancing = async () => {
       isLoading.value = true
       try {
@@ -727,6 +832,39 @@ export default {
       }
     }
 
+    const loadCreditNotifications = async () => {
+      isLoading.value = true
+      try {
+        const data = await creditService.getNotifications({ per_page: creditPerPage.value, page: creditCurrentPage.value })
+        creditNotifications.value = data?.items ?? (Array.isArray(data) ? data : [])
+        creditTotalItems.value = data?.total ?? creditNotifications.value.length
+      } catch {
+        creditNotifications.value = []
+        creditTotalItems.value = 0
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    const markCreditNotificationRead = async (notificationId) => {
+      try {
+        await creditService.markNotificationRead(notificationId)
+        const n = creditNotifications.value.find(x => x.id === notificationId)
+        if (n) n.read = true
+      } catch (e) {
+        logger.error('Error marking notification read:', e)
+      }
+    }
+
+    const markAllCreditNotificationsRead = async () => {
+      try {
+        await creditService.markAllNotificationsRead()
+        creditNotifications.value.forEach(n => { n.read = true })
+      } catch (e) {
+        logger.error('Error marking all notifications read:', e)
+      }
+    }
+
     const loadClaimFiles = async () => {
       isLoading.value = true
       try {
@@ -758,57 +896,298 @@ export default {
 
     const loadCurrentTabData = () => {
       const tab = activeTab.value
-      if (tab === 'bookings-confirmed') loadConfirmedBookings()
-      else if (tab === 'bookings-negotiation') loadNegotiationBookings()
-      else if (tab === 'bookings-waiting') loadWaitingBookings()
+      if (tab === 'bookings') loadBookingsForCurrentTab()
       else if (tab === 'financing') loadFinancing()
       else if (tab === 'title-transfer') loadTitleTransfers()
       else if (tab === 'sold-projects') loadSoldProjects()
       else if (tab === 'claim-files') loadClaimFiles()
     }
 
-    // Action handlers
-    const viewBookingDetail = (booking) => {
-      selectedBooking.value = booking
-      showBookingModal.value = true
+    // Normalize API booking detail (project, unit, client, financial, marketing, credit_procedure_steps) per Show Booking API
+    const normalizeBookingForModal = (raw) => {
+      if (!raw) return null
+      const p = raw.project ?? {}
+      const u = raw.unit ?? raw.contractUnit ?? {}
+      const c = raw.client ?? {}
+      const f = raw.financial ?? {}
+      const m = raw.marketing ?? {}
+      const bookingId = raw.id ?? raw.reservation_id
+      return {
+        ...raw,
+        id: bookingId ?? raw.id ?? raw.reservation_id,
+        reservation_id: raw.reservation_id ?? bookingId,
+        project_name: p.name ?? raw.project_name,
+        unit_number: u.number ?? raw.unit_number,
+        district: p.district ?? raw.district,
+        area: u.area ?? raw.area,
+        unit_type: u.type ?? raw.unit_type,
+        property_type: p.property_type ?? raw.property_type,
+        property_value: p.unit_value ?? u.price ?? f?.unit_value ?? raw.property_value,
+        customer_name: c.name ?? raw.customer_name,
+        customer_phone: c.mobile ?? c.phone ?? raw.customer_phone,
+        customer_email: c.email ?? raw.customer_email,
+        nationality: c.nationality ?? raw.nationality,
+        iban: c.iban ?? raw.iban,
+        deposit_amount: f.down_payment_amount ?? raw.deposit_amount,
+        deposit_date: f.down_payment_date ?? raw.deposit_date,
+        commission_source: f.commission_payer ?? f.commission_source ?? raw.commission_source,
+        payment_method: f.payment_method ?? raw.payment_method,
+        purchase_mechanism: f.purchase_mechanism ?? m.purchase_mechanism ?? raw.purchase_mechanism,
+        purchase_mechanism_label_ar: m.purchase_mechanism_label_ar ?? raw.purchase_mechanism_label_ar,
+        team_name: m.team_name ?? raw.team_name,
+        marketer_name: m.marketer_name ?? raw.marketer_name,
+        credit_procedure_steps: raw.credit_procedure_steps ?? null,
+        created_at: raw.created_at
+      }
+    }
+
+    const viewBookingDetail = async (booking) => {
+      const bookingId = booking?.id ?? booking?.reservation_id
+      if (!bookingId) return
+      selectedFinancingTracker.value = null
+      try {
+        const full = await creditService.getBookingById(bookingId)
+        selectedBooking.value = normalizeBookingForModal(full) || { ...booking, id: bookingId }
+        // Use financing from Show Booking when present to avoid extra GET .../financing (~500ms)
+        if (full && full.financing !== undefined) {
+          selectedFinancingTracker.value = {
+            financing: full.financing,
+            progress_summary: full.progress_summary,
+            current_stage: full.current_stage,
+            remaining_days: full.remaining_days,
+            all_completed: full.all_completed,
+            booking_id: full.id ?? full.reservation_id
+          }
+        } else {
+          selectedFinancingTracker.value = null
+        }
+      } catch {
+        selectedBooking.value = { ...booking, id: bookingId, reservation_id: bookingId }
+      }
+    }
+
+    const clearSelectedBooking = () => {
+      selectedBooking.value = null
+      selectedFinancingTracker.value = null
+    }
+
+    const loadBookingsForCurrentTab = async () => {
+      const tab = bookingsSubTab.value
+      if (tab === 'all') {
+        await Promise.all([loadConfirmedBookings(), loadNegotiationBookings(), loadWaitingBookings()])
+        creditTotalItems.value = confirmedBookings.value.length + negotiationBookings.value.length + waitingBookings.value.length
+        return
+      }
+      if (tab === 'confirmed') loadConfirmedBookings()
+      else if (tab === 'negotiation') loadNegotiationBookings()
+      else if (tab === 'waiting') loadWaitingBookings()
+      else if (tab === 'sold') loadSoldBookings()
+      else if (tab === 'rejected') loadRejectedBookings()
+    }
+
+    const getBookingStatusClass = (booking) => {
+      const s = (booking.credit_status ?? booking.status ?? '').toLowerCase()
+      if (s.includes('confirmed') || s.includes('مؤكد') || s.includes('approved')) return 'excellent'
+      if (s.includes('negotiation') || s.includes('تفاوض')) return 'good'
+      if (s.includes('waiting') || s.includes('انتظار')) return 'good'
+      if (s.includes('rejected') || s.includes('مرفوض') || s.includes('cancelled')) return 'warning'
+      return 'good'
+    }
+
+    const getBookingStatusLabel = (booking) => {
+      const s = booking.credit_status ?? booking.status ?? ''
+      const map = { confirmed: 'مؤكد', negotiation: 'قيد التفاوض', waiting: 'منتظر', sold: 'مباع', rejected: 'مرفوض', cancelled: 'ملغى' }
+      return map[s] || s || 'مؤكد'
+    }
+
+    const selectedBookingId = () => selectedBooking.value?.id ?? selectedBooking.value?.reservation_id
+
+    const onBookingEvacuation = async () => {
+      const bookingId = selectedBookingId()
+      if (!bookingId) return
+      try {
+        const pending = await creditService.getPendingTitleTransfers()
+        const items = pending?.items ?? (Array.isArray(pending) ? pending : [])
+        const transfer = items.find(t => (t.booking_id ?? t.reservation_id) === bookingId) ?? items[0]
+        if (transfer?.id) {
+          await creditService.completeTitleTransfer(transfer.id, {})
+          toast.success('تم تسجيل الإفراغ بنجاح')
+        } else {
+          await creditService.initializeTitleTransfer(bookingId)
+          toast.success('تم بدء إجراء نقل الملكية. حدد موعد الإفراغ إن لزم.')
+        }
+        clearSelectedBooking()
+        loadBookingsForCurrentTab()
+        loadDashboardMetrics()
+      } catch (e) {
+        logger.error('Evacuation error:', e)
+        toast.error('حدث خطأ أثناء تنفيذ الإفراغ')
+      }
+    }
+
+    const onBookingDelete = () => {
+      const bookingId = selectedBookingId()
+      if (!bookingId) return
+      if (!confirm('هل أنت متأكد من حذف هذا الحجز؟')) return
+      creditService.cancelBooking(bookingId, {}).then(() => {
+        toast.success('تم إلغاء الحجز')
+        clearSelectedBooking()
+        loadBookingsForCurrentTab()
+        loadDashboardMetrics()
+      }).catch(e => {
+        logger.error('Cancel booking error:', e)
+        toast.error('حدث خطأ أثناء الإلغاء')
+      })
+    }
+
+    const onBookingEdit = () => {
+      openNegotiationUpdate(selectedBooking.value)
+    }
+
+    const onBookingSchedule = async () => {
+      const bookingId = selectedBookingId()
+      if (!bookingId) return
+      try {
+        let transferId = selectedBooking.value?.title_transfer_id
+        if (!transferId) {
+          const res = await creditService.initializeTitleTransfer(bookingId)
+          transferId = res?.id ?? res?.data?.id
+        }
+        if (transferId) {
+          const date = prompt('أدخل تاريخ الإفراغ (YYYY-MM-DD):')
+          if (date) {
+            await creditService.scheduleTitleTransfer(transferId, { scheduled_date: date })
+            toast.success('تم تحديد موعد الإفراغ')
+            const tracker = await creditService.getFinancingTracker(bookingId)
+            selectedFinancingTracker.value = tracker
+          }
+        }
+      } catch (e) {
+        logger.error('Schedule title transfer error:', e)
+        toast.error('حدث خطأ أثناء تحديد الموعد')
+      }
+    }
+
+    const onBookingCancel = () => {
+      const bookingId = selectedBookingId()
+      if (!bookingId) return
+      if (!confirm('هل أنت متأكد من إلغاء هذا الحجز؟')) return
+      creditService.cancelBooking(bookingId, {}).then(() => {
+        toast.success('تم إلغاء الحجز')
+        clearSelectedBooking()
+        loadBookingsForCurrentTab()
+        loadDashboardMetrics()
+      }).catch(e => {
+        logger.error('Cancel booking error:', e)
+        toast.error('حدث خطأ أثناء الإلغاء')
+      })
+    }
+
+    const onBookingNextStage = () => {
+      const bookingId = selectedBookingId()
+      if (!bookingId) {
+        toast.warning('لا يمكن تنفيذ العملية')
+        return
+      }
+      showAdvanceConfirmModal.value = true
+    }
+
+    const onAdvanceConfirm = async () => {
+      const bookingId = selectedBookingId()
+      if (!bookingId) return
+      isAdvancing.value = true
+      try {
+        await creditService.advanceFinancing(bookingId, {})
+        const updated = await creditService.getFinancingTracker(bookingId)
+        selectedFinancingTracker.value = updated
+        showAdvanceConfirmModal.value = false
+        toast.success('تمت المرحلة بنجاح')
+      } catch (e) {
+        logger.error('Advance financing error:', e)
+        toast.error('حدث خطأ أثناء الانتقال للمرحلة التالية')
+      } finally {
+        isAdvancing.value = false
+      }
+    }
+
+    const onBookingRejectFinancing = async () => {
+      const bookingId = selectedBookingId()
+      if (!bookingId) {
+        toast.warning('لا يوجد حجز محدد')
+        return
+      }
+      const reason = window.prompt('سبب رفض التمويل (مطلوب):')?.trim()
+      if (!reason) {
+        toast.warning('يجب إدخال سبب الرفض')
+        return
+      }
+      try {
+        await creditService.rejectFinancing(bookingId, { reason })
+        toast.success('تم رفض التمويل')
+        const updated = await creditService.getFinancingTracker(bookingId)
+        selectedFinancingTracker.value = updated
+      } catch (e) {
+        logger.error('Reject financing error:', e)
+        toast.error('حدث خطأ أثناء رفض التمويل')
+      }
     }
 
     const openNegotiationUpdate = (booking) => {
+      if (!(booking?.id ?? booking?.reservation_id)) {
+        toast.warning('معرف الحجز غير صالح')
+        return
+      }
       selectedBooking.value = booking
       showNegotiationModal.value = true
     }
 
     const handleNegotiationUpdate = async (data) => {
+      const bookingId = selectedBookingId()
+      if (!bookingId) {
+        toast.warning('معرف الحجز غير صالح')
+        return
+      }
       isSavingNegotiation.value = true
       try {
-        await creditService.updateNegotiation(selectedBooking.value.id, data)
-        alert('تم تحديث حالة التفاوض بنجاح')
+        await creditService.updateNegotiation(bookingId, data)
+        toast.success('تم تحديث حالة التفاوض بنجاح')
         showNegotiationModal.value = false
         loadNegotiationBookings()
       } catch (error) {
         logger.error('Error updating negotiation:', error)
-        alert('حدث خطأ أثناء تحديث حالة التفاوض')
+        const msg = error?.code === 'INVALID_BOOKING_ID' ? error.message : 'حدث خطأ أثناء تحديث حالة التفاوض'
+        toast.error(msg)
       } finally {
         isSavingNegotiation.value = false
       }
     }
 
     const openProcessWaiting = (booking) => {
+      if (!(booking?.id ?? booking?.reservation_id)) {
+        toast.warning('معرف الحجز غير صالح')
+        return
+      }
       selectedBooking.value = booking
       showProcessModal.value = true
     }
 
     const handleProcessWaiting = async (data) => {
+      const bookingId = selectedBookingId()
+      if (!bookingId) {
+        toast.warning('معرف الحجز غير صالح')
+        return
+      }
       isProcessing.value = true
       try {
-        await creditService.processWaitingBooking(selectedBooking.value.id, data)
-        alert('تم معالجة الحجز بنجاح')
+        await creditService.processWaitingBooking(bookingId, data)
+        toast.success('تم معالجة الحجز بنجاح')
         showProcessModal.value = false
         loadWaitingBookings()
         loadDashboardMetrics()
       } catch (error) {
         logger.error('Error processing waiting booking:', error)
-        alert('حدث خطأ أثناء معالجة الحجز')
+        const msg = error?.code === 'INVALID_BOOKING_ID' ? error.message : 'حدث خطأ أثناء معالجة الحجز'
+        toast.error(msg)
       } finally {
         isProcessing.value = false
       }
@@ -823,12 +1202,12 @@ export default {
       isSavingFinancing.value = true
       try {
         await creditService.updateFinancing(selectedFinancing.value.id, data)
-        alert('تم تحديث بيانات التمويل بنجاح')
+        toast.success('تم تحديث بيانات التمويل بنجاح')
         showFinancingModal.value = false
         loadFinancing()
       } catch (error) {
         logger.error('Error updating financing:', error)
-        alert('حدث خطأ أثناء تحديث بيانات التمويل')
+        toast.error('حدث خطأ أثناء تحديث بيانات التمويل')
       } finally {
         isSavingFinancing.value = false
       }
@@ -849,17 +1228,17 @@ export default {
       try {
         if (selectedTransfer.value) {
           await creditService.completeTitleTransfer(selectedTransfer.value.id, data)
-          alert('تم إكمال نقل الملكية بنجاح')
+          toast.success('تم إكمال نقل الملكية بنجاح')
         } else {
           await creditService.createTitleTransfer(data)
-          alert('تم إنشاء طلب نقل الملكية بنجاح')
+          toast.success('تم إنشاء طلب نقل الملكية بنجاح')
         }
         showTitleTransferModal.value = false
         loadTitleTransfers()
         loadDashboardMetrics()
       } catch (error) {
         logger.error('Error saving title transfer:', error)
-        alert('حدث خطأ أثناء حفظ بيانات نقل الملكية')
+        toast.error('حدث خطأ أثناء حفظ بيانات نقل الملكية')
       } finally {
         isSavingTransfer.value = false
       }
@@ -878,12 +1257,12 @@ export default {
     const submitClaim = async (claim) => {
       try {
         await creditService.submitClaim(claim.id)
-        alert('تم إرسال ملف المطالبة بنجاح')
+        toast.success('تم إرسال ملف المطالبة بنجاح')
         loadClaimFiles()
         loadDashboardMetrics()
       } catch (error) {
         logger.error('Error submitting claim:', error)
-        alert('حدث خطأ أثناء إرسال ملف المطالبة')
+        toast.error('حدث خطأ أثناء إرسال ملف المطالبة')
       }
     }
 
@@ -897,17 +1276,17 @@ export default {
       try {
         if (selectedClaim.value && selectedClaim.value.id) {
           await creditService.approveClaim(selectedClaim.value.id, data)
-          alert('تم الموافقة على ملف المطالبة بنجاح')
+          toast.success('تم الموافقة على ملف المطالبة بنجاح')
         } else {
           await creditService.createClaimFile(data)
-          alert('تم إنشاء ملف المطالبة بنجاح')
+          toast.success('تم إنشاء ملف المطالبة بنجاح')
         }
         showClaimModal.value = false
         loadClaimFiles()
         loadDashboardMetrics()
       } catch (error) {
         logger.error('Error saving claim file:', error)
-        alert('حدث خطأ أثناء حفظ ملف المطالبة')
+        toast.error('حدث خطأ أثناء حفظ ملف المطالبة')
       } finally {
         isSavingClaim.value = false
       }
@@ -940,14 +1319,17 @@ export default {
     watch(activeTab, (newTab) => {
       creditCurrentPage.value = 1
       if (newTab === 'dashboard') loadDashboardMetrics()
-      if (newTab === 'bookings-confirmed') loadConfirmedBookings()
-      if (newTab === 'bookings-negotiation') loadNegotiationBookings()
-      if (newTab === 'bookings-waiting') loadWaitingBookings()
+      if (newTab === 'notifications') loadCreditNotifications()
+      if (newTab === 'bookings') loadBookingsForCurrentTab()
       if (newTab === 'financing') loadFinancing()
       if (newTab === 'title-transfer') loadTitleTransfers()
       if (newTab === 'sold-projects') loadSoldProjects()
       if (newTab === 'claim-files') loadClaimFiles()
     }, { immediate: true })
+
+    watch(bookingsSubTab, () => {
+      if (activeTab.value === 'bookings') loadBookingsForCurrentTab()
+    })
 
     return {
       activeTab,
@@ -968,6 +1350,10 @@ export default {
       showFinancingModal,
       showTitleTransferModal,
       showClaimModal,
+      showAdvanceConfirmModal,
+      nextStageLabel,
+      isAdvancing,
+      onAdvanceConfirm,
       selectedBooking,
       selectedFinancing,
       selectedTransfer,
@@ -1007,7 +1393,27 @@ export default {
       creditPerPage,
       creditTotalItems,
       handleCreditPageChange,
-      handleCreditPerPageChange
+      handleCreditPerPageChange,
+      creditNotifications,
+      bookingsSubTab,
+      setBookingsSubTab,
+      currentBookingsList,
+      emptyBookingsMessage,
+      selectedFinancingTracker,
+      selectedBookingId,
+      clearSelectedBooking,
+      loadBookingsForCurrentTab,
+      getBookingStatusClass,
+      getBookingStatusLabel,
+      onBookingEvacuation,
+      onBookingDelete,
+      onBookingEdit,
+      onBookingSchedule,
+      onBookingCancel,
+      onBookingNextStage,
+      onBookingRejectFinancing,
+      markCreditNotificationRead,
+      markAllCreditNotificationsRead
     }
   }
 }
@@ -1016,5 +1422,163 @@ export default {
 <style scoped>
 .credit-view {
   /* Inherit all styles from hr-view */
+}
+.credit-bookings-management .section-header-compact {
+  margin-bottom: 16px;
+}
+.credit-bookings-six-tabs {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.btn-tab-booking {
+  padding: 12px 20px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.btn-tab-booking:hover {
+  color: #1e3a5f;
+  background: #f8fafc;
+}
+.btn-tab-booking.active {
+  color: #1e3a5f;
+  border-bottom-color: #1e3a5f;
+  background: #f1f5f9;
+}
+.booking-detail-inline {
+  margin-top: 8px;
+}
+.booking-no-id-message {
+  padding: 24px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 12px;
+  margin-top: 12px;
+}
+.booking-no-id-message p {
+  margin: 0;
+  color: #92400e;
+  font-weight: 500;
+}
+
+/* تأكيد الانتقال للمرحلة التالية */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.advance-confirm-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 380px;
+  max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+.advance-confirm-modal .modal-title {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+.advance-confirm-modal .modal-body {
+  margin: 0 0 24px 0;
+  font-size: 15px;
+  color: #475569;
+  line-height: 1.6;
+}
+.advance-confirm-modal .modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+.advance-confirm-modal .btn-modal-cancel {
+  padding: 10px 20px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.advance-confirm-modal .btn-modal-cancel:hover {
+  background: #f1f5f9;
+}
+.advance-confirm-modal .btn-modal-confirm {
+  padding: 10px 20px;
+  border: none;
+  background: #8D6E63;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.advance-confirm-modal .btn-modal-confirm:hover:not(:disabled) {
+  background: #7d5e53;
+}
+.advance-confirm-modal .btn-modal-confirm:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.booking-detail-header {
+  margin-bottom: 12px;
+}
+.btn-back-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #475569;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-back-list svg {
+  width: 18px;
+  height: 18px;
+}
+.credit-bookings-subtabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btn-tab-mini {
+  padding: 8px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.btn-tab-mini:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #1e3a5f;
+}
+.btn-tab-mini.active {
+  background: #1e3a5f;
+  border-color: #1e3a5f;
+  color: #fff;
 }
 </style>

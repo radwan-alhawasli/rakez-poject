@@ -594,6 +594,7 @@ import authService from '../services/authService'
 import salesService from '../services/salesService'
 import notificationService from '../services/notificationService'
 import logger from '../utils/logger'
+import { toast } from '../composables/useToast'
 
 export default {
   name: 'ProjectTracker',
@@ -925,7 +926,7 @@ export default {
 
     const selectUnitsTab = () => {
         if (!isTrackerCompleted.value && !isManager.value) {
-            alert('يجب إكمال جميع مراحل المتتبع أولاً')
+            toast.warning('يجب إكمال جميع مراحل المتتبع أولاً')
             return
         }
         activeTab.value = 'units'
@@ -965,12 +966,12 @@ export default {
         try {
             // API expects { team_ids: [id] }
             await teamService.addTeamsToContract(project.value.id, [selectedTeamId.value])
-            alert('تم تعيين الفريق بنجاح')
+            toast.success('تم تعيين الفريق بنجاح')
             selectedTeamId.value = ''
             loadTeamsData() // Reload lists
         } catch (error) {
             logger.error('Error assigning team:', error)
-            alert('حدث خطأ أثناء تعيين الفريق')
+            toast.error('حدث خطأ أثناء تعيين الفريق')
         } finally {
             isTeamActionLoading.value = false
         }
@@ -982,11 +983,11 @@ export default {
         try {
             // API expects { team_ids: [id] }
             await teamService.removeTeamsFromContract(project.value.id, [team.id])
-            alert('تم إزالة الفريق بنجاح')
+            toast.success('تم إزالة الفريق بنجاح')
             loadTeamsData() // Reload lists
         } catch (error) {
             logger.error('Error removing team:', error)
-            alert('حدث خطأ أثناء إزالة الفريق')
+            toast.error('حدث خطأ أثناء إزالة الفريق')
         } finally {
             isTeamActionLoading.value = false
         }
@@ -996,7 +997,7 @@ export default {
        const currentStage = stages[activeStageIndex.value]
        
        if (!currentStage.value) {
-           alert('الرجاء إدخال الرابط قبل الحفظ')
+           toast.warning('الرجاء إدخال الرابط قبل الحفظ')
            return
        }
 
@@ -1024,13 +1025,13 @@ export default {
            if (activeStageIndex.value < stages.length - 1) {
                activeStageIndex.value++
            } else {
-               alert('تهانينا! تم إكمال المتتبع، يمكنك الآن إدارة الوحدات.')
+               toast.success('تهانينا! تم إكمال المتتبع، يمكنك الآن إدارة الوحدات.')
            }
 
        } catch (error) {
            logger.error('Failed to save progress:', error)
            const errorMsg = error.response?.data?.message || error.message
-           alert(`حدث خطأ أثناء حفظ البيانات: ${errorMsg}`)
+           toast.error(`حدث خطأ أثناء حفظ البيانات: ${errorMsg}`)
        }
     }
 
@@ -1092,10 +1093,10 @@ export default {
 
             if (photographyForm.isExisting) {
                 await contractService.updatePhotography(project.value.id, payload)
-                alert('تم تحديث البيانات وإرسالها للموافقة')
+                toast.success('تم تحديث البيانات وإرسالها للموافقة')
             } else {
                 await contractService.storePhotography(project.value.id, payload)
-                alert('تم إرسال البيانات للموافقة بنجاح')
+                toast.success('تم إرسال البيانات للموافقة بنجاح')
                 photographyForm.isExisting = true
             }
             // Update local state
@@ -1108,7 +1109,7 @@ export default {
         } catch (error) {
             logger.error('Photography save error:', error)
              const msg = error.response?.data?.message || error.message || 'خطأ غير معروف'
-            alert(`حدث خطأ أثناء حفظ البيانات: ${msg}`)
+            toast.error(`حدث خطأ أثناء حفظ البيانات: ${msg}`)
             isEditingPending.value = false
         } finally {
             isPhotoSaving.value = false
@@ -1130,10 +1131,10 @@ export default {
             // Use specific Approve endpoint as requested
             await contractService.approvePhotography(project.value.id, payload)
             photographyForm.status = 'approved'
-            alert('تم قبول الصور بنجاح')
+            toast.success('تم قبول الصور بنجاح')
         } catch (error) {
             logger.error('Approval error:', error)
-            alert('حدث خطأ أثناء القبول: ' + (error.response?.data?.message || error.message))
+            toast.error('حدث خطأ أثناء القبول: ' + (error.response?.data?.message || error.message))
         }
     }
 
@@ -1144,7 +1145,7 @@ export default {
 
     const rejectPhotography = async () => {
         if (!rejectReasonInput.value) {
-            alert('يرجى إدخال سبب الرفض')
+            toast.warning('يرجى إدخال سبب الرفض')
             return
         }
         try {
@@ -1155,10 +1156,10 @@ export default {
             photographyForm.status = 'rejected'
             photographyForm.rejection_reason = rejectReasonInput.value
             showRejectModal.value = false
-            alert('تم رفض الصور')
+            toast.success('تم رفض الصور')
         } catch (error) {
              logger.error(error)
-            alert('حدث خطأ أثناء الرفض')
+            toast.error('حدث خطأ أثناء الرفض')
         }
     }
 
@@ -1176,20 +1177,20 @@ export default {
                 await contractService.updateContractUnit(editingUnitId.value, {
                     ...unitForm
                 })
-                alert('تم تحديث الوحدة بنجاح')
+                toast.success('تم تحديث الوحدة بنجاح')
             } else {
                 // Create
                 await contractService.addContractUnit(project.value.id, {
                     ...unitForm
                 })
-                alert('تم إضافة الوحدة بنجاح')
+                toast.success('تم إضافة الوحدة بنجاح')
             }
             closeUnitModal()
             loadUnits()
         } catch (error) {
             logger.error(error)
             const msg = error.response?.data?.message || error.message || 'خطأ غير معروف'
-            alert(`حدث خطأ أثناء حفظ الوحدة: ${msg}`)
+            toast.error(`حدث خطأ أثناء حفظ الوحدة: ${msg}`)
         }
     }
 
@@ -1216,12 +1217,12 @@ export default {
 
         try {
             await contractService.uploadContractUnitsCsv(project.value.id, formData)
-            alert('تم رفع ملف CSV بنجاح')
+            toast.success('تم رفع ملف CSV بنجاح')
             loadUnits()
         } catch (error) {
             logger.error(error)
             const msg = error.response?.data?.message || error.message || 'خطأ غير معروف'
-            alert(`فشل رفع الملف: ${msg}`)
+            toast.error(`فشل رفع الملف: ${msg}`)
         }
         // Reset input
         event.target.value = ''
@@ -1242,10 +1243,10 @@ export default {
             
             // Switch to completed state
             boardsTabState.value = 'completed'
-            alert('تم تأكيد إضافة اللوحات بنجاح')
+            toast.success('تم تأكيد إضافة اللوحات بنجاح')
         } catch (error) {
             logger.error('Error saving board:', error)
-            alert('حدث خطأ أثناء حفظ اللوحات')
+            toast.error('حدث خطأ أثناء حفظ اللوحات')
         } finally {
             isBoardSaving.value = false
         }

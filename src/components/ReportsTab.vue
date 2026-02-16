@@ -100,6 +100,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import hrService from '../services/hrService'
 import logger from '../utils/logger'
+import { toast } from '../composables/useToast'
 
 export default {
   name: 'ReportsTab',
@@ -146,7 +147,7 @@ export default {
             await hrService.generateTeamPerformanceReport(teamReport.month, teamReport.year)
         } catch (error) {
             logger.error('Error generating team report', error)
-            alert('حدث خطأ أثناء إصدار التقرير')
+            toast.error('حدث خطأ أثناء إصدار التقرير')
         } finally {
             loading.team = false
         }
@@ -159,7 +160,7 @@ export default {
             await hrService.generateMarketerReport(marketerReport.marketerId, marketerReport.month, marketerReport.year)
         } catch (error) {
             logger.error('Error generating marketer report', error)
-            alert('حدث خطأ أثناء إصدار التقرير')
+            toast.error('حدث خطأ أثناء إصدار التقرير')
         } finally {
             loading.marketer = false
         }
@@ -171,7 +172,7 @@ export default {
             await hrService.generateEmployeesReport()
         } catch (error) {
             logger.error('Error generating employees report', error)
-            alert('حدث خطأ أثناء إصدار التقرير')
+            toast.error('حدث خطأ أثناء إصدار التقرير')
         } finally {
             loading.employees = false
         }
@@ -183,7 +184,7 @@ export default {
             await hrService.generateExpiringContractsReport(contractsReport.days)
         } catch (error) {
             logger.error('Error generating contracts report', error)
-            alert('حدث خطأ أثناء إصدار التقرير')
+            toast.error('حدث خطأ أثناء إصدار التقرير')
         } finally {
             loading.contracts = false
         }

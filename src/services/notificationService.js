@@ -42,34 +42,35 @@ const notificationService = {
         // 1. Fetch existing notifications
         await this.fetchAll()
 
-        // 2. Setup Pusher
+        // 2. Setup Pusher only when key is configured (avoids ws://... failed when Reverb not running or wrong port)
         if (!pusher) {
             pusher = createPusher(token)
-            
-            // Subscribe to Public
-            const publicChannel = pusher.subscribe('public-notifications')
-            publicChannel.bind('public.notification', (data) => {
-                this.addReceivedNotification(data, 'public')
+        }
+        if (!pusher) return
+
+        // Subscribe to Public
+        const publicChannel = pusher.subscribe('public-notifications')
+        publicChannel.bind('public.notification', (data) => {
+            this.addReceivedNotification(data, 'public')
+        })
+        channels.push(publicChannel)
+
+        // Subscribe to User Private
+        if (user && user.id) {
+            const userChannel = pusher.subscribe(`private-user-notifications.${user.id}`)
+            userChannel.bind('user.notification', (data) => {
+                this.addReceivedNotification(data, 'private')
             })
-            channels.push(publicChannel)
+            channels.push(userChannel)
+        }
 
-            // Subscribe to User Private
-            if (user && user.id) {
-                const userChannel = pusher.subscribe(`private-user-notifications.${user.id}`)
-                userChannel.bind('user.notification', (data) => {
-                    this.addReceivedNotification(data, 'private')
-                })
-                channels.push(userChannel)
-            }
-
-            // Subscribe to Admin Private
-            if (user && user.type === 1) {
-                const adminChannel = pusher.subscribe('private-admin-notifications')
-                adminChannel.bind('admin.notification', (data) => {
-                    this.addReceivedNotification(data, 'admin')
-                })
-                channels.push(adminChannel)
-            }
+        // Subscribe to Admin Private
+        if (user && user.type === 1) {
+            const adminChannel = pusher.subscribe('private-admin-notifications')
+            adminChannel.bind('admin.notification', (data) => {
+                this.addReceivedNotification(data, 'admin')
+            })
+            channels.push(adminChannel)
         }
     },
 
@@ -97,15 +98,13 @@ const notificationService = {
 
         try {
             const privatePath = isAccounting ? '/accounting/notifications' : '/notifications'
-            const [privateNotifs, publicNotifs, adminNotifs] = await Promise.all([
+            const [privateNotifs, adminNotifs] = await Promise.all([
                 fetchSafe(privatePath),
-                fetchSafe('/notifications/public'),
                 isAdmin ? fetchSafe('/admin/notifications') : Promise.resolve([])
             ])
 
             const all = [
                 ...privateNotifs,
-                ...publicNotifs,
                 ...adminNotifs
             ].map(n => ({
                 id: n.id,
