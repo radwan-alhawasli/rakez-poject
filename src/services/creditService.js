@@ -106,6 +106,23 @@ const creditService = {
     }
   },
 
+  // --- Bookings - All (الكل tab) ---
+
+  /**
+   * Get all credit bookings (confirmed + negotiation + cancelled) – single paginated list
+   * GET /credit/bookings?per_page=15&page=1
+   * Same list shape: id, client_name, project_name, booking_date, credit_status_label_ar
+   */
+  async getAllBookings(params = {}) {
+    try {
+      const response = await apiClient.get('/credit/bookings', { params })
+      const { items, total } = extractPaginatedData(response, [])
+      return { items, total }
+    } catch (error) {
+      return handleServiceError(error, 'Error fetching all credit bookings', 'get') || { items: [], total: 0 }
+    }
+  },
+
   // --- Bookings - Confirmed ---
 
   /**
@@ -134,7 +151,7 @@ const creditService = {
 
   /**
    * Show booking details (project, unit, client, financial, marketing, financing_tracker, title_transfer, claim_file)
-   * GET /credit/bookings/:booking_id
+   * GET /credit/bookings/:id or GET /credit/bookings/show/:id – backend includes data.id in response
    */
   async getBookingById(bookingId) {
     requireBookingId(bookingId)
@@ -479,6 +496,68 @@ const creditService = {
       return response.data?.data || response.data || {}
     } catch (error) {
       logger.error('Error creating title transfer:', error)
+      throw error
+    }
+  },
+
+  // --- Payment Plan (Tab 3.3) ---
+
+  /**
+   * Get payment plan for a booking (on-map projects)
+   * GET /credit/bookings/:booking_id/payment-plan
+   * Permission: credit.payment_plan.manage
+   */
+  async getPaymentPlan(bookingId) {
+    requireBookingId(bookingId)
+    try {
+      const response = await apiClient.get(`/credit/bookings/${bookingId}/payment-plan`)
+      return response.data?.data ?? response.data ?? null
+    } catch (error) {
+      return handleServiceError(error, 'Error fetching payment plan', 'get', null)
+    }
+  },
+
+  /**
+   * Create payment plan for a booking
+   * POST /credit/bookings/:booking_id/payment-plan
+   * Body: installments[] with due_date (>= today), amount (required), description (optional)
+   */
+  async createPaymentPlan(bookingId, data = {}) {
+    requireBookingId(bookingId)
+    try {
+      const response = await apiClient.post(`/credit/bookings/${bookingId}/payment-plan`, data)
+      return response.data?.data ?? response.data ?? {}
+    } catch (error) {
+      logger.error(`Error creating payment plan for booking ${bookingId}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Update a payment installment
+   * PUT /credit/payment-installments/:installment_id
+   * Body: due_date, amount, description, status (pending|paid|overdue)
+   */
+  async updateInstallment(installmentId, data = {}) {
+    try {
+      const response = await apiClient.put(`/credit/payment-installments/${installmentId}`, data)
+      return response.data?.data ?? response.data ?? {}
+    } catch (error) {
+      logger.error(`Error updating installment ${installmentId}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Delete a payment installment
+   * DELETE /credit/payment-installments/:installment_id
+   */
+  async deleteInstallment(installmentId) {
+    try {
+      const response = await apiClient.delete(`/credit/payment-installments/${installmentId}`)
+      return response.data?.data ?? response.data ?? {}
+    } catch (error) {
+      logger.error(`Error deleting installment ${installmentId}:`, error)
       throw error
     }
   },

@@ -89,8 +89,8 @@
       <div class="detail-card">
         <h4 class="detail-card-title"><span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>تفاصيل العقار</h4>
         <div class="detail-card-body">
-          <div class="detail-row"><span class="detail-key">الحي :</span><span class="detail-val">{{ booking.district || booking.area || '—' }}</span></div>
-          <div class="detail-row"><span class="detail-key">نوع العقار :</span><span class="detail-val">{{ booking.unit_type || booking.property_type || '—' }}</span></div>
+          <div class="detail-row"><span class="detail-key">الحي :</span><span class="detail-val">{{ booking.district ?? booking.area ?? '—' }}</span></div>
+          <div class="detail-row"><span class="detail-key">نوع العقار :</span><span class="detail-val">{{ booking.unit_type ?? booking.property_type ?? '—' }}</span></div>
           <div class="detail-row"><span class="detail-key">قيمة العقار :</span><span class="detail-val">{{ formatCurrency(booking.property_value || booking.unit_value) }}</span></div>
         </div>
       </div>
@@ -160,13 +160,13 @@ export default {
     })
 
     const projectTeamLabel = computed(() => {
-      const v = props.booking?.team_name ?? props.booking?.team ?? props.booking?.project_team
-      return v && String(v).trim() ? v : 'غير معين'
+      const v = props.booking?.project_team ?? props.booking?.team_name ?? props.booking?.team
+      return v != null && String(v).trim() ? v : 'غير معين'
     })
 
     const sellerTeamLabel = computed(() => {
       const v = props.booking?.seller_team ?? props.booking?.team_name ?? props.booking?.team
-      return v && String(v).trim() ? v : 'غير معين'
+      return v != null && String(v).trim() ? v : 'غير معين'
     })
 
     // Use API credit_procedure_steps (key, label_ar, status, date) when present; else financingTracker

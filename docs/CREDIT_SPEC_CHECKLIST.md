@@ -43,7 +43,7 @@
 
 - **3.1 الحجوزات المؤكدة** – List + "عرض التفاصيل" opens modal (3.1.1–3.1.4).  
 - **3.2 سيناريوهات** (كاش 7 أيام، بنك متتبع) – Logic/UI in financing tracker and booking flow; cash vs bank and tracker stages can be extended as needed.  
-- **3.3 المشاريع على الخارطة** – خطة دفعات / موعد إفراغ – Not in current scope; can be added when map and payment-plan features exist.  
+- **3.3 المشاريع على الخارطة** – خطة دفعات / موعد إفراغ – creditService exposes Payment Plan (Postman 08): `getPaymentPlan(bookingId)`, `createPaymentPlan(bookingId, data)`, `updateInstallment(installmentId, data)`, `deleteInstallment(installmentId)` under `/credit/bookings/:id/payment-plan` and `/credit/payment-installments/:id`. UI can be wired when needed.  
 - **3.4 إتمام الإفراغ** – "تم الإفراغ" → المشاريع المباعة – Conceptual; sold-projects tab exists.  
 - **3.5 إلغاء الحجز** – Cancel/delete – Can be added as action in booking detail or list.  
 - **4. حجوزات التفاوض** – Sub-tab with negotiation list and update (سبب التفاوض، السعر المقترح، إشعار لمدير المبيعات، مدة 48 ساعة، تحويل إلى مؤكد).  
@@ -56,6 +56,15 @@
 **Spec 5.1 البيانات المعروضة:** اسم المشروع، رقم الوحدة، نوع الوحدة، نسبة السعي، قيمة الضريبة، معلومات المشروع.
 
 **Implementation:** Claim-files tab and form exist. Table columns: رقم الملف، رقم العقد، مبلغ المطالبة، الحالة. To align with 5.1, add columns or detail view for: project name, unit number, unit type, commission %, tax value when API provides them.
+
+---
+
+## Endpoint alignment (Postman Credit Module)
+
+- **تبويب مباعة (bookings sub-tab):** `GET /credit/bookings/sold` (List Sold Bookings). **المشاريع المباعة (sidebar):** `GET /credit/sold-projects` (List Sold Projects).  
+- **تبويب مرفوضة/ملغاة:** `GET /credit/bookings/cancelled` (List Cancelled Bookings).  
+- **نقل الملكية (sidebar):** Data loaded via `GET /credit/title-transfers/pending` (List Pending Title Transfers).  
+- **Payment Plan (Tab 3.3):** Implemented in creditService; endpoints as in Postman 08.
 
 ---
 

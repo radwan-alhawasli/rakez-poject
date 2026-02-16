@@ -161,18 +161,14 @@
           <button type="button" :class="['btn-tab-booking', { active: bookingsSubTab === 'sold' }]" @click="setBookingsSubTab('sold')">مباعة</button>
           <button type="button" :class="['btn-tab-booking', { active: bookingsSubTab === 'rejected' }]" @click="setBookingsSubTab('rejected')">مرفوضة / ملغاة</button>
         </div>
-        <div v-if="selectedBooking" class="booking-detail-inline">
+        <div v-if="selectedBooking && selectedBookingId()" class="booking-detail-inline">
           <div class="booking-detail-header">
             <button type="button" class="btn-back-list" @click="clearSelectedBooking">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
               عودة للقائمة
             </button>
           </div>
-          <div v-if="!selectedBookingId()" class="booking-no-id-message">
-            <p>لا يوجد حجز محدد. اختر حجزاً من القائمة.</p>
-          </div>
           <CreditBookingDetailPanel
-            v-else
             :booking="selectedBooking"
             :financing-tracker="selectedFinancingTracker"
             @evacuation="onBookingEvacuation"
@@ -201,11 +197,11 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="booking in currentBookingsList" :key="booking.id">
+                <tr v-for="(booking, index) in currentBookingsList" :key="booking.id ?? booking.reservation_id ?? `row-${index}`">
                   <td>{{ booking.id }}</td>
-                  <td>{{ booking.customer_name || 'غير محدد' }}</td>
-                  <td>{{ booking.project_name || 'غير محدد' }}</td>
-                  <td>{{ formatDate(booking.created_at) }}</td>
+                  <td>{{ booking.client_name ?? booking.customer_name }}</td>
+                  <td>{{ booking.project_name }}</td>
+                  <td>{{ formatDate(booking.booking_date ?? booking.created_at) }}</td>
                   <td><span class="status-tag" :class="getBookingStatusClass(booking)">{{ getBookingStatusLabel(booking) }}</span></td>
                   <td>
                     <button class="btn-action edit" @click="viewBookingDetail(booking)">
@@ -223,7 +219,7 @@
             </table>
           </div>
           <Pagination
-            v-if="creditTotalItems > 0 && !selectedBooking"
+            v-if="creditTotalItems > 0"
             :current-page="creditCurrentPage"
             :total-items="creditTotalItems"
             :per-page="creditPerPage"
@@ -481,6 +477,29 @@
       </div>
     </div>
 
+    <!-- رفض التمويل – سبب الرفض -->
+    <div v-if="showRejectFinancingModal" class="modal-overlay" @click.self="closeRejectFinancingModal">
+      <div class="modal-card reject-financing-modal">
+        <h3 class="modal-title">رفض التمويل</h3>
+        <p class="modal-body">سبب رفض التمويل (مطلوب):</p>
+        <div class="modal-form-group">
+          <textarea
+            v-model="rejectFinancingReason"
+            class="modal-input modal-textarea"
+            placeholder="أدخل سبب الرفض..."
+            rows="3"
+          />
+          <p v-if="rejectFinancingError" class="modal-field-error">{{ rejectFinancingError }}</p>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-modal-cancel" @click="closeRejectFinancingModal">إلغاء</button>
+          <button type="button" class="btn-modal-confirm" :disabled="isRejectingFinancing" @click="onRejectFinancingConfirm">
+            {{ isRejectingFinancing ? 'جاري التنفيذ...' : 'تأكيد' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <FinancingDetailModal
       v-if="showFinancingModal"
       :financing="selectedFinancing"
@@ -550,7 +569,12 @@ export default {
       waitingBookings: 0,
       activeFinancing: 0,
       titleTransfers: 0,
-      pendingClaims: 0
+      pendingClaims: 0,
+      // Optional KPIs from Postman (for future cards or display)
+      requiresReview: 0,
+      rejectedWithDownPayment: 0,
+      overdueStages: 0,
+      soldProjectsCount: 0
     })
 
     const confirmedBookings = ref([])
@@ -576,6 +600,10 @@ export default {
     const showClaimModal = ref(false)
     const showAdvanceConfirmModal = ref(false)
     const isAdvancing = ref(false)
+    const showRejectFinancingModal = ref(false)
+    const rejectFinancingReason = ref('')
+    const rejectFinancingError = ref('')
+    const isRejectingFinancing = ref(false)
     const selectedBooking = ref(null)
     const selectedFinancing = ref(null)
     const selectedTransfer = ref(null)
@@ -611,7 +639,7 @@ export default {
 
     const currentBookingsList = computed(() => {
       const tab = bookingsSubTab.value
-      if (tab === 'all') return [...confirmedBookings.value, ...negotiationBookings.value, ...waitingBookings.value]
+      if (tab === 'all') return allBookings.value
       if (tab === 'confirmed') return confirmedBookings.value
       if (tab === 'negotiation') return negotiationBookings.value
       if (tab === 'waiting') return waitingBookings.value
@@ -636,6 +664,13 @@ export default {
     const selectedFinancingTracker = ref(null)
     const soldBookings = ref([])
     const rejectedBookings = ref([])
+    const allBookings = ref([])
+
+    /** Ensure every list item has id/reservation_id for عرض التفاصيل and table :key (all tabs) */
+    const normalizeBookingListItem = (r) => {
+      const id = r?.id ?? r?.reservation_id ?? r?.booking_id
+      return { ...r, id, reservation_id: r?.reservation_id ?? r?.id ?? r?.booking_id ?? id }
+    }
 
     const TRACKER_LABELS = ['رفع الطلب للبنك', 'صدور التقييم', 'زيارة المقيم للمشروع', 'إجراءات بنكية وعقود', 'تنفيذ العقود', 'فتره التجهيز قبل الافراغ']
     const advanceCompletedCount = computed(() => {
@@ -668,8 +703,32 @@ export default {
         dashboardMetrics.activeFinancing = kpis.projects_in_progress_count ?? kpis.active_financing ?? data.active_financing ?? 0
         dashboardMetrics.titleTransfers = kpis.in_title_transfer_count ?? kpis.title_transfers ?? data.title_transfers ?? 0
         dashboardMetrics.pendingClaims = kpis.pending_accounting_confirmation ?? kpis.pending_claims ?? data.pending_claims ?? 0
+        dashboardMetrics.requiresReview = kpis.requires_review_count ?? 0
+        dashboardMetrics.rejectedWithDownPayment = kpis.rejected_with_paid_down_payment_count ?? 0
+        dashboardMetrics.overdueStages = kpis.overdue_stages ?? 0
+        dashboardMetrics.soldProjectsCount = kpis.sold_projects_count ?? 0
       } catch (error) {
         logger.error('Error loading dashboard metrics:', error)
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    /** Tab الكل: GET /credit/bookings?per_page=&page= – single paginated list (same shape: id, client_name, project_name, booking_date, credit_status_label_ar) */
+    const loadAllBookings = async () => {
+      isLoading.value = true
+      try {
+        const data = await creditService.getAllBookings({
+          page: creditCurrentPage.value,
+          per_page: creditPerPage.value
+        })
+        const raw = data?.items ?? (Array.isArray(data) ? data : [])
+        allBookings.value = raw.map(normalizeBookingListItem)
+        creditTotalItems.value = data?.total ?? allBookings.value.length
+      } catch (error) {
+        logger.error('Error loading all bookings:', error)
+        allBookings.value = []
+        creditTotalItems.value = 0
       } finally {
         isLoading.value = false
       }
@@ -683,7 +742,8 @@ export default {
           page: creditCurrentPage.value,
           per_page: creditPerPage.value
         })
-        confirmedBookings.value = data?.items ?? (Array.isArray(data) ? data : [])
+        const raw = data?.items ?? (Array.isArray(data) ? data : [])
+        confirmedBookings.value = raw.map(normalizeBookingListItem)
         creditTotalItems.value = data?.total ?? confirmedBookings.value.length
       } catch (error) {
         logger.error('Error loading confirmed bookings:', error)
@@ -701,7 +761,8 @@ export default {
           page: creditCurrentPage.value,
           per_page: creditPerPage.value
         })
-        negotiationBookings.value = data?.items ?? (Array.isArray(data) ? data : [])
+        const raw = data?.items ?? (Array.isArray(data) ? data : [])
+        negotiationBookings.value = raw.map(normalizeBookingListItem)
         creditTotalItems.value = data?.total ?? negotiationBookings.value.length
       } catch (error) {
         logger.error('Error loading negotiation bookings:', error)
@@ -719,7 +780,8 @@ export default {
           page: creditCurrentPage.value,
           per_page: creditPerPage.value
         })
-        waitingBookings.value = data?.items ?? (Array.isArray(data) ? data : [])
+        const raw = data?.items ?? (Array.isArray(data) ? data : [])
+        waitingBookings.value = raw.map(normalizeBookingListItem)
         creditTotalItems.value = data?.total ?? waitingBookings.value.length
       } catch (error) {
         logger.error('Error loading waiting bookings:', error)
@@ -731,22 +793,22 @@ export default {
     }
 
     /** Tab مباعة: GET /credit/sold-projects (Postman 06 - List Sold Projects) */
+    /** Tab مباعة: GET /credit/bookings/sold (List Sold Bookings – reservations with credit_status = sold) */
     const loadSoldBookings = async () => {
       isLoading.value = true
       try {
-        const data = await creditService.getSoldProjects({
+        const data = await creditService.getSoldBookings({
           page: creditCurrentPage.value,
           per_page: creditPerPage.value
         })
         const raw = data?.items ?? (Array.isArray(data) ? data : [])
-        soldBookings.value = raw.map((r) => ({
-          id: r.reservation_id ?? r.id,
-          customer_name: r.client_name ?? 'غير محدد',
+        soldBookings.value = raw.map((r) => normalizeBookingListItem({
+          ...r,
+          customer_name: r.customer_name ?? r.client_name ?? 'غير محدد',
           project_name: r.project_name ?? 'غير محدد',
           unit_number: r.unit_number,
-          created_at: r.completed_date ?? r.created_at,
-          credit_status: 'sold',
-          ...r
+          created_at: r.created_at ?? r.completed_date,
+          credit_status: 'sold'
         }))
         creditTotalItems.value = data?.total ?? soldBookings.value.length
       } catch (error) {
@@ -758,19 +820,19 @@ export default {
       }
     }
 
-    /** Tab مرفوضة/ملغاة: GET /credit/bookings/confirmed?credit_status=rejected (Postman 03 - List Confirmed) */
+    /** Tab مرفوضة/ملغاة: GET /credit/bookings/cancelled (List Cancelled Bookings – Postman 04) */
     const loadRejectedBookings = async () => {
       isLoading.value = true
       try {
-        const data = await creditService.getConfirmedBookings({
-          credit_status: 'rejected',
+        const data = await creditService.getCancelledBookings({
           page: creditCurrentPage.value,
           per_page: creditPerPage.value
         })
-        rejectedBookings.value = data?.items ?? (Array.isArray(data) ? data : [])
+        const raw = data?.items ?? (Array.isArray(data) ? data : [])
+        rejectedBookings.value = raw.map(normalizeBookingListItem)
         creditTotalItems.value = data?.total ?? rejectedBookings.value.length
       } catch (error) {
-        logger.error('Error loading rejected bookings:', error)
+        logger.error('Error loading cancelled bookings:', error)
         rejectedBookings.value = []
         creditTotalItems.value = 0
       } finally {
@@ -796,13 +858,11 @@ export default {
       }
     }
 
+    /** List Pending Title Transfers – GET /credit/title-transfers/pending (Postman 06) */
     const loadTitleTransfers = async () => {
       isLoading.value = true
       try {
-        const data = await creditService.getTitleTransfers({
-          page: creditCurrentPage.value,
-          per_page: creditPerPage.value
-        })
+        const data = await creditService.getPendingTitleTransfers()
         titleTransfers.value = data?.items ?? (Array.isArray(data) ? data : [])
         creditTotalItems.value = data?.total ?? titleTransfers.value.length
       } catch (error) {
@@ -903,7 +963,7 @@ export default {
       else if (tab === 'claim-files') loadClaimFiles()
     }
 
-    // Normalize API booking detail (project, unit, client, financial, marketing, credit_procedure_steps) per Show Booking API
+    // Normalize API booking detail: data.id, data.client.name, data.project.name (fallback "غير محدد" when empty)
     const normalizeBookingForModal = (raw) => {
       if (!raw) return null
       const p = raw.project ?? {}
@@ -912,18 +972,21 @@ export default {
       const f = raw.financial ?? {}
       const m = raw.marketing ?? {}
       const bookingId = raw.id ?? raw.reservation_id
+      const fallback = 'غير محدد'
+      const fallbackMarketing = 'غير معين'
       return {
         ...raw,
         id: bookingId ?? raw.id ?? raw.reservation_id,
         reservation_id: raw.reservation_id ?? bookingId,
-        project_name: p.name ?? raw.project_name,
+        project_name: (p && (p.name != null && p.name !== '')) ? p.name : (raw.project_name || fallback),
         unit_number: u.number ?? raw.unit_number,
-        district: p.district ?? raw.district,
+        district: (p.district != null && p.district !== '') ? p.district : (raw.district ?? ''),
+        city: (p.city != null && p.city !== '') ? p.city : (raw.city ?? ''),
         area: u.area ?? raw.area,
         unit_type: u.type ?? raw.unit_type,
-        property_type: p.property_type ?? raw.property_type,
+        property_type: (p.property_type != null && p.property_type !== '') ? p.property_type : (raw.property_type ?? ''),
         property_value: p.unit_value ?? u.price ?? f?.unit_value ?? raw.property_value,
-        customer_name: c.name ?? raw.customer_name,
+        customer_name: (c && (c.name != null && c.name !== '')) ? c.name : (raw.customer_name || raw.client_name || fallback),
         customer_phone: c.mobile ?? c.phone ?? raw.customer_phone,
         customer_email: c.email ?? raw.customer_email,
         nationality: c.nationality ?? raw.nationality,
@@ -933,17 +996,22 @@ export default {
         commission_source: f.commission_payer ?? f.commission_source ?? raw.commission_source,
         payment_method: f.payment_method ?? raw.payment_method,
         purchase_mechanism: f.purchase_mechanism ?? m.purchase_mechanism ?? raw.purchase_mechanism,
-        purchase_mechanism_label_ar: m.purchase_mechanism_label_ar ?? raw.purchase_mechanism_label_ar,
-        team_name: m.team_name ?? raw.team_name,
-        marketer_name: m.marketer_name ?? raw.marketer_name,
+        purchase_mechanism_label_ar: (m.purchase_mechanism_label_ar != null && m.purchase_mechanism_label_ar !== '') ? m.purchase_mechanism_label_ar : (raw.purchase_mechanism_label_ar ?? fallback),
+        team_name: (m.team_name != null && m.team_name !== '') ? m.team_name : (raw.team_name ?? fallbackMarketing),
+        project_team: (m.project_team != null && m.project_team !== '') ? m.project_team : (raw.project_team ?? m.team_name ?? fallbackMarketing),
+        seller_team: (m.seller_team != null && m.seller_team !== '') ? m.seller_team : (raw.seller_team ?? m.team_name ?? fallbackMarketing),
+        marketer_name: (m.marketer_name != null && m.marketer_name !== '') ? m.marketer_name : (raw.marketer_name ?? fallbackMarketing),
         credit_procedure_steps: raw.credit_procedure_steps ?? null,
         created_at: raw.created_at
       }
     }
 
     const viewBookingDetail = async (booking) => {
-      const bookingId = booking?.id ?? booking?.reservation_id
-      if (!bookingId) return
+      const bookingId = booking?.id ?? booking?.reservation_id ?? booking?.booking_id
+      if (!bookingId) {
+        toast.warning('معرف الحجز غير متوفر. لا يمكن عرض التفاصيل.')
+        return
+      }
       selectedFinancingTracker.value = null
       try {
         const full = await creditService.getBookingById(bookingId)
@@ -974,8 +1042,7 @@ export default {
     const loadBookingsForCurrentTab = async () => {
       const tab = bookingsSubTab.value
       if (tab === 'all') {
-        await Promise.all([loadConfirmedBookings(), loadNegotiationBookings(), loadWaitingBookings()])
-        creditTotalItems.value = confirmedBookings.value.length + negotiationBookings.value.length + waitingBookings.value.length
+        loadAllBookings()
         return
       }
       if (tab === 'confirmed') loadConfirmedBookings()
@@ -995,6 +1062,7 @@ export default {
     }
 
     const getBookingStatusLabel = (booking) => {
+      if (booking.credit_status_label_ar) return booking.credit_status_label_ar
       const s = booking.credit_status ?? booking.status ?? ''
       const map = { confirmed: 'مؤكد', negotiation: 'قيد التفاوض', waiting: 'منتظر', sold: 'مباع', rejected: 'مرفوض', cancelled: 'ملغى' }
       return map[s] || s || 'مؤكد'
@@ -1092,6 +1160,13 @@ export default {
       showAdvanceConfirmModal.value = true
     }
 
+    /** Get API error message from axios error (backend now returns actual exception message in response.message) */
+    const getApiErrorMessage = (error, fallback) => {
+      const msg = error?.response?.data?.message
+      if (msg && typeof msg === 'string') return msg
+      return fallback
+    }
+
     const onAdvanceConfirm = async () => {
       const bookingId = selectedBookingId()
       if (!bookingId) return
@@ -1104,32 +1179,55 @@ export default {
         toast.success('تمت المرحلة بنجاح')
       } catch (e) {
         logger.error('Advance financing error:', e)
-        toast.error('حدث خطأ أثناء الانتقال للمرحلة التالية')
+        toast.error(getApiErrorMessage(e, 'حدث خطأ أثناء الانتقال للمرحلة التالية'))
       } finally {
         isAdvancing.value = false
       }
     }
 
-    const onBookingRejectFinancing = async () => {
+    const openRejectFinancingModal = () => {
       const bookingId = selectedBookingId()
       if (!bookingId) {
         toast.warning('لا يوجد حجز محدد')
         return
       }
-      const reason = window.prompt('سبب رفض التمويل (مطلوب):')?.trim()
+      rejectFinancingReason.value = ''
+      rejectFinancingError.value = ''
+      showRejectFinancingModal.value = true
+    }
+
+    const closeRejectFinancingModal = () => {
+      showRejectFinancingModal.value = false
+      rejectFinancingReason.value = ''
+      rejectFinancingError.value = ''
+    }
+
+    const onRejectFinancingConfirm = async () => {
+      const bookingId = selectedBookingId()
+      if (!bookingId) return
+      const reason = rejectFinancingReason.value?.trim()
       if (!reason) {
-        toast.warning('يجب إدخال سبب الرفض')
+        rejectFinancingError.value = 'يجب إدخال سبب الرفض'
         return
       }
+      rejectFinancingError.value = ''
+      isRejectingFinancing.value = true
       try {
         await creditService.rejectFinancing(bookingId, { reason })
         toast.success('تم رفض التمويل')
         const updated = await creditService.getFinancingTracker(bookingId)
         selectedFinancingTracker.value = updated
+        closeRejectFinancingModal()
       } catch (e) {
         logger.error('Reject financing error:', e)
-        toast.error('حدث خطأ أثناء رفض التمويل')
+        toast.error(getApiErrorMessage(e, 'حدث خطأ أثناء رفض التمويل'))
+      } finally {
+        isRejectingFinancing.value = false
       }
+    }
+
+    const onBookingRejectFinancing = () => {
+      openRejectFinancingModal()
     }
 
     const openNegotiationUpdate = (booking) => {
@@ -1207,7 +1305,7 @@ export default {
         loadFinancing()
       } catch (error) {
         logger.error('Error updating financing:', error)
-        toast.error('حدث خطأ أثناء تحديث بيانات التمويل')
+        toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء تحديث بيانات التمويل'))
       } finally {
         isSavingFinancing.value = false
       }
@@ -1318,6 +1416,7 @@ export default {
     // Watch for tab changes (must be after all load functions are defined)
     watch(activeTab, (newTab) => {
       creditCurrentPage.value = 1
+      if (newTab === 'bookings' && selectedBooking.value && !(selectedBooking.value?.id ?? selectedBooking.value?.reservation_id)) clearSelectedBooking()
       if (newTab === 'dashboard') loadDashboardMetrics()
       if (newTab === 'notifications') loadCreditNotifications()
       if (newTab === 'bookings') loadBookingsForCurrentTab()
@@ -1328,7 +1427,10 @@ export default {
     }, { immediate: true })
 
     watch(bookingsSubTab, () => {
-      if (activeTab.value === 'bookings') loadBookingsForCurrentTab()
+      if (activeTab.value === 'bookings') {
+        if (selectedBooking.value && !(selectedBooking.value?.id ?? selectedBooking.value?.reservation_id)) clearSelectedBooking()
+        loadBookingsForCurrentTab()
+      }
     })
 
     return {
@@ -1354,6 +1456,12 @@ export default {
       nextStageLabel,
       isAdvancing,
       onAdvanceConfirm,
+      showRejectFinancingModal,
+      rejectFinancingReason,
+      rejectFinancingError,
+      isRejectingFinancing,
+      closeRejectFinancingModal,
+      onRejectFinancingConfirm,
       selectedBooking,
       selectedFinancing,
       selectedTransfer,
@@ -1533,6 +1641,87 @@ export default {
   opacity: 0.7;
   cursor: not-allowed;
 }
+
+/* رفض التمويل modal */
+.reject-financing-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 380px;
+  max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+.reject-financing-modal .modal-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+.reject-financing-modal .modal-body {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  color: #475569;
+}
+.reject-financing-modal .modal-form-group {
+  margin-bottom: 20px;
+}
+.reject-financing-modal .modal-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #1e3a5f;
+}
+.reject-financing-modal .modal-input:focus {
+  outline: none;
+  border-color: #8D6E63;
+  box-shadow: 0 0 0 2px rgba(141, 110, 99, 0.2);
+}
+.reject-financing-modal .modal-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+.reject-financing-modal .modal-field-error {
+  margin: 8px 0 0 0;
+  font-size: 13px;
+  color: #dc2626;
+}
+.reject-financing-modal .modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+.reject-financing-modal .btn-modal-cancel,
+.reject-financing-modal .btn-modal-confirm {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.reject-financing-modal .btn-modal-cancel {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+}
+.reject-financing-modal .btn-modal-cancel:hover {
+  background: #f1f5f9;
+}
+.reject-financing-modal .btn-modal-confirm {
+  border: none;
+  background: #8D6E63;
+  color: #fff;
+}
+.reject-financing-modal .btn-modal-confirm:hover:not(:disabled) {
+  background: #7d5e53;
+}
+.reject-financing-modal .btn-modal-confirm:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .booking-detail-header {
   margin-bottom: 12px;
 }

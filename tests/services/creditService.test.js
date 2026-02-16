@@ -466,6 +466,51 @@ describe('creditService', () => {
     })
   })
 
+  describe('Payment Plan (Tab 3.3)', () => {
+    it('should get payment plan for booking', async () => {
+      const bookingId = 1
+      const mockPlan = { installments: [{ id: 1, amount: 100000, due_date: '2026-03-01' }] }
+      mock.onGet(`/credit/bookings/${bookingId}/payment-plan`).reply(200, createSuccessResponse(mockPlan))
+
+      const result = await creditService.getPaymentPlan(bookingId)
+
+      expect(mock.history.get.length).toBe(1)
+      expect(result).toBeDefined()
+    })
+
+    it('should create payment plan for booking', async () => {
+      const bookingId = 1
+      const data = { installments: [{ due_date: '2026-03-01', amount: 100000, description: 'الدفعة الأولى' }] }
+      mock.onPost(`/credit/bookings/${bookingId}/payment-plan`).reply(201, createSuccessResponse({ id: 1, ...data }))
+
+      const result = await creditService.createPaymentPlan(bookingId, data)
+
+      expect(mock.history.post.length).toBe(1)
+      expect(result).toBeDefined()
+    })
+
+    it('should update installment', async () => {
+      const installmentId = 1
+      const data = { due_date: '2026-03-15', amount: 120000, status: 'pending' }
+      mock.onPut(`/credit/payment-installments/${installmentId}`).reply(200, createSuccessResponse({ id: installmentId, ...data }))
+
+      const result = await creditService.updateInstallment(installmentId, data)
+
+      expect(mock.history.put.length).toBe(1)
+      expect(result).toBeDefined()
+    })
+
+    it('should delete installment', async () => {
+      const installmentId = 1
+      mock.onDelete(`/credit/payment-installments/${installmentId}`).reply(200, createSuccessResponse({ deleted: true }))
+
+      const result = await creditService.deleteInstallment(installmentId)
+
+      expect(mock.history.delete.length).toBe(1)
+      expect(result).toBeDefined()
+    })
+  })
+
   describe('getClaimFiles', () => {
     it('should fetch claim files', async () => {
       const mockClaims = [{ id: 1, claim_amount: 150000 }]

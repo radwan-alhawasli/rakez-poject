@@ -208,7 +208,7 @@ describe('accountingService', () => {
     it('should normalize total_before_tax to gross_amount', async () => {
       const commissionId = 1
       const mockSummary = { total_before_tax: 45000, vat: 6750, net_amount: 38250, distributions: [] }
-      mock.onGet(`/accounting/commissions/${commissionId}/summary`).reply(200, createSuccessResponse(mockSummary))
+      mock.onGet(`/accounting/commissions/${commissionId}/summary`).reply(200, mockSummary)
 
       const result = await accountingService.getCommissionSummary(commissionId)
 
@@ -351,7 +351,7 @@ describe('accountingService', () => {
       const employeeId = 1
       const params = { month: 2, year: 2026 }
       const mockSalary = { employee_id: employeeId, base_salary: 8000 }
-      mock.onGet(`/accounting/salaries/${employeeId}`, { params }).reply(200, createSuccessResponse(mockSalary))
+      mock.onGet(`/accounting/salaries/${employeeId}`).reply(200, { data: mockSalary })
 
       const result = await accountingService.getEmployeeSalaryDetail(employeeId, params)
 

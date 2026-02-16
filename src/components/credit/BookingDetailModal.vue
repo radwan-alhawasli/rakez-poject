@@ -28,6 +28,10 @@
               <span class="detail-value">{{ booking.district ?? booking.area ?? '—' }}</span>
             </div>
             <div class="detail-item">
+              <span class="detail-label">المدينة:</span>
+              <span class="detail-value">{{ booking.city ?? '—' }}</span>
+            </div>
+            <div class="detail-item">
               <span class="detail-label">نوع العقار:</span>
               <span class="detail-value">{{ booking.unit_type ?? booking.property_type ?? '—' }}</span>
             </div>
@@ -88,17 +92,25 @@
           </div>
         </div>
 
-        <!-- 3.1.4 تفاصيل التسويق -->
+        <!-- 3.1.4 تفاصيل التسويق (API: project_team, seller_team, marketer_name, purchase_mechanism_label_ar – always strings) -->
         <div class="detail-section">
           <h3 class="detail-title">3.1.4 تفاصيل التسويق</h3>
           <div class="detail-grid">
             <div class="detail-item">
-              <span class="detail-label">اسم الفريق:</span>
-              <span class="detail-value">{{ booking.team_name ?? booking.team ?? '—' }}</span>
+              <span class="detail-label">فريق المشروع:</span>
+              <span class="detail-value">{{ booking.project_team ?? booking.team_name ?? booking.team ?? '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">فريق البائع:</span>
+              <span class="detail-value">{{ booking.seller_team ?? booking.team_name ?? booking.team ?? '—' }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">اسم المسوق:</span>
               <span class="detail-value">{{ booking.marketer_name ?? booking.marketer ?? '—' }}</span>
+            </div>
+            <div class="detail-item" v-if="booking.purchase_mechanism_label_ar">
+              <span class="detail-label">آلية الشراء:</span>
+              <span class="detail-value">{{ booking.purchase_mechanism_label_ar }}</span>
             </div>
           </div>
         </div>

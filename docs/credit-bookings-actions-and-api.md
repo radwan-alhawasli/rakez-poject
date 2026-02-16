@@ -1,6 +1,6 @@
 # إدارة الحجوزات — الإجراءات والـ API وتدفق المستخدم
 
-**مرجع الـ API:** مجموعة Postman «RAKEZ ERP - Credit Module (Complete)» — 28 طلباً (1 Login + 2 Dashboard + 4 Notifications منها proxy + 2 Confirmed + 4 Negotiation/Waiting/Cancel + 5 Financing + 5 Title Transfer + 5 Claim Files).
+**مرجع الـ API:** مجموعة Postman «RAKEZ ERP - Credit Module (Complete)» — 31 طلباً (1 Login + 2 Dashboard + 4 Notifications منها proxy + 2 Confirmed + 6 Negotiation/Waiting/Sold/Cancelled/Cancel + 5 Financing + 6 Title Transfer + 5 Claim Files + 4 Payment Plan).
 
 ## 1. إجراءات الجدول (عمود الإجراءات)
 
@@ -56,16 +56,17 @@
 | البند | الوضع | التوصية |
 |-------|--------|---------|
 | **معالجة حجز الانتظار** | الواجهة تستدعي `POST /credit/bookings/waiting/:id/process` | **غير موجود في مجموعة Postman.** إن كان الـ Backend يدعمه، يبقى الاستدعاء؛ وإلا إما إضافة الـ endpoint أو إخفاء زر «معالجة». |
-| **تبويب مباعة** | `GET /credit/sold-projects?per_page=15` (06 - List Sold Projects) | مُربوط: يتم تحميل القائمة وعرضها مع `reservation_id` لـ «عرض التفاصيل». |
-| **تبويب مرفوضة/ملغاة** | `GET /credit/bookings/confirmed?credit_status=rejected` (03 - List Confirmed) | مُربوط: يتم تحميل الحجوزات المرفوضة من نفس endpoint مع فلتر. |
+| **تبويب مباعة** | `GET /credit/bookings/sold` (List Sold Bookings – حجوزات ذات credit_status = sold) | مُربوط: الواجهة تستخدم `getSoldBookings()`. قائمة «المشاريع المباعة» في الشريط الجانبي تستخدم `GET /credit/sold-projects` (مكتملة نقل الملكية). |
+| **تبويب مرفوضة/ملغاة** | `GET /credit/bookings/cancelled` (List Cancelled Bookings) | مُربوط: الواجهة تستخدم `getCancelledBookings()` مع per_page، from_date، to_date، contract_id حسب الحاجة. |
+| **خطة الدفعات (Tab 3.3)** | Postman 08: `GET/POST /credit/bookings/:booking_id/payment-plan`، `PUT/DELETE /credit/payment-installments/:id` | مُربوط في creditService؛ واجهة خطة الدفعات يمكن ربطها لاحقاً عند الحاجة. |
 | **بحث في قائمة المؤكدة** | الواجهة ترسل `search` في الطلب | إن كان الـ API لا يدعم معامل `search`، إما إضافة الدعم في الـ Backend أو تنفيذ البحث من جهة العميل على البيانات المحمّلة. |
-| **إنشاء ملف مطالبة (Claim File)** | الـ API: `POST /credit/bookings/:booking_id/claim-file` | هذا الإجراء عادة من شاشة «إصدار ملف المطالبة والإفراغات» وليس إجبارياً في جدول الحجوزات؛ يمكن إضافة زر له في لوحة التفاصيل لحجز مباع لاحقاً إن رغبت. |
+| **إنشاء ملف مطالبة (Claim File)** | الـ API: `POST /credit/bookings/:booking_id/claim-file` (لحجز مباع) | هذا الإجراء عادة من شاشة «إصدار ملف المطالبة والإفراغات». إن كان الـ Backend يدعم فقط «توليد لحجز مباع» دون create/submit/approve عام، يمكن إخفاء أزرار إرسال/الموافقة أو ربطها عند توفر الـ API. |
 
 ---
 
 ## 5. ملخص
 
-- **جدول الحجوزات:** أزرار «عرض التفاصيل»، «تحديث» (تفاوض)، «معالجة» (انتظار) مربوطة بالـ API. تبويبا **مباعة** و**مرفوضة/ملغاة** يستخدمان `GET /credit/sold-projects` و`GET /credit/bookings/confirmed?credit_status=rejected`.
+- **جدول الحجوزات:** أزرار «عرض التفاصيل»، «تحديث» (تفاوض)، «معالجة» (انتظار) مربوطة بالـ API. تبويب **مباعة** يستخدم `GET /credit/bookings/sold`. تبويب **مرفوضة/ملغاة** يستخدم `GET /credit/bookings/cancelled`. تبويب **المشاريع المباعة** (الشريط الجانبي) يستخدم `GET /credit/sold-projects`.
 - **لوحة التفاصيل:** حذف، تعديل، تم الإفراغ، تحديد موعد الإفراغ، إلغاء، الانتقال للمرحلة التالية، و**رفض التمويل** (مع `reason` مطلوب و`booking_id` فقط) كلها مربوطة بالـ API.
 - **التمويل معتمد على الحجز فقط (booking-centric):** لا يوجد `tracker_id` في الـ URL أو الاستجابة. جميع إجراءات التمويل (advance، reject، complete stage) تستخدم **booking_id** فقط. GET financing يعيد `data = null` عندما لم تبدأ إجراءات التمويل بعد، و`data.financing` مع حالة المراحل عند البدء.
 - **Base URL:** بدون شرطة نهائية (مثال: `http://localhost:8000/api`). الواجهة تزيل أي شرطة نهائية تلقائياً.

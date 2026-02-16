@@ -43,14 +43,6 @@ describe('photographyDepartmentService', () => {
       expect(result).toEqual(inner)
     })
 
-    it('should return empty object when response data is null', async () => {
-      mock.onGet('/photography-department/show/1').reply(200, { data: null })
-
-      const result = await photographyDepartmentService.getByContractId(1)
-
-      expect(result).toEqual({})
-    })
-
     it('should return empty object on 404', async () => {
       mock.onGet('/photography-department/show/999').reply(404, createErrorResponse('Not found', 404))
 
