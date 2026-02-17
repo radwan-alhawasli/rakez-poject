@@ -191,6 +191,23 @@ export function canAccessRoute(user, routeMeta) {
 }
 
 /**
+ * Get the dashboard path for a user based on their role (single source of truth for login and router redirects)
+ * @param {Object} user - User object with type property
+ * @returns {string} Path to role-specific dashboard
+ */
+export function getDashboardPathForUser(user) {
+    if (!user) return '/dashboard'
+    const normalizedRole = normalizeRole(user.type)
+    if (normalizedRole === 8 || normalizedRole === 9) return '/hr/dashboard'
+    if (normalizedRole === 0) return '/marketing/dashboard'
+    if (normalizedRole === 5) return '/sales/dashboard'
+    if (normalizedRole === 6) return '/credit/dashboard'
+    if (normalizedRole === 7) return '/accounting/dashboard'
+    if (normalizedRole === 4) return '/editor/contracts'
+    return '/dashboard'
+}
+
+/**
  * Get user's role label
  * @param {Object} user - User object
  * @returns {string} Role label
@@ -280,6 +297,7 @@ export default {
     hasPermission,
     hasAnyPermission,
     canAccessRoute,
+    getDashboardPathForUser,
     getUserRoleLabel,
     canPerformAction
 }

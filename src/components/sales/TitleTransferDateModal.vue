@@ -47,6 +47,7 @@
 
 <script>
 import { reactive, computed, onMounted, onUnmounted } from 'vue'
+import { toast } from '../../composables/useToast'
 
 export default {
   name: 'TitleTransferDateModal',
@@ -90,7 +91,7 @@ export default {
       today.setHours(0, 0, 0, 0)
       
       if (selectedDate <= today) {
-        alert('يرجى اختيار تاريخ في المستقبل')
+        toast.warning('يرجى اختيار تاريخ في المستقبل')
         return
       }
 

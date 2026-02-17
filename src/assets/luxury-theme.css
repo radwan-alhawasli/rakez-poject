@@ -590,6 +590,9 @@ h6 { font-size: var(--font-base); }
 .animate-stagger-4 { animation-delay: 0.4s; }
 .animate-stagger-5 { animation-delay: 0.5s; }
 .animate-stagger-6 { animation-delay: 0.6s; }
+.animate-stagger-7 { animation-delay: 0.7s; }
+.animate-stagger-8 { animation-delay: 0.8s; }
+.animate-stagger-9 { animation-delay: 0.9s; }
 
 /* Interactive Hover Effects */
 .hover-lift {

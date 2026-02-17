@@ -23,10 +23,10 @@ export function extractPaginatedData(response, fallbackItems = []) {
   let items = []
   let total = 0
 
-  // Format: { data: [...], meta: { total, current_page, per_page } }
+  // Format: { data: [...], meta: { total, current_page, per_page } } or meta.pagination (Credit sold-projects)
   if (Array.isArray(data.data)) {
     items = data.data
-    total = data.meta?.total ?? data.meta?.total_count ?? data.total ?? items.length
+    total = data.meta?.total ?? data.meta?.pagination?.total ?? data.meta?.total_count ?? data.total ?? items.length
   }
   // Format: { items: [...], total: N }
   else if (Array.isArray(data.items)) {

@@ -95,6 +95,7 @@
 import { ref, onMounted } from 'vue'
 import contractService from '../services/contractService'
 import logger from '../utils/logger'
+import { toast } from '../composables/useToast'
 
 export default {
   name: 'ImageApprovalView',
@@ -166,10 +167,10 @@ export default {
             })
             // Remove from list
             pendingImages.value = pendingImages.value.filter(i => i.projectId !== img.projectId)
-            alert('تمت الموافقة بنجاح')
+            toast.success('تمت الموافقة بنجاح')
         } catch (error) {
             logger.error('Error approving images:', error)
-            alert('حدث خطأ أثناء الموافقة')
+            toast.error('حدث خطأ أثناء الموافقة')
         }
     }
 
@@ -186,7 +187,7 @@ export default {
 
     const confirmReject = async () => {
         if (!rejectReasonInput.value) {
-            alert('يرجى إدخال سبب الرفض')
+            toast.warning('يرجى إدخال سبب الرفض')
             return
         }
         if (!selectedItem.value) return
@@ -198,11 +199,11 @@ export default {
             })
             // Remove from list
             pendingImages.value = pendingImages.value.filter(i => i.projectId !== selectedItem.value.projectId)
-            alert('تم رفض الصور')
+            toast.success('تم رفض الصور')
             closeRejectModal()
         } catch (error) {
             logger.error('Error rejecting images:', error)
-            alert('حدث خطأ أثناء الرفض')
+            toast.error('حدث خطأ أثناء الرفض')
         }
     }
 

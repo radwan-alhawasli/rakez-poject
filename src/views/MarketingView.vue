@@ -1127,6 +1127,7 @@ import teamService from '../services/teamService'
 import hrService from '../services/hrService'
 import { usePermissions } from '../composables/usePermissions'
 import { normalizeReportRows } from '../utils/marketingNormalizers'
+import { toast } from '../composables/useToast'
 
 export default {
   name: 'MarketingView',
@@ -1496,7 +1497,7 @@ export default {
 
     const saveExpectedSale = async () => {
       if (!expectedSalesForm.project_id) {
-        alert('اختر مشروعاً أولاً')
+        toast.warning('اختر مشروعاً أولاً')
         return
       }
       try {
@@ -1518,7 +1519,7 @@ export default {
         await Promise.all([loadExpectedSales(), loadDashboard()])
       } catch (error) {
         logger.error('Error saving expected sale:', error)
-        alert('حدث خطأ أثناء حفظ المبيعات المتوقعة')
+        toast.error('حدث خطأ أثناء حفظ المبيعات المتوقعة')
       } finally {
         isSubmitting.value = false
       }
@@ -1561,7 +1562,7 @@ export default {
 
     const calculateBudget = async () => {
       if (!budgetForm.contract_id || !budgetForm.unit_price) {
-        alert('الرجاء إدخال جميع الحقول المطلوبة')
+        toast.warning('الرجاء إدخال جميع الحقول المطلوبة')
         return
       }
 
@@ -1606,7 +1607,7 @@ export default {
         loadDashboard()
       } catch (error) {
         logger.error('Error calculating budget:', error)
-        alert('حدث خطأ أثناء حساب الميزانية')
+        toast.error('حدث خطأ أثناء حساب الميزانية')
       } finally {
         isSubmitting.value = false
       }
@@ -1622,7 +1623,7 @@ export default {
 
     const saveLead = async () => {
       if (!leadForm.name || !leadForm.contact_info || !leadForm.source) {
-        alert('الرجاء إدخال جميع الحقول المطلوبة')
+        toast.warning('الرجاء إدخال جميع الحقول المطلوبة')
         return
       }
 
@@ -1645,7 +1646,7 @@ export default {
         loadDashboard()
       } catch (error) {
         logger.error('Error saving lead:', error)
-        alert('حدث خطأ أثناء حفظ العميل المحتمل')
+        toast.error('حدث خطأ أثناء حفظ العميل المحتمل')
       } finally {
         isSubmitting.value = false
       }
@@ -1664,7 +1665,7 @@ export default {
         loadDashboard()
       } catch (error) {
         logger.error('Error updating task status:', error)
-        alert('حدث خطأ أثناء تحديث حالة المهمة')
+        toast.error('حدث خطأ أثناء تحديث حالة المهمة')
       }
     }
 
@@ -1701,7 +1702,7 @@ export default {
             loadProjectDetails(projectId)
         } catch (error) {
             logger.error('Error adding team:', error)
-            alert('تعذر إضافة الفريق')
+            toast.error('تعذر إضافة الفريق')
         } finally {
             isTeamActionLoading.value = false
         }
@@ -1720,7 +1721,7 @@ export default {
             loadProjectDetails(projectId)
         } catch (error) {
              logger.error('Error removing team:', error)
-             alert('تعذر إزالة الفريق')
+             toast.error('تعذر إزالة الفريق')
         } finally {
              isTeamActionLoading.value = false
         }
@@ -1922,7 +1923,7 @@ export default {
     const loadDeveloperPlan = async () => {
       const id = developerPlanForm.contract_id || developerPlanForm.project_id
       if (!id) {
-        alert('اختر مشروعاً أو أدخل رقم العقد')
+        toast.warning('اختر مشروعاً أو أدخل رقم العقد')
         return
       }
       isLoadingDeveloperPlan.value = true
@@ -1939,7 +1940,7 @@ export default {
         notificationService.addNotification('تم جلب خطة المطور بنجاح', 'success')
       } catch (error) {
         logger.error('Error loading developer plan:', error)
-        alert('لم يتم العثور على خطة/حدث خطأ')
+        toast.error('لم يتم العثور على خطة/حدث خطأ')
       } finally {
         isLoadingDeveloperPlan.value = false
       }
@@ -1947,7 +1948,7 @@ export default {
 
     const saveDeveloperPlan = async () => {
       if (!developerPlanForm.contract_id || !developerPlanForm.marketing_value || !developerPlanForm.average_cpm || !developerPlanForm.average_cpc) {
-        alert('الرجاء إدخال جميع الحقول المطلوبة')
+        toast.warning('الرجاء إدخال جميع الحقول المطلوبة')
         return
       }
       try {
@@ -1961,7 +1962,7 @@ export default {
         notificationService.addNotification('تم حفظ خطة المطور بنجاح', 'success')
       } catch (error) {
         logger.error('Error saving developer plan:', error)
-        alert('حدث خطأ أثناء حفظ خطة المطور')
+        toast.error('حدث خطأ أثناء حفظ خطة المطور')
       } finally {
         isSubmitting.value = false
       }
@@ -1969,7 +1970,7 @@ export default {
 
     const autoGenerateEmployeePlan = async () => {
       if (!employeePlansProjectId.value || !employeePlanGenerateForm.user_id) {
-        alert('اختر مشروعاً وموظفاً')
+        toast.warning('اختر مشروعاً وموظفاً')
         return
       }
       if (!validateDistributions()) return
@@ -1985,7 +1986,7 @@ export default {
         await loadEmployeePlans()
       } catch (error) {
         logger.error('Error auto-generating employee plan:', error)
-        alert('حدث خطأ أثناء إنشاء خطة الموظف')
+        toast.error('حدث خطأ أثناء إنشاء خطة الموظف')
       } finally {
         isSubmitting.value = false
       }
@@ -2152,11 +2153,11 @@ export default {
 
     const validateDistributions = () => {
       if (platformDistributionSum.value !== 100) {
-        alert('مجموع نسب المنصات يجب أن يساوي 100%')
+        toast.warning('مجموع نسب المنصات يجب أن يساوي 100%')
         return false
       }
       if (campaignDistributionSum.value !== 100) {
-        alert('مجموع نسب الحملات يجب أن يساوي 100%')
+        toast.warning('مجموع نسب الحملات يجب أن يساوي 100%')
         return false
       }
       return true
@@ -2164,7 +2165,7 @@ export default {
 
     const applyManualEmployeePlan = async () => {
       if (!employeePlansProjectId.value || !employeePlanGenerateForm.user_id) {
-        alert('اختر مشروعاً وموظفاً')
+        toast.warning('اختر مشروعاً وموظفاً')
         return
       }
       if (!validateDistributions()) return
@@ -2194,7 +2195,7 @@ export default {
         await loadEmployeePlans()
       } catch (error) {
         logger.error('Error saving employee distribution:', error)
-        alert('تعذر حفظ خطة الموظف بالتوزيعات')
+        toast.error('تعذر حفظ خطة الموظف بالتوزيعات')
       } finally {
         isSubmitting.value = false
       }

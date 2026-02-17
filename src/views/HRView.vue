@@ -366,6 +366,7 @@ import ReportsTab from '../components/ReportsTab.vue'
 import hrService from '../services/hrService'
 import authService from '../services/authService'
 import logger from '../utils/logger'
+import { toast } from '../composables/useToast'
 
 export default {
     name: 'HRView',
@@ -503,17 +504,17 @@ export default {
             if (editingTeam.value) {
                 // Update existing team
                 await hrService.updateTeam(editingTeam.value.id, teamData)
-                alert('تم تحديث بيانات الفريق بنجاح')
+                toast.success('تم تحديث بيانات الفريق بنجاح')
             } else {
                 // Create new team
                 await hrService.createTeam(teamData)
-                alert('تم إنشاء الفريق بنجاح')
+                toast.success('تم إنشاء الفريق بنجاح')
             }
             showTeamModal.value = false
             loadTeams() // Refresh list
         } catch (error) {
             logger.error('Error saving team:', error)
-            alert('حدث خطأ أثناء حفظ بيانات الفريق')
+            toast.error('حدث خطأ أثناء حفظ بيانات الفريق')
         } finally {
             isSavingTeam.value = false
         }
@@ -524,11 +525,11 @@ export default {
 
         try {
             await hrService.deleteTeam(team.id)
-            alert('تم حذف الفريق بنجاح')
+            toast.success('تم حذف الفريق بنجاح')
             loadTeams()
         } catch (error) {
             logger.error('Error deleting team:', error)
-            alert('حدث خطأ أثناء حذف الفريق')
+            toast.error('حدث خطأ أثناء حذف الفريق')
         }
     }
 
@@ -541,12 +542,12 @@ export default {
         isLinking.value = true
         try {
             await hrService.linkMarketersToTeam(selectedTeamToLink.value.id, selectedIds)
-            alert('تم ربط المسوقين بالفريق بنجاح')
+            toast.success('تم ربط المسوقين بالفريق بنجاح')
             showLinkModal.value = false
             loadTeams()
         } catch (error) {
             logger.error(error)
-            alert('حدث خطأ أثناء ربط المسوقين')
+            toast.error('حدث خطأ أثناء ربط المسوقين')
         } finally {
             isLinking.value = false
         }
@@ -729,7 +730,7 @@ export default {
             const emp = performanceData.employees.find(e => e.name === selectedEmployee.value.name)
             if (emp) emp.goals = targetData.targetValue
 
-            alert(`تم تحديث الهدف البيعي للموظف ${selectedEmployee.value.name} بنجاح!`)
+            toast.success(`تم تحديث الهدف البيعي للموظف ${selectedEmployee.value.name} بنجاح!`)
             showTargetModal.value = false
         } finally {
             isSavingTarget.value = false
@@ -747,7 +748,7 @@ export default {
             logger.debug('Saving user with HR logic:', userData)
             // Simulated delay for "notification and contract sending"
             await new Promise(r => setTimeout(r, 1500))
-            alert(`تم إنشاء الموظف بنجاح! \nتم إرسال عقد العمل إلى: ${userData.email} \nتم إرسال إشعار لمدير القسم.`)
+            toast.success(`تم إنشاء الموظف بنجاح! تم إرسال عقد العمل إلى: ${userData.email}. تم إرسال إشعار لمدير القسم.`)
             showAddUserModal.value = false
         } finally {
             isSavingUser.value = false

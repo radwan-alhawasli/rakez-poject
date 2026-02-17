@@ -128,6 +128,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import teamService from '../services/teamService'
 import logger from '../utils/logger'
+import { toast } from '../composables/useToast'
 
 export default {
   name: 'TeamManagementView',
@@ -152,7 +153,7 @@ export default {
         teams.value = data
       } catch (error) {
         logger.error('Error fetching teams:', error)
-        alert('حدث خطأ أثناء جلب البيانات')
+        toast.error('حدث خطأ أثناء جلب البيانات')
       } finally {
         isLoading.value = false
       }
@@ -192,17 +193,17 @@ export default {
 
         if (isEditing.value) {
           await teamService.updateTeam(teamForm.id, payload)
-          alert('تم تحديث الفريق بنجاح')
+          toast.success('تم تحديث الفريق بنجاح')
         } else {
           await teamService.createTeam(payload)
-          alert('تم إنشاء الفريق بنجاح')
+          toast.success('تم إنشاء الفريق بنجاح')
         }
 
         closeModal()
         fetchTeams(searchQuery.value)
       } catch (error) {
         logger.error('Error saving team:', error)
-        alert('حدث خطأ أثناء الحفظ: ' + (error.response?.data?.message || error.message))
+        toast.error('حدث خطأ أثناء الحفظ: ' + (error.response?.data?.message || error.message))
       } finally {
         isSaving.value = false
       }
@@ -213,11 +214,11 @@ export default {
 
       try {
         await teamService.deleteTeam(team.id)
-        alert('تم حذف الفريق بنجاح')
+        toast.success('تم حذف الفريق بنجاح')
         fetchTeams(searchQuery.value)
       } catch (error) {
         logger.error('Error deleting team:', error)
-        alert('حدث خطأ أثناء الحذف: ' + (error.response?.data?.message || error.message))
+        toast.error('حدث خطأ أثناء الحذف: ' + (error.response?.data?.message || error.message))
       }
     }
 
@@ -226,10 +227,10 @@ export default {
         const data = await teamService.getTeamById(team.id)
         logger.debug('Team details:', data)
         // You can open a detail modal or navigate to a detail page here
-        alert(`تفاصيل الفريق: ${team.name}\n\n${team.description || 'لا يوجد وصف'}`)
+        toast.info(`${team.name}: ${team.description || 'لا يوجد وصف'}`)
       } catch (error) {
         logger.error('Error viewing team:', error)
-        alert('حدث خطأ أثناء عرض التفاصيل')
+        toast.error('حدث خطأ أثناء عرض التفاصيل')
       }
     }
 

@@ -43,6 +43,18 @@ describe('accountingService', () => {
       expect(result).toBeDefined()
     })
 
+    it('should pass from_date and to_date query parameters', async () => {
+      const params = { from_date: '2026-01-01', to_date: '2026-02-28' }
+      mock.onGet('/accounting/dashboard').reply((config) => {
+        expect(config.params).toEqual(params)
+        return [200, createSuccessResponse({})]
+      })
+
+      await accountingService.getDashboard(params)
+
+      expect(mock.history.get.length).toBe(1)
+    })
+
     it('should pass query parameters', async () => {
       const params = { from: '2026-01-01', to: '2026-02-28' }
       mock.onGet('/accounting/dashboard', { params }).reply(200, createSuccessResponse({}))
@@ -84,6 +96,25 @@ describe('accountingService', () => {
 
       expect(mock.history.post.length).toBe(1)
       expect(result).toBeDefined()
+    })
+  })
+
+  describe('getMarketers', () => {
+    it('should fetch marketers as id and name', async () => {
+      const mockMarketers = [{ id: 1, name: 'M1' }, { id: 2, email: 'm2@test.com' }]
+      mock.onGet('/accounting/marketers').reply(200, mockMarketers)
+
+      const result = await accountingService.getMarketers()
+
+      expect(Array.isArray(result)).toBe(true)
+      expect(result[0]).toEqual({ id: 1, name: 'M1' })
+      expect(result[1].name).toBe('m2@test.com')
+    })
+
+    it('should return empty array on error', async () => {
+      mock.onGet('/accounting/marketers').reply(500, {})
+      const result = await accountingService.getMarketers()
+      expect(result).toEqual([])
     })
   })
 
@@ -173,6 +204,17 @@ describe('accountingService', () => {
 
       expect(result).toBeDefined()
     })
+
+    it('should normalize total_before_tax to gross_amount', async () => {
+      const commissionId = 1
+      const mockSummary = { total_before_tax: 45000, vat: 6750, net_amount: 38250, distributions: [] }
+      mock.onGet(`/accounting/commissions/${commissionId}/summary`).reply(200, mockSummary)
+
+      const result = await accountingService.getCommissionSummary(commissionId)
+
+      expect(result.gross_amount).toBe(45000)
+      expect(result.net_amount).toBe(38250)
+    })
   })
 
   describe('confirmPayment', () => {
@@ -186,6 +228,16 @@ describe('accountingService', () => {
 
       expect(mock.history.post.length).toBe(1)
       expect(result).toBeDefined()
+    })
+
+    it('should post empty body per API spec', async () => {
+      const commissionId = 1
+      const distributionId = 10
+      mock.onPost(`/accounting/commissions/${commissionId}/distributions/${distributionId}/confirm`).reply(200, createSuccessResponse({ confirmed: true }))
+
+      await accountingService.confirmPayment(commissionId, distributionId)
+
+      expect(JSON.parse(mock.history.post[0].data)).toEqual({})
     })
   })
 
@@ -249,6 +301,18 @@ describe('accountingService', () => {
     })
   })
 
+  describe('confirmCommissionReceived', () => {
+    it('should confirm commission received for reservation', async () => {
+      const reservationId = 100
+      mock.onPost(`/accounting/deposits/${reservationId}/commission-received`).reply(200, createSuccessResponse({ confirmed: true }))
+
+      const result = await accountingService.confirmCommissionReceived(reservationId)
+
+      expect(mock.history.post.length).toBe(1)
+      expect(result).toBeDefined()
+    })
+  })
+
   describe('getSalaries', () => {
     it('should fetch employee salaries', async () => {
       const mockSalaries = [{ employee_id: 1, base_salary: 8000, total_commissions: 12500 }]
@@ -282,6 +346,20 @@ describe('accountingService', () => {
     })
   })
 
+  describe('getEmployeeSalaryDetail', () => {
+    it('should return same as getEmployeeSalary (alias)', async () => {
+      const employeeId = 1
+      const params = { month: 2, year: 2026 }
+      const mockSalary = { employee_id: employeeId, base_salary: 8000 }
+      mock.onGet(`/accounting/salaries/${employeeId}`).reply(200, { data: mockSalary })
+
+      const result = await accountingService.getEmployeeSalaryDetail(employeeId, params)
+
+      expect(result).toBeDefined()
+      expect(result.base_salary).toBe(8000)
+    })
+  })
+
   describe('createDistribution', () => {
     it('should create salary distribution', async () => {
       const employeeId = 1
@@ -289,6 +367,19 @@ describe('accountingService', () => {
       mock.onPost(`/accounting/salaries/${employeeId}/distribute`).reply(201, createSuccessResponse({ id: 1, ...distributionData }))
 
       const result = await accountingService.createDistribution(employeeId, distributionData)
+
+      expect(mock.history.post.length).toBe(1)
+      expect(result).toBeDefined()
+    })
+  })
+
+  describe('createSalaryDistribution', () => {
+    it('should create salary distribution (alias)', async () => {
+      const employeeId = 1
+      const distributionData = { month: 2, year: 2026, base_salary: 8000 }
+      mock.onPost(`/accounting/salaries/${employeeId}/distribute`).reply(201, createSuccessResponse({ id: 1 }))
+
+      const result = await accountingService.createSalaryDistribution(employeeId, distributionData)
 
       expect(mock.history.post.length).toBe(1)
       expect(result).toBeDefined()

@@ -100,6 +100,7 @@ import Pagination from '../components/Pagination.vue'
 import contractService from '../services/contractService'
 import authService from '../services/authService'
 import logger from '../utils/logger'
+import { toast } from '../composables/useToast'
 
 const mapStatusForApi = (filter) => {
   if (filter === 'pending') return 'pending'
@@ -252,7 +253,7 @@ export default {
         closeModal()
       } catch (err) {
         logger.error('Error approving contract:', err)
-        alert('حدث خطأ أثناء اعتماد العقد')
+        toast.error('حدث خطأ أثناء اعتماد العقد')
       }
     }
 
@@ -267,7 +268,7 @@ export default {
         closeModal()
       } catch (err) {
         logger.error('Error rejecting contract:', err)
-        alert('حدث خطأ أثناء رفض العقد')
+        toast.error('حدث خطأ أثناء رفض العقد')
       }
     }
 

@@ -33,14 +33,14 @@ describe('notificationService', () => {
     notificationService.disconnect()
   })
 
-  it('fetchAll uses /notifications and /notifications/public', async () => {
+  it('fetchAll uses /notifications and /admin/notifications when admin', async () => {
     mock.onGet('/notifications').reply(200, { data: [{ id: 1, message: 'A', read_at: null }] })
-    mock.onGet('/notifications/public').reply(200, { data: [{ id: 2, message: 'B', read_at: null }] })
     mock.onGet('/admin/notifications').reply(200, { data: [] })
 
     await notificationService.fetchAll()
-    expect(mock.history.get.map((r) => r.url)).toContain('/notifications')
-    expect(mock.history.get.map((r) => r.url)).toContain('/notifications/public')
+    const urls = mock.history.get.map((r) => r.url)
+    expect(urls).toContain('/notifications')
+    expect(urls).toContain('/admin/notifications')
   })
 
   it('markAsRead posts to /notifications/:id/read', async () => {

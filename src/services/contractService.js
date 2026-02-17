@@ -410,6 +410,42 @@ const contractService = {
   },
 
   /**
+   * List developers (Accounting Module API) – paginated, with projects_count, projects, units_count, teams.
+   * GET /developers?search=&per_page=15&page=1
+   * Accessible by accounting, project_management, admin.
+   * @param {Object} params - { search, per_page, page }
+   * @returns {Promise<{ data: Array, meta: Object }>}
+   */
+  async getDevelopersList(params = {}) {
+    try {
+      const response = await apiClient.get('/developers', { params })
+      const res = response.data
+      const data = Array.isArray(res?.data) ? res.data : res?.data?.data ?? []
+      const meta = res?.meta ?? res?.data?.meta ?? {}
+      return { data, meta }
+    } catch (error) {
+      return handleServiceError(error, 'Fetch developers list', 'get', { data: [], meta: {} })
+    }
+  },
+
+  /**
+   * Get developer details (Accounting Module API).
+   * GET /developers/:developer_number
+   * Single developer with projects, units_count, teams. Use developer_number from list.
+   * @param {string|number} developerNumber - developer_number (or id) from list
+   * @returns {Promise<Object|null>} data object or null on 404/error
+   */
+  async getDeveloperDetail(developerNumber) {
+    try {
+      const response = await apiClient.get(`/developers/${developerNumber}`)
+      const res = response.data
+      return res?.data ?? res ?? null
+    } catch (error) {
+      return handleServiceError(error, 'Fetch developer detail', 'get', null)
+    }
+  },
+
+  /**
    * جلب بيانات قسم المونتاج
    * GET /montage-department/show/:id
    */

@@ -1,10 +1,11 @@
 /**
  * Centralized Error Handler
- * Provides consistent error handling, logging, and user notifications
+ * Provides consistent error handling, logging, and user notifications (toast)
  */
 
 import logger from './logger'
 import appConfig from '../config/appConfig'
+import { toast } from '../composables/useToast'
 
 /**
  * Error types
@@ -265,10 +266,9 @@ export function handleError(error, options = {}) {
         logError(error, type, severity, context)
     }
 
-    // Show notification (will be handled by notification service)
+    // Show toast notification
     if (showNotification && userMessage) {
-        // This will be handled by the notification composable/service
-        // For now, we return the message to be shown
+        toast.error(userMessage)
     }
 
     const errorInfo = {

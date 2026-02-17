@@ -134,6 +134,7 @@
 
 <script>
 import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
+import { toast } from '../../composables/useToast'
 
 export default {
   name: 'NegotiationApprovalModal',
@@ -202,7 +203,7 @@ export default {
 
     const handleReject = () => {
       if (!rejectData.reason.trim()) {
-        alert('يرجى إدخال سبب الرفض')
+        toast.warning('يرجى إدخال سبب الرفض')
         return
       }
       emit('reject', {

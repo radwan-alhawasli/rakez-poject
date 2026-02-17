@@ -11,28 +11,106 @@
       </div>
 
       <div class="modal-body" v-if="booking">
+        <!-- 3.1.1 بيانات المشروع -->
         <div class="detail-section">
-          <h3 class="detail-title">معلومات الحجز</h3>
+          <h3 class="detail-title">3.1.1 بيانات المشروع</h3>
           <div class="detail-grid">
             <div class="detail-item">
-              <span class="detail-label">رقم الحجز:</span>
-              <span class="detail-value">{{ booking.id }}</span>
+              <span class="detail-label">اسم المشروع:</span>
+              <span class="detail-value">{{ booking.project_name || '—' }}</span>
             </div>
+            <div class="detail-item">
+              <span class="detail-label">رقم الوحدة:</span>
+              <span class="detail-value">{{ booking.unit_number ?? booking.unit_id ?? '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">الحي:</span>
+              <span class="detail-value">{{ booking.district ?? booking.area ?? '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">المدينة:</span>
+              <span class="detail-value">{{ booking.city ?? '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">نوع العقار:</span>
+              <span class="detail-value">{{ booking.unit_type ?? booking.property_type ?? '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">قيمة العقار:</span>
+              <span class="detail-value">{{ formatCurrency(booking.property_value ?? booking.unit_value ?? booking.final_price) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3.1.2 بيانات العميل -->
+        <div class="detail-section">
+          <h3 class="detail-title">3.1.2 بيانات العميل</h3>
+          <div class="detail-grid">
             <div class="detail-item">
               <span class="detail-label">اسم العميل:</span>
-              <span class="detail-value">{{ booking.customer_name || 'غير محدد' }}</span>
+              <span class="detail-value">{{ booking.customer_name ?? '—' }}</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">المشروع:</span>
-              <span class="detail-value">{{ booking.project_name || 'غير محدد' }}</span>
+              <span class="detail-label">رقم الهاتف:</span>
+              <span class="detail-value">{{ booking.customer_phone ?? booking.phone ?? '—' }}</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">تاريخ الحجز:</span>
-              <span class="detail-value">{{ formatDate(booking.created_at) }}</span>
+              <span class="detail-label">البريد الإلكتروني:</span>
+              <span class="detail-value">{{ booking.customer_email ?? booking.email ?? '—' }}</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">الحالة:</span>
-              <span class="status-tag excellent">مؤكد</span>
+              <span class="detail-label">جنسية العميل:</span>
+              <span class="detail-value">{{ booking.nationality ?? '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">رقم IBAN:</span>
+              <span class="detail-value">{{ booking.iban ?? '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3.1.3 التفاصيل المالية -->
+        <div class="detail-section">
+          <h3 class="detail-title">3.1.3 التفاصيل المالية</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">قيمة العربون:</span>
+              <span class="detail-value">{{ formatCurrency(booking.deposit_amount ?? booking.down_payment) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">تاريخ دفع العربون:</span>
+              <span class="detail-value">{{ formatDate(booking.deposit_date ?? booking.down_payment_date) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">نسبة السعي (مصدر العمولة):</span>
+              <span class="detail-value">{{ booking.commission_source === 'owner' ? 'من المالك' : booking.commission_source === 'buyer' ? 'من المشتري' : (booking.commission_source ?? '—') }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">طريقة دفع العربون:</span>
+              <span class="detail-value">{{ booking.payment_method === 'cash' ? 'كاش (لا يحتاج تأكيد من المحاسبة)' : booking.payment_method === 'transfer' ? 'تحويل بنكي / دفع إلكتروني (يتطلب تأكيد استلام من المحاسبة)' : (booking.payment_method ?? '—') }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3.1.4 تفاصيل التسويق (API: project_team, seller_team, marketer_name, purchase_mechanism_label_ar – always strings) -->
+        <div class="detail-section">
+          <h3 class="detail-title">3.1.4 تفاصيل التسويق</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">فريق المشروع:</span>
+              <span class="detail-value">{{ booking.project_team ?? booking.team_name ?? booking.team ?? '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">فريق البائع:</span>
+              <span class="detail-value">{{ booking.seller_team ?? booking.team_name ?? booking.team ?? '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">اسم المسوق:</span>
+              <span class="detail-value">{{ booking.marketer_name ?? booking.marketer ?? '—' }}</span>
+            </div>
+            <div class="detail-item" v-if="booking.purchase_mechanism_label_ar">
+              <span class="detail-label">آلية الشراء:</span>
+              <span class="detail-value">{{ booking.purchase_mechanism_label_ar }}</span>
             </div>
           </div>
         </div>
@@ -60,12 +138,17 @@ export default {
   emits: ['close'],
   setup(props, { emit }) {
     const formatDate = (dateStr) => {
-      if (!dateStr) return 'غير محدد'
+      if (!dateStr) return '—'
       try {
         return new Date(dateStr).toLocaleDateString('ar-SA')
       } catch {
         return dateStr
       }
+    }
+
+    const formatCurrency = (val) => {
+      if (val == null || val === '') return '—'
+      return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR', maximumFractionDigits: 0 }).format(Number(val))
     }
 
     // Handle Escape key
@@ -87,7 +170,8 @@ export default {
     })
 
     return {
-      formatDate
+      formatDate,
+      formatCurrency
     }
   }
 }

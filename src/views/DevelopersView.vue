@@ -6,10 +6,6 @@
         <h1 class="page-title">إدارة المطورين</h1>
         <p class="page-subtitle">عرض وإدارة المطورين العقاريين ومشاريعهم.</p>
       </div>
-      <button class="btn-primary" @click="openAddModal">
-         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-         مطور جديد
-      </button>
     </div>
 
     <!-- Search -->
@@ -21,12 +17,17 @@
     </div>
 
     <!-- Developers Grid -->
-    <div v-if="filteredDevelopers.length === 0" class="empty-state">
+    <div v-if="isLoading" class="loading-state">
+      <span class="spinner"></span>
+      <p>جاري تحميل المطورين...</p>
+    </div>
+    <div v-else-if="developers.length === 0" class="empty-state">
       <p>لا يوجد مطورين مطابقين للبحث.</p>
     </div>
 
-    <div v-else class="developers-grid">
-      <div v-for="dev in filteredDevelopers" :key="dev.id" class="developer-card">
+    <template v-else>
+    <div class="developers-grid">
+      <div v-for="dev in developers" :key="dev.id" class="developer-card">
         <div class="card-header">
           <div class="dev-info">
              <h3 class="dev-name">{{ dev.name }}</h3>
@@ -37,153 +38,95 @@
           </div>
         </div>
 
-        <div class="card-body">
-           <div class="info-row">
-              <span class="label">الممثل:</span> <span class="value">{{ dev.representative || '-' }}</span>
-           </div>
-           <div class="info-row">
-              <span class="label">السجل التجاري:</span> <span class="value">{{ dev.commercialRecord || '-' }}</span>
-           </div>
-           <div class="info-row">
-              <span class="label">الهاتف:</span> <span class="value">{{ dev.phone || '-' }}</span>
-           </div>
-            <div class="info-row">
-              <span class="label">الموقع:</span> <span class="value">{{ dev.location || '-' }}</span>
-           </div>
-        </div>
+        <p class="card-disclaimer">التفاصيل الكاملة متاحة للمستخدمين المصرح لهم فقط.</p>
 
-        <button class="view-projects-btn">عرض المشاريع</button>
+        <button class="view-projects-btn" @click="goToDeveloperDetail(dev)">عرض المشاريع</button>
       </div>
     </div>
 
-    <!-- Add Developer Modal -->
-    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>إضافة مطور جديد</h3>
-          <button class="close-btn" @click="closeModal">×</button>
-        </div>
-        <div class="modal-body">
-          <form @submit.prevent="addDeveloper">
-             <div class="form-group">
-                <label>اسم الشركة / المطور (اختياري)</label>
-                <input v-model="newDev.name" type="text" class="form-input" />
-             </div>
-             <div class="form-group grid-2">
-                <div>
-                   <label>اسم الممثل (اختياري)</label>
-                   <input v-model="newDev.representative" type="text" class="form-input" />
-                </div>
-                <div>
-                   <label>السجل التجاري (اختياري)</label>
-                   <input v-model="newDev.commercialRecord" type="text" class="form-input" />
-                </div>
-             </div>
-              <div class="form-group grid-2">
-                <div>
-                   <label>رقم الهاتف (اختياري)</label>
-                   <input v-model="newDev.phone" type="text" class="form-input" />
-                </div>
-                <div>
-                   <label>الموقع / المدينة (اختياري)</label>
-                   <input v-model="newDev.location" type="text" class="form-input" />
-                </div>
-             </div>
-             <div class="modal-actions">
-                <button type="button" class="btn-secondary" @click="closeModal">إلغاء</button>
-                <button type="submit" class="btn-primary">حفظ المطور</button>
-             </div>
-          </form>
-        </div>
-      </div>
+    <div v-if="(meta.last_page || 0) > 1" class="pagination">
+      <button type="button" class="pagination-btn" :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)">السابق</button>
+      <span class="pagination-info">صفحة {{ currentPage }} من {{ meta.last_page || 1 }}</span>
+      <button type="button" class="pagination-btn" :disabled="currentPage >= (meta.last_page || 1)" @click="goToPage(currentPage + 1)">التالي</button>
     </div>
+    </template>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import contractService from '../services/contractService'
 import logger from '../utils/logger'
+import { normalizeDeveloper } from '../utils/developerMapper'
 
+const PER_PAGE = 15
+const SEARCH_DEBOUNCE_MS = 400
 
 export default {
   name: 'DevelopersView',
   setup() {
+    const router = useRouter()
     const searchQuery = ref('')
-    const showModal = ref(false)
-    
-    // Real Data
     const developers = ref([])
     const isLoading = ref(true)
-
-    const newDev = ref({ name: '', representative: '', commercialRecord: '', phone: '', location: '' })
-
-    const filteredDevelopers = computed(() => {
-       if (!searchQuery.value) return developers.value
-       const q = searchQuery.value.toLowerCase()
-       return developers.value.filter(d => 
-          (d.name && d.name.toLowerCase().includes(q)) || 
-          (d.representative && d.representative.toLowerCase().includes(q))
-       )
-    })
+    const meta = ref({})
+    const currentPage = ref(1)
+    let searchDebounce = null
 
     const fetchDevelopers = async () => {
        isLoading.value = true
        try {
-          // Fetch developers
-          const devs = await contractService.getDevelopers()
-          // Log to see structure if possible, but we'll map best effort
-          // Expected structure based on typical Laravel usage: id, name, email, etc.
-          // We also need projectCount. The user provided an endpoint for contracts by email.
-          // We might need to fetch contracts for each dev to get the count, or maybe the dev object has it.
-          // For now, let's just show the developers. 
-          // If we need the count eagerly, we'd have to make N calls which is bad. 
-          // Let's assume for now we list them, and maybe fetch count if available or default to 0.
-          
-          developers.value = devs.map(d => ({
-             id: d.id,
-             name: d.name || 'مطور غير معروف',
-             representative: d.name, // Using name as representative if not separate
-             email: d.email,
-             commercialRecord: d.commercial_record || '-',
-             phone: d.phone || '-',
-             location: d.city || d.location || '-',
-             projectCount: 0 // Placeholder until we load it
-          }))
-
-          // Optionally load counts?
-          // Since there is an API 'contracts-by-email', we could try to load it. 
-          // But doing it for all might be heavy. Let's do it on demand or leave as 0/hidden.
-          // Let's try to load for the first few or just leave it.
-
+          const { data, meta: m } = await contractService.getDevelopersList({
+            search: searchQuery.value.trim(),
+            per_page: PER_PAGE,
+            page: currentPage.value
+          })
+          developers.value = (Array.isArray(data) ? data : []).map(d => normalizeDeveloper(d))
+          meta.value = m
        } catch (e) {
          logger.error('Failed to fetch developers', e)
+         developers.value = []
+         meta.value = {}
        } finally {
          isLoading.value = false
        }
     }
 
-    const openAddModal = () => {
-       newDev.value = { name: '', representative: '', commercialRecord: '', phone: '', location: '' }
-       showModal.value = true
-    }
-    const closeModal = () => showModal.value = false
+    watch(searchQuery, () => {
+       if (searchDebounce) clearTimeout(searchDebounce)
+       searchDebounce = setTimeout(() => {
+         currentPage.value = 1
+         fetchDevelopers()
+       }, SEARCH_DEBOUNCE_MS)
+    })
 
-    const addDeveloper = () => {
-       // Ideally this should be an API call too, but user didn't provide CREATE API for developers.
-       // We will keep it incorrectly as mock or just specific alerts.
-       alert('عفواً، لا يوجد API لإضافة مطور حالياً.')
-       closeModal()
+    const goToPage = (page) => {
+       if (page < 1 || page > (meta.value.last_page ?? 1)) return
+       currentPage.value = page
+       fetchDevelopers()
     }
-    
-    // Fetch on mount
+
+    const goToDeveloperDetail = (dev) => {
+       router.push({
+         name: 'DeveloperDetail',
+         params: { id: String(dev.id) },
+         state: { developer: dev }
+       })
+    }
+
     onMounted(() => {
        fetchDevelopers()
     })
 
     return {
-       searchQuery, developers, filteredDevelopers, showModal, newDev,
-       openAddModal, closeModal, addDeveloper
+       searchQuery,
+       developers,
+       meta,
+       currentPage,
+       fetchDevelopers,
+       goToPage,
+       goToDeveloperDetail
     }
   }
 }
@@ -236,10 +179,13 @@ export default {
 }
 .dev-icon svg { width: 20px; }
 
-.card-body { flex: 1; margin-bottom: 20px; }
-.info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-.info-row .label { color: #94a3b8; }
-.info-row .value { color: #1e293b; font-weight: 600; }
+.card-disclaimer {
+  flex: 1;
+  margin: 0 0 20px 0;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}
 
 .view-projects-btn {
    width: 100%; background: #1e3a5f; color: white; border: none; padding: 10px;
@@ -247,39 +193,51 @@ export default {
 }
 .view-projects-btn:hover { background: #0f172a; }
 
-.btn-primary {
-  background: #B1A28F; color: white; border: none; padding: 10px 20px;
-  border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;
-  cursor: pointer; transition: background 0.2s;
+.loading-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #64748b;
 }
-.btn-primary:hover { background: #8c7851; }
+.loading-state .spinner {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #1e3a5f;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.modal-overlay {
-   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-   background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 16px;
 }
-.modal-content {
-   background: white; width: 500px; max-width: 90%; border-radius: 16px; padding: 25px;
-   box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+.pagination-btn {
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #1e3a5f;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
 }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.modal-header h3 { margin: 0; color: #1e3a5f; }
-.close-btn { background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; }
-
-.form-group { margin-bottom: 15px; }
-.form-group label { display: block; margin-bottom: 6px; color: #64748b; font-size: 13px; }
-.form-input {
-   width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;
-   font-family: inherit;
+.pagination-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
 }
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
-.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px; }
-.btn-secondary {
-   background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; padding: 10px 20px; border-radius: 8px; cursor: pointer;
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
-
-@media (max-width: 600px) {
-   .grid-2 { grid-template-columns: 1fr; }
+.pagination-info {
+  font-size: 14px;
+  color: #64748b;
 }
 </style>

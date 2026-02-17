@@ -99,7 +99,8 @@ export const PERMISSION_DEFINITIONS = {
   'accounting.deposits.manage': 'Manage deposits (confirm, refund).',
   'accounting.salaries.view': 'View employee salaries and commissions.',
   'accounting.salaries.distribute': 'Create and manage salary distributions.',
-  'accounting.down_payment.confirm': 'Confirm down payments.'
+  'accounting.down_payment.confirm': 'Confirm down payments.',
+  'agents.manage': 'Manage AI/Chatbot agents (create, edit, delete).'
 }
 
 /**
@@ -132,7 +133,7 @@ export const BOOTSTRAP_ROLE_MAP = {
     'accounting.dashboard.view', 'accounting.notifications.view', 'accounting.sold-units.view', 'accounting.sold-units.manage',
     'accounting.commissions.approve', 'accounting.commissions.create', 'accounting.deposits.view', 'accounting.deposits.manage',
     'accounting.salaries.view', 'accounting.salaries.distribute', 'accounting.down_payment.confirm',
-    'use-ai-assistant', 'manage-ai-knowledge'
+    'use-ai-assistant', 'manage-ai-knowledge', 'agents.manage'
   ],
   project_management: [
     'contracts.view', 'contracts.view_all', 'contracts.approve', 'units.view', 'units.edit', 'units.csv_upload',

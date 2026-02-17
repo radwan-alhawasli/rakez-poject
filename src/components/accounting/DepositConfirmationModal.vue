@@ -6,6 +6,15 @@
         <button class="close-btn" @click="$emit('close')">×</button>
       </div>
       <form @submit.prevent="handleSubmit" class="modal-body">
+        <div v-if="deposit" class="deposit-detail-section">
+          <div class="detail-row"><span class="detail-label">المشروع:</span> {{ deposit.project_name || '—' }}</div>
+          <div class="detail-row"><span class="detail-label">نوع الوحدة:</span> {{ deposit.unit_type || '—' }}</div>
+          <div class="detail-row"><span class="detail-label">سعر البيع النهائي:</span> {{ formatCurrency(deposit.final_price || deposit.total_value) }}</div>
+          <div class="detail-row"><span class="detail-label">قيمة العربون:</span> {{ formatCurrency(deposit.amount) }}</div>
+          <div class="detail-row"><span class="detail-label">طريقة الدفع:</span> {{ deposit.payment_method || '—' }}</div>
+          <div class="detail-row"><span class="detail-label">اسم العميل:</span> {{ deposit.client_name || deposit.customer_name || '—' }}</div>
+          <div class="detail-row"><span class="detail-label">نسبة السعي:</span> {{ deposit.commission_percentage ? deposit.commission_percentage + '%' : '—' }} {{ deposit.commission_source === 'owner' ? '(من المالك)' : deposit.commission_source === 'buyer' ? '(من المشتري)' : '' }}</div>
+        </div>
         <div class="form-group" v-if="action === 'confirm'">
           <label class="form-label">المبلغ المؤكد</label>
           <input v-model.number="formData.confirmed_amount" type="number" class="form-input" :placeholder="deposit?.amount" required />
@@ -70,11 +79,16 @@ export default {
       document.removeEventListener('keydown', handleEscape)
     })
 
+    const formatCurrency = (val) => {
+      if (!val) return '0 ر.س'
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR', maximumFractionDigits: 0 }).format(val)
+    }
+
     const handleSubmit = () => {
       emit('submit', { action: action.value, ...formData })
     }
 
-    return { action, formData, handleSubmit }
+    return { action, formData, formatCurrency, handleSubmit }
   }
 }
 </script>
@@ -139,6 +153,28 @@ export default {
 
 .close-btn:hover {
   color: #ef4444;
+}
+
+.deposit-detail-section {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.detail-row {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #64748b;
+  margin-left: 8px;
 }
 
 .form-group {

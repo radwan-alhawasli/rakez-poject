@@ -9,7 +9,7 @@
       <div class="login-header">
         <div class="logo-area">
           <span class="logo-ar">راكز العقارية</span>
-          <span class="logo-tag">"محل ثقة"</span>
+          <span class="logo-tag">"majd  bayer"</span>
         </div>
       </div>
       

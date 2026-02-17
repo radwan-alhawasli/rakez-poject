@@ -253,6 +253,7 @@ import contractService from '../services/contractService'
 import authService from '../services/authService'
 import notificationService from '../services/notificationService'
 import logger from '../utils/logger'
+import { toast } from '../composables/useToast'
 
 export default {
   name: 'ProjectManagementView',
@@ -491,9 +492,9 @@ export default {
              logger.error('Save failed:', error)
              const msg = error.response?.data?.message || error.message
              if (msg && msg.includes('يجب أن يكون العقد لديه معلومات')) {
-                 alert('تنبيه: لا يمكن إضافة صور لهذا المشروع لأنه يفتقر إلى بيانات العقد الأساسية. يرجى إكمال بيانات المشروع أولاً (الطرف الثاني، المعلومات المالية) في صفحة التتبع.')
+                 toast.warning('تنبيه: لا يمكن إضافة صور لهذا المشروع لأنه يفتقر إلى بيانات العقد الأساسية. يرجى إكمال بيانات المشروع أولاً (الطرف الثاني، المعلومات المالية) في صفحة التتبع.')
              } else {
-                 alert('فشل الحفظ: ' + msg)
+                 toast.error('فشل الحفظ: ' + msg)
              }
         } finally {
             isMediaSaving.value = false
@@ -515,12 +516,12 @@ export default {
     }
 
     const submitWorkspaceLink = async () => {
-        if (!workspaceForm.url) return alert('الرجاء إدخال الرابط')
+        if (!workspaceForm.url) { toast.warning('الرجاء إدخال الرابط'); return }
         // Mock API call
         logger.debug(`Submitting workspace link for project ${selectedProject.value.id}:`, workspaceForm)
         
         // Simulate success and notification
-        alert('تم إضافة الرابط بنجاح وإشعار الإدارة ومدير المشاريع.')
+        toast.success('تم إضافة الرابط بنجاح وإشعار الإدارة ومدير المشاريع.')
         closeWorkspaceModal()
     }
 
