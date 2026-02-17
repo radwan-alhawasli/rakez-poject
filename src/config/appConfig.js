@@ -9,7 +9,7 @@ const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NOD
 const isProduction = process.env.NODE_ENV === 'production'
 
 // API Base URL — بدون شرطة نهائية (e.g. http://localhost:8000/api)
-const apiBaseUrl = (process.env.VUE_APP_API_BASE_URL || 'http://localhost:8000/api').replace(/\/+$/, '')
+const apiBaseUrl = (process.env.VUE_APP_API_BASE_URL || 'https://api.rakez.com.sa/api').replace(/\/+$/, '')
 
 // Log API URL in development for debugging
 if (isDevelopment) {
