@@ -7,7 +7,16 @@
         <p class="section-subtitle">عرض وإنشاء وإدارة المستخدمين في النظام بصلاحيات مختلفة.</p>
       </div>
       <button class="add-btn" @click="openAddModal">
-        <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <svg
+          class="btn-icon-svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
         <span>مستخدم جديد</span>
       </button>
     </div>
@@ -40,8 +49,8 @@
               <div class="user-cell">
                 <div class="user-avatar">{{ (user.name || '?').charAt(0).toUpperCase() }}</div>
                 <div class="user-details">
-                   <div class="user-name">{{ user.name || 'مستخدم غير معروف' }}</div>
-                   <div class="user-email">{{ user.email }}</div>
+                  <div class="user-name">{{ user.name || 'مستخدم غير معروف' }}</div>
+                  <div class="user-email">{{ user.email }}</div>
                 </div>
               </div>
             </td>
@@ -50,24 +59,68 @@
                 {{ getRoleLabel(user.type, user.is_manager) }}
               </div>
             </td>
-            <td>{{ user.team || '-' }}</td>
+            <td>{{ getTeamDisplay(user.team) }}</td>
             <td class="date-cell">{{ formatDate(user.created_at) }}</td>
             <td>
-              <span class="status-badge" :class="user.disabled ? 'disabled' : 'active'">
-                {{ user.disabled ? 'معطل' : 'نشط' }}
+              <span class="status-badge" :class="isUserDisabled(user) ? 'disabled' : 'active'">
+                {{ isUserDisabled(user) ? 'معطل' : 'نشط' }}
               </span>
             </td>
             <td>
               <div class="actions">
-                <button class="action-btn status" @click="toggleUserStatus(user)" :title="user.disabled ? 'تفعيل' : 'تعطيل'">
-                  <svg v-if="!user.disabled" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
-                  <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <button
+                  class="action-btn status"
+                  @click="toggleUserStatus(user)"
+                  :title="isUserDisabled(user) ? 'تفعيل' : 'تعطيل'"
+                >
+                  <svg
+                    v-if="!isUserDisabled(user)"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                    <line x1="12" y1="2" x2="12" y2="12"></line>
+                  </svg>
+                  <svg
+                    v-else
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
                 </button>
                 <button class="action-btn edit" @click="editUser(user)" title="تعديل">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+                <button
+                  v-if="useHrApi"
+                  class="action-btn assign"
+                  @click="openAssignTeam(user)"
+                  title="تعيين لفريق"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
                 </button>
                 <button class="action-btn delete" @click="confirmDelete(user)" title="حذف">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path
+                      d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                    ></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
                 </button>
               </div>
             </td>
@@ -77,8 +130,8 @@
     </div>
 
     <!-- Add/Edit Modal -->
-    <AddUserModal 
-      v-if="showModal" 
+    <AddUserModal
+      v-if="showModal"
       :editUser="selectedUser"
       :isLoading="isSaving"
       @close="closeModal"
@@ -97,6 +150,41 @@
       @close="handleCancelConfirm"
     />
 
+    <!-- Assign to Team Modal (HR only) -->
+    <div v-if="showAssignModal" class="modal-overlay" @click.self="closeAssignModal">
+      <div class="modal-content assign-modal">
+        <div class="modal-header">
+          <h3>تعيين موظف لفريق</h3>
+          <button type="button" class="close-btn" @click="closeAssignModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p v-if="userToAssign" class="assign-user-name">
+            {{ userToAssign.name || userToAssign.email }}
+          </p>
+          <div class="form-group">
+            <label>الفريق</label>
+            <select v-model="selectedTeamId" class="form-input">
+              <option value="">اختر الفريق...</option>
+              <option v-for="t in teamsList" :key="t.id" :value="t.id">
+                {{ t.name }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" @click="closeAssignModal">إلغاء</button>
+          <button
+            type="button"
+            class="btn-primary"
+            :disabled="!selectedTeamId || isAssigning"
+            @click="submitAssignTeam"
+          >
+            {{ isAssigning ? 'جاري التعيين...' : 'تعيين' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Pagination -->
     <Pagination
       v-if="totalItems > 0"
@@ -110,256 +198,387 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
-import hrService from '../services/hrService'
-import AddUserModal from './AddUserModal.vue'
-import ConfirmModal from './ConfirmModal.vue'
-import Pagination from './Pagination.vue'
-import { getRoleLabel, getRoleClass } from '../constants/roles'
-import logger from '../utils/logger'
-import { handleError } from '../utils/errorHandler'
-import appConfig from '../config/appConfig'
-import { toast } from '../composables/useToast'
+import { ref, onMounted } from 'vue';
+import hrService from '../services/hrService';
+import AddUserModal from './AddUserModal.vue';
+import ConfirmModal from './ConfirmModal.vue';
+import Pagination from './Pagination.vue';
+import { getRoleLabel, getRoleClass } from '../constants/roles';
+import logger from '../utils/logger';
+import { handleError } from '../utils/errorHandler';
+import appConfig from '../config/appConfig';
+import { toast } from '../composables/useToast';
 
 export default {
   name: 'UserManagement',
   components: {
     AddUserModal,
     ConfirmModal,
-    Pagination
+    Pagination,
   },
-  setup() {
-    const users = ref([])
-    const loading = ref(true)
-    const showModal = ref(false)
-    const selectedUser = ref(null)
-    const isSaving = ref(false)
-    const showConfirmModal = ref(false)
-    const confirmAction = ref(null)
-    const confirmData = ref(null)
-    const currentPage = ref(1)
-    const perPage = ref(25)
+  props: {
+    /** When true, use HR API (GET/POST/PUT /hr/users) instead of admin employees API */
+    useHrApi: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  setup(props) {
+    const users = ref([]);
+    const loading = ref(true);
+    const showModal = ref(false);
+    const selectedUser = ref(null);
+    const isSaving = ref(false);
+    const showConfirmModal = ref(false);
+    const confirmAction = ref(null);
+    const confirmData = ref(null);
+    const currentPage = ref(1);
+    const perPage = ref(25);
 
-    const totalItems = ref(0)
+    const totalItems = ref(0);
+
+    /** Normalize user so disabled is set from API (is_active or disabled) for consistent display */
+    const normalizeUserForDisplay = u => ({
+      ...u,
+      disabled:
+        u.disabled !== undefined && u.disabled !== null
+          ? !!u.disabled
+          : u.is_active !== undefined && u.is_active !== null
+          ? !u.is_active
+          : false,
+    });
+
+    /** Whether the user is disabled (from disabled or is_active) */
+    const isUserDisabled = user => {
+      if (user.disabled !== undefined && user.disabled !== null) return !!user.disabled;
+      if (user.is_active !== undefined && user.is_active !== null) return !user.is_active;
+      return false;
+    };
+
+    /** Team column: show name if object, else raw value */
+    const getTeamDisplay = team => {
+      if (team == null) return '-';
+      if (typeof team === 'object' && team !== null && team.name) return team.name;
+      if (typeof team === 'string') return team;
+      return '-';
+    };
 
     const fetchUsers = async () => {
-      loading.value = true
+      loading.value = true;
       try {
-        const data = await hrService.getEmployees({
-          page: currentPage.value,
-          per_page: perPage.value
-        })
-        users.value = data?.items ?? (Array.isArray(data) ? data : (data?.data || data?.employees || []))
-        totalItems.value = data?.total ?? users.value.length
+        const data = props.useHrApi
+          ? await hrService.listUsers({
+              page: currentPage.value,
+              per_page: perPage.value,
+            })
+          : await hrService.getEmployees({
+              page: currentPage.value,
+              per_page: perPage.value,
+            });
+        const raw =
+          data?.items ?? (Array.isArray(data) ? data : data?.data || data?.employees || []);
+        users.value = raw.map(normalizeUserForDisplay);
+        totalItems.value = data?.total ?? users.value.length;
       } catch (error) {
-        logger.error('Failed to fetch users', error)
-        users.value = []
-        totalItems.value = 0
+        logger.error('Failed to fetch users', error);
+        users.value = [];
+        totalItems.value = 0;
 
         // Use error handler to get appropriate message based on error type
         const errorInfo = handleError(error, {
           showNotification: false,
-          log: false // Already logged above
-        })
-        
+          log: false, // Already logged above
+        });
+
         // Show user-friendly message based on error type
-        const status = error?.response?.status || error?.status
-        
+        const status = error?.response?.status || error?.status;
+
         if (status === 404) {
-          toast.warning('المورد المطلوب غير موجود. قد يكون هذا المسار غير متاح في الخادم حالياً.')
+          toast.warning('المورد المطلوب غير موجود. قد يكون هذا المسار غير متاح في الخادم حالياً.');
         } else if (status === 401) {
-          toast.warning('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.')
+          toast.warning('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.');
         } else if (status === 403) {
-          toast.warning('ليس لديك صلاحية للوصول إلى هذا المورد.')
+          toast.warning('ليس لديك صلاحية للوصول إلى هذا المورد.');
         } else if (errorInfo.message && !errorInfo.isExpected) {
-          toast.error(errorInfo.message)
+          toast.error(errorInfo.message);
         } else {
-          toast.error('حدث خطأ أثناء جلب البيانات. يرجى المحاولة مرة أخرى.')
+          toast.error('حدث خطأ أثناء جلب البيانات. يرجى المحاولة مرة أخرى.');
         }
       } finally {
-        loading.value = false
+        loading.value = false;
       }
-    }
+    };
 
     const openAddModal = () => {
-      selectedUser.value = null
-      showModal.value = true
-    }
+      selectedUser.value = null;
+      showModal.value = true;
+    };
 
-    const editUser = async (user) => {
-      loading.value = true
+    const editUser = async user => {
+      loading.value = true;
       try {
-        const details = await hrService.getEmployeeById(user.id)
-        selectedUser.value = details.data || details
-        showModal.value = true
+        const details = props.useHrApi
+          ? await hrService.showUser(user.id)
+          : await hrService.getEmployeeById(user.id);
+        selectedUser.value = details?.data ?? details;
+        showModal.value = true;
       } catch (error) {
-        logger.error('Error fetching user details:', error)
-        toast.error('حدث خطأ أثناء جلب تفاصيل المستخدم')
+        logger.error('Error fetching user details:', error);
+        toast.error('حدث خطأ أثناء جلب تفاصيل المستخدم');
       } finally {
-        loading.value = false
+        loading.value = false;
       }
-    }
+    };
 
     const closeModal = () => {
-      showModal.value = false
-      selectedUser.value = null
-    }
+      showModal.value = false;
+      selectedUser.value = null;
+    };
 
-    const handleSaveUser = async (userData) => {
-      isSaving.value = true
+    const handleSaveUser = async userData => {
+      isSaving.value = true;
       try {
-        if (userData.id) {
-          await hrService.updateEmployee(userData.id, userData)
+        if (props.useHrApi) {
+          if (userData.id) {
+            await hrService.updateUser(userData.id, userData);
+          } else {
+            await hrService.createUser(userData);
+          }
         } else {
-          await hrService.createEmployee(userData)
+          if (userData.id) {
+            await hrService.updateEmployee(userData.id, userData);
+          } else {
+            await hrService.createEmployee(userData);
+          }
         }
-        await fetchUsers()
-        closeModal()
+        await fetchUsers();
+        closeModal();
       } catch (error) {
-        logger.error('Error saving user:', error)
-        let errMsg = 'حدث خطأ أثناء حفظ المستخدم'
-        
+        logger.error('Error saving user:', error);
+        let errMsg = 'حدث خطأ أثناء حفظ المستخدم';
+
         if (error.response?.data?.message) {
-            errMsg = error.response.data.message
+          errMsg = error.response.data.message;
         } else if (error.message) {
-            errMsg = error.message
+          errMsg = error.message;
         }
-        
-        toast.error(errMsg)
+
+        toast.error(errMsg);
       } finally {
-        isSaving.value = false
+        isSaving.value = false;
       }
-    }
+    };
 
-    const toggleUserStatus = (user) => {
-      const newStatus = !user.disabled
-      confirmData.value = { user, newStatus }
-      confirmAction.value = 'toggleStatus'
-      showConfirmModal.value = true
-    }
+    const toggleUserStatus = user => {
+      const newStatus = !isUserDisabled(user);
+      confirmData.value = { user, newStatus };
+      confirmAction.value = 'toggleStatus';
+      showConfirmModal.value = true;
+    };
 
-    const confirmDelete = (user) => {
-      confirmData.value = { user }
-      confirmAction.value = 'delete'
-      showConfirmModal.value = true
-    }
+    const confirmDelete = user => {
+      confirmData.value = { user };
+      confirmAction.value = 'delete';
+      showConfirmModal.value = true;
+    };
 
     const handleConfirm = async () => {
-      if (!confirmAction.value || !confirmData.value) return
+      if (!confirmAction.value || !confirmData.value) return;
 
       try {
         if (confirmAction.value === 'toggleStatus') {
-          const { user, newStatus } = confirmData.value
-          
+          const { user, newStatus } = confirmData.value;
+
           // Log for debugging
           if (appConfig.isDevelopment) {
-            logger.debug(`Toggling user status:`, { userId: user.id, currentStatus: user.disabled, newStatus })
+            logger.debug(`Toggling user status:`, {
+              userId: user.id,
+              currentStatus: user.disabled,
+              newStatus,
+            });
           }
-          
-          // Update local state immediately for better UX
-          const userIndex = users.value.findIndex(u => u.id === user.id)
+
+          // Update local state immediately so UI shows تعطل/نشط right away
+          const userIndex = users.value.findIndex(u => u.id === user.id);
           if (userIndex !== -1) {
-            users.value[userIndex].disabled = newStatus
+            users.value[userIndex] = {
+              ...users.value[userIndex],
+              disabled: newStatus,
+              is_active: newStatus ? 0 : 1,
+            };
           }
-          
-          // Try using the dedicated status toggle endpoint first
-          try {
-            await hrService.toggleUserStatus({
-              user_id: user.id,
-              disabled: newStatus ? 1 : 0  // Convert boolean to integer (0/1)
-            })
-          } catch (toggleError) {
-            // Fallback to updateEmployee if toggleUserStatus fails
-            if (appConfig.isDevelopment) {
-              logger.debug('toggleUserStatus failed, trying updateEmployee:', toggleError)
+          showConfirmModal.value = false;
+          toast.success(`تم ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name} بنجاح`);
+
+          if (props.useHrApi) {
+            await hrService.toggleUserStatus(user.id, {
+              is_active: newStatus ? 0 : 1,
+            });
+          } else {
+            try {
+              await hrService.toggleUserStatus(user.id, {
+                is_active: newStatus ? 0 : 1,
+              });
+            } catch (toggleError) {
+              if (appConfig.isDevelopment) {
+                logger.debug('toggleUserStatus failed, trying updateEmployee:', toggleError);
+              }
+              await hrService.updateEmployee(user.id, { disabled: newStatus ? 1 : 0 });
             }
-            // Convert boolean to integer for API compatibility
-            await hrService.updateEmployee(user.id, { disabled: newStatus ? 1 : 0 })
           }
-          
-          // Refresh from server to ensure consistency
-          await fetchUsers()
-          toast.success(`تم ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name} بنجاح`)
+          await fetchUsers();
+          confirmAction.value = null;
+          confirmData.value = null;
         } else if (confirmAction.value === 'delete') {
-          const { user } = confirmData.value
-          await hrService.deleteEmployee(user.id)
-          await fetchUsers()
-          toast.success('تم حذف المستخدم بنجاح')
+          const { user } = confirmData.value;
+          if (props.useHrApi) {
+            await hrService.deleteUser(user.id);
+          } else {
+            await hrService.deleteEmployee(user.id);
+          }
+          await fetchUsers();
+          toast.success('تم حذف المستخدم بنجاح');
         }
-        showConfirmModal.value = false
-        confirmAction.value = null
-        confirmData.value = null
+        showConfirmModal.value = false;
+        confirmAction.value = null;
+        confirmData.value = null;
       } catch (error) {
-        logger.error(`Error ${confirmAction.value}`, error)
-        let errorMsg = confirmAction.value === 'delete' 
-          ? 'حدث خطأ أثناء حذف المستخدم'
-          : 'حدث خطأ أثناء تغيير الحالة'
-        
+        const action = confirmAction.value;
+        logger.error(`Error ${action}`, error);
+        if (action === 'toggleStatus' && confirmData.value) {
+          const { user, newStatus } = confirmData.value;
+          const idx = users.value.findIndex(u => u.id === user.id);
+          if (idx !== -1) {
+            users.value[idx] = {
+              ...users.value[idx],
+              disabled: !newStatus,
+              is_active: newStatus ? 1 : 0,
+            };
+          }
+        }
+        let errorMsg =
+          action === 'delete' ? 'حدث خطأ أثناء حذف المستخدم' : 'حدث خطأ أثناء تغيير الحالة';
+
         // Check for foreign key constraint error
-        const errorMessage = error?.message || error?.response?.data?.message || ''
-        if (confirmAction.value === 'delete') {
-          if (errorMessage.includes('foreign key') || 
-              errorMessage.includes('Integrity constraint') ||
-              errorMessage.includes('Cannot delete or update a parent row')) {
-            errorMsg = 'لا يمكن حذف هذا المستخدم لأنه مرتبط ببيانات أخرى في النظام. يمكنك تعطيل الحساب بدلاً من ذلك.'
+        const errorMessage = error?.message || error?.response?.data?.message || '';
+        if (action === 'delete') {
+          if (
+            errorMessage.includes('foreign key') ||
+            errorMessage.includes('Integrity constraint') ||
+            errorMessage.includes('Cannot delete or update a parent row')
+          ) {
+            errorMsg =
+              'لا يمكن حذف هذا المستخدم لأنه مرتبط ببيانات أخرى في النظام. يمكنك تعطيل الحساب بدلاً من ذلك.';
           } else if (error?.response?.status === 500) {
-            errorMsg = 'حدث خطأ في الخادم أثناء محاولة الحذف. يرجى المحاولة لاحقاً.'
+            errorMsg = 'حدث خطأ في الخادم أثناء محاولة الحذف. يرجى المحاولة لاحقاً.';
           } else if (error?.response?.data?.message) {
-            errorMsg = error.response.data.message
+            errorMsg = error.response.data.message;
           }
         } else if (error?.response?.data?.message) {
-          errorMsg = error.response.data.message
+          errorMsg = error.response.data.message;
         }
-        
-        toast.error(errorMsg)
+
+        toast.error(errorMsg);
+        showConfirmModal.value = false;
+        confirmAction.value = null;
+        confirmData.value = null;
       }
-    }
+    };
 
     const handleCancelConfirm = () => {
-      showConfirmModal.value = false
-      confirmAction.value = null
-      confirmData.value = null
-    }
+      showConfirmModal.value = false;
+      confirmAction.value = null;
+      confirmData.value = null;
+    };
 
     const getConfirmTitle = () => {
       if (confirmAction.value === 'delete') {
-        return 'تأكيد الحذف'
+        return 'تأكيد الحذف';
       }
-      return 'تأكيد التغيير'
-    }
+      return 'تأكيد التغيير';
+    };
 
     const getConfirmMessage = () => {
-      if (!confirmData.value) return ''
-      
+      if (!confirmData.value) return '';
+
       if (confirmAction.value === 'delete') {
-        return `هل أنت متأكد من حذف المستخدم ${confirmData.value.user.name || 'هذا'}؟ لا يمكن التراجع عن هذا الإجراء.`
+        return `هل أنت متأكد من حذف المستخدم ${
+          confirmData.value.user.name || 'هذا'
+        }؟ لا يمكن التراجع عن هذا الإجراء.`;
       } else if (confirmAction.value === 'toggleStatus') {
-        const { user, newStatus } = confirmData.value
-        return `هل أنت متأكد من ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name}؟`
+        const { user, newStatus } = confirmData.value;
+        return `هل أنت متأكد من ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name}؟`;
       }
-      return ''
-    }
+      return '';
+    };
 
-    const formatDate = (dateString) => {
-      if (!dateString) return '-'
-      return new Date(dateString).toISOString().split('T')[0]
-    }
+    const formatDate = dateString => {
+      if (!dateString) return '-';
+      return new Date(dateString).toISOString().split('T')[0];
+    };
 
-    const handlePageChange = (page) => {
-      currentPage.value = page
-      fetchUsers()
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
+    const handlePageChange = page => {
+      currentPage.value = page;
+      fetchUsers();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
-    const handlePerPageChange = (newPerPage) => {
-      perPage.value = newPerPage
-      currentPage.value = 1
-      fetchUsers()
-    }
+    const handlePerPageChange = newPerPage => {
+      perPage.value = newPerPage;
+      currentPage.value = 1;
+      fetchUsers();
+    };
+
+    // Assign to team (HR only)
+    const showAssignModal = ref(false);
+    const userToAssign = ref(null);
+    const teamsList = ref([]);
+    const selectedTeamId = ref('');
+    const isAssigning = ref(false);
+
+    const openAssignTeam = async user => {
+      userToAssign.value = user;
+      selectedTeamId.value = '';
+      showAssignModal.value = true;
+      try {
+        const data = await hrService.getTeams({ per_page: 100 });
+        teamsList.value = data?.items ?? [];
+      } catch (err) {
+        logger.error('Error loading teams:', err);
+        toast.error('حدث خطأ أثناء تحميل الفرق');
+        teamsList.value = [];
+      }
+    };
+
+    const closeAssignModal = () => {
+      showAssignModal.value = false;
+      userToAssign.value = null;
+      selectedTeamId.value = '';
+      teamsList.value = [];
+    };
+
+    const submitAssignTeam = async () => {
+      if (!selectedTeamId.value || !userToAssign.value) return;
+      isAssigning.value = true;
+      try {
+        await hrService.assignTeamMember(selectedTeamId.value, {
+          user_id: userToAssign.value.id,
+        });
+        toast.success('تم تعيين الموظف للفريق بنجاح');
+        closeAssignModal();
+        await fetchUsers();
+      } catch (err) {
+        logger.error('Error assigning to team:', err);
+        const msg = err?.response?.data?.message || err?.message || 'حدث خطأ أثناء التعيين';
+        toast.error(msg);
+      } finally {
+        isAssigning.value = false;
+      }
+    };
 
     onMounted(() => {
-      fetchUsers()
-    })
+      fetchUsers();
+    });
 
     return {
       users,
@@ -373,6 +592,11 @@ export default {
       confirmData,
       currentPage,
       perPage,
+      showAssignModal,
+      userToAssign,
+      teamsList,
+      selectedTeamId,
+      isAssigning,
       openAddModal,
       editUser,
       closeModal,
@@ -387,10 +611,15 @@ export default {
       getConfirmMessage,
       formatDate,
       getRoleLabel,
-      getRoleClass
-    }
-  }
-}
+      getRoleClass,
+      isUserDisabled,
+      getTeamDisplay,
+      openAssignTeam,
+      closeAssignModal,
+      submitAssignTeam,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -401,8 +630,14 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .section-header {
@@ -427,7 +662,7 @@ export default {
 }
 
 .add-btn {
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
   border: none;
   padding: 12px 28px;
@@ -524,12 +759,36 @@ export default {
   min-width: 100px;
 }
 
-.role-marketing { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
-.role-admin { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-.role-pm { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-.role-inventory { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
-.role-hr { background: #faf5ff; color: #6b21a8; border: 1px solid #e9d5ff; }
-.role-default { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+.role-marketing {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+.role-admin {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+.role-pm {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+.role-inventory {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+.role-hr {
+  background: #faf5ff;
+  color: #6b21a8;
+  border: 1px solid #e9d5ff;
+}
+.role-default {
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
 
 .status-badge {
   display: inline-block;
@@ -539,26 +798,36 @@ export default {
   font-weight: 700;
 }
 
-.status-badge.active { background: #dcfce7; color: #16a34a; }
-.status-badge.disabled { background: #fee2e2; color: #ef4444; }
+.status-badge.active {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.status-badge.disabled {
+  background: #fee2e2;
+  color: #ef4444;
+}
 
-.action-btn.status:hover { border-color: #3b82f6; color: #3b82f6; background: #eff6ff; }
+.action-btn.status:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background: #eff6ff;
+}
 
-.actions { 
-  display: flex; 
-  gap: 8px; 
+.actions {
+  display: flex;
+  gap: 8px;
 }
 
 .action-btn {
-  background: white; 
-  border: 1.5px solid #e2e8f0; 
-  width: 38px; 
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  width: 38px;
   height: 38px;
-  border-radius: 10px; 
-  cursor: pointer; 
-  display: flex; 
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
   align-items: center;
-  justify-content: center; 
+  justify-content: center;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   color: #64748b;
 }
@@ -568,24 +837,139 @@ export default {
   height: 18px;
 }
 
-.action-btn:hover { 
-  border-color: #B1A28F; 
-  color: #B1A28F; 
+.action-btn:hover {
+  border-color: #b1a28f;
+  color: #b1a28f;
   background: #fdfbf7;
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(161, 139, 92, 0.1);
 }
 
-.action-btn.delete:hover { 
-  border-color: #ef4444; 
-  color: #ef4444; 
+.action-btn.delete:hover {
+  border-color: #ef4444;
+  color: #ef4444;
   background: #fef2f2;
   box-shadow: 0 4px 10px rgba(239, 68, 68, 0.1);
 }
 
-.spinner {
-  width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: #B1A28F;
-  border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;
+.action-btn.assign {
+  border-color: #b1a28f;
+  color: #8c7851;
+  background: #faf8f5;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+.action-btn.assign:hover {
+  border-color: #8c7851;
+  color: #8c7851;
+  background: #f5f0e8;
+  box-shadow: 0 4px 10px rgba(140, 120, 81, 0.15);
+}
+
+/* Assign to team modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.assign-modal.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+.assign-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.assign-modal .modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #1e3a5f;
+}
+.assign-modal .close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #94a3b8;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+.assign-modal .modal-body {
+  padding: 20px;
+}
+.assign-user-name {
+  font-weight: 600;
+  color: #334155;
+  margin: 0 0 16px 0;
+}
+.assign-modal .form-group {
+  margin-bottom: 0;
+}
+.assign-modal .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #475569;
+  font-size: 14px;
+}
+.assign-modal .form-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: 'Tajawal', sans-serif;
+}
+.assign-modal .modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+}
+.assign-modal .btn-secondary {
+  padding: 10px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  color: #64748b;
+  font-weight: 600;
+  cursor: pointer;
+}
+.assign-modal .btn-primary {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+.assign-modal .btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f1f5f9;
+  border-top-color: #b1a28f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 </style>

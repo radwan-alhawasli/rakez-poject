@@ -3,28 +3,28 @@
  * Replace with API calls when backend is available.
  */
 
-const STORAGE_KEY = 'rakez_agents'
+const STORAGE_KEY = 'rakez_agents';
 
 function getStoredAgents() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
   } catch {
-    return []
+    return [];
   }
 }
 
 function setStoredAgents(agents) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(agents))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(agents));
   } catch (_e) {
     // localStorage full or unavailable; in-memory only
   }
 }
 
 function nextId(agents) {
-  const max = agents.reduce((m, a) => Math.max(m, Number(a.id) || 0), 0)
-  return String(max + 1)
+  const max = agents.reduce((m, a) => Math.max(m, Number(a.id) || 0), 0);
+  return String(max + 1);
 }
 
 const agentService = {
@@ -33,8 +33,10 @@ const agentService = {
    * @returns {Promise<Array<{ id, name, description?, humanHelpEnabled, humanHelpLabel, finishEnabled, finishLabel, createdAt, updatedAt }>>}
    */
   async getAgents() {
-    const list = getStoredAgents()
-    return [...list].sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0))
+    const list = getStoredAgents();
+    return [...list].sort(
+      (a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)
+    );
   },
 
   /**
@@ -43,8 +45,8 @@ const agentService = {
    * @returns {Promise<Object|null>}
    */
   async getAgent(id) {
-    const agents = getStoredAgents()
-    return agents.find(a => String(a.id) === String(id)) || null
+    const agents = getStoredAgents();
+    return agents.find(a => String(a.id) === String(id)) || null;
   },
 
   /**
@@ -53,8 +55,8 @@ const agentService = {
    * @returns {Promise<Object>} Created agent with id, createdAt, updatedAt
    */
   async createAgent(data) {
-    const agents = getStoredAgents()
-    const now = new Date().toISOString()
+    const agents = getStoredAgents();
+    const now = new Date().toISOString();
     const agent = {
       id: nextId(agents),
       name: data.name || '',
@@ -64,11 +66,11 @@ const agentService = {
       finishEnabled: !!data.finishEnabled,
       finishLabel: data.finishLabel ?? 'Finish Conversation',
       createdAt: now,
-      updatedAt: now
-    }
-    agents.push(agent)
-    setStoredAgents(agents)
-    return { ...agent }
+      updatedAt: now,
+    };
+    agents.push(agent);
+    setStoredAgents(agents);
+    return { ...agent };
   },
 
   /**
@@ -78,22 +80,27 @@ const agentService = {
    * @returns {Promise<Object|null>} Updated agent or null if not found
    */
   async updateAgent(id, data) {
-    const agents = getStoredAgents()
-    const index = agents.findIndex(a => String(a.id) === String(id))
-    if (index === -1) return null
-    const now = new Date().toISOString()
+    const agents = getStoredAgents();
+    const index = agents.findIndex(a => String(a.id) === String(id));
+    if (index === -1) return null;
+    const now = new Date().toISOString();
     agents[index] = {
       ...agents[index],
       name: data.name !== undefined ? data.name : agents[index].name,
       description: data.description !== undefined ? data.description : agents[index].description,
-      humanHelpEnabled: data.humanHelpEnabled !== undefined ? !!data.humanHelpEnabled : agents[index].humanHelpEnabled,
-      humanHelpLabel: data.humanHelpLabel !== undefined ? data.humanHelpLabel : agents[index].humanHelpLabel,
-      finishEnabled: data.finishEnabled !== undefined ? !!data.finishEnabled : agents[index].finishEnabled,
+      humanHelpEnabled:
+        data.humanHelpEnabled !== undefined
+          ? !!data.humanHelpEnabled
+          : agents[index].humanHelpEnabled,
+      humanHelpLabel:
+        data.humanHelpLabel !== undefined ? data.humanHelpLabel : agents[index].humanHelpLabel,
+      finishEnabled:
+        data.finishEnabled !== undefined ? !!data.finishEnabled : agents[index].finishEnabled,
       finishLabel: data.finishLabel !== undefined ? data.finishLabel : agents[index].finishLabel,
-      updatedAt: now
-    }
-    setStoredAgents(agents)
-    return { ...agents[index] }
+      updatedAt: now,
+    };
+    setStoredAgents(agents);
+    return { ...agents[index] };
   },
 
   /**
@@ -102,12 +109,12 @@ const agentService = {
    * @returns {Promise<boolean>} true if deleted, false if not found
    */
   async deleteAgent(id) {
-    const agents = getStoredAgents()
-    const filtered = agents.filter(a => String(a.id) !== String(id))
-    if (filtered.length === agents.length) return false
-    setStoredAgents(filtered)
-    return true
-  }
-}
+    const agents = getStoredAgents();
+    const filtered = agents.filter(a => String(a.id) !== String(id));
+    if (filtered.length === agents.length) return false;
+    setStoredAgents(filtered);
+    return true;
+  },
+};
 
-export default agentService
+export default agentService;

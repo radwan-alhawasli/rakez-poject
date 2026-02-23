@@ -1,10 +1,22 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')" @keydown.esc="$emit('close')" tabindex="-1">
+  <div
+    class="modal-overlay"
+    @click.self="$emit('close')"
+    @keydown.esc="$emit('close')"
+    tabindex="-1"
+  >
     <div class="modal-container">
       <div class="modal-header">
         <h2 class="modal-title">{{ isEditMode ? 'تعديل الفريق' : 'إضافة فريق جديد' }}</h2>
         <button class="close-btn" @click="$emit('close')">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M18 6L6 18M6 6l12 12"></path>
           </svg>
         </button>
@@ -27,11 +39,7 @@
         <div class="form-group">
           <label class="form-label">لون الفريق</label>
           <div class="color-picker">
-            <input
-              v-model="formData.color"
-              type="color"
-              class="color-input"
-            />
+            <input v-model="formData.color" type="color" class="color-input" />
             <span class="color-value">{{ formData.color }}</span>
           </div>
         </div>
@@ -75,9 +83,7 @@
 
         <!-- Buttons -->
         <div class="modal-footer">
-          <button type="button" class="btn-secondary" @click="$emit('close')">
-            إلغاء
-          </button>
+          <button type="button" class="btn-secondary" @click="$emit('close')">إلغاء</button>
           <button type="submit" class="btn-primary" :disabled="isLoading">
             <span v-if="!isLoading">{{ isEditMode ? 'حفظ التعديلات' : 'إضافة الفريق' }}</span>
             <span v-else>جاري الحفظ...</span>
@@ -89,77 +95,80 @@
 </template>
 
 <script>
-import { ref, reactive, watch, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, watch, onMounted, onUnmounted } from 'vue';
 
 export default {
   name: 'TeamModal',
   props: {
     team: {
       type: Object,
-      default: null
+      default: null,
     },
     isLoading: {
       type: Boolean,
-      default: false
+      default: false,
     },
     isHR: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
-    const isEditMode = ref(!!props.team)
+    const isEditMode = ref(!!props.team);
 
     const formData = reactive({
       name: '',
       color: '#B1A28F',
       locations: '',
       monthlyGoal: 0,
-      description: ''
-    })
+      description: '',
+    });
 
     // Populate form if editing
     if (props.team) {
-      Object.assign(formData, props.team)
+      Object.assign(formData, props.team);
     }
 
-    watch(() => props.team, (newTeam) => {
-      if (newTeam) {
-        Object.assign(formData, newTeam)
-        isEditMode.value = true
+    watch(
+      () => props.team,
+      newTeam => {
+        if (newTeam) {
+          Object.assign(formData, newTeam);
+          isEditMode.value = true;
+        }
       }
-    })
+    );
 
     // Handle Escape key
-    const handleEscape = (e) => {
+    const handleEscape = e => {
       if (e.key === 'Escape') {
-        emit('close')
+        emit('close');
       }
-    }
+    };
 
     // Lock body scroll when modal is open
     onMounted(() => {
-      document.body.style.overflow = 'hidden'
-      document.addEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape);
+    });
 
     onUnmounted(() => {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEscape);
+    });
 
     const handleSubmit = () => {
-      emit('submit', { ...formData })
-    }
+      emit('submit', { ...formData });
+    };
 
     return {
       isEditMode,
       formData,
-      handleSubmit
-    }
-  }
-}
+      handleSubmit,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -266,7 +275,7 @@ export default {
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #B1A28F;
+  border-color: #b1a28f;
   box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.1);
 }
 

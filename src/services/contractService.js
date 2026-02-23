@@ -1,7 +1,7 @@
-import apiClient from '../api/apiClient'
-import logger from '../utils/logger'
-import { handleServiceError } from '../utils/serviceErrorHandler'
-import { extractPaginatedData } from '../utils/paginationUtils'
+import apiClient from '../api/apiClient';
+import logger from '../utils/logger';
+import { handleServiceError } from '../utils/serviceErrorHandler';
+import { extractPaginatedData } from '../utils/paginationUtils';
 
 /**
  * خدمة العقود - API Integration
@@ -17,11 +17,14 @@ const contractService = {
    */
   async getAllContracts(params = {}) {
     try {
-      const response = await apiClient.get('/admin/contracts/adminIndex', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/admin/contracts/adminIndex', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Fetch admin contracts', 'get') || { items: [], total: 0 }
+      const status = error?.response?.status || error?.status;
+      if (status === 401) throw error;
+      logger.error('Fetch admin contracts:', error);
+      return { items: [], total: 0 };
     }
   },
 
@@ -33,11 +36,20 @@ const contractService = {
    */
   async listContractsPM(params = {}) {
     try {
-      const response = await apiClient.get('/contracts/admin-index', { params })
-      const contracts = response.data?.data || response.data || []
-      return Array.isArray(contracts) ? contracts : []
+      const response = await apiClient.get('/contracts/admin-index', { params });
+      const res = response.data;
+      const data = res?.data ?? res;
+
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data?.data)) return data.data;
+      if (Array.isArray(data?.items)) return data.items;
+
+      return [];
     } catch (error) {
-      return handleServiceError(error, 'Fetch PM contracts', 'get', [])
+      const status = error?.response?.status || error?.status;
+      if (status === 401) throw error;
+      logger.error('Fetch PM contracts:', error);
+      return [];
     }
   },
 
@@ -47,15 +59,15 @@ const contractService = {
    * Payload: { status: 'approved' | 'rejected' }
    */
   async updateContractStatus(contractId, status) {
-    return this.updateContractStatusAdmin(contractId, status)
+    return this.updateContractStatusAdmin(contractId, status);
   },
 
   async approveContract(contractId) {
-    return this.updateContractStatus(contractId, 'approved')
+    return this.updateContractStatus(contractId, 'approved');
   },
 
   async rejectContract(contractId) {
-    return this.updateContractStatus(contractId, 'rejected')
+    return this.updateContractStatus(contractId, 'rejected');
   },
 
   /**
@@ -64,13 +76,10 @@ const contractService = {
    */
   async updateContractStatusProjectManager(contractId, status) {
     try {
-      const response = await apiClient.patch(
-        `/contracts/update-status/${contractId}`,
-        { status }
-      )
-      return response.data
+      const response = await apiClient.patch(`/contracts/update-status/${contractId}`, { status });
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Update contract status (PM)', 'patch')
+      return handleServiceError(error, 'Update contract status (PM)', 'patch');
     }
   },
 
@@ -80,13 +89,12 @@ const contractService = {
    */
   async updateContractStatusAdmin(contractId, status) {
     try {
-      const response = await apiClient.patch(
-        `/admin/contracts/adminUpdateStatus/${contractId}`,
-        { status }
-      )
-      return response.data
+      const response = await apiClient.patch(`/admin/contracts/adminUpdateStatus/${contractId}`, {
+        status,
+      });
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Update contract status (Admin)', 'patch')
+      return handleServiceError(error, 'Update contract status (Admin)', 'patch');
     }
   },
 
@@ -99,21 +107,24 @@ const contractService = {
    */
   async getContracts(filters = {}) {
     try {
-      const response = await apiClient.get('/contracts/index', { params: filters })
-      const res = response.data
-      let contracts = []
+      const response = await apiClient.get('/contracts/index', { params: filters });
+      const res = response.data;
+      let contracts = [];
       if (Array.isArray(res)) {
-        contracts = res
+        contracts = res;
       } else if (res && res.data && Array.isArray(res.data)) {
-        contracts = res.data
+        contracts = res.data;
       } else if (res && res.data && res.data.data && Array.isArray(res.data.data)) {
-        contracts = res.data.data
+        contracts = res.data.data;
       } else {
-        contracts = res.data || []
+        contracts = res.data || [];
       }
-      return Array.isArray(contracts) ? contracts : []
+      return Array.isArray(contracts) ? contracts : [];
     } catch (error) {
-      return handleServiceError(error, 'Fetch contracts', 'get', [])
+      const status = error?.response?.status || error?.status;
+      if (status === 401) throw error;
+      logger.error('Fetch contracts:', error);
+      return [];
     }
   },
 
@@ -123,21 +134,21 @@ const contractService = {
    */
   async getEditorContracts() {
     try {
-      const response = await apiClient.get('/editor/contracts/index')
-      const res = response.data
-      let contracts = []
+      const response = await apiClient.get('/editor/contracts/index');
+      const res = response.data;
+      let contracts = [];
       if (Array.isArray(res)) {
-        contracts = res
+        contracts = res;
       } else if (res && res.data && Array.isArray(res.data)) {
-        contracts = res.data
+        contracts = res.data;
       } else if (res && res.data && res.data.data && Array.isArray(res.data.data)) {
-        contracts = res.data.data
+        contracts = res.data.data;
       } else {
-        contracts = res.data || []
+        contracts = res.data || [];
       }
-      return Array.isArray(contracts) ? contracts : []
+      return Array.isArray(contracts) ? contracts : [];
     } catch (error) {
-      return handleServiceError(error, 'Fetch editor contracts', 'get', [])
+      return handleServiceError(error, 'Fetch editor contracts', 'get', []);
     }
   },
 
@@ -147,10 +158,10 @@ const contractService = {
    */
   async getEditorContractById(id) {
     try {
-      const response = await apiClient.get(`/editor/contracts/show/${id}`)
-      return response.data.data || response.data
+      const response = await apiClient.get(`/editor/contracts/show/${id}`);
+      return response.data.data || response.data;
     } catch (error) {
-      return handleServiceError(error, 'Fetch editor contract by id', 'get', null)
+      return handleServiceError(error, 'Fetch editor contract by id', 'get', null);
     }
   },
 
@@ -159,8 +170,8 @@ const contractService = {
    * GET /contracts/show/:id
    */
   async getContractById(id) {
-    const response = await apiClient.get(`/contracts/show/${id}`)
-    return response.data.data || response.data
+    const response = await apiClient.get(`/contracts/show/${id}`);
+    return response.data.data || response.data;
   },
 
   /**
@@ -170,11 +181,11 @@ const contractService = {
    */
   async createContract(payload) {
     try {
-      logger.debug('Creating contract payload:', payload)
-      const response = await apiClient.post('/contracts/store', payload)
-      return response.data
+      logger.debug('Creating contract payload:', payload);
+      const response = await apiClient.post('/contracts/store', payload);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Create contract', 'post')
+      return handleServiceError(error, 'Create contract', 'post');
     }
   },
 
@@ -184,10 +195,10 @@ const contractService = {
    */
   async updateContract(id, payload) {
     try {
-      const response = await apiClient.put(`/contracts/update/${id}`, payload)
-      return response.data
+      const response = await apiClient.put(`/contracts/update/${id}`, payload);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Update contract', 'put')
+      return handleServiceError(error, 'Update contract', 'put');
     }
   },
 
@@ -198,11 +209,11 @@ const contractService = {
    */
   async storeContractInfo(id, payload) {
     try {
-      logger.debug(`Storing contract info for ${id}:`, payload)
-      const response = await apiClient.post(`/contracts/store/info/${id}`, payload)
-      return response.data
+      logger.debug(`Storing contract info for ${id}:`, payload);
+      const response = await apiClient.post(`/contracts/store/info/${id}`, payload);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Store contract info', 'post')
+      return handleServiceError(error, 'Store contract info', 'post');
     }
   },
 
@@ -211,7 +222,7 @@ const contractService = {
    * POST /contracts/store/info/:id
    */
   async completeContractInfo(id, payload) {
-    return this.storeContractInfo(id, payload)
+    return this.storeContractInfo(id, payload);
   },
 
   /**
@@ -220,10 +231,10 @@ const contractService = {
    */
   async storeSecondPartyData(id, payload) {
     try {
-      const response = await apiClient.post(`/second-party-data/store/${id}`, payload)
-      return response.data
+      const response = await apiClient.post(`/second-party-data/store/${id}`, payload);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Store second party data', 'post')
+      return handleServiceError(error, 'Store second party data', 'post');
     }
   },
 
@@ -233,10 +244,10 @@ const contractService = {
    */
   async updateSecondPartyData(id, payload) {
     try {
-      const response = await apiClient.put(`/second-party-data/update/${id}`, payload)
-      return response.data
+      const response = await apiClient.put(`/second-party-data/update/${id}`, payload);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Update second party data', 'put')
+      return handleServiceError(error, 'Update second party data', 'put');
     }
   },
 
@@ -246,11 +257,11 @@ const contractService = {
    */
   async getSecondPartyData(id) {
     try {
-      const response = await apiClient.get(`/second-party-data/show/${id}`)
-      return response.data
+      const response = await apiClient.get(`/second-party-data/show/${id}`);
+      return response.data;
     } catch (error) {
       // Allow 404/400 to pass gracefully as "no data found"
-      return handleServiceError(error, 'Fetch second party data', 'get', null)
+      return handleServiceError(error, 'Fetch second party data', 'get', null);
     }
   },
 
@@ -268,23 +279,23 @@ const contractService = {
         formData.append('csv_file', csvFile);
         response = await apiClient.get(`/contracts/units/show/${id}`, {
           data: formData,
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
         response = await apiClient.get(`/contracts/units/show/${id}`);
       }
-      const res = response.data
-      let units = []
+      const res = response.data;
+      let units = [];
       if (Array.isArray(res)) {
-        units = res
+        units = res;
       } else if (res && res.data && Array.isArray(res.data)) {
-        units = res.data
+        units = res.data;
       } else {
-        units = res.data || []
+        units = res.data || [];
       }
-      return Array.isArray(units) ? units : []
+      return Array.isArray(units) ? units : [];
     } catch (error) {
-      return handleServiceError(error, 'Fetch contract units', 'get', [])
+      return handleServiceError(error, 'Fetch contract units', 'get', []);
     }
   },
 
@@ -294,10 +305,10 @@ const contractService = {
    */
   async addContractUnit(id, payload) {
     try {
-      const response = await apiClient.post(`/contracts/units/store/${id}`, payload)
-      return response.data
+      const response = await apiClient.post(`/contracts/units/store/${id}`, payload);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Add contract unit', 'post')
+      return handleServiceError(error, 'Add contract unit', 'post');
     }
   },
 
@@ -307,10 +318,10 @@ const contractService = {
    */
   async updateContractUnit(unitId, payload) {
     try {
-      const response = await apiClient.put(`/contracts/units/update/${unitId}`, payload)
-      return response.data
+      const response = await apiClient.put(`/contracts/units/update/${unitId}`, payload);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Update contract unit', 'put')
+      return handleServiceError(error, 'Update contract unit', 'put');
     }
   },
 
@@ -320,10 +331,10 @@ const contractService = {
    */
   async uploadContractUnitsCsv(id, formData) {
     try {
-      const response = await apiClient.post(`/contracts/units/upload-csv/${id}`, formData)
-      return response.data
+      const response = await apiClient.post(`/contracts/units/upload-csv/${id}`, formData);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Upload units CSV', 'post')
+      return handleServiceError(error, 'Upload units CSV', 'post');
     }
   },
 
@@ -334,11 +345,11 @@ const contractService = {
   async getPhotography(id) {
     try {
       // Assuming this endpoint exists based on standard REST patterns in this project
-      const response = await apiClient.get(`/photography-department/show/${id}`)
-      return response.data
+      const response = await apiClient.get(`/photography-department/show/${id}`);
+      return response.data;
     } catch (error) {
       // Return null rather than throwing so we can handle empty state gracefully
-      return handleServiceError(error, 'Fetch photography data', 'get', null)
+      return handleServiceError(error, 'Fetch photography data', 'get', null);
     }
   },
 
@@ -348,10 +359,10 @@ const contractService = {
    */
   async storePhotography(id, payload) {
     try {
-      const response = await apiClient.post(`/photography-department/store/${id}`, payload)
-      return response.data
+      const response = await apiClient.post(`/photography-department/store/${id}`, payload);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Store photography data', 'post')
+      return handleServiceError(error, 'Store photography data', 'post');
     }
   },
 
@@ -361,10 +372,10 @@ const contractService = {
    */
   async updatePhotography(id, payload) {
     try {
-      const response = await apiClient.put(`/photography-department/update/${id}`, payload)
-      return response.data
+      const response = await apiClient.put(`/photography-department/update/${id}`, payload);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Update photography data', 'put')
+      return handleServiceError(error, 'Update photography data', 'put');
     }
   },
 
@@ -375,12 +386,12 @@ const contractService = {
    */
   async approvePhotography(id, payload = {}) {
     try {
-      // User specified {{server}}/photography-department/approve/1 
+      // User specified {{server}}/photography-department/approve/1
       // likely expects a POST or GET. POST is safer for actions.
-      const response = await apiClient.post(`/photography-department/approve/${id}`, payload)
-      return response.data
+      const response = await apiClient.post(`/photography-department/approve/${id}`, payload);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Approve photography', 'post')
+      return handleServiceError(error, 'Approve photography', 'post');
     }
   },
 
@@ -392,20 +403,20 @@ const contractService = {
    */
   async getDevelopers() {
     try {
-      const response = await apiClient.get('/second-party-data/second-parties')
+      const response = await apiClient.get('/second-party-data/second-parties');
       // Normalize response
-      const res = response.data
-      let devs = []
+      const res = response.data;
+      let devs = [];
       if (Array.isArray(res)) {
-        devs = res
+        devs = res;
       } else if (res && res.data && Array.isArray(res.data)) {
-        devs = res.data
+        devs = res.data;
       } else {
-        devs = res.data || []
+        devs = res.data || [];
       }
-      return Array.isArray(devs) ? devs : []
+      return Array.isArray(devs) ? devs : [];
     } catch (error) {
-      return handleServiceError(error, 'Fetch developers', 'get', [])
+      return handleServiceError(error, 'Fetch developers', 'get', []);
     }
   },
 
@@ -418,13 +429,13 @@ const contractService = {
    */
   async getDevelopersList(params = {}) {
     try {
-      const response = await apiClient.get('/developers', { params })
-      const res = response.data
-      const data = Array.isArray(res?.data) ? res.data : res?.data?.data ?? []
-      const meta = res?.meta ?? res?.data?.meta ?? {}
-      return { data, meta }
+      const response = await apiClient.get('/developers', { params });
+      const res = response.data;
+      const data = Array.isArray(res?.data) ? res.data : res?.data?.data ?? [];
+      const meta = res?.meta ?? res?.data?.meta ?? {};
+      return { data, meta };
     } catch (error) {
-      return handleServiceError(error, 'Fetch developers list', 'get', { data: [], meta: {} })
+      return handleServiceError(error, 'Fetch developers list', 'get', { data: [], meta: {} });
     }
   },
 
@@ -437,54 +448,50 @@ const contractService = {
    */
   async getDeveloperDetail(developerNumber) {
     try {
-      const response = await apiClient.get(`/developers/${developerNumber}`)
-      const res = response.data
-      return res?.data ?? res ?? null
+      const response = await apiClient.get(`/developers/${developerNumber}`);
+      const res = response.data;
+      return res?.data ?? res ?? null;
     } catch (error) {
-      return handleServiceError(error, 'Fetch developer detail', 'get', null)
+      return handleServiceError(error, 'Fetch developer detail', 'get', null);
     }
   },
 
   /**
-   * جلب بيانات قسم المونتاج
-   * GET /montage-department/show/:id
+   * جلب بيانات قسم المونتاج (editor prefix)
+   * GET /editor/montage-department/show/:id
    */
   async getMontage(id) {
     try {
-      const response = await apiClient.get(`/montage-department/show/${id}`)
-      return response.data
+      const response = await apiClient.get(`/editor/montage-department/show/${id}`);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Fetch montage data', 'get', null)
+      return handleServiceError(error, 'Fetch montage data', 'get', null);
     }
   },
 
   /**
-   * حفظ بيانات قسم المونتاج
-   * POST /montage-department/store/:id
+   * حفظ بيانات قسم المونتاج (editor prefix)
+   * POST /editor/montage-department/store/:id
    */
   async storeMontage(id, payload) {
     try {
-      const response = await apiClient.post(`/montage-department/store/${id}`, payload)
-      return response.data
+      const response = await apiClient.post(`/editor/montage-department/store/${id}`, payload);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Store montage data', 'post')
+      return handleServiceError(error, 'Store montage data', 'post');
     }
   },
 
   /**
-   * تحديث بيانات قسم المونتاج
-   * POST /montage-department/update/:id
-   * (User request implies POST or PUT, keeping standard unless failed)
+   * تحديث بيانات قسم المونتاج (editor prefix, PUT)
+   * PUT /editor/montage-department/update/:id
    */
   async updateMontage(id, payload) {
     try {
-      // User specific endpoint example usually POST for updates in Laravel often?
-      // But adhering to REST for now or POST as per user implicit text.
-      // User text: {{server}}/montage-department/update/2
-      const response = await apiClient.post(`/montage-department/update/${id}`, payload)
-      return response.data
+      const response = await apiClient.put(`/editor/montage-department/update/${id}`, payload);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Update montage data', 'post')
+      return handleServiceError(error, 'Update montage data', 'put');
     }
   },
 
@@ -494,10 +501,12 @@ const contractService = {
    */
   async getDeveloperContractsByEmail(email) {
     try {
-      const response = await apiClient.get('/second-party-data/contracts-by-email', { params: { email } })
-      return response.data
+      const response = await apiClient.get('/second-party-data/contracts-by-email', {
+        params: { email },
+      });
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Fetch developer contracts by email', 'get', [])
+      return handleServiceError(error, 'Fetch developer contracts by email', 'get', []);
     }
   },
 
@@ -511,10 +520,10 @@ const contractService = {
    */
   async deleteContract(id) {
     try {
-      const response = await apiClient.delete(`/contracts/${id}`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.delete(`/contracts/${id}`);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Delete contract ${id}`, 'delete')
+      return handleServiceError(error, `Delete contract ${id}`, 'delete');
     }
   },
 
@@ -526,10 +535,10 @@ const contractService = {
    */
   async deleteUnit(unitId) {
     try {
-      const response = await apiClient.delete(`/contracts/units/delete/${unitId}`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.delete(`/contracts/units/delete/${unitId}`);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Delete unit ${unitId}`, 'delete')
+      return handleServiceError(error, `Delete unit ${unitId}`, 'delete');
     }
   },
 
@@ -541,17 +550,22 @@ const contractService = {
    */
   async getBoardsDepartment(contractId) {
     try {
-      const response = await apiClient.get(`/boards-department/show/${contractId}`)
+      const response = await apiClient.get(`/boards-department/show/${contractId}`);
       // If response.data.data is explicitly null, return empty object
       if (response.data?.data === null) {
-        return {}
+        return {};
       }
       // Otherwise use normal extraction logic
-      const data = response.data?.data ?? response.data
+      const data = response.data?.data ?? response.data;
       // Return empty object if final data is null or undefined
-      return (data === null || data === undefined) ? {} : data
+      return data === null || data === undefined ? {} : data;
     } catch (error) {
-      return handleServiceError(error, `Fetch boards department for contract ${contractId}`, 'get', {})
+      return handleServiceError(
+        error,
+        `Fetch boards department for contract ${contractId}`,
+        'get',
+        {}
+      );
     }
   },
 
@@ -564,26 +578,21 @@ const contractService = {
    */
   async storeBoardsDepartment(contractId, data) {
     try {
-      const response = await apiClient.post(`/boards-department/store/${contractId}`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/boards-department/store/${contractId}`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, 'Store boards department', 'post')
+      return handleServiceError(error, 'Store boards department', 'post');
     }
   },
 
   /**
-   * Alias for storeBoardsDepartment
+   * Alias for storeBoardsDepartment (api.php: POST boards-department/store/{contractId})
    * @deprecated Use storeBoardsDepartment(contractId, data)
    */
   async createBoardsDepartment(data) {
-    const contractId = data?.contract_id ?? data?.contractId
-    if (contractId) return this.storeBoardsDepartment(contractId, data)
-    try {
-      const response = await apiClient.post('/boards-department/store', data)
-      return response.data?.data || response.data || {}
-    } catch (error) {
-      return handleServiceError(error, 'Create boards department', 'post')
-    }
+    const contractId = data?.contract_id ?? data?.contractId;
+    if (contractId) return this.storeBoardsDepartment(contractId, data);
+    return Promise.reject(new Error('contract_id or contractId required for boards department'));
   },
 
   /**
@@ -595,10 +604,10 @@ const contractService = {
    */
   async updateBoardsDepartment(id, data) {
     try {
-      const response = await apiClient.put(`/boards-department/update/${id}`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.put(`/boards-department/update/${id}`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Update boards department ${id}`, 'put')
+      return handleServiceError(error, `Update boards department ${id}`, 'put');
     }
   },
 
@@ -611,12 +620,12 @@ const contractService = {
    */
   async approvePhotographyDepartment(id, data = {}) {
     try {
-      const response = await apiClient.patch(`/photography-department/approve/${id}`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.patch(`/photography-department/approve/${id}`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Approve photography department ${id}`, 'patch')
+      return handleServiceError(error, `Approve photography department ${id}`, 'patch');
     }
-  }
-}
+  },
+};
 
-export default contractService
+export default contractService;

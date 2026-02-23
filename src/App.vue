@@ -1,10 +1,7 @@
 <template>
   <div id="app">
     <div class="logo-container">
-      <div class="rakez-logo">
-
-    
-      </div>
+      <div class="rakez-logo"></div>
     </div>
     <router-view />
     <ToastContainer />
@@ -12,16 +9,17 @@
 </template>
 
 <script>
-import ToastContainer from './components/ToastContainer.vue'
+import ToastContainer from './components/ToastContainer.vue';
 export default {
   name: 'App',
-  components: { ToastContainer }
-}
+  components: { ToastContainer },
+};
 </script>
 
 <style>
 @import './assets/luxury-theme.css';
 @import './assets/global-luxury-styles.css';
+@import './assets/responsive-breakpoints.css';
 @import './assets/responsive-enhancements.css';
 
 body {
@@ -35,7 +33,7 @@ body {
   background-color: #fdfbf7;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  
+
   /* Custom Background Application - Luxury Enhanced */
   background-image: url('./assets/rakez_custom_bg.png');
   background-size: contain;

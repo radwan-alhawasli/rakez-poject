@@ -3,92 +3,92 @@
  * Data access layer for users
  */
 
-import apiClient from '../api/apiClient'
-import logger from '../utils/logger'
+import apiClient from '../api/apiClient';
+import logger from '../utils/logger';
 
 class UserRepository {
-    /**
-     * Get all users
-     * @param {Object} filters - Filters
-     * @returns {Promise<Array>} Users
-     */
-    async findAll(filters = {}) {
-        try {
-            const response = await apiClient.get('/users', { params: filters })
-            const data = response.data
-            
-            if (Array.isArray(data)) {
-                return data
-            } else if (data?.data && Array.isArray(data.data)) {
-                return data.data
-            }
-            
-            return data?.data || []
-        } catch (error) {
-            logger.error('UserRepository.findAll error:', error)
-            throw error
-        }
-    }
+  /**
+   * Get all users
+   * @param {Object} filters - Filters
+   * @returns {Promise<Array>} Users
+   */
+  async findAll(filters = {}) {
+    try {
+      const response = await apiClient.get('/users', { params: filters });
+      const data = response.data;
 
-    /**
-     * Get user by ID
-     * @param {number} id - User ID
-     * @returns {Promise<Object>} User
-     */
-    async findById(id) {
-        try {
-            const response = await apiClient.get(`/users/${id}`)
-            return response.data?.data || response.data
-        } catch (error) {
-            logger.error('UserRepository.findById error:', error)
-            throw error
-        }
-    }
+      if (Array.isArray(data)) {
+        return data;
+      } else if (data?.data && Array.isArray(data.data)) {
+        return data.data;
+      }
 
-    /**
-     * Create user
-     * @param {Object} data - User data
-     * @returns {Promise<Object>} Created user
-     */
-    async create(data) {
-        try {
-            const response = await apiClient.post('/users', data)
-            return response.data?.data || response.data
-        } catch (error) {
-            logger.error('UserRepository.create error:', error)
-            throw error
-        }
+      return data?.data || [];
+    } catch (error) {
+      logger.error('UserRepository.findAll error:', error);
+      throw error;
     }
+  }
 
-    /**
-     * Update user
-     * @param {number} id - User ID
-     * @param {Object} data - Update data
-     * @returns {Promise<Object>} Updated user
-     */
-    async update(id, data) {
-        try {
-            const response = await apiClient.put(`/users/${id}`, data)
-            return response.data?.data || response.data
-        } catch (error) {
-            logger.error('UserRepository.update error:', error)
-            throw error
-        }
+  /**
+   * Get user by ID
+   * @param {number} id - User ID
+   * @returns {Promise<Object>} User
+   */
+  async findById(id) {
+    try {
+      const response = await apiClient.get(`/users/${id}`);
+      return response.data?.data || response.data;
+    } catch (error) {
+      logger.error('UserRepository.findById error:', error);
+      throw error;
     }
+  }
 
-    /**
-     * Delete user
-     * @param {number} id - User ID
-     * @returns {Promise<void>}
-     */
-    async delete(id) {
-        try {
-            await apiClient.delete(`/users/${id}`)
-        } catch (error) {
-            logger.error('UserRepository.delete error:', error)
-            throw error
-        }
+  /**
+   * Create user
+   * @param {Object} data - User data
+   * @returns {Promise<Object>} Created user
+   */
+  async create(data) {
+    try {
+      const response = await apiClient.post('/users', data);
+      return response.data?.data || response.data;
+    } catch (error) {
+      logger.error('UserRepository.create error:', error);
+      throw error;
     }
+  }
+
+  /**
+   * Update user
+   * @param {number} id - User ID
+   * @param {Object} data - Update data
+   * @returns {Promise<Object>} Updated user
+   */
+  async update(id, data) {
+    try {
+      const response = await apiClient.put(`/users/${id}`, data);
+      return response.data?.data || response.data;
+    } catch (error) {
+      logger.error('UserRepository.update error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete user
+   * @param {number} id - User ID
+   * @returns {Promise<void>}
+   */
+  async delete(id) {
+    try {
+      await apiClient.delete(`/users/${id}`);
+    } catch (error) {
+      logger.error('UserRepository.delete error:', error);
+      throw error;
+    }
+  }
 }
 
-export default new UserRepository()
+export default new UserRepository();

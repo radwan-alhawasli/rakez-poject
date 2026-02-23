@@ -6,7 +6,14 @@
         <p class="page-subtitle">إنشاء وتعديل وحذف فرق العمل</p>
       </div>
       <button class="btn-primary" @click="openCreateModal">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          viewBox="0 0 24 24"
+          width="18"
+          height="18"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
@@ -16,14 +23,22 @@
 
     <!-- Search Bar -->
     <div class="search-container">
-      <input 
-        v-model="searchQuery" 
+      <input
+        v-model="searchQuery"
         @input="searchTeams"
-        type="text" 
-        class="search-input" 
+        type="text"
+        class="search-input"
         placeholder="البحث عن فريق..."
       />
-      <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+      <svg
+        class="search-icon"
+        viewBox="0 0 24 24"
+        width="20"
+        height="20"
+        stroke="currentColor"
+        stroke-width="2"
+        fill="none"
+      >
         <circle cx="11" cy="11" r="8"></circle>
         <path d="m21 21-4.35-4.35"></path>
       </svg>
@@ -53,21 +68,44 @@
             <td>{{ formatDate(team.created_at) }}</td>
             <td class="actions">
               <button class="btn-icon view" @click="viewTeam(team)" title="عرض">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                   <circle cx="12" cy="12" r="3"></circle>
                 </svg>
               </button>
               <button class="btn-icon edit" @click="openEditModal(team)" title="تعديل">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
               </button>
               <button class="btn-icon delete" @click="confirmDelete(team)" title="حذف">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <path
+                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                  ></path>
                 </svg>
               </button>
             </td>
@@ -92,10 +130,10 @@
         <form @submit.prevent="saveTeam">
           <div class="form-group">
             <label>اسم الفريق *</label>
-            <input 
-              v-model="teamForm.name" 
-              type="text" 
-              class="form-input" 
+            <input
+              v-model="teamForm.name"
+              type="text"
+              class="form-input"
               placeholder="أدخل اسم الفريق"
               required
             />
@@ -103,9 +141,9 @@
 
           <div class="form-group">
             <label>الوصف</label>
-            <textarea 
-              v-model="teamForm.description" 
-              class="form-input" 
+            <textarea
+              v-model="teamForm.description"
+              class="form-input"
               rows="4"
               placeholder="وصف الفريق (اختياري)"
             ></textarea>
@@ -114,144 +152,178 @@
           <div class="modal-actions">
             <button type="button" class="btn-text" @click="closeModal">إلغاء</button>
             <button type="submit" class="btn-primary" :disabled="isSaving">
-              {{ isSaving ? 'جاري الحفظ...' : (isEditing ? 'تحديث' : 'حفظ') }}
+              {{ isSaving ? 'جاري الحفظ...' : isEditing ? 'تحديث' : 'حفظ' }}
             </button>
           </div>
         </form>
       </div>
     </div>
 
+    <ConfirmModal
+      v-if="showConfirmModal"
+      :title="confirmModalConfig.title"
+      :message="confirmModalConfig.message"
+      :type="confirmModalConfig.type"
+      :confirm-text="confirmModalConfig.confirmText"
+      @confirm="onConfirmModalConfirm"
+      @close="showConfirmModal = false"
+    />
   </div>
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue'
-import teamService from '../services/teamService'
-import logger from '../utils/logger'
-import { toast } from '../composables/useToast'
+import { ref, reactive, onMounted } from 'vue';
+import ConfirmModal from '../components/ConfirmModal.vue';
+import teamService from '../services/teamService';
+import logger from '../utils/logger';
+import { toast } from '../composables/useToast';
 
 export default {
   name: 'TeamManagementView',
   setup() {
-    const teams = ref([])
-    const isLoading = ref(false)
-    const showModal = ref(false)
-    const isEditing = ref(false)
-    const isSaving = ref(false)
-    const searchQuery = ref('')
-    
+    const teams = ref([]);
+    const isLoading = ref(false);
+    const showModal = ref(false);
+    const showConfirmModal = ref(false);
+    const confirmModalConfig = ref({
+      title: '',
+      message: '',
+      type: 'warning',
+      confirmText: 'تأكيد',
+      resolve: null,
+    });
+    const isEditing = ref(false);
+    const isSaving = ref(false);
+    const searchQuery = ref('');
+
     const teamForm = reactive({
       id: null,
       name: '',
-      description: ''
-    })
+      description: '',
+    });
 
     const fetchTeams = async (search = '') => {
-      isLoading.value = true
+      isLoading.value = true;
       try {
-        const data = await teamService.getTeams(search)
-        teams.value = data
+        const data = await teamService.getTeams(search);
+        teams.value = data;
       } catch (error) {
-        logger.error('Error fetching teams:', error)
-        toast.error('حدث خطأ أثناء جلب البيانات')
+        logger.error('Error fetching teams:', error);
+        toast.error('حدث خطأ أثناء جلب البيانات');
       } finally {
-        isLoading.value = false
+        isLoading.value = false;
       }
-    }
+    };
 
     const searchTeams = () => {
-      fetchTeams(searchQuery.value)
-    }
+      fetchTeams(searchQuery.value);
+    };
 
     const openCreateModal = () => {
-      isEditing.value = false
-      teamForm.id = null
-      teamForm.name = ''
-      teamForm.description = ''
-      showModal.value = true
-    }
+      isEditing.value = false;
+      teamForm.id = null;
+      teamForm.name = '';
+      teamForm.description = '';
+      showModal.value = true;
+    };
 
-    const openEditModal = (team) => {
-      isEditing.value = true
-      teamForm.id = team.id
-      teamForm.name = team.name
-      teamForm.description = team.description || ''
-      showModal.value = true
-    }
+    const openEditModal = team => {
+      isEditing.value = true;
+      teamForm.id = team.id;
+      teamForm.name = team.name;
+      teamForm.description = team.description || '';
+      showModal.value = true;
+    };
 
     const closeModal = () => {
-      showModal.value = false
-    }
+      showModal.value = false;
+    };
 
     const saveTeam = async () => {
-      isSaving.value = true
+      isSaving.value = true;
       try {
         const payload = {
           name: teamForm.name,
-          description: teamForm.description
-        }
+          description: teamForm.description,
+        };
 
         if (isEditing.value) {
-          await teamService.updateTeam(teamForm.id, payload)
-          toast.success('تم تحديث الفريق بنجاح')
+          await teamService.updateTeam(teamForm.id, payload);
+          toast.success('تم تحديث الفريق بنجاح');
         } else {
-          await teamService.createTeam(payload)
-          toast.success('تم إنشاء الفريق بنجاح')
+          await teamService.createTeam(payload);
+          toast.success('تم إنشاء الفريق بنجاح');
         }
 
-        closeModal()
-        fetchTeams(searchQuery.value)
+        closeModal();
+        fetchTeams(searchQuery.value);
       } catch (error) {
-        logger.error('Error saving team:', error)
-        toast.error('حدث خطأ أثناء الحفظ: ' + (error.response?.data?.message || error.message))
+        logger.error('Error saving team:', error);
+        toast.error('حدث خطأ أثناء الحفظ: ' + (error.response?.data?.message || error.message));
       } finally {
-        isSaving.value = false
+        isSaving.value = false;
       }
-    }
+    };
 
-    const confirmDelete = async (team) => {
-      if (!confirm(`هل أنت متأكد من حذف الفريق "${team.name}"؟`)) return
+    const confirmDelete = team => {
+      confirmModalConfig.value = {
+        title: 'تأكيد الحذف',
+        message: `هل أنت متأكد من حذف الفريق "${team.name}"؟`,
+        type: 'danger',
+        confirmText: 'حذف',
+        resolve: async () => {
+          try {
+            await teamService.deleteTeam(team.id);
+            toast.success('تم حذف الفريق بنجاح');
+            fetchTeams(searchQuery.value);
+          } catch (error) {
+            logger.error('Error deleting team:', error);
+            toast.error('حدث خطأ أثناء الحذف: ' + (error.response?.data?.message || error.message));
+          }
+        },
+      };
+      showConfirmModal.value = true;
+    };
 
+    const onConfirmModalConfirm = async () => {
+      const fn = confirmModalConfig.value.resolve;
+      if (fn) await fn();
+      showConfirmModal.value = false;
+    };
+
+    const viewTeam = async team => {
       try {
-        await teamService.deleteTeam(team.id)
-        toast.success('تم حذف الفريق بنجاح')
-        fetchTeams(searchQuery.value)
-      } catch (error) {
-        logger.error('Error deleting team:', error)
-        toast.error('حدث خطأ أثناء الحذف: ' + (error.response?.data?.message || error.message))
-      }
-    }
-
-    const viewTeam = async (team) => {
-      try {
-        const data = await teamService.getTeamById(team.id)
-        logger.debug('Team details:', data)
+        const data = await teamService.getTeamById(team.id);
+        logger.debug('Team details:', data);
         // You can open a detail modal or navigate to a detail page here
-        toast.info(`${team.name}: ${team.description || 'لا يوجد وصف'}`)
+        toast.info(`${team.name}: ${team.description || 'لا يوجد وصف'}`);
       } catch (error) {
-        logger.error('Error viewing team:', error)
-        toast.error('حدث خطأ أثناء عرض التفاصيل')
+        logger.error('Error viewing team:', error);
+        toast.error('حدث خطأ أثناء عرض التفاصيل');
       }
-    }
+    };
 
-    const formatDate = (dateString) => {
-      if (!dateString) return '-'
-      const date = new Date(dateString)
-      return date.toLocaleDateString('ar-SA', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      })
-    }
+    const formatDate = dateString => {
+      if (!dateString) return '-';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('ar-SA', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    };
 
     onMounted(() => {
-      fetchTeams()
-    })
+      fetchTeams();
+    });
 
     return {
       teams,
       isLoading,
       showModal,
+      showConfirmModal,
+      confirmModalConfig,
+      onConfirmModalConfirm,
       isEditing,
       isSaving,
       searchQuery,
@@ -264,10 +336,11 @@ export default {
       saveTeam,
       confirmDelete,
       viewTeam,
-      formatDate
-    }
-  }
-}
+      formatDate,
+    };
+  },
+  components: { ConfirmModal },
+};
 </script>
 
 <style scoped>
@@ -278,8 +351,14 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .page-header {
@@ -373,7 +452,9 @@ export default {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .teams-table-container {
@@ -437,13 +518,28 @@ export default {
   transform: translateY(-2px);
 }
 
-.btn-icon.view { background: #e3f2fd; color: #1976d2; }
-.btn-icon.edit { background: #fff3e0; color: #f57c00; }
-.btn-icon.delete { background: #ffebee; color: #c62828; }
+.btn-icon.view {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+.btn-icon.edit {
+  background: #fff3e0;
+  color: #f57c00;
+}
+.btn-icon.delete {
+  background: #ffebee;
+  color: #c62828;
+}
 
-.btn-icon.view:hover { background: #bbdefb; }
-.btn-icon.edit:hover { background: #ffe0b2; }
-.btn-icon.delete:hover { background: #ffcdd2; }
+.btn-icon.view:hover {
+  background: #bbdefb;
+}
+.btn-icon.edit:hover {
+  background: #ffe0b2;
+}
+.btn-icon.delete:hover {
+  background: #ffcdd2;
+}
 
 .empty-state {
   text-align: center;
@@ -476,8 +572,14 @@ export default {
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-header {

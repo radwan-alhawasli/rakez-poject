@@ -1,314 +1,556 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import authService from '../services/authService'
-import { canAccessRoute, normalizeRole, getDashboardPathForUser } from '../utils/rbac'
-import notificationService from '../services/notificationService'
-import logger from '../utils/logger'
+import { createRouter, createWebHistory } from 'vue-router';
+import authService from '../services/authService';
+import { canAccessRoute, getDashboardPathForUser, isSalesLeader } from '../utils/rbac';
+import notificationService from '../services/notificationService';
+import logger from '../utils/logger';
+import {
+  ROLE_ADMIN,
+  ROLE_PROJECT_MANAGEMENT,
+  ROLE_ACCOUNTING,
+  ROLE_HR,
+  ROLE_MARKETING,
+  ROLE_SALES,
+  ROLE_CREDIT,
+  ROLE_EDITOR,
+} from '../constants/roles';
+import { PERMISSIONS } from '../constants/permissions';
 
 const routes = [
-    {
-        path: '/login',
-        name: 'Login',
-        component: () => import('../views/LoginView.vue'),
-        meta: { public: true }
-    },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('../views/LoginView.vue'),
+    meta: { public: true },
+  },
 
-    {
-        path: '/',
-        component: () => import('../layouts/MainLayout.vue'),
-        children: [
-            {
-                path: '',
-                redirect: '/dashboard'
-            },
-            {
-                path: 'dashboard',
-                name: 'Dashboard',
-                component: () => import('../views/DashboardView.vue')
-            },
-            {
-                path: 'project-management',
-                name: 'ProjectManagement',
-                component: () => import('../views/ProjectManagementView.vue')
-            },
-            {
-                path: 'developers',
-                name: 'Developers',
-                component: () => import('../views/DevelopersView.vue'),
-                meta: { roles: [1, 3, 7] }
-            },
-            {
-                path: 'developers/:id',
-                name: 'DeveloperDetail',
-                component: () => import('../views/DeveloperDetailView.vue'),
-                meta: { roles: [1, 3, 7] }
-            },
-            {
-                path: 'notifications',
-                name: 'Notifications',
-                component: () => import('../views/NotificationsView.vue'),
-                meta: { permissions: ['notifications.view'] }
-            },
-            {
-                path: 'contracts',
-                name: 'Contracts',
-                component: () => import('../views/ContractsView.vue'),
-                meta: { permissions: ['contracts.view'] }
-            },
-            {
-                path: 'users',
-                name: 'Users',
-                component: () => import('../views/UsersView.vue'),
-                meta: { roles: [1, 8], permissions: ['hr.users.create'] } // Admin and HR only
-            },
-            {
-                path: 'agents',
-                name: 'Agents',
-                component: () => import('../views/AgentsView.vue'),
-                meta: { roles: [1], permissions: ['agents.manage'] }
-            },
-            {
-                path: 'exclusive-request',
-                name: 'ExclusiveRequest',
-                component: () => import('../views/ExclusiveProjectView.vue')
-            },
-            {
-                path: 'my-requests',
-                name: 'MyRequests',
-                component: () => import('../views/MyRequestsView.vue')
-            },
+  {
+    path: '/',
+    component: () => import('../layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '',
+        redirect: '/dashboard',
+      },
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: () => import('../views/DashboardView.vue'),
+      },
+      {
+        path: 'ai-assistant',
+        name: 'AiAssistant',
+        component: () => import('../views/AiAssistantView.vue'),
+      },
+      {
+        path: 'knowledge-management',
+        name: 'KnowledgeManagement',
+        component: () => import('../views/KnowledgeManagementView.vue'),
+        meta: { permissions: [PERMISSIONS.MANAGE_AI_KNOWLEDGE] },
+      },
+      {
+        path: 'project-management',
+        name: 'ProjectManagement',
+        component: () => import('../views/ProjectManagementView.vue'),
+        meta: { roles: [ROLE_ADMIN, ROLE_PROJECT_MANAGEMENT] },
+      },
+      {
+        path: 'developers',
+        name: 'Developers',
+        component: () => import('../views/DevelopersView.vue'),
+        meta: { roles: [ROLE_ADMIN, ROLE_PROJECT_MANAGEMENT, ROLE_ACCOUNTING] },
+      },
+      {
+        path: 'developers/:id',
+        name: 'DeveloperDetail',
+        component: () => import('../views/DeveloperDetailView.vue'),
+        meta: { roles: [ROLE_ADMIN, ROLE_PROJECT_MANAGEMENT, ROLE_ACCOUNTING] },
+      },
+      {
+        path: 'notifications',
+        name: 'Notifications',
+        component: () => import('../views/NotificationsView.vue'),
+        meta: { permissions: [PERMISSIONS.NOTIFICATIONS_VIEW] },
+      },
+      {
+        path: 'contracts',
+        name: 'Contracts',
+        component: () => import('../views/ContractsView.vue'),
+        meta: { permissions: [PERMISSIONS.CONTRACTS_VIEW] },
+      },
+      {
+        path: 'users',
+        name: 'Users',
+        component: () => import('../views/UsersView.vue'),
+        meta: { roles: [ROLE_ADMIN, ROLE_HR], permissions: [PERMISSIONS.HR_USERS_CREATE] },
+      },
+      {
+        path: 'agents',
+        name: 'Agents',
+        component: () => import('../views/AgentsView.vue'),
+        meta: { roles: [ROLE_ADMIN], permissions: [PERMISSIONS.AGENTS_MANAGE] },
+      },
+      {
+        path: 'exclusive-request',
+        name: 'ExclusiveRequest',
+        component: () => import('../views/ExclusiveProjectView.vue'),
+      },
+      {
+        path: 'my-requests',
+        name: 'MyRequests',
+        component: () => import('../views/MyRequestsView.vue'),
+      },
 
-            {
-                path: 'contract-form/:id',
-                name: 'ContractForm',
-                component: () => import('../views/ContractFormView.vue')
-            },
-            {
-                path: 'project-tracker/:id',
-                name: 'ProjectTracker',
-                component: () => import('../views/ProjectTrackerView.vue')
-            },
-            {
-                path: 'reservations',
-                name: 'Reservations',
-                component: () => import('../views/ReservationsView.vue')
-            },
-            /*
+      {
+        path: 'contract-form/:id',
+        name: 'ContractForm',
+        component: () => import('../views/ContractFormView.vue'),
+      },
+      {
+        path: 'project-tracker/:id',
+        name: 'ProjectTracker',
+        component: () => import('../views/ProjectTrackerView.vue'),
+      },
+      {
+        path: 'reservations',
+        name: 'Reservations',
+        component: () => import('../views/ReservationsView.vue'),
+      },
+      /*
                         {
                             path: 'boards',
                             name: 'Boards',
                             component: () => import('../views/BoardsView.vue')
                         },
             */
-            {
-                path: 'cancelled-reservations',
-                name: 'CancelledReservations',
-                component: () => import('../views/CancelledReservationsView.vue')
-            },
-            {
-                path: 'profile',
-                name: 'Profile',
-                component: () => import('../views/ProfileView.vue')
-            },
-            {
-                path: 'teams',
-                name: 'Teams',
-                component: () => import('../views/TeamsView.vue')
-            },
-            {
-                path: 'team-management',
-                name: 'TeamManagement',
-                component: () => import('../views/TeamManagementView.vue')
-            },
-            {
-                path: 'image-approval',
-                name: 'ImageApproval',
-                component: () => import('../views/ImageApprovalView.vue')
-            },
-            {
-                path: 'hr',
-                name: 'HR',
-                component: () => import('../views/HRView.vue'),
-                meta: { roles: [8, 9, 'hr'], permissions: ['hr.dashboard.view'] },
-                children: [
-                    { path: '', redirect: { name: 'HRDashboard' } },
-                    { path: 'dashboard', name: 'HRDashboard', component: () => import('../views/HRView.vue'), meta: { permissions: ['hr.dashboard.view'] } },
-                    { path: 'teams', name: 'HRTeams', component: () => import('../views/HRView.vue'), meta: { permissions: ['hr.teams.manage'] } },
-                    { path: 'team-performance', name: 'HRTeamPerformance', component: () => import('../views/HRView.vue'), meta: { permissions: ['hr.performance.view'] } },
-                    { path: 'employee-performance', name: 'HREmployeePerformance', component: () => import('../views/HRView.vue'), meta: { permissions: ['hr.performance.view'] } },
-                    { path: 'users', name: 'HRUsers', component: () => import('../views/HRView.vue'), meta: { permissions: ['hr.users.create'] } },
-                    { path: 'reports', name: 'HRReports', component: () => import('../views/HRView.vue'), meta: { permissions: ['hr.reports.view'] } }
-                ]
-            },
-            {
-                path: 'marketing',
-                name: 'Marketing',
-                component: () => import('../views/MarketingView.vue'),
-                meta: { roles: [0, 'marketing'], permissions: ['marketing.dashboard.view'] },
-                children: [
-                    { path: '', redirect: { name: 'MarketingDashboard' } },
-                    { path: 'dashboard', name: 'MarketingDashboard', component: () => import('../views/MarketingView.vue'), meta: { permissions: ['marketing.dashboard.view'] } },
-                    { path: 'projects', name: 'MarketingProjects', component: () => import('../views/MarketingView.vue'), meta: { permissions: ['marketing.projects.view'] } },
-                    { path: 'tasks', name: 'MarketingTasks', component: () => import('../views/MarketingView.vue'), meta: { permissions: ['marketing.tasks.view'] } },
-                    { path: 'leads', name: 'MarketingLeads', component: () => import('../views/MarketingView.vue'), meta: { permissions: ['marketing.teams.view'] } },
-                    { path: 'expected-sales', name: 'MarketingExpectedSales', component: () => import('../views/MarketingView.vue'), meta: { permissions: ['marketing.reports.view'] } },
-                    { path: 'reports', name: 'MarketingReports', component: () => import('../views/MarketingView.vue'), meta: { permissions: ['marketing.reports.view'] } },
+      {
+        path: 'cancelled-reservations',
+        name: 'CancelledReservations',
+        component: () => import('../views/CancelledReservationsView.vue'),
+      },
+      {
+        path: 'profile',
+        name: 'Profile',
+        component: () => import('../views/ProfileView.vue'),
+      },
+      {
+        path: 'teams',
+        name: 'Teams',
+        component: () => import('../views/TeamsView.vue'),
+      },
+      {
+        path: 'team-management',
+        name: 'TeamManagement',
+        component: () => import('../views/TeamManagementView.vue'),
+      },
+      {
+        path: 'image-approval',
+        name: 'ImageApproval',
+        component: () => import('../views/ImageApprovalView.vue'),
+      },
+      {
+        path: 'hr',
+        component: () => import('../views/HRView.vue'),
+        meta: { roles: [ROLE_HR], permissions: [PERMISSIONS.HR_DASHBOARD_VIEW] },
+        children: [
+          { path: '', name: 'HR', redirect: { name: 'HRDashboard' } },
+          {
+            path: 'dashboard',
+            name: 'HRDashboard',
+            component: () => import('../views/HRView.vue'),
+            meta: { permissions: [PERMISSIONS.HR_DASHBOARD_VIEW] },
+          },
+          {
+            path: 'teams',
+            name: 'HRTeams',
+            component: () => import('../views/HRView.vue'),
+            meta: { permissions: [PERMISSIONS.HR_TEAMS_MANAGE] },
+          },
+          {
+            path: 'team-performance',
+            name: 'HRTeamPerformance',
+            component: () => import('../views/HRView.vue'),
+            meta: { permissions: [PERMISSIONS.HR_PERFORMANCE_VIEW] },
+          },
+          {
+            path: 'employee-performance',
+            name: 'HREmployeePerformance',
+            component: () => import('../views/HRView.vue'),
+            meta: { permissions: [PERMISSIONS.HR_PERFORMANCE_VIEW] },
+          },
+          {
+            path: 'users',
+            name: 'HRUsers',
+            component: () => import('../views/HRView.vue'),
+            meta: { permissions: [PERMISSIONS.HR_USERS_CREATE] },
+          },
+          {
+            path: 'reports',
+            name: 'HRReports',
+            component: () => import('../views/HRView.vue'),
+            meta: { permissions: [PERMISSIONS.HR_REPORTS_VIEW] },
+          },
+        ],
+      },
+      {
+        path: 'marketing',
+        component: () => import('../views/MarketingView.vue'),
+        meta: { roles: [ROLE_MARKETING], permissions: [PERMISSIONS.MARKETING_DASHBOARD_VIEW] },
+        children: [
+          { path: '', name: 'Marketing', redirect: { name: 'MarketingDashboard' } },
+          {
+            path: 'dashboard',
+            name: 'MarketingDashboard',
+            component: () => import('../views/MarketingView.vue'),
+            meta: { permissions: [PERMISSIONS.MARKETING_DASHBOARD_VIEW] },
+          },
+          {
+            path: 'projects',
+            name: 'MarketingProjects',
+            component: () => import('../views/MarketingView.vue'),
+            meta: { permissions: [PERMISSIONS.MARKETING_PROJECTS_VIEW] },
+          },
+          {
+            path: 'tasks',
+            name: 'MarketingTasks',
+            component: () => import('../views/MarketingView.vue'),
+            meta: { permissions: [PERMISSIONS.MARKETING_TASKS_VIEW] },
+          },
+          {
+            path: 'leads',
+            name: 'MarketingLeads',
+            component: () => import('../views/MarketingView.vue'),
+            meta: { permissions: [PERMISSIONS.MARKETING_TEAMS_VIEW] },
+          },
+          {
+            path: 'expected-sales',
+            name: 'MarketingExpectedSales',
+            component: () => import('../views/MarketingView.vue'),
+            meta: { permissions: [PERMISSIONS.MARKETING_REPORTS_VIEW] },
+          },
+          {
+            path: 'reports',
+            name: 'MarketingReports',
+            component: () => import('../views/MarketingView.vue'),
+            meta: { permissions: [PERMISSIONS.MARKETING_REPORTS_VIEW] },
+          },
 
-                    // New consolidated screens (MainLayout links rely on these)
-                    { path: 'plans', name: 'MarketingPlans', component: () => import('../views/MarketingView.vue'), meta: { permissions: ['marketing.plans.create'] } },
-                    { path: 'ai-assistant', name: 'MarketingAiAssistant', component: () => import('../views/MarketingView.vue'), meta: { permissions: ['use-ai-assistant'] } },
+          // New consolidated screens (MainLayout links rely on these)
+          {
+            path: 'plans',
+            name: 'MarketingPlans',
+            component: () => import('../views/MarketingView.vue'),
+            meta: { permissions: [PERMISSIONS.MARKETING_PLANS_CREATE] },
+          },
+          {
+            path: 'ai-assistant',
+            name: 'MarketingAiAssistant',
+            component: () => import('../views/MarketingView.vue'),
+            meta: { permissions: [PERMISSIONS.USE_AI_ASSISTANT] },
+          },
 
-                    // Backward-compatible routes -> redirect into /marketing/plans
-                    { path: 'developer-plan', name: 'MarketingDeveloperPlan', redirect: { name: 'MarketingPlans', query: { sub: 'developer' } } },
-                    { path: 'employee-plans', name: 'MarketingEmployeePlans', redirect: { name: 'MarketingPlans', query: { sub: 'employee' } } }
-                ]
-            },
-            {
-                path: 'sales',
-                name: 'Sales',
-                component: () => import('../views/SalesViewExtended.vue'),
-                meta: { roles: [5, 'sales'], permissions: ['sales.dashboard.view'] },
-                children: [
-                    { path: '', redirect: { name: 'SalesDashboard' } },
-                    { path: 'dashboard', name: 'SalesDashboard', component: () => import('../views/SalesViewExtended.vue'), meta: { permissions: ['sales.dashboard.view'] } },
-                    { path: 'targets', name: 'SalesTargets', component: () => import('../views/SalesViewExtended.vue'), meta: { permissions: ['sales.targets.view'] } },
-                    { path: 'projects', name: 'SalesProjects', component: () => import('../views/SalesViewExtended.vue'), meta: { permissions: ['sales.projects.view'] } },
-                    { path: 'reservations', name: 'SalesReservations', component: () => import('../views/SalesViewExtended.vue'), meta: { permissions: ['sales.reservations.view'] } },
-                    { path: 'attendance', name: 'SalesAttendance', component: () => import('../views/SalesViewExtended.vue'), meta: { permissions: ['sales.attendance.view'] } },
-                    { path: 'negotiations', name: 'SalesNegotiations', component: () => import('../views/SalesViewExtended.vue'), meta: { permissions: ['sales.negotiation.approve'] } },
-                    { path: 'team', name: 'SalesTeam', component: () => import('../views/SalesViewExtended.vue'), meta: { permissions: ['sales.team.manage'] } },
-                    { path: 'tasks', name: 'SalesTasks', component: () => import('../views/SalesViewExtended.vue'), meta: { permissions: ['sales.tasks.manage'] } },
-                    { path: 'waiting-list', name: 'SalesWaitingList', component: () => import('../views/SalesViewExtended.vue'), meta: { permissions: ['sales.waiting_list.create'] } },
-                    { path: 'assignments', name: 'SalesAssignments', component: () => import('../views/SalesViewExtended.vue'), meta: { permissions: ['sales.projects.allocate_shifts'] } },
-                    { path: 'payment-plans', name: 'SalesPaymentPlans', component: () => import('../views/SalesViewExtended.vue'), meta: { permissions: ['sales.payment-plan.manage'] } }
-                ]
-            },
-            {
-                path: 'teams',
-                name: 'Teams',
-                component: () => import('../views/TeamsView.vue')
-            },
-            {
-                path: 'credit',
-                name: 'Credit',
-                component: () => import('../views/CreditView.vue'),
-                meta: { roles: [6, 'credit'], permissions: ['credit.dashboard.view'] },
-                children: [
-                    { path: '', redirect: { name: 'CreditDashboard' } },
-                    { path: 'dashboard', name: 'CreditDashboard', component: () => import('../views/CreditView.vue'), meta: { permissions: ['credit.dashboard.view'] } },
-                    { path: 'notifications', name: 'CreditNotifications', component: () => import('../views/CreditView.vue'), meta: { permissions: ['credit.dashboard.view'] } },
-                    { path: 'bookings', name: 'CreditBookings', component: () => import('../views/CreditView.vue'), meta: { permissions: ['credit.bookings.view'] } },
-                    { path: 'financing', name: 'CreditFinancing', component: () => import('../views/CreditView.vue'), meta: { permissions: ['credit.financing.manage'] } },
-                    { path: 'title-transfer', name: 'CreditTitleTransfer', component: () => import('../views/CreditView.vue'), meta: { permissions: ['credit.title_transfer.manage'] } },
-                    { path: 'sold-projects', name: 'CreditSoldProjects', component: () => import('../views/CreditView.vue'), meta: { permissions: ['credit.bookings.view'] } },
-                    { path: 'claim-files', name: 'CreditClaimFiles', component: () => import('../views/CreditView.vue'), meta: { permissions: ['credit.claim_files.generate'] } }
-                ]
-            },
-            {
-                path: 'accounting',
-                name: 'Accounting',
-                component: () => import('../views/AccountingView.vue'),
-                meta: { roles: [7, 'accounting'], permissions: ['accounting.dashboard.view'] },
-                children: [
-                    { path: '', redirect: { name: 'AccountingDashboard' } },
-                    { path: 'dashboard', name: 'AccountingDashboard', component: () => import('../views/AccountingView.vue'), meta: { permissions: ['accounting.dashboard.view'] } },
-                    { path: 'notifications', name: 'AccountingNotifications', component: () => import('../views/AccountingView.vue'), meta: { permissions: ['accounting.notifications.view'] } },
-                    { path: 'sold-units', name: 'AccountingSoldUnits', component: () => import('../views/AccountingView.vue'), meta: { permissions: ['accounting.sold-units.view'] } },
-                    { path: 'commissions', name: 'AccountingCommissions', component: () => import('../views/AccountingView.vue'), meta: { permissions: ['accounting.commissions.approve'] } },
-                    { path: 'deposits', name: 'AccountingDeposits', component: () => import('../views/AccountingView.vue'), meta: { permissions: ['accounting.deposits.view'] } },
-                    { path: 'salaries', name: 'AccountingSalaries', component: () => import('../views/AccountingView.vue'), meta: { permissions: ['accounting.salaries.view'] } },
-                    { path: 'confirmations', name: 'AccountingConfirmations', component: () => import('../views/AccountingView.vue'), meta: { permissions: ['accounting.down_payment.confirm'] } }
-                ]
-            },
-            {
-                path: 'commission-deposits',
-                name: 'CommissionDeposits',
-                component: () => import('../views/CommissionDepositsView.vue'),
-                meta: { roles: [1, 7, 8] },
-                children: [
-                    { path: '', redirect: { name: 'CommissionsDashboard' } },
-                    { path: 'dashboard', name: 'CommissionsDashboard', component: () => import('../views/CommissionDepositsView.vue') },
-                    { path: 'commissions', name: 'CommissionsList', component: () => import('../views/CommissionDepositsView.vue') },
-                    { path: 'deposits', name: 'DepositsTracking', component: () => import('../views/CommissionDepositsView.vue') }
-                ]
-            },
-            {
-                path: 'editor',
-                name: 'Editor',
-                component: () => import('../views/EditorView.vue'),
-                meta: { roles: [4, 'editor'] },
-                children: [
-                    { path: '', redirect: { name: 'EditorContracts' } },
-                    { path: 'contracts', name: 'EditorContracts', component: () => import('../views/EditorView.vue') },
-                    { path: 'photography', name: 'EditorPhotography', component: () => import('../views/EditorView.vue') },
-                    { path: 'media', name: 'EditorMedia', component: () => import('../views/EditorView.vue') }
-                ]
-            }
-        ]
-    },
-    {
-        path: '/:pathMatch(.*)*',
-        redirect: '/'
-    }
-]
+          // Backward-compatible routes -> redirect into /marketing/plans
+          {
+            path: 'developer-plan',
+            name: 'MarketingDeveloperPlan',
+            redirect: { name: 'MarketingPlans', query: { sub: 'developer' } },
+          },
+          {
+            path: 'employee-plans',
+            name: 'MarketingEmployeePlans',
+            redirect: { name: 'MarketingPlans', query: { sub: 'employee' } },
+          },
+        ],
+      },
+      {
+        path: 'sales',
+        component: () => import('../views/SalesViewExtended.vue'),
+        meta: { roles: [ROLE_SALES], permissions: [PERMISSIONS.SALES_DASHBOARD_VIEW] },
+        children: [
+          { path: '', name: 'Sales', redirect: { name: 'SalesDashboard' } },
+          {
+            path: 'dashboard',
+            name: 'SalesDashboard',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_DASHBOARD_VIEW] },
+          },
+          {
+            path: 'targets',
+            name: 'SalesTargets',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_TARGETS_VIEW] },
+          },
+          {
+            path: 'projects',
+            name: 'SalesProjects',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_PROJECTS_VIEW] },
+          },
+          {
+            path: 'reservations',
+            name: 'SalesReservations',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_RESERVATIONS_VIEW] },
+          },
+          {
+            path: 'attendance',
+            name: 'SalesAttendance',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_ATTENDANCE_VIEW] },
+          },
+          {
+            path: 'negotiations',
+            name: 'SalesNegotiations',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_NEGOTIATION_APPROVE] },
+          },
+          {
+            path: 'team',
+            name: 'SalesTeam',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_TEAM_MANAGE] },
+          },
+          {
+            path: 'tasks',
+            name: 'SalesTasks',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_TASKS_MANAGE] },
+          },
+          {
+            path: 'waiting-list',
+            name: 'SalesWaitingList',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_WAITING_LIST_CREATE] },
+          },
+          {
+            path: 'assignments',
+            name: 'SalesAssignments',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_PROJECTS_ALLOCATE_SHIFTS] },
+          },
+          {
+            path: 'payment-plans',
+            name: 'SalesPaymentPlans',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_PAYMENT_PLAN_MANAGE] },
+          },
+        ],
+      },
+      {
+        path: 'teams',
+        name: 'Teams',
+        component: () => import('../views/TeamsView.vue'),
+      },
+      {
+        path: 'credit',
+        component: () => import('../views/CreditView.vue'),
+        meta: { roles: [ROLE_CREDIT], permissions: [PERMISSIONS.CREDIT_DASHBOARD_VIEW] },
+        children: [
+          { path: '', name: 'Credit', redirect: { name: 'CreditDashboard' } },
+          {
+            path: 'dashboard',
+            name: 'CreditDashboard',
+            component: () => import('../views/CreditView.vue'),
+            meta: { permissions: [PERMISSIONS.CREDIT_DASHBOARD_VIEW] },
+          },
+          {
+            path: 'notifications',
+            name: 'CreditNotifications',
+            component: () => import('../views/CreditView.vue'),
+            meta: { permissions: [PERMISSIONS.CREDIT_DASHBOARD_VIEW] },
+          },
+          {
+            path: 'bookings',
+            name: 'CreditBookings',
+            component: () => import('../views/CreditView.vue'),
+            meta: { permissions: [PERMISSIONS.CREDIT_BOOKINGS_VIEW] },
+          },
+          {
+            path: 'financing',
+            name: 'CreditFinancing',
+            component: () => import('../views/CreditView.vue'),
+            meta: { permissions: [PERMISSIONS.CREDIT_FINANCING_MANAGE] },
+          },
+          {
+            path: 'title-transfer',
+            name: 'CreditTitleTransfer',
+            component: () => import('../views/CreditView.vue'),
+            meta: { permissions: [PERMISSIONS.CREDIT_TITLE_TRANSFER_MANAGE] },
+          },
+          {
+            path: 'sold-projects',
+            name: 'CreditSoldProjects',
+            component: () => import('../views/CreditView.vue'),
+            meta: { permissions: [PERMISSIONS.CREDIT_BOOKINGS_VIEW] },
+          },
+          {
+            path: 'claim-files',
+            name: 'CreditClaimFiles',
+            component: () => import('../views/CreditView.vue'),
+            meta: { permissions: [PERMISSIONS.CREDIT_CLAIM_FILES_GENERATE] },
+          },
+        ],
+      },
+      {
+        path: 'accounting',
+        component: () => import('../views/AccountingView.vue'),
+        meta: { roles: [ROLE_ACCOUNTING], permissions: [PERMISSIONS.ACCOUNTING_DASHBOARD_VIEW] },
+        children: [
+          { path: '', name: 'Accounting', redirect: { name: 'AccountingDashboard' } },
+          {
+            path: 'dashboard',
+            name: 'AccountingDashboard',
+            component: () => import('../views/AccountingView.vue'),
+            meta: { permissions: [PERMISSIONS.ACCOUNTING_DASHBOARD_VIEW] },
+          },
+          {
+            path: 'notifications',
+            name: 'AccountingNotifications',
+            component: () => import('../views/AccountingView.vue'),
+            meta: { permissions: [PERMISSIONS.ACCOUNTING_NOTIFICATIONS_VIEW] },
+          },
+          {
+            path: 'sold-units',
+            name: 'AccountingSoldUnits',
+            component: () => import('../views/AccountingView.vue'),
+            meta: { permissions: [PERMISSIONS.ACCOUNTING_SOLD_UNITS_VIEW] },
+          },
+          {
+            path: 'commissions',
+            name: 'AccountingCommissions',
+            component: () => import('../views/AccountingView.vue'),
+            meta: { permissions: [PERMISSIONS.ACCOUNTING_COMMISSIONS_APPROVE] },
+          },
+          {
+            path: 'deposits',
+            name: 'AccountingDeposits',
+            component: () => import('../views/AccountingView.vue'),
+            meta: { permissions: [PERMISSIONS.ACCOUNTING_DEPOSITS_VIEW] },
+          },
+          {
+            path: 'salaries',
+            name: 'AccountingSalaries',
+            component: () => import('../views/AccountingView.vue'),
+            meta: { permissions: [PERMISSIONS.ACCOUNTING_SALARIES_VIEW] },
+          },
+          {
+            path: 'confirmations',
+            name: 'AccountingConfirmations',
+            component: () => import('../views/AccountingView.vue'),
+            meta: { permissions: [PERMISSIONS.ACCOUNTING_DOWN_PAYMENT_CONFIRM] },
+          },
+        ],
+      },
+      {
+        path: 'commission-deposits',
+        component: () => import('../views/CommissionDepositsView.vue'),
+        meta: { roles: [ROLE_ADMIN, ROLE_ACCOUNTING, ROLE_HR] },
+        children: [
+          { path: '', name: 'CommissionDeposits', redirect: { name: 'CommissionsDashboard' } },
+          {
+            path: 'dashboard',
+            name: 'CommissionsDashboard',
+            component: () => import('../views/CommissionDepositsView.vue'),
+          },
+          {
+            path: 'commissions',
+            name: 'CommissionsList',
+            component: () => import('../views/CommissionDepositsView.vue'),
+          },
+          {
+            path: 'deposits',
+            name: 'DepositsTracking',
+            component: () => import('../views/CommissionDepositsView.vue'),
+          },
+        ],
+      },
+      {
+        path: 'editor',
+        component: () => import('../views/EditorView.vue'),
+        meta: { roles: [ROLE_EDITOR] },
+        children: [
+          { path: '', name: 'Editor', redirect: { name: 'EditorContracts' } },
+          {
+            path: 'contracts',
+            name: 'EditorContracts',
+            component: () => import('../views/EditorView.vue'),
+          },
+          {
+            path: 'photography',
+            name: 'EditorPhotography',
+            component: () => import('../views/EditorView.vue'),
+          },
+          {
+            path: 'media',
+            name: 'EditorMedia',
+            component: () => import('../views/EditorView.vue'),
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/',
+  },
+];
 
 const router = createRouter({
-    history: createWebHistory(),
-    routes
-})
+  history: createWebHistory(),
+  routes,
+});
 
 router.beforeEach((to, from, next) => {
-    const isAuthenticated = authService.isAuthenticated()
-    const user = authService.getCurrentUser()
+  const isAuthenticated = authService.isAuthenticated();
+  const user = authService.getCurrentUser();
 
-    // Check if session is expired
-    if (isAuthenticated && authService.isSessionExpiring()) {
-        // Show warning (could trigger a modal/notification)
-        logger.warn('Session expiring soon')
+  // Check if session is expired
+  if (isAuthenticated && authService.isSessionExpiring()) {
+    // Show warning (could trigger a modal/notification)
+    logger.warn('Session expiring soon');
+  }
+
+  // Public routes - allow access
+  if (to.meta.public) {
+    // If already authenticated and trying to access login, redirect to dashboard
+    if (to.name === 'Login' && isAuthenticated) {
+      return redirectByRole(user, next);
     }
+    return next();
+  }
 
-    // Public routes - allow access
-    if (to.meta.public) {
-        // If already authenticated and trying to access login, redirect to dashboard
-        if (to.name === 'Login' && isAuthenticated) {
-            return redirectByRole(user, next)
-        }
-        return next()
+  // Protected routes - require authentication
+  if (!isAuthenticated) {
+    logger.warn('Unauthenticated access attempt to:', to.path);
+    next('/login');
+    return;
+  }
+
+  // Check role-based access control
+  if (!canAccessRoute(user, to.meta)) {
+    logger.warn('Access denied for user:', user?.email, 'to route:', to.path);
+    const salesLeader = isSalesLeader(user);
+    if (salesLeader && to.path.startsWith('/marketing')) {
+      notificationService.addNotification('غير مصرح لك بالوصول إلى واجهات التسويق', 'warning');
+      if (canAccessRoute(user, { permissions: [PERMISSIONS.SALES_TASKS_MANAGE] })) {
+        next('/sales/tasks');
+        return;
+      }
+      next('/sales/dashboard');
+      return;
     }
+    // Redirect to appropriate dashboard based on role
+    redirectByRole(user, next);
+    return;
+  }
 
-    // Protected routes - require authentication
-    if (!isAuthenticated) {
-        logger.warn('Unauthenticated access attempt to:', to.path)
-        next('/login')
-        return
-    }
+  // Handle root path and login redirect
+  if (to.path === '/' || (to.name === 'Login' && isAuthenticated)) {
+    redirectByRole(user, next);
+    return;
+  }
 
-    // Check role-based access control
-    if (!canAccessRoute(user, to.meta)) {
-        logger.warn('Access denied for user:', user?.email, 'to route:', to.path)
-        const norm = normalizeRole(user?.type)
-        const isSalesLeader = norm === 5 && (user?.is_leader === true || user?.is_leader === 1 || user?.is_leader === '1')
-        if (isSalesLeader && to.path.startsWith('/marketing')) {
-            notificationService.addNotification('غير مصرح لك بالوصول إلى واجهات التسويق', 'warning')
-            if (canAccessRoute(user, { permissions: ['sales.tasks.manage'] })) {
-                next('/sales/tasks')
-                return
-            }
-            next('/sales/dashboard')
-            return
-        }
-        // Redirect to appropriate dashboard based on role
-        redirectByRole(user, next)
-        return
-    }
-
-    // Handle root path and login redirect
-    if (to.path === '/' || (to.name === 'Login' && isAuthenticated)) {
-        redirectByRole(user, next)
-        return
-    }
-
-    next()
-})
+  next();
+});
 
 /**
  * Redirect user based on their role
@@ -316,7 +558,7 @@ router.beforeEach((to, from, next) => {
  * @param {Function} next - Router next function
  */
 function redirectByRole(user, next) {
-    next(getDashboardPathForUser(user))
+  next(getDashboardPathForUser(user));
 }
 
-export default router
+export default router;

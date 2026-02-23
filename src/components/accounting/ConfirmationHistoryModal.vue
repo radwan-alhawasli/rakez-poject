@@ -1,5 +1,10 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')" @keydown.esc="$emit('close')" tabindex="-1">
+  <div
+    class="modal-overlay"
+    @click.self="$emit('close')"
+    @keydown.esc="$emit('close')"
+    tabindex="-1"
+  >
     <div class="modal-container">
       <div class="modal-header">
         <h2 class="modal-title">تاريخ التأكيدات</h2>
@@ -22,7 +27,9 @@
                 <td><span class="status-tag excellent">مؤكد</span></td>
               </tr>
               <tr v-if="history.length === 0">
-                <td colspan="3" style="text-align: center; padding: 40px; color: #94a3b8;">لا يوجد تاريخ</td>
+                <td colspan="3" style="text-align: center; padding: 40px; color: #94a3b8">
+                  لا يوجد تاريخ
+                </td>
               </tr>
             </tbody>
           </table>
@@ -36,70 +43,81 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue'
-import accountingService from '../../services/accountingService'
-import logger from '../../utils/logger'
+import { ref, onMounted, onUnmounted } from 'vue';
+import accountingService from '../../services/accountingService';
+import logger from '../../utils/logger';
 
 export default {
   name: 'ConfirmationHistoryModal',
   props: {
-    reservationId: { type: [Number, String], default: null }
+    reservationId: { type: [Number, String], default: null },
   },
   emits: ['close'],
   setup(props, { emit }) {
-    const history = ref([])
+    const history = ref([]);
 
     // Handle Escape key
-    const handleEscape = (e) => {
+    const handleEscape = e => {
       if (e.key === 'Escape') {
-        emit('close')
+        emit('close');
       }
-    }
+    };
 
     // Lock body scroll when modal is open
     onMounted(async () => {
-      document.body.style.overflow = 'hidden'
-      document.addEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape);
       try {
         const data = await accountingService.getConfirmationHistory(
           props.reservationId != null ? { reservation_id: props.reservationId } : {}
-        )
-        history.value = data?.items ?? (Array.isArray(data) ? data : [])
+        );
+        history.value = data?.items ?? (Array.isArray(data) ? data : []);
       } catch (error) {
-        logger.error('Error loading confirmation history:', error)
-        history.value = []
+        logger.error('Error loading confirmation history:', error);
+        history.value = [];
       }
-    })
+    });
 
     onUnmounted(() => {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEscape);
+    });
 
-    const formatCurrency = (val) => {
-      if (!val) return '0 ر.س'
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR', maximumFractionDigits: 0 }).format(val)
-    }
+    const formatCurrency = val => {
+      if (!val) return '0 ر.س';
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'SAR',
+        maximumFractionDigits: 0,
+      }).format(val);
+    };
 
-    const getDateValue = (item) => {
-      return item?.confirmed_at ?? item?.confirmation_date ?? item?.created_at ?? item?.date
-        ?? item?.confirmedAt ?? item?.confirmationDate ?? item?.createdAt
-    }
+    const getDateValue = item => {
+      return (
+        item?.confirmed_at ??
+        item?.confirmation_date ??
+        item?.created_at ??
+        item?.date ??
+        item?.confirmedAt ??
+        item?.confirmationDate ??
+        item?.createdAt
+      );
+    };
 
-    const formatDate = (dateStr) => {
-      if (dateStr == null || dateStr === '') return 'غير محدد'
+    const formatDate = dateStr => {
+      if (dateStr == null || dateStr === '') return 'غير محدد';
       try {
-        const d = new Date(dateStr)
-        if (Number.isNaN(d.getTime())) return 'غير محدد'
-        return d.toLocaleDateString('ar-SA')
+        const d = new Date(dateStr);
+        if (Number.isNaN(d.getTime())) return 'غير محدد';
+        return d.toLocaleDateString('ar-SA');
       } catch {
-        return String(dateStr)
+        return String(dateStr);
       }
-    }
+    };
 
-    return { history, formatCurrency, formatDate, getDateValue }
-  }
-}
+    return { history, formatCurrency, formatDate, getDateValue };
+  },
+};
 </script>
 
 <style scoped>
@@ -123,8 +141,12 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-container {

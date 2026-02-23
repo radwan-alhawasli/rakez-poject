@@ -4,7 +4,7 @@
     <div class="geo-shape shape-1"></div>
     <div class="geo-shape shape-2"></div>
     <div class="geo-shape shape-3"></div>
-    
+
     <div class="login-container">
       <div class="login-header">
         <div class="logo-area">
@@ -12,50 +12,50 @@
           <span class="logo-tag">"majd  bayer"</span>
         </div>
       </div>
-      
+
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
           <label for="email" class="form-label">البريد الإلكتروني</label>
-          <input 
-            type="email" 
-            id="email" 
-            v-model="email" 
-            class="form-input" 
+          <input
+            type="email"
+            id="email"
+            v-model="email"
+            class="form-input"
             placeholder="user@rakez.com"
             required
             dir="auto"
           />
         </div>
-        
+
         <div class="form-group">
           <label for="password" class="form-label">كلمة المرور</label>
-          <input 
-            type="password" 
-            id="password" 
-            v-model="password" 
-            class="form-input" 
+          <input
+            type="password"
+            id="password"
+            v-model="password"
+            class="form-input"
             placeholder="••••••••"
             required
           />
         </div>
-        
+
         <div class="form-options">
           <div class="forgot-wrapper">
             <a href="#" class="forgot-link">هل نسيت كلمة المرور؟</a>
           </div>
         </div>
-        
+
         <button type="submit" class="login-btn" :disabled="isLoading">
           <span v-if="isLoading" class="loader"></span>
           <span v-else>تسجيل الدخول</span>
         </button>
-        
+
         <div v-if="error" class="error-message">
           {{ error }}
         </div>
       </form>
     </div>
-    
+
     <div class="branding">
       <div class="rakez-logo-large">
         <div class="r-text">راكز</div>
@@ -67,45 +67,45 @@
 </template>
 
 <script>
-import { ref } from 'vue'
-import authService from '../services/authService'
-import logger from '../utils/logger'
+import { ref } from 'vue';
+import authService from '../services/authService';
+import logger from '../utils/logger';
 
 export default {
   name: 'LoginPage',
   emits: ['login-success'],
   setup(props, { emit }) {
-    const email = ref('')
-    const password = ref('')
-    const isLoading = ref(false)
-    const error = ref('')
+    const email = ref('');
+    const password = ref('');
+    const isLoading = ref(false);
+    const error = ref('');
 
     const handleLogin = async () => {
-      if (!email.value || !password.value) return
-      
-      isLoading.value = true
-      error.value = ''
-      
+      if (!email.value || !password.value) return;
+
+      isLoading.value = true;
+      error.value = '';
+
       try {
-        const user = await authService.login(email.value, password.value)
-        emit('login-success', user)
+        const user = await authService.login(email.value, password.value);
+        emit('login-success', user);
       } catch (err) {
-        logger.error('Login failed', err)
-        error.value = 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+        logger.error('Login failed', err);
+        error.value = 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
       } finally {
-        isLoading.value = false
+        isLoading.value = false;
       }
-    }
+    };
 
     return {
       email,
       password,
       isLoading,
       error,
-      handleLogin
-    }
-  }
-}
+      handleLogin,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -130,7 +130,7 @@ export default {
   background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
   opacity: 0.4;
   z-index: 1;
-  box-shadow: 20px 20px 60px rgba(0,0,0,0.3);
+  box-shadow: 20px 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 .shape-1 {
@@ -158,7 +158,7 @@ export default {
   left: 10%;
   border-radius: 20px;
   transform: rotate(-15deg);
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   opacity: 0.1;
 }
 
@@ -168,7 +168,7 @@ export default {
   border-radius: 16px;
   padding: 40px;
   z-index: 10;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
   position: relative;
 }
 
@@ -229,7 +229,7 @@ export default {
 
 .form-input:focus {
   outline: none;
-  border-color: #B1A28F;
+  border-color: #b1a28f;
   background: white;
   box-shadow: 0 0 0 3px rgba(161, 139, 92, 0.1);
 }
@@ -252,12 +252,12 @@ export default {
 }
 
 .forgot-link:hover {
-  color: #B1A28F;
+  color: #b1a28f;
 }
 
 .login-btn {
   margin-top: 10px;
-  background: #B1A28F; /* Gold */
+  background: #b1a28f; /* Gold */
   color: white;
   border: none;
   padding: 14px;
@@ -321,7 +321,7 @@ export default {
 .r-en {
   font-size: 14px;
   letter-spacing: 4px;
-  color: #B1A28F;
+  color: #b1a28f;
   margin-top: 5px;
 }
 
@@ -343,8 +343,12 @@ export default {
 }
 
 @keyframes rotation {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Media Queries */
@@ -353,7 +357,7 @@ export default {
     width: 90%;
     padding: 30px 20px;
   }
-  
+
   .branding {
     display: none;
   }

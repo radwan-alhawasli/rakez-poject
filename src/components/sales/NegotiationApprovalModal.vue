@@ -1,10 +1,22 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')" @keydown.esc="$emit('close')" tabindex="-1">
+  <div
+    class="modal-overlay"
+    @click.self="$emit('close')"
+    @keydown.esc="$emit('close')"
+    tabindex="-1"
+  >
     <div class="modal-container">
       <div class="modal-header">
         <h2 class="modal-title">مراجعة التفاوض</h2>
         <button class="close-btn" @click="$emit('close')">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M18 6L6 18M6 6l12 12"></path>
           </svg>
         </button>
@@ -17,7 +29,9 @@
             <div class="detail-grid">
               <div class="detail-item">
                 <span class="detail-label">رقم الحجز:</span>
-                <span class="detail-value">#{{ negotiation.reservation_id || negotiation.id }}</span>
+                <span class="detail-value"
+                  >#{{ negotiation.reservation_id || negotiation.id }}</span
+                >
               </div>
               <div class="detail-item">
                 <span class="detail-label">اسم العميل:</span>
@@ -29,7 +43,9 @@
               </div>
               <div class="detail-item">
                 <span class="detail-label">تاريخ الطلب:</span>
-                <span class="detail-value">{{ formatDate(negotiation.created_at || negotiation.request_date) }}</span>
+                <span class="detail-value">{{
+                  formatDate(negotiation.created_at || negotiation.request_date)
+                }}</span>
               </div>
             </div>
           </div>
@@ -39,17 +55,39 @@
             <div class="price-comparison">
               <div class="price-item">
                 <span class="price-label">السعر الأصلي:</span>
-                <span class="price-value original">{{ formatCurrency(negotiation.original_price || 0) }}</span>
+                <span class="price-value original">{{
+                  formatCurrency(negotiation.original_price || 0)
+                }}</span>
               </div>
-              <div class="price-arrow">→</div>
+              <div class="price-arrow">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  width="24"
+                  height="24"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </div>
               <div class="price-item">
                 <span class="price-label">السعر المقترح:</span>
-                <span class="price-value proposed">{{ formatCurrency(negotiation.proposed_price || 0) }}</span>
+                <span class="price-value proposed">{{
+                  formatCurrency(negotiation.proposed_price || 0)
+                }}</span>
               </div>
               <div class="price-difference">
                 <span class="difference-label">الفرق:</span>
                 <span class="difference-value" :class="getDifferenceClass()">
-                  {{ formatCurrency(Math.abs((negotiation.proposed_price || 0) - (negotiation.original_price || 0))) }}
+                  {{
+                    formatCurrency(
+                      Math.abs(
+                        (negotiation.proposed_price || 0) - (negotiation.original_price || 0)
+                      )
+                    )
+                  }}
                   ({{ getDifferencePercentage() }}%)
                 </span>
               </div>
@@ -63,13 +101,13 @@
 
         <div class="action-section">
           <div class="action-tabs">
-            <button 
+            <button
               :class="['action-tab', { active: actionType === 'approve' }]"
               @click="actionType = 'approve'"
             >
               موافقة
             </button>
-            <button 
+            <button
               :class="['action-tab', { active: actionType === 'reject' }]"
               @click="actionType = 'reject'"
             >
@@ -87,11 +125,7 @@
                 rows="4"
               ></textarea>
             </div>
-            <button 
-              @click="handleApprove" 
-              class="btn-primary approve-btn"
-              :disabled="isProcessing"
-            >
+            <button @click="handleApprove" class="btn-primary approve-btn" :disabled="isProcessing">
               <span v-if="!isProcessing">تأكيد الموافقة</span>
               <span v-else>جاري المعالجة...</span>
             </button>
@@ -117,8 +151,8 @@
                 rows="3"
               ></textarea>
             </div>
-            <button 
-              @click="handleReject" 
+            <button
+              @click="handleReject"
               class="btn-danger reject-btn"
               :disabled="isProcessing || !rejectData.reason"
             >
@@ -133,100 +167,100 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
-import { toast } from '../../composables/useToast'
+import { ref, reactive, onMounted, onUnmounted, computed } from 'vue';
+import { toast } from '../../composables/useToast';
 
 export default {
   name: 'NegotiationApprovalModal',
   props: {
     negotiation: {
       type: Object,
-      default: null
+      default: null,
     },
     isLoading: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   emits: ['close', 'approve', 'reject'],
   setup(props, { emit }) {
-    const actionType = ref('approve')
-    const isProcessing = computed(() => props.isLoading)
-    
+    const actionType = ref('approve');
+    const isProcessing = computed(() => props.isLoading);
+
     const approveData = reactive({
-      notes: ''
-    })
-    
+      notes: '',
+    });
+
     const rejectData = reactive({
       reason: '',
-      notes: ''
-    })
+      notes: '',
+    });
 
-    const formatCurrency = (amount) => {
+    const formatCurrency = amount => {
       return new Intl.NumberFormat('ar-SA', {
         style: 'currency',
-        currency: 'SAR'
-      }).format(amount || 0)
-    }
+        currency: 'SAR',
+      }).format(amount || 0);
+    };
 
-    const formatDate = (dateString) => {
-      if (!dateString) return '—'
-      const date = new Date(dateString)
+    const formatDate = dateString => {
+      if (!dateString) return '—';
+      const date = new Date(dateString);
       return date.toLocaleDateString('ar-SA', {
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
-      })
-    }
+        day: 'numeric',
+      });
+    };
 
     const getDifferencePercentage = () => {
-      if (!props.negotiation) return '0'
-      const original = props.negotiation.original_price || 0
-      const proposed = props.negotiation.proposed_price || 0
-      if (original === 0) return '0'
-      const diff = ((proposed - original) / original) * 100
-      return diff.toFixed(2)
-    }
+      if (!props.negotiation) return '0';
+      const original = props.negotiation.original_price || 0;
+      const proposed = props.negotiation.proposed_price || 0;
+      if (original === 0) return '0';
+      const diff = ((proposed - original) / original) * 100;
+      return diff.toFixed(2);
+    };
 
     const getDifferenceClass = () => {
-      if (!props.negotiation) return ''
-      const original = props.negotiation.original_price || 0
-      const proposed = props.negotiation.proposed_price || 0
-      return proposed < original ? 'positive' : 'negative'
-    }
+      if (!props.negotiation) return '';
+      const original = props.negotiation.original_price || 0;
+      const proposed = props.negotiation.proposed_price || 0;
+      return proposed < original ? 'positive' : 'negative';
+    };
 
     const handleApprove = () => {
       emit('approve', {
-        notes: approveData.notes || null
-      })
-    }
+        notes: approveData.notes || null,
+      });
+    };
 
     const handleReject = () => {
       if (!rejectData.reason.trim()) {
-        toast.warning('يرجى إدخال سبب الرفض')
-        return
+        toast.warning('يرجى إدخال سبب الرفض');
+        return;
       }
       emit('reject', {
         reason: rejectData.reason,
-        notes: rejectData.notes || null
-      })
-    }
+        notes: rejectData.notes || null,
+      });
+    };
 
-    const handleEscape = (e) => {
+    const handleEscape = e => {
       if (e.key === 'Escape') {
-        emit('close')
+        emit('close');
       }
-    }
+    };
 
     onMounted(() => {
-      document.body.style.overflow = 'hidden'
-      document.addEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape);
+    });
 
     onUnmounted(() => {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEscape);
+    });
 
     return {
       actionType,
@@ -238,10 +272,10 @@ export default {
       getDifferenceClass,
       handleApprove,
       handleReject,
-      isProcessing
-    }
-  }
-}
+      isProcessing,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -262,8 +296,12 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-container {
@@ -491,8 +529,8 @@ export default {
 }
 
 .action-tab.active {
-  border-color: #B1A28F;
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  border-color: #b1a28f;
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
 }
 
@@ -529,7 +567,7 @@ export default {
 
 .form-textarea:focus {
   outline: none;
-  border-color: #B1A28F;
+  border-color: #b1a28f;
   box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.1);
 }
 

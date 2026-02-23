@@ -27,13 +27,17 @@
               <tr v-for="contract in contracts" :key="contract.id">
                 <td>{{ contract.id }}</td>
                 <td>{{ contract.project_name || contract.contract_name || 'غير محدد' }}</td>
-                <td><span class="status-tag good">{{ contract.status || 'قيد المعالجة' }}</span></td>
+                <td>
+                  <span class="status-tag good">{{ contract.status || 'قيد المعالجة' }}</span>
+                </td>
                 <td>
                   <button class="btn-action edit" @click="viewContract(contract)">عرض</button>
                 </td>
               </tr>
               <tr v-if="contracts.length === 0 && !isLoading">
-                <td colspan="4" style="text-align: center; padding: 40px; color: #94a3b8;">لا توجد عقود</td>
+                <td colspan="4" style="text-align: center; padding: 40px; color: #94a3b8">
+                  لا توجد عقود
+                </td>
               </tr>
             </tbody>
           </table>
@@ -68,53 +72,57 @@
 </template>
 
 <script>
-import { ref, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import editorService from '../services/editorService'
-import logger from '../utils/logger'
+import { ref, computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import editorService from '../services/editorService';
+import logger from '../utils/logger';
 
 export default {
   name: 'EditorView',
   setup() {
-    const route = useRoute()
-    const isLoading = ref(false)
+    const route = useRoute();
+    const isLoading = ref(false);
     const activeTab = computed(() => {
-      const name = route.name
-      if (name === 'EditorContracts') return 'contracts'
-      if (name === 'EditorPhotography') return 'photography'
-      if (name === 'EditorMedia') return 'media'
-      return 'contracts'
-    })
+      const name = route.name;
+      if (name === 'EditorContracts') return 'contracts';
+      if (name === 'EditorPhotography') return 'photography';
+      if (name === 'EditorMedia') return 'media';
+      return 'contracts';
+    });
 
-    const contracts = ref([])
+    const contracts = ref([]);
 
     const loadContracts = async () => {
-      isLoading.value = true
+      isLoading.value = true;
       try {
-        const data = await editorService.getContracts()
-        contracts.value = Array.isArray(data) ? data : []
+        const data = await editorService.getContracts();
+        contracts.value = Array.isArray(data) ? data : [];
       } catch (error) {
-        logger.error('Error loading editor contracts:', error)
-        contracts.value = []
+        logger.error('Error loading editor contracts:', error);
+        contracts.value = [];
       } finally {
-        isLoading.value = false
+        isLoading.value = false;
       }
-    }
+    };
 
-    const viewContract = () => {}
+    const viewContract = () => {};
 
-    watch(activeTab, (newTab) => {
-      if (newTab === 'contracts') loadContracts()
-    }, { immediate: true })
+    watch(
+      activeTab,
+      newTab => {
+        if (newTab === 'contracts') loadContracts();
+      },
+      { immediate: true }
+    );
 
     return {
       activeTab,
       isLoading,
       contracts,
-      viewContract
-    }
-  }
-}
+      viewContract,
+    };
+  },
+};
 </script>
 
 <style scoped>

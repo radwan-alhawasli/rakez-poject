@@ -8,9 +8,6 @@
 
     <!-- Stats Cards -->
     <div class="stats-grid">
-      
-
-
       <!-- Available Units -->
       <div class="stat-card animate-fade-in-up animate-stagger-1 hover-lift">
         <div class="stat-content">
@@ -19,46 +16,62 @@
           <span class="stat-desc">وحدة سكنية جاهزة للبيع</span>
         </div>
         <div class="stat-icon-bg units">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="2"></circle>
+          </svg>
         </div>
       </div>
 
       <!-- Marketing Projects (Now Total Projects) -->
-      <div class="stat-card clickable animate-fade-in-up animate-stagger-2 hover-lift hover-shine" @click="$router.push('/project-management')">
+      <div
+        class="stat-card clickable animate-fade-in-up animate-stagger-2 hover-lift hover-shine"
+        @click="$router.push('/project-management')"
+      >
         <div class="stat-content">
           <span class="stat-label">مشاريع التسويق (إجمالي المشاريع)</span>
           <span class="stat-value number">{{ totalProjects }}</span>
           <span class="stat-desc">مشروع جاهز للتسويق - اضغط للعرض</span>
         </div>
         <div class="stat-icon-bg projects">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"></path>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
         </div>
       </div>
 
-       <!-- Ready Projects -->
-       <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift">
+      <!-- Ready Projects -->
+      <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift">
         <div class="stat-content">
           <span class="stat-label">المشاريع الجاهزة</span>
           <span class="stat-value number">{{ readyProjects }}</span>
           <span class="stat-desc">مشاريع مكتملة تحتوي على وحدات</span>
         </div>
         <div class="stat-icon-bg ready">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
         </div>
       </div>
-      
-       <!-- Not Ready Projects -->
-       <div class="stat-card animate-fade-in-up animate-stagger-4 hover-lift">
+
+      <!-- Not Ready Projects -->
+      <div class="stat-card animate-fade-in-up animate-stagger-4 hover-lift">
         <div class="stat-content">
           <span class="stat-label">المشاريع غير الجاهزة</span>
           <span class="stat-value number">{{ notReadyProjects }}</span>
           <span class="stat-desc">لم يكتمل المتتبع (Tracker)</span>
         </div>
         <div class="stat-icon-bg not-ready">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
         </div>
       </div>
-
     </div>
 
     <!-- Overview (Placeholder for Chart) -->
@@ -69,89 +82,90 @@
       </div>
       <div class="chart-placeholder">
         <!-- Add Chart here later if needed -->
-        <p style="color: #94a3b8; margin-top: 40px;">مخطط بياني لتوزيع المشاريع</p>
+        <p style="color: #94a3b8; margin-top: 40px">مخطط بياني لتوزيع المشاريع</p>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import authService from '../services/authService'
-import contractService from '../services/contractService'
-import logger from '../utils/logger'
+import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import authService from '../services/authService';
+import contractService from '../services/contractService';
+import logger from '../utils/logger';
 
 export default {
   name: 'DashboardView',
   setup() {
-    const router = useRouter()
-    const user = ref(authService.getCurrentUser())
-    const userName = computed(() => user.value?.name || 'مستخدم')
-    
+    const router = useRouter();
+    const user = ref(authService.getCurrentUser());
+    const userName = computed(() => user.value?.name || 'مستخدم');
+
     // Stats
-    const totalProjectValue = ref(0)
-    const availableUnits = ref(0)
-    const totalProjects = ref(0)
-    const readyProjects = ref(0)
-    const notReadyProjects = ref(0)
+    const totalProjectValue = ref(0);
+    const availableUnits = ref(0);
+    const totalProjects = ref(0);
+    const readyProjects = ref(0);
+    const notReadyProjects = ref(0);
 
     const fetchData = async () => {
       try {
-        let apps = []
+        let apps = [];
         // Check if user is admin (type 1)
-        const isUserAdmin = user.value && (user.value.type === 1 || user.value.type === 'admin')
-        const isUserEditor = user.value && user.value.type === 4
-        
+        const isUserAdmin = user.value && (user.value.type === 1 || user.value.type === 'admin');
+        const isUserEditor = user.value && user.value.type === 4;
+
         if (isUserAdmin) {
-             apps = await contractService.getAllContracts()
+          apps = await contractService.getAllContracts();
         } else if (isUserEditor) {
-             apps = await contractService.getEditorContracts()
+          apps = await contractService.getEditorContracts();
         } else {
-             apps = await contractService.getContracts()
+          apps = await contractService.getContracts();
         }
 
-        const projects = Array.isArray(apps) ? apps : []
-        
-        totalProjects.value = projects.length
+        const projects = Array.isArray(apps) ? apps : [];
+
+        totalProjects.value = projects.length;
 
         // Logic for Ready/Not Ready
-        readyProjects.value = projects.filter(p => p.status === 'Approved' || (p.units && p.units.length > 0)).length
-        notReadyProjects.value = projects.filter(p => p.status !== 'Approved').length
-        
+        readyProjects.value = projects.filter(
+          p => p.status === 'Approved' || (p.units && p.units.length > 0)
+        ).length;
+        notReadyProjects.value = projects.filter(p => p.status !== 'Approved').length;
+
         // Calculate Total Value and Available Units
-        let valueSum = 0
-        let unitsSum = 0
+        let valueSum = 0;
+        let unitsSum = 0;
 
         projects.forEach(p => {
-             if (p.units && Array.isArray(p.units)) {
-                 p.units.forEach(u => {
-                     const count = parseInt(u.count) || 1
-                     const price = parseFloat(u.price) || 0
-                     unitsSum += count
-                     valueSum += (price * count)
-                 })
-             }
-        })
+          if (p.units && Array.isArray(p.units)) {
+            p.units.forEach(u => {
+              const count = parseInt(u.count) || 1;
+              const price = parseFloat(u.price) || 0;
+              unitsSum += count;
+              valueSum += price * count;
+            });
+          }
+        });
 
-        availableUnits.value = unitsSum
+        availableUnits.value = unitsSum;
         // Format to Millions if large enough, else keep as is
-        totalProjectValue.value = (valueSum / 1000000).toFixed(2)
-
+        totalProjectValue.value = (valueSum / 1000000).toFixed(2);
       } catch (e) {
-        logger.error('Error fetching dashboard data', e)
+        logger.error('Error fetching dashboard data', e);
       }
-    }
+    };
 
     onMounted(() => {
       // Redirect HR users to their specialized dashboard
-      const currentUser = authService.getCurrentUser()
+      const currentUser = authService.getCurrentUser();
       if (currentUser?.type == 8) {
-          router.push('/hr/dashboard')
-          return
+        router.push('/hr/dashboard');
+        return;
       }
-      fetchData()
-    })
+      fetchData();
+    });
 
     return {
       userName,
@@ -159,10 +173,10 @@ export default {
       availableUnits,
       totalProjects,
       readyProjects,
-      notReadyProjects
-    }
-  }
-}
+      notReadyProjects,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -173,7 +187,16 @@ export default {
   animation: fadeInUp 0.6s ease-out;
 }
 
-@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* Welcome Header - Luxury Enhanced */
 .welcome-header {
@@ -272,8 +295,7 @@ export default {
 .stat-card:hover {
   border-color: rgba(177, 162, 143, 0.35);
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 50px -12px rgba(177, 162, 143, 0.25), 
-              0 8px 20px rgba(30, 58, 95, 0.12);
+  box-shadow: 0 20px 50px -12px rgba(177, 162, 143, 0.25), 0 8px 20px rgba(30, 58, 95, 0.12);
 }
 
 .stat-card:hover::before {
@@ -319,7 +341,7 @@ export default {
 }
 
 .stat-card:hover .stat-value {
-  color: #B1A28F;
+  color: #b1a28f;
   transform: scale(1.05);
 }
 
@@ -355,7 +377,7 @@ export default {
   inset: -2px;
   border-radius: 50%;
   padding: 2px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;

@@ -1,10 +1,22 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')" @keydown.esc="$emit('close')" tabindex="-1">
+  <div
+    class="modal-overlay"
+    @click.self="$emit('close')"
+    @keydown.esc="$emit('close')"
+    tabindex="-1"
+  >
     <div class="modal-container">
       <div class="modal-header">
         <h2 class="modal-title">تحديد موعد الإفراغ المنفصل</h2>
         <button class="close-btn" @click="$emit('close')">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M18 6L6 18M6 6l12 12"></path>
           </svg>
         </button>
@@ -13,10 +25,10 @@
       <form @submit.prevent="handleSubmit" class="modal-body">
         <div class="form-group">
           <label class="form-label">موعد الإفراغ *</label>
-          <input 
-            type="date" 
-            v-model="formData.title_transfer_date" 
-            class="form-input" 
+          <input
+            type="date"
+            v-model="formData.title_transfer_date"
+            class="form-input"
             required
             :min="minDate"
           />
@@ -46,85 +58,85 @@
 </template>
 
 <script>
-import { reactive, computed, onMounted, onUnmounted } from 'vue'
-import { toast } from '../../composables/useToast'
+import { reactive, computed, onMounted, onUnmounted } from 'vue';
+import { toast } from '../../composables/useToast';
 
 export default {
   name: 'TitleTransferDateModal',
   props: {
     reservationId: {
       type: [Number, String],
-      required: true
+      required: true,
     },
     currentDate: {
       type: String,
-      default: null
+      default: null,
     },
     isLoading: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
-    const isSaving = computed(() => props.isLoading)
-    
+    const isSaving = computed(() => props.isLoading);
+
     const formData = reactive({
       title_transfer_date: props.currentDate || '',
-      notes: ''
-    })
+      notes: '',
+    });
 
     const minDate = computed(() => {
-      const tomorrow = new Date()
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      return tomorrow.toISOString().split('T')[0]
-    })
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow.toISOString().split('T')[0];
+    });
 
     const handleSubmit = () => {
       if (!formData.title_transfer_date) {
-        return
+        return;
       }
 
       // Validate date is in the future
-      const selectedDate = new Date(formData.title_transfer_date)
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      
+      const selectedDate = new Date(formData.title_transfer_date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
       if (selectedDate <= today) {
-        toast.warning('يرجى اختيار تاريخ في المستقبل')
-        return
+        toast.warning('يرجى اختيار تاريخ في المستقبل');
+        return;
       }
 
       emit('submit', {
         title_transfer_date: formData.title_transfer_date,
-        notes: formData.notes || null
-      })
-    }
+        notes: formData.notes || null,
+      });
+    };
 
-    const handleEscape = (e) => {
+    const handleEscape = e => {
       if (e.key === 'Escape') {
-        emit('close')
+        emit('close');
       }
-    }
+    };
 
     onMounted(() => {
-      document.body.style.overflow = 'hidden'
-      document.addEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape);
+    });
 
     onUnmounted(() => {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEscape);
+    });
 
     return {
       formData,
       minDate,
       isSaving,
-      handleSubmit
-    }
-  }
-}
+      handleSubmit,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -144,8 +156,12 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-container {
@@ -235,7 +251,7 @@ export default {
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #B1A28F;
+  border-color: #b1a28f;
   box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.1);
 }
 
@@ -279,7 +295,7 @@ export default {
   padding: 12px 24px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
   font-weight: 700;
   cursor: pointer;

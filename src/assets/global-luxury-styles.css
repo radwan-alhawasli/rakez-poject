@@ -562,8 +562,56 @@ input[type="number"], input[type="tel"],
 
 /* Enhanced Responsive Design - All Screen Sizes */
 
-/* Extra Large Screens (1920px+) */
-@media (min-width: 1920px) {
+/* 4K / Ultra-wide (3840px+) */
+@media (min-width: 3840px) {
+  .welcome-title,
+  .page-title,
+  .main-title {
+    font-size: 42px;
+  }
+  
+  .stat-value {
+    font-size: 52px !important;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 36px;
+  }
+  
+  .content-section,
+  .overview-section,
+  .data-section {
+    padding: 55px;
+  }
+}
+
+/* 2K / QHD (2560px - 3839px) */
+@media (min-width: 2560px) and (max-width: 3839px) {
+  .welcome-title,
+  .page-title,
+  .main-title {
+    font-size: 40px;
+  }
+  
+  .stat-value {
+    font-size: 50px !important;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 34px;
+  }
+  
+  .content-section,
+  .overview-section,
+  .data-section {
+    padding: 52px;
+  }
+}
+
+/* Extra Large Screens (1920px - 2559px) */
+@media (min-width: 1920px) and (max-width: 2559px) {
   .welcome-title,
   .page-title,
   .main-title {

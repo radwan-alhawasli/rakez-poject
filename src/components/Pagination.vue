@@ -10,10 +10,10 @@
       </select>
       <span>عنصر في الصفحة</span>
     </div>
-    
+
     <div class="pagination-controls">
-      <button 
-        class="pagination-btn" 
+      <button
+        class="pagination-btn"
         :disabled="currentPage === 1"
         @click="goToPage(1)"
         title="الصفحة الأولى"
@@ -23,9 +23,9 @@
           <polyline points="18 17 13 12 18 7"></polyline>
         </svg>
       </button>
-      
-      <button 
-        class="pagination-btn" 
+
+      <button
+        class="pagination-btn"
         :disabled="currentPage === 1"
         @click="goToPage(currentPage - 1)"
         title="السابق"
@@ -34,7 +34,7 @@
           <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
       </button>
-      
+
       <div class="page-numbers">
         <button
           v-for="page in visiblePages"
@@ -46,9 +46,9 @@
           {{ page }}
         </button>
       </div>
-      
-      <button 
-        class="pagination-btn" 
+
+      <button
+        class="pagination-btn"
         :disabled="currentPage === totalPages"
         @click="goToPage(currentPage + 1)"
         title="التالي"
@@ -57,9 +57,9 @@
           <polyline points="9 18 15 12 9 6"></polyline>
         </svg>
       </button>
-      
-      <button 
-        class="pagination-btn" 
+
+      <button
+        class="pagination-btn"
         :disabled="currentPage === totalPages"
         @click="goToPage(totalPages)"
         title="الصفحة الأخيرة"
@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch } from 'vue';
 
 export default {
   name: 'PaginationComponent',
@@ -82,102 +82,105 @@ export default {
     currentPage: {
       type: Number,
       required: true,
-      default: 1
+      default: 1,
     },
     totalItems: {
       type: Number,
       required: true,
-      default: 0
+      default: 0,
     },
     perPage: {
       type: Number,
-      default: 25
+      default: 25,
     },
     maxVisiblePages: {
       type: Number,
-      default: 7
-    }
+      default: 7,
+    },
   },
   emits: ['page-change', 'per-page-change'],
   setup(props, { emit }) {
-    const localPerPage = ref(props.perPage)
-    
-    const totalPages = computed(() => Math.ceil(props.totalItems / localPerPage.value))
-    
+    const localPerPage = ref(props.perPage);
+
+    const totalPages = computed(() => Math.ceil(props.totalItems / localPerPage.value));
+
     const startItem = computed(() => {
-      if (props.totalItems === 0) return 0
-      return (props.currentPage - 1) * localPerPage.value + 1
-    })
-    
+      if (props.totalItems === 0) return 0;
+      return (props.currentPage - 1) * localPerPage.value + 1;
+    });
+
     const endItem = computed(() => {
-      const end = props.currentPage * localPerPage.value
-      return end > props.totalItems ? props.totalItems : end
-    })
-    
+      const end = props.currentPage * localPerPage.value;
+      return end > props.totalItems ? props.totalItems : end;
+    });
+
     const visiblePages = computed(() => {
-      const pages = []
-      const total = totalPages.value
-      const current = props.currentPage
-      const maxVisible = props.maxVisiblePages
-      
+      const pages = [];
+      const total = totalPages.value;
+      const current = props.currentPage;
+      const maxVisible = props.maxVisiblePages;
+
       if (total <= maxVisible) {
         // Show all pages if total is less than max visible
         for (let i = 1; i <= total; i++) {
-          pages.push(i)
+          pages.push(i);
         }
       } else {
         // Always show first page
-        pages.push(1)
-        
+        pages.push(1);
+
         if (current <= Math.floor(maxVisible / 2) + 1) {
           // Near the start
           for (let i = 2; i <= maxVisible - 2; i++) {
-            pages.push(i)
+            pages.push(i);
           }
-          pages.push('...')
-          pages.push(total)
+          pages.push('...');
+          pages.push(total);
         } else if (current >= total - Math.floor(maxVisible / 2)) {
           // Near the end
-          pages.push('...')
+          pages.push('...');
           for (let i = total - (maxVisible - 3); i < total; i++) {
-            pages.push(i)
+            pages.push(i);
           }
-          pages.push(total)
+          pages.push(total);
         } else {
           // In the middle
-          pages.push('...')
-          const start = current - Math.floor((maxVisible - 4) / 2)
-          const end = current + Math.floor((maxVisible - 4) / 2)
+          pages.push('...');
+          const start = current - Math.floor((maxVisible - 4) / 2);
+          const end = current + Math.floor((maxVisible - 4) / 2);
           for (let i = start; i <= end; i++) {
-            pages.push(i)
+            pages.push(i);
           }
-          pages.push('...')
-          pages.push(total)
+          pages.push('...');
+          pages.push(total);
         }
       }
-      
-      return pages
-    })
-    
-    const goToPage = (page) => {
+
+      return pages;
+    });
+
+    const goToPage = page => {
       if (page >= 1 && page <= totalPages.value && page !== props.currentPage) {
-        emit('page-change', page)
+        emit('page-change', page);
       }
-    }
-    
+    };
+
     const handlePerPageChange = () => {
-      emit('per-page-change', localPerPage.value)
+      emit('per-page-change', localPerPage.value);
       // Reset to first page when changing per page
       if (props.currentPage !== 1) {
-        emit('page-change', 1)
+        emit('page-change', 1);
       }
-    }
-    
+    };
+
     // Watch for external perPage changes
-    watch(() => props.perPage, (newVal) => {
-      localPerPage.value = newVal
-    })
-    
+    watch(
+      () => props.perPage,
+      newVal => {
+        localPerPage.value = newVal;
+      }
+    );
+
     return {
       localPerPage,
       totalPages,
@@ -185,10 +188,10 @@ export default {
       endItem,
       visiblePages,
       goToPage,
-      handlePerPageChange
-    }
-  }
-}
+      handlePerPageChange,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -223,12 +226,12 @@ export default {
 }
 
 .per-page-select:hover {
-  border-color: #B1A28F;
+  border-color: #b1a28f;
 }
 
 .per-page-select:focus {
   outline: none;
-  border-color: #B1A28F;
+  border-color: #b1a28f;
   box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.1);
 }
 
@@ -255,8 +258,8 @@ export default {
 
 .pagination-btn:hover:not(:disabled) {
   background: #f8fafc;
-  border-color: #B1A28F;
-  color: #B1A28F;
+  border-color: #b1a28f;
+  color: #b1a28f;
 }
 
 .pagination-btn:disabled {
@@ -291,13 +294,13 @@ export default {
 
 .page-number:hover:not(:disabled) {
   background: #f8fafc;
-  border-color: #B1A28F;
-  color: #B1A28F;
+  border-color: #b1a28f;
+  color: #b1a28f;
 }
 
 .page-number.active {
-  background: #B1A28F;
-  border-color: #B1A28F;
+  background: #b1a28f;
+  border-color: #b1a28f;
   color: white;
   font-weight: 600;
 }
@@ -318,15 +321,15 @@ export default {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .pagination-info {
     justify-content: center;
   }
-  
+
   .pagination-controls {
     justify-content: center;
   }
-  
+
   .page-numbers {
     flex-wrap: wrap;
     justify-content: center;

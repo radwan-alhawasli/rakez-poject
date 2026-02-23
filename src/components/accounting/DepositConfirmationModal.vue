@@ -1,23 +1,60 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')" @keydown.esc="$emit('close')" tabindex="-1">
+  <div
+    class="modal-overlay"
+    @click.self="$emit('close')"
+    @keydown.esc="$emit('close')"
+    tabindex="-1"
+  >
     <div class="modal-container">
       <div class="modal-header">
-        <h2 class="modal-title">{{ action === 'confirm' ? 'تأكيد الوديعة' : 'معالجة الاسترداد' }}</h2>
+        <h2 class="modal-title">
+          {{ action === 'confirm' ? 'تأكيد الوديعة' : 'معالجة الاسترداد' }}
+        </h2>
         <button class="close-btn" @click="$emit('close')">×</button>
       </div>
       <form @submit.prevent="handleSubmit" class="modal-body">
         <div v-if="deposit" class="deposit-detail-section">
-          <div class="detail-row"><span class="detail-label">المشروع:</span> {{ deposit.project_name || '—' }}</div>
-          <div class="detail-row"><span class="detail-label">نوع الوحدة:</span> {{ deposit.unit_type || '—' }}</div>
-          <div class="detail-row"><span class="detail-label">سعر البيع النهائي:</span> {{ formatCurrency(deposit.final_price || deposit.total_value) }}</div>
-          <div class="detail-row"><span class="detail-label">قيمة العربون:</span> {{ formatCurrency(deposit.amount) }}</div>
-          <div class="detail-row"><span class="detail-label">طريقة الدفع:</span> {{ deposit.payment_method || '—' }}</div>
-          <div class="detail-row"><span class="detail-label">اسم العميل:</span> {{ deposit.client_name || deposit.customer_name || '—' }}</div>
-          <div class="detail-row"><span class="detail-label">نسبة السعي:</span> {{ deposit.commission_percentage ? deposit.commission_percentage + '%' : '—' }} {{ deposit.commission_source === 'owner' ? '(من المالك)' : deposit.commission_source === 'buyer' ? '(من المشتري)' : '' }}</div>
+          <div class="detail-row">
+            <span class="detail-label">المشروع:</span> {{ deposit.project_name || '—' }}
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">نوع الوحدة:</span> {{ deposit.unit_type || '—' }}
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">سعر البيع النهائي:</span>
+            {{ formatCurrency(deposit.final_price || deposit.total_value) }}
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">قيمة العربون:</span> {{ formatCurrency(deposit.amount) }}
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">طريقة الدفع:</span> {{ deposit.payment_method || '—' }}
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">اسم العميل:</span>
+            {{ deposit.client_name || deposit.customer_name || '—' }}
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">نسبة السعي:</span>
+            {{ deposit.commission_percentage ? deposit.commission_percentage + '%' : '—' }}
+            {{
+              deposit.commission_source === 'owner'
+                ? '(من المالك)'
+                : deposit.commission_source === 'buyer'
+                ? '(من المشتري)'
+                : ''
+            }}
+          </div>
         </div>
         <div class="form-group" v-if="action === 'confirm'">
           <label class="form-label">المبلغ المؤكد</label>
-          <input v-model.number="formData.confirmed_amount" type="number" class="form-input" :placeholder="deposit?.amount" required />
+          <input
+            v-model.number="formData.confirmed_amount"
+            type="number"
+            class="form-input"
+            :placeholder="deposit?.amount"
+            required
+          />
         </div>
         <div class="form-group" v-if="action === 'confirm'">
           <label class="form-label">تاريخ التأكيد</label>
@@ -25,7 +62,12 @@
         </div>
         <div class="form-group" v-if="action === 'refund'">
           <label class="form-label">مبلغ الاسترداد</label>
-          <input v-model.number="formData.refund_amount" type="number" class="form-input" required />
+          <input
+            v-model.number="formData.refund_amount"
+            type="number"
+            class="form-input"
+            required
+          />
         </div>
         <div class="form-group" v-if="action === 'refund'">
           <label class="form-label">سبب الاسترداد</label>
@@ -43,54 +85,58 @@
 </template>
 
 <script>
-import { reactive, computed, onMounted, onUnmounted } from 'vue'
+import { reactive, computed, onMounted, onUnmounted } from 'vue';
 
 export default {
   name: 'DepositConfirmationModal',
   props: {
     deposit: { type: Object, default: null },
-    isLoading: { type: Boolean, default: false }
+    isLoading: { type: Boolean, default: false },
   },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
-    const action = computed(() => props.deposit?.status === 'pending' ? 'confirm' : 'refund')
+    const action = computed(() => (props.deposit?.status === 'pending' ? 'confirm' : 'refund'));
     const formData = reactive({
       confirmed_amount: props.deposit?.amount || 0,
       confirmation_date: new Date().toISOString().split('T')[0],
       refund_amount: 0,
-      reason: ''
-    })
+      reason: '',
+    });
 
     // Handle Escape key
-    const handleEscape = (e) => {
+    const handleEscape = e => {
       if (e.key === 'Escape') {
-        emit('close')
+        emit('close');
       }
-    }
+    };
 
     // Lock body scroll when modal is open
     onMounted(() => {
-      document.body.style.overflow = 'hidden'
-      document.addEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape);
+    });
 
     onUnmounted(() => {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEscape);
+    });
 
-    const formatCurrency = (val) => {
-      if (!val) return '0 ر.س'
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR', maximumFractionDigits: 0 }).format(val)
-    }
+    const formatCurrency = val => {
+      if (!val) return '0 ر.س';
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'SAR',
+        maximumFractionDigits: 0,
+      }).format(val);
+    };
 
     const handleSubmit = () => {
-      emit('submit', { action: action.value, ...formData })
-    }
+      emit('submit', { action: action.value, ...formData });
+    };
 
-    return { action, formData, formatCurrency, handleSubmit }
-  }
-}
+    return { action, formData, formatCurrency, handleSubmit };
+  },
+};
 </script>
 
 <style scoped>
@@ -114,8 +160,12 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-container {
@@ -226,7 +276,7 @@ export default {
   padding: 12px 24px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
   font-weight: 700;
   cursor: pointer;

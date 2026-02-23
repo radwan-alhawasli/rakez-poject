@@ -2,10 +2,10 @@
  * User Store Tests
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
-import { useUserStore } from '../../src/stores/userStore'
-import userService from '../../src/services/userService'
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
+import { useUserStore } from '../../src/stores/userStore';
+import userService from '../../src/services/userService';
 
 vi.mock('../../src/services/userService', () => ({
   default: {
@@ -13,41 +13,41 @@ vi.mock('../../src/services/userService', () => ({
     getUserById: vi.fn(),
     createUser: vi.fn(),
     updateUser: vi.fn(),
-    deleteUser: vi.fn()
-  }
-}))
+    deleteUser: vi.fn(),
+  },
+}));
 
 vi.mock('../../src/stores/authStore', () => ({
-  useAuthStore: vi.fn(() => ({ currentUser: null }))
-}))
+  useAuthStore: vi.fn(() => ({ currentUser: null })),
+}));
 
 vi.mock('../../src/utils/logger', () => ({
-  default: { error: vi.fn(), warn: vi.fn(), debug: vi.fn() }
-}))
+  default: { error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+}));
 
 describe('userStore', () => {
   beforeEach(() => {
-    setActivePinia(createPinia())
-    vi.clearAllMocks()
-  })
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
 
   it('should have initial state and getters', () => {
-    const store = useUserStore()
-    expect(store.users).toEqual([])
-    expect(store.allUsers).toEqual([])
-    expect(store.userCount).toBe(0)
-    expect(store.isLoading).toBe(false)
-  })
+    const store = useUserStore();
+    expect(store.users).toEqual([]);
+    expect(store.allUsers).toEqual([]);
+    expect(store.userCount).toBe(0);
+    expect(store.isLoading).toBe(false);
+  });
 
   it('fetchUsers should set users on success', async () => {
-    const mockUsers = [{ id: 1, name: 'U1' }]
-    vi.mocked(userService.getUsers).mockResolvedValue({ data: mockUsers })
+    const mockUsers = [{ id: 1, name: 'U1' }];
+    vi.mocked(userService.getUsers).mockResolvedValue({ data: mockUsers });
 
-    const store = useUserStore()
-    await store.fetchUsers()
+    const store = useUserStore();
+    await store.fetchUsers();
 
-    expect(userService.getUsers).toHaveBeenCalled()
-    expect(store.users).toEqual(mockUsers)
-    expect(store.userCount).toBe(1)
-  })
-})
+    expect(userService.getUsers).toHaveBeenCalled();
+    expect(store.users).toEqual(mockUsers);
+    expect(store.userCount).toBe(1);
+  });
+});

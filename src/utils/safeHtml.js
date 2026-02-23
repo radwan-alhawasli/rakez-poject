@@ -3,8 +3,9 @@
  * Provides safe HTML rendering to prevent XSS attacks using DOMPurify
  */
 
-import DOMPurify from 'dompurify'
-import { escapeHtml } from './sanitizer'
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
+import { escapeHtml } from './sanitizer';
 
 /**
  * Sanitize HTML content using DOMPurify
@@ -16,38 +17,51 @@ import { escapeHtml } from './sanitizer'
  * @returns {string} Sanitized HTML
  */
 export function sanitizeHtml(html, options = {}) {
-    if (typeof html !== 'string') {
-        return ''
-    }
+  if (typeof html !== 'string') {
+    return '';
+  }
 
-    const {
-        allowTags = [],
-        allowAttributes = [],
-        allowLinks = true
-    } = options
+  const { allowTags = [], allowAttributes = [], allowLinks = true } = options;
 
-    // Default allowed tags (common safe tags)
-    const defaultTags = ['p', 'br', 'strong', 'em', 'u', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li']
-    if (allowLinks) {
-        defaultTags.push('a')
-    }
+  // Default allowed tags (common safe tags)
+  const defaultTags = [
+    'p',
+    'br',
+    'strong',
+    'em',
+    'u',
+    'span',
+    'div',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'ul',
+    'ol',
+    'li',
+  ];
+  if (allowLinks) {
+    defaultTags.push('a');
+  }
 
-    // Default allowed attributes
-    const defaultAttributes = ['class', 'id']
-    if (allowLinks) {
-        defaultAttributes.push('href', 'target', 'rel')
-    }
+  // Default allowed attributes
+  const defaultAttributes = ['class', 'id'];
+  if (allowLinks) {
+    defaultAttributes.push('href', 'target', 'rel');
+  }
 
-    // Configure DOMPurify
-    const config = {
-        ALLOWED_TAGS: allowTags.length > 0 ? allowTags : defaultTags,
-        ALLOWED_ATTR: allowAttributes.length > 0 ? allowAttributes : defaultAttributes,
-        ALLOW_DATA_ATTR: false,
-        KEEP_CONTENT: true
-    }
+  // Configure DOMPurify
+  const config = {
+    ALLOWED_TAGS: allowTags.length > 0 ? allowTags : defaultTags,
+    ALLOWED_ATTR: allowAttributes.length > 0 ? allowAttributes : defaultAttributes,
+    ALLOW_DATA_ATTR: false,
+    KEEP_CONTENT: true,
+  };
 
-    // Sanitize using DOMPurify
-    return DOMPurify.sanitize(html, config)
+  // Sanitize using DOMPurify
+  return DOMPurify.sanitize(html, config);
 }
 
 /**
@@ -57,9 +71,9 @@ export function sanitizeHtml(html, options = {}) {
  * @returns {Object} Vue component data for safe rendering
  */
 export function createSafeHtml(html, options = {}) {
-    return {
-        __html: sanitizeHtml(html, options)
-    }
+  return {
+    __html: sanitizeHtml(html, options),
+  };
 }
 
 /**
@@ -68,21 +82,21 @@ export function createSafeHtml(html, options = {}) {
  * @returns {boolean} True if content appears safe
  */
 export function isSafeContent(content) {
-    if (typeof content !== 'string') {
-        return true
-    }
+  if (typeof content !== 'string') {
+    return true;
+  }
 
-    // Check for dangerous patterns
-    const dangerousPatterns = [
-        /<script/i,
-        /javascript:/i,
-        /on\w+\s*=/i, // Event handlers like onclick=
-        /<iframe/i,
-        /<object/i,
-        /<embed/i
-    ]
+  // Check for dangerous patterns
+  const dangerousPatterns = [
+    /<script/i,
+    /javascript:/i,
+    /on\w+\s*=/i, // Event handlers like onclick=
+    /<iframe/i,
+    /<object/i,
+    /<embed/i,
+  ];
 
-    return !dangerousPatterns.some(pattern => pattern.test(content))
+  return !dangerousPatterns.some(pattern => pattern.test(content));
 }
 
 /**
@@ -92,10 +106,10 @@ export function isSafeContent(content) {
  * @returns {string} Escaped text
  */
 export function safeText(text) {
-    if (typeof text !== 'string') {
-        return String(text || '')
-    }
-    return escapeHtml(text)
+  if (typeof text !== 'string') {
+    return String(text || '');
+  }
+  return escapeHtml(text);
 }
 
 /**
@@ -103,18 +117,83 @@ export function safeText(text) {
  * @returns {Object} DOMPurify configuration object
  */
 export function getDOMPurifyConfig() {
-    return {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a'],
-        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'id'],
-        ALLOW_DATA_ATTR: false,
-        KEEP_CONTENT: true
-    }
+  return {
+    ALLOWED_TAGS: [
+      'p',
+      'br',
+      'strong',
+      'em',
+      'u',
+      'span',
+      'div',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'ul',
+      'ol',
+      'li',
+      'a',
+      'code',
+      'pre',
+    ],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'id'],
+    ALLOW_DATA_ATTR: false,
+    KEEP_CONTENT: true,
+  };
+}
+
+/** Options for sanitizing markdown-derived HTML (AI assistant answers) */
+const MARKDOWN_SANITIZE_OPTIONS = {
+  allowTags: [
+    'p',
+    'br',
+    'strong',
+    'em',
+    'u',
+    'span',
+    'div',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'ul',
+    'ol',
+    'li',
+    'a',
+    'code',
+    'pre',
+  ],
+  allowAttributes: ['href', 'target', 'rel', 'class', 'id'],
+  allowLinks: true,
+};
+
+/**
+ * Parse markdown to HTML and sanitize for safe rendering (e.g. AI answer_markdown).
+ * Uses marked + sanitizeHtml. Never render API HTML without sanitization.
+ * @param {string} markdown - Markdown string
+ * @returns {string} Sanitized HTML
+ */
+export function sanitizeMarkdown(markdown) {
+  if (typeof markdown !== 'string') return '';
+  try {
+    const html = marked.parse(markdown);
+    if (typeof html !== 'string') return '';
+    return sanitizeHtml(html, MARKDOWN_SANITIZE_OPTIONS);
+  } catch {
+    return sanitizeHtml(markdown, MARKDOWN_SANITIZE_OPTIONS);
+  }
 }
 
 export default {
-    sanitizeHtml,
-    createSafeHtml,
-    isSafeContent,
-    safeText,
-    getDOMPurifyConfig
-}
+  sanitizeHtml,
+  sanitizeMarkdown,
+  createSafeHtml,
+  isSafeContent,
+  safeText,
+  getDOMPurifyConfig,
+};

@@ -1,3 +1,8 @@
+<!--
+  LEGACY: This view is not used by the router. All sales routes use SalesViewExtended.vue.
+  Kept for reference only (simpler tabs: dashboard, projects, reservations).
+  Do not import or route to this component.
+-->
 <template>
   <div class="sales-view">
     <!-- Header -->
@@ -8,23 +13,45 @@
       </div>
     </div>
 
-    <!-- Tabs Navigation -->
+    <!-- Tabs Navigation (icons rendered inline to avoid v-html) -->
     <div class="tabs-nav">
-      <button 
-        v-for="tab in tabs" 
+      <button
+        v-for="tab in tabs"
         :key="tab.id"
-        class="nav-tab" 
+        class="nav-tab"
         :class="{ active: activeTab === tab.id }"
         @click="activeTab = tab.id"
       >
-        <svg v-html="tab.icon" class="tab-icon"></svg>
+        <svg
+          class="tab-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <template v-if="tab.id === 'dashboard'">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          </template>
+          <template v-else-if="tab.id === 'projects'">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </template>
+          <template v-else-if="tab.id === 'reservations'">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </template>
+        </svg>
         {{ tab.label }}
       </button>
     </div>
 
     <!-- Tab Content -->
     <div class="tab-content">
-      
       <!-- DASHBOARD TAB -->
       <div v-if="activeTab === 'dashboard'" class="dashboard-tab">
         <div class="dashboard-filters">
@@ -38,61 +65,91 @@
           </div>
           <div class="filter-group">
             <label>من تاريخ</label>
-            <input type="date" v-model="dashboardFilters.from" @change="loadDashboard" class="filter-input">
+            <input
+              type="date"
+              v-model="dashboardFilters.from"
+              @change="loadDashboard"
+              class="filter-input"
+            />
           </div>
           <div class="filter-group">
             <label>إلى تاريخ</label>
-            <input type="date" v-model="dashboardFilters.to" @change="loadDashboard" class="filter-input">
+            <input
+              type="date"
+              v-model="dashboardFilters.to"
+              @change="loadDashboard"
+              class="filter-input"
+            />
           </div>
         </div>
 
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div
+              class="stat-icon"
+              style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
               </svg>
             </div>
             <div class="stat-content">
-              <div class="stat-value">{{ formatNumber(dashboardMetrics.total_reservations || 0) }}</div>
+              <div class="stat-value">
+                {{ formatNumber(dashboardMetrics.total_reservations || 0) }}
+              </div>
               <div class="stat-label">إجمالي الحجوزات</div>
             </div>
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div
+              class="stat-icon"
+              style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
               </svg>
             </div>
             <div class="stat-content">
-              <div class="stat-value">{{ formatCurrency(dashboardMetrics.total_sales_value || 0) }}</div>
+              <div class="stat-value">
+                {{ formatCurrency(dashboardMetrics.total_sales_value || 0) }}
+              </div>
               <div class="stat-label">قيمة المبيعات</div>
             </div>
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div
+              class="stat-icon"
+              style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
               </svg>
             </div>
             <div class="stat-content">
-              <div class="stat-value">{{ formatNumber(dashboardMetrics.pending_reservations || 0) }}</div>
+              <div class="stat-value">
+                {{ formatNumber(dashboardMetrics.pending_reservations || 0) }}
+              </div>
               <div class="stat-label">حجوزات معلقة</div>
             </div>
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <div
+              class="stat-icon"
+              style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
             <div class="stat-content">
-              <div class="stat-value">{{ formatNumber(dashboardMetrics.confirmed_reservations || 0) }}</div>
+              <div class="stat-value">
+                {{ formatNumber(dashboardMetrics.confirmed_reservations || 0) }}
+              </div>
               <div class="stat-label">حجوزات مؤكدة</div>
             </div>
           </div>
@@ -114,7 +171,12 @@
         </div>
 
         <div v-else class="projects-grid">
-          <div v-for="project in projects" :key="project.id" class="project-card" @click="viewProjectDetails(project.id)">
+          <div
+            v-for="project in projects"
+            :key="project.id"
+            class="project-card"
+            @click="viewProjectDetails(project.id)"
+          >
             <div class="project-header">
               <h3>{{ project.project_name || project.name }}</h3>
               <span class="project-status" :class="getStatusClass(project.status)">
@@ -193,7 +255,9 @@
                 <td>{{ reservation.project_name || '—' }}</td>
                 <td>{{ reservation.unit_number || '—' }}</td>
                 <td>
-                  <span class="reservation-type">{{ getReservationType(reservation.reservation_type) }}</span>
+                  <span class="reservation-type">{{
+                    getReservationType(reservation.reservation_type)
+                  }}</span>
                 </td>
                 <td class="amount">{{ formatCurrency(reservation.down_payment_amount || 0) }}</td>
                 <td>
@@ -204,8 +268,8 @@
                 <td>{{ formatDate(reservation.contract_date) }}</td>
                 <td>
                   <div class="action-buttons">
-                    <button 
-                      v-if="reservation.status === 'pending'" 
+                    <button
+                      v-if="reservation.status === 'pending'"
                       @click="confirmReservation(reservation.id)"
                       class="btn-action confirm"
                       title="تأكيد الحجز"
@@ -214,8 +278,8 @@
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
                     </button>
-                    <button 
-                      v-if="reservation.status !== 'cancelled'" 
+                    <button
+                      v-if="reservation.status !== 'cancelled'"
                       @click="cancelReservation(reservation.id)"
                       class="btn-action cancel"
                       title="إلغاء الحجز"
@@ -225,7 +289,7 @@
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                       </svg>
                     </button>
-                    <button 
+                    <button
                       @click="downloadVoucher(reservation.id)"
                       class="btn-action download"
                       title="تحميل الإيصال"
@@ -287,7 +351,7 @@
             <!-- Units List -->
             <div class="units-section">
               <h4>الوحدات المتاحة</h4>
-              
+
               <div v-if="isLoadingUnits" class="loading-state">
                 <div class="spinner"></div>
               </div>
@@ -307,7 +371,9 @@
                   <div class="unit-details">
                     <div class="unit-detail">
                       <span class="label">الدور:</span>
-                      <span class="value">{{ unit.floor || '—' }}</span>
+                      <span class="value">{{
+                        unit.floor != null && !Number.isNaN(Number(unit.floor)) ? unit.floor : '—'
+                      }}</span>
                     </div>
                     <div class="unit-detail">
                       <span class="label">الغرف:</span>
@@ -322,8 +388,8 @@
                       <span class="value price">{{ formatCurrency(unit.price || 0) }}</span>
                     </div>
                   </div>
-                  <button 
-                    v-if="unit.status === 'available'" 
+                  <button
+                    v-if="unit.status === 'available'"
                     @click="openReservationModal(unit)"
                     class="btn-reserve"
                   >
@@ -338,7 +404,11 @@
     </div>
 
     <!-- Reservation Modal -->
-    <div v-if="showReservationModal" class="modal-overlay" @click.self="showReservationModal = false">
+    <div
+      v-if="showReservationModal"
+      class="modal-overlay"
+      @click.self="showReservationModal = false"
+    >
       <div class="modal-content reservation-modal">
         <div class="modal-header">
           <h3>حجز وحدة #{{ selectedUnit?.unit_number }}</h3>
@@ -353,19 +423,52 @@
                 <h4>معلومات العميل</h4>
                 <div class="form-group">
                   <label>اسم العميل *</label>
-                  <input type="text" v-model="reservationForm.client_name" required class="form-input">
+                  <input
+                    type="text"
+                    v-model="reservationForm.client_name"
+                    required
+                    class="form-input"
+                  />
                 </div>
                 <div class="form-group">
                   <label>رقم الجوال *</label>
-                  <input type="tel" v-model="reservationForm.client_mobile" required class="form-input" placeholder="05xxxxxxxx">
+                  <input
+                    type="tel"
+                    v-model="reservationForm.client_mobile"
+                    required
+                    class="form-input"
+                    placeholder="05xxxxxxxx"
+                  />
                 </div>
                 <div class="form-group">
                   <label>الجنسية *</label>
-                  <input type="text" v-model="reservationForm.client_nationality" required class="form-input">
+                  <select
+                    v-if="reservationLookups?.nationalities?.length"
+                    v-model="reservationForm.client_nationality"
+                    required
+                    class="form-input"
+                  >
+                    <option v-for="nat in reservationLookups.nationalities" :key="nat" :value="nat">
+                      {{ nat }}
+                    </option>
+                  </select>
+                  <input
+                    v-else
+                    type="text"
+                    v-model="reservationForm.client_nationality"
+                    required
+                    class="form-input"
+                    placeholder="مثال: Saudi"
+                  />
                 </div>
                 <div class="form-group">
                   <label>رقم الآيبان</label>
-                  <input type="text" v-model="reservationForm.client_iban" class="form-input" placeholder="SA00...">
+                  <input
+                    type="text"
+                    v-model="reservationForm.client_iban"
+                    class="form-input"
+                    placeholder="SA00..."
+                  />
                 </div>
               </div>
 
@@ -374,52 +477,142 @@
                 <h4>تفاصيل الحجز</h4>
                 <div class="form-group">
                   <label>نوع الحجز *</label>
-                  <select v-model="reservationForm.reservation_type" required class="form-input">
-                    <option value="negotiation">تفاوض</option>
-                    <option value="booking">حجز</option>
-                    <option value="contract">عقد</option>
+                  <select
+                    v-if="reservationLookups?.reservation_types?.length"
+                    v-model="reservationForm.reservation_type"
+                    required
+                    class="form-input"
+                  >
+                    <option
+                      v-for="type in reservationLookups.reservation_types"
+                      :key="type.value"
+                      :value="type.value"
+                    >
+                      {{ type.label }}
+                    </option>
+                  </select>
+                  <select
+                    v-else
+                    v-model="reservationForm.reservation_type"
+                    class="form-input"
+                    disabled
+                    title="جاري تحميل البيانات"
+                  >
+                    <option value="">لا توجد بيانات</option>
                   </select>
                 </div>
                 <div class="form-group">
                   <label>تاريخ العقد *</label>
-                  <input type="date" v-model="reservationForm.contract_date" required class="form-input">
+                  <input
+                    type="date"
+                    v-model="reservationForm.contract_date"
+                    required
+                    class="form-input"
+                  />
                 </div>
                 <div class="form-group">
                   <label>طريقة الدفع *</label>
-                  <select v-model="reservationForm.payment_method" required class="form-input">
-                    <option value="bank_transfer">تحويل بنكي</option>
-                    <option value="cash">نقدي</option>
-                    <option value="check">شيك</option>
+                  <select
+                    v-if="reservationLookups?.payment_methods?.length"
+                    v-model="reservationForm.payment_method"
+                    required
+                    class="form-input"
+                  >
+                    <option
+                      v-for="method in reservationLookups.payment_methods"
+                      :key="method.value"
+                      :value="method.value"
+                    >
+                      {{ method.label }}
+                    </option>
+                  </select>
+                  <select
+                    v-else
+                    v-model="reservationForm.payment_method"
+                    class="form-input"
+                    disabled
+                    title="جاري تحميل البيانات"
+                  >
+                    <option value="">لا توجد بيانات</option>
                   </select>
                 </div>
                 <div class="form-group">
                   <label>مبلغ الدفعة المقدمة *</label>
-                  <input type="number" v-model="reservationForm.down_payment_amount" required class="form-input" min="0">
+                  <input
+                    type="number"
+                    v-model="reservationForm.down_payment_amount"
+                    required
+                    class="form-input"
+                    min="0"
+                  />
                 </div>
                 <div class="form-group">
                   <label>حالة الدفع *</label>
-                  <select v-model="reservationForm.down_payment_status" required class="form-input">
-                    <option value="pending">معلق</option>
-                    <option value="paid">مدفوع</option>
+                  <select
+                    v-if="reservationLookups?.down_payment_statuses?.length"
+                    v-model="reservationForm.down_payment_status"
+                    required
+                    class="form-input"
+                  >
+                    <option
+                      v-for="status in reservationLookups.down_payment_statuses"
+                      :key="status.value"
+                      :value="status.value"
+                    >
+                      {{ status.label }}
+                    </option>
+                  </select>
+                  <select
+                    v-else
+                    v-model="reservationForm.down_payment_status"
+                    class="form-input"
+                    disabled
+                    title="جاري تحميل البيانات"
+                  >
+                    <option value="">لا توجد بيانات</option>
                   </select>
                 </div>
                 <div class="form-group">
                   <label>آلية الشراء *</label>
-                  <select v-model="reservationForm.purchase_mechanism" required class="form-input">
-                    <option value="cash">نقدي</option>
-                    <option value="installment">تقسيط</option>
-                    <option value="mortgage">رهن عقاري</option>
+                  <select
+                    v-if="reservationLookups?.purchase_mechanisms?.length"
+                    v-model="reservationForm.purchase_mechanism"
+                    required
+                    class="form-input"
+                  >
+                    <option
+                      v-for="mech in reservationLookups.purchase_mechanisms"
+                      :key="mech.value"
+                      :value="mech.value"
+                    >
+                      {{ mech.label }}
+                    </option>
+                  </select>
+                  <select
+                    v-else
+                    v-model="reservationForm.purchase_mechanism"
+                    class="form-input"
+                    disabled
+                    title="جاري تحميل البيانات"
+                  >
+                    <option value="">لا توجد بيانات</option>
                   </select>
                 </div>
                 <div class="form-group full-width">
                   <label>ملاحظات التفاوض</label>
-                  <textarea v-model="reservationForm.negotiation_notes" class="form-input" rows="3"></textarea>
+                  <textarea
+                    v-model="reservationForm.negotiation_notes"
+                    class="form-input"
+                    rows="3"
+                  ></textarea>
                 </div>
               </div>
             </div>
 
             <div class="form-actions">
-              <button type="button" @click="showReservationModal = false" class="btn-secondary">إلغاء</button>
+              <button type="button" @click="showReservationModal = false" class="btn-secondary">
+                إلغاء
+              </button>
               <button type="submit" class="btn-primary" :disabled="isSubmitting">
                 <span v-if="isSubmitting">جاري الحفظ...</span>
                 <span v-else>تأكيد الحجز</span>
@@ -429,53 +622,68 @@
         </div>
       </div>
     </div>
+
+    <ConfirmModal
+      v-if="showConfirmModal"
+      :title="confirmModalConfig.title"
+      :message="confirmModalConfig.message"
+      :type="confirmModalConfig.type"
+      :confirm-text="confirmModalConfig.confirmText"
+      @confirm="onConfirmModalConfirm"
+      @close="showConfirmModal = false"
+    />
   </div>
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue'
-import salesService from '../services/salesService'
-import notificationService from '../services/notificationService'
-import logger from '../utils/logger'
+import { ref, reactive, onMounted } from 'vue';
+import salesService from '../services/salesService';
+import notificationService from '../services/notificationService';
+import logger from '../utils/logger';
+import ConfirmModal from '../components/ConfirmModal.vue';
 
 export default {
   name: 'SalesView',
+  components: { ConfirmModal },
   setup() {
-    const activeTab = ref('dashboard')
+    const activeTab = ref('dashboard');
     const tabs = [
-      { id: 'dashboard', label: 'لوحة التحكم', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>' },
-      { id: 'projects', label: 'المشاريع', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>' },
-      { id: 'reservations', label: 'الحجوزات', icon: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>' }
-    ]
+      { id: 'dashboard', label: 'لوحة التحكم' },
+      { id: 'projects', label: 'المشاريع' },
+      { id: 'reservations', label: 'الحجوزات' },
+    ];
 
     // Dashboard
     const dashboardFilters = reactive({
       scope: 'me',
-      from: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
-      to: new Date().toISOString().split('T')[0]
-    })
+      from: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+        .toISOString()
+        .split('T')[0],
+      to: new Date().toISOString().split('T')[0],
+    });
     const dashboardMetrics = reactive({
       total_reservations: 0,
       total_sales_value: 0,
       pending_reservations: 0,
-      confirmed_reservations: 0
-    })
+      confirmed_reservations: 0,
+    });
 
     // Projects
-    const projects = ref([])
-    const isLoadingProjects = ref(false)
-    const selectedProject = ref(null)
-    const showProjectModal = ref(false)
-    const isLoadingProjectDetails = ref(false)
-    const projectUnits = ref([])
-    const isLoadingUnits = ref(false)
+    const projects = ref([]);
+    const isLoadingProjects = ref(false);
+    const selectedProject = ref(null);
+    const showProjectModal = ref(false);
+    const isLoadingProjectDetails = ref(false);
+    const projectUnits = ref([]);
+    const isLoadingUnits = ref(false);
 
     // Reservations
-    const reservations = ref([])
-    const isLoadingReservations = ref(false)
-    const showReservationModal = ref(false)
-    const selectedUnit = ref(null)
-    const isSubmitting = ref(false)
+    const reservations = ref([]);
+    const isLoadingReservations = ref(false);
+    const showReservationModal = ref(false);
+    const selectedUnit = ref(null);
+    const reservationLookups = ref(null);
+    const isSubmitting = ref(false);
     const reservationForm = reactive({
       contract_id: '',
       contract_unit_id: '',
@@ -489,83 +697,92 @@ export default {
       down_payment_amount: 0,
       down_payment_status: 'pending',
       purchase_mechanism: 'cash',
-      negotiation_notes: ''
-    })
+      negotiation_notes: '',
+    });
 
     // Methods
     const loadDashboard = async () => {
       try {
-        const data = await salesService.getDashboard(dashboardFilters)
-        Object.assign(dashboardMetrics, data)
+        const data = await salesService.getDashboard(dashboardFilters);
+        Object.assign(dashboardMetrics, data);
       } catch (error) {
-        logger.error('Error loading dashboard:', error)
+        logger.error('Error loading dashboard:', error);
       }
-    }
+    };
 
     const loadProjects = async () => {
-      isLoadingProjects.value = true
+      isLoadingProjects.value = true;
       try {
-        projects.value = await salesService.getProjects()
+        projects.value = await salesService.getProjects();
       } catch (error) {
-        logger.error('Error loading projects:', error)
+        logger.error('Error loading projects:', error);
       } finally {
-        isLoadingProjects.value = false
+        isLoadingProjects.value = false;
       }
-    }
+    };
 
-    const viewProjectDetails = async (projectId) => {
-      showProjectModal.value = true
-      isLoadingProjectDetails.value = true
-      isLoadingUnits.value = true
-      
+    const viewProjectDetails = async projectId => {
+      showProjectModal.value = true;
+      isLoadingProjectDetails.value = true;
+      isLoadingUnits.value = true;
+
       try {
-        selectedProject.value = await salesService.getProjectDetails(projectId)
-        projectUnits.value = await salesService.getProjectUnits(projectId)
+        selectedProject.value = await salesService.getProjectDetails(projectId);
+        projectUnits.value = await salesService.getProjectUnits(projectId);
       } catch (error) {
-        logger.error('Error loading project details:', error)
+        logger.error('Error loading project details:', error);
       } finally {
-        isLoadingProjectDetails.value = false
-        isLoadingUnits.value = false
+        isLoadingProjectDetails.value = false;
+        isLoadingUnits.value = false;
       }
-    }
+    };
 
     const loadReservations = async () => {
-      isLoadingReservations.value = true
+      isLoadingReservations.value = true;
       try {
-        reservations.value = await salesService.getReservations()
+        reservations.value = await salesService.getReservations();
       } catch (error) {
-        logger.error('Error loading reservations:', error)
+        logger.error('Error loading reservations:', error);
       } finally {
-        isLoadingReservations.value = false
+        isLoadingReservations.value = false;
       }
-    }
+    };
 
-    const openReservationModal = async (unit) => {
-      selectedUnit.value = unit
-      reservationForm.contract_unit_id = unit.id
-      reservationForm.contract_id = unit.contract_id || selectedProject.value?.id
-      
+    const openReservationModal = async unit => {
+      selectedUnit.value = unit;
+      reservationForm.contract_unit_id = unit.id;
+      reservationForm.contract_id = unit.contract_id || selectedProject.value?.id;
+      reservationLookups.value = null;
       try {
-        const context = await salesService.getReservationContext(unit.id)
-        // Pre-fill form with context data if available
-        if (context) {
-          // You can pre-fill additional fields here based on context
+        const response = await salesService.getReservationContext(unit.id);
+        if (response?.data?.data?.lookups) {
+          reservationLookups.value = response.data.data.lookups;
+          const lookups = reservationLookups.value;
+          if (lookups.reservation_types?.length)
+            reservationForm.reservation_type = lookups.reservation_types[0].value;
+          if (lookups.payment_methods?.length)
+            reservationForm.payment_method = lookups.payment_methods[0].value;
+          if (lookups.down_payment_statuses?.length)
+            reservationForm.down_payment_status = lookups.down_payment_statuses[0].value;
+          if (lookups.purchase_mechanisms?.length)
+            reservationForm.purchase_mechanism = lookups.purchase_mechanisms[0].value;
+          if (lookups.nationalities?.length)
+            reservationForm.client_nationality = lookups.nationalities[0];
         }
       } catch (error) {
-        logger.error('Error loading reservation context:', error)
+        logger.error('Error loading reservation context:', error);
       }
-      
-      showReservationModal.value = true
-    }
+      showReservationModal.value = true;
+    };
 
     const submitReservation = async () => {
-      isSubmitting.value = true
+      isSubmitting.value = true;
       try {
-        await salesService.createReservation(reservationForm)
-        notificationService.addNotification('تم إنشاء الحجز بنجاح', 'success')
-        showReservationModal.value = false
-        loadReservations()
-        
+        await salesService.createReservation(reservationForm);
+        notificationService.addNotification('تم إنشاء الحجز بنجاح', 'success');
+        showReservationModal.value = false;
+        loadReservations();
+
         // Reset form
         Object.assign(reservationForm, {
           contract_id: '',
@@ -580,146 +797,175 @@ export default {
           down_payment_amount: 0,
           down_payment_status: 'pending',
           purchase_mechanism: 'cash',
-          negotiation_notes: ''
-        })
+          negotiation_notes: '',
+        });
       } catch (error) {
-        logger.error('Error creating reservation:', error)
-        notificationService.addNotification('حدث خطأ أثناء إنشاء الحجز', 'error')
+        logger.error('Error creating reservation:', error);
+        notificationService.addNotification('حدث خطأ أثناء إنشاء الحجز', 'error');
       } finally {
-        isSubmitting.value = false
+        isSubmitting.value = false;
       }
-    }
+    };
 
-    const confirmReservation = async (reservationId) => {
-      if (!confirm('هل أنت متأكد من تأكيد هذا الحجز؟')) return
-      
-      try {
-        await salesService.confirmReservation(reservationId)
-        notificationService.addNotification('تم تأكيد الحجز بنجاح', 'success')
-        loadReservations()
-      } catch (error) {
-        logger.error('Error confirming reservation:', error)
-        notificationService.addNotification('حدث خطأ أثناء تأكيد الحجز', 'error')
-      }
-    }
+    const showConfirmModal = ref(false);
+    const confirmModalConfig = ref({
+      title: '',
+      message: '',
+      type: 'warning',
+      confirmText: 'تأكيد',
+      resolve: null,
+    });
 
-    const cancelReservation = async (reservationId) => {
-      if (!confirm('هل أنت متأكد من إلغاء هذا الحجز؟')) return
-      
-      try {
-        await salesService.cancelReservation(reservationId)
-        notificationService.addNotification('تم إلغاء الحجز', 'success')
-        loadReservations()
-      } catch (error) {
-        logger.error('Error cancelling reservation:', error)
-        notificationService.addNotification('حدث خطأ أثناء إلغاء الحجز', 'error')
-      }
-    }
+    const confirmReservation = reservationId => {
+      confirmModalConfig.value = {
+        title: 'تأكيد الحجز',
+        message: 'هل أنت متأكد من تأكيد هذا الحجز؟',
+        type: 'info',
+        confirmText: 'تأكيد',
+        resolve: async () => {
+          try {
+            await salesService.confirmReservation(reservationId);
+            notificationService.addNotification('تم تأكيد الحجز بنجاح', 'success');
+            loadReservations();
+          } catch (error) {
+            logger.error('Error confirming reservation:', error);
+            notificationService.addNotification('حدث خطأ أثناء تأكيد الحجز', 'error');
+          }
+        },
+      };
+      showConfirmModal.value = true;
+    };
 
-    const downloadVoucher = async (reservationId) => {
+    const cancelReservation = reservationId => {
+      confirmModalConfig.value = {
+        title: 'إلغاء الحجز',
+        message: 'هل أنت متأكد من إلغاء هذا الحجز؟',
+        type: 'danger',
+        confirmText: 'إلغاء الحجز',
+        resolve: async () => {
+          try {
+            await salesService.cancelReservation(reservationId);
+            notificationService.addNotification('تم إلغاء الحجز', 'success');
+            loadReservations();
+          } catch (error) {
+            logger.error('Error cancelling reservation:', error);
+            notificationService.addNotification('حدث خطأ أثناء إلغاء الحجز', 'error');
+          }
+        },
+      };
+      showConfirmModal.value = true;
+    };
+
+    const onConfirmModalConfirm = async () => {
+      const fn = confirmModalConfig.value.resolve;
+      if (fn) await fn();
+      showConfirmModal.value = false;
+    };
+
+    const downloadVoucher = async reservationId => {
       try {
-        const blob = await salesService.downloadVoucher(reservationId)
-        const url = window.URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `voucher-${reservationId}.pdf`
-        link.click()
-        window.URL.revokeObjectURL(url)
+        const blob = await salesService.downloadVoucher(reservationId);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `voucher-${reservationId}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
       } catch (error) {
-        logger.error('Error downloading voucher:', error)
-        notificationService.addNotification('حدث خطأ أثناء تحميل الإيصال', 'error')
+        logger.error('Error downloading voucher:', error);
+        notificationService.addNotification('حدث خطأ أثناء تحميل الإيصال', 'error');
       }
-    }
+    };
 
     // Utility functions
-    const formatCurrency = (value) => {
-      return new Intl.NumberFormat('ar-SA', { 
-        style: 'currency', 
+    const formatCurrency = value => {
+      return new Intl.NumberFormat('ar-SA', {
+        style: 'currency',
         currency: 'SAR',
-        minimumFractionDigits: 0
-      }).format(value || 0)
-    }
+        minimumFractionDigits: 0,
+      }).format(value || 0);
+    };
 
-    const formatNumber = (value) => {
-      return new Intl.NumberFormat('ar-SA').format(value || 0)
-    }
+    const formatNumber = value => {
+      return new Intl.NumberFormat('ar-SA').format(value || 0);
+    };
 
-    const formatDate = (dateString) => {
-      if (!dateString) return '—'
-      return new Date(dateString).toLocaleDateString('ar-SA')
-    }
+    const formatDate = dateString => {
+      if (!dateString) return '—';
+      return new Date(dateString).toLocaleDateString('ar-SA');
+    };
 
-    const getStatusClass = (status) => {
+    const getStatusClass = status => {
       const statusMap = {
-        'active': 'status-active',
-        'ready': 'status-ready',
-        'not_ready': 'status-not-ready',
-        'pending': 'status-pending'
-      }
-      return statusMap[status] || 'status-default'
-    }
+        active: 'status-active',
+        ready: 'status-ready',
+        not_ready: 'status-not-ready',
+        pending: 'status-pending',
+      };
+      return statusMap[status] || 'status-default';
+    };
 
-    const getStatusText = (status) => {
+    const getStatusText = status => {
       const statusMap = {
-        'active': 'نشط',
-        'ready': 'جاهز',
-        'not_ready': 'غير جاهز',
-        'pending': 'معلق'
-      }
-      return statusMap[status] || status
-    }
+        active: 'نشط',
+        ready: 'جاهز',
+        not_ready: 'غير جاهز',
+        pending: 'معلق',
+      };
+      return statusMap[status] || status;
+    };
 
-    const getUnitStatusClass = (status) => {
+    const getUnitStatusClass = status => {
       const statusMap = {
-        'available': 'unit-available',
-        'reserved': 'unit-reserved',
-        'sold': 'unit-sold'
-      }
-      return statusMap[status] || ''
-    }
+        available: 'unit-available',
+        reserved: 'unit-reserved',
+        sold: 'unit-sold',
+      };
+      return statusMap[status] || '';
+    };
 
-    const getUnitStatusText = (status) => {
+    const getUnitStatusText = status => {
       const statusMap = {
-        'available': 'متاح',
-        'reserved': 'محجوز',
-        'sold': 'مباع'
-      }
-      return statusMap[status] || status
-    }
+        available: 'متاح',
+        reserved: 'محجوز',
+        sold: 'مباع',
+      };
+      return statusMap[status] || status;
+    };
 
-    const getReservationType = (type) => {
+    const getReservationType = type => {
       const typeMap = {
-        'negotiation': 'تفاوض',
-        'booking': 'حجز',
-        'contract': 'عقد'
-      }
-      return typeMap[type] || type
-    }
+        negotiation: 'تفاوض',
+        booking: 'حجز',
+        contract: 'عقد',
+      };
+      return typeMap[type] || type;
+    };
 
-    const getReservationStatusClass = (status) => {
+    const getReservationStatusClass = status => {
       const statusMap = {
-        'pending': 'res-pending',
-        'confirmed': 'res-confirmed',
-        'cancelled': 'res-cancelled'
-      }
-      return statusMap[status] || ''
-    }
+        pending: 'res-pending',
+        confirmed: 'res-confirmed',
+        cancelled: 'res-cancelled',
+      };
+      return statusMap[status] || '';
+    };
 
-    const getReservationStatusText = (status) => {
+    const getReservationStatusText = status => {
       const statusMap = {
-        'pending': 'معلق',
-        'confirmed': 'مؤكد',
-        'cancelled': 'ملغي'
-      }
-      return statusMap[status] || status
-    }
+        pending: 'معلق',
+        confirmed: 'مؤكد',
+        cancelled: 'ملغي',
+      };
+      return statusMap[status] || status;
+    };
 
     // Lifecycle
     onMounted(() => {
-      loadDashboard()
-      loadProjects()
-      loadReservations()
-    })
+      loadDashboard();
+      loadProjects();
+      loadReservations();
+    });
 
     return {
       activeTab,
@@ -737,6 +983,7 @@ export default {
       isLoadingReservations,
       showReservationModal,
       selectedUnit,
+      reservationLookups,
       isSubmitting,
       reservationForm,
       loadDashboard,
@@ -745,6 +992,9 @@ export default {
       submitReservation,
       confirmReservation,
       cancelReservation,
+      showConfirmModal,
+      confirmModalConfig,
+      onConfirmModalConfirm,
       downloadVoucher,
       formatCurrency,
       formatNumber,
@@ -755,10 +1005,10 @@ export default {
       getUnitStatusText,
       getReservationType,
       getReservationStatusClass,
-      getReservationStatusText
-    }
-  }
-}
+      getReservationStatusText,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -881,7 +1131,7 @@ export default {
 .filter-select:focus,
 .filter-input:focus {
   outline: none;
-  border-color: #B1A28F;
+  border-color: #b1a28f;
 }
 
 .stats-grid {
@@ -956,7 +1206,7 @@ export default {
 .project-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
-  border-color: #B1A28F;
+  border-color: #b1a28f;
 }
 
 .project-header {
@@ -1020,7 +1270,7 @@ export default {
 .btn-view-project {
   width: 100%;
   padding: 10px;
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -1286,7 +1536,7 @@ export default {
 }
 
 .unit-card:hover {
-  border-color: #B1A28F;
+  border-color: #b1a28f;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
@@ -1414,7 +1664,7 @@ export default {
 
 .form-input:focus {
   outline: none;
-  border-color: #B1A28F;
+  border-color: #b1a28f;
 }
 
 textarea.form-input {
@@ -1441,7 +1691,7 @@ textarea.form-input {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
 }
 
@@ -1479,14 +1729,16 @@ textarea.form-input {
   width: 40px;
   height: 40px;
   border: 4px solid #e2e8f0;
-  border-top-color: #B1A28F;
+  border-top-color: #b1a28f;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state svg {
@@ -1506,22 +1758,21 @@ textarea.form-input {
   .tabs-nav {
     flex-direction: column;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .projects-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .form-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .dashboard-filters {
     flex-direction: column;
   }
 }
 </style>
-

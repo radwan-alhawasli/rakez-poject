@@ -13,10 +13,24 @@
       <div class="modal-header">
         <div class="header-content">
           <h2 class="modal-title">{{ isEdit ? 'تعديل وكيل' : 'إضافة وكيل' }}</h2>
-          <p class="modal-subtitle">{{ isEdit ? 'تعديل إعدادات وكيل المحادثة.' : 'إنشاء وكيل محادثة جديد مع أزرار الإجراءات.' }}</p>
+          <p class="modal-subtitle">
+            {{
+              isEdit ? 'تعديل إعدادات وكيل المحادثة.' : 'إنشاء وكيل محادثة جديد مع أزرار الإجراءات.'
+            }}
+          </p>
         </div>
         <button type="button" class="close-btn" @click="$emit('close')" aria-label="إغلاق">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
 
@@ -44,7 +58,7 @@
               class="input input-luxury textarea"
               rows="3"
               placeholder="وصف مختصر لدور الوكيل..."
-           ></textarea>
+            ></textarea>
           </div>
         </section>
 
@@ -118,7 +132,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
 
 const defaultForm = () => ({
   name: '',
@@ -126,93 +140,94 @@ const defaultForm = () => ({
   humanHelpEnabled: true,
   humanHelpLabel: 'Human Help',
   finishEnabled: false,
-  finishLabel: 'Finish Conversation'
-})
+  finishLabel: 'Finish Conversation',
+});
 
 export default {
   name: 'AgentModal',
   props: {
     editAgent: { type: Object, default: null },
-    isLoading: { type: Boolean, default: false }
+    isLoading: { type: Boolean, default: false },
   },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
-    const overlayRef = ref(null)
-    const containerRef = ref(null)
-    const isSaving = ref(false)
-    const form = reactive({ ...defaultForm() })
+    const overlayRef = ref(null);
+    const containerRef = ref(null);
+    const isSaving = ref(false);
+    const form = reactive({ ...defaultForm() });
 
-    const isEdit = computed(() => !!props.editAgent?.id)
+    const isEdit = computed(() => !!props.editAgent?.id);
 
     function getFocusables() {
-      const el = containerRef.value
-      if (!el) return []
-      const selector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      return [...el.querySelectorAll(selector)]
+      const el = containerRef.value;
+      if (!el) return [];
+      const selector =
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+      return [...el.querySelectorAll(selector)];
     }
 
     function handleTab(e) {
-      const focusables = getFocusables()
-      if (focusables.length === 0) return
-      const first = focusables[0]
-      const last = focusables[focusables.length - 1]
+      const focusables = getFocusables();
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
       if (e.shiftKey) {
         if (document.activeElement === first) {
-          e.preventDefault()
-          last.focus()
+          e.preventDefault();
+          last.focus();
         }
       } else {
         if (document.activeElement === last) {
-          e.preventDefault()
-          first.focus()
+          e.preventDefault();
+          first.focus();
         }
       }
     }
 
     function resetForm() {
-      Object.assign(form, defaultForm())
+      Object.assign(form, defaultForm());
       if (props.editAgent) {
-        form.name = props.editAgent.name ?? ''
-        form.description = props.editAgent.description ?? ''
-        form.humanHelpEnabled = !!props.editAgent.humanHelpEnabled
-        form.humanHelpLabel = props.editAgent.humanHelpLabel ?? 'Human Help'
-        form.finishEnabled = !!props.editAgent.finishEnabled
-        form.finishLabel = props.editAgent.finishLabel ?? 'Finish Conversation'
+        form.name = props.editAgent.name ?? '';
+        form.description = props.editAgent.description ?? '';
+        form.humanHelpEnabled = !!props.editAgent.humanHelpEnabled;
+        form.humanHelpLabel = props.editAgent.humanHelpLabel ?? 'Human Help';
+        form.finishEnabled = !!props.editAgent.finishEnabled;
+        form.finishLabel = props.editAgent.finishLabel ?? 'Finish Conversation';
       }
     }
 
-    watch(() => props.editAgent, resetForm, { immediate: true })
+    watch(() => props.editAgent, resetForm, { immediate: true });
 
     function handleSubmit() {
-      if (!form.name?.trim()) return
-      isSaving.value = true
+      if (!form.name?.trim()) return;
+      isSaving.value = true;
       emit('submit', {
         name: form.name.trim(),
         description: form.description?.trim() ?? '',
         humanHelpEnabled: form.humanHelpEnabled,
         humanHelpLabel: form.humanHelpLabel?.trim() || 'Human Help',
         finishEnabled: form.finishEnabled,
-        finishLabel: form.finishLabel?.trim() || 'Finish Conversation'
-      })
-      isSaving.value = false
+        finishLabel: form.finishLabel?.trim() || 'Finish Conversation',
+      });
+      isSaving.value = false;
     }
 
     function handleEscape(e) {
-      if (e.key === 'Escape') emit('close')
+      if (e.key === 'Escape') emit('close');
     }
 
     onMounted(() => {
-      document.body.style.overflow = 'hidden'
-      document.addEventListener('keydown', handleEscape)
-      const focusables = getFocusables()
-      if (focusables.length) focusables[0].focus()
-      else overlayRef.value?.focus()
-    })
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape);
+      const focusables = getFocusables();
+      if (focusables.length) focusables[0].focus();
+      else overlayRef.value?.focus();
+    });
 
     onUnmounted(() => {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEscape);
+    });
 
     return {
       overlayRef,
@@ -221,10 +236,10 @@ export default {
       isEdit,
       isSaving: computed(() => props.isLoading || isSaving.value),
       handleSubmit,
-      handleTab
-    }
-  }
-}
+      handleTab,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -244,8 +259,12 @@ export default {
   outline: none;
 }
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-container {
@@ -259,7 +278,7 @@ export default {
   box-shadow: var(--shadow-lg, 0 10px 40px -10px rgba(0, 0, 0, 0.12));
   overflow: hidden;
   direction: rtl;
-  border-top: 4px solid var(--color-gold, #B1A28F);
+  border-top: 4px solid var(--color-gold, #b1a28f);
 }
 
 .modal-header {
@@ -269,7 +288,9 @@ export default {
   padding: 24px 28px;
   background: var(--color-white, #fff);
 }
-.header-content { flex: 1; }
+.header-content {
+  flex: 1;
+}
 .modal-title {
   font-size: 22px;
   font-weight: 700;
@@ -319,13 +340,16 @@ export default {
 .section-bar {
   width: 4px;
   height: 20px;
-  background: var(--color-gold, #B1A28F);
+  background: var(--color-gold, #b1a28f);
   border-radius: 2px;
 }
 .form-group {
   margin-bottom: 16px;
 }
-.form-group.flex-1 { flex: 1; min-width: 0; }
+.form-group.flex-1 {
+  flex: 1;
+  min-width: 0;
+}
 .label {
   display: block;
   font-size: 14px;

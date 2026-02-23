@@ -1,5 +1,5 @@
-import apiClient from '../api/apiClient'
-import { handleServiceError } from '../utils/serviceErrorHandler'
+import apiClient from '../api/apiClient';
+import { handleServiceError } from '../utils/serviceErrorHandler';
 
 /**
  * Boards Department Service
@@ -15,11 +15,16 @@ const boardsDepartmentService = {
    */
   async getByContractId(contractId) {
     try {
-      const response = await apiClient.get(`/boards-department/show/${contractId}`)
-      const data = response.data?.data ?? response.data
-      return (data === null || data === undefined) ? {} : data
+      const response = await apiClient.get(`/boards-department/show/${contractId}`);
+      const data = response.data?.data ?? response.data;
+      return data === null || data === undefined ? {} : data;
     } catch (error) {
-      return handleServiceError(error, `Fetch boards department for contract ${contractId}`, 'get', {})
+      return handleServiceError(
+        error,
+        `Fetch boards department for contract ${contractId}`,
+        'get',
+        {}
+      );
     }
   },
 
@@ -32,10 +37,10 @@ const boardsDepartmentService = {
    */
   async store(contractId, data) {
     try {
-      const response = await apiClient.post(`/boards-department/store/${contractId}`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/boards-department/store/${contractId}`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, 'Store boards department', 'post')
+      return handleServiceError(error, 'Store boards department', 'post');
     }
   },
 
@@ -48,12 +53,12 @@ const boardsDepartmentService = {
    */
   async update(contractId, data) {
     try {
-      const response = await apiClient.put(`/boards-department/update/${contractId}`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.put(`/boards-department/update/${contractId}`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Update boards department ${contractId}`, 'put')
+      return handleServiceError(error, `Update boards department ${contractId}`, 'put');
     }
-  }
-}
+  },
+};
 
-export default boardsDepartmentService
+export default boardsDepartmentService;

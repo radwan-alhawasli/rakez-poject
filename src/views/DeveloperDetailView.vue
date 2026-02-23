@@ -2,8 +2,16 @@
   <div class="developer-detail-view">
     <div class="page-header">
       <button class="back-btn" @click="goBack">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
         العودة للمطورين
       </button>
@@ -68,7 +76,9 @@
         </div>
         <ul v-else class="projects-list">
           <li v-for="p in projects" :key="p.id || p.contract_id" class="project-item">
-            <span class="project-name">{{ p.project_name || p.name || p.title || 'مشروع بدون اسم' }}</span>
+            <span class="project-name">{{
+              p.project_name || p.name || p.title || 'مشروع بدون اسم'
+            }}</span>
             <span v-if="p.status" class="project-status">{{ p.status }}</span>
           </li>
         </ul>
@@ -78,88 +88,88 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import contractService from '../services/contractService'
-import { normalizeDeveloper } from '../utils/developerMapper'
-import logger from '../utils/logger'
+import { ref, computed, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import contractService from '../services/contractService';
+import { normalizeDeveloper } from '../utils/developerMapper';
+import logger from '../utils/logger';
 
 export default {
   name: 'DeveloperDetailView',
   setup() {
-    const router = useRouter()
-    const route = useRoute()
-    const developer = ref(null)
-    const projects = ref([])
-    const isLoadingProjects = ref(false)
+    const router = useRouter();
+    const route = useRoute();
+    const developer = ref(null);
+    const projects = ref([]);
+    const isLoadingProjects = ref(false);
 
     const projectCount = computed(() => {
-      if (developer.value?.projectCount != null) return Number(developer.value.projectCount)
-      return Array.isArray(projects.value) ? projects.value.length : 0
-    })
+      if (developer.value?.projectCount != null) return Number(developer.value.projectCount);
+      return Array.isArray(projects.value) ? projects.value.length : 0;
+    });
 
     const goBack = () => {
-      router.push({ name: 'Developers' })
-    }
+      router.push({ name: 'Developers' });
+    };
 
     const loadDeveloperFromState = () => {
-      const state = window.history.state
+      const state = window.history.state;
       if (state?.developer) {
-        developer.value = state.developer
-        return true
+        developer.value = state.developer;
+        return true;
       }
-      return false
-    }
+      return false;
+    };
 
     const loadDeveloperById = async () => {
-      const id = route.params.id
-      if (!id) return
+      const id = route.params.id;
+      if (!id) return;
       try {
-        const raw = await contractService.getDeveloperDetail(id)
+        const raw = await contractService.getDeveloperDetail(id);
         if (raw && typeof raw === 'object') {
-          developer.value = normalizeDeveloper(raw)
-          if (Array.isArray(raw.projects)) projects.value = raw.projects
+          developer.value = normalizeDeveloper(raw);
+          if (Array.isArray(raw.projects)) projects.value = raw.projects;
         }
       } catch (e) {
-        logger.error('Failed to load developer detail', e)
+        logger.error('Failed to load developer detail', e);
       }
-    }
+    };
 
     const loadProjects = async () => {
-      if (!developer.value?.email) return
-      isLoadingProjects.value = true
+      if (!developer.value?.email) return;
+      isLoadingProjects.value = true;
       try {
-        const res = await contractService.getDeveloperContractsByEmail(developer.value.email)
-        const raw = res?.data ?? res
-        projects.value = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : [])
+        const res = await contractService.getDeveloperContractsByEmail(developer.value.email);
+        const raw = res?.data ?? res;
+        projects.value = Array.isArray(raw) ? raw : raw && Array.isArray(raw.data) ? raw.data : [];
       } catch (e) {
-        logger.error('Failed to fetch developer projects', e)
-        projects.value = []
+        logger.error('Failed to fetch developer projects', e);
+        projects.value = [];
       } finally {
-        isLoadingProjects.value = false
+        isLoadingProjects.value = false;
       }
-    }
+    };
 
     onMounted(async () => {
-      const fromState = loadDeveloperFromState()
-      if (!fromState) await loadDeveloperById()
-      if (!developer.value) return
+      const fromState = loadDeveloperFromState();
+      if (!fromState) await loadDeveloperById();
+      if (!developer.value) return;
       if (Array.isArray(developer.value.projects) && developer.value.projects.length > 0) {
-        projects.value = developer.value.projects
+        projects.value = developer.value.projects;
       } else if (projects.value.length === 0 && developer.value?.email) {
-        await loadProjects()
+        await loadProjects();
       }
-    })
+    });
 
     return {
       developer,
       projects,
       projectCount,
       isLoadingProjects,
-      goBack
-    }
-  }
-}
+      goBack,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -168,8 +178,14 @@ export default {
   animation: fadeIn 0.4s ease-out;
 }
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .page-header {
@@ -304,7 +320,9 @@ export default {
   margin-bottom: 8px;
 }
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 .projects-list {
   list-style: none;

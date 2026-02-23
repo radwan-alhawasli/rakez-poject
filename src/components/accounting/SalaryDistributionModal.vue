@@ -1,5 +1,10 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')" @keydown.esc="$emit('close')" tabindex="-1">
+  <div
+    class="modal-overlay"
+    @click.self="$emit('close')"
+    @keydown.esc="$emit('close')"
+    tabindex="-1"
+  >
     <div class="modal-container">
       <div class="modal-header">
         <h2 class="modal-title">إدارة توزيع الراتب</h2>
@@ -9,24 +14,50 @@
         <div class="salary-detail-section">
           <h3 class="detail-title">بيانات الموظف</h3>
           <div class="detail-grid">
-            <div class="detail-row"><span class="detail-label">اسم الموظف:</span> {{ salary.employee_name || '—' }}</div>
-            <div class="detail-row"><span class="detail-label">الراتب حسب العقد:</span> {{ formatCurrency(salary.contract_salary || salary.base_salary) }}</div>
-            <div class="detail-row"><span class="detail-label">المسمى الوظيفي:</span> {{ salary.job_title || salary.title || '—' }}</div>
+            <div class="detail-row">
+              <span class="detail-label">اسم الموظف:</span> {{ salary.employee_name || '—' }}
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">الراتب حسب العقد:</span>
+              {{ formatCurrency(salary.contract_salary || salary.base_salary) }}
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">المسمى الوظيفي:</span>
+              {{ salary.job_title || salary.title || '—' }}
+            </div>
           </div>
         </div>
 
         <div v-if="isSalesJob" class="sales-commission-section">
           <h3 class="detail-title">تفاصيل عمولة المسوق (سيلز)</h3>
           <div class="detail-grid">
-            <div class="detail-row"><span class="detail-label">نسبة العمولة:</span> {{ salary.commission_percentage ? salary.commission_percentage + '%' : '—' }}</div>
-            <div class="detail-row"><span class="detail-label">المشاريع المباعة:</span> {{ salary.sold_projects_count || salary.projects_count || 0 }}</div>
-            <div class="detail-row"><span class="detail-label">عدد الوحدات:</span> {{ salary.units_count || 0 }}</div>
-            <div class="detail-row"><span class="detail-label">صافي عمولة المسوق الشهرية:</span> {{ formatCurrency(salary.net_monthly_commission || salary.total_commissions) }}</div>
+            <div class="detail-row">
+              <span class="detail-label">نسبة العمولة:</span>
+              {{ salary.commission_percentage ? salary.commission_percentage + '%' : '—' }}
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">المشاريع المباعة:</span>
+              {{ salary.sold_projects_count || salary.projects_count || 0 }}
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">عدد الوحدات:</span> {{ salary.units_count || 0 }}
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">صافي عمولة المسوق الشهرية:</span>
+              {{ formatCurrency(salary.net_monthly_commission || salary.total_commissions) }}
+            </div>
           </div>
           <div v-if="salary.unit_breakdown && salary.unit_breakdown.length" class="unit-breakdown">
             <h4 class="breakdown-subtitle">سعر البيع النهائي ونسبة العمولة من كل مشروع</h4>
             <table class="breakdown-table">
-              <thead><tr><th>المشروع</th><th>سعر البيع النهائي</th><th>نسبة العمولة</th><th>العمولة</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>المشروع</th>
+                  <th>سعر البيع النهائي</th>
+                  <th>نسبة العمولة</th>
+                  <th>العمولة</th>
+                </tr>
+              </thead>
               <tbody>
                 <tr v-for="(u, i) in salary.unit_breakdown" :key="i">
                   <td>{{ u.project_name || '—' }}</td>
@@ -41,7 +72,14 @@
 
         <div class="form-group">
           <label class="form-label">الشهر</label>
-          <input v-model="formData.month" type="number" min="1" max="12" class="form-input" required />
+          <input
+            v-model="formData.month"
+            type="number"
+            min="1"
+            max="12"
+            class="form-input"
+            required
+          />
         </div>
         <div class="form-group">
           <label class="form-label">السنة</label>
@@ -53,7 +91,12 @@
         </div>
         <div class="form-group">
           <label class="form-label">إجمالي العمولات</label>
-          <input v-model.number="formData.total_commissions" type="number" class="form-input" required />
+          <input
+            v-model.number="formData.total_commissions"
+            type="number"
+            class="form-input"
+            required
+          />
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-secondary" @click="$emit('close')">إلغاء</button>
@@ -67,56 +110,60 @@
 </template>
 
 <script>
-import { reactive, computed, onMounted, onUnmounted } from 'vue'
+import { reactive, computed, onMounted, onUnmounted } from 'vue';
 
 export default {
   name: 'SalaryDistributionModal',
   props: {
     salary: { type: Object, default: null },
-    isLoading: { type: Boolean, default: false }
+    isLoading: { type: Boolean, default: false },
   },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
     const isSalesJob = computed(() => {
-      const title = (props.salary?.job_title || props.salary?.title || '').toLowerCase()
-      return title.includes('سيلز') || title.includes('sales') || title.includes('مسوق')
-    })
+      const title = (props.salary?.job_title || props.salary?.title || '').toLowerCase();
+      return title.includes('سيلز') || title.includes('sales') || title.includes('مسوق');
+    });
 
-    const formatCurrency = (val) => {
-      if (!val) return '0 ر.س'
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR', maximumFractionDigits: 0 }).format(val)
-    }
+    const formatCurrency = val => {
+      if (!val) return '0 ر.س';
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'SAR',
+        maximumFractionDigits: 0,
+      }).format(val);
+    };
     // Handle Escape key
-    const handleEscape = (e) => {
+    const handleEscape = e => {
       if (e.key === 'Escape') {
-        emit('close')
+        emit('close');
       }
-    }
+    };
 
     // Lock body scroll when modal is open
     onMounted(() => {
-      document.body.style.overflow = 'hidden'
-      document.addEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape);
+    });
 
     onUnmounted(() => {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEscape);
+    });
     const formData = reactive({
       month: new Date().getMonth() + 1,
       year: new Date().getFullYear(),
       base_salary: props.salary?.base_salary || 0,
-      total_commissions: props.salary?.total_commissions || 0
-    })
+      total_commissions: props.salary?.total_commissions || 0,
+    });
 
     const handleSubmit = () => {
-      emit('submit', { action: props.salary?.distribution_id ? 'update' : 'create', ...formData })
-    }
+      emit('submit', { action: props.salary?.distribution_id ? 'update' : 'create', ...formData });
+    };
 
-    return { formData, handleSubmit, isSalesJob, formatCurrency }
-  }
-}
+    return { formData, handleSubmit, isSalesJob, formatCurrency };
+  },
+};
 </script>
 
 <style scoped>
@@ -140,8 +187,12 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-container {
@@ -281,7 +332,7 @@ export default {
   padding: 12px 24px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
   font-weight: 700;
   cursor: pointer;

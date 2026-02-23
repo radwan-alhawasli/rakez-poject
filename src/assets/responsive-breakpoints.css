@@ -1,0 +1,25 @@
+/**
+ * Canonical responsive breakpoints - Rakez Real Estate
+ * Use these values for media queries and layout decisions so views stay consistent.
+ *
+ * Reference:
+ *   320px  - Extra small (very small phones)
+ *   576px  - Small (large phones, landscape)
+ *   768px  - Medium (tablets portrait)
+ *   992px  - Large (tablets landscape, small desktop)
+ *   1200px - Extra large (desktop)
+ *   1920px - XXL (full HD+)
+ *   2560px - 2K (QHD)
+ *   3840px - 4K (ultra-wide)
+ */
+
+:root {
+  --bp-xs: 320px;
+  --bp-sm: 576px;
+  --bp-md: 768px;
+  --bp-lg: 992px;
+  --bp-xl: 1200px;
+  --bp-xxl: 1920px;
+  --bp-2k: 2560px;
+  --bp-4k: 3840px;
+}

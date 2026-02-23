@@ -1,5 +1,10 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')" @keydown.esc="$emit('close')" tabindex="-1">
+  <div
+    class="modal-overlay"
+    @click.self="$emit('close')"
+    @keydown.esc="$emit('close')"
+    tabindex="-1"
+  >
     <div class="modal-container commission-modal-wide">
       <div class="modal-header">
         <h2 class="modal-title">ملخص العمولة وتوزيعات العمولات</h2>
@@ -9,11 +14,30 @@
         <div v-if="commissionSummary" class="commission-summary-section">
           <h3 class="detail-title">ملخص العمولة (من المالك أو المشتري)</h3>
           <div class="summary-grid">
-            <div class="summary-row"><span class="summary-label">نسبة السعي (إجمالي العمولة قبل الضريبة):</span><span class="summary-value">{{ formatCurrency(commissionSummary.gross_amount) }}</span></div>
-            <div class="summary-row"><span class="summary-label">ضريبة القيمة المضافة:</span><span class="summary-value">{{ formatCurrency(commissionSummary.vat) }}</span></div>
-            <div class="summary-row"><span class="summary-label">مصاريف التسويق:</span><span class="summary-value">{{ formatCurrency(commissionSummary.marketing_expenses) }}</span></div>
-            <div class="summary-row"><span class="summary-label">رسوم البنك:</span><span class="summary-value">{{ formatCurrency(commissionSummary.bank_fees) }}</span></div>
-            <div class="summary-row net"><span class="summary-label">الصافي النهائي للتوزيع:</span><span class="summary-value">{{ formatCurrency(commissionSummary.net_amount) }}</span></div>
+            <div class="summary-row">
+              <span class="summary-label">نسبة السعي (إجمالي العمولة قبل الضريبة):</span
+              ><span class="summary-value">{{
+                formatCurrency(commissionSummary.gross_amount)
+              }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">ضريبة القيمة المضافة:</span
+              ><span class="summary-value">{{ formatCurrency(commissionSummary.vat) }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">مصاريف التسويق:</span
+              ><span class="summary-value">{{
+                formatCurrency(commissionSummary.marketing_expenses)
+              }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">رسوم البنك:</span
+              ><span class="summary-value">{{ formatCurrency(commissionSummary.bank_fees) }}</span>
+            </div>
+            <div class="summary-row net">
+              <span class="summary-label">الصافي النهائي للتوزيع:</span
+              ><span class="summary-value">{{ formatCurrency(commissionSummary.net_amount) }}</span>
+            </div>
           </div>
         </div>
 
@@ -32,7 +56,9 @@
             </thead>
             <tbody>
               <tr v-for="(dist, idx) in distributions" :key="dist.id || idx">
-                <td>{{ getCommissionTypeLabel(dist.commission_type || dist.distribution_type) }}</td>
+                <td>
+                  {{ getCommissionTypeLabel(dist.commission_type || dist.distribution_type) }}
+                </td>
                 <td>{{ dist.employee_name || dist.user_name || dist.user_id || '—' }}</td>
                 <td>{{ dist.bank_account || '—' }}</td>
                 <td>{{ dist.percentage ? dist.percentage + '%' : '—' }}</td>
@@ -58,7 +84,11 @@
 
         <div class="form-group">
           <label class="form-label">إضافة / تعديل توزيعات</label>
-          <div v-for="(dist, idx) in editDistributions" :key="'edit-' + idx" class="distribution-item">
+          <div
+            v-for="(dist, idx) in editDistributions"
+            :key="'edit-' + idx"
+            class="distribution-item"
+          >
             <select v-model="dist.commission_type" class="form-input">
               <option value="lead_generation">جلب</option>
               <option value="persuasion">إقناع</option>
@@ -69,9 +99,26 @@
               <option value="external_marketer">مسوق خارجي</option>
               <option value="other">أخرى</option>
             </select>
-            <input v-model="dist.employee_name" type="text" placeholder="اسم الموظف" class="form-input" />
-            <input v-model="dist.bank_account" type="text" placeholder="رقم الحساب البنكي" class="form-input" />
-            <input v-model.number="dist.percentage" type="number" placeholder="النسبة %" class="form-input" min="0" max="100" />
+            <input
+              v-model="dist.employee_name"
+              type="text"
+              placeholder="اسم الموظف"
+              class="form-input"
+            />
+            <input
+              v-model="dist.bank_account"
+              type="text"
+              placeholder="رقم الحساب البنكي"
+              class="form-input"
+            />
+            <input
+              v-model.number="dist.percentage"
+              type="number"
+              placeholder="النسبة %"
+              class="form-input"
+              min="0"
+              max="100"
+            />
             <button @click="removeEditDistribution(idx)" class="btn-action delete">حذف</button>
           </div>
           <button @click="addEditDistribution" class="btn-secondary">إضافة توزيع</button>
@@ -87,34 +134,34 @@
 </template>
 
 <script>
-import { ref, watch, onMounted, onUnmounted } from 'vue'
-import accountingService from '../../services/accountingService'
+import { ref, watch, onMounted, onUnmounted } from 'vue';
+import accountingService from '../../services/accountingService';
 
 export default {
   name: 'CommissionDistributionModal',
   props: {
     commission: { type: Object, default: null },
-    isLoading: { type: Boolean, default: false }
+    isLoading: { type: Boolean, default: false },
   },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') emit('close')
-    }
+    const handleEscape = e => {
+      if (e.key === 'Escape') emit('close');
+    };
 
     onMounted(() => {
-      document.body.style.overflow = 'hidden'
-      document.addEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape);
+    });
 
     onUnmounted(() => {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEscape);
+    });
 
-    const commissionSummary = ref(null)
-    const distributions = ref([])
-    const editDistributions = ref([])
+    const commissionSummary = ref(null);
+    const distributions = ref([]);
+    const editDistributions = ref([]);
 
     const COMMISSION_TYPE_LABELS = {
       lead_generation: 'جلب',
@@ -131,66 +178,83 @@ export default {
       management: 'إدارة',
       external: 'مسوق خارجي',
       sales: 'مبيعات',
-      team: 'فريق'
-    }
+      team: 'فريق',
+    };
 
-    const getCommissionTypeLabel = (type) => COMMISSION_TYPE_LABELS[type] || type || '—'
+    const getCommissionTypeLabel = type => COMMISSION_TYPE_LABELS[type] || type || '—';
 
-    const formatCurrency = (val) => {
-      if (!val) return '0 ر.س'
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR', maximumFractionDigits: 0 }).format(val)
-    }
+    const formatCurrency = val => {
+      if (!val) return '0 ر.س';
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'SAR',
+        maximumFractionDigits: 0,
+      }).format(val);
+    };
 
     const loadSummary = async () => {
-      if (!props.commission?.id) return
+      if (!props.commission?.id) return;
       try {
-        commissionSummary.value = await accountingService.getCommissionSummary(props.commission.id)
+        commissionSummary.value = await accountingService.getCommissionSummary(props.commission.id);
       } catch {
-        commissionSummary.value = null
+        commissionSummary.value = null;
       }
-    }
+    };
 
     const initDistributions = () => {
-      const dists = props.commission?.distributions || []
-      distributions.value = Array.isArray(dists) ? dists.map(d => ({
-        ...d,
-        commission_type: d.commission_type || d.distribution_type || 'jalb',
-        employee_name: d.employee_name || d.user_name,
-        bank_account: d.bank_account || '',
-        amount: d.amount || 0,
-        confirmed: d.confirmed || d.status === 'confirmed'
-      })) : []
-      editDistributions.value = [{ commission_type: 'lead_generation', employee_name: '', bank_account: '', percentage: 0 }]
-    }
+      const dists = props.commission?.distributions || [];
+      distributions.value = Array.isArray(dists)
+        ? dists.map(d => ({
+            ...d,
+            commission_type: d.commission_type || d.distribution_type || 'jalb',
+            employee_name: d.employee_name || d.user_name,
+            bank_account: d.bank_account || '',
+            amount: d.amount || 0,
+            confirmed: d.confirmed || d.status === 'confirmed',
+          }))
+        : [];
+      editDistributions.value = [
+        { commission_type: 'lead_generation', employee_name: '', bank_account: '', percentage: 0 },
+      ];
+    };
 
-    watch(() => props.commission, (val) => {
-      if (val) {
-        loadSummary()
-        initDistributions()
-      }
-    }, { immediate: true })
+    watch(
+      () => props.commission,
+      val => {
+        if (val) {
+          loadSummary();
+          initDistributions();
+        }
+      },
+      { immediate: true }
+    );
 
     const addEditDistribution = () => {
-      editDistributions.value.push({ commission_type: 'jalb', employee_name: '', bank_account: '', percentage: 0 })
-    }
+      editDistributions.value.push({
+        commission_type: 'jalb',
+        employee_name: '',
+        bank_account: '',
+        percentage: 0,
+      });
+    };
 
-    const removeEditDistribution = (idx) => {
-      editDistributions.value.splice(idx, 1)
-    }
+    const removeEditDistribution = idx => {
+      editDistributions.value.splice(idx, 1);
+    };
 
-    const handleConfirmRow = (dist) => {
+    const handleConfirmRow = dist => {
       emit('submit', {
         action: 'confirm',
         distributionId: dist.id,
         unitNumber: props.commission?.unit_number,
         projectName: props.commission?.project_name,
-        commissionType: getCommissionTypeLabel(dist.commission_type || dist.distribution_type)
-      })
-    }
+        commissionType: getCommissionTypeLabel(dist.commission_type || dist.distribution_type),
+      });
+    };
 
     const handleUpdate = () => {
-      emit('submit', { action: 'update', distributions: editDistributions.value })
-    }
+      emit('submit', { action: 'update', distributions: editDistributions.value });
+    };
 
     return {
       commissionSummary,
@@ -201,10 +265,10 @@ export default {
       handleConfirmRow,
       addEditDistribution,
       removeEditDistribution,
-      handleUpdate
-    }
-  }
-}
+      handleUpdate,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -228,8 +292,12 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-container {
@@ -275,8 +343,13 @@ export default {
   border-top: 1px solid #e2e8f0;
 }
 
-.summary-label { color: #64748b; }
-.summary-value { font-weight: 600; color: #1e293b; }
+.summary-label {
+  color: #64748b;
+}
+.summary-value {
+  font-weight: 600;
+  color: #1e293b;
+}
 
 .distribution-table-section {
   margin-bottom: 20px;
@@ -408,7 +481,7 @@ export default {
 
 .btn-primary {
   border: none;
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
 }
 

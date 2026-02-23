@@ -330,25 +330,50 @@
    MODAL RESPONSIVE ENHANCEMENTS
    ========================================== */
 
+/* Modal and overlay safety: safe-area + overflow on short viewports */
+.modal-content {
+  max-height: min(90vh, calc(100dvh - 2 * env(safe-area-inset-top, 0px) - 2 * env(safe-area-inset-bottom, 0px) - 40px));
+}
+
+.modal-body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@supports (max-height: 100dvh) {
+  .modal-content {
+    max-height: min(90dvh, calc(100dvh - 2 * env(safe-area-inset-top, 0px) - 2 * env(safe-area-inset-bottom, 0px) - 40px));
+  }
+}
+
 @media (max-width: 767px) {
   .modal-content {
     max-width: 95vw;
     margin: 20px auto;
     border-radius: 20px;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
   }
   
   .modal-header {
     padding: 20px 16px;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
   }
   
   .modal-body {
     padding: 20px 16px;
-    max-height: calc(100vh - 200px);
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    max-height: min(calc(100vh - 200px), calc(100dvh - 200px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)));
     overflow-y: auto;
   }
   
   .modal-footer {
     padding: 16px;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
     flex-direction: column;
     gap: 10px;
   }
