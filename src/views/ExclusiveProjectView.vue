@@ -4,178 +4,171 @@
     <div class="section-header">
       <div class="header-content">
         <h2 class="section-title">طلب اعتماد مشروع حصري</h2>
-        <p class="section-subtitle">أدخل بيانات العقد الكاملة لإرسال طلب اعتماده كمشروع حصري.</p>
+        <p class="section-subtitle">
+          أدخل بيانات المشروع الأولية لإرسال طلب اعتماده كفرصة حصرية لفريقك.
+        </p>
       </div>
     </div>
 
     <!-- Form Container -->
     <div class="form-container">
       <form @submit.prevent="handleSubmit">
-        
-        <!-- Section: Team Selection -->
+        <h3 class="section-label">بيانات المشروع الحصري</h3>
+
+        <!-- Section: Developer Info -->
         <div class="form-section">
-          <h3 class="section-label">اختيار الفريق</h3>
-          
+          <h4 class="group-title">معلومات المطور</h4>
           <div class="form-group-info">
             <div class="input-row">
               <div class="field-group full">
-                <label>الفريق</label>
+                <label>اختر مطورًا أو أضف جديدًا</label>
+                <p class="field-hint">
+                  يمكنك اختيار مطور من القائمة أو إضافة مطور جديد وإدخال بياناته يدوياً.
+                </p>
                 <div class="select-wrapper">
-                  <select v-model="form.team_id" class="form-input">
-                    <option value="">لا يوجد فريق</option>
-                    <option v-for="team in teams" :key="team.id" :value="team.id">
-                      {{ team.name }}
+                  <select
+                    v-model="form.developer_id"
+                    class="form-input"
+                    @change="onDeveloperSelect"
+                  >
+                    <option value="">إضافة مطور جديد (إدخال يدوي)</option>
+                    <option v-for="dev in developers" :key="dev.id" :value="dev.id">
+                      {{ dev.name }} {{ dev.commercialRecord ? `(${dev.commercialRecord})` : '' }}
                     </option>
                   </select>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Section: Second Party Info -->
-        <div class="form-section">
-          <h3 class="section-label">بيانات الطرف الثاني</h3>
-          
-          <div class="form-group-info">
-            <h4 class="group-title">المعلومات الأساسية</h4>
-            
-            <div class="input-row">
+            <div class="input-row" v-if="isNewDeveloper">
               <div class="field-group">
-                <label>اسم الطرف الثاني <span class="required">*</span></label>
-                <input type="text" v-model="form.second_party_name" class="form-input" placeholder="أدخل الاسم" required />
+                <label>المطور / الوكيل</label>
+                <input
+                  type="text"
+                  v-model="form.developer_name"
+                  class="form-input"
+                  placeholder="اسم المطور أو الوكيل"
+                />
               </div>
               <div class="field-group">
-                <label>رقم الهوية / الإقامة <span class="required">*</span></label>
-                <input type="text" v-model="form.second_party_id_number" class="form-input" placeholder="1234567890" required />
-              </div>
-            </div>
-
-            <div class="input-row">
-              <div class="field-group">
-                <label>رقم الجوال <span class="required">*</span></label>
-                <input type="tel" v-model="form.second_party_phone" class="form-input" placeholder="0501234567" required />
-              </div>
-              <div class="field-group">
-                <label>البريد الإلكتروني <span class="required">*</span></label>
-                <input type="email" v-model="form.second_party_email" class="form-input" placeholder="ahmed@example.com" required />
+                <label>رقم المطور (السجل التجاري)</label>
+                <input
+                  type="text"
+                  v-model="form.developer_cr_number"
+                  class="form-input"
+                  placeholder="رقم السجل التجاري"
+                />
               </div>
             </div>
-
-            <div class="input-row">
-              <div class="field-group">
-                <label>العنوان</label>
-                <input type="text" v-model="form.second_party_address" class="form-input" placeholder="العنوان الكامل" />
-              </div>
-              <div class="field-group">
-                <label>رقم السجل التجاري</label>
-                <input type="text" v-model="form.second_party_cr_number" class="form-input" placeholder="0501234567" />
-              </div>
-            </div>
-
-            <div class="input-row">
-              <div class="field-group">
-                <label>المفوض بالتوقيع</label>
-                <input type="text" v-model="form.second_party_signatory" class="form-input" placeholder="اسم المفوض" />
-              </div>
-              <div class="field-group">
-                <label>الصفة <span class="required">*</span></label>
-                <select v-model="form.second_party_role" class="form-input" required>
-                  <option value="">-- اختر الصفة --</option>
-                  <option value="owner">مالك</option>
-                  <option value="buyer">مشتري</option>
-                </select>
+            <div class="input-row selected-developer-summary" v-else-if="selectedDeveloperDisplay">
+              <div class="field-group full">
+                <span class="selected-label">المطور المختار:</span>
+                <span class="selected-value">{{ selectedDeveloperDisplay }}</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Section: Contract Info -->
+        <!-- Section: Project Info -->
         <div class="form-section">
+          <h4 class="group-title">معلومات المشروع</h4>
           <div class="form-group-info">
-            <h4 class="group-title">معلومات العقد والموقع</h4>
-            
             <div class="input-row">
               <div class="field-group">
-                <label>التاريخ الميلادي <span class="required">*</span></label>
-                <input type="date" v-model="form.gregorian_date" class="form-input" required />
+                <label>اسم المشروع</label>
+                <input
+                  type="text"
+                  v-model="form.project_name"
+                  class="form-input"
+                  placeholder="اسم المشروع"
+                />
               </div>
               <div class="field-group">
-                <label>التاريخ الهجري <span class="required">*</span></label>
-                <input type="text" v-model="form.hijri_date" class="form-input" placeholder="12-3-2020" required />
-              </div>
-            </div>
-
-            <div class="input-row">
-              <div class="field-group">
-                <label>مدينة العقد <span class="required">*</span></label>
-                <input type="text" v-model="form.contract_city" class="form-input" placeholder="الرياض" required />
+                <label>المدينة</label>
+                <input type="text" v-model="form.city" class="form-input" placeholder="المدينة" />
               </div>
               <div class="field-group">
-                <label>مدة الاتفاقية (بالأيام) <span class="required">*</span></label>
-                <input type="number" v-model="form.agreement_duration_days" class="form-input" placeholder="3" required />
-              </div>
-            </div>
-
-            <div class="input-row">
-              <div class="field-group">
-                <label>خط العرض (Latitude)</label>
-                <input type="number" step="any" v-model="form.lat" class="form-input" placeholder="25.2048" />
-              </div>
-              <div class="field-group">
-                <label>خط الطول (Longitude)</label>
-                <input type="number" step="any" v-model="form.lng" class="form-input" placeholder="55.2708" />
+                <label>الحي</label>
+                <input
+                  type="text"
+                  v-model="form.neighborhood"
+                  class="form-input"
+                  placeholder="الحي"
+                />
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Section: Financial Info -->
+        <!-- Section: Unit Info (multiple types, each with count) -->
         <div class="form-section">
+          <h4 class="group-title">معلومات الوحدات</h4>
           <div class="form-group-info">
-            <h4 class="group-title">المعلومات المالية</h4>
-            
-            <div class="input-row">
-              <div class="field-group">
-                <label>نسبة العمولة (%) <span class="required">*</span></label>
-                <input type="number" step="any" v-model="form.commission_percent" class="form-input" placeholder="5" required />
+            <div class="unit-rows-header input-row">
+              <div class="field-group field-type"><label>نوع الوحدات</label></div>
+              <div class="field-group field-count"><label>عدد الوحدات</label></div>
+              <div class="field-group field-price"><label>متوسط سعر الوحدة</label></div>
+              <div class="field-group field-subtotal"><label>قيمة النوع</label></div>
+              <div class="field-group field-action"><label>&nbsp;</label></div>
+            </div>
+            <div
+              v-for="(row, index) in form.unit_rows"
+              :key="row.id"
+              class="unit-item-row input-row"
+            >
+              <div class="field-group field-type">
+                <div class="select-wrapper">
+                  <select v-model="row.unit_type" class="form-input">
+                    <option value="">... اختر نوعا</option>
+                    <option v-for="opt in unitTypeOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.label }}
+                    </option>
+                  </select>
+                </div>
               </div>
-              <div class="field-group">
-                <label>العمولة من <span class="required">*</span></label>
-                <select v-model="form.commission_from" class="form-input" required>
-                  <option value="">-- اختر --</option>
-                  <option value="owner">المالك</option>
-                  <option value="buyer">المشتري</option>
-                </select>
+              <div class="field-group field-count">
+                <input
+                  type="number"
+                  v-model.number="row.units_count"
+                  class="form-input"
+                  min="0"
+                  placeholder="0"
+                />
+              </div>
+              <div class="field-group field-price">
+                <input
+                  type="number"
+                  v-model.number="row.avg_unit_price"
+                  class="form-input"
+                  min="0"
+                  placeholder="0"
+                />
+              </div>
+              <div class="field-group field-subtotal">
+                <input type="text" :value="rowSubtotal(row)" class="form-input readonly" readonly />
+              </div>
+              <div class="field-group field-action">
+                <button
+                  type="button"
+                  class="remove-unit-btn"
+                  @click="removeUnitRow(index)"
+                  :title="'حذف السطر'"
+                >
+                  ×
+                </button>
               </div>
             </div>
-
-            <div class="input-row">
-              <div class="field-group">
-                <label>متوسط قيمة العقار</label>
-                <input type="number" v-model="form.avg_property_value" class="form-input" placeholder="29" />
-              </div>
-              <div class="field-group">
-                <label>تاريخ الإصدار</label>
-                <input type="date" v-model="form.release_date" class="form-input" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section: Agency Info -->
-        <div class="form-section">
-          <div class="form-group-info">
-            <h4 class="group-title">معلومات الوكالة</h4>
-            
-            <div class="input-row">
-              <div class="field-group">
-                <label>رقم الوكالة</label>
-                <input type="text" v-model="form.agency_number" class="form-input" placeholder="234" />
-              </div>
-              <div class="field-group">
-                <label>تاريخ الوكالة</label>
-                <input type="date" v-model="form.agency_date" class="form-input" />
+            <button type="button" class="add-unit-link" @click="addUnitRow">
+              + إضافة نوع وحدة
+            </button>
+            <div class="input-row total-row">
+              <div class="field-group full">
+                <label>إجمالي قيمة الوحدات</label>
+                <input
+                  type="text"
+                  :value="totalUnitsValueFormatted"
+                  class="form-input readonly"
+                  readonly
+                />
               </div>
             </div>
           </div>
@@ -185,167 +178,180 @@
         <div class="form-actions">
           <button type="submit" class="submit-btn" :disabled="isLoading">
             <span v-if="isLoading" class="spinner-small"></span>
-            إرسال طلب العقد
+            إرسال الطلب
           </button>
         </div>
-
       </form>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue'
-import contractService from '../services/contractService'
-import hrService from '../services/hrService'
-import notificationService from '../services/notificationService'
-import logger from '../utils/logger'
-import { toast } from '../composables/useToast'
+import { ref, reactive, computed, onMounted } from 'vue';
+import contractService from '../services/contractService';
+import exclusiveProjectService from '../services/exclusiveProjectService';
+import notificationService from '../services/notificationService';
+import logger from '../utils/logger';
+import { toast } from '../composables/useToast';
+import { normalizeDeveloper } from '../utils/developerMapper';
+import { UNIT_TYPES } from '../constants/lookups';
 
 export default {
   name: 'ExclusiveProjectView',
   setup() {
-    const isLoading = ref(false)
-    const teams = ref([])
+    const isLoading = ref(false);
+    const developers = ref([]);
 
+    let nextUnitRowId = 1;
     const form = reactive({
-      // Team Selection
-      team_id: '',
-      
-      // Second Party Info
-      second_party_name: '',
-      second_party_id_number: '',
-      second_party_phone: '',
-      second_party_email: '',
-      second_party_address: '',
-      second_party_cr_number: '',
-      second_party_signatory: '',
-      second_party_role: '', // owner or buyer
-      
-      // Contract & Location Info
-      gregorian_date: '',
-      hijri_date: '',
-      contract_city: '',
-      agreement_duration_days: '',
-      lat: '',
-      lng: '',
-      
-      // Financial Info
-      commission_percent: '',
-      commission_from: '', // owner or buyer
-      avg_property_value: '',
-      release_date: '',
-      
-      // Agency Info
-      agency_number: '',
-      agency_date: ''
-    })
+      developer_id: '',
+      developer_name: '',
+      developer_cr_number: '',
+      project_name: '',
+      city: '',
+      neighborhood: '',
+      unit_rows: [{ id: nextUnitRowId++, unit_type: '', units_count: 0, avg_unit_price: 0 }],
+    });
 
-    // Load teams on component mount
-    const loadTeams = async () => {
+    const unitTypeOptions = UNIT_TYPES;
+
+    const isNewDeveloper = computed(() => !form.developer_id);
+
+    const selectedDeveloperDisplay = computed(() => {
+      if (!form.developer_id) return '';
+      const dev = developers.value.find(d => String(d.id) === String(form.developer_id));
+      if (!dev) return '';
+      return dev.commercialRecord ? `${dev.name} (${dev.commercialRecord})` : dev.name;
+    });
+
+    const rowSubtotal = row => {
+      const count = Number(row.units_count) || 0;
+      const avg = Number(row.avg_unit_price) || 0;
+      const val = count * avg;
+      return val > 0 ? val.toLocaleString('ar-SA') : '0';
+    };
+
+    const totalUnitsValue = computed(() => {
+      return form.unit_rows.reduce((sum, row) => {
+        const count = Number(row.units_count) || 0;
+        const avg = Number(row.avg_unit_price) || 0;
+        return sum + count * avg;
+      }, 0);
+    });
+
+    const totalUnitsValueFormatted = computed(() => totalUnitsValue.value.toLocaleString('ar-SA'));
+
+    const addUnitRow = () => {
+      form.unit_rows.push({
+        id: nextUnitRowId++,
+        unit_type: '',
+        units_count: 0,
+        avg_unit_price: 0,
+      });
+    };
+
+    const removeUnitRow = index => {
+      if (form.unit_rows.length <= 1) return;
+      form.unit_rows.splice(index, 1);
+    };
+
+    const loadDevelopers = async () => {
       try {
-        const data = await hrService.getTeams()
-        teams.value = data?.items ?? (Array.isArray(data) ? data : (data?.data || []))
+        const { data } = await contractService.getDevelopersList({ per_page: 100, page: 1 });
+        const list = Array.isArray(data) ? data : [];
+        developers.value = list.map(d => normalizeDeveloper(d));
       } catch (error) {
-        logger.error('Error loading teams:', error)
-        teams.value = []
+        logger.error('Error loading developers:', error);
+        developers.value = [];
       }
-    }
+    };
+
+    const onDeveloperSelect = () => {
+      if (form.developer_id) {
+        const dev = developers.value.find(d => String(d.id) === String(form.developer_id));
+        if (dev) {
+          form.developer_name = dev.name;
+          form.developer_cr_number = dev.commercialRecord || '';
+        }
+      } else {
+        form.developer_name = '';
+        form.developer_cr_number = '';
+      }
+    };
 
     onMounted(() => {
-      loadTeams()
-    })
+      loadDevelopers();
+    });
 
-    const formatDateForAPI = (dateString) => {
-      if (!dateString) return ''
-      const [year, month, day] = dateString.split('-')
-      return `${day}-${month}-${year}`
-    }
+    const resetForm = () => {
+      form.developer_id = '';
+      form.developer_name = '';
+      form.developer_cr_number = '';
+      form.project_name = '';
+      form.city = '';
+      form.neighborhood = '';
+      form.unit_rows = [{ id: nextUnitRowId++, unit_type: '', units_count: 0, avg_unit_price: 0 }];
+    };
 
     const handleSubmit = async () => {
-      isLoading.value = true
+      isLoading.value = true;
       try {
-        // Prepare payload matching API structure
+        const units = form.unit_rows
+          .filter(r => r.unit_type || (Number(r.units_count) || 0) > 0)
+          .map(r => ({
+            unit_type: r.unit_type || undefined,
+            units_count: Number(r.units_count) || 0,
+            avg_unit_price: Number(r.avg_unit_price) || 0,
+          }));
+
         const payload = {
-          lat: parseFloat(form.lat) || 25.2048,
-          lng: parseFloat(form.lng) || 55.2708,
-          second_party_name: form.second_party_name,
-          second_party_id_number: form.second_party_id_number,
-          second_party_phone: form.second_party_phone,
-          second_party_email: form.second_party_email,
-          second_party_address: form.second_party_address || 'rayad',
-          second_party_cr_number: form.second_party_cr_number || '0501234567',
-          second_party_signatory: form.second_party_signatory || 'sasa',
-          second_party_role: form.second_party_role,
-          gregorian_date: formatDateForAPI(form.gregorian_date),
-          hijri_date: form.hijri_date,
-          contract_city: form.contract_city,
-          agreement_duration_days: form.agreement_duration_days,
-          commission_percent: form.commission_percent,
-          commission_from: form.commission_from,
-          agency_number: form.agency_number || '234',
-          agency_date: formatDateForAPI(form.agency_date) || '12-3-2020',
-          avg_property_value: form.avg_property_value || '29',
-          release_date: formatDateForAPI(form.release_date) || '12-3-2020'
+          project_name: form.project_name,
+          city: form.city,
+          neighborhood: form.neighborhood,
+          units,
+          units_count: units.reduce((s, u) => s + (u.units_count || 0), 0),
+          total_units_value: totalUnitsValue.value,
+        };
+        if (form.developer_id) {
+          payload.developer_id = form.developer_id;
+        } else {
+          payload.developer_name = form.developer_name;
+          payload.developer_cr_number = form.developer_cr_number;
         }
 
-        // Add team_id if selected
-        if (form.team_id) {
-          payload.team_id = form.team_id
-        }
+        await exclusiveProjectService.createExclusiveProject(payload);
 
-        // Get contract ID (assuming it's passed or selected)
-        const contractId = 2 // You can make this dynamic
-        await contractService.completeContractInfo(contractId, payload)
-        
-        // Trigger notification
         notificationService.addNotification(
-           `تم إرسال طلب العقد لـ "${form.second_party_name}" بنجاح وهو الآن قيد المراجعة.`,
-           'success'
-        )
-
-        toast.success('تم إرسال طلب العقد بنجاح!')
-        
-        // Reset form
-        Object.assign(form, {
-          team_id: '',
-          second_party_name: '',
-          second_party_id_number: '',
-          second_party_phone: '',
-          second_party_email: '',
-          second_party_address: '',
-          second_party_cr_number: '',
-          second_party_signatory: '',
-          second_party_role: '',
-          gregorian_date: '',
-          hijri_date: '',
-          contract_city: '',
-          agreement_duration_days: '',
-          lat: '',
-          lng: '',
-          commission_percent: '',
-          commission_from: '',
-          avg_property_value: '',
-          release_date: '',
-          agency_number: '',
-          agency_date: ''
-        })
+          'تم إرسال طلب اعتماد المشروع الحصري بنجاح وهو قيد المراجعة.',
+          'success'
+        );
+        toast.success('تم إرسال الطلب بنجاح!');
+        resetForm();
       } catch (error) {
-        logger.error('Submission failed', error)
-        toast.error('حدث خطأ أثناء إرسال الطلب: ' + (error.response?.data?.message || error.message))
+        logger.error('Exclusive project request failed', error);
+        const msg = error.response?.data?.message || error.message;
+        toast.error('حدث خطأ أثناء إرسال الطلب: ' + msg);
       } finally {
-        isLoading.value = false
+        isLoading.value = false;
       }
-    }
+    };
 
     return {
       form,
-      teams,
+      developers,
+      unitTypeOptions,
+      isNewDeveloper,
+      selectedDeveloperDisplay,
       isLoading,
-      handleSubmit
-    }
-  }
-}
+      totalUnitsValueFormatted,
+      onDeveloperSelect,
+      rowSubtotal,
+      addUnitRow,
+      removeUnitRow,
+      handleSubmit,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -355,8 +361,14 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .section-header {
@@ -385,14 +397,14 @@ export default {
 }
 
 .section-label {
-    font-size: 24px;
-    font-family: 'Amiri', serif;
-    color: #1e3a5f;
-    margin-bottom: 20px;
-    background: #fdfbf7;
-    padding: 10px 20px;
-    border-radius: 8px;
-    display: inline-block;
+  font-size: 24px;
+  font-family: 'Amiri', serif;
+  color: #1e3a5f;
+  margin-bottom: 20px;
+  background: #fdfbf7;
+  padding: 10px 20px;
+  border-radius: 8px;
+  display: inline-block;
 }
 
 .form-group-info {
@@ -418,16 +430,6 @@ export default {
   margin-bottom: 20px;
 }
 
-.input-row.grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-}
-
-.input-row.grid-4 {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-}
-
 .field-group {
   flex: 1;
   display: flex;
@@ -446,9 +448,31 @@ export default {
   font-weight: 500;
 }
 
-.field-group label .required {
-  color: #ef4444;
-  margin-right: 4px;
+.field-hint {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.selected-developer-summary {
+  padding: 12px 16px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  margin-top: -8px;
+}
+
+.selected-developer-summary .selected-label {
+  font-size: 13px;
+  color: #64748b;
+  margin-left: 8px;
+}
+
+.selected-developer-summary .selected-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e3a5f;
 }
 
 .select-wrapper {
@@ -474,62 +498,89 @@ export default {
 
 .form-input:focus {
   outline: none;
-  border-color: #B1A28F;
+  border-color: #b1a28f;
   box-shadow: 0 0 0 3px rgba(161, 139, 92, 0.1);
   background: white;
 }
 
-.form-input.text-area {
-  min-height: 100px;
-  resize: vertical;
-  font-family: 'Tajawal', sans-serif;
+.form-input.readonly {
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: default;
 }
 
-.unit-item {
-    position: relative;
-    border-bottom: 1px dashed #e2e8f0;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
+.unit-rows-header.input-row {
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.unit-item-row {
+  align-items: flex-end;
+}
+
+.unit-item-row .field-action {
+  flex: 0 0 auto;
+  width: 44px;
+}
+
+.field-type {
+  flex: 1.2;
+  min-width: 120px;
+}
+.field-count {
+  flex: 0.7;
+  min-width: 90px;
+}
+.field-price {
+  flex: 1;
+  min-width: 110px;
+}
+.field-subtotal {
+  flex: 1;
+  min-width: 100px;
 }
 
 .remove-unit-btn {
-    position: absolute;
-    top: 35px;
-    left: -10px;
-    background: #fee2e2;
-    color: #ef4444;
-    border: none;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.remove-unit-btn:hover {
+  background: #fecaca;
 }
 
 .add-unit-link {
-    background: none;
-    border: none;
-    color: #B1A28F;
-    font-weight: 700;
-    cursor: pointer;
-    font-size: 14px;
-    margin-bottom: 20px;
-    font-family: 'Tajawal', sans-serif;
+  background: none;
+  border: none;
+  color: #b1a28f;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+  margin: 12px 0 20px 0;
+  font-family: 'Tajawal', sans-serif;
+  padding: 0;
 }
 
 .add-unit-link:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
-.mt-20 { margin-top: 20px; }
-
-.form-input.readonly {
-    background: #f1f5f9;
-    color: #64748b;
-    cursor: default;
+.total-row {
+  margin-top: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .form-actions {
@@ -541,7 +592,7 @@ export default {
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
   border: none;
   padding: 14px 40px;
@@ -576,25 +627,42 @@ export default {
 .spinner-small {
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {
-  .input-row { flex-direction: column; }
-  .input-row.grid-3 { grid-template-columns: 1fr; }
-  .input-row.grid-4 { grid-template-columns: 1fr; }
-  
+  .input-row {
+    flex-direction: column;
+  }
+  .unit-rows-header.input-row {
+    display: none;
+  }
+  .unit-item-row {
+    flex-wrap: wrap;
+  }
+  .field-type,
+  .field-count,
+  .field-price,
+  .field-subtotal {
+    min-width: 100%;
+    flex: 1 1 100%;
+  }
+  .field-action {
+    order: -1;
+    margin-bottom: 8px;
+  }
   .section-title {
     font-size: 24px;
   }
-  
   .form-group-info {
     padding: 20px;
   }

@@ -4,31 +4,58 @@
       <div class="modal-header">
         <div class="header-text">
           <h2 class="modal-title">{{ isEdit ? 'تعديل بيانات الموظف' : 'إضافة موظف جديد' }}</h2>
-          <p class="modal-subtitle">{{ isEdit ? 'تعديل تفاصيل الموظف في النظام.' : 'أدخل تفاصيل الموظف الجديد لإنشاء حسابه.' }}</p>
+          <p class="modal-subtitle">
+            {{
+              isEdit ? 'تعديل تفاصيل الموظف في النظام.' : 'أدخل تفاصيل الموظف الجديد لإنشاء حسابه.'
+            }}
+          </p>
         </div>
         <button class="close-btn" @click="$emit('close')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
 
       <div class="modal-body">
         <form @submit.prevent="handleSubmit" class="user-form">
-          
           <!-- البيانات الشخصية (Personal Data) -->
           <div class="form-section">
             <h3 class="section-title">
-              <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              <svg
+                class="section-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
               البيانات الشخصية
             </h3>
-            
+
             <div class="form-row">
               <div class="form-group">
                 <label class="label">الاسم الكامل *</label>
-                <input v-model="form.name" type="text" class="input" placeholder="مثال: علي أحمد الأحمد" required />
+                <input
+                  v-model="form.name"
+                  type="text"
+                  class="input"
+                  placeholder="مثال: علي أحمد الأحمد"
+                  required
+                />
               </div>
               <div class="form-group">
                 <label class="label">رقم الهوية *</label>
-                <input v-model="form.identity_number" type="text" class="input" placeholder="مثال: 1234567890" required />
+                <input
+                  v-model="form.identity_number"
+                  type="text"
+                  class="input"
+                  placeholder="مثال: 1234567890"
+                  required
+                />
               </div>
             </div>
 
@@ -36,15 +63,37 @@
               <div class="form-group">
                 <label class="label">تاريخ الميلاد *</label>
                 <div class="date-type-toggle">
-                  <button type="button" @click="dateType = 'gregorian'" :class="{ active: dateType === 'gregorian' }" class="toggle-btn">ميلادي</button>
-                  <button type="button" @click="dateType = 'hijri'" :class="{ active: dateType === 'hijri' }" class="toggle-btn">هجري</button>
+                  <button
+                    type="button"
+                    @click="dateType = 'gregorian'"
+                    :class="{ active: dateType === 'gregorian' }"
+                    class="toggle-btn"
+                  >
+                    ميلادي
+                  </button>
+                  <button
+                    type="button"
+                    @click="dateType = 'hijri'"
+                    :class="{ active: dateType === 'hijri' }"
+                    class="toggle-btn"
+                  >
+                    هجري
+                  </button>
                 </div>
                 <input v-model="form.birthday" type="date" class="input" required />
-                <small class="hint">{{ dateType === 'gregorian' ? 'التاريخ الميلادي' : 'التاريخ الهجري' }}</small>
+                <small class="hint">{{
+                  dateType === 'gregorian' ? 'التاريخ الميلادي' : 'التاريخ الهجري'
+                }}</small>
               </div>
               <div class="form-group">
                 <label class="label">رقم الجوال *</label>
-                <input v-model="form.phone" type="text" class="input" placeholder="05xxxxxxxx" required />
+                <input
+                  v-model="form.phone"
+                  type="text"
+                  class="input"
+                  placeholder="05xxxxxxxx"
+                  required
+                />
               </div>
             </div>
 
@@ -52,21 +101,18 @@
               <label class="label">الجنسية</label>
               <select v-model="form.nationality" class="input select">
                 <option value="">اختر الجنسية</option>
-                <option value="saudi">سعودي</option>
-                <option value="egyptian">مصري</option>
-                <option value="jordanian">أردني</option>
-                <option value="syrian">سوري</option>
-                <option value="other">أخرى</option>
+                <option v-for="opt in NATIONALITIES" :key="opt.value" :value="opt.value">
+                  {{ opt.label }}
+                </option>
               </select>
             </div>
 
             <div class="form-group">
               <label class="label">الحالة الاجتماعية</label>
               <select v-model="form.marital_status" class="input select">
-                <option value="single">أعزب/عزباء</option>
-                <option value="married">متزوج/متزوجة</option>
-                <option value="divorced">مطلق/مطلقة</option>
-                <option value="widowed">أرمل/أرملة</option>
+                <option v-for="opt in MARITAL_STATUSES" :key="opt.value" :value="opt.value">
+                  {{ opt.label }}
+                </option>
               </select>
             </div>
           </div>
@@ -76,14 +122,28 @@
           <!-- البيانات الوظيفية (Job Data) -->
           <div class="form-section">
             <h3 class="section-title">
-              <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+              <svg
+                class="section-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+              </svg>
               البيانات الوظيفية
             </h3>
 
             <div class="form-row">
               <div class="form-group">
                 <label class="label">المسمى الوظيفي</label>
-                <input v-model="form.job_title" type="text" class="input" placeholder="مثال: مسوق عقاري" />
+                <input
+                  v-model="form.job_title"
+                  type="text"
+                  class="input"
+                  placeholder="مثال: مسوق عقاري"
+                />
               </div>
               <div class="form-group">
                 <label class="label">القسم / الإدارة *</label>
@@ -106,7 +166,13 @@
             <div class="form-row">
               <div class="form-group">
                 <label class="label">الراتب الشامل (ر.س) *</label>
-                <input v-model.number="form.salary" type="number" class="input" placeholder="0.00" required />
+                <input
+                  v-model.number="form.salary"
+                  type="number"
+                  class="input"
+                  placeholder="0.00"
+                  required
+                />
               </div>
               <div class="form-group">
                 <label class="label">نوع الدوام *</label>
@@ -124,13 +190,23 @@
               </div>
               <div class="form-group">
                 <label class="label">فترة التجربة (بالأيام)</label>
-                <input v-model.number="form.trial_period_days" type="number" class="input" placeholder="90" />
+                <input
+                  v-model.number="form.trial_period_days"
+                  type="number"
+                  class="input"
+                  placeholder="90"
+                />
               </div>
             </div>
 
             <div class="form-group">
               <label class="label">ميزات أخرى</label>
-              <textarea v-model="form.additional_benefits" class="input textarea" rows="3" placeholder="مثال: تأمين صحي، بدل سكن، بدل مواصلات..."></textarea>
+              <textarea
+                v-model="form.additional_benefits"
+                class="input textarea"
+                rows="3"
+                placeholder="مثال: تأمين صحي، بدل سكن، بدل مواصلات..."
+              ></textarea>
             </div>
 
             <!-- Team & Manager Status -->
@@ -139,9 +215,7 @@
                 <label class="label">الفريق</label>
                 <select v-model="form.team" class="input select">
                   <option value="">لا يوجد فريق</option>
-                  <option :value="1">الفريق الأول</option>
-                  <option :value="2">الفريق الثاني</option>
-                  <option :value="3">الفريق الثالث</option>
+                  <option v-for="t in teamsList" :key="t.id" :value="t.id">{{ t.name }}</option>
                 </select>
               </div>
               <div class="form-group d-flex-center">
@@ -158,24 +232,49 @@
           <!-- بيانات التواصل والبنوك (Contact & Banking) -->
           <div class="form-section">
             <h3 class="section-title">
-              <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              <svg
+                class="section-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+                ></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
               بيانات التواصل والبنوك
             </h3>
 
             <div class="form-row">
               <div class="form-group">
                 <label class="label">البريد الإلكتروني *</label>
-                <input v-model="form.email" type="email" class="input" placeholder="user@example.com" required />
+                <input
+                  v-model="form.email"
+                  type="email"
+                  class="input"
+                  placeholder="user@example.com"
+                  required
+                />
               </div>
               <div class="form-group">
                 <label class="label">رقم حساب البنك (IBAN)</label>
-                <input v-model="form.iban" type= "text" class="input" placeholder="SA..." />
+                <input v-model="form.iban" type="text" class="input" placeholder="SA..." />
               </div>
             </div>
 
             <div class="form-group">
-              <label class="label">كلمة المرور {{ isEdit ? '(اتركها فارغة للإبقاء على الحالية)' : '*' }}</label>
-              <input v-model="form.password" type="password" class="input" placeholder="••••••" :required="!isEdit" />
+              <label class="label"
+                >كلمة المرور {{ isEdit ? '(اتركها فارغة للإبقاء على الحالية)' : '*' }}</label
+              >
+              <input
+                v-model="form.password"
+                type="password"
+                class="input"
+                placeholder="••••••"
+                :required="!isEdit"
+              />
             </div>
           </div>
 
@@ -184,16 +283,35 @@
           <!-- المستندات والموافقات (Documents & Approvals) -->
           <div class="form-section">
             <h3 class="section-title">
-              <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              <svg
+                class="section-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
               المستندات والموافقات
             </h3>
 
             <div class="form-group">
               <label class="label">السيرة الذاتية (CV)</label>
               <div class="file-upload-area">
-                <input type="file" ref="cvFileInput" @change="handleCVUpload" accept=".pdf,.doc,.docx" class="file-input" />
+                <input
+                  type="file"
+                  ref="cvFileInput"
+                  @change="handleCVUpload"
+                  accept=".pdf,.doc,.docx"
+                  class="file-input"
+                />
                 <button type="button" @click="$refs.cvFileInput.click()" class="upload-btn">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
                   {{ form.cv_file ? 'تغيير الملف' : 'رفع السيرة الذاتية' }}
                 </button>
                 <span v-if="form.cv_file" class="file-name">{{ form.cv_file.name }}</span>
@@ -203,12 +321,24 @@
             <div class="form-group">
               <label class="label">التوقيع الإلكتروني (أو scan)</label>
               <div class="file-upload-area">
-                <input type="file" ref="signatureFileInput" @change="handleSignatureUpload" accept="image/*,.pdf" class="file-input" />
+                <input
+                  type="file"
+                  ref="signatureFileInput"
+                  @change="handleSignatureUpload"
+                  accept="image/*,.pdf"
+                  class="file-input"
+                />
                 <button type="button" @click="$refs.signatureFileInput.click()" class="upload-btn">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
                   {{ form.signature_file ? 'تغيير التوقيع' : 'رفع التوقيع' }}
                 </button>
-                <span v-if="form.signature_file" class="file-name">{{ form.signature_file.name }}</span>
+                <span v-if="form.signature_file" class="file-name">{{
+                  form.signature_file.name
+                }}</span>
               </div>
             </div>
 
@@ -232,12 +362,27 @@
           <!-- العقود (Contracts) -->
           <div class="form-section" v-if="!isEdit">
             <h3 class="section-title">
-              <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+              <svg
+                class="section-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
               العقود
             </h3>
 
             <div class="contract-notice">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
               <p>سيتم إنشاء وإرسال عقد التوظيف تلقائياً بعد حفظ بيانات الموظف</p>
             </div>
           </div>
@@ -246,7 +391,16 @@
             <button type="button" class="btn btn-cancel" @click="$emit('close')">إلغاء</button>
             <button type="submit" class="btn btn-submit" :disabled="isLoading">
               <span v-if="isLoading" class="loader-state">
-                <svg class="spinner-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle></svg>
+                <svg class="spinner-icon" viewBox="0 0 24 24">
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                    fill="none"
+                  ></circle>
+                </svg>
                 جاري الحفظ...
               </span>
               <span v-else>{{ isEdit ? 'حفظ التعديلات' : 'إنشاء الموظف' }}</span>
@@ -259,27 +413,43 @@
 </template>
 
 <script>
-import { ref, watch } from 'vue'
-import { ROLE_MAP } from '../constants/roles'
+import { ref, watch, onMounted } from 'vue';
+import { ROLE_MAP } from '../constants/roles';
+import { NATIONALITIES, MARITAL_STATUSES } from '../constants/lookups';
+import hrService from '../services/hrService';
+import logger from '../utils/logger';
 
 export default {
   name: 'AddUserModal',
   props: {
     editUser: {
       type: Object,
-      default: null
+      default: null,
     },
     isLoading: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
-    const isEdit = ref(false)
-    const dateType = ref('gregorian') // gregorian or hijri
-    const cvFileInput = ref(null)
-    const signatureFileInput = ref(null)
+    const isEdit = ref(false);
+    const dateType = ref('gregorian'); // gregorian or hijri
+    const cvFileInput = ref(null);
+    const signatureFileInput = ref(null);
+    const teamsList = ref([]);
+
+    onMounted(async () => {
+      try {
+        const { items } = await hrService.getTeams({ per_page: 100 });
+        teamsList.value = (items || []).map(t => ({
+          id: t.id ?? t.team_id,
+          name: t.name || t.team_name || `فريق ${t.id ?? t.team_id}`,
+        }));
+      } catch (e) {
+        logger.error('AddUserModal: failed to load teams', e);
+      }
+    });
 
     const form = ref({
       // Personal Data
@@ -312,22 +482,22 @@ export default {
       logo_usage_consent: false,
 
       // System
-      is_manager: false
-    })
+      is_manager: false,
+    });
 
-    const handleCVUpload = (event) => {
-      const file = event.target.files[0]
+    const handleCVUpload = event => {
+      const file = event.target.files[0];
       if (file) {
-        form.value.cv_file = file
+        form.value.cv_file = file;
       }
-    }
+    };
 
-    const handleSignatureUpload = (event) => {
-      const file = event.target.files[0]
+    const handleSignatureUpload = event => {
+      const file = event.target.files[0];
       if (file) {
-        form.value.signature_file = file
+        form.value.signature_file = file;
       }
-    }
+    };
 
     const resetForm = () => {
       form.value = {
@@ -352,38 +522,43 @@ export default {
         signature_file: null,
         work_phone_consent: false,
         logo_usage_consent: false,
-        is_manager: false
-      }
-    }
+        is_manager: false,
+      };
+    };
 
-    watch(() => props.editUser, (user) => {
-      if (user) {
-        isEdit.value = true
-        let typeValue = (typeof user.type === 'string' && ROLE_MAP[user.type] !== undefined)
-          ? ROLE_MAP[user.type]
-          : user.type
+    watch(
+      () => props.editUser,
+      user => {
+        if (user) {
+          isEdit.value = true;
+          let typeValue =
+            typeof user.type === 'string' && ROLE_MAP[user.type] !== undefined
+              ? ROLE_MAP[user.type]
+              : user.type;
 
-        // Handle Project Management special case (3)
-        if (typeValue === 3) {
-          typeValue = user.is_manager ? 'pm_manager' : 'pm_employee'
+          // Handle Project Management special case (3)
+          if (typeValue === 3) {
+            typeValue = user.is_manager ? 'pm_manager' : 'pm_employee';
+          }
+
+          form.value = {
+            ...user,
+            type: typeValue,
+            password: '',
+            is_manager: !!user.is_manager,
+            cv_file: null,
+            signature_file: null,
+          };
+        } else {
+          isEdit.value = false;
+          resetForm();
         }
-
-        form.value = {
-          ...user,
-          type: typeValue,
-          password: '',
-          is_manager: !!user.is_manager,
-          cv_file: null,
-          signature_file: null
-        }
-      } else {
-        isEdit.value = false
-        resetForm()
-      }
-    }, { immediate: true })
+      },
+      { immediate: true }
+    );
 
     const handleSubmit = () => {
-      const submissionData = { 
+      const submissionData = {
         id: props.editUser?.id,
         name: form.value.name,
         email: form.value.email,
@@ -397,51 +572,56 @@ export default {
         iban: form.value.iban,
         marital_status: form.value.marital_status,
         team: form.value.team,
-        is_manager: form.value.is_manager
-      }
+        is_manager: form.value.is_manager,
+      };
 
       // Convert virtual PM types back to real type and is_manager flag
       if (form.value.type === 'pm_manager') {
-        submissionData.type = 3
-        submissionData.is_manager = true
+        submissionData.type = 3;
+        submissionData.is_manager = true;
       } else if (form.value.type === 'pm_employee') {
-        submissionData.type = 3
-        submissionData.is_manager = false
+        submissionData.type = 3;
+        submissionData.is_manager = false;
       } else {
-        submissionData.type = parseInt(form.value.type)
+        submissionData.type = parseInt(form.value.type);
       }
 
       // Format dates for API (DD-MM-YYYY) as shown in Postman image
-      const formatDateForAPI = (dateStr) => {
-        if (!dateStr) return ''
-        const date = new Date(dateStr)
-        if (isNaN(date.getTime())) return dateStr // Already formatted or invalid
-        return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`
-      }
+      const formatDateForAPI = dateStr => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return dateStr; // Already formatted or invalid
+        return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1)
+          .toString()
+          .padStart(2, '0')}-${date.getFullYear()}`;
+      };
 
-      submissionData.birthday = formatDateForAPI(submissionData.birthday)
-      submissionData.date_of_works = formatDateForAPI(submissionData.date_of_works)
+      submissionData.birthday = formatDateForAPI(submissionData.birthday);
+      submissionData.date_of_works = formatDateForAPI(submissionData.date_of_works);
 
       // Only include password if it's not empty (for edit mode)
       if (isEdit.value && !submissionData.password) {
-        delete submissionData.password
+        delete submissionData.password;
       }
 
-      emit('submit', submissionData)
-    }
+      emit('submit', submissionData);
+    };
 
     return {
       form,
       isEdit,
       dateType,
+      teamsList,
+      NATIONALITIES,
+      MARITAL_STATUSES,
       cvFileInput,
       signatureFileInput,
       handleCVUpload,
       handleSignatureUpload,
-      handleSubmit
-    }
-  }
-}
+      handleSubmit,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -560,13 +740,13 @@ export default {
   gap: 10px;
   font-family: 'Amiri', serif;
   padding-bottom: 10px;
-  border-bottom: 2px solid #B1A28F;
+  border-bottom: 2px solid #b1a28f;
 }
 
 .section-icon {
   width: 22px;
   height: 22px;
-  color: #B1A28F;
+  color: #b1a28f;
 }
 
 .form-row {
@@ -602,7 +782,7 @@ export default {
 .input:focus,
 .textarea:focus {
   outline: none;
-  border-color: #B1A28F;
+  border-color: #b1a28f;
   box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.1);
 }
 
@@ -646,8 +826,8 @@ export default {
 }
 
 .toggle-btn.active {
-  background: #B1A28F;
-  border-color: #B1A28F;
+  background: #b1a28f;
+  border-color: #b1a28f;
   color: white;
 }
 
@@ -684,8 +864,8 @@ export default {
 }
 
 .upload-btn:hover {
-  border-color: #B1A28F;
-  color: #B1A28F;
+  border-color: #b1a28f;
+  color: #b1a28f;
   background: #fdfbf7;
 }
 
@@ -714,7 +894,7 @@ export default {
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: #B1A28F;
+  accent-color: #b1a28f;
 }
 
 .contract-notice {
@@ -811,15 +991,19 @@ export default {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {
   .form-row {
     grid-template-columns: 1fr;
   }
-  
+
   .modal-container {
     width: 100%;
     max-height: 100vh;
@@ -827,7 +1011,14 @@ export default {
   }
 }
 
-.d-flex-center { display: flex; align-items: center; }
-.mt-20 { margin-top: 20px; }
-.fw-bold { font-weight: 700; }
+.d-flex-center {
+  display: flex;
+  align-items: center;
+}
+.mt-20 {
+  margin-top: 20px;
+}
+.fw-bold {
+  font-weight: 700;
+}
 </style>

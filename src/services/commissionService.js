@@ -1,6 +1,6 @@
-import apiClient from '../api/apiClient'
-import { handleServiceError } from '../utils/serviceErrorHandler'
-import { extractPaginatedData } from '../utils/paginationUtils'
+import apiClient from '../api/apiClient';
+import { handleServiceError } from '../utils/serviceErrorHandler';
+import { extractPaginatedData } from '../utils/paginationUtils';
 
 /**
  * Commission & Deposits Service
@@ -15,11 +15,11 @@ const commissionService = {
    */
   async getCommissions(params = {}) {
     try {
-      const response = await apiClient.get('/commissions', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/sales/commissions', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Fetch commissions', 'get') || { items: [], total: 0 }
+      return handleServiceError(error, 'Fetch commissions', 'get') || { items: [], total: 0 };
     }
   },
 
@@ -29,10 +29,10 @@ const commissionService = {
    */
   async getCommissionById(id) {
     try {
-      const response = await apiClient.get(`/commissions/${id}`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.get(`/sales/commissions/${id}`);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Fetch commission ${id}`, 'get', {})
+      return handleServiceError(error, `Fetch commission ${id}`, 'get', {});
     }
   },
 
@@ -42,23 +42,26 @@ const commissionService = {
    */
   async createCommission(commissionData) {
     try {
-      const response = await apiClient.post('/commissions', commissionData)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post('/sales/commissions', commissionData);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, 'Create commission', 'post')
+      return handleServiceError(error, 'Create commission', 'post');
     }
   },
 
   /**
-   * Update commission
-   * PUT /commissions/:id
+   * Update commission expenses
+   * PUT /sales/commissions/:id/expenses
+   * @param {number|string} id - Commission ID
+   * @param {Object} commissionData - Expense update data
+   * @returns {Promise<Object>} Updated commission
    */
   async updateCommission(id, commissionData) {
     try {
-      const response = await apiClient.put(`/commissions/${id}`, commissionData)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.put(`/sales/commissions/${id}/expenses`, commissionData);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Update commission ${id}`, 'put')
+      return handleServiceError(error, `Update commission ${id}`, 'put');
     }
   },
 
@@ -68,10 +71,10 @@ const commissionService = {
    */
   async deleteCommission(id) {
     try {
-      const response = await apiClient.delete(`/commissions/${id}`)
-      return response.data
+      const response = await apiClient.delete(`/sales/commissions/${id}`);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, `Delete commission ${id}`, 'delete')
+      return handleServiceError(error, `Delete commission ${id}`, 'delete');
     }
   },
 
@@ -81,10 +84,10 @@ const commissionService = {
    */
   async calculateCommission(calculationData) {
     try {
-      const response = await apiClient.post('/commissions/calculate', calculationData)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post('/sales/commissions/calculate', calculationData);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, 'Calculate commission', 'post')
+      return handleServiceError(error, 'Calculate commission', 'post');
     }
   },
 
@@ -96,11 +99,11 @@ const commissionService = {
    */
   async getDeposits(params = {}) {
     try {
-      const response = await apiClient.get('/deposits', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/sales/deposits', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Fetch deposits', 'get') || { items: [], total: 0 }
+      return handleServiceError(error, 'Fetch deposits', 'get') || { items: [], total: 0 };
     }
   },
 
@@ -110,10 +113,10 @@ const commissionService = {
    */
   async getDepositById(id) {
     try {
-      const response = await apiClient.get(`/deposits/${id}`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.get(`/sales/deposits/${id}`);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Fetch deposit ${id}`, 'get', {})
+      return handleServiceError(error, `Fetch deposit ${id}`, 'get', {});
     }
   },
 
@@ -123,10 +126,10 @@ const commissionService = {
    */
   async createDeposit(depositData) {
     try {
-      const response = await apiClient.post('/deposits', depositData)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post('/sales/deposits', depositData);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, 'Create deposit', 'post')
+      return handleServiceError(error, 'Create deposit', 'post');
     }
   },
 
@@ -136,10 +139,10 @@ const commissionService = {
    */
   async updateDeposit(id, depositData) {
     try {
-      const response = await apiClient.put(`/deposits/${id}`, depositData)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.put(`/sales/deposits/${id}`, depositData);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Update deposit ${id}`, 'put')
+      return handleServiceError(error, `Update deposit ${id}`, 'put');
     }
   },
 
@@ -149,49 +152,52 @@ const commissionService = {
    */
   async deleteDeposit(id) {
     try {
-      const response = await apiClient.delete(`/deposits/${id}`)
-      return response.data
+      const response = await apiClient.delete(`/sales/deposits/${id}`);
+      return response.data;
     } catch (error) {
-      return handleServiceError(error, `Delete deposit ${id}`, 'delete')
+      return handleServiceError(error, `Delete deposit ${id}`, 'delete');
     }
   },
 
   /**
-   * Process deposit payment
-   * POST /deposits/:id/process
+   * Confirm deposit receipt (previously processDeposit)
+   * POST /sales/deposits/:id/confirm-receipt
+   * @param {number|string} id - Deposit ID
+   * @param {Object} paymentData - Payment data
+   * @returns {Promise<Object>} Confirmed deposit
    */
   async processDeposit(id, paymentData) {
     try {
-      const response = await apiClient.post(`/deposits/${id}/process`, paymentData)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/sales/deposits/${id}/confirm-receipt`, paymentData);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Process deposit ${id}`, 'post')
+      return handleServiceError(error, `Process deposit ${id}`, 'post');
     }
   },
 
   /**
-   * Get commission report
-   * GET /commissions/report
+   * @deprecated Not in Postman collection — endpoint may no longer exist on the backend.
+   * GET /sales/commissions/report
    */
   async getCommissionReport(params = {}) {
     try {
-      const response = await apiClient.get('/commissions/report', { params })
-      return response.data?.data || response.data || {}
+      const response = await apiClient.get('/sales/commissions/report', { params });
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, 'Fetch commission report', 'get', {})
+      return handleServiceError(error, 'Fetch commission report', 'get', {});
     }
   },
 
   /**
-   * Get deposit report
-   * GET /deposits/report
+   * @deprecated Not in Postman collection — endpoint may no longer exist on the backend.
+   * GET /sales/deposits/report
    */
   async getDepositReport(params = {}) {
     try {
-      const response = await apiClient.get('/deposits/report', { params })
-      return response.data?.data || response.data || {}
+      const response = await apiClient.get('/sales/deposits/report', { params });
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, 'Fetch deposit report', 'get', {})
+      return handleServiceError(error, 'Fetch deposit report', 'get', {});
     }
   },
 
@@ -204,11 +210,18 @@ const commissionService = {
    */
   async getDistributions(commissionId, params = {}) {
     try {
-      const response = await apiClient.get(`/commissions/${commissionId}/distributions`, { params })
-      const distributions = response.data?.data || response.data || []
-      return Array.isArray(distributions) ? distributions : []
+      const response = await apiClient.get(`/sales/commissions/${commissionId}/distributions`, {
+        params,
+      });
+      const distributions = response.data?.data || response.data || [];
+      return Array.isArray(distributions) ? distributions : [];
     } catch (error) {
-      return handleServiceError(error, `Fetch distributions for commission ${commissionId}`, 'get', [])
+      return handleServiceError(
+        error,
+        `Fetch distributions for commission ${commissionId}`,
+        'get',
+        []
+      );
     }
   },
 
@@ -221,10 +234,17 @@ const commissionService = {
    */
   async createDistribution(commissionId, data) {
     try {
-      const response = await apiClient.post(`/commissions/${commissionId}/distributions`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(
+        `/sales/commissions/${commissionId}/distributions`,
+        data
+      );
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Create distribution for commission ${commissionId}`, 'post')
+      return handleServiceError(
+        error,
+        `Create distribution for commission ${commissionId}`,
+        'post'
+      );
     }
   },
 
@@ -237,10 +257,10 @@ const commissionService = {
    */
   async updateDistribution(id, data) {
     try {
-      const response = await apiClient.put(`/commissions/distributions/${id}`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.put(`/sales/commissions/distributions/${id}`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Update distribution ${id}`, 'put')
+      return handleServiceError(error, `Update distribution ${id}`, 'put');
     }
   },
 
@@ -252,10 +272,10 @@ const commissionService = {
    */
   async approveDistribution(id) {
     try {
-      const response = await apiClient.post(`/commissions/distributions/${id}/approve`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/sales/commissions/distributions/${id}/approve`);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Approve distribution ${id}`, 'post')
+      return handleServiceError(error, `Approve distribution ${id}`, 'post');
     }
   },
 
@@ -268,10 +288,12 @@ const commissionService = {
    */
   async rejectDistribution(id, reason = '') {
     try {
-      const response = await apiClient.post(`/commissions/distributions/${id}/reject`, { reason })
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/sales/commissions/distributions/${id}/reject`, {
+        reason,
+      });
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Reject distribution ${id}`, 'post')
+      return handleServiceError(error, `Reject distribution ${id}`, 'post');
     }
   },
 
@@ -283,25 +305,25 @@ const commissionService = {
    */
   async deleteDistribution(id) {
     try {
-      const response = await apiClient.delete(`/commissions/distributions/${id}`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.delete(`/sales/commissions/distributions/${id}`);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Delete distribution ${id}`, 'delete')
+      return handleServiceError(error, `Delete distribution ${id}`, 'delete');
     }
   },
 
   /**
-   * Confirm deposit
-   * POST /deposits/:id/confirm
+   * Confirm deposit receipt (backend: confirm-receipt)
+   * POST /sales/deposits/:id/confirm-receipt
    * @param {number|string} id - Deposit ID
    * @returns {Promise<Object>} Confirmed deposit
    */
   async confirmDeposit(id) {
     try {
-      const response = await apiClient.post(`/deposits/${id}/confirm`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/sales/deposits/${id}/confirm-receipt`);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Confirm deposit ${id}`, 'post')
+      return handleServiceError(error, `Confirm deposit ${id}`, 'post');
     }
   },
 
@@ -314,10 +336,10 @@ const commissionService = {
    */
   async refundDeposit(id, data) {
     try {
-      const response = await apiClient.post(`/deposits/${id}/refund`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/sales/deposits/${id}/refund`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Refund deposit ${id}`, 'post')
+      return handleServiceError(error, `Refund deposit ${id}`, 'post');
     }
   },
 
@@ -329,10 +351,12 @@ const commissionService = {
    */
   async bulkApproveCommissions(commissionIds) {
     try {
-      const response = await apiClient.post('/commissions/bulk-approve', { commission_ids: commissionIds })
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post('/sales/commissions/bulk-approve', {
+        commission_ids: commissionIds,
+      });
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, 'Bulk approve commissions', 'post')
+      return handleServiceError(error, 'Bulk approve commissions', 'post');
     }
   },
 
@@ -344,10 +368,12 @@ const commissionService = {
    */
   async bulkConfirmDeposits(depositIds) {
     try {
-      const response = await apiClient.post('/deposits/bulk-confirm', { deposit_ids: depositIds })
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post('/sales/deposits/bulk-confirm', {
+        deposit_ids: depositIds,
+      });
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, 'Bulk confirm deposits', 'post')
+      return handleServiceError(error, 'Bulk confirm deposits', 'post');
     }
   },
 
@@ -359,10 +385,10 @@ const commissionService = {
    */
   async getCommissionStats(params = {}) {
     try {
-      const response = await apiClient.get('/commissions/stats', { params })
-      return response.data?.data || response.data || {}
+      const response = await apiClient.get('/sales/commissions/stats', { params });
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, 'Fetch commission statistics', 'get', {})
+      return handleServiceError(error, 'Fetch commission statistics', 'get', {});
     }
   },
 
@@ -374,27 +400,29 @@ const commissionService = {
    */
   async getDepositStats(params = {}) {
     try {
-      const response = await apiClient.get('/deposits/stats', { params })
-      return response.data?.data || response.data || {}
+      const response = await apiClient.get('/sales/deposits/stats', { params });
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, 'Fetch deposit statistics', 'get', {})
+      return handleServiceError(error, 'Fetch deposit statistics', 'get', {});
     }
   },
 
   /**
-   * Get commission analytics dashboard
-   * GET /commissions/analytics
+   * Get commission analytics (monthly report)
+   * GET /sales/analytics/commissions/monthly-report
    * @param {Object} params - Query parameters
    * @returns {Promise<Object>} Analytics dashboard data
    */
   async getCommissionAnalytics(params = {}) {
     try {
-      const response = await apiClient.get('/commissions/analytics', { params })
-      return response.data?.data || response.data || {}
+      const response = await apiClient.get('/sales/analytics/commissions/monthly-report', {
+        params,
+      });
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, 'Fetch commission analytics', 'get', {})
+      return handleServiceError(error, 'Fetch commission analytics', 'get', {});
     }
-  }
-}
+  },
+};
 
-export default commissionService
+export default commissionService;

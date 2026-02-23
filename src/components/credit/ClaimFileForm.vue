@@ -1,10 +1,24 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')" @keydown.esc="$emit('close')" tabindex="-1">
+  <div
+    class="modal-overlay"
+    @click.self="$emit('close')"
+    @keydown.esc="$emit('close')"
+    tabindex="-1"
+  >
     <div class="modal-container">
       <div class="modal-header">
-        <h2 class="modal-title">{{ isEditMode ? 'الموافقة على ملف المطالبة' : 'إنشاء ملف مطالبة' }}</h2>
+        <h2 class="modal-title">
+          {{ isEditMode ? 'الموافقة على ملف المطالبة' : 'إنشاء ملف مطالبة' }}
+        </h2>
         <button class="close-btn" @click="$emit('close')">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M18 6L6 18M6 6l12 12"></path>
           </svg>
         </button>
@@ -57,11 +71,7 @@
 
         <div class="form-group" v-if="isEditMode">
           <label class="form-label">تاريخ الدفع</label>
-          <input
-            v-model="formData.payment_date"
-            type="date"
-            class="form-input"
-          />
+          <input v-model="formData.payment_date" type="date" class="form-input" />
         </div>
 
         <div class="form-group">
@@ -87,23 +97,23 @@
 </template>
 
 <script>
-import { reactive, computed, watch, onMounted, onUnmounted } from 'vue'
+import { reactive, computed, watch, onMounted, onUnmounted } from 'vue';
 
 export default {
   name: 'ClaimFileForm',
   props: {
     claim: {
       type: Object,
-      default: null
+      default: null,
     },
     isLoading: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
-    const isEditMode = computed(() => !!props.claim && props.claim.status === 'submitted')
+    const isEditMode = computed(() => !!props.claim && props.claim.status === 'submitted');
 
     const formData = reactive({
       contract_id: props.claim?.contract_id || '',
@@ -111,58 +121,62 @@ export default {
       claim_type: props.claim?.claim_type || 'commission',
       approved_amount: props.claim?.approved_amount || 0,
       payment_date: props.claim?.payment_date || '',
-      notes: props.claim?.notes || ''
-    })
+      notes: props.claim?.notes || '',
+    });
 
     // Watch for prop changes to update form data
-    watch(() => props.claim, (newClaim) => {
-      if (newClaim) {
-        formData.contract_id = newClaim.contract_id || ''
-        formData.claim_amount = newClaim.claim_amount || 0
-        formData.claim_type = newClaim.claim_type || 'commission'
-        formData.approved_amount = newClaim.approved_amount || 0
-        formData.payment_date = newClaim.payment_date || ''
-        formData.notes = newClaim.notes || ''
-      } else {
-        // Reset form when claim is cleared
-        formData.contract_id = ''
-        formData.claim_amount = 0
-        formData.claim_type = 'commission'
-        formData.approved_amount = 0
-        formData.payment_date = ''
-        formData.notes = ''
-      }
-    }, { immediate: true })
+    watch(
+      () => props.claim,
+      newClaim => {
+        if (newClaim) {
+          formData.contract_id = newClaim.contract_id || '';
+          formData.claim_amount = newClaim.claim_amount || 0;
+          formData.claim_type = newClaim.claim_type || 'commission';
+          formData.approved_amount = newClaim.approved_amount || 0;
+          formData.payment_date = newClaim.payment_date || '';
+          formData.notes = newClaim.notes || '';
+        } else {
+          // Reset form when claim is cleared
+          formData.contract_id = '';
+          formData.claim_amount = 0;
+          formData.claim_type = 'commission';
+          formData.approved_amount = 0;
+          formData.payment_date = '';
+          formData.notes = '';
+        }
+      },
+      { immediate: true }
+    );
 
     // Handle Escape key
-    const handleEscape = (e) => {
+    const handleEscape = e => {
       if (e.key === 'Escape') {
-        emit('close')
+        emit('close');
       }
-    }
+    };
 
     // Lock body scroll when modal is open
     onMounted(() => {
-      document.body.style.overflow = 'hidden'
-      document.addEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape);
+    });
 
     onUnmounted(() => {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEscape);
+    });
 
     const handleSubmit = () => {
-      emit('submit', { ...formData })
-    }
+      emit('submit', { ...formData });
+    };
 
     return {
       isEditMode,
       formData,
-      handleSubmit
-    }
-  }
-}
+      handleSubmit,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -253,7 +267,7 @@ export default {
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #B1A28F;
+  border-color: #b1a28f;
   box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.1);
 }
 
@@ -291,7 +305,7 @@ export default {
   padding: 12px 24px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
   font-weight: 700;
   cursor: pointer;
@@ -309,7 +323,11 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 </style>

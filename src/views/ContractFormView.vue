@@ -4,7 +4,9 @@
     <div class="section-header">
       <div class="header-content">
         <h2 class="section-title">إحضار المشاريع والعقود</h2>
-        <p class="section-subtitle">إضافة مطورين جدد، إنشاء عقود، وتعبئة بيانات المشاريع الأولية.</p>
+        <p class="section-subtitle">
+          إضافة مطورين جدد، إنشاء عقود، وتعبئة بيانات المشاريع الأولية.
+        </p>
       </div>
     </div>
 
@@ -29,7 +31,6 @@
       </div>
 
       <form @submit.prevent="saveChanges">
-        
         <!-- Section: Basic Info -->
         <div class="form-section">
           <h4 class="section-label">معلومات العقد الأساسية</h4>
@@ -41,7 +42,12 @@
               </div>
               <div class="field-group">
                 <label>الطرف الأول</label>
-                <input type="text" value="شركة راكز العقارية" class="form-input readonly" readonly />
+                <input
+                  type="text"
+                  value="شركة راكز العقارية"
+                  class="form-input readonly"
+                  readonly
+                />
               </div>
               <div class="field-group">
                 <label>رقم العقد</label>
@@ -56,7 +62,12 @@
               </div>
               <div class="field-group">
                 <label>رقم هاتف الشركة</label>
-                <input type="text" v-model="form.phone" class="form-input" placeholder="أدخل رقم الهاتف" />
+                <input
+                  type="text"
+                  v-model="form.phone"
+                  class="form-input"
+                  placeholder="أدخل رقم الهاتف"
+                />
               </div>
               <div class="field-group">
                 <label>يمثلها بالتوقيع على هذا العقد</label>
@@ -71,7 +82,12 @@
               </div>
               <div class="field-group">
                 <label>تاريخ هجري</label>
-                <input type="text" v-model="form.hijri_date" class="form-input" placeholder="-- / -- / --" />
+                <input
+                  type="text"
+                  v-model="form.hijri_date"
+                  class="form-input"
+                  placeholder="-- / -- / --"
+                />
               </div>
               <div class="field-group">
                 <label>تاريخ ميلادي</label>
@@ -82,7 +98,12 @@
             <div class="input-row">
               <div class="field-group full">
                 <label>مدة الاتفاقية (بالأيام)</label>
-                <input type="number" v-model="form.agreement_duration_days" class="form-input" placeholder="مثال: 3" />
+                <input
+                  type="number"
+                  v-model="form.agreement_duration_days"
+                  class="form-input"
+                  placeholder="مثال: 3"
+                />
               </div>
             </div>
           </div>
@@ -101,13 +122,18 @@
                 <label>السعي من</label>
                 <select v-model="form.commission_from" class="form-input">
                   <option value="">اختر الطرف</option>
-                  <option value="owner">المالك </option>
+                  <option value="owner">المالك</option>
                   <option value="partner">المشتري</option>
                 </select>
               </div>
               <div class="field-group">
                 <label>نسبة السعي (%)</label>
-                <input type="number" v-model="form.commission_percent" class="form-input" placeholder="0" />
+                <input
+                  type="number"
+                  v-model="form.commission_percent"
+                  class="form-input"
+                  placeholder="0"
+                />
               </div>
             </div>
 
@@ -118,7 +144,12 @@
               </div>
               <div class="field-group">
                 <label>متوسط قيمة العقار</label>
-                <input type="number" v-model="form.avg_property_value" class="form-input" placeholder="0.00" />
+                <input
+                  type="number"
+                  v-model="form.avg_property_value"
+                  class="form-input"
+                  placeholder="0.00"
+                />
               </div>
               <div class="field-group">
                 <label>تاريخ الوكالة</label>
@@ -133,12 +164,12 @@
           <h4 class="section-label">معلومات الطرف الثاني</h4>
           <div class="form-group-info">
             <div class="input-row">
-                <div class="field-group full">
-                   <label>اختر مطوراً موجوداً (اختياري)</label>
-                   <select class="form-input">
-                       <option>...اختر مطوراً لملء البيانات تلقائياً</option>
-                   </select>
-                </div>
+              <div class="field-group full">
+                <label>اختر مطوراً موجوداً (اختياري)</label>
+                <select class="form-input">
+                  <option>...اختر مطوراً لملء البيانات تلقائياً</option>
+                </select>
+              </div>
             </div>
 
             <div class="input-row grid-3">
@@ -159,7 +190,12 @@
             <div class="input-row grid-3">
               <div class="field-group">
                 <label>بصفته (الدور)</label>
-                <input type="text" v-model="form.second_party_role" class="form-input" placeholder="مثال: owner" />
+                <input
+                  type="text"
+                  v-model="form.second_party_role"
+                  class="form-input"
+                  placeholder="مثال: owner"
+                />
               </div>
               <div class="field-group">
                 <label>هوية رقم</label>
@@ -171,10 +207,15 @@
               </div>
             </div>
 
-             <div class="input-row">
+            <div class="input-row">
               <div class="field-group full">
                 <label>البريد الإلكتروني للطرف الثاني</label>
-                <input type="email" v-model="form.second_party_email" class="form-input" placeholder="email@example.com" />
+                <input
+                  type="email"
+                  v-model="form.second_party_email"
+                  class="form-input"
+                  placeholder="email@example.com"
+                />
               </div>
               <div class="field-group full">
                 <label>رقم جوال الطرف الثاني</label>
@@ -195,11 +236,11 @@
               </div>
               <div class="field-group">
                 <label>نوع الوحدة</label>
-                 <select v-model="form.unit_type" class="form-input">
-                    <option value="">اختر النوع</option>
-                    <option value="فيلا">فيلا</option>
-                    <option value="شقة">شقة</option>
-                 </select>
+                <select v-model="form.unit_type" class="form-input">
+                  <option value="">اختر النوع</option>
+                  <option value="فيلا">فيلا</option>
+                  <option value="شقة">شقة</option>
+                </select>
               </div>
               <div class="field-group">
                 <label>اسم المشروع</label>
@@ -225,20 +266,39 @@
             <div class="input-row">
               <div class="field-group full">
                 <label>الوصف</label>
-                <textarea v-model="form.notes" class="form-input text-area" placeholder="أدخل ملاحظاتك هنا..."></textarea>
+                <textarea
+                  v-model="form.notes"
+                  class="form-input text-area"
+                  placeholder="أدخل ملاحظاتك هنا..."
+                ></textarea>
               </div>
             </div>
 
             <div class="input-row">
               <div class="field-group full">
                 <label>رابط صورة المشروع</label>
-                <input type="text" value="https://placeholder.co/800x600/1e293b/b1a28f?text=%D8%A7%D9%84%D9%84%D8%B1%D8%AC%D8%B3" class="form-input readonly" readonly />
+                <input
+                  type="text"
+                  value="https://placeholder.co/800x600/1e293b/b1a28f?text=%D8%A7%D9%84%D9%84%D8%B1%D8%AC%D8%B3"
+                  class="form-input readonly"
+                  readonly
+                />
               </div>
             </div>
-            
+
             <button type="button" class="add-project-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                <span>إضافة مشروع آخر</span>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>إضافة مشروع آخر</span>
             </button>
           </div>
         </div>
@@ -250,67 +310,85 @@
             حفظ واعتماد العقد
           </button>
         </div>
-
       </form>
     </div>
 
     <!-- Success Modal -->
     <div v-if="showDownloadModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="success-icon">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-            </div>
-            <h3>تم حفظ العقد بنجاح</h3>
-            <p>يمكنك الآن تحميل نسخة PDF من العقد.</p>
-            
-            <div class="modal-actions">
-                <button @click="downloadContract" class="download-btn" :disabled="isDownloading">
-                    <span v-if="isDownloading" class="spinner-small"></span>
-                    <span v-else>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    </span>
-                    تحميل العقد (PDF)
-                </button>
-                <button @click="closeModal" class="close-btn">إغلاق</button>
-            </div>
+      <div class="modal-content">
+        <div class="success-icon">
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#10b981"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
         </div>
-    </div>
+        <h3>تم حفظ العقد بنجاح</h3>
+        <p>يمكنك الآن تحميل نسخة PDF من العقد.</p>
 
+        <div class="modal-actions">
+          <button @click="downloadContract" class="download-btn" :disabled="isDownloading">
+            <span v-if="isDownloading" class="spinner-small"></span>
+            <span v-else>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+            </span>
+            تحميل العقد (PDF)
+          </button>
+          <button @click="closeModal" class="close-btn">إغلاق</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import contractService from '../services/contractService'
-import { downloadFilledContract } from '../services/pdfService'
-import logger from '../utils/logger'
-import { toast } from '../composables/useToast'
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import contractService from '../services/contractService';
+import { downloadFilledContract } from '../services/pdfService';
+import logger from '../utils/logger';
+import { toast } from '../composables/useToast';
 
 export default {
   name: 'ContractFormView',
   setup() {
-    const router = useRouter()
-    const route = useRoute()
-    const isSaving = ref(false)
-    const isDownloading = ref(false)
-    const showDownloadModal = ref(false)
-    const requestId = route.params.id
+    const router = useRouter();
+    const route = useRoute();
+    const isSaving = ref(false);
+    const isDownloading = ref(false);
+    const showDownloadModal = ref(false);
+    const requestId = route.params.id;
 
     const form = reactive({
       // First Party - Readonly usually
       phone: '',
       signatory: 'عبد العزيز خالد عبد العزيز الجلعود',
-      
+
       // Contract Dates/City
       contract_city: 'الرياض',
       gregorian_date: '',
       hijri_date: '',
       agreement_duration_days: '',
-      
+
       // Marketing
       agency_number: '',
       agency_date: '',
@@ -337,173 +415,182 @@ export default {
       unit_type: '',
       total_units_value: 0,
       average_unit_price: 0,
-      notes: ''
-    })
+      notes: '',
+    });
 
     const fetchContractDetails = async () => {
-        try {
-            const data = await contractService.getContractById(requestId)
-            if (data) {
-                // Project Info
-                form.city = data.city || form.city
-                form.project_name = data.project_name || form.project_name
-                form.district = data.district || form.district
-                
-                // Handle logic to extract unit info from units array if present
-                if (data.units && Array.isArray(data.units) && data.units.length > 0) {
-                   const firstUnit = data.units[0]
-                   form.unit_type = firstUnit.type || data.unit_type || form.unit_type
-                   
-                   // Calculate counts and total value (price * count) as per user request for "Average Property Value"
-                   let totalCount = 0
-                   let calculatedValue = 0
-                   
-                   data.units.forEach(u => {
-                       const count = parseInt(u.count) || 0
-                       const price = parseInt(u.price) || 0
-                       totalCount += count
-                       calculatedValue += (price * count)
-                   })
+      try {
+        const data = await contractService.getContractById(requestId);
+        if (data) {
+          // Project Info
+          form.city = data.city || form.city;
+          form.project_name = data.project_name || form.project_name;
+          form.district = data.district || form.district;
 
-                   form.units_count = totalCount > 0 ? totalCount : (data.units_count || form.units_count || 0)
-                   // Set avg_property_value using the calculated total
-                   form.avg_property_value = calculatedValue > 0 ? calculatedValue : (data.avg_property_value || form.avg_property_value || 0)
-                   
-                } else {
-                   form.units_count = data.units_count || data.unit_count || form.units_count || 0
-                   form.unit_type = data.unit_type || form.unit_type
-                }
-                
-                form.total_units_value = data.total_units_value || form.total_units_value || 0
-                form.average_unit_price = data.average_unit_price || form.average_unit_price || 0
-                form.notes = data.notes || form.notes
-                
-                // Second Party Info - Pre-fill from Developer info if it's an exclusive project or info exists
-                form.second_party_name = data.second_party_name || data.developer_name || data.name || form.second_party_name
-                form.second_party_id = data.second_party_id_number || data.second_party_id || form.second_party_id
-                form.second_party_phone = data.second_party_phone || form.second_party_phone
-                form.second_party_email = data.second_party_email || form.second_party_email
-                form.second_party_address = data.second_party_address || form.second_party_address
-                form.second_party_cr_number = data.second_party_cr_number || data.developer_number || form.second_party_cr_number
-                form.second_party_signatory = data.second_party_signatory || form.second_party_signatory
-                form.second_party_role = data.second_party_role || 'developer' // Default role for exclusive projects
-                
-                // Dates
-                if (data.gregorian_date) {
-                    // Convert DD-MM-YYYY to YYYY-MM-DD if needed
-                    const dateStr = data.gregorian_date;
-                    if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
-                        const parts = dateStr.split('-');
-                        form.gregorian_date = `${parts[2]}-${parts[1]}-${parts[0]}`;
-                    } else {
-                        form.gregorian_date = dateStr;
-                    }
-                }
-                form.hijri_date = data.hijri_date || form.hijri_date
-                
-                // Contract Details
-                form.contract_city = data.contract_city || form.contract_city
-                form.agreement_duration_days = data.agreement_duration_days || form.agreement_duration_days
-                
-                // Marketing
-                form.agency_number = data.agency_number || form.agency_number
-                if (data.agency_date) {
-                    const dateStr = data.agency_date;
-                    if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
-                        const parts = dateStr.split('-');
-                        form.agency_date = `${parts[2]}-${parts[1]}-${parts[0]}`;
-                    } else {
-                        form.agency_date = dateStr;
-                    }
-                }
-                form.commission_percent = data.commission_percent || form.commission_percent
-                form.commission_from = data.commission_from || form.commission_from
-                form.avg_property_value = data.avg_property_value || form.avg_property_value
-                if (data.release_date) {
-                    const dateStr = data.release_date;
-                    if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
-                        const parts = dateStr.split('-');
-                        form.release_date = `${parts[2]}-${parts[1]}-${parts[0]}`;
-                    } else {
-                        form.release_date = dateStr;
-                    }
-                }
+          // Handle logic to extract unit info from units array if present
+          if (data.units && Array.isArray(data.units) && data.units.length > 0) {
+            const firstUnit = data.units[0];
+            form.unit_type = firstUnit.type || data.unit_type || form.unit_type;
+
+            // Calculate counts and total value (price * count) as per user request for "Average Property Value"
+            let totalCount = 0;
+            let calculatedValue = 0;
+
+            data.units.forEach(u => {
+              const count = parseInt(u.count) || 0;
+              const price = parseInt(u.price) || 0;
+              totalCount += count;
+              calculatedValue += price * count;
+            });
+
+            form.units_count =
+              totalCount > 0 ? totalCount : data.units_count || form.units_count || 0;
+            // Set avg_property_value using the calculated total
+            form.avg_property_value =
+              calculatedValue > 0
+                ? calculatedValue
+                : data.avg_property_value || form.avg_property_value || 0;
+          } else {
+            form.units_count = data.units_count || data.unit_count || form.units_count || 0;
+            form.unit_type = data.unit_type || form.unit_type;
+          }
+
+          form.total_units_value = data.total_units_value || form.total_units_value || 0;
+          form.average_unit_price = data.average_unit_price || form.average_unit_price || 0;
+          form.notes = data.notes || form.notes;
+
+          // Second Party Info - Pre-fill from Developer info if it's an exclusive project or info exists
+          form.second_party_name =
+            data.second_party_name || data.developer_name || data.name || form.second_party_name;
+          form.second_party_id =
+            data.second_party_id_number || data.second_party_id || form.second_party_id;
+          form.second_party_phone = data.second_party_phone || form.second_party_phone;
+          form.second_party_email = data.second_party_email || form.second_party_email;
+          form.second_party_address = data.second_party_address || form.second_party_address;
+          form.second_party_cr_number =
+            data.second_party_cr_number || data.developer_number || form.second_party_cr_number;
+          form.second_party_signatory = data.second_party_signatory || form.second_party_signatory;
+          form.second_party_role = data.second_party_role || 'developer'; // Default role for exclusive projects
+
+          // Dates
+          if (data.gregorian_date) {
+            // Convert DD-MM-YYYY to YYYY-MM-DD if needed
+            const dateStr = data.gregorian_date;
+            if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
+              const parts = dateStr.split('-');
+              form.gregorian_date = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            } else {
+              form.gregorian_date = dateStr;
             }
-        } catch (error) {
-            logger.error('Failed to fetch contract details', error)
-        }
-    }
+          }
+          form.hijri_date = data.hijri_date || form.hijri_date;
 
-    onMounted(fetchContractDetails)
+          // Contract Details
+          form.contract_city = data.contract_city || form.contract_city;
+          form.agreement_duration_days =
+            data.agreement_duration_days || form.agreement_duration_days;
+
+          // Marketing
+          form.agency_number = data.agency_number || form.agency_number;
+          if (data.agency_date) {
+            const dateStr = data.agency_date;
+            if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
+              const parts = dateStr.split('-');
+              form.agency_date = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            } else {
+              form.agency_date = dateStr;
+            }
+          }
+          form.commission_percent = data.commission_percent || form.commission_percent;
+          form.commission_from = data.commission_from || form.commission_from;
+          form.avg_property_value = data.avg_property_value || form.avg_property_value;
+          if (data.release_date) {
+            const dateStr = data.release_date;
+            if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
+              const parts = dateStr.split('-');
+              form.release_date = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            } else {
+              form.release_date = dateStr;
+            }
+          }
+        }
+      } catch (error) {
+        logger.error('Failed to fetch contract details', error);
+      }
+    };
+
+    onMounted(fetchContractDetails);
 
     const saveChanges = async () => {
-      isSaving.value = true
+      isSaving.value = true;
       try {
-        logger.debug('Updating contract:', requestId, form)
-        
+        logger.debug('Updating contract:', requestId, form);
+
         const payload = {
-            // Second Party
-            second_party_name: form.second_party_name,
-            second_party_id_number: form.second_party_id,
-            second_party_phone: form.second_party_phone,
-            second_party_email: form.second_party_email,
-            second_party_address: form.second_party_address,
-            second_party_cr_number: form.second_party_cr_number,
-            second_party_signatory: form.second_party_signatory,
-            second_party_role: form.second_party_role,
+          // Second Party
+          second_party_name: form.second_party_name,
+          second_party_id_number: form.second_party_id,
+          second_party_phone: form.second_party_phone,
+          second_party_email: form.second_party_email,
+          second_party_address: form.second_party_address,
+          second_party_cr_number: form.second_party_cr_number,
+          second_party_signatory: form.second_party_signatory,
+          second_party_role: form.second_party_role,
 
-            // Dates
-            // Dates - Format to DD-MM-YYYY if needed, or send as is if input matches
-            // Input type="date" gives YYYY-MM-DD. Postman shows DD-M-YYYY.
-            // We will format to DD-MM-YYYY to be safe.
-            gregorian_date: form.gregorian_date ? form.gregorian_date.split('-').reverse().join('-') : '',
-            hijri_date: form.hijri_date, // Usually text input, user enters correctly or we assume so
-            
-            // Details
-            contract_city: form.contract_city,
-            agreement_duration_days: form.agreement_duration_days.toString(),
-            commission_percent: form.commission_percent.toString(),
-            commission_from: form.commission_from,
-            agency_number: form.agency_number,
-            agency_date: form.agency_date ? form.agency_date.split('-').reverse().join('-') : '',
-            avg_property_value: form.avg_property_value.toString(),
-            release_date: form.release_date ? form.release_date.split('-').reverse().join('-') : ''
-        }
+          // Dates
+          // Dates - Format to DD-MM-YYYY if needed, or send as is if input matches
+          // Input type="date" gives YYYY-MM-DD. Postman shows DD-M-YYYY.
+          // We will format to DD-MM-YYYY to be safe.
+          gregorian_date: form.gregorian_date
+            ? form.gregorian_date.split('-').reverse().join('-')
+            : '',
+          hijri_date: form.hijri_date, // Usually text input, user enters correctly or we assume so
 
-        await contractService.storeContractInfo(requestId, payload)
-        
+          // Details
+          contract_city: form.contract_city,
+          agreement_duration_days: form.agreement_duration_days.toString(),
+          commission_percent: form.commission_percent.toString(),
+          commission_from: form.commission_from,
+          agency_number: form.agency_number,
+          agency_date: form.agency_date ? form.agency_date.split('-').reverse().join('-') : '',
+          avg_property_value: form.avg_property_value.toString(),
+          release_date: form.release_date ? form.release_date.split('-').reverse().join('-') : '',
+        };
+
+        await contractService.storeContractInfo(requestId, payload);
+
         // alert('تم حفظ تعديلات العقد بنجاح!')
         // router.push('/my-requests')
-        showDownloadModal.value = true
+        showDownloadModal.value = true;
       } catch (error) {
-        logger.error('Save failed', error)
-        toast.error('حدث خطأ أثناء الحفظ')
+        logger.error('Save failed', error);
+        toast.error('حدث خطأ أثناء الحفظ');
       } finally {
-        isSaving.value = false
+        isSaving.value = false;
       }
-    }
+    };
 
     const downloadContract = async () => {
-        isDownloading.value = true
-        try {
-            const pdfBytes = await downloadFilledContract(form)
-            const blob = new Blob([pdfBytes], { type: 'application/pdf' })
-            const link = document.createElement('a')
-            link.href = URL.createObjectURL(blob)
-            link.download = `contract-${requestId}.pdf`
-            link.click()
-        } catch (error) {
-            logger.error('Download failed', error)
-            toast.error('فشل تحميل ملف PDF. يرجى المحاولة مرة أخرى.')
-        } finally {
-            isDownloading.value = false
-        }
-    }
+      isDownloading.value = true;
+      try {
+        const pdfBytes = await downloadFilledContract(form);
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `contract-${requestId}.pdf`;
+        link.click();
+      } catch (error) {
+        logger.error('Download failed', error);
+        toast.error('فشل تحميل ملف PDF. يرجى المحاولة مرة أخرى.');
+      } finally {
+        isDownloading.value = false;
+      }
+    };
 
     const closeModal = () => {
-        showDownloadModal.value = false
-        router.push('/my-requests')
-    }
+      showDownloadModal.value = false;
+      router.push('/my-requests');
+    };
 
     return {
       form,
@@ -512,10 +599,10 @@ export default {
       showDownloadModal,
       saveChanges,
       downloadContract,
-      closeModal
-    }
-  }
-}
+      closeModal,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -525,8 +612,14 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .section-header {
@@ -547,29 +640,29 @@ export default {
 }
 
 .import-type-section {
-    margin-bottom: 30px;
+  margin-bottom: 30px;
 }
 
 .main-form {
-    margin-top: 40px;
+  margin-top: 40px;
 }
 
 .form-title-area {
-    text-align: center;
-    margin-bottom: 30px;
+  text-align: center;
+  margin-bottom: 30px;
 }
 
 .main-form-title {
-    font-size: 28px;
-    font-family: 'Amiri', serif;
-    color: #1e3a5f;
-    margin: 0 0 5px 0;
+  font-size: 28px;
+  font-family: 'Amiri', serif;
+  color: #1e3a5f;
+  margin: 0 0 5px 0;
 }
 
 .main-form-subtitle {
-    font-size: 14px;
-    color: #94a3b8;
-    margin: 0;
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 0;
 }
 
 .form-section {
@@ -577,12 +670,12 @@ export default {
 }
 
 .section-label {
-    font-size: 20px;
-    font-family: 'Amiri', serif;
-    color: #1e3a5f;
-    margin-bottom: 15px;
-    padding-right: 10px;
-    border-right: 4px solid #B1A28F;
+  font-size: 20px;
+  font-family: 'Amiri', serif;
+  color: #1e3a5f;
+  margin-bottom: 15px;
+  padding-right: 10px;
+  border-right: 4px solid #b1a28f;
 }
 
 .form-group-info {
@@ -594,9 +687,9 @@ export default {
 }
 
 .form-group-info.compact {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 .group-title {
@@ -613,8 +706,8 @@ export default {
 }
 
 .input-row.grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .field-group {
@@ -635,7 +728,9 @@ export default {
 }
 
 /* Fix for RTL labels to be right aligned */
-.contract-form label { text-align: right; }
+.contract-form label {
+  text-align: right;
+}
 
 .form-input {
   padding: 12px 16px;
@@ -651,50 +746,50 @@ export default {
 
 .form-input:focus {
   outline: none;
-  border-color: #B1A28F;
+  border-color: #b1a28f;
   box-shadow: 0 0 0 3px rgba(161, 139, 92, 0.1);
   background: white;
 }
 
 .form-input.readonly {
-    background: #f8fafc;
-    color: #64748b;
-    border-color: #f1f5f9;
+  background: #f8fafc;
+  color: #64748b;
+  border-color: #f1f5f9;
 }
 
 .text-area {
-    min-height: 100px;
-    text-align: right;
-    resize: vertical;
+  min-height: 100px;
+  text-align: right;
+  resize: vertical;
 }
 
 .add-project-btn {
-    background: none;
-    border: 1px dashed #cbd5e1;
-    color: #94a3b8;
-    padding: 10px;
-    width: 100%;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: 'Tajawal', sans-serif;
-    transition: all 0.2s;
-    margin-top: 10px;
+  background: none;
+  border: 1px dashed #cbd5e1;
+  color: #94a3b8;
+  padding: 10px;
+  width: 100%;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Tajawal', sans-serif;
+  transition: all 0.2s;
+  margin-top: 10px;
 }
 
 .add-project-btn:hover {
-    border-color: #B1A28F;
-    color: #B1A28F;
-    background: #fdfbf7;
+  border-color: #b1a28f;
+  color: #b1a28f;
+  background: #fdfbf7;
 }
 
 .form-footer {
-    display: flex;
-    justify-content: flex-start;
-    margin-top: 20px;
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 20px;
 }
 
 .save-btn {
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
   border: none;
   padding: 14px 40px;
@@ -724,129 +819,140 @@ export default {
   box-shadow: none;
 }
 
-.centered { text-align-last: center; }
-.text-center { text-align: center; }
+.centered {
+  text-align-last: center;
+}
+.text-center {
+  text-align: center;
+}
 
 @media (max-width: 900px) {
-  .input-row.grid-3 { grid-template-columns: 1fr; }
+  .input-row.grid-3 {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Modal Styles */
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(4px);
-    animation: fadeIn 0.2s ease-out;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
 }
 
 .modal-content {
-    background: white;
-    padding: 40px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 450px;
-    text-align: center;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 450px;
+  text-align: center;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .success-icon {
-    width: 80px;
-    height: 80px;
-    background: #ecfdf5;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px auto;
+  width: 80px;
+  height: 80px;
+  background: #ecfdf5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
 }
 
 .modal-content h3 {
-    font-size: 24px;
-    color: #1e3a5f;
-    margin-bottom: 10px;
-    font-family: 'Amiri', serif;
+  font-size: 24px;
+  color: #1e3a5f;
+  margin-bottom: 10px;
+  font-family: 'Amiri', serif;
 }
 
 .modal-content p {
-    color: #64748b;
-    margin-bottom: 30px;
-    font-size: 16px;
+  color: #64748b;
+  margin-bottom: 30px;
+  font-size: 16px;
 }
 
 .modal-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .download-btn {
-    background: #1e3a5f;
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-family: 'Tajawal', sans-serif;
-    transition: all 0.2s;
+  background: #1e3a5f;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: 'Tajawal', sans-serif;
+  transition: all 0.2s;
 }
 
 .download-btn:hover:not(:disabled) {
-    background: #2c5282;
-    transform: translateY(-1px);
+  background: #2c5282;
+  transform: translateY(-1px);
 }
 
 .download-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .close-btn {
-    background: white;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
-    padding: 12px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 15px;
-    cursor: pointer;
-    font-family: 'Tajawal', sans-serif;
-    transition: all 0.2s;
+  background: white;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  font-family: 'Tajawal', sans-serif;
+  transition: all 0.2s;
 }
 
 .close-btn:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-    color: #475569;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #475569;
 }
 
 /* Approve Button Style */
 .approve-btn {
-    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); /* Darker blue request */
-    box-shadow: 0 4px 12px rgba(30, 58, 95, 0.25);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); /* Darker blue request */
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.25);
 }
 
 .approve-btn:hover:not(:disabled) {
-    box-shadow: 0 8px 20px rgba(30, 58, 95, 0.35);
+  box-shadow: 0 8px 20px rgba(30, 58, 95, 0.35);
 }
-
 </style>

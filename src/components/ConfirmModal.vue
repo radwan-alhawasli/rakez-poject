@@ -2,13 +2,27 @@
   <div class="modal-overlay" @click.self="handleCancel" tabindex="-1">
     <div class="modal-container">
       <div class="modal-icon" :class="iconType">
-        <svg v-if="type === 'danger'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          v-if="type === 'danger'"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <circle cx="12" cy="12" r="10"></circle>
           <line x1="12" y1="8" x2="12" y2="12"></line>
           <line x1="12" y1="16" x2="12.01" y2="16"></line>
         </svg>
-        <svg v-else-if="type === 'warning'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        <svg
+          v-else-if="type === 'warning'"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+          ></path>
           <line x1="12" y1="9" x2="12" y2="13"></line>
           <line x1="12" y1="17" x2="12.01" y2="17"></line>
         </svg>
@@ -17,15 +31,18 @@
           <polyline points="12 16 12 12 12 8"></polyline>
         </svg>
       </div>
-      
+
       <h3 class="modal-title">{{ title }}</h3>
       <p class="modal-message">{{ message }}</p>
-      
+
       <div class="modal-actions">
-        <button class="btn btn-cancel" @click="handleCancel">
-          إلغاء
-        </button>
-        <button class="btn btn-confirm" :class="confirmButtonClass" @click="handleConfirm" :disabled="isLoading">
+        <button class="btn btn-cancel" @click="handleCancel">إلغاء</button>
+        <button
+          class="btn btn-confirm"
+          :class="confirmButtonClass"
+          @click="handleConfirm"
+          :disabled="isLoading"
+        >
           <span v-if="isLoading" class="btn-spinner"></span>
           <span v-else>{{ confirmText }}</span>
         </button>
@@ -35,86 +52,86 @@
 </template>
 
 <script>
-import { onMounted, onUnmounted, computed } from 'vue'
+import { onMounted, onUnmounted, computed } from 'vue';
 
 export default {
   name: 'ConfirmModal',
   props: {
     title: {
       type: String,
-      default: 'تأكيد الإجراء'
+      default: 'تأكيد الإجراء',
     },
     message: {
       type: String,
-      required: true
+      required: true,
     },
     type: {
       type: String,
       default: 'warning', // 'warning', 'danger', 'info'
-      validator: (value) => ['warning', 'danger', 'info'].includes(value)
+      validator: value => ['warning', 'danger', 'info'].includes(value),
     },
     confirmText: {
       type: String,
-      default: 'تأكيد'
+      default: 'تأكيد',
     },
     cancelText: {
       type: String,
-      default: 'إلغاء'
+      default: 'إلغاء',
     },
     isLoading: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   emits: ['confirm', 'cancel', 'close'],
   setup(props, { emit }) {
     const iconType = computed(() => {
-      return `icon-${props.type}`
-    })
+      return `icon-${props.type}`;
+    });
 
     const confirmButtonClass = computed(() => {
-      if (props.type === 'danger') return 'btn-danger'
-      if (props.type === 'warning') return 'btn-warning'
-      return 'btn-primary'
-    })
+      if (props.type === 'danger') return 'btn-danger';
+      if (props.type === 'warning') return 'btn-warning';
+      return 'btn-primary';
+    });
 
-    const handleEscape = (e) => {
+    const handleEscape = e => {
       if (e.key === 'Escape' && !props.isLoading) {
-        handleCancel()
+        handleCancel();
       }
-    }
+    };
 
     const handleConfirm = () => {
       if (!props.isLoading) {
-        emit('confirm')
+        emit('confirm');
       }
-    }
+    };
 
     const handleCancel = () => {
       if (!props.isLoading) {
-        emit('cancel')
-        emit('close')
+        emit('cancel');
+        emit('close');
       }
-    }
+    };
 
     onMounted(() => {
-      document.body.style.overflow = 'hidden'
-      document.addEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape);
+    });
 
     onUnmounted(() => {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEscape);
+    });
 
     return {
       iconType,
       confirmButtonClass,
       handleConfirm,
-      handleCancel
-    }
-  }
-}
+      handleCancel,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -283,7 +300,7 @@ export default {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
 }
 
 .btn-primary:hover:not(:disabled) {

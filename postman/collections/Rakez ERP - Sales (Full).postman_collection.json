@@ -1,0 +1,720 @@
+{
+  "info": {
+    "_postman_id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+    "name": "Rakez ERP - Sales (Full)",
+    "description": "Full API collection for the Sales module: dashboard, projects, reservations, targets, attendance, team, waiting list, negotiations, payment plan, analytics, commissions, deposits, admin. Auth: Bearer token; run 00 - Auth → Login first. Variables: base_url, token, user_email, user_password; optional: contract_id, unit_id, reservation_id, target_id, task_id, etc.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api" },
+    { "key": "token", "value": "" },
+    { "key": "user_email", "value": "" },
+    { "key": "user_password", "value": "" },
+    { "key": "contract_id", "value": "1" },
+    { "key": "unit_id", "value": "1" },
+    { "key": "reservation_id", "value": "1" },
+    { "key": "target_id", "value": "1" },
+    { "key": "task_id", "value": "1" },
+    { "key": "waiting_list_id", "value": "1" },
+    { "key": "negotiation_id", "value": "1" },
+    { "key": "user_id", "value": "1" },
+    { "key": "commission_id", "value": "1" },
+    { "key": "deposit_id", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "00 - Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            },
+            "description": "Run first to set token. Sets collection variable token from access_token.",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "var res = pm.response.json();",
+                    "if (res.access_token) {",
+                    "  pm.collectionVariables.set('token', res.access_token);",
+                    "  pm.test('Login successful', function() { pm.response.to.have.status(200); });",
+                    "} else {",
+                    "  pm.test('Login failed', function() { pm.expect(res.access_token).to.exist; });",
+                    "}"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 - Dashboard",
+      "item": [
+        {
+          "name": "Get Sales Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/dashboard", "host": ["{{base_url}}"], "path": ["sales", "dashboard"] }
+        },
+        {
+          "name": "Get Sold Units",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/sold-units", "host": ["{{base_url}}"], "path": ["sales", "sold-units"] }
+        },
+        {
+          "name": "Get Sold Unit Commission Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/sold-units/{{unit_id}}/commission-summary", "host": ["{{base_url}}"], "path": ["sales", "sold-units", "{{unit_id}}", "commission-summary"] }
+        },
+        {
+          "name": "Get Deposits Management",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/deposits/management", "host": ["{{base_url}}"], "path": ["sales", "deposits", "management"] }
+        },
+        {
+          "name": "Get Deposits Follow-up",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/deposits/follow-up", "host": ["{{base_url}}"], "path": ["sales", "deposits", "follow-up"] }
+        }
+      ]
+    },
+    {
+      "name": "02 - Projects",
+      "item": [
+        {
+          "name": "List Sales Projects",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/projects?per_page=15&page=1", "host": ["{{base_url}}"], "path": ["sales", "projects"], "query": [{ "key": "per_page", "value": "15" }, { "key": "page", "value": "1" }] }
+        },
+        {
+          "name": "Get Project by Contract ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/projects/{{contract_id}}", "host": ["{{base_url}}"], "path": ["sales", "projects", "{{contract_id}}"] }
+        },
+        {
+          "name": "Get Project Units",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/projects/{{contract_id}}/units", "host": ["{{base_url}}"], "path": ["sales", "projects", "{{contract_id}}", "units"] }
+        }
+      ]
+    },
+    {
+      "name": "03 - Reservation Context",
+      "item": [
+        {
+          "name": "Get Unit Reservation Context",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/units/{{unit_id}}/reservation-context", "host": ["{{base_url}}"], "path": ["sales", "units", "{{unit_id}}", "reservation-context"] }
+        }
+      ]
+    },
+    {
+      "name": "04 - Reservations",
+      "item": [
+        {
+          "name": "Create Reservation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"unit_id\": {{unit_id}},\n  \"client_name\": \"Client Name\",\n  \"client_email\": \"client@example.com\",\n  \"client_phone\": \"+966500000000\"\n}" },
+            "url": { "raw": "{{base_url}}/sales/reservations", "host": ["{{base_url}}"], "path": ["sales", "reservations"] }
+        },
+        {
+          "name": "List Reservations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/reservations?per_page=15&page=1", "host": ["{{base_url}}"], "path": ["sales", "reservations"], "query": [{ "key": "per_page", "value": "15" }, { "key": "page", "value": "1" }] }
+        },
+        {
+          "name": "Confirm Reservation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/reservations/{{reservation_id}}/confirm", "host": ["{{base_url}}"], "path": ["sales", "reservations", "{{reservation_id}}", "confirm"] }
+        },
+        {
+          "name": "Cancel Reservation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/reservations/{{reservation_id}}/cancel", "host": ["{{base_url}}"], "path": ["sales", "reservations", "{{reservation_id}}", "cancel"] }
+        },
+        {
+          "name": "Store Action",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"action\": \"note\",\n  \"notes\": \"Action notes\"\n}" },
+            "url": { "raw": "{{base_url}}/sales/reservations/{{reservation_id}}/actions", "host": ["{{base_url}}"], "path": ["sales", "reservations", "{{reservation_id}}", "actions"] }
+        },
+        {
+          "name": "Download Voucher",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/reservations/{{reservation_id}}/voucher", "host": ["{{base_url}}"], "path": ["sales", "reservations", "{{reservation_id}}", "voucher"] }
+        }
+      ]
+    },
+    {
+      "name": "05 - Targets",
+      "item": [
+        {
+          "name": "Get My Targets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/targets/my", "host": ["{{base_url}}"], "path": ["sales", "targets", "my"] }
+        },
+        {
+          "name": "Update Target",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": 100000,\n  \"period\": \"2025-02\"\n}" },
+            "url": { "raw": "{{base_url}}/sales/targets/{{target_id}}", "host": ["{{base_url}}"], "path": ["sales", "targets", "{{target_id}}"] }
+        }
+      ]
+    },
+    {
+      "name": "06 - Attendance",
+      "item": [
+        {
+          "name": "Get My Attendance",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/attendance/my", "host": ["{{base_url}}"], "path": ["sales", "attendance", "my"] }
+        }
+      ]
+    },
+    {
+      "name": "07 - Assignments",
+      "item": [
+        {
+          "name": "Get My Assignments",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/assignments/my", "host": ["{{base_url}}"], "path": ["sales", "assignments", "my"] }
+        }
+      ]
+    },
+    {
+      "name": "08 - Team (Leader)",
+      "item": [
+        {
+          "name": "Team Projects",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/team/projects", "host": ["{{base_url}}"], "path": ["sales", "team", "projects"] }
+        },
+        {
+          "name": "Team Members",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/team/members", "host": ["{{base_url}}"], "path": ["sales", "team", "members"] }
+        },
+        {
+          "name": "Emergency Contacts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/projects/{{contract_id}}/emergency-contacts", "host": ["{{base_url}}"], "path": ["sales", "projects", "{{contract_id}}", "emergency-contacts"] }
+        },
+        {
+          "name": "Create Target (Team)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user_id\": {{user_id}},\n  \"amount\": 50000,\n  \"period\": \"2025-02\"\n}" },
+            "url": { "raw": "{{base_url}}/sales/targets", "host": ["{{base_url}}"], "path": ["sales", "targets"] }
+        },
+        {
+          "name": "Attendance Team",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/attendance/team", "host": ["{{base_url}}"], "path": ["sales", "attendance", "team"] }
+        },
+        {
+          "name": "Schedules",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/attendance/schedules", "host": ["{{base_url}}"], "path": ["sales", "attendance", "schedules"] }
+        },
+        {
+          "name": "Tasks - Projects",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/tasks/projects", "host": ["{{base_url}}"], "path": ["sales", "tasks", "projects"] }
+        },
+        {
+          "name": "Tasks by Project",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/tasks/projects/{{contract_id}}", "host": ["{{base_url}}"], "path": ["sales", "tasks", "projects", "{{contract_id}}"] }
+        },
+        {
+          "name": "Create Marketing Task",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"project_id\": {{contract_id}},\n  \"description\": \"Task description\",\n  \"due_date\": \"2025-02-28\"\n}" },
+            "url": { "raw": "{{base_url}}/sales/marketing-tasks", "host": ["{{base_url}}"], "path": ["sales", "marketing-tasks"] }
+        },
+        {
+          "name": "Update Marketing Task",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"completed\",\n  \"notes\": \"Done\"\n}" },
+            "url": { "raw": "{{base_url}}/sales/marketing-tasks/{{task_id}}", "host": ["{{base_url}}"], "path": ["sales", "marketing-tasks", "{{task_id}}"] }
+        }
+      ]
+    },
+    {
+      "name": "09 - Waiting List",
+      "item": [
+        {
+          "name": "List Waiting List",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/waiting-list?per_page=15&page=1", "host": ["{{base_url}}"], "path": ["sales", "waiting-list"], "query": [{ "key": "per_page", "value": "15" }, { "key": "page", "value": "1" }] }
+        },
+        {
+          "name": "Get Waiting List by Unit",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/waiting-list/unit/{{unit_id}}", "host": ["{{base_url}}"], "path": ["sales", "waiting-list", "unit", "{{unit_id}}"] }
+        },
+        {
+          "name": "Create Waiting List",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"unit_id\": {{unit_id}},\n  \"client_name\": \"Client\",\n  \"client_email\": \"client@example.com\",\n  \"client_phone\": \"+966500000000\"\n}" },
+            "url": { "raw": "{{base_url}}/sales/waiting-list", "host": ["{{base_url}}"], "path": ["sales", "waiting-list"] }
+        },
+        {
+          "name": "Convert to Reservation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/waiting-list/{{waiting_list_id}}/convert", "host": ["{{base_url}}"], "path": ["sales", "waiting-list", "{{waiting_list_id}}", "convert"] }
+        },
+        {
+          "name": "Cancel Waiting List",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/waiting-list/{{waiting_list_id}}", "host": ["{{base_url}}"], "path": ["sales", "waiting-list", "{{waiting_list_id}}"] }
+        }
+      ]
+    },
+    {
+      "name": "10 - Negotiations",
+      "item": [
+        {
+          "name": "Pending Negotiations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/negotiations/pending", "host": ["{{base_url}}"], "path": ["sales", "negotiations", "pending"] }
+        },
+        {
+          "name": "Approve Negotiation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/negotiations/{{negotiation_id}}/approve", "host": ["{{base_url}}"], "path": ["sales", "negotiations", "{{negotiation_id}}", "approve"] }
+        },
+        {
+          "name": "Reject Negotiation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Rejection reason\"\n}" },
+            "url": { "raw": "{{base_url}}/sales/negotiations/{{negotiation_id}}/reject", "host": ["{{base_url}}"], "path": ["sales", "negotiations", "{{negotiation_id}}", "reject"] }
+        }
+      ]
+    },
+    {
+      "name": "11 - Payment Plan",
+      "item": [
+        {
+          "name": "Get Payment Plan",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/reservations/{{reservation_id}}/payment-plan", "host": ["{{base_url}}"], "path": ["sales", "reservations", "{{reservation_id}}", "payment-plan"] }
+        },
+        {
+          "name": "Create Payment Plan",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"installments\": [\n    { \"due_date\": \"2025-03-01\", \"amount\": 100000 },\n    { \"due_date\": \"2025-04-01\", \"amount\": 100000 }\n  ]\n}" },
+            "url": { "raw": "{{base_url}}/sales/reservations/{{reservation_id}}/payment-plan", "host": ["{{base_url}}"], "path": ["sales", "reservations", "{{reservation_id}}", "payment-plan"] }
+        },
+        {
+          "name": "Update Installment",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"due_date\": \"2025-03-15\",\n  \"amount\": 120000\n}" },
+            "url": { "raw": "{{base_url}}/sales/payment-installments/1", "host": ["{{base_url}}"], "path": ["sales", "payment-installments", "1"] }
+        },
+        {
+          "name": "Delete Installment",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/payment-installments/1", "host": ["{{base_url}}"], "path": ["sales", "payment-installments", "1"] }
+        }
+      ]
+    },
+    {
+      "name": "12 - Analytics",
+      "item": [
+        {
+          "name": "Analytics Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/analytics/dashboard", "host": ["{{base_url}}"], "path": ["sales", "analytics", "dashboard"] }
+        },
+        {
+          "name": "Analytics Sold Units",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/analytics/sold-units", "host": ["{{base_url}}"], "path": ["sales", "analytics", "sold-units"] }
+        },
+        {
+          "name": "Deposit Stats by Project",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/analytics/deposits/stats/project/{{contract_id}}", "host": ["{{base_url}}"], "path": ["sales", "analytics", "deposits", "stats", "project", "{{contract_id}}"] }
+        },
+        {
+          "name": "Commission Stats by Employee",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/analytics/commissions/stats/employee/{{user_id}}", "host": ["{{base_url}}"], "path": ["sales", "analytics", "commissions", "stats", "employee", "{{user_id}}"] }
+        },
+        {
+          "name": "Commissions Monthly Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/analytics/commissions/monthly-report", "host": ["{{base_url}}"], "path": ["sales", "analytics", "commissions", "monthly-report"] }
+        }
+      ]
+    },
+    {
+      "name": "13 - Commissions",
+      "item": [
+        {
+          "name": "List Commissions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/commissions?per_page=15&page=1", "host": ["{{base_url}}"], "path": ["sales", "commissions"], "query": [{ "key": "per_page", "value": "15" }, { "key": "page", "value": "1" }] }
+        },
+        {
+          "name": "Create Commission",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"reservation_id\": {{reservation_id}},\n  \"unit_id\": {{unit_id}}\n}" },
+            "url": { "raw": "{{base_url}}/sales/commissions", "host": ["{{base_url}}"], "path": ["sales", "commissions"] }
+        },
+        {
+          "name": "Get Commission",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/commissions/{{commission_id}}", "host": ["{{base_url}}"], "path": ["sales", "commissions", "{{commission_id}}"] }
+        },
+        {
+          "name": "Update Commission Expenses",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"expenses\": 5000\n}" },
+            "url": { "raw": "{{base_url}}/sales/commissions/{{commission_id}}/expenses", "host": ["{{base_url}}"], "path": ["sales", "commissions", "{{commission_id}}", "expenses"] }
+        },
+        {
+          "name": "Add Distributions",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"distributions\": [\n    { \"user_id\": {{user_id}}, \"type\": \"lead_generation\", \"amount\": 1000 }\n  ]\n}" },
+            "url": { "raw": "{{base_url}}/sales/commissions/{{commission_id}}/distributions", "host": ["{{base_url}}"], "path": ["sales", "commissions", "{{commission_id}}", "distributions"] }
+        },
+        {
+          "name": "Distribute (Lead Generation)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user_id\": {{user_id}},\n  \"amount\": 1000\n}" },
+            "url": { "raw": "{{base_url}}/sales/commissions/{{commission_id}}/distribute/lead-generation", "host": ["{{base_url}}"], "path": ["sales", "commissions", "{{commission_id}}", "distribute", "lead-generation"] }
+        },
+        {
+          "name": "Distribute (Persuasion)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user_id\": {{user_id}},\n  \"amount\": 1000\n}" },
+            "url": { "raw": "{{base_url}}/sales/commissions/{{commission_id}}/distribute/persuasion", "host": ["{{base_url}}"], "path": ["sales", "commissions", "{{commission_id}}", "distribute", "persuasion"] }
+        },
+        {
+          "name": "Distribute (Closing)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user_id\": {{user_id}},\n  \"amount\": 1000\n}" },
+            "url": { "raw": "{{base_url}}/sales/commissions/{{commission_id}}/distribute/closing", "host": ["{{base_url}}"], "path": ["sales", "commissions", "{{commission_id}}", "distribute", "closing"] }
+        },
+        {
+          "name": "Distribute (Management)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user_id\": {{user_id}},\n  \"amount\": 1000\n}" },
+            "url": { "raw": "{{base_url}}/sales/commissions/{{commission_id}}/distribute/management", "host": ["{{base_url}}"], "path": ["sales", "commissions", "{{commission_id}}", "distribute", "management"] }
+        },
+        {
+          "name": "Approve Commission",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/commissions/{{commission_id}}/approve", "host": ["{{base_url}}"], "path": ["sales", "commissions", "{{commission_id}}", "approve"] }
+        },
+        {
+          "name": "Mark Commission Paid",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/commissions/{{commission_id}}/mark-paid", "host": ["{{base_url}}"], "path": ["sales", "commissions", "{{commission_id}}", "mark-paid"] }
+        },
+        {
+          "name": "Commission Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/commissions/summary", "host": ["{{base_url}}"], "path": ["sales", "commissions", "summary"] }
+        },
+        {
+          "name": "Update Distribution",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": 1500\n}" },
+            "url": { "raw": "{{base_url}}/sales/commissions/distributions/1", "host": ["{{base_url}}"], "path": ["sales", "commissions", "distributions", "1"] }
+        },
+        {
+          "name": "Delete Distribution",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/commissions/distributions/1", "host": ["{{base_url}}"], "path": ["sales", "commissions", "distributions", "1"] }
+        },
+        {
+          "name": "Approve Distribution",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/commissions/distributions/1/approve", "host": ["{{base_url}}"], "path": ["sales", "commissions", "distributions", "1", "approve"] }
+        },
+        {
+          "name": "Reject Distribution",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Rejection reason\"\n}" },
+            "url": { "raw": "{{base_url}}/sales/commissions/distributions/1/reject", "host": ["{{base_url}}"], "path": ["sales", "commissions", "distributions", "1", "reject"] }
+        }
+      ]
+    },
+    {
+      "name": "14 - Deposits",
+      "item": [
+        {
+          "name": "List Deposits",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/deposits?per_page=15&page=1", "host": ["{{base_url}}"], "path": ["sales", "deposits"], "query": [{ "key": "per_page", "value": "15" }, { "key": "page", "value": "1" }] }
+        },
+        {
+          "name": "Create Deposit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"reservation_id\": {{reservation_id}},\n  \"amount\": 50000,\n  \"due_date\": \"2025-02-28\"\n}" },
+            "url": { "raw": "{{base_url}}/sales/deposits", "host": ["{{base_url}}"], "path": ["sales", "deposits"] }
+        },
+        {
+          "name": "Legacy Follow-up",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/deposits/follow-up", "host": ["{{base_url}}"], "path": ["sales", "deposits", "follow-up"] }
+        },
+        {
+          "name": "Get Deposit",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/deposits/{{deposit_id}}", "host": ["{{base_url}}"], "path": ["sales", "deposits", "{{deposit_id}}"] }
+        },
+        {
+          "name": "Update Deposit",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": 55000,\n  \"due_date\": \"2025-03-01\"\n}" },
+            "url": { "raw": "{{base_url}}/sales/deposits/{{deposit_id}}", "host": ["{{base_url}}"], "path": ["sales", "deposits", "{{deposit_id}}"] }
+        },
+        {
+          "name": "Confirm Receipt",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/deposits/{{deposit_id}}/confirm-receipt", "host": ["{{base_url}}"], "path": ["sales", "deposits", "{{deposit_id}}", "confirm-receipt"] }
+        },
+        {
+          "name": "Mark Received",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/deposits/{{deposit_id}}/mark-received", "host": ["{{base_url}}"], "path": ["sales", "deposits", "{{deposit_id}}", "mark-received"] }
+        },
+        {
+          "name": "Refund Deposit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Refund reason\"\n}" },
+            "url": { "raw": "{{base_url}}/sales/deposits/{{deposit_id}}/refund", "host": ["{{base_url}}"], "path": ["sales", "deposits", "{{deposit_id}}", "refund"] }
+        },
+        {
+          "name": "Generate Claim",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/deposits/{{deposit_id}}/generate-claim", "host": ["{{base_url}}"], "path": ["sales", "deposits", "{{deposit_id}}", "generate-claim"] }
+        },
+        {
+          "name": "Can Refund",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/deposits/{{deposit_id}}/can-refund", "host": ["{{base_url}}"], "path": ["sales", "deposits", "{{deposit_id}}", "can-refund"] }
+        },
+        {
+          "name": "Delete Deposit",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/deposits/{{deposit_id}}", "host": ["{{base_url}}"], "path": ["sales", "deposits", "{{deposit_id}}"] }
+        },
+        {
+          "name": "Bulk Confirm",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"deposit_ids\": [1, 2, 3]\n}" },
+            "url": { "raw": "{{base_url}}/sales/deposits/bulk-confirm", "host": ["{{base_url}}"], "path": ["sales", "deposits", "bulk-confirm"] }
+        },
+        {
+          "name": "Stats by Project",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/deposits/stats/project/{{contract_id}}", "host": ["{{base_url}}"], "path": ["sales", "deposits", "stats", "project", "{{contract_id}}"] }
+        },
+        {
+          "name": "By Reservation",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/deposits/by-reservation/{{reservation_id}}", "host": ["{{base_url}}"], "path": ["sales", "deposits", "by-reservation", "{{reservation_id}}"] }
+        },
+        {
+          "name": "Refundable by Project",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{base_url}}/sales/deposits/refundable/project/{{contract_id}}", "host": ["{{base_url}}"], "path": ["sales", "deposits", "refundable", "project", "{{contract_id}}"] }
+        }
+      ]
+    },
+    {
+      "name": "15 - Admin",
+      "item": [
+        {
+          "name": "Assign Project to Leader",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"contract_id\": {{contract_id}},\n  \"user_id\": {{user_id}}\n}" },
+            "url": { "raw": "{{base_url}}/admin/sales/assign-project", "host": ["{{base_url}}"], "path": ["admin", "sales", "assign-project"] }
+        }
+      ]
+    }
+  ]
+}

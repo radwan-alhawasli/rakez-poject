@@ -4,7 +4,9 @@
     <div class="section-header">
       <div class="header-content">
         <h2 class="section-title">طلباتي الحصرية</h2>
-        <p class="section-subtitle">تتبع حالة طلبات المشاريع الحصرية التي قدمتها وأكمل العقود المعتمدة.</p>
+        <p class="section-subtitle">
+          تتبع حالة طلبات المشاريع الحصرية التي قدمتها وأكمل العقود المعتمدة.
+        </p>
       </div>
     </div>
 
@@ -45,12 +47,18 @@
             </td>
             <td>
               <div class="status-badge" :class="request.status.toLowerCase()">
-                {{ request.status.toLowerCase() === 'approved' ? 'موافق عليه' : (request.status.toLowerCase() === 'rejected' ? 'مرفوض' : 'معلق') }}
+                {{
+                  request.status.toLowerCase() === 'approved'
+                    ? 'موافق عليه'
+                    : request.status.toLowerCase() === 'rejected'
+                    ? 'مرفوض'
+                    : 'معلق'
+                }}
               </div>
             </td>
             <td class="text-center">
-              <button 
-                class="complete-btn" 
+              <button
+                class="complete-btn"
                 @click="completeContract(request.id)"
                 :disabled="request.status.toLowerCase() !== 'approved'"
               >
@@ -65,103 +73,108 @@
 </template>
 
 <script>
-import { ref, onMounted, onActivated } from 'vue'
-import { useRouter } from 'vue-router'
-import contractService from '../services/contractService'
-import logger from '../utils/logger'
+import { ref, onMounted, onActivated } from 'vue';
+import { useRouter } from 'vue-router';
+import contractService from '../services/contractService';
+import logger from '../utils/logger';
 
 export default {
   name: 'MyRequestsView',
   setup() {
-    const router = useRouter()
-    const requests = ref([])
-    const isLoading = ref(true)
+    const router = useRouter();
+    const requests = ref([]);
+    const isLoading = ref(true);
 
     // Check if contract is completed (has been filled with data)
-    const isContractCompleted = (item) => {
+    const isContractCompleted = item => {
       // Check if contract has completion data
       // We check for fields that are ONLY present after the "Complete Contract" form is submitted.
       // These fields are not part of the initial Exclusive Project Request.
-      
+
       const hasDate = item.gregorian_date && item.gregorian_date !== '';
       const hasHijri = item.hijri_date && item.hijri_date !== '';
-      const hasDuration = item.agreement_duration_days != null && item.agreement_duration_days !== '' && item.agreement_duration_days != 0;
+      const hasDuration =
+        item.agreement_duration_days != null &&
+        item.agreement_duration_days !== '' &&
+        item.agreement_duration_days != 0;
       const hasCommission = item.commission_percent != null && item.commission_percent !== '';
-      
+
       // If ANY of these specific completion fields are present, the contract is considered completed.
       // We avoid checking second_party_name alone as it might be pre-filled from developer info.
       return hasDate || hasHijri || hasDuration || hasCommission;
-    }
+    };
 
     const fetchRequests = async () => {
-      isLoading.value = true
+      isLoading.value = true;
       try {
-        const data = await contractService.getContracts()
-        
+        const data = await contractService.getContracts();
+
         // 1. Filter out rejected contracts initially if needed, or keep all
         // The user only sees their requests.
-        
+
         // 2. Process contracts
-        const processedRequests = await Promise.all(data.map(async (item) => {
-           const status = (item.status || 'Pending').toLowerCase()
-           
-           // If approved, we need to check if it's completed
-           // But 'item' from list might be incomplete. 
-           // We'll check if we need to fetch details.
-           // Ideally, the list API should return enough info.
-           // If not, we fetch detail. 
-           
-           if (status === 'approved') {
-               // Fetch full details to check completion
-               try {
-                   const fullDetails = await contractService.getContractById(item.id)
-                   if (isContractCompleted(fullDetails)) {
-                       return null // Filter out completed
-                   }
-                   return { ...item, status: 'Approved' } // Keep non-completed
-               } catch (e) {
-                   logger.error(`Failed to fetch details for ${item.id}`, e)
-                   return item // Keep if check fails, better safe than hidden
-               }
-           }
-           
-           return item
-        }))
-        
+        const processedRequests = await Promise.all(
+          data.map(async item => {
+            const status = (item.status || 'Pending').toLowerCase();
+
+            // If approved, we need to check if it's completed
+            // But 'item' from list might be incomplete.
+            // We'll check if we need to fetch details.
+            // Ideally, the list API should return enough info.
+            // If not, we fetch detail.
+
+            if (status === 'approved') {
+              // Fetch full details to check completion
+              try {
+                const fullDetails = await contractService.getContractById(item.id);
+                if (isContractCompleted(fullDetails)) {
+                  return null; // Filter out completed
+                }
+                return { ...item, status: 'Approved' }; // Keep non-completed
+              } catch (e) {
+                logger.error(`Failed to fetch details for ${item.id}`, e);
+                return item; // Keep if check fails, better safe than hidden
+              }
+            }
+
+            return item;
+          })
+        );
+
         // Filter out nulls (completed contracts)
-        const validRequests = processedRequests.filter(r => r !== null)
+        const validRequests = processedRequests.filter(r => r !== null);
 
         // Map API fields if they differ
         requests.value = validRequests.map(item => ({
-            id: item.id,
-            project_name: item.project_name || 'بدون اسم',
-            date: item.created_at ? item.created_at.split('T')[0] : 'غير متوفر',
-            status: item.status || 'Pending'
-        }))
+          id: item.id,
+          project_name: item.project_name || 'بدون اسم',
+          date: item.created_at ? item.created_at.split('T')[0] : 'غير متوفر',
+          status: item.status || 'Pending',
+        }));
       } catch (error) {
-        logger.error('Failed to fetch requests', error)
+        logger.error('Failed to fetch requests', error);
       } finally {
-        isLoading.value = false
+        isLoading.value = false;
       }
-    }
+    };
 
     // Fetch on mount
-    onMounted(fetchRequests)
-    
-    // Re-fetch when component is activated (returning to this route)
-    onActivated(fetchRequests)
+    onMounted(fetchRequests);
 
-    const completeContract = (id) => {
-      router.push(`/contract-form/${id}`)
-    }
+    // Re-fetch when component is activated (returning to this route)
+    onActivated(fetchRequests);
+
+    const completeContract = id => {
+      router.push(`/contract-form/${id}`);
+    };
 
     return {
       requests,
       isLoading,
-      completeContract
-    }
-  }
-}
+      completeContract,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -171,8 +184,14 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .section-header {
@@ -263,12 +282,24 @@ export default {
   border: 1px solid transparent;
 }
 
-.status-badge.pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-.status-badge.approved { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-.status-badge.rejected { background: #fee2e2; color: #b91c1c; border: 1px solid #fecdd3; }
+.status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+.status-badge.approved {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+.status-badge.rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecdd3;
+}
 
 .complete-btn {
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -294,14 +325,18 @@ export default {
   box-shadow: none;
 }
 
-.text-center { text-align: center; }
-.padding-30 { padding: 30px !important; }
+.text-center {
+  text-align: center;
+}
+.padding-30 {
+  padding: 30px !important;
+}
 
 .spinner-gold {
   width: 40px;
   height: 40px;
   border: 3px solid rgba(161, 139, 92, 0.1);
-  border-top-color: #B1A28F;
+  border-top-color: #b1a28f;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   display: inline-block;
@@ -309,7 +344,7 @@ export default {
 
 .loading-text {
   margin-top: 10px;
-  color: #B1A28F;
+  color: #b1a28f;
   font-weight: 500;
 }
 
@@ -319,6 +354,8 @@ export default {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

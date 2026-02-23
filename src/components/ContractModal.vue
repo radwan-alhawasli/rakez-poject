@@ -7,13 +7,29 @@
           <div class="header-title-row">
             <h2 class="modal-title">تفاصيل العقد/الطلب</h2>
             <span :class="['status-badge-header', normalizedStatus]">
-               {{ normalizedStatus === 'approved' ? 'موافق عليه' : (normalizedStatus === 'rejected' ? 'مرفوض' : 'معلق') }}
+              {{
+                normalizedStatus === 'approved'
+                  ? 'موافق عليه'
+                  : normalizedStatus === 'rejected'
+                  ? 'مرفوض'
+                  : 'معلق'
+              }}
             </span>
           </div>
           <p class="modal-subtitle">مراجعة كاملة لبيانات السجل قبل الموافقة أو الرفض.</p>
         </div>
         <button class="close-btn" @click="closeModal">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
 
@@ -75,110 +91,157 @@
           ...
         </div> 
         -->
-       <div class="modal-footer-action">
-           <button @click="closeModal" class="btn-close-large">إغلاق</button>
-           <div v-if="normalizedStatus === 'pending' && hasPermission('contracts.approve')" class="action-buttons">
-             <button @click="rejectContract" class="btn-reject">رفض العقد</button>
-             <button @click="approveContract" class="btn-approve">الموافقة على العقد</button>
-           </div>
+        <div class="modal-footer-action">
+          <button @click="closeModal" class="btn-close-large">إغلاق</button>
+          <div
+            v-if="normalizedStatus === 'pending' && hasPermission('contracts.approve')"
+            class="action-buttons"
+          >
+            <button @click="rejectContract" class="btn-reject">رفض العقد</button>
+            <button @click="approveContract" class="btn-approve">الموافقة على العقد</button>
+          </div>
         </div>
       </div>
     </div>
+    <ConfirmModal
+      v-if="showConfirmModal"
+      :title="confirmModalConfig.title"
+      :message="confirmModalConfig.message"
+      :type="confirmModalConfig.type"
+      :confirm-text="confirmModalConfig.confirmText"
+      @confirm="onConfirmModalConfirm"
+      @close="showConfirmModal = false"
+    />
   </div>
 </template>
 
 <script>
-import { computed, onMounted, onUnmounted } from 'vue'
-import { usePermissions } from '../composables/usePermissions'
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import ConfirmModal from './ConfirmModal.vue';
+import { usePermissions } from '../composables/usePermissions';
 
 export default {
   name: 'ContractModal',
+  components: { ConfirmModal },
   props: {
     contract: {
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
   emits: ['close', 'approve', 'reject'],
   setup(props, { emit }) {
-    const { hasPermission } = usePermissions()
+    const { hasPermission } = usePermissions();
 
     // Handle Escape key
-    const handleEscape = (e) => {
+    const handleEscape = e => {
       if (e.key === 'Escape') {
-        closeModal()
+        closeModal();
       }
-    }
+    };
 
     // Lock body scroll when modal is open
     onMounted(() => {
-      document.body.style.overflow = 'hidden'
-      document.addEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape);
+    });
 
     onUnmounted(() => {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEscape);
+    });
+
+    const showConfirmModal = ref(false);
+    const confirmModalConfig = ref({
+      title: '',
+      message: '',
+      type: 'warning',
+      confirmText: 'تأكيد',
+      resolve: null,
+    });
+
     // بيانات تفاصيل العقد المحددة - ربط صحيح مع API
     const contractDetails = computed(() => {
-      const c = props.contract || {}
-      
+      const c = props.contract || {};
+
       // حساب عدد الوحدات ونوعها من units array إذا كان موجوداً
-      let unitType = 'N/A'
-      let unitCount = 0
-      
+      let unitType = 'N/A';
+      let unitCount = 0;
+
       if (c.units && Array.isArray(c.units) && c.units.length > 0) {
         // جمع عدد الوحدات من جميع العناصر
-        unitCount = c.units.reduce((sum, unit) => sum + (parseInt(unit.count) || 0), 0)
+        unitCount = c.units.reduce((sum, unit) => sum + (parseInt(unit.count) || 0), 0);
         // أخذ نوع الوحدة من العنصر الأول (أو دمج الأنواع إذا كانت مختلفة)
-        const types = c.units.map(u => u.type).filter(t => t).join('، ')
-        unitType = types || 'N/A'
+        const types = c.units
+          .map(u => u.type)
+          .filter(t => t)
+          .join('، ');
+        unitType = types || 'N/A';
       } else {
         // استخدام الحقول المباشرة إذا لم يكن هناك units array
-        unitType = c.unit_type || 'N/A'
-        unitCount = c.units_count || c.unit_count || 0
+        unitType = c.unit_type || 'N/A';
+        unitCount = c.units_count || c.unit_count || 0;
       }
-      
+
       return {
         // بيانات المطور - الاسم هو اسم المطور (developer_name)
         name: c.developer_name || c.developer || 'غير محدد',
-        
+
         // بيانات المشروع - من API الحقول الصحيحة
         projectName: c.project_name || 'غير محدد',
         unitType: unitType,
         unitCount: unitCount,
-        
+
         // تفاصيل التسويق - المسوقون هو اسم المستخدم الذي قدم الطلب (created_by_name)
-        marketer: c.created_by_name || c.marketer || c.marketer_name || 'غير محدد'
-      }
-    })
+        marketer: c.created_by_name || c.marketer || c.marketer_name || 'غير محدد',
+      };
+    });
 
     // حساب الحالة المعيارية للعرض والتحقق
     const normalizedStatus = computed(() => {
-      const s = props.contract?.status ? String(props.contract.status).toLowerCase() : 'pending'
-      if (s === 'approved') return 'approved'
-      if (s === 'rejected' || s === 'refused') return 'rejected'
-      return 'pending'
-    })
+      const s = props.contract?.status ? String(props.contract.status).toLowerCase() : 'pending';
+      if (s === 'approved') return 'approved';
+      if (s === 'rejected' || s === 'refused') return 'rejected';
+      return 'pending';
+    });
 
     const closeModal = () => {
-      emit('close')
-    }
+      emit('close');
+    };
 
     const approveContract = () => {
-      if (confirm(`هل أنت متأكد من الموافقة على العقد ${props.contract.number}؟`)) {
-        emit('approve', props.contract)
-        closeModal()
-      }
-    }
+      confirmModalConfig.value = {
+        title: 'الموافقة على العقد',
+        message: `هل أنت متأكد من الموافقة على العقد ${props.contract.number}؟`,
+        type: 'info',
+        confirmText: 'موافقة',
+        resolve: () => {
+          emit('approve', props.contract);
+          closeModal();
+        },
+      };
+      showConfirmModal.value = true;
+    };
 
     const rejectContract = () => {
-      if (confirm(`هل أنت متأكد من رفض العقد ${props.contract.number}؟`)) {
-        emit('reject', props.contract)
-        closeModal()
-      }
-    }
+      confirmModalConfig.value = {
+        title: 'رفض العقد',
+        message: `هل أنت متأكد من رفض العقد ${props.contract.number}؟`,
+        type: 'danger',
+        confirmText: 'رفض',
+        resolve: () => {
+          emit('reject', props.contract);
+          closeModal();
+        },
+      };
+      showConfirmModal.value = true;
+    };
+
+    const onConfirmModalConfirm = async () => {
+      const fn = confirmModalConfig.value.resolve;
+      if (fn) await fn();
+      showConfirmModal.value = false;
+    };
 
     return {
       contractDetails,
@@ -186,10 +249,13 @@ export default {
       approveContract,
       rejectContract,
       normalizedStatus,
-      hasPermission
-    }
-  }
-}
+      hasPermission,
+      showConfirmModal,
+      confirmModalConfig,
+      onConfirmModalConfirm,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -214,8 +280,12 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-container {
@@ -230,12 +300,15 @@ export default {
   overflow: hidden;
   direction: rtl;
   font-family: 'Tajawal', sans-serif;
-  border-top: 4px solid #B1A28F; /* Gold Top Border */
+  border-top: 4px solid #b1a28f; /* Gold Top Border */
 }
 
 /* Classic Typography Helpers */
-h2, h3, .modal-title, .section-title {
-    font-family: 'Amiri', 'Playfair Display', serif;
+h2,
+h3,
+.modal-title,
+.section-title {
+  font-family: 'Amiri', 'Playfair Display', serif;
 }
 
 .modal-header {
@@ -253,10 +326,10 @@ h2, h3, .modal-title, .section-title {
 }
 
 .header-title-row {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 8px;
 }
 
 .modal-title {
@@ -267,15 +340,27 @@ h2, h3, .modal-title, .section-title {
 }
 
 .status-badge-header {
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    font-family: 'Tajawal', sans-serif;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Tajawal', sans-serif;
 }
-.status-badge-header.approved { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-.status-badge-header.pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-.status-badge-header.rejected { background: #fee2e2; color: #b91c1c; border: 1px solid #fecdd3; }
+.status-badge-header.approved {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+.status-badge-header.pending {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+.status-badge-header.rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecdd3;
+}
 
 .modal-subtitle {
   font-size: 14px;
@@ -324,7 +409,7 @@ h2, h3, .modal-title, .section-title {
 .section-bar {
   width: 4px;
   height: 24px;
-  background: linear-gradient(180deg, #B1A28F 0%, #c9a961 100%);
+  background: linear-gradient(180deg, #b1a28f 0%, #c9a961 100%);
   border-radius: 2px;
   box-shadow: 0 2px 4px rgba(161, 139, 92, 0.3);
 }
@@ -366,8 +451,8 @@ h2, h3, .modal-title, .section-title {
 }
 
 .detail-label {
-  font-size: 14px; 
-  font-family: 'Tajawal', sans-serif; 
+  font-size: 14px;
+  font-family: 'Tajawal', sans-serif;
   font-weight: 700;
   color: #1e3a5f;
   min-width: fit-content;
@@ -383,7 +468,7 @@ h2, h3, .modal-title, .section-title {
 }
 
 .detail-value.highlight {
-  color: #B1A28F;
+  color: #b1a28f;
   font-weight: 700;
   font-size: 15px;
 }
@@ -403,7 +488,7 @@ h2, h3, .modal-title, .section-title {
 }
 
 .btn-approve {
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
   border: none;
   padding: 12px 32px;
@@ -454,35 +539,34 @@ h2, h3, .modal-title, .section-title {
 
 .btn-close-large:hover {
   background: #fdfdfd;
-  color: #B1A28F;
-  border-color: #B1A28F;
+  color: #b1a28f;
+  border-color: #b1a28f;
 }
-
 
 /* Scrollbar customization */
 ::-webkit-scrollbar {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f1f1; 
+  background: #f1f1f1;
 }
 ::-webkit-scrollbar-thumb {
-  background: #B1A28F; 
+  background: #b1a28f;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #8c7851; 
+  background: #8c7851;
 }
 
 @media (max-width: 600px) {
-    .detail-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
-    }
-    
-    .section-bar {
-        height: 20px;
-    }
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .section-bar {
+    height: 20px;
+  }
 }
 </style>

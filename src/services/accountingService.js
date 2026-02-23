@@ -1,7 +1,7 @@
-import apiClient from '../api/apiClient'
-import logger from '../utils/logger'
-import { handleServiceError } from '../utils/serviceErrorHandler'
-import { extractPaginatedData } from '../utils/paginationUtils'
+import apiClient from '../api/apiClient';
+import logger from '../utils/logger';
+import { handleServiceError } from '../utils/serviceErrorHandler';
+import { extractPaginatedData } from '../utils/paginationUtils';
 
 /**
  * Accounting Department Service
@@ -18,12 +18,12 @@ const accountingService = {
    */
   async getDashboard(params = {}) {
     try {
-      const apiParams = {}
-      if (params.from_date) apiParams.from_date = params.from_date
-      if (params.to_date) apiParams.to_date = params.to_date
-      const response = await apiClient.get('/accounting/dashboard', { params: apiParams })
-      const raw = response.data?.data ?? response.data
-      if (raw === null || raw === undefined) return {}
+      const apiParams = {};
+      if (params.from_date) apiParams.from_date = params.from_date;
+      if (params.to_date) apiParams.to_date = params.to_date;
+      const response = await apiClient.get('/accounting/dashboard', { params: apiParams });
+      const raw = response.data?.data ?? response.data;
+      if (raw === null || raw === undefined) return {};
       return {
         total_units_sold: raw.units_sold ?? raw.total_units_sold,
         total_deposits: raw.total_received_deposits ?? raw.total_deposits,
@@ -35,10 +35,10 @@ const accountingService = {
         pending_salaries: raw.pending_salaries,
         pending_commissions: raw.pending_commissions,
         approved_commissions: raw.approved_commissions,
-        unread_notifications: raw.unread_notifications
-      }
+        unread_notifications: raw.unread_notifications,
+      };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching accounting dashboard', 'get', {}) || {}
+      return handleServiceError(error, 'Error fetching accounting dashboard', 'get', {}) || {};
     }
   },
 
@@ -52,11 +52,16 @@ const accountingService = {
    */
   async getNotifications(params = {}) {
     try {
-      const response = await apiClient.get('/accounting/notifications', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/accounting/notifications', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching accounting notifications', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching accounting notifications', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
     }
   },
 
@@ -68,11 +73,11 @@ const accountingService = {
    */
   async markNotificationAsRead(notificationId) {
     try {
-      const response = await apiClient.post(`/accounting/notifications/${notificationId}/read`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/accounting/notifications/${notificationId}/read`);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error marking notification ${notificationId} as read:`, error)
-      throw error
+      logger.error(`Error marking notification ${notificationId} as read:`, error);
+      throw error;
     }
   },
 
@@ -83,11 +88,11 @@ const accountingService = {
    */
   async markAllNotificationsAsRead() {
     try {
-      const response = await apiClient.post('/accounting/notifications/read-all')
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post('/accounting/notifications/read-all');
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error('Error marking all notifications as read:', error)
-      throw error
+      logger.error('Error marking all notifications as read:', error);
+      throw error;
     }
   },
 
@@ -101,11 +106,13 @@ const accountingService = {
    */
   async getSoldUnits(params = {}) {
     try {
-      const response = await apiClient.get('/accounting/sold-units', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/accounting/sold-units', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching sold units', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching sold units', 'get') || { items: [], total: 0 }
+      );
     }
   },
 
@@ -117,13 +124,13 @@ const accountingService = {
    */
   async getMarketers() {
     try {
-      const response = await apiClient.get('/accounting/marketers')
-      const raw = response.data?.data ?? response.data
-      const list = Array.isArray(raw) ? raw : (raw?.data || raw?.items || [])
-      return (list || []).map(m => ({ id: m.id, name: m.name || m.email || '' }))
+      const response = await apiClient.get('/accounting/marketers');
+      const raw = response.data?.data ?? response.data;
+      const list = Array.isArray(raw) ? raw : raw?.data || raw?.items || [];
+      return (list || []).map(m => ({ id: m.id, name: m.name || m.email || '' }));
     } catch (error) {
-      logger.error('Error fetching marketers:', error)
-      return []
+      logger.error('Error fetching marketers:', error);
+      return [];
     }
   },
 
@@ -136,11 +143,11 @@ const accountingService = {
    */
   async getSoldUnitById(reservationId) {
     try {
-      const response = await apiClient.get(`/accounting/sold-units/${reservationId}`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.get(`/accounting/sold-units/${reservationId}`);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error fetching sold unit ${reservationId}:`, error)
-      throw error
+      logger.error(`Error fetching sold unit ${reservationId}:`, error);
+      throw error;
     }
   },
 
@@ -162,13 +169,16 @@ const accountingService = {
         commission_source: data.commission_source || 'owner',
         team_responsible: data.team_responsible ?? data.team_name ?? '',
         marketing_expenses: data.marketing_expenses ?? 0,
-        bank_fees: data.bank_fees ?? 0
-      }
-      const response = await apiClient.post(`/accounting/sold-units/${reservationId}/commission`, body)
-      return response.data?.data || response.data || {}
+        bank_fees: data.bank_fees ?? 0,
+      };
+      const response = await apiClient.post(
+        `/accounting/sold-units/${reservationId}/commission`,
+        body
+      );
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error creating manual commission for reservation ${reservationId}:`, error)
-      throw error
+      logger.error(`Error creating manual commission for reservation ${reservationId}:`, error);
+      throw error;
     }
   },
 
@@ -180,11 +190,13 @@ const accountingService = {
    */
   async getCommissions(params = {}) {
     try {
-      const response = await apiClient.get('/accounting/commissions', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/accounting/commissions', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching commissions', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching commissions', 'get') || { items: [], total: 0 }
+      );
     }
   },
 
@@ -200,19 +212,40 @@ const accountingService = {
    */
   async updateDistributions(commissionId, data) {
     try {
-      const apiTypes = { jalb: 'lead_generation', iqnaa: 'persuasion', iqfal: 'closing', external: 'external_marketer', lead_generation: 'lead_generation', persuasion: 'persuasion', closing: 'closing', team_leader: 'team_leader', assistant_pm: 'assistant_pm', project_manager: 'project_manager', owner: 'owner', sales_manager: 'sales_manager', projects_department: 'projects_department', management: 'management', ceo: 'ceo', external_marketer: 'external_marketer', other: 'other' }
+      const apiTypes = {
+        jalb: 'lead_generation',
+        iqnaa: 'persuasion',
+        iqfal: 'closing',
+        external: 'external_marketer',
+        lead_generation: 'lead_generation',
+        persuasion: 'persuasion',
+        closing: 'closing',
+        team_leader: 'team_leader',
+        assistant_pm: 'assistant_pm',
+        project_manager: 'project_manager',
+        owner: 'owner',
+        sales_manager: 'sales_manager',
+        projects_department: 'projects_department',
+        management: 'management',
+        ceo: 'ceo',
+        external_marketer: 'external_marketer',
+        other: 'other',
+      };
       const distributions = (data.distributions || []).map(d => ({
         type: apiTypes[d.commission_type] || d.type || d.commission_type || 'lead_generation',
         user_id: d.user_id,
         percentage: d.percentage,
         external_name: d.external_name || d.employee_name,
-        bank_account: d.bank_account
-      }))
-      const response = await apiClient.put(`/accounting/commissions/${commissionId}/distributions`, { distributions })
-      return response.data?.data || response.data || {}
+        bank_account: d.bank_account,
+      }));
+      const response = await apiClient.put(
+        `/accounting/commissions/${commissionId}/distributions`,
+        { distributions }
+      );
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error updating distributions for commission ${commissionId}:`, error)
-      throw error
+      logger.error(`Error updating distributions for commission ${commissionId}:`, error);
+      throw error;
     }
   },
 
@@ -225,11 +258,13 @@ const accountingService = {
    */
   async approveDistribution(commissionId, distributionId) {
     try {
-      const response = await apiClient.post(`/accounting/commissions/${commissionId}/distributions/${distributionId}/approve`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(
+        `/accounting/commissions/${commissionId}/distributions/${distributionId}/approve`
+      );
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error approving distribution ${distributionId}:`, error)
-      throw error
+      logger.error(`Error approving distribution ${distributionId}:`, error);
+      throw error;
     }
   },
 
@@ -243,11 +278,14 @@ const accountingService = {
    */
   async rejectDistribution(commissionId, distributionId, data = {}) {
     try {
-      const response = await apiClient.post(`/accounting/commissions/${commissionId}/distributions/${distributionId}/reject`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(
+        `/accounting/commissions/${commissionId}/distributions/${distributionId}/reject`,
+        data
+      );
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error rejecting distribution ${distributionId}:`, error)
-      throw error
+      logger.error(`Error rejecting distribution ${distributionId}:`, error);
+      throw error;
     }
   },
 
@@ -260,19 +298,19 @@ const accountingService = {
    */
   async getCommissionSummary(commissionId) {
     try {
-      const response = await apiClient.get(`/accounting/commissions/${commissionId}/summary`)
-      const raw = response.data?.data || response.data || {}
+      const response = await apiClient.get(`/accounting/commissions/${commissionId}/summary`);
+      const raw = response.data?.data || response.data || {};
       return {
         gross_amount: raw.total_before_tax ?? raw.gross_amount,
         vat: raw.vat,
         marketing_expenses: raw.marketing_expenses ?? 0,
         bank_fees: raw.bank_fees ?? 0,
         net_amount: raw.net_amount,
-        distributions: raw.distributions || []
-      }
+        distributions: raw.distributions || [],
+      };
     } catch (error) {
-      logger.error(`Error fetching commission summary ${commissionId}:`, error)
-      throw error
+      logger.error(`Error fetching commission summary ${commissionId}:`, error);
+      throw error;
     }
   },
 
@@ -287,11 +325,14 @@ const accountingService = {
    */
   async confirmPayment(commissionId, distributionId) {
     try {
-      const response = await apiClient.post(`/accounting/commissions/${commissionId}/distributions/${distributionId}/confirm`, {})
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(
+        `/accounting/commissions/${commissionId}/distributions/${distributionId}/confirm`,
+        {}
+      );
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error confirming payment for distribution ${distributionId}:`, error)
-      throw error
+      logger.error(`Error confirming payment for distribution ${distributionId}:`, error);
+      throw error;
     }
   },
 
@@ -305,11 +346,16 @@ const accountingService = {
    */
   async getPendingDeposits(params = {}) {
     try {
-      const response = await apiClient.get('/accounting/deposits/pending', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/accounting/deposits/pending', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching pending deposits', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching pending deposits', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
     }
   },
 
@@ -323,11 +369,11 @@ const accountingService = {
    */
   async confirmDeposit(depositId) {
     try {
-      const response = await apiClient.post(`/accounting/deposits/${depositId}/confirm`, {})
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/accounting/deposits/${depositId}/confirm`, {});
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error confirming deposit ${depositId}:`, error)
-      throw error
+      logger.error(`Error confirming deposit ${depositId}:`, error);
+      throw error;
     }
   },
 
@@ -339,11 +385,16 @@ const accountingService = {
    */
   async getDepositsFollowUp(params = {}) {
     try {
-      const response = await apiClient.get('/accounting/deposits/follow-up', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/accounting/deposits/follow-up', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching deposits follow-up', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching deposits follow-up', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
     }
   },
 
@@ -357,11 +408,11 @@ const accountingService = {
    */
   async processRefund(depositId) {
     try {
-      const response = await apiClient.post(`/accounting/deposits/${depositId}/refund`, {})
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/accounting/deposits/${depositId}/refund`, {});
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error processing refund for deposit ${depositId}:`, error)
-      throw error
+      logger.error(`Error processing refund for deposit ${depositId}:`, error);
+      throw error;
     }
   },
 
@@ -373,11 +424,11 @@ const accountingService = {
    */
   async generateClaimFile(reservationId) {
     try {
-      const response = await apiClient.post(`/accounting/deposits/claim-file/${reservationId}`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/accounting/deposits/claim-file/${reservationId}`);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error generating claim file for reservation ${reservationId}:`, error)
-      throw error
+      logger.error(`Error generating claim file for reservation ${reservationId}:`, error);
+      throw error;
     }
   },
 
@@ -390,11 +441,14 @@ const accountingService = {
    */
   async confirmCommissionReceived(reservationId, data = {}) {
     try {
-      const response = await apiClient.post(`/accounting/deposits/${reservationId}/commission-received`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(
+        `/accounting/deposits/${reservationId}/commission-received`,
+        data
+      );
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error confirming commission received for reservation ${reservationId}:`, error)
-      throw error
+      logger.error(`Error confirming commission received for reservation ${reservationId}:`, error);
+      throw error;
     }
   },
 
@@ -408,11 +462,11 @@ const accountingService = {
    */
   async getSalaries(params = {}) {
     try {
-      const response = await apiClient.get('/accounting/salaries', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/accounting/salaries', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching salaries', 'get') || { items: [], total: 0 }
+      return handleServiceError(error, 'Error fetching salaries', 'get') || { items: [], total: 0 };
     }
   },
 
@@ -425,11 +479,11 @@ const accountingService = {
    */
   async getEmployeeSalary(employeeId, params = {}) {
     try {
-      const response = await apiClient.get(`/accounting/salaries/${employeeId}`, { params })
-      return response.data?.data || response.data || {}
+      const response = await apiClient.get(`/accounting/salaries/${employeeId}`, { params });
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error fetching salary for employee ${employeeId}:`, error)
-      throw error
+      logger.error(`Error fetching salary for employee ${employeeId}:`, error);
+      throw error;
     }
   },
 
@@ -441,7 +495,7 @@ const accountingService = {
    * @returns {Promise<Object>} Employee salary details
    */
   async getEmployeeSalaryDetail(employeeId, params = {}) {
-    return this.getEmployeeSalary(employeeId, params)
+    return this.getEmployeeSalary(employeeId, params);
   },
 
   /**
@@ -453,11 +507,11 @@ const accountingService = {
    */
   async createDistribution(employeeId, data) {
     try {
-      const response = await apiClient.post(`/accounting/salaries/${employeeId}/distribute`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/accounting/salaries/${employeeId}/distribute`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error creating distribution for employee ${employeeId}:`, error)
-      throw error
+      logger.error(`Error creating distribution for employee ${employeeId}:`, error);
+      throw error;
     }
   },
 
@@ -469,7 +523,7 @@ const accountingService = {
    * @returns {Promise<Object>} Created distribution
    */
   async createSalaryDistribution(employeeId, data) {
-    return this.createDistribution(employeeId, data)
+    return this.createDistribution(employeeId, data);
   },
 
   /**
@@ -480,11 +534,13 @@ const accountingService = {
    */
   async approveSalaryDistribution(distributionId) {
     try {
-      const response = await apiClient.post(`/accounting/salaries/distributions/${distributionId}/approve`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(
+        `/accounting/salaries/distributions/${distributionId}/approve`
+      );
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error approving salary distribution ${distributionId}:`, error)
-      throw error
+      logger.error(`Error approving salary distribution ${distributionId}:`, error);
+      throw error;
     }
   },
 
@@ -497,11 +553,14 @@ const accountingService = {
    */
   async markSalaryAsPaid(distributionId, data) {
     try {
-      const response = await apiClient.post(`/accounting/salaries/distributions/${distributionId}/paid`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(
+        `/accounting/salaries/distributions/${distributionId}/paid`,
+        data
+      );
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error marking salary as paid for distribution ${distributionId}:`, error)
-      throw error
+      logger.error(`Error marking salary as paid for distribution ${distributionId}:`, error);
+      throw error;
     }
   },
 
@@ -515,11 +574,16 @@ const accountingService = {
    */
   async getPendingConfirmations(params = {}) {
     try {
-      const response = await apiClient.get('/accounting/pending-confirmations', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/accounting/pending-confirmations', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching pending confirmations', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching pending confirmations', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
     }
   },
 
@@ -531,11 +595,11 @@ const accountingService = {
    */
   async confirmDownPayment(reservationId) {
     try {
-      const response = await apiClient.post(`/accounting/confirm/${reservationId}`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/accounting/confirm/${reservationId}`);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error confirming down payment for reservation ${reservationId}:`, error)
-      throw error
+      logger.error(`Error confirming down payment for reservation ${reservationId}:`, error);
+      throw error;
     }
   },
 
@@ -547,14 +611,14 @@ const accountingService = {
    */
   async getConfirmationHistory(params = {}) {
     try {
-      const response = await apiClient.get('/accounting/confirmations/history', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/accounting/confirmations/history', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      logger.error('Error fetching confirmation history:', error)
-      throw error
+      logger.error('Error fetching confirmation history:', error);
+      throw error;
     }
-  }
-}
+  },
+};
 
-export default accountingService
+export default accountingService;

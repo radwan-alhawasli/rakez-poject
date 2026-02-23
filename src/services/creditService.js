@@ -1,7 +1,7 @@
-import apiClient from '../api/apiClient'
-import logger from '../utils/logger'
-import { handleServiceError } from '../utils/serviceErrorHandler'
-import { extractPaginatedData } from '../utils/paginationUtils'
+import apiClient from '../api/apiClient';
+import logger from '../utils/logger';
+import { handleServiceError } from '../utils/serviceErrorHandler';
+import { extractPaginatedData } from '../utils/paginationUtils';
 
 /**
  * Credit Department Service
@@ -11,11 +11,11 @@ import { extractPaginatedData } from '../utils/paginationUtils'
 /** Throw if bookingId is missing/invalid so we never call the API with undefined. */
 function requireBookingId(bookingId) {
   if (bookingId === undefined || bookingId === null || String(bookingId).trim() === '') {
-    const err = new Error('معرف الحجز غير صالح')
-    err.code = 'INVALID_BOOKING_ID'
-    throw err
+    const err = new Error('معرف الحجز غير صالح');
+    err.code = 'INVALID_BOOKING_ID';
+    throw err;
   }
-  return bookingId
+  return bookingId;
 }
 
 const creditService = {
@@ -27,12 +27,12 @@ const creditService = {
    */
   async getDashboard(params = {}) {
     try {
-      const response = await apiClient.get('/credit/dashboard', { params })
-      if (response.data?.data === null) return {}
-      const data = response.data?.data ?? response.data
-      return (data === null || data === undefined) ? {} : data
+      const response = await apiClient.get('/credit/dashboard', { params });
+      if (response.data?.data === null) return {};
+      const data = response.data?.data ?? response.data;
+      return data === null || data === undefined ? {} : data;
     } catch (error) {
-      return handleServiceError(error, 'Error fetching credit dashboard', 'get', {}) || {}
+      return handleServiceError(error, 'Error fetching credit dashboard', 'get', {}) || {};
     }
   },
 
@@ -42,10 +42,10 @@ const creditService = {
    */
   async refreshDashboard() {
     try {
-      const response = await apiClient.post('/credit/dashboard/refresh')
-      return response.data?.data ?? response.data
+      const response = await apiClient.post('/credit/dashboard/refresh');
+      return response.data?.data ?? response.data;
     } catch (error) {
-      return handleServiceError(error, 'Error refreshing credit dashboard', 'post')
+      return handleServiceError(error, 'Error refreshing credit dashboard', 'post');
     }
   },
 
@@ -58,11 +58,16 @@ const creditService = {
    */
   async getNotifications(params = {}) {
     try {
-      const response = await apiClient.get('/credit/notifications', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/credit/notifications', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching credit notifications', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching credit notifications', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
     }
   },
 
@@ -72,11 +77,16 @@ const creditService = {
    */
   async getNotificationsProxy(params = {}) {
     try {
-      const response = await apiClient.get('/notifications', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/notifications', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching notifications (proxy)', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching notifications (proxy)', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
     }
   },
 
@@ -86,10 +96,10 @@ const creditService = {
    */
   async markNotificationRead(notificationId) {
     try {
-      const response = await apiClient.post(`/credit/notifications/${notificationId}/read`)
-      return response.data?.data ?? response.data
+      const response = await apiClient.post(`/credit/notifications/${notificationId}/read`);
+      return response.data?.data ?? response.data;
     } catch (error) {
-      return handleServiceError(error, 'Error marking notification read', 'post')
+      return handleServiceError(error, 'Error marking notification read', 'post');
     }
   },
 
@@ -99,10 +109,10 @@ const creditService = {
    */
   async markAllNotificationsRead() {
     try {
-      const response = await apiClient.post('/credit/notifications/read-all')
-      return response.data?.data ?? response.data
+      const response = await apiClient.post('/credit/notifications/read-all');
+      return response.data?.data ?? response.data;
     } catch (error) {
-      return handleServiceError(error, 'Error marking all notifications read', 'post')
+      return handleServiceError(error, 'Error marking all notifications read', 'post');
     }
   },
 
@@ -115,11 +125,16 @@ const creditService = {
    */
   async getAllBookings(params = {}) {
     try {
-      const response = await apiClient.get('/credit/bookings', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/credit/bookings', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching all credit bookings', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching all credit bookings', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
     }
   },
 
@@ -133,20 +148,25 @@ const creditService = {
    */
   async getConfirmedBookings(params = {}) {
     try {
-      const response = await apiClient.get('/credit/bookings/confirmed', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/credit/bookings/confirmed', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching confirmed bookings', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching confirmed bookings', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
     }
   },
 
   /**
-   * Get confirmed booking details (legacy path)
-   * GET /credit/bookings/confirmed/:booking_id
+   * Get confirmed booking details (uses same endpoint as getBookingById; backend has no separate confirmed/:id)
+   * GET /credit/bookings/:id
    */
   async getConfirmedBookingById(bookingId) {
-    return this.getBookingById(bookingId)
+    return this.getBookingById(bookingId);
   },
 
   /**
@@ -154,13 +174,13 @@ const creditService = {
    * GET /credit/bookings/:id or GET /credit/bookings/show/:id – backend includes data.id in response
    */
   async getBookingById(bookingId) {
-    requireBookingId(bookingId)
+    requireBookingId(bookingId);
     try {
-      const response = await apiClient.get(`/credit/bookings/${bookingId}`)
-      return response.data?.data ?? response.data ?? {}
+      const response = await apiClient.get(`/credit/bookings/${bookingId}`);
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error fetching booking ${bookingId}:`, error)
-      throw error
+      logger.error(`Error fetching booking ${bookingId}:`, error);
+      throw error;
     }
   },
 
@@ -170,13 +190,13 @@ const creditService = {
    * @param {Object} data - { cancellation_reason }
    */
   async cancelBooking(bookingId, data = {}) {
-    requireBookingId(bookingId)
+    requireBookingId(bookingId);
     try {
-      const response = await apiClient.post(`/credit/bookings/${bookingId}/cancel`, data)
-      return response.data?.data ?? response.data
+      const response = await apiClient.post(`/credit/bookings/${bookingId}/cancel`, data);
+      return response.data?.data ?? response.data;
     } catch (error) {
-      logger.error(`Error cancelling booking ${bookingId}:`, error)
-      throw error
+      logger.error(`Error cancelling booking ${bookingId}:`, error);
+      throw error;
     }
   },
 
@@ -190,29 +210,34 @@ const creditService = {
    */
   async getNegotiationBookings(params = {}) {
     try {
-      const response = await apiClient.get('/credit/bookings/negotiation', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/credit/bookings/negotiation', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching negotiation bookings', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching negotiation bookings', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
     }
   },
 
   /**
-   * Update negotiation status (API supports PUT and PATCH)
-   * PUT /credit/bookings/negotiation/:booking_id
+   * Update negotiation status
+   * PATCH /credit/bookings/negotiation/:booking_id
    * @param {number|string} bookingId - Booking ID (from List Negotiation Bookings)
    * @param {Object} data - Update data (optional body per Postman)
    * @returns {Promise<Object>} Updated booking
    */
   async updateNegotiation(bookingId, data = {}) {
-    requireBookingId(bookingId)
+    requireBookingId(bookingId);
     try {
-      const response = await apiClient.put(`/credit/bookings/negotiation/${bookingId}`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.patch(`/credit/bookings/negotiation/${bookingId}`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error updating negotiation ${bookingId}:`, error)
-      throw error
+      logger.error(`Error updating negotiation ${bookingId}:`, error);
+      throw error;
     }
   },
 
@@ -226,11 +251,16 @@ const creditService = {
    */
   async getWaitingBookings(params = {}) {
     try {
-      const response = await apiClient.get('/credit/bookings/waiting', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/credit/bookings/waiting', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching waiting bookings', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching waiting bookings', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
     }
   },
 
@@ -241,11 +271,13 @@ const creditService = {
    */
   async getSoldBookings(params = {}) {
     try {
-      const response = await apiClient.get('/credit/bookings/sold', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/credit/bookings/sold', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching sold bookings', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching sold bookings', 'get') || { items: [], total: 0 }
+      );
     }
   },
 
@@ -256,11 +288,16 @@ const creditService = {
    */
   async getCancelledBookings(params = {}) {
     try {
-      const response = await apiClient.get('/credit/bookings/cancelled', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/credit/bookings/cancelled', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching cancelled bookings', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching cancelled bookings', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
     }
   },
 
@@ -273,13 +310,13 @@ const creditService = {
    * @returns {Promise<Object>} Processed booking
    */
   async processWaitingBooking(bookingId, data) {
-    requireBookingId(bookingId)
+    requireBookingId(bookingId);
     try {
-      const response = await apiClient.post(`/credit/bookings/waiting/${bookingId}/process`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/credit/bookings/waiting/${bookingId}/process`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error processing waiting booking ${bookingId}:`, error)
-      throw error
+      logger.error(`Error processing waiting booking ${bookingId}:`, error);
+      throw error;
     }
   },
 
@@ -292,13 +329,16 @@ const creditService = {
    * Body optional (stage 1: bank_name, client_salary, employment_type; stage 4: appraiser_name).
    */
   async advanceFinancing(bookingId, data = {}) {
-    requireBookingId(bookingId)
+    requireBookingId(bookingId);
     try {
-      const response = await apiClient.post(`/credit/bookings/${bookingId}/financing/advance`, data)
-      return response.data?.data ?? response.data ?? {}
+      const response = await apiClient.post(
+        `/credit/bookings/${bookingId}/financing/advance`,
+        data
+      );
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error advancing financing for booking ${bookingId}:`, error)
-      throw error
+      logger.error(`Error advancing financing for booking ${bookingId}:`, error);
+      throw error;
     }
   },
 
@@ -307,13 +347,13 @@ const creditService = {
    * POST /credit/bookings/:booking_id/financing
    */
   async initializeFinancingTracker(bookingId) {
-    requireBookingId(bookingId)
+    requireBookingId(bookingId);
     try {
-      const response = await apiClient.post(`/credit/bookings/${bookingId}/financing`)
-      return response.data?.data ?? response.data ?? {}
+      const response = await apiClient.post(`/credit/bookings/${bookingId}/financing`);
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error initializing financing tracker for booking ${bookingId}:`, error)
-      throw error
+      logger.error(`Error initializing financing tracker for booking ${bookingId}:`, error);
+      throw error;
     }
   },
 
@@ -323,12 +363,12 @@ const creditService = {
    * Response: data with financing, progress_summary, current_stage, booking_id when started; data = null when not started.
    */
   async getFinancingTracker(bookingId) {
-    requireBookingId(bookingId)
+    requireBookingId(bookingId);
     try {
-      const response = await apiClient.get(`/credit/bookings/${bookingId}/financing`)
-      return response.data?.data ?? response.data ?? null
+      const response = await apiClient.get(`/credit/bookings/${bookingId}/financing`);
+      return response.data?.data ?? response.data ?? null;
     } catch (error) {
-      return handleServiceError(error, 'Error fetching financing tracker', 'get', null)
+      return handleServiceError(error, 'Error fetching financing tracker', 'get', null);
     }
   },
 
@@ -338,13 +378,16 @@ const creditService = {
    * للمرحلة 1: bank_name مطلوب؛ وإلا يرجع الـ API 422 مع errors.bank_name.
    */
   async completeFinancingStage(bookingId, stageNumber, data = {}) {
-    requireBookingId(bookingId)
+    requireBookingId(bookingId);
     try {
-      const response = await apiClient.patch(`/credit/bookings/${bookingId}/financing/stage/${stageNumber}`, data)
-      return response.data?.data ?? response.data ?? {}
+      const response = await apiClient.patch(
+        `/credit/bookings/${bookingId}/financing/stage/${stageNumber}`,
+        data
+      );
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error completing financing stage ${stageNumber}:`, error)
-      throw error
+      logger.error(`Error completing financing stage ${stageNumber}:`, error);
+      throw error;
     }
   },
 
@@ -354,14 +397,15 @@ const creditService = {
    * Body: reason (مطلوب).
    */
   async rejectFinancing(bookingId, data = {}) {
-    requireBookingId(bookingId)
+    requireBookingId(bookingId);
     try {
-      const body = typeof data === 'string' ? { reason: data } : { reason: data?.reason ?? 'رفض التمويل' }
-      const response = await apiClient.post(`/credit/bookings/${bookingId}/financing/reject`, body)
-      return response.data?.data ?? response.data ?? {}
+      const body =
+        typeof data === 'string' ? { reason: data } : { reason: data?.reason ?? 'رفض التمويل' };
+      const response = await apiClient.post(`/credit/bookings/${bookingId}/financing/reject`, body);
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error rejecting financing for booking ${bookingId}:`, error)
-      throw error
+      logger.error(`Error rejecting financing for booking ${bookingId}:`, error);
+      throw error;
     }
   },
 
@@ -371,31 +415,33 @@ const creditService = {
    */
   async getFinancing(params = {}) {
     try {
-      const response = await apiClient.get('/credit/financing', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/credit/financing', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching financing', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching financing', 'get') || { items: [], total: 0 }
+      );
     }
   },
 
   async getFinancingById(financingId) {
     try {
-      const response = await apiClient.get(`/credit/financing/${financingId}`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.get(`/credit/financing/${financingId}`);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error fetching financing ${financingId}:`, error)
-      throw error
+      logger.error(`Error fetching financing ${financingId}:`, error);
+      throw error;
     }
   },
 
   async updateFinancing(financingId, data) {
     try {
-      const response = await apiClient.put(`/credit/financing/${financingId}`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.put(`/credit/financing/${financingId}`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error updating financing ${financingId}:`, error)
-      throw error
+      logger.error(`Error updating financing ${financingId}:`, error);
+      throw error;
     }
   },
 
@@ -406,13 +452,13 @@ const creditService = {
    * POST /credit/bookings/:booking_id/title-transfer
    */
   async initializeTitleTransfer(bookingId) {
-    requireBookingId(bookingId)
+    requireBookingId(bookingId);
     try {
-      const response = await apiClient.post(`/credit/bookings/${bookingId}/title-transfer`)
-      return response.data?.data ?? response.data ?? {}
+      const response = await apiClient.post(`/credit/bookings/${bookingId}/title-transfer`);
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error initializing title transfer for booking ${bookingId}:`, error)
-      throw error
+      logger.error(`Error initializing title transfer for booking ${bookingId}:`, error);
+      throw error;
     }
   },
 
@@ -423,11 +469,11 @@ const creditService = {
    */
   async scheduleTitleTransfer(transferId, data = {}) {
     try {
-      const response = await apiClient.patch(`/credit/title-transfer/${transferId}/schedule`, data)
-      return response.data?.data ?? response.data ?? {}
+      const response = await apiClient.patch(`/credit/title-transfer/${transferId}/schedule`, data);
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error scheduling title transfer ${transferId}:`, error)
-      throw error
+      logger.error(`Error scheduling title transfer ${transferId}:`, error);
+      throw error;
     }
   },
 
@@ -438,11 +484,11 @@ const creditService = {
    */
   async unscheduleTitleTransfer(transferId) {
     try {
-      const response = await apiClient.patch(`/credit/title-transfer/${transferId}/unschedule`)
-      return response.data?.data ?? response.data ?? {}
+      const response = await apiClient.patch(`/credit/title-transfer/${transferId}/unschedule`);
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error unscheduling title transfer ${transferId}:`, error)
-      throw error
+      logger.error(`Error unscheduling title transfer ${transferId}:`, error);
+      throw error;
     }
   },
 
@@ -452,11 +498,11 @@ const creditService = {
    */
   async completeTitleTransfer(transferId, data = {}) {
     try {
-      const response = await apiClient.post(`/credit/title-transfer/${transferId}/complete`, data)
-      return response.data?.data ?? response.data ?? {}
+      const response = await apiClient.post(`/credit/title-transfer/${transferId}/complete`, data);
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error completing title transfer ${transferId}:`, error)
-      throw error
+      logger.error(`Error completing title transfer ${transferId}:`, error);
+      throw error;
     }
   },
 
@@ -466,38 +512,47 @@ const creditService = {
    */
   async getPendingTitleTransfers() {
     try {
-      const response = await apiClient.get('/credit/title-transfers/pending')
-      const data = response.data?.data ?? response.data
-      const items = Array.isArray(data) ? data : data?.data ?? []
-      const total = data?.total ?? items.length
-      return { items, total }
+      const response = await apiClient.get('/credit/title-transfers/pending');
+      const data = response.data?.data ?? response.data;
+      const items = Array.isArray(data) ? data : data?.data ?? [];
+      const total = data?.total ?? items.length;
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching pending title transfers', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching pending title transfers', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
     }
   },
 
   /**
-   * Get title transfer requests (list – optional alternate endpoint)
-   * GET /credit/title-transfer
+   * Get title transfer requests (delegates to pending; backend has no generic GET /credit/title-transfer)
+   * GET /credit/title-transfers/pending
    */
-  async getTitleTransfers(params = {}) {
-    try {
-      const response = await apiClient.get('/credit/title-transfer', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
-    } catch (error) {
-      return handleServiceError(error, 'Error fetching title transfers', 'get') || { items: [], total: 0 }
-    }
+  async getTitleTransfers() {
+    return this.getPendingTitleTransfers();
   },
 
-  async createTitleTransfer(data) {
-    try {
-      const response = await apiClient.post('/credit/title-transfer', data)
-      return response.data?.data || response.data || {}
-    } catch (error) {
-      logger.error('Error creating title transfer:', error)
-      throw error
+  /**
+   * Initialize title transfer for a booking (backend has no generic POST /credit/title-transfer).
+   * Accepts (bookingId) or (data) where data.booking_id is the booking ID (for backward compatibility).
+   * @param {number|string|Object} bookingIdOrData - Booking ID, or object with booking_id
+   * @param {Object} [_optionalData] - Optional; kept for backward compatibility, not used
+   */
+  // eslint-disable-next-line no-unused-vars -- second arg kept for backward-compat call signature
+  async createTitleTransfer(bookingIdOrData, _optionalData = {}) {
+    const bookingId =
+      typeof bookingIdOrData === 'object' && bookingIdOrData !== null
+        ? bookingIdOrData.booking_id ?? bookingIdOrData.bookingId
+        : bookingIdOrData;
+    if (bookingId === undefined || bookingId === null) {
+      const err = new Error('معرف الحجز مطلوب لإنشاء طلب نقل الملكية');
+      err.code = 'INVALID_BOOKING_ID';
+      throw err;
     }
+    return this.initializeTitleTransfer(bookingId);
   },
 
   // --- Payment Plan (Tab 3.3) ---
@@ -508,12 +563,12 @@ const creditService = {
    * Permission: credit.payment_plan.manage
    */
   async getPaymentPlan(bookingId) {
-    requireBookingId(bookingId)
+    requireBookingId(bookingId);
     try {
-      const response = await apiClient.get(`/credit/bookings/${bookingId}/payment-plan`)
-      return response.data?.data ?? response.data ?? null
+      const response = await apiClient.get(`/credit/bookings/${bookingId}/payment-plan`);
+      return response.data?.data ?? response.data ?? null;
     } catch (error) {
-      return handleServiceError(error, 'Error fetching payment plan', 'get', null)
+      return handleServiceError(error, 'Error fetching payment plan', 'get', null);
     }
   },
 
@@ -523,13 +578,13 @@ const creditService = {
    * Body: installments[] with due_date (>= today), amount (required), description (optional)
    */
   async createPaymentPlan(bookingId, data = {}) {
-    requireBookingId(bookingId)
+    requireBookingId(bookingId);
     try {
-      const response = await apiClient.post(`/credit/bookings/${bookingId}/payment-plan`, data)
-      return response.data?.data ?? response.data ?? {}
+      const response = await apiClient.post(`/credit/bookings/${bookingId}/payment-plan`, data);
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error creating payment plan for booking ${bookingId}:`, error)
-      throw error
+      logger.error(`Error creating payment plan for booking ${bookingId}:`, error);
+      throw error;
     }
   },
 
@@ -540,11 +595,11 @@ const creditService = {
    */
   async updateInstallment(installmentId, data = {}) {
     try {
-      const response = await apiClient.put(`/credit/payment-installments/${installmentId}`, data)
-      return response.data?.data ?? response.data ?? {}
+      const response = await apiClient.put(`/credit/payment-installments/${installmentId}`, data);
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error updating installment ${installmentId}:`, error)
-      throw error
+      logger.error(`Error updating installment ${installmentId}:`, error);
+      throw error;
     }
   },
 
@@ -554,11 +609,11 @@ const creditService = {
    */
   async deleteInstallment(installmentId) {
     try {
-      const response = await apiClient.delete(`/credit/payment-installments/${installmentId}`)
-      return response.data?.data ?? response.data ?? {}
+      const response = await apiClient.delete(`/credit/payment-installments/${installmentId}`);
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error deleting installment ${installmentId}:`, error)
-      throw error
+      logger.error(`Error deleting installment ${installmentId}:`, error);
+      throw error;
     }
   },
 
@@ -572,27 +627,34 @@ const creditService = {
    */
   async getSoldProjects(params = {}) {
     try {
-      const response = await apiClient.get('/credit/sold-projects', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/credit/sold-projects', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching sold projects', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching sold projects', 'get') || { items: [], total: 0 }
+      );
     }
   },
 
   /**
-   * Get sold project details
-   * GET /credit/sold-projects/:project_id
-   * @param {number|string} projectId - Project ID
-   * @returns {Promise<Object>} Project details
+   * Get sold project details (backend has only list; filter client-side)
+   * GET /credit/sold-projects then find by project_id
+   * @param {number|string} projectId - Project ID (or contract_id)
+   * @returns {Promise<Object>} Project details or {} if not found
    */
   async getSoldProjectById(projectId) {
     try {
-      const response = await apiClient.get(`/credit/sold-projects/${projectId}`)
-      return response.data?.data || response.data || {}
+      const { items } = await this.getSoldProjects({ per_page: 500 });
+      const found =
+        Array.isArray(items) &&
+        items.find(
+          p => String(p.id) === String(projectId) || String(p.contract_id) === String(projectId)
+        );
+      return found || {};
     } catch (error) {
-      logger.error(`Error fetching sold project ${projectId}:`, error)
-      throw error
+      logger.error(`Error fetching sold project ${projectId}:`, error);
+      throw error;
     }
   },
 
@@ -604,11 +666,13 @@ const creditService = {
    */
   async getClaimFiles(params = {}) {
     try {
-      const response = await apiClient.get('/credit/claim-files', { params })
-      const { items, total } = extractPaginatedData(response, [])
-      return { items, total }
+      const response = await apiClient.get('/credit/claim-files', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching claim files', 'get') || { items: [], total: 0 }
+      return (
+        handleServiceError(error, 'Error fetching claim files', 'get') || { items: [], total: 0 }
+      );
     }
   },
 
@@ -617,13 +681,13 @@ const creditService = {
    * POST /credit/bookings/:booking_id/claim-file
    */
   async generateClaimFileForBooking(bookingId) {
-    requireBookingId(bookingId)
+    requireBookingId(bookingId);
     try {
-      const response = await apiClient.post(`/credit/bookings/${bookingId}/claim-file`)
-      return response.data?.data ?? response.data ?? {}
+      const response = await apiClient.post(`/credit/bookings/${bookingId}/claim-file`);
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error generating claim file for booking ${bookingId}:`, error)
-      throw error
+      logger.error(`Error generating claim file for booking ${bookingId}:`, error);
+      throw error;
     }
   },
 
@@ -633,11 +697,11 @@ const creditService = {
    */
   async getClaimFileById(claimFileId) {
     try {
-      const response = await apiClient.get(`/credit/claim-files/${claimFileId}`)
-      return response.data?.data ?? response.data ?? {}
+      const response = await apiClient.get(`/credit/claim-files/${claimFileId}`);
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error fetching claim file ${claimFileId}:`, error)
-      throw error
+      logger.error(`Error fetching claim file ${claimFileId}:`, error);
+      throw error;
     }
   },
 
@@ -648,11 +712,11 @@ const creditService = {
    */
   async generateClaimFilePdf(claimFileId) {
     try {
-      const response = await apiClient.post(`/credit/claim-files/${claimFileId}/pdf`)
-      return response.data?.data ?? response.data ?? {}
+      const response = await apiClient.post(`/credit/claim-files/${claimFileId}/pdf`);
+      return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error generating claim file PDF ${claimFileId}:`, error)
-      throw error
+      logger.error(`Error generating claim file PDF ${claimFileId}:`, error);
+      throw error;
     }
   },
 
@@ -660,39 +724,39 @@ const creditService = {
    * Get claim file PDF download URL (same path, GET returns file stream)
    */
   getClaimFilePdfDownloadUrl(claimFileId) {
-    const baseURL = apiClient.defaults?.baseURL ?? ''
-    return `${baseURL}/credit/claim-files/${claimFileId}/pdf`
+    const baseURL = apiClient.defaults?.baseURL ?? '';
+    return `${baseURL}/credit/claim-files/${claimFileId}/pdf`;
   },
 
   async createClaimFile(data) {
     try {
-      const response = await apiClient.post('/credit/claim-files', data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post('/credit/claim-files', data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error('Error creating claim file:', error)
-      throw error
+      logger.error('Error creating claim file:', error);
+      throw error;
     }
   },
 
   async submitClaim(claimId) {
     try {
-      const response = await apiClient.post(`/credit/claim-files/${claimId}/submit`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/credit/claim-files/${claimId}/submit`);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error submitting claim ${claimId}:`, error)
-      throw error
+      logger.error(`Error submitting claim ${claimId}:`, error);
+      throw error;
     }
   },
 
   async approveClaim(claimId, data) {
     try {
-      const response = await apiClient.post(`/credit/claim-files/${claimId}/approve`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/credit/claim-files/${claimId}/approve`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error approving claim ${claimId}:`, error)
-      throw error
+      logger.error(`Error approving claim ${claimId}:`, error);
+      throw error;
     }
-  }
-}
+  },
+};
 
-export default creditService
+export default creditService;

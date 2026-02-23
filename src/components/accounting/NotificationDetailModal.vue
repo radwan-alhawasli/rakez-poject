@@ -1,5 +1,10 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')" @keydown.esc="$emit('close')" tabindex="-1">
+  <div
+    class="modal-overlay"
+    @click.self="$emit('close')"
+    @keydown.esc="$emit('close')"
+    tabindex="-1"
+  >
     <div class="modal-container">
       <div class="modal-header">
         <h2 class="modal-title">تفاصيل الإشعار</h2>
@@ -17,7 +22,9 @@
           </div>
           <div class="detail-row">
             <span class="detail-label">التاريخ:</span>
-            <span class="detail-value">{{ formatDate(notification.created_at || notification.time) }}</span>
+            <span class="detail-value">{{
+              formatDate(notification.created_at || notification.time)
+            }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">الحالة:</span>
@@ -29,7 +36,10 @@
             <span class="detail-label">الرسالة:</span>
             <p class="detail-message">{{ notification.message || notification.body }}</p>
           </div>
-          <div v-if="notification.data && Object.keys(notification.data).length" class="detail-row data-section">
+          <div
+            v-if="notification.data && Object.keys(notification.data).length"
+            class="detail-row data-section"
+          >
             <span class="detail-label">بيانات إضافية:</span>
             <div class="data-grid">
               <div v-for="(val, key) in notification.data" :key="key" class="data-item">
@@ -40,7 +50,13 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button v-if="!notification.read" type="button" class="btn-primary" @click="$emit('mark-read')" :disabled="isLoading">
+          <button
+            v-if="!notification.read"
+            type="button"
+            class="btn-primary"
+            @click="$emit('mark-read')"
+            :disabled="isLoading"
+          >
             تعيين كمقروء
           </button>
           <button type="button" class="btn-secondary" @click="$emit('close')">إغلاق</button>
@@ -51,7 +67,7 @@
 </template>
 
 <script>
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue';
 
 const NOTIFICATION_TYPE_LABELS = {
   unit_reserved: 'تم حجز وحدة',
@@ -59,76 +75,76 @@ const NOTIFICATION_TYPE_LABELS = {
   unit_vacated: 'تم إفراغ الوحدة',
   reservation_cancelled: 'تم إلغاء الحجز',
   commission_confirmed: 'تم تأكيد عمولة',
-  commission_received: 'تم استلام عمولة من المالك'
-}
+  commission_received: 'تم استلام عمولة من المالك',
+};
 
 export default {
   name: 'NotificationDetailModal',
   props: {
     notification: { type: Object, default: null },
-    isLoading: { type: Boolean, default: false }
+    isLoading: { type: Boolean, default: false },
   },
   emits: ['close', 'mark-read'],
   setup(props, { emit }) {
     const typeLabel = computed(() => {
-      const t = props.notification?.type
-      return NOTIFICATION_TYPE_LABELS[t] || t || 'عام'
-    })
+      const t = props.notification?.type;
+      return NOTIFICATION_TYPE_LABELS[t] || t || 'عام';
+    });
 
-    const formatDate = (dateStr) => {
-      if (!dateStr) return '—'
+    const formatDate = dateStr => {
+      if (!dateStr) return '—';
       try {
         return new Date(dateStr).toLocaleDateString('ar-SA', {
           year: 'numeric',
           month: 'long',
           day: 'numeric',
           hour: '2-digit',
-          minute: '2-digit'
-        })
+          minute: '2-digit',
+        });
       } catch {
-        return dateStr
+        return dateStr;
       }
-    }
+    };
 
-    const formatDataKey = (key) => {
+    const formatDataKey = key => {
       const map = {
         project_name: 'المشروع',
         unit_number: 'رقم الوحدة',
         reservation_id: 'رقم الحجز',
         amount: 'المبلغ',
-        customer_name: 'اسم العميل'
-      }
-      return map[key] || key
-    }
+        customer_name: 'اسم العميل',
+      };
+      return map[key] || key;
+    };
 
-    const formatDataValue = (val) => {
-      if (val == null) return '—'
-      if (typeof val === 'object') return JSON.stringify(val)
-      return String(val)
-    }
+    const formatDataValue = val => {
+      if (val == null) return '—';
+      if (typeof val === 'object') return JSON.stringify(val);
+      return String(val);
+    };
 
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') emit('close')
-    }
+    const handleEscape = e => {
+      if (e.key === 'Escape') emit('close');
+    };
 
     onMounted(() => {
-      document.body.style.overflow = 'hidden'
-      document.addEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape);
+    });
 
     onUnmounted(() => {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEscape);
+    });
 
     return {
       typeLabel,
       formatDate,
       formatDataKey,
-      formatDataValue
-    }
-  }
-}
+      formatDataValue,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -275,7 +291,7 @@ export default {
   padding: 10px 20px;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(135deg, #B1A28F 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
   font-weight: 600;
   cursor: pointer;

@@ -1,13 +1,13 @@
 /**
  * API Mock Factory
  * Creates axios mock adapters for testing API services
- * 
+ *
  * Note: Mocks for dependencies should be set up in individual test files
  * to avoid conflicts and ensure proper isolation
  */
 
-import axios from 'axios'
-import MockAdapter from 'axios-mock-adapter'
+import axios from 'axios';
+import MockAdapter from 'axios-mock-adapter';
 
 /**
  * Create a new axios mock adapter
@@ -16,8 +16,8 @@ import MockAdapter from 'axios-mock-adapter'
  * @returns {MockAdapter} Mock adapter instance
  */
 export function createApiMock(options = {}, axiosInstance = axios) {
-  const { delayResponse = 0 } = options
-  return new MockAdapter(axiosInstance, { delayResponse })
+  const { delayResponse = 0 } = options;
+  return new MockAdapter(axiosInstance, { delayResponse });
 }
 
 /**
@@ -29,7 +29,7 @@ export function createApiMock(options = {}, axiosInstance = axios) {
 export function createSuccessResponse(data, status = 200) {
   // Return format: [statusCode, responseData]
   // The responseData will be in response.data when using axios
-  return [status, data]
+  return [status, data];
 }
 
 /**
@@ -39,7 +39,7 @@ export function createSuccessResponse(data, status = 200) {
  * @returns {Array} Mock error response
  */
 export function createErrorResponse(message = 'Error occurred', status = 400) {
-  return [status, { success: false, message, errors: {} }]
+  return [status, { success: false, message, errors: {} }];
 }
 
 /**
@@ -49,7 +49,7 @@ export function createErrorResponse(message = 'Error occurred', status = 400) {
  * @returns {Array} Mock validation error response
  */
 export function createValidationErrorResponse(errors, status = 422) {
-  return [status, { success: false, message: 'Validation failed', errors }]
+  return [status, { success: false, message: 'Validation failed', errors }];
 }
 
 /**
@@ -58,14 +58,14 @@ export function createValidationErrorResponse(errors, status = 422) {
  */
 export function setupCommonMocks(mock) {
   // Mock CSRF token endpoint
-  mock.onGet('/sanctum/csrf-cookie').reply(200, {})
-  
+  mock.onGet('/sanctum/csrf-cookie').reply(200, {});
+
   // Mock 404 for unmatched routes
-  mock.onAny().reply((config) => {
+  mock.onAny().reply(config => {
     // eslint-disable-next-line no-console
-    console.warn(`Unmatched API call: ${config.method.toUpperCase()} ${config.url}`)
-    return [404, { success: false, message: 'Endpoint not found' }]
-  })
+    console.warn(`Unmatched API call: ${config.method.toUpperCase()} ${config.url}`);
+    return [404, { success: false, message: 'Endpoint not found' }];
+  });
 }
 
 /**
@@ -73,7 +73,7 @@ export function setupCommonMocks(mock) {
  * @param {MockAdapter} mock - Mock adapter instance
  */
 export function resetMocks(mock) {
-  mock.reset()
+  mock.reset();
 }
 
 /**
@@ -81,7 +81,7 @@ export function resetMocks(mock) {
  * @param {MockAdapter} mock - Mock adapter instance
  */
 export function restoreMocks(mock) {
-  mock.restore()
+  mock.restore();
 }
 
 export default {
@@ -91,5 +91,5 @@ export default {
   createValidationErrorResponse,
   setupCommonMocks,
   resetMocks,
-  restoreMocks
-}
+  restoreMocks,
+};

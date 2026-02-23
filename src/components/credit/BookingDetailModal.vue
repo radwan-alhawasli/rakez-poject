@@ -1,10 +1,22 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')" @keydown.esc="$emit('close')" tabindex="-1">
+  <div
+    class="modal-overlay"
+    @click.self="$emit('close')"
+    @keydown.esc="$emit('close')"
+    tabindex="-1"
+  >
     <div class="modal-container">
       <div class="modal-header">
         <h2 class="modal-title">تفاصيل الحجز</h2>
         <button class="close-btn" @click="$emit('close')">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M18 6L6 18M6 6l12 12"></path>
           </svg>
         </button>
@@ -33,11 +45,15 @@
             </div>
             <div class="detail-item">
               <span class="detail-label">نوع العقار:</span>
-              <span class="detail-value">{{ booking.unit_type ?? booking.property_type ?? '—' }}</span>
+              <span class="detail-value">{{
+                booking.unit_type ?? booking.property_type ?? '—'
+              }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">قيمة العقار:</span>
-              <span class="detail-value">{{ formatCurrency(booking.property_value ?? booking.unit_value ?? booking.final_price) }}</span>
+              <span class="detail-value">{{
+                formatCurrency(booking.property_value ?? booking.unit_value ?? booking.final_price)
+              }}</span>
             </div>
           </div>
         </div>
@@ -75,19 +91,35 @@
           <div class="detail-grid">
             <div class="detail-item">
               <span class="detail-label">قيمة العربون:</span>
-              <span class="detail-value">{{ formatCurrency(booking.deposit_amount ?? booking.down_payment) }}</span>
+              <span class="detail-value">{{
+                formatCurrency(booking.deposit_amount ?? booking.down_payment)
+              }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">تاريخ دفع العربون:</span>
-              <span class="detail-value">{{ formatDate(booking.deposit_date ?? booking.down_payment_date) }}</span>
+              <span class="detail-value">{{
+                formatDate(booking.deposit_date ?? booking.down_payment_date)
+              }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">نسبة السعي (مصدر العمولة):</span>
-              <span class="detail-value">{{ booking.commission_source === 'owner' ? 'من المالك' : booking.commission_source === 'buyer' ? 'من المشتري' : (booking.commission_source ?? '—') }}</span>
+              <span class="detail-value">{{
+                booking.commission_source === 'owner'
+                  ? 'من المالك'
+                  : booking.commission_source === 'buyer'
+                  ? 'من المشتري'
+                  : booking.commission_source ?? '—'
+              }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">طريقة دفع العربون:</span>
-              <span class="detail-value">{{ booking.payment_method === 'cash' ? 'كاش (لا يحتاج تأكيد من المحاسبة)' : booking.payment_method === 'transfer' ? 'تحويل بنكي / دفع إلكتروني (يتطلب تأكيد استلام من المحاسبة)' : (booking.payment_method ?? '—') }}</span>
+              <span class="detail-value">{{
+                booking.payment_method === 'cash'
+                  ? 'كاش (لا يحتاج تأكيد من المحاسبة)'
+                  : booking.payment_method === 'transfer'
+                  ? 'تحويل بنكي / دفع إلكتروني (يتطلب تأكيد استلام من المحاسبة)'
+                  : booking.payment_method ?? '—'
+              }}</span>
             </div>
           </div>
         </div>
@@ -98,15 +130,21 @@
           <div class="detail-grid">
             <div class="detail-item">
               <span class="detail-label">فريق المشروع:</span>
-              <span class="detail-value">{{ booking.project_team ?? booking.team_name ?? booking.team ?? '—' }}</span>
+              <span class="detail-value">{{
+                booking.project_team ?? booking.team_name ?? booking.team ?? '—'
+              }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">فريق البائع:</span>
-              <span class="detail-value">{{ booking.seller_team ?? booking.team_name ?? booking.team ?? '—' }}</span>
+              <span class="detail-value">{{
+                booking.seller_team ?? booking.team_name ?? booking.team ?? '—'
+              }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">اسم المسوق:</span>
-              <span class="detail-value">{{ booking.marketer_name ?? booking.marketer ?? '—' }}</span>
+              <span class="detail-value">{{
+                booking.marketer_name ?? booking.marketer ?? '—'
+              }}</span>
             </div>
             <div class="detail-item" v-if="booking.purchase_mechanism_label_ar">
               <span class="detail-label">آلية الشراء:</span>
@@ -125,56 +163,60 @@
 </template>
 
 <script>
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue';
 
 export default {
   name: 'BookingDetailModal',
   props: {
     booking: {
       type: Object,
-      default: null
-    }
+      default: null,
+    },
   },
   emits: ['close'],
   setup(props, { emit }) {
-    const formatDate = (dateStr) => {
-      if (!dateStr) return '—'
+    const formatDate = dateStr => {
+      if (!dateStr) return '—';
       try {
-        return new Date(dateStr).toLocaleDateString('ar-SA')
+        return new Date(dateStr).toLocaleDateString('ar-SA');
       } catch {
-        return dateStr
+        return dateStr;
       }
-    }
+    };
 
-    const formatCurrency = (val) => {
-      if (val == null || val === '') return '—'
-      return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR', maximumFractionDigits: 0 }).format(Number(val))
-    }
+    const formatCurrency = val => {
+      if (val == null || val === '') return '—';
+      return new Intl.NumberFormat('ar-SA', {
+        style: 'currency',
+        currency: 'SAR',
+        maximumFractionDigits: 0,
+      }).format(Number(val));
+    };
 
     // Handle Escape key
-    const handleEscape = (e) => {
+    const handleEscape = e => {
       if (e.key === 'Escape') {
-        emit('close')
+        emit('close');
       }
-    }
+    };
 
     // Lock body scroll when modal is open
     onMounted(() => {
-      document.body.style.overflow = 'hidden'
-      document.addEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape);
+    });
 
     onUnmounted(() => {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', handleEscape)
-    })
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEscape);
+    });
 
     return {
       formatDate,
-      formatCurrency
-    }
-  }
-}
+      formatCurrency,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -307,8 +349,12 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {

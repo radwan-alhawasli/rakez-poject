@@ -1,5 +1,5 @@
-import apiClient from '../api/apiClient'
-import { handleServiceError } from '../utils/serviceErrorHandler'
+import apiClient from '../api/apiClient';
+import { handleServiceError } from '../utils/serviceErrorHandler';
 
 /**
  * Photography Department Service
@@ -15,11 +15,11 @@ const photographyDepartmentService = {
    */
   async getByContractId(contractId) {
     try {
-      const response = await apiClient.get(`/photography-department/show/${contractId}`)
-      const data = response.data?.data ?? response.data
-      return (data === null || data === undefined) ? {} : data
+      const response = await apiClient.get(`/photography-department/show/${contractId}`);
+      const data = response.data?.data ?? response.data;
+      return data === null || data === undefined ? {} : data;
     } catch (error) {
-      return handleServiceError(error, `Fetch photography for contract ${contractId}`, 'get', {})
+      return handleServiceError(error, `Fetch photography for contract ${contractId}`, 'get', {});
     }
   },
 
@@ -32,10 +32,10 @@ const photographyDepartmentService = {
    */
   async store(contractId, data) {
     try {
-      const response = await apiClient.post(`/photography-department/store/${contractId}`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/photography-department/store/${contractId}`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, 'Store photography department', 'post')
+      return handleServiceError(error, 'Store photography department', 'post');
     }
   },
 
@@ -48,10 +48,10 @@ const photographyDepartmentService = {
    */
   async update(contractId, data) {
     try {
-      const response = await apiClient.put(`/photography-department/update/${contractId}`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.put(`/photography-department/update/${contractId}`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Update photography department ${contractId}`, 'put')
+      return handleServiceError(error, `Update photography department ${contractId}`, 'put');
     }
   },
 
@@ -64,12 +64,12 @@ const photographyDepartmentService = {
    */
   async approve(contractId, data = {}) {
     try {
-      const response = await apiClient.post(`/photography-department/approve/${contractId}`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/photography-department/approve/${contractId}`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Approve photography for contract ${contractId}`, 'post')
+      return handleServiceError(error, `Approve photography for contract ${contractId}`, 'post');
     }
-  }
-}
+  },
+};
 
-export default photographyDepartmentService
+export default photographyDepartmentService;

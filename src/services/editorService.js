@@ -1,5 +1,5 @@
-import apiClient from '../api/apiClient'
-import { handleServiceError } from '../utils/serviceErrorHandler'
+import apiClient from '../api/apiClient';
+import { handleServiceError } from '../utils/serviceErrorHandler';
 
 /**
  * Editor Department Service
@@ -10,78 +10,79 @@ const editorService = {
 
   /**
    * Get contracts for editing
-   * GET /editor/contracts
+   * GET /editor/contracts/index
    * @param {Object} params - Query parameters
    * @returns {Promise<Array>} List of contracts
    */
   async getContracts(params = {}) {
     try {
-      const response = await apiClient.get('/editor/contracts', { params })
-      const contracts = response.data?.data || response.data || []
-      return Array.isArray(contracts) ? contracts : []
+      const response = await apiClient.get('/editor/contracts/index', { params });
+      const contracts = response.data?.data || response.data || [];
+      return Array.isArray(contracts) ? contracts : [];
     } catch (error) {
-      return handleServiceError(error, 'Fetch editor contracts', 'get', [])
+      return handleServiceError(error, 'Fetch editor contracts', 'get', []);
     }
   },
 
   /**
    * Get contract details for editing
-   * GET /editor/contracts/:contract_id
+   * GET /editor/contracts/show/:id
    * @param {number|string} contractId - Contract ID
    * @returns {Promise<Object>} Contract details
    */
   async getContractById(contractId) {
-    const response = await apiClient.get(`/editor/contracts/${contractId}`)
-    return response.data?.data || response.data || {}
+    const response = await apiClient.get(`/editor/contracts/show/${contractId}`);
+    return response.data?.data || response.data || {};
   },
 
   // --- Montage Department ---
 
   /**
    * Get montage details for contract
-   * GET /editor/montage-department/:contract_id
+   * GET /editor/montage-department/show/:contractId
    * @param {number|string} contractId - Contract ID
    * @returns {Promise<Object>} Montage details
    */
   async getMontage(contractId) {
     try {
-      const response = await apiClient.get(`/editor/montage-department/${contractId}`)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.get(`/editor/montage-department/show/${contractId}`);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Fetch montage for contract ${contractId}`, 'get', {})
+      return handleServiceError(error, `Fetch montage for contract ${contractId}`, 'get', {});
     }
   },
 
   /**
    * Create montage task
-   * POST /editor/montage-department
-   * @param {Object} data - Montage data (contract_id, status, notes, etc.)
+   * POST /editor/montage-department/store/:contractId
+   * @param {number|string} contractId - Contract ID
+   * @param {Object} data - Montage data (status, notes, etc.)
    * @returns {Promise<Object>} Created montage
    */
-  async createMontage(data) {
+  async createMontage(contractId, data) {
     try {
-      const response = await apiClient.post('/editor/montage-department', data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.post(`/editor/montage-department/store/${contractId}`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, 'Create montage', 'post')
+      return handleServiceError(error, 'Create montage', 'post');
     }
   },
 
   /**
    * Update montage status
-   * PUT /editor/montage-department/:montage_id
-   * @param {number|string} montageId - Montage ID
+   * PUT /editor/montage-department/update/:contractId
+   * @param {number|string} contractId - Contract ID
    * @param {Object} data - Update data (status, file_url, etc.)
    * @returns {Promise<Object>} Updated montage
    */
-  async updateMontage(montageId, data) {
+  async updateMontage(contractId, data) {
     try {
-      const response = await apiClient.put(`/editor/montage-department/${montageId}`, data)
-      return response.data?.data || response.data || {}
+      const response = await apiClient.put(`/editor/montage-department/update/${contractId}`, data);
+      return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Update montage ${montageId}`, 'put')
+      return handleServiceError(error, `Update montage ${contractId}`, 'put');
     }
-  }
-}
+  },
+};
 
-export default editorService
+export default editorService;
