@@ -42,6 +42,11 @@ const routes = [
         component: () => import('../views/AiAssistantView.vue'),
       },
       {
+        path: 'chat',
+        name: 'Chat',
+        component: () => import('../views/ChatView.vue'),
+      },
+      {
         path: 'knowledge-management',
         name: 'KnowledgeManagement',
         component: () => import('../views/KnowledgeManagementView.vue'),
