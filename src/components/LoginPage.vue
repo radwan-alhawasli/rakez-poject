@@ -41,7 +41,7 @@
 
         <div class="form-options">
           <div class="forgot-wrapper">
-            <a href="#" class="forgot-link">هل نسيت كلمة المرور؟</a>
+            <a href="#" class="forgot-link">هل نسيت  المرور؟</a>
           </div>
         </div>
 
