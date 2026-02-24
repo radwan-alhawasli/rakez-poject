@@ -1477,19 +1477,19 @@
   ],
   "variable": [
     {
-      "id": "845f6b1e-7c3c-4434-9d88-575c06a6269f",
+      "id": "0188f948-9acf-4b47-87c7-25e8c2ce4cf6",
       "key": "base_url",
       "value": "http://localhost:8000",
       "type": "string"
     },
     {
-      "id": "cc1f6875-04b3-4870-b9dc-6db30b3a0981",
+      "id": "779456e4-b388-446f-9b40-eb056b984af5",
       "key": "token",
       "value": "your-auth-token-here",
       "type": "string"
     },
     {
-      "id": "bd11c408-ab99-4558-999b-a2c6edf4487b",
+      "id": "04f5db0d-53a2-450f-862d-f765a77aa839",
       "key": "session_id",
       "value": "uuid-session-id",
       "type": "string"

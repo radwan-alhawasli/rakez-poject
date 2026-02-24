@@ -4011,315 +4011,59 @@
         }
       ],
       "id": "3c0531e7-0f93-4a1c-8c62-e1450fa094b2"
-    },
-    {
-      "name": "Rakez ERP - Inventory API",
-      "item": [
-        {
-          "name": "Inventory - Locations",
-          "item": [
-            {
-              "name": "Contract Locations (filtered)",
-              "id": "68217ee4-9da6-4123-a3b0-1cb5a5377ec4",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/api/inventory/contracts/locations?status={{status}}&user_id={{user_id}}&city={{city}}&district={{district}}&project_name={{project_name}}&has_photography={{has_photography}}&has_montage={{has_montage}}&per_page=200",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "inventory",
-                    "contracts",
-                    "locations"
-                  ],
-                  "query": [
-                    {
-                      "key": "status",
-                      "value": "{{status}}"
-                    },
-                    {
-                      "key": "user_id",
-                      "value": "{{user_id}}"
-                    },
-                    {
-                      "key": "city",
-                      "value": "{{city}}"
-                    },
-                    {
-                      "key": "district",
-                      "value": "{{district}}"
-                    },
-                    {
-                      "key": "project_name",
-                      "value": "{{project_name}}"
-                    },
-                    {
-                      "key": "has_photography",
-                      "value": "{{has_photography}}"
-                    },
-                    {
-                      "key": "has_montage",
-                      "value": "{{has_montage}}"
-                    },
-                    {
-                      "key": "per_page",
-                      "value": "200"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            }
-          ],
-          "id": "c8e7c3a6-57d1-48e1-8e1c-4cb7d0dedd5c"
-        },
-        {
-          "name": "Inventory - Contract Units",
-          "item": [
-            {
-              "name": "Get Units By Contract (show/{contractId})",
-              "id": "eca0e6ec-eef9-4c13-b86c-c1cef4591168",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/api/inventory/contracts/units/show/{{contractId}}",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "inventory",
-                    "contracts",
-                    "units",
-                    "show",
-                    "{{contractId}}"
-                  ]
-                }
-              },
-              "response": []
-            }
-          ],
-          "id": "bd4d4ce2-4797-4de7-8826-637ea17e41bf"
-        },
-        {
-          "name": "Inventory - Contracts",
-          "item": [
-            {
-              "name": "Get Contract (show)",
-              "id": "344c989e-4c38-4793-86a8-d52e3f044a13",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{token}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/api/inventory/contracts/show/{{contractId}}",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "inventory",
-                    "contracts",
-                    "show",
-                    "{{contractId}}"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Admin Contracts Index (admin-index)",
-              "id": "b7d4d225-6b34-4eb2-b42a-98a80b1213f4",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/api/inventory/contracts/admin-index",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "inventory",
-                    "contracts",
-                    "admin-index"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Contracts Agency Overview (inventory dashboard)",
-              "id": "77edecfa-0a7a-4dcf-9202-584bdbdfb404",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{token}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/api/inventory/contracts/agency-overview",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "inventory",
-                    "contracts",
-                    "agency-overview"
-                  ],
-                  "query": [
-                    {
-                      "key": "status",
-                      "value": "{{status}}",
-                      "disabled": true
-                    },
-                    {
-                      "key": "user_id",
-                      "value": "{{user_id}}",
-                      "disabled": true
-                    },
-                    {
-                      "key": "city",
-                      "value": "{{city}}",
-                      "disabled": true
-                    },
-                    {
-                      "key": "district",
-                      "value": "{{district}}",
-                      "disabled": true
-                    },
-                    {
-                      "key": "project_name",
-                      "value": "{{project_name}}",
-                      "disabled": true
-                    },
-                    {
-                      "key": "has_photography",
-                      "value": "{{has_photography}}",
-                      "disabled": true
-                    },
-                    {
-                      "key": "has_montage",
-                      "value": "{{has_montage}}",
-                      "disabled": true
-                    },
-                    {
-                      "key": "per_page",
-                      "value": "{{per_page}}",
-                      "disabled": true
-                    }
-                  ]
-                }
-              },
-              "response": []
-            }
-          ],
-          "id": "c17d1b2e-14e4-497c-a2db-ddb9025413a9"
-        },
-        {
-          "name": "Inventory - Second Party Data",
-          "item": [
-            {
-              "name": "Get Second Party Data (show)",
-              "id": "3508786f-aa90-4233-ace4-6cffb8827165",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/api/inventory/second-party-data/show/{{secondPartyId}}",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "inventory",
-                    "second-party-data",
-                    "show",
-                    "{{secondPartyId}}"
-                  ]
-                }
-              },
-              "response": []
-            }
-          ],
-          "id": "332dcae1-e5d5-4ba7-b387-b6ffe97a19dd"
-        }
-      ],
-      "id": "43c339f8-3209-45e4-ae52-856a95286670"
     }
   ],
   "variable": [
     {
-      "id": "fff0c40e-56b5-4c1d-9f49-2b781f7abb69",
+      "id": "6151f936-eb61-4542-84f6-fdbb3550f49d",
       "key": "local",
       "value": "",
       "type": "default"
     },
     {
-      "id": "e6116b7c-e637-4700-90db-b4954cc44105",
+      "id": "b850f719-c9b2-453a-be6b-f2abb7f12342",
       "key": "token",
       "value": "",
       "type": "default"
     },
     {
-      "id": "09f5ea10-6cbd-4bea-92bb-f5e0515be5bf",
+      "id": "897b74ed-aaf9-448d-bed3-f34669d349cb",
       "key": "local_1",
       "value": "",
       "type": "default"
     },
     {
-      "id": "627a7aee-2f57-463d-9317-5338a3134b28",
+      "id": "a5092132-c2bc-49e6-bc48-330f40d1700a",
       "key": "server",
       "value": "",
       "type": "default"
     },
     {
-      "id": "f14999a3-184e-4084-a6e3-71f62268c291",
+      "id": "0b70405f-c0cd-434a-bd54-5b727c878afd",
       "key": "52|x0Gb03UtHGMSyfha6WD2o8qxhKCAdowdSFcSQBSQ96868846",
       "value": "",
       "type": "default"
     },
     {
-      "id": "77401f37-97f4-4089-a5ec-9ecb3e11d7a6",
+      "id": "fb2616e2-c4f0-452e-9431-ba52c9b8ca6a",
       "key": "{{token}}",
       "value": "",
       "type": "default"
     },
     {
-      "id": "3e3cabd2-02f1-46ba-bb8f-c0f7bca856a3",
+      "id": "794d75b6-3d69-4bcc-8615-12c080c50d62",
       "key": "{{token}}",
       "value": "",
       "type": "default"
     },
     {
-      "id": "17cb7c30-b588-49c7-bd3f-b207b7db5d81",
+      "id": "6edd1524-ad5a-4d86-8cd0-088f0f0c12e9",
       "key": "baseUrl",
       "value": "",
       "type": "default"
     },
     {
-      "id": "faea0fad-760e-431f-ac96-7c53a6e5daaf",
+      "id": "51f71f23-7438-4313-89db-5d816874dcf1",
       "key": "contractId",
       "value": "",
       "type": "default"
