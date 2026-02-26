@@ -1,0 +1,33 @@
+[    2736ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/project_management/teams/index:0
+[    2740ms] [WARNING] API Error [403]: User does not have the right roles. @ webpack-internal:///./src/utils/logger.js:26
+[    3100ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/hr/users?per_page=100:0
+[    3103ms] [WARNING] API Error [403]: User does not have the right permissions. @ webpack-internal:///./src/utils/logger.js:26
+[   11471ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8000/api/users:0
+[   12396ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8000/api/teams:0
+[   13332ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/hr/users:0
+[   14245ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/project_management/teams/index:0
+[   33097ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8000/api/users/all:0
+[   33947ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8000/api/employees:0
+[   34808ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8000/api/staff:0
+[   35678ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8000/api/public/users:0
+[   71068ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/hr/users/10:0
+[   71956ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/project_management/teams/show/7:0
+[  117872ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8000/api/teams/7/members:0
+[  118780ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/teams/show/7:0
+[  188903ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/project_management/teams/index:0
+[  188906ms] [WARNING] API Error [403]: User does not have the right roles. @ webpack-internal:///./src/utils/logger.js:26
+[  189261ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/hr/users?per_page=100:0
+[  189264ms] [WARNING] API Error [403]: User does not have the right permissions. @ webpack-internal:///./src/utils/logger.js:26
+[  306416ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/project_management/teams/index:0
+[  306419ms] [WARNING] API Error [403]: User does not have the right roles. @ webpack-internal:///./src/utils/logger.js:26
+[  306800ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/hr/users?per_page=100:0
+[  306803ms] [WARNING] API Error [403]: User does not have the right permissions. @ webpack-internal:///./src/utils/logger.js:26
+[  396867ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/project_management/teams/index:0
+[  396869ms] [WARNING] API Error [403]: User does not have the right roles. @ webpack-internal:///./src/utils/logger.js:26
+[  397222ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/hr/users?per_page=100:0
+[  397225ms] [WARNING] API Error [403]: User does not have the right permissions. @ webpack-internal:///./src/utils/logger.js:26
+[  561909ms] [WARNING] Session expiring soon @ webpack-internal:///./src/utils/logger.js:26
+[  564069ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/project_management/teams/index:0
+[  564074ms] [WARNING] API Error [403]: User does not have the right roles. @ webpack-internal:///./src/utils/logger.js:26
+[  564421ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8000/api/hr/users?per_page=100:0
+[  564425ms] [WARNING] API Error [403]: User does not have the right permissions. @ webpack-internal:///./src/utils/logger.js:26

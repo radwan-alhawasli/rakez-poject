@@ -728,7 +728,8 @@ export default {
 
       try {
         selectedProject.value = await salesService.getProjectDetails(projectId);
-        projectUnits.value = await salesService.getProjectUnits(projectId);
+        const unitsRes = await salesService.getProjectUnits(projectId);
+        projectUnits.value = Array.isArray(unitsRes?.data) ? unitsRes.data : [];
       } catch (error) {
         logger.error('Error loading project details:', error);
       } finally {
@@ -740,7 +741,8 @@ export default {
     const loadReservations = async () => {
       isLoadingReservations.value = true;
       try {
-        reservations.value = await salesService.getReservations();
+        const { items } = await salesService.getReservations();
+        reservations.value = Array.isArray(items) ? items : [];
       } catch (error) {
         logger.error('Error loading reservations:', error);
       } finally {

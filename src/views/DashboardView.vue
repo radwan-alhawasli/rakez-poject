@@ -498,4 +498,74 @@ export default {
   color: #94a3b8;
   font-family: 'Cairo', sans-serif;
 }
+
+/* ============================
+   DASHBOARD RESPONSIVE
+   ============================ */
+@media (max-width: 576px) {
+  .dashboard-view {
+    padding: 10px 12px;
+  }
+  .page-title,
+  .welcome-title {
+    font-size: 20px;
+  }
+  .stat-card {
+    padding: 14px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .dashboard-view {
+    padding: 28px 40px;
+  }
+  .page-title,
+  .welcome-title {
+    font-size: 34px;
+  }
+  .stat-value {
+    font-size: 32px;
+  }
+  .chart-placeholder {
+    padding: 60px 40px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .dashboard-view {
+    padding: 36px 52px;
+  }
+  .page-title,
+  .welcome-title {
+    font-size: 40px;
+  }
+  .stat-value {
+    font-size: 38px;
+  }
+  .stat-card {
+    padding: 28px;
+    border-radius: 20px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .dashboard-view {
+    padding: 48px 60px;
+  }
+  .page-title,
+  .welcome-title {
+    font-size: 52px;
+  }
+  .stat-value {
+    font-size: 48px;
+  }
+  .stat-card {
+    padding: 36px;
+    border-radius: 24px;
+  }
+  .chart-placeholder {
+    padding: 80px 60px;
+    border-radius: 24px;
+  }
+}
 </style>

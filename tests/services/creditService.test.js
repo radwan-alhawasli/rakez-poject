@@ -597,6 +597,91 @@ describe('creditService', () => {
     });
   });
 
+  describe('getClaimFileCandidates', () => {
+    it('should fetch candidates (sold bookings without claim files)', async () => {
+      const mockCandidates = [
+        { reservation_id: 789, project_name: 'مشروع جدة', unit_number: 'B-202', claim_amount: 7500 },
+      ];
+      mock
+        .onGet('/credit/claim-files/candidates')
+        .reply(200, { data: mockCandidates, meta: { total: 1 } });
+
+      const result = await creditService.getClaimFileCandidates({ per_page: 15 });
+
+      expect(mock.history.get.length).toBe(1);
+      expect(result).toHaveProperty('items');
+      expect(result).toHaveProperty('total');
+      expect(Array.isArray(result.items)).toBe(true);
+    });
+
+    it('should throw on server error', async () => {
+      mock.onGet('/credit/claim-files/candidates').reply(500, createErrorResponse('Server error', 500));
+
+      await expect(creditService.getClaimFileCandidates()).rejects.toThrow();
+    });
+
+    it('should return empty on 404', async () => {
+      mock.onGet('/credit/claim-files/candidates').reply(404, createErrorResponse('Not found', 404));
+
+      const result = await creditService.getClaimFileCandidates();
+      expect(Array.isArray(asList(result))).toBe(true);
+    });
+  });
+
+  describe('generateBulkClaimFiles', () => {
+    it('should generate individual claim files for multiple reservations', async () => {
+      const payload = { reservation_ids: [123, 124, 125] };
+      mock
+        .onPost('/credit/claim-files/generate-bulk')
+        .reply(200, { data: { created: { '123': 1, '124': 2 }, errors: { '125': 'exists' } } });
+
+      const result = await creditService.generateBulkClaimFiles(payload);
+
+      expect(mock.history.post.length).toBe(1);
+      const sentBody = JSON.parse(mock.history.post[0].data);
+      expect(sentBody.reservation_ids).toEqual([123, 124, 125]);
+      expect(result).toBeDefined();
+      expect(result.created).toBeDefined();
+      expect(result.errors).toBeDefined();
+    });
+
+    it('should throw on server error', async () => {
+      mock.onPost('/credit/claim-files/generate-bulk').reply(500, createErrorResponse('Server error', 500));
+
+      await expect(creditService.generateBulkClaimFiles({ reservation_ids: [1] })).rejects.toThrow();
+    });
+  });
+
+  describe('createCombinedClaimFile', () => {
+    it('should create combined claim file with multiple booking ids', async () => {
+      const payload = { booking_ids: [10, 20, 30], claim_type: 'commission', notes: 'test' };
+      mock
+        .onPost('/credit/claim-files/combined')
+        .reply(201, { data: { id: 99, claim_amount: 450000, booking_ids: [10, 20, 30] } });
+
+      const result = await creditService.createCombinedClaimFile(payload);
+
+      expect(mock.history.post.length).toBe(1);
+      const sentBody = JSON.parse(mock.history.post[0].data);
+      expect(sentBody.booking_ids).toEqual([10, 20, 30]);
+      expect(sentBody.claim_type).toBe('commission');
+      expect(result).toBeDefined();
+      expect(result.id).toBe(99);
+    });
+
+    it('should throw on server error', async () => {
+      mock.onPost('/credit/claim-files/combined').reply(500, createErrorResponse('Server error', 500));
+
+      await expect(creditService.createCombinedClaimFile({ booking_ids: [1] })).rejects.toThrow();
+    });
+
+    it('should throw on validation error', async () => {
+      mock.onPost('/credit/claim-files/combined').reply(422, createErrorResponse('Validation failed', 422));
+
+      await expect(creditService.createCombinedClaimFile({})).rejects.toThrow();
+    });
+  });
+
   // Error scenarios
   describe('Error Handling', () => {
     it('should handle 400 Bad Request', async () => {

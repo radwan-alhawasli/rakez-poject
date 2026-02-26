@@ -111,9 +111,11 @@ const notificationService = {
         id: n.id,
         title: n.message || n.title,
         time: n.created_at,
-        read: !!n.read_at,
-        type: n.type || 'info',
-        actionRequired: !n.read_at,
+        read: !!n.read_at || n.status === 'read',
+        type: n.type || n.event_type || 'info',
+        eventType: n.event_type || null,
+        status: n.status || (n.read_at ? 'read' : 'pending'),
+        actionRequired: !n.read_at && n.status !== 'read',
       }));
 
       // Sort by date newest first
@@ -259,7 +261,7 @@ const notificationService = {
       ? `/accounting/notifications/${id}/read`
       : `/notifications/${id}/read`;
     try {
-      await apiClient.post(endpoint);
+      await apiClient.patch(endpoint).catch(() => apiClient.post(endpoint));
       const n = notifications.value.find(x => x.id === id);
       if (n) {
         n.read = true;
@@ -268,7 +270,6 @@ const notificationService = {
       }
     } catch (error) {
       logger.error('Error marking as read:', error);
-      // Fallback to optimistic local update to avoid UI crash on missing endpoint
       const n = notifications.value.find(x => x.id === id);
       if (n) {
         n.read = true;
@@ -290,11 +291,13 @@ const notificationService = {
       (user.type === 7 ||
         String(user.type) === '7' ||
         String(user.role || '').toLowerCase() === 'accounting');
-    const endpoint = isAccounting
+    const markAllEndpoint = isAccounting
       ? '/accounting/notifications/read-all'
-      : '/notifications/read-all';
+      : '/notifications/mark-all-read';
     try {
-      await apiClient.post(endpoint);
+      await apiClient.patch(markAllEndpoint).catch(() =>
+        apiClient.post(isAccounting ? '/accounting/notifications/read-all' : '/notifications/read-all')
+      );
       notifications.value.forEach(n => {
         n.read = true;
         n.actionRequired = false;

@@ -9,6 +9,47 @@ import { extractPaginatedData } from '../utils/paginationUtils';
  */
 const SALES_API_ENDPOINT_REGISTRY = {
   getDashboard: { method: 'GET', endpoint: '/sales/dashboard', source: 'preferred_249' },
+  getSoldUnits: { method: 'GET', endpoint: '/sales/sold-units', source: 'preferred_249' },
+  getSoldUnitCommissionSummary: {
+    method: 'GET',
+    endpoint: '/sales/sold-units/{unit_id}/commission-summary',
+    source: 'preferred_249',
+  },
+  getDepositsManagement: {
+    method: 'GET',
+    endpoint: '/sales/deposits/management',
+    source: 'preferred_249',
+  },
+  getDepositsFollowUp: {
+    method: 'GET',
+    endpoint: '/sales/deposits/follow-up',
+    source: 'preferred_249',
+  },
+  getAnalyticsDashboard: {
+    method: 'GET',
+    endpoint: '/sales/analytics/dashboard',
+    source: 'preferred_249',
+  },
+  getAnalyticsSoldUnits: {
+    method: 'GET',
+    endpoint: '/sales/analytics/sold-units',
+    source: 'preferred_249',
+  },
+  getAnalyticsDepositStatsByProject: {
+    method: 'GET',
+    endpoint: '/sales/analytics/deposits/stats/project/{contract_id}',
+    source: 'preferred_249',
+  },
+  getAnalyticsCommissionStatsByEmployee: {
+    method: 'GET',
+    endpoint: '/sales/analytics/commissions/stats/employee/{user_id}',
+    source: 'preferred_249',
+  },
+  getAnalyticsMonthlyCommissionReport: {
+    method: 'GET',
+    endpoint: '/sales/analytics/commissions/monthly-report',
+    source: 'preferred_249',
+  },
   getProjects: { method: 'GET', endpoint: '/sales/projects', source: 'preferred_249' },
   getProjectDetails: {
     method: 'GET',
@@ -98,12 +139,53 @@ const SALES_API_ENDPOINT_REGISTRY = {
     endpoint: '/sales/marketing-tasks/{task_id}',
     source: 'preferred_249',
   },
+  logReservationAction: {
+    method: 'POST',
+    endpoint: '/sales/reservations/{reservation_id}/actions',
+    source: 'preferred_249',
+  },
+  downloadVoucher: {
+    method: 'GET',
+    endpoint: '/sales/reservations/{reservation_id}/voucher',
+    source: 'preferred_249',
+  },
+  createWaitingList: { method: 'POST', endpoint: '/sales/waiting-list', source: 'preferred_249' },
+  getWaitingListByUnit: {
+    method: 'GET',
+    endpoint: '/sales/waiting-list/unit/{unit_id}',
+    source: 'preferred_249',
+  },
+  deleteWaitingList: {
+    method: 'DELETE',
+    endpoint: '/sales/waiting-list/{waiting_list_id}',
+    source: 'preferred_249',
+  },
+  updateEmergencyContacts: {
+    method: 'PATCH',
+    endpoint: '/sales/projects/{contract_id}/emergency-contacts',
+    source: 'preferred_249',
+  },
+  assignProjectToLeader: {
+    method: 'POST',
+    endpoint: '/admin/sales/project-assignments',
+    source: 'preferred_249',
+  },
   getProjectAssignments: {
     method: 'GET',
     endpoint: '/admin/sales/project-assignments',
     source: 'preferred_249',
   },
   getMyAssignments: { method: 'GET', endpoint: '/sales/assignments/my', source: 'preferred_249' },
+  getProjectAttendanceOverview: {
+    method: 'GET',
+    endpoint: '/sales/attendance/project/{contract_id}',
+    source: 'preferred_249',
+  },
+  bulkSaveProjectAttendance: {
+    method: 'POST',
+    endpoint: '/sales/attendance/project/{contract_id}/bulk',
+    source: 'preferred_249',
+  },
 };
 
 /**
@@ -116,8 +198,8 @@ const salesService = {
   /**
    * Get sales dashboard data
    * GET /sales/dashboard
-   * @param {Object} params - Query parameters (optional filters, date ranges)
-   * @returns {Promise<Object>} Dashboard data with KPIs and statistics
+   * @param {Object} params - scope (me|team|all), from, to (dates)
+   * @returns {Promise<Object>} Dashboard data (kpi_version, definitions, reserved_units, confirmed_count, etc.)
    */
   getDashboard(params = {}) {
     return apiClient.get('/sales/dashboard', { params });
@@ -127,10 +209,11 @@ const salesService = {
   /**
    * Get list of sales projects
    * GET /sales/projects
-   * @returns {Promise<Array>} List of projects available to sales team
+   * @param {Object} params - status (available|pending), q, city, district, scope (me|team|all), per_page
+   * @returns {Promise<Object>} Axios response; data array + meta (current_page, last_page, total)
    */
-  getProjects() {
-    return apiClient.get('/sales/projects');
+  getProjects(params = {}) {
+    return apiClient.get('/sales/projects', { params });
   },
 
   /**
@@ -145,12 +228,25 @@ const salesService = {
 
   /**
    * Get project units
-   * GET /sales/projects/:projectId/units
-   * @param {number|string} projectId - Project ID
-   * @returns {Promise<Array>} List of units in the project
+   * GET /sales/projects/{contractId}/units
+   * Query: status (available|reserved|sold|pending), floor, min_price, max_price, per_page
+   * @param {number|string} projectId - Contract ID
+   * @param {Object} params - Query parameters
+   * @returns {Promise<Object>} Axios response; data array normalized with id, status, area for compatibility
    */
-  getProjectUnits(projectId) {
-    return apiClient.get(`/sales/projects/${projectId}/units`);
+  async getProjectUnits(projectId, params = {}) {
+    const response = await apiClient.get(`/sales/projects/${projectId}/units`, { params });
+    const body = response?.data ?? response;
+    const raw = body?.data ?? body?.units ?? body;
+    const arr = Array.isArray(raw) ? raw : [];
+    const normalized = arr.map(u => ({
+      ...u,
+      id: u.id ?? u.unit_id,
+      status: u.status ?? u.unit_status ?? u.computed_availability,
+      area: u.area ?? u.area_m2,
+      unit_number: u.unit_number ?? u.unit_id,
+    }));
+    return { ...response, data: normalized };
   },
 
   /**
@@ -177,8 +273,8 @@ const salesService = {
   /**
    * Create a new reservation
    * POST /sales/reservations
-   * @param {Object} data - Reservation data (unit_id, client_name, client_mobile, etc.)
-   * @returns {Promise<Object>} Created reservation
+   * @param {Object} data - contract_id, contract_unit_id, contract_date, reservation_type (confirmed_reservation|negotiation), client_name, client_mobile, client_nationality, client_iban?, payment_method, down_payment_amount, down_payment_status, purchase_mechanism, evacuation_date?; for negotiation add negotiation_notes, negotiation_reason?, proposed_price?
+   * @returns {Promise<Object>} Created reservation (reservation_id, status, voucher_url, etc.)
    */
   createReservation(data) {
     return apiClient.post('/sales/reservations', data);
@@ -187,8 +283,8 @@ const salesService = {
   /**
    * Get list of reservations
    * GET /sales/reservations
-   * @param {Object} params - page, per_page, status
-   * @returns {Promise<{ items: Array, total: number }>} List of reservations
+   * @param {Object} params - mine (bool), include_cancelled (bool), contract_id, status (under_negotiation|confirmed|cancelled), from, to, per_page
+   * @returns {Promise<{ items: Array, total: number }>} Paginated list of reservations
    */
   async getReservations(params = {}) {
     try {
@@ -222,19 +318,20 @@ const salesService = {
 
   /**
    * Cancel a reservation
-   * POST /sales/reservations/:reservationId/cancel
+   * POST /sales/reservations/{id}/cancel
    * @param {number|string} reservationId - Reservation ID
+   * @param {Object} data - { cancellation_reason } (optional)
    * @returns {Promise<Object>} Cancelled reservation
    */
-  cancelReservation(reservationId) {
-    return apiClient.post(`/sales/reservations/${reservationId}/cancel`);
+  cancelReservation(reservationId, data = {}) {
+    return apiClient.post(`/sales/reservations/${reservationId}/cancel`, data);
   },
 
   /**
    * Log an action for a reservation
-   * POST /sales/reservations/:reservationId/actions
+   * POST /sales/reservations/{id}/actions
    * @param {number|string} reservationId - Reservation ID
-   * @param {Object} data - Action data (action_type, notes, etc.)
+   * @param {Object} data - { action_type: 'lead_acquisition'|'persuasion'|'closing', notes }
    * @returns {Promise<Object>} Action log entry
    */
   logAction(reservationId, data) {
@@ -273,9 +370,9 @@ const salesService = {
 
   /**
    * Update a sales target
-   * PATCH /sales/targets/:targetId
+   * PATCH /sales/targets/{id}
    * @param {number|string} targetId - Target ID
-   * @param {Object} data - Target update data (amount, period, etc.)
+   * @param {Object} data - { status: 'new'|'in_progress'|'completed' }
    * @returns {Promise<Object>} Updated target
    */
   updateTarget(targetId, data) {
@@ -283,9 +380,9 @@ const salesService = {
   },
 
   /**
-   * Create a new sales target
+   * Create target for team member (leader only)
    * POST /sales/targets
-   * @param {Object} data - Target data (amount, period, user_id, etc.)
+   * @param {Object} data - marketer_id, contract_id, contract_unit_id, target_type (reservation|negotiation|closing), start_date, end_date, leader_notes
    * @returns {Promise<Object>} Created target
    */
   createTarget(data) {
@@ -320,9 +417,9 @@ const salesService = {
   },
 
   /**
-   * Create attendance schedule
+   * Create single schedule (leader only)
    * POST /sales/attendance/schedules
-   * @param {Object} data - Schedule data (date, check_in, check_out, etc.)
+   * @param {Object} data - { contract_id, user_id, schedule_date, start_time, end_time }
    * @returns {Promise<Object>} Created schedule
    */
   createSchedule(data) {
@@ -370,7 +467,7 @@ const salesService = {
    */
   async getProjectAssignments(params = {}) {
     try {
-      const response = await apiClient.get('/sales/team/projects', { params });
+      const response = await apiClient.get('/admin/sales/project-assignments', { params });
       const data = response.data?.data ?? response.data;
       return Array.isArray(data) ? data : [];
     } catch (error) {
@@ -381,7 +478,7 @@ const salesService = {
   /**
    * Get team members
    * GET /sales/team/members
-   * @returns {Promise<Array>} List of team members normalized to { id, name }
+   * @returns {Promise<Array>} List of team members { id, name, email, team }
    */
   async getTeamMembers() {
     const response = await apiClient.get('/sales/team/members');
@@ -390,13 +487,15 @@ const salesService = {
     return list.map(m => ({
       id: m.id ?? m.user_id ?? m.marketer_id,
       name: m.name ?? m.full_name ?? m.marketer_name ?? m.email ?? `#${m.id ?? m.user_id ?? ''}`,
+      email: m.email ?? null,
+      team: m.team ?? m.team_name ?? null,
     }));
   },
 
   /**
-   * Assign project to team members
+   * Assign project to leader (admin only)
    * POST /admin/sales/project-assignments
-   * @param {Object} data - Assignment data (project_id, user_ids, etc.)
+   * @param {Object} data - { leader_id, contract_id, start_date, end_date }
    * @returns {Promise<Object>} Assignment result
    */
   assignProject(data) {
@@ -442,9 +541,9 @@ const salesService = {
   },
 
   /**
-   * Create a marketing task
+   * Create marketing task (leader only)
    * POST /sales/marketing-tasks
-   * @param {Object} data - Task data (project_id, description, due_date, etc.)
+   * @param {Object} data - contract_id, task_name, marketer_id, participating_marketers_count, design_link, design_number, design_description
    * @returns {Promise<Object>} Created task
    */
   createMarketingTask(data) {
@@ -452,10 +551,10 @@ const salesService = {
   },
 
   /**
-   * Update task status
-   * PATCH /sales/marketing-tasks/:taskId
+   * Update marketing task status
+   * PATCH /sales/marketing-tasks/{id}
    * @param {number|string} taskId - Task ID
-   * @param {Object} data - Update data (status, notes, etc.)
+   * @param {Object} data - { status: 'new'|'in_progress'|'completed' }
    * @returns {Promise<Object>} Updated task
    */
   updateTaskStatus(taskId, data) {
@@ -494,7 +593,7 @@ const salesService = {
   /**
    * Get waiting list
    * GET /sales/waiting-list
-   * @param {Object} params - Query parameters
+   * @param {Object} params - status, sales_staff_id, contract_id, contract_unit_id, active_only, per_page
    * @returns {Promise<Array>} List of waiting list entries
    */
   async getWaitingList(params = {}) {
@@ -529,7 +628,7 @@ const salesService = {
   /**
    * Add to waiting list
    * POST /sales/waiting-list
-   * @param {Object} data - Waiting list entry data
+   * @param {Object} data - { contract_id, contract_unit_id, client_name, client_mobile, client_email?, priority, notes? }
    * @returns {Promise<Object>} Created waiting list entry
    */
   async addToWaitingList(data) {
@@ -538,10 +637,10 @@ const salesService = {
   },
 
   /**
-   * Convert waiting list entry to reservation
-   * POST /sales/waiting-list/convert
+   * Convert waiting list entry to reservation (leader only)
+   * POST /sales/waiting-list/{id}/convert
    * @param {number|string} waitingListId - Waiting list entry ID
-   * @param {Object} data - Conversion data
+   * @param {Object} data - contract_date, reservation_type, client_nationality, client_iban, payment_method, down_payment_amount, down_payment_status, purchase_mechanism; for negotiation add negotiation_notes
    * @returns {Promise<Object>} Created reservation
    */
   async convertToReservation(waitingListId, data = {}) {
@@ -550,14 +649,19 @@ const salesService = {
   },
 
   /**
-   * Cancel waiting list entry
-   * DELETE /sales/waiting-list
+   * Cancel / delete waiting list entry
+   * DELETE /sales/waiting-list/{id}
    * @param {number|string} id - Waiting list entry ID
    * @returns {Promise<Object>} Response
    */
   async cancelWaitingListEntry(id) {
     const response = await apiClient.delete(`/sales/waiting-list/${id}`);
     return response.data?.data || response.data || {};
+  },
+
+  /** Alias for cancelWaitingListEntry. DELETE /sales/waiting-list/{id} */
+  async deleteWaitingList(id) {
+    return this.cancelWaitingListEntry(id);
   },
 
   /**
@@ -656,6 +760,245 @@ const salesService = {
   async updateMarketingTask(taskId, data) {
     const response = await apiClient.patch(`/sales/marketing-tasks/${taskId}`, data);
     return response.data?.data || response.data || {};
+  },
+
+  // Project Schedule Management (Leader)
+
+  /**
+   * Get project attendance overview — team members with today's presence status
+   * GET /sales/attendance/project/{contractId}
+   * Falls back to getTeamMembers + getTeamAttendance if endpoint unavailable
+   * @param {number|string} projectId - Project/Contract ID
+   * @param {string} [date] - Optional date (YYYY-MM-DD), defaults to today
+   * @returns {Promise<Array>} Members with schedule/attendance info
+   */
+  async getProjectScheduleMembers(projectId, date) {
+    const params = {};
+    if (date) params.date = date;
+    try {
+      const response = await apiClient.get(`/sales/attendance/project/${projectId}`, { params });
+      const payload = response?.data?.data ?? response?.data ?? {};
+      const raw = payload?.members ?? (Array.isArray(payload) ? payload : []);
+      return Array.isArray(raw) ? raw : [];
+    } catch {
+      const [members, attendance] = await Promise.all([
+        this.getTeamMembers(),
+        this.getTeamAttendance({ contract_id: projectId }).catch(() => []),
+      ]);
+      const today = (date || new Date().toISOString()).slice(0, 10);
+      const todayRecords = attendance.filter(
+        r => (r.date || r.schedule_date || '').slice(0, 10) === today
+      );
+      return members.map(m => {
+        const record = todayRecords.find(r => (r.user_id ?? r.employee_id) === m.id);
+        return {
+          ...m,
+          is_present: !!record,
+          check_in_time: record?.check_in_time || null,
+          check_out_time: record?.check_out_time || null,
+          status: record?.status || 'absent',
+        };
+      });
+    }
+  },
+
+  // ── SalesInsightsController ─────────────────────────────────────────────
+
+  /**
+   * Get sold units
+   * GET /sales/sold-units
+   * @param {Object} params - Optional filters (page, per_page, project_id, date range)
+   * @returns {Promise<{ items: Array, total: number }>} Paginated sold units
+   */
+  async getSoldUnits(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/sold-units', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
+    } catch (error) {
+      return handleServiceError(error, 'Fetch sold units', 'get') || { items: [], total: 0 };
+    }
+  },
+
+  /**
+   * Get commission summary for a sold unit
+   * GET /sales/sold-units/{unitId}/commission-summary
+   * @param {number|string} unitId - Unit ID
+   * @param {Object} params - Optional query parameters
+   * @returns {Promise<Object>} Commission summary for the unit
+   */
+  async getSoldUnitCommissionSummary(unitId, params = {}) {
+    try {
+      const response = await apiClient.get(`/sales/sold-units/${unitId}/commission-summary`, {
+        params,
+      });
+      return response.data?.data ?? response.data ?? {};
+    } catch (error) {
+      return handleServiceError(error, 'Fetch commission summary', 'get') || {};
+    }
+  },
+
+  /**
+   * Get deposits management data
+   * GET /sales/deposits/management
+   * @param {Object} params - Optional filters (page, per_page, status, project_id)
+   * @returns {Promise<{ items: Array, total: number }>} Deposits management data
+   */
+  async getDepositsManagement(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/deposits/management', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
+    } catch (error) {
+      return (
+        handleServiceError(error, 'Fetch deposits management', 'get') || { items: [], total: 0 }
+      );
+    }
+  },
+
+  /**
+   * Get deposits follow-up data
+   * GET /sales/deposits/follow-up
+   * @param {Object} params - Optional filters (page, per_page, status, overdue_only)
+   * @returns {Promise<{ items: Array, total: number }>} Deposits requiring follow-up
+   */
+  async getDepositsFollowUp(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/deposits/follow-up', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
+    } catch (error) {
+      return (
+        handleServiceError(error, 'Fetch deposits follow-up', 'get') || { items: [], total: 0 }
+      );
+    }
+  },
+
+  // ── SalesAnalyticsController ─────────────────────────────────────────────
+
+  /**
+   * Get analytics dashboard data
+   * GET /sales/analytics/dashboard
+   * @param {Object} params - Optional filters (from, to, scope)
+   * @returns {Promise<Object>} Analytics dashboard metrics
+   */
+  async getAnalyticsDashboard(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/analytics/dashboard', { params });
+      return response.data?.data ?? response.data ?? {};
+    } catch (error) {
+      return handleServiceError(error, 'Fetch analytics dashboard', 'get') || {};
+    }
+  },
+
+  /**
+   * Get analytics for sold units
+   * GET /sales/analytics/sold-units
+   * @param {Object} params - Optional filters (from, to, project_id)
+   * @returns {Promise<Object>} Sold units analytics
+   */
+  async getAnalyticsSoldUnits(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/analytics/sold-units', { params });
+      return response.data?.data ?? response.data ?? {};
+    } catch (error) {
+      return handleServiceError(error, 'Fetch analytics sold units', 'get') || {};
+    }
+  },
+
+  /**
+   * Get deposit statistics by project
+   * GET /sales/analytics/deposits/stats/project/{contractId}
+   * @param {number|string} contractId - Contract/Project ID
+   * @param {Object} params - Optional query parameters
+   * @returns {Promise<Object>} Deposit statistics for the project
+   */
+  async getAnalyticsDepositStatsByProject(contractId, params = {}) {
+    try {
+      const response = await apiClient.get(
+        `/sales/analytics/deposits/stats/project/${contractId}`,
+        { params }
+      );
+      return response.data?.data ?? response.data ?? {};
+    } catch (error) {
+      return handleServiceError(error, 'Fetch deposit stats by project', 'get') || {};
+    }
+  },
+
+  /**
+   * Get commission statistics by employee
+   * GET /sales/analytics/commissions/stats/employee/{userId}
+   * @param {number|string} userId - User/Employee ID
+   * @param {Object} params - Optional query parameters (from, to)
+   * @returns {Promise<Object>} Commission statistics for the employee
+   */
+  async getAnalyticsCommissionStatsByEmployee(userId, params = {}) {
+    try {
+      const response = await apiClient.get(
+        `/sales/analytics/commissions/stats/employee/${userId}`,
+        { params }
+      );
+      return response.data?.data ?? response.data ?? {};
+    } catch (error) {
+      return handleServiceError(error, 'Fetch commission stats by employee', 'get') || {};
+    }
+  },
+
+  /**
+   * Get monthly commission report
+   * GET /sales/analytics/commissions/monthly-report
+   * @param {Object} params - Required: year (2020-2100), month (1-12)
+   * @returns {Promise<Object>} Monthly commission report data
+   */
+  async getAnalyticsMonthlyCommissionReport(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/analytics/commissions/monthly-report', {
+        params,
+      });
+      return response.data?.data ?? response.data ?? {};
+    } catch (error) {
+      return handleServiceError(error, 'Fetch monthly commission report', 'get') || {};
+    }
+  },
+
+  /**
+   * Bulk save project attendance (and triggers backend notifications)
+   * POST /sales/attendance/project/{contractId}/bulk
+   * Falls back to individual createSchedule calls
+   * @param {number|string} projectId - Project/Contract ID
+   * @param {Array} schedules - Array of { user_id, present, start_time?, end_time? }
+   * @param {string} [date] - Date string (YYYY-MM-DD), defaults to today
+   * @returns {Promise<Object>} Result with created/updated/removed counts
+   */
+  async saveProjectSchedules(projectId, schedules, date) {
+    const today = date || new Date().toISOString().slice(0, 10);
+    try {
+      const payload = {
+        date: today,
+        schedules: schedules.map(s => ({
+          user_id: s.user_id,
+          present: s.is_present ?? s.present ?? false,
+          start_time: s.start_time || '08:00',
+          end_time: s.end_time || '17:00',
+        })),
+      };
+      const response = await apiClient.post(`/sales/attendance/project/${projectId}/bulk`, payload);
+      return response.data?.data || response.data || {};
+    } catch {
+      const presentMembers = schedules.filter(s => s.is_present ?? s.present);
+      const results = await Promise.allSettled(
+        presentMembers.map(s =>
+          this.createSchedule({
+            contract_id: projectId,
+            user_id: s.user_id,
+            schedule_date: today,
+            start_time: s.start_time || '08:00',
+            end_time: s.end_time || '17:00',
+          })
+        )
+      );
+      return { saved: results.filter(r => r.status === 'fulfilled').length };
+    }
   },
 };
 

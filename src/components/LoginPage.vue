@@ -352,14 +352,95 @@ export default {
 }
 
 /* Media Queries */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .login-container {
-    width: 90%;
-    padding: 30px 20px;
+    width: 85%;
+    padding: 32px 24px;
+  }
+}
+
+@media (max-width: 576px) {
+  .login-container {
+    width: 95%;
+    padding: 24px 16px;
+    border-radius: 16px;
   }
 
   .branding {
     display: none;
+  }
+
+  .login-title {
+    font-size: 22px;
+  }
+
+  .input-field {
+    padding: 14px;
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .login-container {
+    max-width: 520px;
+  }
+
+  .login-title {
+    font-size: 32px;
+  }
+
+  .input-field {
+    padding: 16px;
+    font-size: 16px;
+  }
+
+  .submit-btn {
+    padding: 16px;
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .login-container {
+    max-width: 600px;
+  }
+
+  .login-title {
+    font-size: 38px;
+  }
+
+  .input-field {
+    padding: 18px;
+    font-size: 18px;
+    border-radius: 14px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .login-container {
+    max-width: 720px;
+    padding: 60px;
+    border-radius: 28px;
+  }
+
+  .login-title {
+    font-size: 48px;
+  }
+
+  .input-field {
+    padding: 22px;
+    font-size: 22px;
+    border-radius: 16px;
+  }
+
+  .submit-btn {
+    padding: 20px;
+    font-size: 22px;
+    border-radius: 16px;
+  }
+
+  .branding img {
+    max-width: 200px;
   }
 }
 </style>

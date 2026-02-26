@@ -337,20 +337,41 @@ export default {
 
     const handleSaveUser = async userData => {
       isSaving.value = true;
+      const cvFile = userData.cv_file;
+      const sigFile = userData.signature_file;
+      delete userData.cv_file;
+      delete userData.signature_file;
+
       try {
+        let savedUserId = userData.id;
         if (props.useHrApi) {
           if (userData.id) {
             await hrService.updateUser(userData.id, userData);
           } else {
-            await hrService.createUser(userData);
+            const result = await hrService.createUser(userData);
+            savedUserId = result?.id ?? result?.data?.id ?? savedUserId;
           }
         } else {
           if (userData.id) {
             await hrService.updateEmployee(userData.id, userData);
           } else {
-            await hrService.createEmployee(userData);
+            const result = await hrService.createEmployee(userData);
+            savedUserId = result?.id ?? result?.data?.id ?? savedUserId;
           }
         }
+
+        if (savedUserId && (cvFile || sigFile)) {
+          try {
+            const formData = new FormData();
+            if (cvFile) formData.append('files[]', cvFile);
+            if (sigFile) formData.append('files[]', sigFile);
+            await hrService.uploadUserFiles(savedUserId, formData);
+          } catch (uploadErr) {
+            logger.error('Error uploading user files:', uploadErr);
+            toast.error('تم حفظ المستخدم لكن حدث خطأ أثناء رفع الملفات');
+          }
+        }
+
         await fetchUsers();
         closeModal();
       } catch (error) {

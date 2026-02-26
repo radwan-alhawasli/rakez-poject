@@ -558,7 +558,15 @@ h3,
   background: #8c7851;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 576px) {
   .detail-row {
     flex-direction: column;
     align-items: flex-start;
@@ -567,6 +575,46 @@ h3,
 
   .section-bar {
     height: 20px;
+  }
+
+  .modal-content {
+    padding: 16px;
+    border-radius: 12px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .modal-content {
+    max-width: 800px;
+  }
+  .detail-value,
+  .detail-label {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .modal-content {
+    max-width: 900px;
+  }
+  .detail-value,
+  .detail-label {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .modal-content {
+    max-width: 1100px;
+    padding: 40px;
+    border-radius: 24px;
+  }
+  .detail-value,
+  .detail-label {
+    font-size: 20px;
+  }
+  .section-title {
+    font-size: 22px;
   }
 }
 </style>

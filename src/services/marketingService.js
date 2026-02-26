@@ -188,6 +188,15 @@ const marketingService = {
     }
   },
 
+  async suggestEmployeePlan(payload) {
+    try {
+      const response = await apiClient.post('/marketing/employee-plans/suggest', payload);
+      return unwrap(response, {});
+    } catch (error) {
+      return handleServiceError(error, 'Suggest employee plan', 'post');
+    }
+  },
+
   async autoGenerateEmployeePlan(payload) {
     try {
       const response = await apiClient.post('/marketing/employee-plans/auto-generate', payload);

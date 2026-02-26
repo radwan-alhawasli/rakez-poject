@@ -341,38 +341,21 @@
         </div>
       </div>
 
-      <!-- 3. Plans Tab -->
-      <div v-else-if="activeTab === 'plans'" class="marketing-plans-view">
+      <!-- 3. Developer Plan Tab -->
+      <div v-else-if="activeTab === 'developer-plan'" class="marketing-developer-plan-view">
         <div class="section-header-compact">
-          <h2 class="section-title">خطط التسويق</h2>
-          <p class="section-subtitle">إدارة خطط المطورين وخطط الموظفين.</p>
+          <h2 class="section-title">خطة المطور</h2>
+          <p class="section-subtitle">إعدادات خطة المطور والمخرجات المتوقعة.</p>
         </div>
 
-        <!-- Sub-tabs for Plans -->
-        <div class="plans-sub-tabs" style="display: flex; gap: 10px; margin-bottom: 20px">
-          <button
-            :class="['btn-tab-mini', { active: activePlanSubTab === 'developer' }]"
-            @click="setPlanSubTab('developer')"
-          >
-            خطة المطور
-          </button>
-          <button
-            :class="['btn-tab-mini', { active: activePlanSubTab === 'employee' }]"
-            @click="setPlanSubTab('employee')"
-          >
-            خطط الموظفين
-          </button>
-        </div>
-
-        <!-- Developer Plan Sub-tab -->
-        <div v-if="activePlanSubTab === 'developer'" class="plan-grid">
+        <div class="plan-grid">
           <div class="plan-card">
             <h3 class="plan-card-title">إعدادات خطة المطور</h3>
 
             <div class="form-grid">
               <div class="form-group">
                 <label>المشروع <span class="required">*</span></label>
-                <select v-model="developerPlanForm.project_id" class="form-input">
+                <select v-model="developerPlanForm.project_id" class="form-input" @change="onDeveloperPlanProjectChange">
                   <option value="">-- اختر مشروعاً --</option>
                   <option v-for="p in projects" :key="p.id" :value="p.id">
                     {{ p.project_name || p.name || 'Project #' + p.id }}
@@ -588,153 +571,89 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Employee Plans Sub-tab -->
-        <div v-else-if="activePlanSubTab === 'employee'" class="marketing-employee-plan-view">
-          <div class="plan-card">
-            <div class="form-grid">
-              <div class="form-group">
-                <label>المشروع <span class="required">*</span></label>
-                <select
-                  v-model="employeePlansProjectId"
-                  class="form-input"
-                  @change="loadEmployeePlans"
-                >
-                  <option value="">-- اختر مشروعاً --</option>
-                  <option v-for="p in projects" :key="p.id" :value="getMarketingProjectId(p)">
-                    {{ p.project_name || p.name || 'Project #' + p.id }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>الموظف (Marketer) <span class="required">*</span></label>
-                <select v-model="employeePlanGenerateForm.user_id" class="form-input">
-                  <option value="">-- اختر موظفاً --</option>
-                  <option v-for="u in marketingEmployees" :key="u.id" :value="u.id">
-                    {{ u.name || u.full_name || 'User #' + u.id }}
-                  </option>
-                </select>
+      <!-- 3b. Employee Plans Tab -->
+      <div v-else-if="activeTab === 'employee-plans'" class="marketing-employee-plan-view">
+        <div class="section-header-compact">
+          <h2 class="section-title">خطط الموظفين</h2>
+          <p class="section-subtitle">إدارة وتوزيع خطط الموظفين.</p>
+        </div>
+        <div class="plan-card">
+          <div class="form-grid">
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label>المشروع <span class="required">*</span></label>
+              <select
+                v-model="employeePlansProjectId"
+                class="form-input"
+                @change="loadEmployeePlans"
+              >
+                <option value="">-- اختر مشروعاً --</option>
+                <option v-for="p in projects" :key="p.id" :value="getMarketingProjectId(p)">
+                  {{ p.project_name || p.name || 'Project #' + p.id }}
+                </option>
+              </select>
+            </div>
+            
+            <div class="form-group" style="grid-column: 1 / -1; margin-bottom: 20px;">
+              <div style="display: flex; gap: 15px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div style="flex: 1;">
+                  <label style="font-size: 13px; color: #64748b; margin-bottom: 5px; display: block;">نسبة التسويق (%)</label>
+                  <input type="number" class="form-input" v-model.number="budgetForm.marketing_percent" style="height: 38px;" />
+                </div>
+                <div style="flex: 1;">
+                  <label style="font-size: 13px; color: #64748b; margin-bottom: 5px; display: block;">إجمالي العمولة (SAR)</label>
+                  <input type="text" class="form-input" :value="formatCurrency(employeePlanBudgetSummary.commission_value)" disabled readonly style="height: 38px; background: #f1f5f9;" />
+                </div>
+                <div style="flex: 1;">
+                  <label style="font-size: 13px; color: #64748b; margin-bottom: 5px; display: block;">ميزانية التسويق (SAR)</label>
+                  <input type="text" class="form-input" :value="formatCurrency(employeePlanBudgetSummary.marketing_value)" disabled readonly style="height: 38px; background: #f1f5f9; color: #0f172a; font-weight: 500;" />
+                </div>
               </div>
             </div>
+          </div>
 
-            <div class="form-grid">
-              <div class="form-group">
-                <label>توزيع المنصات (%)</label>
-                <div class="details-grid">
-                  <div class="detail-item">
-                    <span>TikTok</span
-                    ><input
-                      type="number"
-                      v-model.number="platformDistribution.tiktok"
-                      class="form-input"
-                      min="0"
-                      max="100"
-                    />
-                  </div>
-                  <div class="detail-item">
-                    <span>Meta</span
-                    ><input
-                      type="number"
-                      v-model.number="platformDistribution.meta"
-                      class="form-input"
-                      min="0"
-                      max="100"
-                    />
-                  </div>
-                  <div class="detail-item">
-                    <span>Snapchat</span
-                    ><input
-                      type="number"
-                      v-model.number="platformDistribution.snapchat"
-                      class="form-input"
-                      min="0"
-                      max="100"
-                    />
-                  </div>
-                  <div class="detail-item">
-                    <span>YouTube</span
-                    ><input
-                      type="number"
-                      v-model.number="platformDistribution.youtube"
-                      class="form-input"
-                      min="0"
-                      max="100"
-                    />
-                  </div>
-                  <div class="detail-item">
-                    <span>LinkedIn</span
-                    ><input
-                      type="number"
-                      v-model.number="platformDistribution.linkedin"
-                      class="form-input"
-                      min="0"
-                      max="100"
-                    />
-                  </div>
-                  <div class="detail-item">
-                    <span>X</span
-                    ><input
-                      type="number"
-                      v-model.number="platformDistribution.x"
-                      class="form-input"
-                      min="0"
-                      max="100"
-                    />
+          <div class="platforms-distribution" style="margin-top: 20px;">
+            <h5 style="margin-bottom: 15px; color: #334155;">توزيع المنصات وأنواع الحملات</h5>
+            <div v-for="(platform, platformName) in platformDistribution" :key="platformName" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 15px; overflow: hidden;">
+              <div style="background: #ffffff; padding: 12px 15px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <strong style="color: #0f172a;">{{ platformName }}</strong>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 14px; color: #64748b;">نسبة المنصة:</span>
+                  <div style="display: flex; align-items: center; width: 100px;">
+                    <input type="number" class="form-input" v-model.number="platformDistribution[platformName]" min="0" max="100" style="height: 32px; padding: 4px 8px;" />
+                    <span style="padding: 0 8px; color: #64748b;">%</span>
                   </div>
                 </div>
-                <p class="section-desc">المجموع: {{ platformDistributionSum }}%</p>
               </div>
-
-              <div class="form-group">
-                <label>توزيع أنواع الحملات (%)</label>
-                <div class="details-grid">
-                  <div class="detail-item">
-                    <span>Direct</span
-                    ><input
-                      type="number"
-                      v-model.number="campaignDistribution.direct_communication"
-                      class="form-input"
-                      min="0"
-                      max="100"
-                    />
-                  </div>
-                  <div class="detail-item">
-                    <span>Hand Raise</span
-                    ><input
-                      type="number"
-                      v-model.number="campaignDistribution.hand_raise"
-                      class="form-input"
-                      min="0"
-                      max="100"
-                    />
-                  </div>
-                  <div class="detail-item">
-                    <span>Impression</span
-                    ><input
-                      type="number"
-                      v-model.number="campaignDistribution.impression"
-                      class="form-input"
-                      min="0"
-                      max="100"
-                    />
-                  </div>
-                  <div class="detail-item">
-                    <span>Sales</span
-                    ><input
-                      type="number"
-                      v-model.number="campaignDistribution.sales"
-                      class="form-input"
-                      min="0"
-                      max="100"
-                    />
+              
+              <div style="padding: 15px;">
+                <div class="details-grid" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));">
+                  <div v-for="(campaignPercent, campaignName) in campaignDistributionByPlatform[platformName]" :key="campaignName" class="detail-item">
+                    <span style="font-size: 12px;">{{ campaignName }}</span>
+                    <div style="display: flex; align-items: center;">
+                      <input type="number" class="form-input" v-model.number="campaignDistributionByPlatform[platformName][campaignName]" min="0" max="100" style="height: 32px; padding: 4px 8px;" />
+                      <span style="padding: 0 5px; font-size: 12px; color: #64748b;">%</span>
+                    </div>
                   </div>
                 </div>
-                <p class="section-desc">المجموع: {{ campaignDistributionSum }}%</p>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                  <p class="section-desc" :style="campaignDistributionSums[platformName] !== 100 ? 'color: #ef4444; margin: 0;' : 'margin: 0;'">
+                    مجموع الحملات: {{ campaignDistributionSums[platformName] }}%
+                  </p>
+                  <div v-if="budgetDistributionResult?.platform_amounts_sar?.[platformName]" style="text-align: left; font-size: 13px; color: #10b981; font-weight: 500;">
+                    المبلغ الإجمالي للمنصة: {{ formatCurrency(budgetDistributionResult.platform_amounts_sar[platformName]) }} SAR
+                  </div>
+                </div>
               </div>
             </div>
+            <p class="section-desc" :style="platformDistributionSum !== 100 ? 'color: #ef4444;' : ''">
+              إجمالي نسب المنصات: {{ platformDistributionSum }}%
+            </p>
+          </div>
 
-            <div class="plan-actions">
+          <div class="plan-actions" style="margin-top: 20px;">
               <button class="btn-secondary" @click="loadEmployees" :disabled="isLoadingEmployees">
                 <span v-if="isLoadingEmployees" class="spinner-small"></span>
                 تحديث قائمة الموظفين
@@ -742,9 +661,18 @@
               <button
                 v-if="hasPermission('marketing.plans.create')"
                 class="btn-secondary"
+                @click="suggestAiPlan"
+                :disabled="isSuggestingAiPlan"
+              >
+                <span v-if="isSuggestingAiPlan" class="spinner-small"></span>
+                اقتراح التوزيع (AI) 🪄
+              </button>
+              <button
+                v-if="hasPermission('marketing.plans.create')"
+                class="btn-secondary"
                 @click="applyManualEmployeePlan"
                 :disabled="
-                  isSubmitting || !employeePlansProjectId || !employeePlanGenerateForm.user_id
+                  isSubmitting || !employeePlansProjectId
                 "
               >
                 تطبيق التوزيعات
@@ -754,7 +682,7 @@
                 class="btn-primary"
                 @click="autoGenerateEmployeePlan"
                 :disabled="
-                  isSubmitting || !employeePlansProjectId || !employeePlanGenerateForm.user_id
+                  isSubmitting || !employeePlansProjectId
                 "
               >
                 <span v-if="isSubmitting" class="spinner-small"></span>
@@ -762,34 +690,32 @@
               </button>
             </div>
 
+            <div v-if="aiSuggestionRationale" class="overview-section" style="margin-top: 14px; background-color: #f0fdf4; border-color: #bbf7d0;">
+              <h4 style="color: #166534; margin-bottom: 5px;">🤖 مبررات الذكاء الاصطناعي:</h4>
+              <p style="color: #15803d; font-size: 14px;">{{ aiSuggestionRationale }}</p>
+            </div>
+
             <div v-if="budgetDistributionResult" class="overview-section" style="margin-top: 14px">
               <div class="section-header">
-                <h3 class="section-title-chart">نتائج توزيع الميزانية</h3>
+                <h3 class="section-title-chart">تفاصيل الميزانية الموزعة (SAR)</h3>
               </div>
               <div class="details-grid">
-                <div class="detail-item">
-                  <span class="detail-label">Leads</span
-                  ><span class="detail-value number">{{
-                    budgetDistributionResult.leads ?? '—'
-                  }}</span>
+                <div v-for="(amount, platform) in budgetDistributionResult.platform_amounts_sar" :key="platform" class="detail-item">
+                  <span class="detail-label">{{ platform }}</span>
+                  <span class="detail-value number">{{ formatCurrency(amount) }}</span>
                 </div>
-                <div class="detail-item">
-                  <span class="detail-label">Direct Contacts</span
-                  ><span class="detail-value number">{{
-                    budgetDistributionResult.direct_contacts ?? '—'
-                  }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Opportunities</span
-                  ><span class="detail-value number">{{
-                    budgetDistributionResult.opportunities ?? '—'
-                  }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Bookings</span
-                  ><span class="detail-value number">{{
-                    budgetDistributionResult.bookings ?? '—'
-                  }}</span>
+              </div>
+              
+              <div class="section-header" style="margin-top: 15px">
+                <h4 class="section-subtitle">توزيع الحملات لكل منصة</h4>
+              </div>
+              <div v-for="(campaigns, platform) in budgetDistributionResult.campaign_amounts_by_platform_sar" :key="'camp-'+platform" style="margin-bottom: 10px;">
+                <h5 style="margin-bottom: 5px; color: #475569;">{{ platform }}</h5>
+                <div class="details-grid">
+                  <div v-for="(amt, campType) in campaigns" :key="campType" class="detail-item">
+                    <span class="detail-label">{{ campType }}</span>
+                    <span class="detail-value number">{{ formatCurrency(amt) }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -841,7 +767,6 @@
             </table>
           </div>
         </div>
-      </div>
 
       <!-- 4. Tasks Tab -->
       <div v-else-if="activeTab === 'tasks'" class="marketing-tasks-view">
@@ -1360,41 +1285,57 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
+            <label>المشروع <span class="required">*</span></label>
+            <select
+              v-model="budgetForm.project_id"
+              class="form-input"
+              @change="onBudgetProjectChange"
+              required
+            >
+              <option value="">-- اختر مشروعاً --</option>
+              <option v-for="p in projects" :key="p.id" :value="p.id">
+                {{ p.project_name || p.name || 'Project #' + p.id }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
             <label>رقم العقد <span class="required">*</span></label>
             <input
               type="number"
               v-model="budgetForm.contract_id"
               class="form-input"
-              placeholder="أدخل رقم العقد"
-              required
+              placeholder="يتم جلبه تلقائياً"
+              disabled
             />
           </div>
           <div class="form-group">
-            <label>سعر الوحدة <span class="required">*</span></label>
+            <label>سعر الوحدة المتوقع <span class="required">*</span></label>
             <input
               type="number"
               v-model="budgetForm.unit_price"
               class="form-input"
-              placeholder="أدخل سعر الوحدة"
-              required
+              placeholder="يتم جلبه تلقائياً"
+              disabled
             />
           </div>
           <div class="form-group">
-            <label>نسبة العمولة %</label>
+            <label>نسبة العمولة % (من العقد)</label>
             <input
               type="number"
               v-model="budgetForm.commission_percent"
               class="form-input"
-              placeholder="مثال: 3"
+              placeholder="يتم جلبها تلقائياً"
+              disabled
             />
           </div>
           <div class="form-group">
-            <label>نسبة التسويق (ثابتة)</label>
+            <label>نسبة التسويق المستقطعة % <span class="required">*</span></label>
             <input
               type="number"
               step="0.01"
               v-model="budgetForm.marketing_percent"
               class="form-input"
+              placeholder="أدخل نسبة التسويق من العمولة"
             />
           </div>
           <div class="form-group">
@@ -2080,6 +2021,7 @@ export default {
 
     // Forms
     const budgetForm = reactive({
+      project_id: '',
       contract_id: '',
       unit_price: '',
       commission_percent: '', // "نسبة السعي/العمولة"
@@ -2123,14 +2065,18 @@ export default {
       linkedin: 10,
       x: 10,
     });
-    const campaignDistribution = reactive({
-      direct_communication: 30,
-      hand_raise: 30,
-      impression: 20,
-      sales: 20,
+    const campaignDistributionByPlatform = reactive({
+      TikTok: { 'Direct Communication': 25, 'Hand Raise': 25, 'Impression': 25, 'Sales': 25 },
+      Meta: { 'Direct Communication': 25, 'Hand Raise': 25, 'Impression': 25, 'Sales': 25 },
+      Snapchat: { 'Direct Communication': 25, 'Hand Raise': 25, 'Impression': 25, 'Sales': 25 },
+      YouTube: { 'Direct Communication': 25, 'Hand Raise': 25, 'Impression': 25, 'Sales': 25 },
+      LinkedIn: { 'Direct Communication': 25, 'Hand Raise': 25, 'Impression': 25, 'Sales': 25 },
+      X: { 'Direct Communication': 25, 'Hand Raise': 25, 'Impression': 25, 'Sales': 25 },
     });
     const budgetDistributionResult = ref(null);
     const budgetResult = ref(null);
+    const isSuggestingAiPlan = ref(false);
+    const aiSuggestionRationale = ref('');
 
     const expectedSalesRows = ref([]);
     const isLoadingExpectedSales = ref(false);
@@ -2175,19 +2121,8 @@ export default {
       return (aiSections.value || []).find(s => String(s.key) === String(key)) || null;
     });
 
-    // Derived: developer plan outputs (prefer API computed outputs, fallback to local formulas)
+    // Derived: developer plan outputs (reactive based on form inputs)
     const devPlanOutputs = computed(() => {
-      if (developerPlanSummary.value) {
-        const s = developerPlanSummary.value;
-        return {
-          totalBudget:
-            Number(s.total_budget ?? s.totalBudget ?? s.raw_plan?.marketing_value ?? 0) || 0,
-          expectedImpressions: Number(s.expected_impressions ?? s.expectedImpressions ?? 0) || 0,
-          expectedClicks: Number(s.expected_clicks ?? s.expectedClicks ?? 0) || 0,
-          durationLabel: String(s.marketing_duration ?? s.durationLabel ?? '—'),
-        };
-      }
-
       const marketingValue = Number(developerPlanForm.marketing_value) || 0;
       const cpm = Number(developerPlanForm.average_cpm) || 0;
       const cpc = Number(developerPlanForm.average_cpc) || 0;
@@ -2195,6 +2130,7 @@ export default {
       const expectedImpressions = cpm > 0 ? Math.round((marketingValue / cpm) * 1000) : 0;
       const expectedClicks = cpc > 0 ? Math.round(marketingValue / cpc) : 0;
 
+      const s = developerPlanSummary.value || {};
       const durationDays =
         Number(
           selectedProjectDetails.value?.agreement_duration_days ||
@@ -2202,7 +2138,7 @@ export default {
             0
         ) || Number(budgetForm.contract_duration_days || 0);
 
-      const durationLabel = durationDays ? `${formatNumber(durationDays)} يوم` : 'حسب مدة العقد';
+      const durationLabel = durationDays ? `${formatNumber(durationDays)} يوم` : String(s.marketing_duration ?? s.durationLabel ?? 'حسب مدة العقد');
 
       return {
         totalBudget: marketingValue,
@@ -2222,9 +2158,32 @@ export default {
     const platformDistributionSum = computed(() =>
       Object.values(platformDistribution).reduce((acc, v) => acc + (Number(v) || 0), 0)
     );
-    const campaignDistributionSum = computed(() =>
-      Object.values(campaignDistribution).reduce((acc, v) => acc + (Number(v) || 0), 0)
-    );
+    const campaignDistributionSums = computed(() => {
+      const sums = {};
+      for (const [platform, campaigns] of Object.entries(campaignDistributionByPlatform)) {
+        sums[platform] = Object.values(campaigns).reduce((acc, v) => acc + (Number(v) || 0), 0);
+      }
+      return sums;
+    });
+
+    const employeePlanBudgetSummary = computed(() => {
+      const p = projects.value.find(x => String(x.id) === String(employeePlansProjectId.value));
+      if (!p) return { commission_value: 0, marketing_value: 0 };
+
+      const unitPrice = Number(p.average_unit_price) || 0;
+      const commissionPercent = Number(p.commission_percentage) || 0;
+      
+      const rawMarketingPercent = Number(budgetForm.marketing_percent) || MARKETING_PERCENT_FIXED;
+      const marketingPercent = rawMarketingPercent > 1 ? rawMarketingPercent / 100 : rawMarketingPercent;
+
+      const commissionValue = unitPrice * (commissionPercent / 100);
+      const marketingValue = commissionValue * marketingPercent;
+
+      return {
+        commission_value: commissionValue,
+        marketing_value: marketingValue,
+      };
+    });
 
     const reportSummary = computed(() => ({
       projectPerformance: formatReportSummary(reportsData.projectPerformance),
@@ -2475,7 +2434,41 @@ export default {
 
     // --- Action Functions ---
 
+    const onBudgetProjectChange = () => {
+      if (!budgetForm.project_id) {
+        budgetForm.contract_id = '';
+        budgetForm.unit_price = '';
+        budgetForm.commission_percent = '';
+        return;
+      }
+      const p = projects.value.find(proj => String(proj.id) === String(budgetForm.project_id));
+      if (p) {
+        budgetForm.contract_id = p.contract_number ?? p.marketing_project?.contract_id ?? p.id ?? '';
+        budgetForm.unit_price = p.average_unit_price ?? '';
+        budgetForm.commission_percent = p.commission_percentage ?? '';
+      }
+    };
+
+    const onDeveloperPlanProjectChange = () => {
+      if (!developerPlanForm.project_id) {
+        developerPlanForm.contract_id = '';
+        developerPlanForm.marketing_value = '';
+        return;
+      }
+      const p = projects.value.find(x => String(x.id) === String(developerPlanForm.project_id));
+      if (p) {
+        developerPlanForm.contract_id = String(
+          p.marketing_project?.contract_id ?? p.contract_id ?? p.contractId ?? p.id ?? ''
+        );
+        developerPlanForm.marketing_value = String(p.marketing_value ?? p.marketingValue ?? '');
+      }
+
+      // Auto-load existing developer plan
+      loadDeveloperPlan();
+    };
+
     const openCalculateBudgetModal = () => {
+      budgetForm.project_id = '';
       budgetForm.contract_id = '';
       budgetForm.unit_price = '';
       budgetForm.commission_percent = '';
@@ -2494,19 +2487,21 @@ export default {
 
       try {
         isSubmitting.value = true;
+        const rawMarketingPercent = Number(budgetForm.marketing_percent) || MARKETING_PERCENT_FIXED;
+        
         const result = await marketingService.calculateBudget({
           contract_id: parseInt(budgetForm.contract_id),
           unit_price: parseFloat(budgetForm.unit_price),
+          marketing_percent: rawMarketingPercent,
         });
 
         // Best-effort fields from backend, otherwise compute locally per SRS formulas
         const unitPrice = Number(budgetForm.unit_price) || 0;
         const commissionPercent = Number(budgetForm.commission_percent) || 0;
-        const rawMarketingPercent = Number(budgetForm.marketing_percent);
         const marketingPercent =
           rawMarketingPercent > 1
             ? rawMarketingPercent / 100
-            : rawMarketingPercent || MARKETING_PERCENT_FIXED;
+            : rawMarketingPercent;
 
         const commissionValue = result.commission_value ?? unitPrice * (commissionPercent / 100);
         const marketingValue = result.marketing_value ?? Number(commissionValue) * marketingPercent;
@@ -2848,14 +2843,12 @@ export default {
       }
 
       if (tab === 'developer-plan') {
-        activeTab.value = 'plans';
-        activePlanSubTab.value = 'developer';
+        activeTab.value = 'developer-plan';
         return;
       }
 
       if (tab === 'employee-plans') {
-        activeTab.value = 'plans';
-        activePlanSubTab.value = 'employee';
+        activeTab.value = 'employee-plans';
         return;
       }
 
@@ -2906,6 +2899,11 @@ export default {
         } else if (newTab === 'projects') {
           loadProjects();
         } else if (newTab === 'plans') {
+          loadProjects();
+          loadEmployees();
+        } else if (newTab === 'developer-plan') {
+          loadProjects();
+        } else if (newTab === 'employee-plans') {
           loadProjects();
           loadEmployees();
         } else if (newTab === 'tasks') {
@@ -2992,19 +2990,30 @@ export default {
     };
 
     const autoGenerateEmployeePlan = async () => {
-      if (!employeePlansProjectId.value || !employeePlanGenerateForm.user_id) {
-        toast.warning('اختر مشروعاً وموظفاً');
+      if (!employeePlansProjectId.value) {
+        toast.warning('اختر مشروعاً');
         return;
       }
-      if (!validateDistributions()) return;
       try {
         isSubmitting.value = true;
-        await marketingService.autoGenerateEmployeePlan({
+        const rawMarketingPercent = Number(budgetForm.marketing_percent) || MARKETING_PERCENT_FIXED;
+        
+        const payload = {
           marketing_project_id: Number(employeePlansProjectId.value),
-          user_id: Number(employeePlanGenerateForm.user_id),
-          platform_distribution: { ...platformDistribution },
-          campaign_distribution: { ...campaignDistribution },
-        });
+          marketing_percent: rawMarketingPercent,
+          strategy: 'ai',
+        };
+
+        if (employeePlanGenerateForm.user_id) {
+          payload.user_id = Number(employeePlanGenerateForm.user_id);
+        }
+
+        const response = await marketingService.autoGenerateEmployeePlan(payload);
+        
+        if (response?.breakdown) {
+          budgetDistributionResult.value = response.breakdown;
+        }
+
         notificationService.addNotification('تم إنشاء خطة الموظف تلقائياً', 'success');
         await loadEmployeePlans();
       } catch (error) {
@@ -3202,44 +3211,92 @@ export default {
         toast.warning('مجموع نسب المنصات يجب أن يساوي 100%');
         return false;
       }
-      if (campaignDistributionSum.value !== 100) {
-        toast.warning('مجموع نسب الحملات يجب أن يساوي 100%');
-        return false;
+      for (const [platform, sum] of Object.entries(campaignDistributionSums.value)) {
+        if (sum !== 100) {
+          toast.warning(`مجموع نسب الحملات في منصة ${platform} يجب أن يساوي 100%`);
+          return false;
+        }
       }
       return true;
     };
 
+    const suggestAiPlan = async () => {
+      try {
+        isSuggestingAiPlan.value = true;
+        const payload = {
+          goal: 'leads',
+        };
+        if (developerPlanForm.marketing_value) {
+          payload.marketing_value = Number(developerPlanForm.marketing_value);
+        }
+        
+        const response = await marketingService.suggestEmployeePlan(payload);
+        if (response?.data) {
+          const data = response.data;
+          
+          if (data.platform_distribution) {
+            for (const key in platformDistribution) {
+              const capKey = Object.keys(data.platform_distribution).find(k => k.toLowerCase() === key.toLowerCase());
+              if (capKey) {
+                platformDistribution[key] = data.platform_distribution[capKey];
+              }
+            }
+          }
+          
+          if (data.campaign_distribution_by_platform) {
+            for (const platform in data.campaign_distribution_by_platform) {
+               if (campaignDistributionByPlatform[platform]) {
+                 for (const camp in data.campaign_distribution_by_platform[platform]) {
+                   campaignDistributionByPlatform[platform][camp] = data.campaign_distribution_by_platform[platform][camp];
+                 }
+               }
+            }
+          }
+          
+          if (data.breakdown) {
+             budgetDistributionResult.value = data.breakdown;
+          }
+          
+          if (data.rationale) {
+             aiSuggestionRationale.value = data.rationale;
+          }
+          
+          notificationService.addNotification('تم تطبيق اقتراح الذكاء الاصطناعي', 'success');
+        }
+      } catch (error) {
+        logger.error('Error suggesting AI plan:', error);
+        toast.error('حدث خطأ أثناء طلب اقتراح الذكاء الاصطناعي');
+      } finally {
+        isSuggestingAiPlan.value = false;
+      }
+    };
+
     const applyManualEmployeePlan = async () => {
-      if (!employeePlansProjectId.value || !employeePlanGenerateForm.user_id) {
-        toast.warning('اختر مشروعاً وموظفاً');
+      if (!employeePlansProjectId.value) {
+        toast.warning('اختر مشروعاً');
         return;
       }
       if (!validateDistributions()) return;
 
       try {
         isSubmitting.value = true;
-        await marketingService.createEmployeePlan({
+        const rawMarketingPercent = Number(budgetForm.marketing_percent) || MARKETING_PERCENT_FIXED;
+        
+        const payload = {
           marketing_project_id: Number(employeePlansProjectId.value),
-          user_id: Number(employeePlanGenerateForm.user_id),
+          marketing_percent: rawMarketingPercent,
           platform_distribution: { ...platformDistribution },
-          campaign_distribution: { ...campaignDistribution },
-        });
+          campaign_distribution_by_platform: JSON.parse(JSON.stringify(campaignDistributionByPlatform)),
+        };
 
-        const distribution = await marketingService.getBudgetDistributionByProject(
-          employeePlansProjectId.value,
-          {
-            plan_type: 'employee',
-          }
-        );
-        const distributionId = distribution?.id || distribution?.distribution_id;
-        if (distributionId) {
-          await marketingService.calculateBudgetDistribution(distributionId, {
-            platform_distribution: { ...platformDistribution },
-            campaign_distribution: { ...campaignDistribution },
-          });
-          budgetDistributionResult.value = await marketingService.getBudgetDistributionResults(
-            distributionId
-          );
+        if (employeePlanGenerateForm.user_id) {
+          payload.user_id = Number(employeePlanGenerateForm.user_id);
+        }
+
+        const response = await marketingService.createEmployeePlan(payload);
+
+        if (response?.breakdown) {
+          budgetDistributionResult.value = response.breakdown;
         }
 
         notificationService.addNotification('تم حفظ خطة الموظف مع التوزيعات', 'success');
@@ -3433,6 +3490,8 @@ export default {
       showProjectDetailsModal,
       budgetForm,
       leadForm,
+      onBudgetProjectChange,
+      onDeveloperPlanProjectChange,
       openCalculateBudgetModal,
       calculateBudget,
       budgetResult,
@@ -3487,11 +3546,15 @@ export default {
       loadEmployeePlans,
       autoGenerateEmployeePlan,
       platformDistribution,
-      campaignDistribution,
+      campaignDistributionByPlatform,
       platformDistributionSum,
-      campaignDistributionSum,
+      campaignDistributionSums,
       applyManualEmployeePlan,
+      suggestAiPlan,
+      isSuggestingAiPlan,
+      aiSuggestionRationale,
       budgetDistributionResult,
+      employeePlanBudgetSummary,
       getMarketingProjectId,
       formatDistribution,
       getRecommendedEmployee,
@@ -5020,8 +5083,103 @@ export default {
   }
 }
 
-/* Dark Mode Support (Optional) */
-@media (prefers-color-scheme: dark) {
-  /* يمكن إضافة دعم الوضع الداكن هنا إذا لزم الأمر */
+@media (max-width: 576px) {
+  .tab-content {
+    padding: 14px;
+  }
+
+  .welcome-title {
+    font-size: 20px;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+
+  .luxury-table th,
+  .luxury-table td {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  .stat-card {
+    padding: 14px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .tab-content {
+    padding: 36px;
+  }
+
+  .welcome-title {
+    font-size: 34px;
+  }
+
+  .section-title {
+    font-size: 28px;
+  }
+
+  .stats-grid {
+    gap: 24px;
+  }
+
+  .luxury-table th,
+  .luxury-table td {
+    padding: 20px;
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .tab-content {
+    padding: 44px;
+  }
+
+  .welcome-title {
+    font-size: 40px;
+  }
+
+  .section-title {
+    font-size: 32px;
+  }
+
+  .luxury-table th,
+  .luxury-table td {
+    padding: 24px;
+    font-size: 16px;
+  }
+
+  .stat-value {
+    font-size: 34px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .tab-content {
+    padding: 56px;
+  }
+
+  .welcome-title {
+    font-size: 50px;
+  }
+
+  .section-title {
+    font-size: 38px;
+  }
+
+  .luxury-table th,
+  .luxury-table td {
+    padding: 30px;
+    font-size: 20px;
+  }
+
+  .stat-value {
+    font-size: 42px;
+  }
+
+  .projects-grid {
+    gap: 28px;
+  }
 }
 </style>

@@ -471,6 +471,243 @@
 }
 
 /* ==========================================
+   LARGE SCREEN SCALING (Full HD / 2K / 4K)
+   ========================================== */
+
+/* Full HD+ (1920px) */
+@media (min-width: 1920px) {
+  :root {
+    --base-font: 16px;
+    --heading-scale: 1.1;
+  }
+
+  body {
+    font-size: var(--base-font);
+  }
+
+  .container-fluid {
+    max-width: 1600px;
+  }
+
+  .stat-card {
+    padding: clamp(20px, 1.5vw, 32px);
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 22px 24px;
+  }
+}
+
+/* 2K / QHD (2560px) */
+@media (min-width: 2560px) {
+  :root {
+    --base-font: 18px;
+    --heading-scale: 1.25;
+  }
+
+  body {
+    font-size: var(--base-font);
+  }
+
+  .container-fluid {
+    max-width: 2200px;
+  }
+
+  .section-title,
+  .page-title {
+    font-size: clamp(28px, 1.6vw, 42px);
+  }
+
+  .section-subtitle,
+  .page-subtitle {
+    font-size: clamp(16px, 0.8vw, 20px);
+  }
+
+  .stat-card {
+    padding: clamp(24px, 1.8vw, 40px);
+    border-radius: 20px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 26px 28px;
+    font-size: 16px;
+  }
+
+  .modal-content {
+    max-width: min(720px, 50vw);
+    border-radius: 20px;
+  }
+
+  .form-input,
+  input,
+  select,
+  textarea {
+    padding: 14px 18px;
+    font-size: 16px;
+  }
+
+  .add-btn,
+  .btn-primary {
+    padding: 14px 32px;
+    font-size: 16px;
+    border-radius: 14px;
+  }
+
+  .action-btn {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+/* 4K / Ultra-wide (3840px) */
+@media (min-width: 3840px) {
+  :root {
+    --base-font: 22px;
+    --heading-scale: 1.5;
+  }
+
+  body {
+    font-size: var(--base-font);
+  }
+
+  .container-fluid {
+    max-width: 3200px;
+  }
+
+  .section-title,
+  .page-title {
+    font-size: clamp(36px, 1.2vw, 56px);
+  }
+
+  .section-subtitle,
+  .page-subtitle {
+    font-size: clamp(18px, 0.6vw, 26px);
+  }
+
+  .stat-card {
+    padding: clamp(28px, 2vw, 48px);
+    border-radius: 24px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 32px;
+    font-size: 20px;
+  }
+
+  .modal-content {
+    max-width: min(900px, 40vw);
+    border-radius: 24px;
+  }
+
+  .form-input,
+  input,
+  select,
+  textarea {
+    padding: 18px 22px;
+    font-size: 20px;
+    border-radius: 14px;
+  }
+
+  .add-btn,
+  .btn-primary {
+    padding: 18px 40px;
+    font-size: 20px;
+    border-radius: 16px;
+  }
+
+  .action-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+  }
+
+  .action-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .card-grid {
+    gap: clamp(20px, 1.5vw, 40px);
+  }
+
+  .user-avatar,
+  .team-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    border-radius: 16px;
+  }
+
+  .role-badge {
+    padding: 8px 20px;
+    font-size: 16px;
+  }
+
+  .status-badge {
+    padding: 6px 14px;
+    font-size: 14px;
+  }
+
+  .spinner {
+    width: 56px;
+    height: 56px;
+    border-width: 4px;
+  }
+}
+
+/* ==========================================
+   FLUID TYPOGRAPHY BASE
+   ========================================== */
+
+html {
+  font-size: clamp(14px, 0.9vw, 22px);
+}
+
+/* Ensure fluid but capped typography across all screens */
+.text-fluid-sm {
+  font-size: clamp(12px, 0.7vw, 16px);
+}
+
+.text-fluid-base {
+  font-size: clamp(14px, 0.85vw, 20px);
+}
+
+.text-fluid-lg {
+  font-size: clamp(16px, 1vw, 24px);
+}
+
+.text-fluid-xl {
+  font-size: clamp(20px, 1.4vw, 36px);
+}
+
+.text-fluid-2xl {
+  font-size: clamp(24px, 1.8vw, 48px);
+}
+
+/* ==========================================
+   TOUCH DEVICE ENHANCEMENTS
+   ========================================== */
+
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a,
+  .action-btn,
+  .nav-item,
+  .tab-btn,
+  select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .actions {
+    gap: 6px;
+  }
+}
+
+/* ==========================================
    PERFORMANCE OPTIMIZATIONS
    ========================================== */
 

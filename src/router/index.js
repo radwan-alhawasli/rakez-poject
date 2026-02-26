@@ -133,6 +133,11 @@ const routes = [
         component: () => import('../views/ProfileView.vue'),
       },
       {
+        path: 'tasks',
+        name: 'Tasks',
+        component: () => import('../views/TasksView.vue'),
+      },
+      {
         path: 'teams',
         name: 'Teams',
         component: () => import('../views/TeamsView.vue'),
@@ -248,16 +253,18 @@ const routes = [
             meta: { permissions: [PERMISSIONS.USE_AI_ASSISTANT] },
           },
 
-          // Backward-compatible routes -> redirect into /marketing/plans
+          // Backward-compatible routes -> standalone tabs now
           {
             path: 'developer-plan',
             name: 'MarketingDeveloperPlan',
-            redirect: { name: 'MarketingPlans', query: { sub: 'developer' } },
+            component: () => import('../views/MarketingView.vue'),
+            meta: { permissions: [PERMISSIONS.MARKETING_PLANS_CREATE] },
           },
           {
             path: 'employee-plans',
             name: 'MarketingEmployeePlans',
-            redirect: { name: 'MarketingPlans', query: { sub: 'employee' } },
+            component: () => import('../views/MarketingView.vue'),
+            meta: { permissions: [PERMISSIONS.MARKETING_PLANS_CREATE] },
           },
         ],
       },
@@ -288,7 +295,7 @@ const routes = [
           {
             path: 'reservations',
             name: 'SalesReservations',
-            component: () => import('../views/SalesViewExtended.vue'),
+            component: () => import('../views/ReservationsView.vue'),
             meta: { permissions: [PERMISSIONS.SALES_RESERVATIONS_VIEW] },
           },
           {
@@ -300,8 +307,7 @@ const routes = [
           {
             path: 'negotiations',
             name: 'SalesNegotiations',
-            component: () => import('../views/SalesViewExtended.vue'),
-            meta: { permissions: [PERMISSIONS.SALES_NEGOTIATION_APPROVE] },
+            redirect: { name: 'SalesReservations' },
           },
           {
             path: 'team',
@@ -318,8 +324,7 @@ const routes = [
           {
             path: 'waiting-list',
             name: 'SalesWaitingList',
-            component: () => import('../views/SalesViewExtended.vue'),
-            meta: { permissions: [PERMISSIONS.SALES_WAITING_LIST_CREATE] },
+            redirect: { name: 'SalesReservations' },
           },
           {
             path: 'assignments',
@@ -332,6 +337,36 @@ const routes = [
             name: 'SalesPaymentPlans',
             component: () => import('../views/SalesViewExtended.vue'),
             meta: { permissions: [PERMISSIONS.SALES_PAYMENT_PLAN_MANAGE] },
+          },
+          {
+            path: 'project-schedules',
+            name: 'SalesProjectSchedules',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_PROJECT_SCHEDULES_MANAGE] },
+          },
+          {
+            path: 'project-schedules/:projectId',
+            name: 'SalesProjectScheduleDetail',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_PROJECT_SCHEDULES_MANAGE] },
+          },
+          {
+            path: 'sold-units',
+            name: 'SalesSoldUnits',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_SOLD_UNITS_VIEW] },
+          },
+          {
+            path: 'deposits',
+            name: 'SalesDeposits',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_DEPOSITS_VIEW] },
+          },
+          {
+            path: 'analytics',
+            name: 'SalesAnalytics',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_ANALYTICS_VIEW] },
           },
         ],
       },

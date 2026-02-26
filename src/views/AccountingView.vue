@@ -1635,4 +1635,61 @@ export default {
 .btn-action.edit:active {
   transform: scale(0.98);
 }
+
+/* ============================
+   ACCOUNTING RESPONSIVE
+   ============================ */
+@media (max-width: 768px) {
+  .tabs-container,
+  .accounting-tabs {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    gap: 0;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+}
+
+@media (min-width: 1920px) {
+  .page-title {
+    font-size: 32px;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 22px 24px;
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .page-title {
+    font-size: 38px;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 26px 28px;
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .page-title {
+    font-size: 48px;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 32px;
+    font-size: 20px;
+  }
+  .btn-action {
+    width: 46px;
+    height: 46px;
+  }
+}
 </style>

@@ -2918,4 +2918,57 @@ export default {
     font-size: 13px;
   }
 }
+
+/* Large screens */
+@media (min-width: 1920px) {
+  .hr-view {
+    padding: 28px 40px;
+  }
+  .page-title {
+    font-size: 32px;
+  }
+  .data-table th,
+  .data-table td,
+  .metrics-table th,
+  .metrics-table td {
+    padding: 22px 24px;
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .hr-view {
+    padding: 36px 52px;
+  }
+  .page-title {
+    font-size: 38px;
+  }
+  .data-table th,
+  .data-table td,
+  .metrics-table th,
+  .metrics-table td {
+    padding: 26px 28px;
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .hr-view {
+    padding: 48px 60px;
+  }
+  .page-title {
+    font-size: 48px;
+  }
+  .data-table th,
+  .data-table td,
+  .metrics-table th,
+  .metrics-table td {
+    padding: 32px;
+    font-size: 20px;
+  }
+  .stat-card {
+    padding: 32px;
+    border-radius: 24px;
+  }
+}
 </style>

@@ -211,7 +211,7 @@
 
             <!-- Team & Manager Status -->
             <div class="form-row">
-              <div class="form-group">
+              <div v-if="form.type === 5 || form.type === 0" class="form-group">
                 <label class="label">الفريق</label>
                 <select v-model="form.team" class="input select">
                   <option value="">لا يوجد فريق</option>
@@ -557,6 +557,15 @@ export default {
       { immediate: true }
     );
 
+    watch(
+      () => form.value.type,
+      newType => {
+        if (newType !== 5 && newType !== 0) {
+          form.value.team = '';
+        }
+      }
+    );
+
     const handleSubmit = () => {
       const submissionData = {
         id: props.editUser?.id,
@@ -602,6 +611,14 @@ export default {
       // Only include password if it's not empty (for edit mode)
       if (isEdit.value && !submissionData.password) {
         delete submissionData.password;
+      }
+
+      // Include file references so the parent can upload them after user creation
+      if (form.value.cv_file) {
+        submissionData.cv_file = form.value.cv_file;
+      }
+      if (form.value.signature_file) {
+        submissionData.signature_file = form.value.signature_file;
       }
 
       emit('submit', submissionData);
@@ -1020,5 +1037,57 @@ export default {
 }
 .fw-bold {
   font-weight: 700;
+}
+
+/* Large screen enhancements */
+@media (min-width: 1920px) {
+  .modal-container {
+    max-width: 800px;
+  }
+  .input, .select, .textarea {
+    padding: 14px 16px;
+    font-size: 15px;
+  }
+  .label {
+    font-size: 15px;
+  }
+  .modal-header h2 {
+    font-size: 24px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .modal-container {
+    max-width: 900px;
+  }
+  .input, .select, .textarea {
+    padding: 16px 18px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+  .label {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .modal-container {
+    max-width: 1100px;
+  }
+  .input, .select, .textarea {
+    padding: 20px 22px;
+    font-size: 20px;
+    border-radius: 14px;
+  }
+  .label {
+    font-size: 20px;
+  }
+  .modal-header h2 {
+    font-size: 32px;
+  }
+  .btn-submit, .btn-cancel {
+    padding: 16px 32px;
+    font-size: 20px;
+  }
 }
 </style>

@@ -335,4 +335,57 @@ export default {
     justify-content: center;
   }
 }
+
+@media (max-width: 576px) {
+  .pagination-wrapper {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+  .page-btn {
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 12px;
+  }
+  .per-page-selector select {
+    font-size: 13px;
+    padding: 6px 8px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .page-btn {
+    min-width: 42px;
+    min-height: 42px;
+    font-size: 15px;
+  }
+  .pagination-info {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .page-btn {
+    min-width: 48px;
+    min-height: 48px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .page-btn {
+    min-width: 56px;
+    min-height: 56px;
+    font-size: 20px;
+    border-radius: 14px;
+  }
+  .pagination-info {
+    font-size: 18px;
+  }
+  .per-page-selector select {
+    font-size: 18px;
+    padding: 10px 14px;
+  }
+}
 </style>

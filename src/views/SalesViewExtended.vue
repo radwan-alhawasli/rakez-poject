@@ -76,7 +76,7 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">حجوزات مؤكدة</span>
-              <span class="stat-value">{{ dashboardData.confirmed_reservations || 0 }}</span>
+              <span class="stat-value">{{ dashboardData.confirmed_count || dashboardData.confirmed_reservations || 0 }}</span>
             </div>
           </div>
           <div class="stat-card">
@@ -87,7 +87,7 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">حجوزات تحت التفاوض</span>
-              <span class="stat-value">{{ dashboardData.negotiation_reservations || 0 }}</span>
+              <span class="stat-value">{{ dashboardData.negotiation_count || dashboardData.negotiation_reservations || 0 }}</span>
             </div>
           </div>
           <div class="stat-card">
@@ -100,6 +100,53 @@
             <div class="stat-info">
               <span class="stat-label">نسبة التأكيد</span>
               <span class="stat-value">{{ dashboardData.percent_confirmed || 0 }}%</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon sold">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">الوحدات المباعة</span>
+              <span class="stat-value">{{ dashboardData.sold_units_count || 0 }}</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon total-res">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                <line x1="1" y1="10" x2="23" y2="10"></line>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">إجمالي الحجوزات</span>
+              <span class="stat-value">{{ dashboardData.total_reservations || 0 }}</span>
+            </div>
+          </div>
+          <div class="stat-card wide">
+            <div class="stat-icon deposits">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">الدفعات المستلمة</span>
+              <span class="stat-value">{{ formatCurrency(dashboardData.total_received_deposits || 0) }}</span>
+            </div>
+          </div>
+          <div class="stat-card wide">
+            <div class="stat-icon revenue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">إجمالي الإيرادات</span>
+              <span class="stat-value">{{ formatCurrency(dashboardData.total_revenue || 0) }}</span>
             </div>
           </div>
         </div>
@@ -406,221 +453,9 @@
         </div>
       </div>
 
-      <!-- RESERVATIONS TAB (الحجوزات) – نفس واجهة مدير المشاريع: حجوزاتي + تبويبان + بطاقات -->
-      <div v-else-if="activeTab === 'reservations'" class="reservations-tab my-reservations-pm">
-        <div class="page-header">
-          <h1 class="page-title">حجوزاتي</h1>
-          <p class="page-subtitle">عرض جميع الوحدات التي قمت بحجزها وتتبع حالتها.</p>
-        </div>
-
-        <div class="filter-tabs">
-          <button
-            :class="['tab-btn', { active: reservationsFilterTab === 'reservations' }]"
-            @click="reservationsFilterTab = 'reservations'"
-          >
-            حجوزات
-          </button>
-          <button
-            :class="['tab-btn', { active: reservationsFilterTab === 'cancelled' }]"
-            @click="reservationsFilterTab = 'cancelled'"
-          >
-            حجوزات ملغاه
-          </button>
-        </div>
-
-        <div v-if="isLoadingReservations" class="loading-state">
-          <div class="spinner"></div>
-          <p>جاري تحميل الحجوزات...</p>
-        </div>
-
-        <div v-else class="reservations-list">
-          <div
-            v-for="reservation in filteredReservationsForCards"
-            :key="reservation.id"
-            class="reservation-card"
-          >
-            <div
-              class="card-status-badge"
-              :class="getReservationCardStatusClass(reservation.status)"
-            >
-              {{ getReservationCardStatusLabel(reservation.status) }}
-            </div>
-            <div class="card-body">
-              <div class="card-unit">وحدة: {{ reservation.unit_number || '—' }}</div>
-              <div class="card-project">مشروع: {{ reservation.project_name || '—' }}</div>
-              <div class="card-date">
-                تاريخ الحجز: {{ formatReservationDateCard(reservation.contract_date) }}
-              </div>
-              <div class="card-actions">
-                <button
-                  type="button"
-                  class="btn-details"
-                  @click="openReservationDetail(reservation)"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                  عرض التفاصيل
-                </button>
-                <button type="button" class="btn-edit" @click="editReservationCard(reservation)">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                  </svg>
-                  تعديل
-                </button>
-                <button
-                  v-if="reservation.status !== 'cancelled' && reservation.status !== 'rejected'"
-                  type="button"
-                  class="btn-cancel"
-                  @click="cancelReservationCard(reservation)"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-                  </svg>
-                  إلغاء
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="filteredReservationsForCards.length === 0" class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-              ></path>
-            </svg>
-            <p>لا توجد حجوزات في هذا القسم</p>
-          </div>
-        </div>
-
-        <!-- تفاصيل الحجز (نفس تصميم مدير المشاريع) -->
-        <div
-          v-if="detailReservation"
-          class="detail-modal-overlay"
-          @click.self="detailReservation = null"
-        >
-          <div class="detail-modal">
-            <div class="detail-modal-header">
-              <h3>تفاصيل الحجز</h3>
-              <button type="button" class="detail-modal-close" @click="detailReservation = null">
-                &times;
-              </button>
-            </div>
-            <div v-if="detailReservation" class="detail-modal-body">
-              <div class="detail-section">
-                <h4>الوحدة والمشروع</h4>
-                <p><strong>وحدة:</strong> {{ detailReservation.unit_number || '—' }}</p>
-                <p><strong>مشروع:</strong> {{ detailReservation.project_name || '—' }}</p>
-                <p>
-                  <strong>تاريخ الحجز:</strong>
-                  {{ formatReservationDateCard(detailReservation.contract_date) }}
-                </p>
-              </div>
-              <div class="detail-section">
-                <h4>تفاصيل العميل</h4>
-                <p><strong>الاسم:</strong> {{ detailReservation.client_name || '—' }}</p>
-                <p><strong>الجوال:</strong> {{ detailReservation.client_mobile || '—' }}</p>
-              </div>
-              <div class="detail-section">
-                <h4>التفاصيل المالية</h4>
-                <p>
-                  <strong>العربون:</strong>
-                  {{ formatCurrency(detailReservation.down_payment_amount || 0) }} ريال
-                </p>
-                <p>
-                  <strong>نوع الحجز:</strong>
-                  {{ getReservationType(detailReservation.reservation_type) }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- NEGOTIATIONS TAB (التفاوضات المعلقة) -->
-      <div v-else-if="activeTab === 'negotiations'" class="negotiations-tab">
-        <div class="section-header">
-          <h2>التفاوضات المعلقة</h2>
-        </div>
-
-        <div v-if="isLoadingNegotiations" class="loading-state">
-          <div class="spinner"></div>
-          <p>جاري تحميل التفاوضات...</p>
-        </div>
-
-        <div v-else-if="pendingNegotiations.length === 0" class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-          <p>لا توجد تفاوضات معلقة</p>
-        </div>
-
-        <div v-else class="negotiations-table-container">
-          <table class="negotiations-table">
-            <thead>
-              <tr>
-                <th>رقم الحجز</th>
-                <th>اسم العميل</th>
-                <th>المشروع</th>
-                <th>السعر الأصلي</th>
-                <th>السعر المقترح</th>
-                <th>سبب التفاوض</th>
-                <th>تاريخ الطلب</th>
-                <th>الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="negotiation in paginatedNegotiations"
-                :key="negotiation.id"
-                class="negotiation-row"
-                v-memo="[
-                  negotiation.id,
-                  negotiation.client_name,
-                  negotiation.status,
-                  negotiation.contract_date,
-                ]"
-              >
-                <td>#{{ negotiation.reservation_id || negotiation.id }}</td>
-                <td>{{ negotiation.client_name || '—' }}</td>
-                <td>{{ negotiation.project_name || '—' }}</td>
-                <td class="amount">{{ formatCurrency(negotiation.original_price || 0) }}</td>
-                <td class="amount highlight">
-                  {{ formatCurrency(negotiation.proposed_price || 0) }}
-                </td>
-                <td>{{ negotiation.reason || negotiation.negotiation_reason || '—' }}</td>
-                <td>{{ formatDate(negotiation.created_at || negotiation.request_date) }}</td>
-                <td>
-                  <div class="action-buttons">
-                    <button
-                      @click="openNegotiationApproval(negotiation)"
-                      class="btn-action approve"
-                      title="مراجعة والموافقة/الرفض"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                      </svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Pagination for Negotiations -->
-        <Pagination
-          v-if="pendingNegotiations.length > 0"
-          :current-page="negotiationsPage"
-          :total-items="pendingNegotiations.length"
-          :per-page="negotiationsPerPage"
-          @page-change="handleNegotiationsPageChange"
-          @per-page-change="handleNegotiationsPerPageChange"
-        />
+      <!-- RESERVATIONS TAB — delegated to ReservationsView component -->
+      <div v-else-if="activeTab === 'reservations' || activeTab === 'negotiations' || activeTab === 'waiting-list'">
+        <ReservationsView />
       </div>
 
       <!-- ATTENDANCE TAB (دوامي) -->
@@ -816,134 +651,6 @@
         </div>
       </div>
 
-      <!-- WAITING LIST TAB – نفس تصميم الحجوزات: عنوان + تبويبان + بطاقات -->
-      <div
-        v-else-if="activeTab === 'waiting-list'"
-        class="reservations-tab my-reservations-pm waiting-list-cards"
-      >
-        <div class="page-header">
-          <h1 class="page-title">قائمة الانتظار</h1>
-          <p class="page-subtitle">عرض طلبات قائمة الانتظار وتتبع حالتها.</p>
-        </div>
-
-        <div class="filter-tabs">
-          <button
-            :class="['tab-btn', { active: waitingListFilterTab === 'active' }]"
-            @click="waitingListFilterTab = 'active'"
-          >
-            قائمة الانتظار
-          </button>
-          <button
-            :class="['tab-btn', { active: waitingListFilterTab === 'cancelled' }]"
-            @click="waitingListFilterTab = 'cancelled'"
-          >
-            ملغاه
-          </button>
-        </div>
-
-        <div v-if="isLoadingWaitingList" class="loading-state">
-          <div class="spinner"></div>
-          <p>جاري تحميل قائمة الانتظار...</p>
-        </div>
-
-        <div v-else class="reservations-list">
-          <div
-            v-for="(entry, wlIndex) in filteredWaitingListForCards"
-            :key="entry?.id ?? `wl-${wlIndex}`"
-            class="reservation-card"
-          >
-            <div class="card-status-badge" :class="getWaitingListCardStatusClass(entry.status)">
-              {{ getWaitingListCardStatusLabel(entry.status) }}
-            </div>
-            <div class="card-body">
-              <div class="card-unit">وحدة: {{ entry.unit_number || '—' }}</div>
-              <div class="card-project">مشروع: {{ entry.project_name || '—' }}</div>
-              <div class="card-date">
-                العميل: {{ entry.client_name || '—' }} · {{ entry.client_mobile || '—' }}
-              </div>
-              <div class="card-actions">
-                <button type="button" class="btn-details" @click="openWaitingListDetail(entry)">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                  عرض التفاصيل
-                </button>
-                <button
-                  v-if="hasPermission('sales.waiting_list.convert')"
-                  type="button"
-                  class="btn-edit"
-                  @click="convertWaitingEntry(entry)"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                  تحويل إلى حجز
-                </button>
-                <button
-                  v-if="
-                    hasAnyPermission(['sales.waiting_list.create', 'sales.waiting_list.convert'])
-                  "
-                  type="button"
-                  class="btn-cancel"
-                  @click="removeWaitingEntry(entry)"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-                  </svg>
-                  إلغاء
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="filteredWaitingListForCards.length === 0" class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-              ></path>
-            </svg>
-            <p>لا توجد طلبات في هذا القسم</p>
-          </div>
-        </div>
-
-        <!-- تفاصيل عنصر قائمة الانتظار -->
-        <div
-          v-if="detailWaitingEntry"
-          class="detail-modal-overlay"
-          @click.self="detailWaitingEntry = null"
-        >
-          <div class="detail-modal">
-            <div class="detail-modal-header">
-              <h3>تفاصيل قائمة الانتظار</h3>
-              <button type="button" class="detail-modal-close" @click="detailWaitingEntry = null">
-                &times;
-              </button>
-            </div>
-            <div v-if="detailWaitingEntry" class="detail-modal-body">
-              <div class="detail-section">
-                <h4>الوحدة والمشروع</h4>
-                <p><strong>وحدة:</strong> {{ detailWaitingEntry.unit_number || '—' }}</p>
-                <p><strong>مشروع:</strong> {{ detailWaitingEntry.project_name || '—' }}</p>
-              </div>
-              <div class="detail-section">
-                <h4>العميل</h4>
-                <p><strong>الاسم:</strong> {{ detailWaitingEntry.client_name || '—' }}</p>
-                <p><strong>الجوال:</strong> {{ detailWaitingEntry.client_mobile || '—' }}</p>
-              </div>
-              <div class="detail-section">
-                <h4>الحالة</h4>
-                <p>
-                  <strong>الحالة:</strong>
-                  {{ getWaitingListCardStatusLabel(detailWaitingEntry.status) }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- ASSIGNMENTS TAB -->
       <div v-else-if="activeTab === 'assignments'" class="team-tab">
         <div class="section-header">
@@ -999,6 +706,700 @@
         </div>
         <div class="empty-state">
           <p>إدارة خطط الدفع تتم من تبويب الحجوزات عبر زر خيارات المشاريع على الخارطة.</p>
+        </div>
+      </div>
+
+      <!-- PROJECT SCHEDULES TAB (إدارة دوام المشاريع) - Leader Only -->
+      <div v-else-if="activeTab === 'project-schedules'" class="project-schedules-tab">
+        <!-- List View (no project selected) -->
+        <template v-if="!selectedScheduleProject">
+          <div class="page-header">
+            <div class="header-content">
+              <h1 class="page-title">إدارة دوام المشاريع</h1>
+              <p class="page-subtitle">
+                اضغط على مشروع لعرض المسؤولين وتعيين جداول الدوام الخاصة بهم
+              </p>
+            </div>
+          </div>
+
+          <div v-if="isLoadingScheduleProjects" class="loading-state">
+            <div class="spinner"></div>
+            <p>جاري تحميل المشاريع...</p>
+          </div>
+
+          <div v-else-if="scheduleProjects.length === 0" class="empty-state">
+            <p>لا توجد مشاريع معينة لفريقك حالياً.</p>
+          </div>
+
+          <div v-else class="schedule-projects-grid">
+            <div
+              v-for="project in scheduleProjects"
+              :key="project.id"
+              class="schedule-project-card"
+              @click="openProjectSchedule(project)"
+            >
+              <h3 class="project-card-title">
+                {{ project.project_name || project.name || project.contract_name }}
+              </h3>
+              <p class="project-card-activity">{{ project.activity_type || 'أنشطة المشروع' }}</p>
+              <p class="project-card-team">فريق المبيعات</p>
+            </div>
+          </div>
+        </template>
+
+        <!-- Detail View (project selected) -->
+        <template v-else>
+          <div class="page-header schedule-detail-header">
+            <div class="header-content">
+              <button
+                class="btn-back"
+                @click="
+                  selectedScheduleProject = null;
+                  scheduleMembers = [];
+                "
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                رجوع
+              </button>
+              <h1 class="page-title">
+                إدارة مشروع دوام:
+                {{ selectedScheduleProject.project_name || selectedScheduleProject.name }}
+              </h1>
+              <p class="page-subtitle">
+                قم بتعيين جداول الدوام للمسؤولين في هذا المشروع وجهة اتصال الطوارئ
+              </p>
+            </div>
+          </div>
+
+          <div v-if="isLoadingScheduleDetail" class="loading-state">
+            <div class="spinner"></div>
+            <p>جاري تحميل بيانات الجداول...</p>
+          </div>
+
+          <div v-else ref="scheduleDetailRef" class="schedule-detail-layout">
+            <!-- Right: Team Members Schedules -->
+            <div class="schedule-members-section">
+              <h3 class="section-label">جداول المسوقين</h3>
+              <div class="schedule-members-list">
+                <div
+                  v-for="member in scheduleMembers"
+                  :key="member.id"
+                  class="schedule-member-card"
+                >
+                  <div class="member-row">
+                    <div class="member-identity">
+                      <div
+                        class="member-avatar-circle"
+                        :style="{ background: getAvatarColor(member.id) }"
+                      >
+                        {{ (member.name || '?').charAt(0) }}
+                      </div>
+                      <span class="member-name-label">{{ member.name }}</span>
+                    </div>
+                    <label class="toggle-switch">
+                      <input
+                        type="checkbox"
+                        :checked="member.is_present"
+                        @change="toggleScheduleMember(member)"
+                      />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  <div class="member-schedule-info">
+                    <span class="schedule-day">{{ getTodayArabicDay() }}</span>
+                    <span class="schedule-status" :class="member.is_present ? 'present' : 'absent'">
+                      {{ member.is_present ? 'متواجد اليوم' : 'غير متواجد اليوم' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Left: Emergency Contact -->
+            <div class="emergency-contact-section">
+              <h3 class="section-label">جهة اتصال الطوارئ</h3>
+              <div class="emergency-form">
+                <div class="form-group">
+                  <label>الاسم</label>
+                  <input
+                    v-model="emergencyContact.name"
+                    type="text"
+                    class="form-input"
+                    placeholder="مثال: خالد الأحمد"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>رقم الجوال</label>
+                  <input
+                    v-model="emergencyContact.phone"
+                    type="tel"
+                    class="form-input"
+                    placeholder="05.."
+                    dir="ltr"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>الدور</label>
+                  <select v-model="emergencyContact.role" class="form-input">
+                    <option value="أخرى">أخرى</option>
+                    <option value="مدير المشروع">مدير المشروع</option>
+                    <option value="مشرف الموقع">مشرف الموقع</option>
+                    <option value="حارس الأمن">حارس الأمن</option>
+                    <option value="المالك">المالك</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Save Button -->
+          <div class="schedule-save-bar">
+            <button
+              class="btn-save-schedules"
+              @click="saveAllSchedules"
+              :disabled="isSavingSchedules"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              {{ isSavingSchedules ? 'جاري الحفظ والإرسال...' : 'حفظ وإرسال للفريق' }}
+            </button>
+          </div>
+        </template>
+      </div>
+
+      <!-- SOLD UNITS TAB -->
+      <div v-else-if="activeTab === 'sold-units'" class="sold-units-tab">
+        <div class="page-header">
+          <div class="header-content">
+            <h1 class="page-title">الوحدات المباعة</h1>
+            <p class="page-subtitle">سجل الوحدات المكتملة البيع وملخصات العمولات</p>
+          </div>
+          <button class="btn-primary" @click="loadSoldUnits">
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            تحديث
+          </button>
+        </div>
+
+        <div v-if="isLoadingSoldUnits" class="loading-state">
+          <div class="spinner"></div>
+          <p>جاري تحميل الوحدات المباعة...</p>
+        </div>
+
+        <div v-else-if="soldUnits.length === 0" class="empty-state">
+          <svg
+            viewBox="0 0 24 24"
+            width="48"
+            height="48"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <p>لا توجد وحدات مباعة بعد.</p>
+        </div>
+
+        <div v-else>
+          <!-- Commission detail panel -->
+          <div v-if="selectedSoldUnit" class="commission-panel">
+            <div class="commission-panel-header">
+              <button
+                class="btn-back"
+                @click="
+                  selectedSoldUnit = null;
+                  soldUnitCommission = null;
+                "
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                رجوع
+              </button>
+              <h3>ملخص عمولة الوحدة: {{ selectedSoldUnit.unit_number || selectedSoldUnit.id }}</h3>
+            </div>
+            <div v-if="isLoadingCommission" class="loading-state">
+              <div class="spinner"></div>
+              <p>جاري تحميل ملخص العمولة...</p>
+            </div>
+            <div v-else-if="soldUnitCommission" class="commission-details">
+              <div class="detail-grid">
+                <div class="detail-card">
+                  <span class="detail-label">إجمالي العمولة</span>
+                  <span class="detail-value">{{
+                    formatCurrency(soldUnitCommission.total_commission || 0)
+                  }}</span>
+                </div>
+                <div class="detail-card">
+                  <span class="detail-label">العمولة المدفوعة</span>
+                  <span class="detail-value success">{{
+                    formatCurrency(soldUnitCommission.paid_commission || 0)
+                  }}</span>
+                </div>
+                <div class="detail-card">
+                  <span class="detail-label">العمولة المعلقة</span>
+                  <span class="detail-value warning">{{
+                    formatCurrency(soldUnitCommission.pending_commission || 0)
+                  }}</span>
+                </div>
+                <div class="detail-card">
+                  <span class="detail-label">الموظف</span>
+                  <span class="detail-value">{{ soldUnitCommission.employee_name || '—' }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-else class="empty-state"><p>لا توجد بيانات عمولة لهذه الوحدة.</p></div>
+          </div>
+
+          <!-- Sold units table -->
+          <div v-else class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>رقم الوحدة</th>
+                  <th>المشروع</th>
+                  <th>العميل</th>
+                  <th>سعر البيع</th>
+                  <th>تاريخ البيع</th>
+                  <th>الحالة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(unit, idx) in soldUnits" :key="unit.id">
+                  <td>{{ (soldUnitsPage - 1) * soldUnitsPerPage + idx + 1 }}</td>
+                  <td>{{ unit.unit_number || unit.id }}</td>
+                  <td>{{ unit.project_name || unit.contract_name || '—' }}</td>
+                  <td>{{ unit.client_name || '—' }}</td>
+                  <td>{{ formatCurrency(unit.sale_price || unit.price || 0) }}</td>
+                  <td>{{ formatDate(unit.sold_at || unit.created_at) }}</td>
+                  <td>
+                    <span class="badge badge-sold">مباعة</span>
+                  </td>
+                  <td>
+                    <button
+                      class="btn-icon-sm"
+                      title="ملخص العمولة"
+                      @click="viewSoldUnitCommission(unit)"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <Pagination
+              v-if="soldUnitsTotal > soldUnitsPerPage"
+              :current-page="soldUnitsPage"
+              :total-items="soldUnitsTotal"
+              :per-page="soldUnitsPerPage"
+              @page-change="handleSoldUnitsPageChange"
+              @per-page-change="handleSoldUnitsPerPageChange"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- DEPOSITS TAB -->
+      <div v-else-if="activeTab === 'deposits'" class="deposits-tab">
+        <div class="page-header">
+          <div class="header-content">
+            <h1 class="page-title">الودائع</h1>
+            <p class="page-subtitle">إدارة ودائع المبيعات ومتابعة المستحقات</p>
+          </div>
+        </div>
+
+        <!-- Sub-tabs -->
+        <div class="sub-tabs">
+          <button
+            class="sub-tab-btn"
+            :class="{ active: depositsSubTab === 'management' }"
+            @click="
+              depositsSubTab = 'management';
+              if (depositsManagement.length === 0) loadDepositsManagement();
+            "
+          >
+            إدارة الودائع
+          </button>
+          <button
+            class="sub-tab-btn"
+            :class="{ active: depositsSubTab === 'follow-up' }"
+            @click="
+              depositsSubTab = 'follow-up';
+              if (depositsFollowUp.length === 0) loadDepositsFollowUp();
+            "
+          >
+            متابعة الودائع
+          </button>
+        </div>
+
+        <!-- Management sub-tab -->
+        <div v-if="depositsSubTab === 'management'">
+          <div v-if="isLoadingDepositsManagement" class="loading-state">
+            <div class="spinner"></div>
+            <p>جاري تحميل بيانات الودائع...</p>
+          </div>
+          <div v-else-if="depositsManagement.length === 0" class="empty-state">
+            <svg
+              viewBox="0 0 24 24"
+              width="48"
+              height="48"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            <p>لا توجد ودائع لإدارتها حالياً.</p>
+          </div>
+          <div v-else class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>الوحدة</th>
+                  <th>العميل</th>
+                  <th>المبلغ</th>
+                  <th>تاريخ الإيداع</th>
+                  <th>تاريخ الاستحقاق</th>
+                  <th>الحالة</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(dep, idx) in depositsManagement" :key="dep.id || idx">
+                  <td>{{ idx + 1 }}</td>
+                  <td>{{ dep.unit_number || dep.unit_id || '—' }}</td>
+                  <td>{{ dep.client_name || '—' }}</td>
+                  <td>{{ formatCurrency(dep.amount || 0) }}</td>
+                  <td>{{ formatDate(dep.deposit_date || dep.created_at) }}</td>
+                  <td>{{ dep.due_date ? formatDate(dep.due_date) : '—' }}</td>
+                  <td>
+                    <span
+                      :class="[
+                        'badge',
+                        dep.status === 'paid'
+                          ? 'badge-success'
+                          : dep.status === 'overdue'
+                          ? 'badge-danger'
+                          : 'badge-warning',
+                      ]"
+                    >
+                      {{
+                        dep.status === 'paid'
+                          ? 'مدفوع'
+                          : dep.status === 'overdue'
+                          ? 'متأخر'
+                          : 'معلق'
+                      }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Follow-up sub-tab -->
+        <div v-else-if="depositsSubTab === 'follow-up'">
+          <div v-if="isLoadingDepositsFollowUp" class="loading-state">
+            <div class="spinner"></div>
+            <p>جاري تحميل بيانات المتابعة...</p>
+          </div>
+          <div v-else-if="depositsFollowUp.length === 0" class="empty-state">
+            <svg
+              viewBox="0 0 24 24"
+              width="48"
+              height="48"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <p>لا توجد ودائع تحتاج متابعة حالياً.</p>
+          </div>
+          <div v-else class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>الوحدة</th>
+                  <th>العميل</th>
+                  <th>المبلغ المستحق</th>
+                  <th>تاريخ الاستحقاق</th>
+                  <th>أيام التأخير</th>
+                  <th>الحالة</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(dep, idx) in depositsFollowUp" :key="dep.id || idx">
+                  <td>{{ idx + 1 }}</td>
+                  <td>{{ dep.unit_number || dep.unit_id || '—' }}</td>
+                  <td>{{ dep.client_name || '—' }}</td>
+                  <td>{{ formatCurrency(dep.amount || dep.outstanding_amount || 0) }}</td>
+                  <td>{{ dep.due_date ? formatDate(dep.due_date) : '—' }}</td>
+                  <td>
+                    <span
+                      :class="[
+                        'badge',
+                        (dep.overdue_days || 0) > 0 ? 'badge-danger' : 'badge-warning',
+                      ]"
+                    >
+                      {{ dep.overdue_days || 0 }} يوم
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge badge-warning">
+                      {{ dep.follow_up_status || 'بانتظار المتابعة' }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS TAB -->
+      <div v-else-if="activeTab === 'analytics'" class="analytics-tab">
+        <div class="page-header">
+          <div class="header-content">
+            <h1 class="page-title">التحليلات والتقارير</h1>
+            <p class="page-subtitle">تقارير المبيعات والودائع والعمولات الشهرية</p>
+          </div>
+          <div class="date-filters">
+            <input
+              type="date"
+              v-model="analyticsFilters.from"
+              class="date-input"
+              placeholder="من تاريخ"
+            />
+            <span>إلى</span>
+            <input
+              type="date"
+              v-model="analyticsFilters.to"
+              class="date-input"
+              placeholder="إلى تاريخ"
+            />
+            <button class="btn-primary" @click="loadAnalyticsDashboard">
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+              تحديث
+            </button>
+          </div>
+        </div>
+
+        <!-- Sub-tabs -->
+        <div class="sub-tabs">
+          <button
+            class="sub-tab-btn"
+            :class="{ active: analyticsSubTab === 'overview' }"
+            @click="
+              analyticsSubTab = 'overview';
+              loadAnalyticsDashboard();
+            "
+          >
+            نظرة عامة
+          </button>
+          <button
+            class="sub-tab-btn"
+            :class="{ active: analyticsSubTab === 'commissions' }"
+            @click="
+              analyticsSubTab = 'commissions';
+              loadAnalyticsMonthlyReport();
+            "
+          >
+            تقرير العمولات الشهري
+          </button>
+        </div>
+
+        <!-- Overview sub-tab -->
+        <div v-if="analyticsSubTab === 'overview'">
+          <div v-if="isLoadingAnalytics" class="loading-state">
+            <div class="spinner"></div>
+            <p>جاري تحميل بيانات التحليلات...</p>
+          </div>
+          <div v-else-if="!analyticsDashboard" class="empty-state">
+            <svg
+              viewBox="0 0 24 24"
+              width="48"
+              height="48"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            <p>لا توجد بيانات تحليلية. اضغط "تحديث" لتحميلها.</p>
+          </div>
+          <div v-else class="analytics-grid">
+            <div class="stat-card">
+              <div class="stat-icon confirmed">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">إجمالي الوحدات المباعة</span>
+                <span class="stat-value">{{ analyticsDashboard.total_sold_units || 0 }}</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon marketing">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="1" x2="12" y2="23"></line>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">إجمالي العمولات</span>
+                <span class="stat-value">{{
+                  formatCurrency(analyticsDashboard.total_commissions || 0)
+                }}</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon reserved">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">الودائع المعلقة</span>
+                <span class="stat-value">{{
+                  formatCurrency(analyticsDashboard.pending_deposits || 0)
+                }}</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon ratio">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                  <polyline points="17 6 23 6 23 12"></polyline>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">نسبة إتمام المبيعات</span>
+                <span class="stat-value">{{ analyticsDashboard.completion_rate || 0 }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Commission Report sub-tab -->
+        <div v-else-if="analyticsSubTab === 'commissions'">
+          <div v-if="isLoadingMonthlyReport" class="loading-state">
+            <div class="spinner"></div>
+            <p>جاري تحميل تقرير العمولات...</p>
+          </div>
+          <div v-else-if="!analyticsMonthlyReport" class="empty-state">
+            <p>لا توجد بيانات. اضغط على "تقرير العمولات الشهري" لتحميله.</p>
+          </div>
+          <div v-else class="table-container">
+            <div class="report-summary">
+              <div class="detail-card">
+                <span class="detail-label">إجمالي العمولات الشهرية</span>
+                <span class="detail-value">{{
+                  formatCurrency(analyticsMonthlyReport.total || 0)
+                }}</span>
+              </div>
+              <div class="detail-card">
+                <span class="detail-label">عدد المعاملات</span>
+                <span class="detail-value">{{ analyticsMonthlyReport.count || 0 }}</span>
+              </div>
+            </div>
+            <table
+              class="data-table"
+              v-if="analyticsMonthlyReport.items && analyticsMonthlyReport.items.length"
+            >
+              <thead>
+                <tr>
+                  <th>الموظف</th>
+                  <th>المشروع</th>
+                  <th>العمولة</th>
+                  <th>الشهر</th>
+                  <th>الحالة</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(row, idx) in analyticsMonthlyReport.items" :key="idx">
+                  <td>{{ row.employee_name || '—' }}</td>
+                  <td>{{ row.project_name || '—' }}</td>
+                  <td>{{ formatCurrency(row.commission || 0) }}</td>
+                  <td>{{ row.month || row.period || '—' }}</td>
+                  <td>
+                    <span
+                      :class="['badge', row.status === 'paid' ? 'badge-success' : 'badge-warning']"
+                    >
+                      {{ row.status === 'paid' ? 'مدفوع' : 'معلق' }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -1249,6 +1650,24 @@
               </div>
 
               <div class="detail-box">
+                <span class="label">الوحدات المباعة</span>
+                <span class="value" style="color: #d97706">{{
+                  selectedProject.sold_units ?? 0
+                }}</span>
+                <span class="status-mini" :class="selectedProject.sold_units > 0 ? 'ok' : 'pending'">
+                  {{ selectedProject.soldUnitsPercent ?? 0 }}%
+                </span>
+              </div>
+
+              <div class="detail-box">
+                <span class="label">الوحدات المحجوزة</span>
+                <span class="value" style="color: #7c3aed">{{
+                  selectedProject.reserved_units ?? 0
+                }}</span>
+                <span class="status-mini ok">Reserved</span>
+              </div>
+
+              <div class="detail-box">
                 <span class="label">المطور العقاري</span>
                 <span class="value">{{ selectedProject.developer_name || '—' }}</span>
                 <span class="status-mini ok">Partner</span>
@@ -1257,7 +1676,12 @@
               <div class="detail-box">
                 <span class="label">حالة المشروع</span>
                 <span class="value" style="color: #b1a28f">{{ selectedProject.statusLabel }}</span>
-                <span class="status-mini ok">Active</span>
+                <span
+                  class="status-mini"
+                  :class="selectedProject.is_ready ? 'ok' : 'pending'"
+                >
+                  {{ selectedProject.is_ready ? 'جاهز' : 'غير جاهز' }}
+                </span>
               </div>
             </div>
 
@@ -1675,12 +2099,16 @@ import { ref, reactive, onMounted, computed, watch, shallowRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import salesService from '../services/salesService';
 import notificationService from '../services/notificationService';
+import html2canvas from 'html2canvas';
 import logger from '../utils/logger';
 import { usePermissions } from '../composables/usePermissions';
+import authService from '../services/authService';
+import { isSalesLeader } from '../utils/rbac';
 import PaymentPlanModal from '../components/sales/PaymentPlanModal.vue';
 import TitleTransferDateModal from '../components/sales/TitleTransferDateModal.vue';
 import NegotiationApprovalModal from '../components/sales/NegotiationApprovalModal.vue';
 import ConfirmModal from '../components/ConfirmModal.vue';
+import ReservationsView from './ReservationsView.vue';
 import SlideOverPanel from '../components/SlideOverPanel.vue';
 import Pagination from '../components/Pagination.vue';
 import { NATIONALITIES } from '../constants/lookups';
@@ -1706,6 +2134,11 @@ export default {
       if (name === 'SalesWaitingList') return 'waiting-list';
       if (name === 'SalesAssignments') return 'assignments';
       if (name === 'SalesPaymentPlans') return 'payment-plans';
+      if (name === 'SalesProjectSchedules' || name === 'SalesProjectScheduleDetail')
+        return 'project-schedules';
+      if (name === 'SalesSoldUnits') return 'sold-units';
+      if (name === 'SalesDeposits') return 'deposits';
+      if (name === 'SalesAnalytics') return 'analytics';
       return 'dashboard';
     };
 
@@ -1790,6 +2223,30 @@ export default {
         icon: '<line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>',
         requiredPermission: 'sales.payment-plan.manage',
       },
+      {
+        id: 'project-schedules',
+        label: 'Project Schedules',
+        icon: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>',
+        requiredPermission: 'sales.attendance.manage',
+      },
+      {
+        id: 'sold-units',
+        label: 'Sold Units',
+        icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline><path d="M9 3H5a2 2 0 0 0-2 2v4m0 0h18M3 9v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9"></path>',
+        requiredPermission: 'sales.sold_units.view',
+      },
+      {
+        id: 'deposits',
+        label: 'Deposits',
+        icon: '<line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>',
+        requiredPermission: 'sales.deposits.view',
+      },
+      {
+        id: 'analytics',
+        label: 'Analytics',
+        icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>',
+        requiredPermission: 'sales.analytics.view',
+      },
     ];
 
     const visibleTabs = computed(() => {
@@ -1814,6 +2271,10 @@ export default {
         'waiting-list': 'SalesWaitingList',
         assignments: 'SalesAssignments',
         'payment-plans': 'SalesPaymentPlans',
+        'project-schedules': 'SalesProjectSchedules',
+        'sold-units': 'SalesSoldUnits',
+        deposits: 'SalesDeposits',
+        analytics: 'SalesAnalytics',
       };
       const targetRoute = routeMap[tabId];
       if (targetRoute) router.push({ name: targetRoute });
@@ -1841,12 +2302,28 @@ export default {
         await loadWaitingList();
       } else if (tabId === 'assignments' && myAssignments.value.length === 0) {
         await loadAssignments();
+      } else if (tabId === 'project-schedules' && scheduleProjects.value.length === 0) {
+        await loadScheduleProjects();
+      } else if (tabId === 'sold-units' && soldUnits.value.length === 0) {
+        await loadSoldUnits();
+      } else if (tabId === 'deposits') {
+        if (depositsManagement.value.length === 0) await loadDepositsManagement();
+        if (depositsFollowUp.value.length === 0) await loadDepositsFollowUp();
+      } else if (tabId === 'analytics') {
+        await loadAnalyticsDashboard();
       }
     };
 
     // Lifecycle: catch tab load errors so 401 Unauthenticated doesn't show as uncaught runtime error
-    onMounted(() => {
-      loadTabData(activeTab.value).catch(() => {});
+    onMounted(async () => {
+      await loadTabData(activeTab.value).catch(() => {});
+      if (route.name === 'SalesProjectScheduleDetail' && route.params.projectId) {
+        await loadScheduleProjects().catch(() => {});
+        const project = scheduleProjects.value.find(
+          p => String(p.contract_id || p.id) === String(route.params.projectId)
+        );
+        if (project) openProjectSchedule(project).catch(() => {});
+      }
     });
 
     // Dashboard
@@ -1861,7 +2338,9 @@ export default {
     const loadDashboard = async () => {
       isLoadingDashboard.value = true;
       try {
-        const response = await salesService.getDashboard(dashboardFilters);
+        const user = authService.getCurrentUser();
+        const scope = user && isSalesLeader(user) ? 'all' : dashboardFilters.scope;
+        const response = await salesService.getDashboard({ ...dashboardFilters, scope });
         dashboardData.value = response?.data?.data || response?.data || response;
         // Also load projects if we don't have them
         if (projects.value.length === 0) {
@@ -1903,6 +2382,16 @@ export default {
     const isLoadingTeam = ref(false);
     const isLoadingTeamProjects = ref(false);
 
+    // Project Schedules (Leader)
+    const scheduleProjects = shallowRef([]);
+    const isLoadingScheduleProjects = ref(false);
+    const selectedScheduleProject = ref(null);
+    const scheduleMembers = ref([]);
+    const isLoadingScheduleDetail = ref(false);
+    const isSavingSchedules = ref(false);
+    const emergencyContact = reactive({ name: '', phone: '', role: 'أخرى' });
+    const scheduleDetailRef = ref(null);
+
     // Tasks - Using shallowRef for better performance with large arrays
     const marketingTasks = shallowRef([]);
     const taskProjectOptions = shallowRef([]);
@@ -1941,12 +2430,13 @@ export default {
         .slice(0, 4);
     });
     const isProjectReady = p => {
-      const s = String(p.status || '').toLowerCase();
+      if (p.is_ready === true || p.is_ready === 1) return true;
+      const s = String(p.status || p.contract_status || '').toLowerCase();
       const hasUnits = (p.total_units ?? 0) > 0 || (p.available_units ?? 0) >= 0;
       return (s === 'approved' || s === 'ready' || s === 'completed') && hasUnits;
     };
     const isProjectArchived = p => {
-      const s = String(p.status || '').toLowerCase();
+      const s = String(p.status || p.contract_status || '').toLowerCase();
       return s === 'refused' || s === 'rejected' || s === 'archived';
     };
     const projectsList = computed(() => (Array.isArray(projects.value) ? projects.value : []));
@@ -1966,42 +2456,58 @@ export default {
     const loadProjects = async () => {
       isLoadingProjects.value = true;
       try {
-        const response = await salesService.getProjects();
+        const user = authService.getCurrentUser();
+        const isLeader = user && isSalesLeader(user);
+        const params = {
+          scope: isLeader ? 'all' : 'me',
+          per_page: 100,
+        };
+        const response = await salesService.getProjects(params);
         let rawData = response?.data?.data || response?.data || response;
         if (!Array.isArray(rawData) && rawData?.data) rawData = rawData.data;
         if (!Array.isArray(rawData)) rawData = [];
 
-        // Normalize shape from /api/sales/projects – same fields as Project Management UI
         const totalUnits = p => p.total_units ?? p.units_count ?? p.totalUnits ?? 0;
-        const reserved = p => p.reserved_units ?? p.reservedUnits ?? 0;
+        const reservedUnits = p => p.reserved_units ?? p.reservedUnits ?? 0;
         projects.value = rawData.map(p => {
           const id = p.contract_id || p.id;
-          const salesStatus = (p.sales_status || p.status || 'pending').toString().toLowerCase();
+          const contractStatus = (
+            p.contract_status ||
+            p.sales_status ||
+            p.status ||
+            'pending'
+          )
+            .toString()
+            .toLowerCase();
           const total = totalUnits(p);
-          const soldCount = Number(reserved(p)) || 0;
-          const soldPct = total ? Math.round((soldCount / total) * 100) : 0;
+          const reserved = Number(reservedUnits(p)) || 0;
+          const sold = Number(p.sold_units ?? 0) || Math.max(0, total - (p.available_units ?? 0) - reserved);
+          const soldPct = total ? Math.round((sold / total) * 100) : 0;
 
           let statusClass = 'pending';
-          let statusLabel = 'pending';
-          if (
-            salesStatus === 'archived' ||
-            salesStatus === 'rejected' ||
-            salesStatus === 'refused'
+          let statusLabel = p.project_status_label_ar || '';
+          if (p.is_ready === true || p.is_ready === 1) {
+            statusClass = contractStatus === 'completed' ? 'completed' : 'ready';
+            statusLabel = statusLabel || 'جاهز - متاح للبيع';
+          } else if (
+            contractStatus === 'archived' ||
+            contractStatus === 'rejected' ||
+            contractStatus === 'refused'
           ) {
             statusClass = 'rejected';
-            statusLabel = 'rejected';
-          } else if (salesStatus === 'completed') {
+            statusLabel = statusLabel || 'مرفوض';
+          } else if (contractStatus === 'completed') {
             statusClass = 'completed';
-            statusLabel = 'completed';
-          } else if (salesStatus === 'ready' || salesStatus === 'ready_for_marketing') {
+            statusLabel = statusLabel || 'مكتمل';
+          } else if (contractStatus === 'ready' || contractStatus === 'ready_for_marketing') {
             statusClass = 'ready';
-            statusLabel = 'ready';
-          } else if (salesStatus === 'approved' || salesStatus === 'active') {
+            statusLabel = statusLabel || 'جاهز - متاح للبيع';
+          } else if (contractStatus === 'approved' || contractStatus === 'active') {
             statusClass = 'approved';
-            statusLabel = 'approved';
+            statusLabel = statusLabel || 'معتمد';
           } else {
             statusClass = 'pending';
-            statusLabel = 'pending';
+            statusLabel = statusLabel || 'غير جاهز - تتبع الأوراق';
           }
 
           const endDate = p.contract_end_date || p.end_date || p.agreement_end_date || null;
@@ -2033,17 +2539,19 @@ export default {
             image: img || '/img/placeholder-project.jpg',
             hasImage,
             developer_name: p.developer_name || p.developer || p.developer_info?.name,
-            status: salesStatus,
+            status: contractStatus,
+            contract_status: contractStatus,
+            is_ready: p.is_ready ?? false,
             statusLabel,
             statusClass,
             total_units: total,
-            available_units:
-              p.available_units ?? p.availableUnits ?? Math.max(0, total - soldCount),
-            reserved_units: p.reserved_units ?? p.reservedUnits ?? soldCount,
+            available_units: p.available_units ?? p.availableUnits ?? Math.max(0, total - sold - reserved),
+            reserved_units: reserved,
+            sold_units: sold,
             assignee: p.team_name || p.marketer_name || p.marketer || null,
             setupProgress: p.setup_progress != null ? Number(p.setup_progress) : 0,
             soldUnitsPercent: soldPct,
-            soldUnitsCount: soldCount,
+            soldUnitsCount: sold,
             daysLeft,
             timelinePillLabel,
             descriptionLine,
@@ -2901,6 +3409,148 @@ export default {
       }
     };
 
+    // Project Schedules
+    const normalizeProjects = raw =>
+      raw.map(p => ({
+        ...p,
+        id: p.contract_id ?? p.id,
+        contract_id: p.contract_id ?? p.id,
+        project_name: p.project_name || p.name || p.contract_name,
+      }));
+
+    const loadScheduleProjects = async () => {
+      isLoadingScheduleProjects.value = true;
+      try {
+        // Primary: team projects endpoint (leader-only)
+        const data = await salesService.getTeamProjects();
+        const raw = data?.items ?? (Array.isArray(data) ? data : []);
+        if (raw.length > 0) {
+          scheduleProjects.value = normalizeProjects(raw);
+          return;
+        }
+        // Fallback: my assignments endpoint
+        const assignments = await salesService.getMyAssignments();
+        const assignRaw = assignments?.items ?? (Array.isArray(assignments) ? assignments : []);
+        if (assignRaw.length > 0) {
+          scheduleProjects.value = normalizeProjects(assignRaw);
+          return;
+        }
+        // Fallback: general projects list
+        const projects = await salesService.getProjects();
+        const projRaw = Array.isArray(projects) ? projects : projects?.data ?? [];
+        scheduleProjects.value = normalizeProjects(projRaw);
+      } catch (error) {
+        logger.error('Error loading schedule projects:', error);
+      } finally {
+        isLoadingScheduleProjects.value = false;
+      }
+    };
+
+    const openProjectSchedule = async project => {
+      selectedScheduleProject.value = project;
+      isLoadingScheduleDetail.value = true;
+      try {
+        const projectId = project.contract_id || project.id;
+        const [members, ecData] = await Promise.all([
+          salesService.getProjectScheduleMembers(projectId),
+          salesService.getEmergencyContacts(projectId).catch(() => ({})),
+        ]);
+        scheduleMembers.value = members.map(m => ({ ...m, is_present: !!m.is_present }));
+        const ec = Array.isArray(ecData) ? ecData[0] : ecData;
+        if (ec) {
+          emergencyContact.name = ec.name || ec.contact_name || '';
+          emergencyContact.phone = ec.phone || ec.contact_phone || '';
+          emergencyContact.role = ec.role || ec.contact_role || 'أخرى';
+        } else {
+          Object.assign(emergencyContact, { name: '', phone: '', role: 'أخرى' });
+        }
+        router.push({ name: 'SalesProjectScheduleDetail', params: { projectId } });
+      } catch (error) {
+        logger.error('Error loading project schedule:', error);
+        notificationService.addNotification('حدث خطأ أثناء تحميل بيانات المشروع', 'error');
+      } finally {
+        isLoadingScheduleDetail.value = false;
+      }
+    };
+
+    const toggleScheduleMember = member => {
+      const idx = scheduleMembers.value.findIndex(m => m.id === member.id);
+      if (idx !== -1) {
+        scheduleMembers.value[idx] = {
+          ...scheduleMembers.value[idx],
+          is_present: !member.is_present,
+        };
+        scheduleMembers.value = [...scheduleMembers.value];
+      }
+    };
+
+    const getAvatarColor = id => {
+      const colors = [
+        '#2ecc71',
+        '#3498db',
+        '#9b59b6',
+        '#e67e22',
+        '#1abc9c',
+        '#e74c3c',
+        '#f39c12',
+        '#2c3e50',
+      ];
+      return colors[(id || 0) % colors.length];
+    };
+
+    const getTodayArabicDay = () => {
+      const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+      return days[new Date().getDay()];
+    };
+
+    const saveAllSchedules = async () => {
+      isSavingSchedules.value = true;
+      try {
+        const projectId =
+          selectedScheduleProject.value?.contract_id || selectedScheduleProject.value?.id;
+        const schedules = scheduleMembers.value.map(m => ({
+          user_id: m.id,
+          is_present: m.is_present,
+        }));
+
+        // Bulk save triggers backend notifications to each affected team member
+        await salesService.saveProjectSchedules(projectId, schedules);
+        await salesService.updateEmergencyContacts(projectId, {
+          name: emergencyContact.name,
+          phone: emergencyContact.phone,
+          role: emergencyContact.role,
+        });
+
+        // Capture attendance view as a shareable image
+        if (scheduleDetailRef.value) {
+          try {
+            const canvas = await html2canvas(scheduleDetailRef.value, {
+              useCORS: true,
+              scale: 1.5,
+              backgroundColor: '#f8fafc',
+            });
+            const link = document.createElement('a');
+            const today = new Date().toISOString().slice(0, 10);
+            link.download = `attendance-${today}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+          } catch (imgErr) {
+            logger.error('Error capturing attendance image:', imgErr);
+          }
+        }
+
+        notificationService.addNotification(
+          'تم حفظ الجداول وإرسال الإشعارات للفريق بنجاح',
+          'success'
+        );
+      } catch (error) {
+        logger.error('Error saving schedules:', error);
+        notificationService.addNotification('حدث خطأ أثناء حفظ البيانات', 'error');
+      } finally {
+        isSavingSchedules.value = false;
+      }
+    };
+
     // Utility functions
     const formatCurrency = value => {
       return new Intl.NumberFormat('ar-SA', {
@@ -3022,6 +3672,123 @@ export default {
         cancelled: 'ملغي',
       };
       return statusMap[status] || status;
+    };
+
+    // ── Sold Units ──────────────────────────────────────────────────────────
+    const soldUnits = ref([]);
+    const soldUnitsTotal = ref(0);
+    const soldUnitsPage = ref(1);
+    const soldUnitsPerPage = ref(15);
+    const isLoadingSoldUnits = ref(false);
+    const selectedSoldUnit = ref(null);
+    const soldUnitCommission = ref(null);
+    const isLoadingCommission = ref(false);
+
+    const loadSoldUnits = async () => {
+      isLoadingSoldUnits.value = true;
+      try {
+        const { items, total } = await salesService.getSoldUnits({
+          page: soldUnitsPage.value,
+          per_page: soldUnitsPerPage.value,
+        });
+        soldUnits.value = items;
+        soldUnitsTotal.value = total;
+      } catch (e) {
+        logger.error('loadSoldUnits', e);
+      } finally {
+        isLoadingSoldUnits.value = false;
+      }
+    };
+
+    const viewSoldUnitCommission = async unit => {
+      selectedSoldUnit.value = unit;
+      soldUnitCommission.value = null;
+      isLoadingCommission.value = true;
+      try {
+        soldUnitCommission.value = await salesService.getSoldUnitCommissionSummary(unit.id);
+      } catch (e) {
+        logger.error('viewSoldUnitCommission', e);
+      } finally {
+        isLoadingCommission.value = false;
+      }
+    };
+
+    const handleSoldUnitsPageChange = async page => {
+      soldUnitsPage.value = page;
+      await loadSoldUnits();
+    };
+
+    const handleSoldUnitsPerPageChange = async perPage => {
+      soldUnitsPerPage.value = perPage;
+      soldUnitsPage.value = 1;
+      await loadSoldUnits();
+    };
+
+    // ── Deposits ─────────────────────────────────────────────────────────────
+    const depositsManagement = ref([]);
+    const depositsManagementTotal = ref(0);
+    const depositsFollowUp = ref([]);
+    const depositsFollowUpTotal = ref(0);
+    const depositsSubTab = ref('management');
+    const isLoadingDepositsManagement = ref(false);
+    const isLoadingDepositsFollowUp = ref(false);
+
+    const loadDepositsManagement = async () => {
+      isLoadingDepositsManagement.value = true;
+      try {
+        const { items, total } = await salesService.getDepositsManagement();
+        depositsManagement.value = items;
+        depositsManagementTotal.value = total;
+      } catch (e) {
+        logger.error('loadDepositsManagement', e);
+      } finally {
+        isLoadingDepositsManagement.value = false;
+      }
+    };
+
+    const loadDepositsFollowUp = async () => {
+      isLoadingDepositsFollowUp.value = true;
+      try {
+        const { items, total } = await salesService.getDepositsFollowUp();
+        depositsFollowUp.value = items;
+        depositsFollowUpTotal.value = total;
+      } catch (e) {
+        logger.error('loadDepositsFollowUp', e);
+      } finally {
+        isLoadingDepositsFollowUp.value = false;
+      }
+    };
+
+    // ── Analytics ────────────────────────────────────────────────────────────
+    const analyticsDashboard = ref(null);
+    const analyticsFilters = reactive({ from: '', to: '' });
+    const isLoadingAnalytics = ref(false);
+    const analyticsSubTab = ref('overview');
+    const analyticsMonthlyReport = ref(null);
+    const isLoadingMonthlyReport = ref(false);
+
+    const loadAnalyticsDashboard = async () => {
+      isLoadingAnalytics.value = true;
+      try {
+        analyticsDashboard.value = await salesService.getAnalyticsDashboard(analyticsFilters);
+      } catch (e) {
+        logger.error('loadAnalyticsDashboard', e);
+      } finally {
+        isLoadingAnalytics.value = false;
+      }
+    };
+
+    const loadAnalyticsMonthlyReport = async () => {
+      isLoadingMonthlyReport.value = true;
+      try {
+        analyticsMonthlyReport.value = await salesService.getAnalyticsMonthlyCommissionReport(
+          analyticsFilters
+        );
+      } catch (e) {
+        logger.error('loadAnalyticsMonthlyReport', e);
+      } finally {
+        isLoadingMonthlyReport.value = false;
+      }
     };
 
     return {
@@ -3157,6 +3924,21 @@ export default {
       onConfirmModalConfirm,
       loadWaitingList,
       loadAssignments,
+      // Project Schedules
+      scheduleProjects,
+      isLoadingScheduleProjects,
+      selectedScheduleProject,
+      scheduleMembers,
+      isLoadingScheduleDetail,
+      isSavingSchedules,
+      emergencyContact,
+      scheduleDetailRef,
+      loadScheduleProjects,
+      openProjectSchedule,
+      toggleScheduleMember,
+      getAvatarColor,
+      getTodayArabicDay,
+      saveAllSchedules,
       // Pagination
       paginatedReservations,
       paginatedNegotiations,
@@ -3174,6 +3956,38 @@ export default {
       handleNegotiationsPerPageChange,
       handleAttendancePageChange,
       handleAttendancePerPageChange,
+      // Sold Units
+      soldUnits,
+      soldUnitsTotal,
+      soldUnitsPage,
+      soldUnitsPerPage,
+      isLoadingSoldUnits,
+      selectedSoldUnit,
+      soldUnitCommission,
+      isLoadingCommission,
+      loadSoldUnits,
+      viewSoldUnitCommission,
+      handleSoldUnitsPageChange,
+      handleSoldUnitsPerPageChange,
+      // Deposits
+      depositsManagement,
+      depositsManagementTotal,
+      depositsFollowUp,
+      depositsFollowUpTotal,
+      depositsSubTab,
+      isLoadingDepositsManagement,
+      isLoadingDepositsFollowUp,
+      loadDepositsManagement,
+      loadDepositsFollowUp,
+      // Analytics
+      analyticsDashboard,
+      analyticsFilters,
+      isLoadingAnalytics,
+      analyticsSubTab,
+      analyticsMonthlyReport,
+      isLoadingMonthlyReport,
+      loadAnalyticsDashboard,
+      loadAnalyticsMonthlyReport,
     };
   },
   components: {
@@ -3181,6 +3995,7 @@ export default {
     TitleTransferDateModal,
     NegotiationApprovalModal,
     ConfirmModal,
+    ReservationsView,
     SlideOverPanel,
     Pagination,
   },
@@ -3348,7 +4163,7 @@ export default {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
-@media (max-width: var(--bp-md)) {
+@media (max-width: 768px) {
   .page-header {
     flex-direction: column;
     align-items: stretch;
@@ -3911,6 +4726,30 @@ export default {
   background: #ffedd5;
   color: #9a3412;
 }
+.stat-icon.sold {
+  background: #fce7f3;
+  color: #9d174d;
+}
+.stat-icon.total-res {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+.stat-icon.deposits {
+  background: #d1fae5;
+  color: #047857;
+}
+.stat-icon.revenue {
+  background: #fef3c7;
+  color: #b45309;
+}
+.stat-card.wide {
+  grid-column: span 2;
+}
+@media (max-width: 768px) {
+  .stat-card.wide {
+    grid-column: span 1;
+  }
+}
 
 .stat-info {
   display: flex;
@@ -3935,7 +4774,7 @@ export default {
   gap: 12px;
 }
 
-@media (max-width: var(--bp-sm)) {
+@media (max-width: 576px) {
   .date-filters {
     flex-direction: column;
     align-items: stretch;
@@ -4512,8 +5351,8 @@ export default {
   margin-bottom: 12px;
 }
 
-/* Responsive - using canonical breakpoints (see responsive-breakpoints.css) */
-@media (max-width: var(--bp-md)) {
+/* Responsive - using canonical breakpoints */
+@media (max-width: 768px) {
   .sales-view {
     padding: 12px 16px;
   }
@@ -4746,13 +5585,13 @@ export default {
   margin: 24px 0;
 }
 
-@media (max-width: var(--bp-lg)) {
+@media (max-width: 992px) {
   .details-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: var(--bp-sm)) {
+@media (max-width: 576px) {
   .details-grid {
     grid-template-columns: 1fr;
   }
@@ -5663,5 +6502,760 @@ export default {
 textarea.form-input {
   resize: vertical;
   min-height: 80px;
+}
+
+/* ============================
+   PROJECT SCHEDULES TAB
+   ============================ */
+.project-schedules-tab {
+  direction: rtl;
+}
+
+.schedule-projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.schedule-project-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 28px 24px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.schedule-project-card:hover {
+  border-color: #b1a28f;
+  box-shadow: 0 6px 20px rgba(177, 162, 143, 0.18);
+  transform: translateY(-2px);
+}
+
+.project-card-title {
+  font-size: clamp(16px, 1.2vw, 20px);
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.project-card-activity {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 4px 0;
+}
+
+.project-card-team {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* Detail Header */
+.schedule-detail-header .header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #475569;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  width: fit-content;
+  margin-bottom: 8px;
+}
+
+.btn-back:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+/* Detail Layout */
+.schedule-detail-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 28px;
+  margin-top: 20px;
+}
+
+.section-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* Members List */
+.schedule-members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.schedule-member-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  transition: border-color 0.2s;
+}
+
+.schedule-member-card:hover {
+  border-color: #cbd5e1;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.member-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.member-avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.member-name-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #cbd5e1;
+  border-radius: 26px;
+  transition: background 0.3s;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  top: 3px;
+  right: 3px;
+  transition: transform 0.3s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: #2ecc71;
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(-22px);
+}
+
+.member-schedule-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.schedule-day {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.schedule-status {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.schedule-status.present {
+  color: #059669;
+}
+
+.schedule-status.absent {
+  color: #94a3b8;
+}
+
+/* Emergency Contact */
+.emergency-contact-section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+}
+
+.emergency-form .form-group {
+  margin-bottom: 18px;
+}
+
+.emergency-form .form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.emergency-form .form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.emergency-form .form-input:focus {
+  outline: none;
+  border-color: #b1a28f;
+}
+
+/* Save Bar */
+.schedule-save-bar {
+  margin-top: 28px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.btn-save-schedules {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #b1a28f, #8c7851);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(177, 162, 143, 0.3);
+}
+
+.btn-save-schedules:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(177, 162, 143, 0.4);
+}
+
+.btn-save-schedules:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-save-schedules svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ============================
+   PROJECT SCHEDULES RESPONSIVE
+   ============================ */
+@media (max-width: 992px) {
+  .schedule-detail-layout {
+    grid-template-columns: 1fr;
+  }
+  .emergency-contact-section {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .schedule-projects-grid {
+    grid-template-columns: 1fr;
+  }
+  .schedule-project-card {
+    padding: 20px 18px;
+  }
+  .schedule-detail-layout {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .member-row {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .schedule-save-bar {
+    position: sticky;
+    bottom: 0;
+    background: #f8fafc;
+    padding: 16px 0;
+    margin-top: 16px;
+  }
+  .btn-save-schedules {
+    width: 100%;
+    justify-content: center;
+  }
+  .btn-back {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .schedule-projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 24px;
+  }
+  .schedule-detail-layout {
+    grid-template-columns: 1fr 400px;
+    gap: 36px;
+  }
+  .schedule-member-card {
+    padding: 20px 24px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .schedule-projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+    gap: 28px;
+  }
+  .schedule-detail-layout {
+    grid-template-columns: 1fr 480px;
+    gap: 40px;
+  }
+  .project-card-title {
+    font-size: 22px;
+  }
+  .member-avatar-circle {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .schedule-projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+    gap: 36px;
+  }
+  .schedule-detail-layout {
+    grid-template-columns: 1fr 560px;
+    gap: 48px;
+  }
+  .project-card-title {
+    font-size: 26px;
+  }
+  .section-label {
+    font-size: 20px;
+  }
+  .member-avatar-circle {
+    width: 56px;
+    height: 56px;
+    font-size: 22px;
+  }
+  .btn-save-schedules {
+    padding: 16px 36px;
+    font-size: 18px;
+  }
+}
+
+/* ============================
+   SALES VIEW GLOBAL RESPONSIVE
+   ============================ */
+
+/* Tabs - make scrollable on small screens */
+@media (max-width: 768px) {
+  .tabs-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    gap: 0;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .tabs-container::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  .tabs-container::-webkit-scrollbar-thumb {
+    background: #b1a28f;
+    border-radius: 2px;
+  }
+
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .tab-icon {
+    display: none;
+  }
+
+  .sales-view {
+    padding: 12px 14px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+  }
+
+  .section-header h2 {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 576px) {
+  .tabs-container {
+    gap: 0;
+    margin-bottom: 16px;
+  }
+
+  .tab-btn {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .sales-view {
+    padding: 10px 10px;
+  }
+
+  .reservations-table th,
+  .reservations-table td,
+  .negotiations-table th,
+  .negotiations-table td {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+}
+
+/* Large screens: bigger tab area */
+@media (min-width: 1920px) {
+  .sales-view {
+    padding: 28px 40px;
+  }
+
+  .tabs-container {
+    gap: 36px;
+    margin-bottom: 36px;
+  }
+
+  .tab-btn {
+    font-size: 16px;
+    padding: 14px 8px;
+  }
+
+  .page-title {
+    font-size: 32px;
+  }
+
+  .section-header h2 {
+    font-size: 24px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .sales-view {
+    padding: 36px 52px;
+  }
+
+  .tabs-container {
+    gap: 40px;
+    margin-bottom: 40px;
+  }
+
+  .tab-btn {
+    font-size: 18px;
+    padding: 16px 10px;
+  }
+
+  .page-title {
+    font-size: 36px;
+  }
+
+  .section-header h2 {
+    font-size: 28px;
+  }
+
+  .stat-value {
+    font-size: 36px;
+  }
+
+  .reservations-table th,
+  .reservations-table td,
+  .negotiations-table th,
+  .negotiations-table td {
+    padding: 20px;
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .sales-view {
+    padding: 48px 60px;
+  }
+
+  .tabs-container {
+    gap: 48px;
+    margin-bottom: 48px;
+  }
+
+  .tab-btn {
+    font-size: 22px;
+    padding: 18px 12px;
+  }
+
+  .page-title {
+    font-size: 44px;
+  }
+
+  .section-header h2 {
+    font-size: 34px;
+  }
+
+  .stat-value {
+    font-size: 44px;
+  }
+
+  .reservations-table th,
+  .reservations-table td,
+  .negotiations-table th,
+  .negotiations-table td {
+    padding: 28px;
+    font-size: 20px;
+  }
+
+  .project-card.luxury {
+    border-radius: 28px;
+  }
+
+  .card-content {
+    padding: 28px;
+  }
+
+  .project-name {
+    font-size: 24px;
+  }
+}
+
+/* ── Sold Units / Deposits / Analytics shared ─────────────────── */
+.sold-units-tab,
+.deposits-tab,
+.analytics-tab {
+  animation: fadeInUp 0.3s ease;
+}
+
+.sub-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0;
+}
+
+.sub-tab-btn {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  font-family: inherit;
+}
+
+.sub-tab-btn.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+.sub-tab-btn:hover:not(.active) {
+  color: #334155;
+}
+
+.commission-panel {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+}
+
+.commission-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.commission-panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.commission-details .detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.detail-card {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.detail-value.success {
+  color: #10b981;
+}
+.detail-value.warning {
+  color: #f59e0b;
+}
+
+.report-summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.badge-sold {
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: #dcfce7;
+  color: #16a34a;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-danger {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: #d97706;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.btn-icon-sm {
+  background: #f1f5f9;
+  border: none;
+  border-radius: 6px;
+  padding: 6px;
+  cursor: pointer;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-icon-sm:hover {
+  background: #e2e8f0;
+  color: #1e293b;
 }
 </style>
