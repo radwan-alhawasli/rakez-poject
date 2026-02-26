@@ -82,7 +82,7 @@
       </div>
       <div class="chart-placeholder">
         <!-- Add Chart here later if needed -->
-        <p style="color: #94a3b8; margin-top: 40px">مخطط بياني لتوزيع المشاريع</p>
+        <p style="color: var(--color-dark-gray); margin-top: 40px">مخطط بياني لتوزيع المشاريع</p>
       </div>
     </div>
   </div>
@@ -180,10 +180,7 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Amiri:wght@400;700&display=swap');
-
 .dashboard-view {
-  font-family: 'Cairo', 'Tajawal', sans-serif;
   animation: fadeInUp 0.6s ease-out;
 }
 
@@ -209,15 +206,14 @@ export default {
 .welcome-title {
   font-size: 32px;
   font-weight: 800;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 10px 0;
-  font-family: 'Cairo', sans-serif;
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
 .welcome-subtitle {
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 16px;
   margin: 0;
   font-weight: 500;
@@ -246,7 +242,7 @@ export default {
 
 /* Stat Cards - Premium Luxury Design */
 .stat-card {
-  background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
+  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-off-white) 100%);
   border-radius: 24px;
   padding: 32px 30px;
   display: flex;
@@ -318,22 +314,20 @@ export default {
 
 .stat-label {
   font-size: 14px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
   margin-bottom: 0;
   order: 1;
   letter-spacing: -0.01em;
   line-height: 1.4;
-  font-family: 'Cairo', sans-serif;
 }
 
 .stat-value {
   font-size: 42px;
   font-weight: 900;
-  color: #1e293b;
+  color: var(--color-charcoal);
   line-height: 1;
   margin: 8px 0;
-  font-family: 'Cairo', sans-serif;
   order: 2;
   letter-spacing: -0.03em;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
@@ -341,18 +335,17 @@ export default {
 }
 
 .stat-card:hover .stat-value {
-  color: #b1a28f;
+  color: var(--color-gold);
   transform: scale(1.05);
 }
 
 .stat-desc {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   font-weight: 500;
   order: 3;
   letter-spacing: 0.01em;
   opacity: 0.85;
-  font-family: 'Cairo', sans-serif;
 }
 
 /* Stat Icons - Luxury Glass-morphism */
@@ -400,7 +393,7 @@ export default {
 }
 
 .stat-icon-bg.units {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  background: linear-gradient(135deg, #fbbf24 0%, var(--color-warning) 100%);
   color: white;
 }
 
@@ -415,13 +408,13 @@ export default {
 }
 
 .stat-icon-bg.not-ready {
-  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+  background: linear-gradient(135deg, #f87171 0%, var(--color-error) 100%);
   color: white;
 }
 
 /* Overview Section - Luxury Enhanced */
 .overview-section {
-  background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
+  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-off-white) 100%);
   border-radius: 28px;
   padding: 40px;
   border: 1px solid rgba(177, 162, 143, 0.15);
@@ -456,15 +449,14 @@ export default {
 .section-title {
   font-size: 24px;
   font-weight: 800;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 10px 0;
-  font-family: 'Cairo', sans-serif;
   letter-spacing: -0.02em;
   line-height: 1.3;
 }
 
 .section-desc {
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 15px;
   margin: 0;
   font-weight: 500;
@@ -476,7 +468,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  background: linear-gradient(135deg, var(--color-light-gray) 0%, var(--color-white) 100%);
   border-radius: 20px;
   border: 2px dashed rgba(177, 162, 143, 0.25);
   margin-top: 25px;
@@ -488,14 +480,83 @@ export default {
 
 .chart-placeholder:hover {
   border-color: rgba(177, 162, 143, 0.4);
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-light-gray) 100%);
 }
 
 .chart-placeholder p {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #94a3b8;
-  font-family: 'Cairo', sans-serif;
+  color: var(--color-dark-gray);
+}
+
+/* ============================
+   DASHBOARD RESPONSIVE
+   ============================ */
+@media (max-width: 576px) {
+  .dashboard-view {
+    padding: 10px 12px;
+  }
+  .page-title,
+  .welcome-title {
+    font-size: 20px;
+  }
+  .stat-card {
+    padding: 14px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .dashboard-view {
+    padding: 28px 40px;
+  }
+  .page-title,
+  .welcome-title {
+    font-size: 34px;
+  }
+  .stat-value {
+    font-size: 32px;
+  }
+  .chart-placeholder {
+    padding: 60px 40px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .dashboard-view {
+    padding: 36px 52px;
+  }
+  .page-title,
+  .welcome-title {
+    font-size: 40px;
+  }
+  .stat-value {
+    font-size: 38px;
+  }
+  .stat-card {
+    padding: 28px;
+    border-radius: 20px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .dashboard-view {
+    padding: 48px 60px;
+  }
+  .page-title,
+  .welcome-title {
+    font-size: 52px;
+  }
+  .stat-value {
+    font-size: 48px;
+  }
+  .stat-card {
+    padding: 36px;
+    border-radius: 24px;
+  }
+  .chart-placeholder {
+    padding: 80px 60px;
+    border-radius: 24px;
+  }
 }
 </style>

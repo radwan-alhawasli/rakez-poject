@@ -164,6 +164,7 @@
 
 <script>
 import { onMounted, onUnmounted } from 'vue';
+import { useFormatters } from '../../composables/useFormatters';
 
 export default {
   name: 'BookingDetailModal',
@@ -175,23 +176,7 @@ export default {
   },
   emits: ['close'],
   setup(props, { emit }) {
-    const formatDate = dateStr => {
-      if (!dateStr) return '—';
-      try {
-        return new Date(dateStr).toLocaleDateString('ar-SA');
-      } catch {
-        return dateStr;
-      }
-    };
-
-    const formatCurrency = val => {
-      if (val == null || val === '') return '—';
-      return new Intl.NumberFormat('ar-SA', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 0,
-      }).format(Number(val));
-    };
+    const { formatCurrencyAr: formatCurrency, formatDate } = useFormatters();
 
     // Handle Escape key
     const handleEscape = e => {
@@ -231,7 +216,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
   animation: fadeIn 0.3s ease;
 }
 
@@ -256,22 +241,21 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 25px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-light-gray);
   padding-bottom: 15px;
 }
 
 .modal-title {
   font-size: 20px;
   font-weight: 800;
-  color: #1e3a5f;
-  font-family: 'Amiri', serif;
+  color: var(--color-navy);
 }
 
 .close-btn {
   background: none;
   border: none;
   font-size: 28px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   cursor: pointer;
   transition: color 0.2s;
   padding: 0;
@@ -283,7 +267,7 @@ export default {
 }
 
 .close-btn:hover {
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .modal-body {
@@ -297,9 +281,8 @@ export default {
 .detail-title {
   font-size: 18px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin-bottom: 15px;
-  font-family: 'Cairo', sans-serif;
 }
 
 .detail-grid {
@@ -316,22 +299,22 @@ export default {
 
 .detail-label {
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
 }
 
 .detail-value {
   font-size: 15px;
-  color: #1e293b;
+  color: var(--color-charcoal);
   font-weight: 500;
 }
 
 .detail-text {
   font-size: 15px;
-  color: #1e293b;
+  color: var(--color-charcoal);
   line-height: 1.6;
   padding: 15px;
-  background: #f8fafc;
+  background: var(--color-light-gray);
   border-radius: 12px;
 }
 
@@ -345,7 +328,7 @@ export default {
 
 .status-tag.excellent {
   background: #dcfce7;
-  color: #16a34a;
+  color: var(--color-success);
 }
 
 @keyframes fadeIn {
@@ -365,6 +348,41 @@ export default {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Tablet responsive */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 12px;
+  }
+  .modal-container {
+    width: 95%;
+    max-width: 95vw;
+    padding: 20px;
+  }
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile full-screen */
+@media (max-width: 575px) {
+  .modal-overlay {
+    padding: 8px;
+  }
+  .modal-container {
+    width: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 16px;
+    padding: 16px;
+  }
+  .modal-title {
+    font-size: 18px;
+  }
+  .detail-title {
+    font-size: 16px;
   }
 }
 </style>

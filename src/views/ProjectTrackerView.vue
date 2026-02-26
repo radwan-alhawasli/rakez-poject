@@ -11,13 +11,10 @@
       <div class="project-header">
         <div class="header-image-container">
           <img
-            :src="project.image || '/img/placeholder-project.jpg'"
+            :src="project.image || placeholderProjectSvg"
             alt="Project Image"
             class="header-image"
-            @error="
-              $event.target.src =
-                'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%221200%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%221200%22%20height%3D%22300%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22%23666666%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E'
-            "
+            @error="$event.target.src = placeholderProjectSvg"
           />
           <div class="header-overlay"></div>
           <div class="header-content">
@@ -46,10 +43,10 @@
           class="nav-tab"
           :class="{ active: activeTab === 'units' }"
           @click="selectUnitsTab"
-          :disabled="!isTrackerCompleted && !isManager"
+          :disabled="!isTrackerCompleted && !isManager && !isSalesUser"
         >
           الوحدات
-          <span v-if="!isTrackerCompleted" class="tab-hint">{{
+          <span v-if="!isTrackerCompleted && !isSalesUser" class="tab-hint">{{
             isManager ? '(مفتوح للمدير)' : '(مغلق)'
           }}</span>
         </button>
@@ -63,7 +60,7 @@
           <div class="tracker-header-box">
             <h2 class="tracker-title">متتبع حالة المشروع</h2>
             <p class="tracker-desc">
-              أكمل جميع المراحل لتمكين إضافة الوحدات. اضغط على مرحلة لإدخال بياناتها.
+              {{ isSalesUser ? 'عرض تقدم المشروع فقط — لا توجد نماذج للتعديل.' : 'أكمل جميع المراحل لتمكين إضافة الوحدات. اضغط على مرحلة لإدخال بياناتها.' }}
             </p>
             <div class="progress-indicator">
               <span class="progress-label">التقدم</span>
@@ -108,8 +105,8 @@
             </div>
           </div>
 
-          <!-- Stage details card (design match) -->
-          <div class="stage-content-area">
+          <!-- Stage details card (design match) — مخفي عن المبيعات: يشوفون التتبع فقط بدون أي فورم -->
+          <div v-if="!isSalesUser" class="stage-content-area">
             <h3 class="stage-section-title">تفاصيل المرحلة: {{ stages[activeStageIndex].name }}</h3>
             <p class="stage-section-subtitle">يرجى تقديم الرابط والتاريخ لهذه المرحلة.</p>
             <div class="input-group">
@@ -181,8 +178,8 @@
             </div>
           </div>
 
-          <!-- Documents card (design match) -->
-          <div class="documents-card">
+          <!-- Documents card (hidden for sales users) -->
+          <div v-if="!isSalesUser" class="documents-card">
             <h3 class="documents-card-title">المستندات</h3>
             <div class="input-group">
               <label>رابط المشروع</label>
@@ -274,7 +271,7 @@
                 margin-top: 15px;
                 background: #fee2e2;
                 padding: 10px;
-                border-radius: 8px;
+                border-radius: var(--radius-sm);
                 color: #991b1b;
               "
             >
@@ -394,7 +391,7 @@
                   text-align: left;
                   padding: 15px;
                   background: #f9fafb;
-                  border-radius: 8px;
+                  border-radius: var(--radius-sm);
                 "
               >
                 <div v-if="photographyForm.status !== 'approved'">
@@ -598,9 +595,9 @@
           <div class="units-header-actions">
             <div class="units-header-title">
               <h3>وحدات المشروع</h3>
-              <p class="units-subtitle">وحدة مضافة {{ units.length }}</p>
+              <p class="units-subtitle">{{ (unitCountFromApi != null ? unitCountFromApi : units.length) }} وحدة</p>
             </div>
-            <div class="units-btns">
+            <div v-if="!isSalesUser" class="units-btns">
               <button class="btn-units-primary" @click="showAddUnitModal = true">
                 <svg
                   viewBox="0 0 24 24"
@@ -663,7 +660,7 @@
             <div v-for="unit in units" :key="unit.id" class="unit-card">
               <div class="unit-card-top">
                 <span class="unit-status-pill" :class="unit.status">{{
-                  unit.status === 'available' ? 'متاحة' : unit.status || 'قيد الانتظار'
+                  unit.status === 'available' ? 'متاحة' : unit.status === 'reserved' ? 'محجوزة' : unit.status === 'sold' ? 'مباعة' : unit.status || 'قيد الانتظار'
                 }}</span>
                 <span class="unit-id">#{{ unit.unit_number || unit.id }}</span>
               </div>
@@ -723,9 +720,18 @@
                 >
                   حجز
                 </button>
-                <button v-else class="btn-unit-details" disabled>حجز</button>
+                <button
+                  v-else-if="unit.status === 'reserved'"
+                  class="btn-unit-waiting"
+                  @click="openWaitingListModal(unit)"
+                >
+                  حجز انتظار
+                </button>
+                <button v-else class="btn-unit-details" disabled>
+                  {{ unit.status === 'sold' ? 'مباعة' : 'حجز' }}
+                </button>
               </div>
-              <div class="unit-card-footer">
+              <div v-if="!isSalesUser" class="unit-card-footer">
                 <button type="button" class="icon-btn" @click="openEditUnit(unit)" title="تعديل">
                   <svg
                     viewBox="0 0 24 24"
@@ -1061,6 +1067,60 @@
             </form>
           </div>
         </div>
+
+        <!-- WAITING LIST MODAL (حجز انتظار للوحدة المحجوزة) -->
+        <div
+          v-if="showWaitingListModal"
+          class="modal-overlay"
+          @click.self="showWaitingListModal = false"
+        >
+          <div class="modal-content" style="max-width: 500px">
+            <h3>حجز انتظار — وحدة {{ waitingListUnit?.unit_number || waitingListUnit?.id }}</h3>
+            <p class="modal-desc" style="color:#64748b;margin:0 0 1rem 0;font-size:14px">إضافة العميل إلى قائمة الانتظار لهذه الوحدة المحجوزة.</p>
+            <form @submit.prevent="submitWaitingList" class="reservation-form">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>اسم العميل *</label>
+                  <input
+                    v-model="waitingListForm.client_name"
+                    required
+                    type="text"
+                    placeholder="الاسم الكامل"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>رقم الجوال *</label>
+                  <input
+                    v-model="waitingListForm.phone"
+                    required
+                    type="text"
+                    placeholder="05xxxxxxxx"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>الأولوية (1–10)</label>
+                  <input
+                    v-model.number="waitingListForm.priority"
+                    type="number"
+                    min="1"
+                    max="10"
+                    placeholder="10"
+                  />
+                </div>
+                <div class="form-group" style="grid-column: span 2">
+                  <label>ملاحظات</label>
+                  <textarea v-model="waitingListForm.notes" rows="2" placeholder="اختياري"></textarea>
+                </div>
+              </div>
+              <div class="modal-actions">
+                <button type="button" class="btn-text" @click="closeWaitingListModal">إلغاء</button>
+                <button type="submit" class="btn-primary" :disabled="waitingListSaving">
+                  {{ waitingListSaving ? 'جاري الإضافة...' : 'إضافة لقائمة الانتظار' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </template>
 
@@ -1141,12 +1201,15 @@ import salesService from '../services/salesService';
 import notificationService from '../services/notificationService';
 import logger from '../utils/logger';
 import { toast } from '../composables/useToast';
+import { useFormatters } from '../composables/useFormatters';
 import ConfirmModal from '../components/ConfirmModal.vue';
 
 export default {
   name: 'ProjectTracker',
   setup() {
     const route = useRoute();
+    const placeholderProjectSvg =
+      "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%221200%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%221200%22%20height%3D%22300%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22%23666666%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E";
     // eslint-disable-next-line no-unused-vars
     const isLoading = ref(true);
     const activeTab = ref(route.query.tab || 'progress');
@@ -1192,6 +1255,55 @@ export default {
       selectedUnit.value = unit;
       reservationForm.contract_unit_id = unit.id;
       showReservationModal.value = true;
+    };
+
+    // Waiting list (حجز انتظار) for reserved units
+    const showWaitingListModal = ref(false);
+    const waitingListUnit = ref(null);
+    const waitingListSaving = ref(false);
+    const waitingListForm = reactive({
+      client_name: '',
+      phone: '',
+      priority: 10,
+      notes: '',
+    });
+    const openWaitingListModal = unit => {
+      waitingListUnit.value = unit;
+      waitingListForm.client_name = '';
+      waitingListForm.phone = '';
+      waitingListForm.priority = 10;
+      waitingListForm.notes = '';
+      showWaitingListModal.value = true;
+    };
+    const closeWaitingListModal = () => {
+      showWaitingListModal.value = false;
+      waitingListUnit.value = null;
+    };
+    const submitWaitingList = async () => {
+      if (!waitingListUnit.value || !project.value?.id) return;
+      waitingListSaving.value = true;
+      try {
+        await salesService.addToWaitingList({
+          contract_unit_id: waitingListUnit.value.id,
+          unit_id: waitingListUnit.value.id,
+          contract_id: project.value.id,
+          project_id: project.value.id,
+          client_name: waitingListForm.client_name,
+          phone: waitingListForm.phone,
+          priority: waitingListForm.priority || 10,
+          notes: waitingListForm.notes || undefined,
+        });
+        notificationService.addNotification('تمت إضافة العميل لقائمة الانتظار بنجاح', 'success');
+        closeWaitingListModal();
+      } catch (e) {
+        logger.error('Waiting list add error:', e);
+        notificationService.addNotification(
+          e.response?.data?.message || 'فشل إضافة قائمة الانتظار',
+          'error'
+        );
+      } finally {
+        waitingListSaving.value = false;
+      }
     };
 
     const submitReservation = async () => {
@@ -1267,9 +1379,15 @@ export default {
 
     const isManager = computed(() => {
       const user = authService.getCurrentUser();
-      // Allow Admin (1), Project Manager (3), or PM Manager (10)
       return user?.type == 1 || user?.type == 3 || user?.type == 10;
     });
+
+    const isSalesUser = computed(() => {
+      const user = authService.getCurrentUser();
+      return user?.type == 5;
+    });
+
+    const canEditTracker = computed(() => isManager.value && !isSalesUser.value);
 
     // Boards State
     const boardsTabState = ref('pending'); // 'pending' or 'completed'
@@ -1355,8 +1473,9 @@ export default {
     const activeStageIndex = ref(0);
     const isTrackerCompleted = computed(() => stages.every(s => s.status === 'completed'));
 
-    // Units Logic
+    // Units Logic (قد تأتي من GET /api/contracts/show/{id} كـ contract_units)
     const units = ref([]);
+    const unitCountFromApi = ref(null); // unit_count من الـ API للعرض
     const unitsLoading = ref(false);
     const showAddUnitModal = ref(false);
     const isEditingUnit = ref(false);
@@ -1373,12 +1492,38 @@ export default {
       description: '',
     });
 
+    /** يطبّق project_progress من استجابة GET contracts/show (completed_count, total_count, steps) */
+    const applyProjectProgress = (projectProgress) => {
+      if (!projectProgress || !Array.isArray(projectProgress.steps)) return;
+      const steps = projectProgress.steps;
+      steps.forEach((step, i) => {
+        if (stages[i]) {
+          stages[i].name = step.label_ar || stages[i].name;
+          stages[i].status = step.completed ? 'completed' : 'pending';
+          stages[i].completedAt = step.completed ? (stages[i].completedAt || 'تم') : null;
+        }
+      });
+      const firstPending = stages.findIndex(s => s.status === 'pending');
+      activeStageIndex.value = firstPending !== -1 ? firstPending : stages.length - 1;
+    };
+
+    /** يطبّق الوحدات وعددها من استجابة GET contracts/show (unit_count, contract_units) */
+    const applyUnitsFromShow = (data) => {
+      const arr = data?.contract_units;
+      if (Array.isArray(arr)) {
+        units.value = arr;
+        unitCountFromApi.value = data.unit_count != null ? data.unit_count : arr.length;
+      } else {
+        unitCountFromApi.value = data?.unit_count ?? null;
+      }
+    };
+
     const fetchProject = async () => {
       isLoading.value = true;
       try {
         const id = route.params.id;
 
-        // 1. Fetch Contract Basics
+        // 1. Fetch Contract Basics (مصدر واحد: GET /api/contracts/show/{id} أو editor/contracts/show)
         const user = authService.getCurrentUser();
         const isEditor = user && user.type == 4;
         const isSales = user && user.type == 5;
@@ -1427,42 +1572,66 @@ export default {
           };
         }
 
-        // 2. Fetch Existing Tracker Data
-        const trackerData = await contractService.getSecondPartyData(id);
-        if (trackerData && trackerData.data) {
-          const d = trackerData.data;
-          projectLinkUrl.value = d.project_link_url || d.project_link || '';
-          stages.forEach(stage => {
-            if (stage.apiKey && d[stage.apiKey]) {
-              stage.value = d[stage.apiKey];
-              stage.status = 'completed';
-              stage.completedAt = d.updated_at ? new Date(d.updated_at).toLocaleDateString() : 'تم';
-              if (d.stage_entry_dates && d.stage_entry_dates[stage.apiKey])
-                stage.entryDate = d.stage_entry_dates[stage.apiKey];
-            }
-          });
-          const firstPending = stages.findIndex(s => s.status === 'pending');
-          if (firstPending !== -1) activeStageIndex.value = firstPending;
-          else activeStageIndex.value = stages.length - 1;
+        // 1b. الوحدات وتقدم المشروع من استجابة show — لجميع الأدوار (مبيعات/قائد مبيعات يشوفون كل شيء إن السماح من الباكند)
+        if (!isSales) {
+          applyUnitsFromShow(data);
+        } else {
+          try {
+            const showData = await contractService.getContractById(id);
+            applyUnitsFromShow(showData);
+            if (showData?.project_progress) applyProjectProgress(showData.project_progress);
+            data = showData;
+          } catch (_) {
+            /* الباكند قد يمنع صلاحية contracts/show للمبيعات — الوحدات تُحمّل لاحقاً من loadUnits */
+          }
         }
 
-        // 3. Fetch Photography Data
-        const photoData = await contractService.getPhotography(id);
-        if (photoData && photoData.data) {
-          const p = photoData.data;
-          photographyForm.image_url = p.image_url || '';
-          photographyForm.video_url = p.video_url || '';
-          photographyForm.description = p.description || '';
-          photographyForm.status = p.status || 'pending'; // Default to pending if exists but no status
-          photographyForm.rejection_reason = p.rejection_reason || null;
-
-          if (p.updated_at) {
-            photographyForm.updated_at = new Date(p.updated_at).toLocaleDateString('ar-SA');
-          } else if (p.created_at) {
-            photographyForm.updated_at = new Date(p.created_at).toLocaleDateString('ar-SA');
+        // 2. Fetch Existing Tracker Data — لجميع الأدوار (عرض التتبع)
+        try {
+          const trackerData = await contractService.getSecondPartyData(id);
+          if (trackerData && trackerData.data) {
+            const d = trackerData.data;
+            projectLinkUrl.value = d.project_link_url || d.project_link || '';
+            stages.forEach(stage => {
+              if (stage.apiKey && d[stage.apiKey]) {
+                stage.value = d[stage.apiKey];
+                stage.status = 'completed';
+                stage.completedAt = d.updated_at ? new Date(d.updated_at).toLocaleDateString() : 'تم';
+                if (d.stage_entry_dates && d.stage_entry_dates[stage.apiKey])
+                  stage.entryDate = d.stage_entry_dates[stage.apiKey];
+              }
+            });
           }
-          photographyForm.isExisting = true;
-        } else {
+        } catch (_) {
+          /* صلاحية second-party-data قد تكون مقتصرة على أدوار معينة */
+        }
+
+        // 2b. تقدم المشروع من الـ API
+        if (data?.project_progress) applyProjectProgress(data.project_progress);
+        const firstPending = stages.findIndex(s => s.status === 'pending');
+        activeStageIndex.value = firstPending !== -1 ? firstPending : stages.length - 1;
+
+        // 3. Fetch Photography Data — لجميع الأدوار (عرض فقط)
+        try {
+          const photoData = await contractService.getPhotography(id);
+          if (photoData && photoData.data) {
+            const p = photoData.data;
+            photographyForm.image_url = p.image_url || '';
+            photographyForm.video_url = p.video_url || '';
+            photographyForm.description = p.description || '';
+            photographyForm.status = p.status || 'pending';
+            photographyForm.rejection_reason = p.rejection_reason || null;
+
+            if (p.updated_at) {
+              photographyForm.updated_at = new Date(p.updated_at).toLocaleDateString('ar-SA');
+            } else if (p.created_at) {
+              photographyForm.updated_at = new Date(p.created_at).toLocaleDateString('ar-SA');
+            }
+            photographyForm.isExisting = true;
+          } else {
+            photographyForm.isExisting = false;
+          }
+        } catch (_) {
           photographyForm.isExisting = false;
         }
       } catch (e) {
@@ -1503,12 +1672,13 @@ export default {
     };
 
     const selectUnitsTab = () => {
-      if (!isTrackerCompleted.value && !isManager.value) {
+      if (!isTrackerCompleted.value && !isManager.value && !isSalesUser.value) {
         toast.warning('يجب إكمال جميع مراحل المتتبع أولاً');
         return;
       }
       activeTab.value = 'units';
-      loadUnits();
+      // استدعاء إضافي فقط إن لم تكن الوحدات قد أتت من استجابة show
+      if (units.value.length === 0) loadUnits();
     };
 
     const selectTeamsTab = () => {
@@ -1639,22 +1809,32 @@ export default {
         const user = authService.getCurrentUser();
         if (user && user.type == 5) {
           const res = await salesService.getProjectUnits(project.value.id);
-          const body = res.data;
-          const d = body?.data || body?.units || body;
+          const body = res?.data ?? res;
+          const d = body?.data ?? body?.units ?? body;
           units.value = Array.isArray(d) ? d : Array.isArray(body) ? body : [];
+          unitCountFromApi.value = null;
+          // مشروع جاهز للتسويق: إذا الـ API رجع فاضي جرّب وحدات العقد
+          if (units.value.length === 0) {
+            try {
+              const contractUnits = await contractService.getContractUnits(project.value.id);
+              units.value = Array.isArray(contractUnits) ? contractUnits : [];
+            } catch (_) {
+              /* استمر بدون وحدات */
+            }
+          }
         } else {
           units.value = await contractService.getContractUnits(project.value.id);
+          unitCountFromApi.value = null;
         }
       } catch (error) {
         logger.error('Error loading units:', error);
         units.value = [];
+        unitCountFromApi.value = null;
       }
       unitsLoading.value = false;
     };
 
-    const formatCurrency = val => {
-      return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR' }).format(val);
-    };
+    const { formatCurrencyAr: formatCurrency } = useFormatters();
 
     const resetUnitForm = () => {
       unitForm.unit_number = '';
@@ -1898,6 +2078,7 @@ export default {
     });
 
     return {
+      placeholderProjectSvg,
       isLoading,
       activeTab,
       project,
@@ -1915,6 +2096,7 @@ export default {
       selectUnitsTab,
       // Units
       units,
+      unitCountFromApi,
       unitsLoading,
       showAddUnitModal,
       unitForm,
@@ -1940,6 +2122,8 @@ export default {
       isBoardSaving,
       saveBoard,
       isManager,
+      isSalesUser,
+      canEditTracker,
       isEditingPending,
       cancelPhotoEdit,
       // Teams
@@ -1961,6 +2145,13 @@ export default {
       reservationForm,
       openReserveModal,
       submitReservation,
+      showWaitingListModal,
+      waitingListUnit,
+      waitingListForm,
+      waitingListSaving,
+      openWaitingListModal,
+      closeWaitingListModal,
+      submitWaitingList,
       confirmReservation,
       downloadVoucher,
       showConfirmModal,
@@ -1975,7 +2166,6 @@ export default {
 <style scoped>
 /* Reuse existing styles plus new ones */
 .project-tracker-view {
-  font-family: 'Tajawal', sans-serif;
   padding-bottom: 50px;
 }
 
@@ -2030,7 +2220,6 @@ export default {
   font-size: 36px;
   font-weight: 800;
   margin: 0 0 5px 0;
-  font-family: 'Amiri', serif;
 }
 
 .project-subtitle-large {
@@ -2053,7 +2242,6 @@ export default {
   padding: 20px 5px;
   background: none;
   border: none;
-  font-family: 'Tajawal', sans-serif;
   font-size: 15px;
   color: #64748b;
   cursor: pointer;
@@ -2116,7 +2304,6 @@ export default {
   font-size: 32px;
   font-weight: 800;
   color: #1e3a5f;
-  font-family: 'Amiri', serif;
   margin: 0;
 }
 
@@ -2129,7 +2316,7 @@ export default {
 
 .dash-stat-card {
   background: white;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   padding: 25px;
   display: flex;
   flex-direction: column;
@@ -2158,7 +2345,6 @@ export default {
   font-weight: 800;
   color: #b1a28f;
   margin-bottom: 15px;
-  font-family: 'Amiri', serif;
 }
 
 .dash-badge {
@@ -2196,7 +2382,7 @@ export default {
 
 .project-desc-card {
   background: white;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   padding: 25px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   border: 1px solid #f1f5f9;
@@ -2234,7 +2420,6 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin: 0;
-  font-family: 'Amiri', serif;
 }
 
 @keyframes slideUp {
@@ -2258,7 +2443,6 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0 0 10px 0;
-  font-family: 'Amiri', serif;
 }
 
 .tracker-desc {
@@ -2390,7 +2574,6 @@ export default {
   color: #1e3a5f;
   font-size: 18px;
   margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
 }
 .stage-section-subtitle {
   font-size: 14px;
@@ -2416,7 +2599,6 @@ export default {
   color: #1e3a5f;
   font-size: 18px;
   margin: 0 0 20px 0;
-  font-family: 'Amiri', serif;
 }
 .documents-update-btn {
   margin-top: 16px;
@@ -2434,7 +2616,7 @@ export default {
   color: #047857;
   font-size: 12px;
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   margin-right: 15px;
   vertical-align: middle;
   border: 1px solid #a7f3d0;
@@ -2458,9 +2640,8 @@ export default {
   flex: 1;
   padding: 12px 14px;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #f8fafc;
-  font-family: 'Tajawal', sans-serif;
   color: #1e293b;
   transition: border-color 0.2s;
 }
@@ -2482,7 +2663,7 @@ export default {
   height: 42px;
   border: 1px solid #e2e8f0;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2496,10 +2677,9 @@ export default {
   color: white;
   border: none;
   padding: 10px 24px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
   cursor: pointer;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .update-btn.secondary {
@@ -2541,7 +2721,6 @@ export default {
   margin: 0 0 4px 0;
   font-size: 20px;
   color: #1e3a5f;
-  font-family: 'Amiri', serif;
 }
 .units-subtitle {
   margin: 0;
@@ -2607,7 +2786,7 @@ export default {
 }
 .unit-status-pill {
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 12px;
   font-weight: 600;
 }
@@ -2622,6 +2801,10 @@ export default {
 .unit-status-pill.sold {
   background: #e2e8f0;
   color: #64748b;
+}
+.unit-status-pill.reserved {
+  background: #ede9fe;
+  color: #5b21b6;
 }
 .unit-id {
   font-size: 14px;
@@ -2658,7 +2841,7 @@ export default {
   color: #1e3a5f;
   border: 1px solid #e2e8f0;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -2676,13 +2859,27 @@ export default {
   color: white;
   border: none;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
 }
 .btn-unit-reserve:hover {
   background: #3d3231;
+}
+.btn-unit-waiting {
+  flex: 1;
+  background: #7c3aed;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-unit-waiting:hover {
+  background: #6d28d9;
 }
 .unit-card-footer {
   display: flex;
@@ -2731,7 +2928,7 @@ export default {
   width: 100%;
   border-collapse: collapse;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -2838,7 +3035,6 @@ export default {
   padding: 8px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  font-family: inherit;
 }
 .form-group textarea {
   grid-column: span 2;
@@ -2876,7 +3072,6 @@ export default {
   text-align: center;
   font-size: 18px;
   font-weight: 800;
-  font-family: 'Amiri', serif;
 }
 
 .form-container {
@@ -2942,7 +3137,7 @@ export default {
   width: 100%;
   padding: 10px;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   text-align: center;
   outline: none;
   font-size: 14px;
@@ -2990,7 +3185,7 @@ export default {
 .completed-info-card {
   background: white;
   padding: 40px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   border: 1px solid #e2e8f0;
   max-width: 500px;
   margin: 0 auto;
@@ -3022,7 +3217,6 @@ export default {
   font-weight: 700;
   text-decoration: underline;
   cursor: pointer;
-  font-family: inherit;
 }
 /* --- Premium CTA Styles --- */
 .board-cta-container {
@@ -3079,7 +3273,6 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin-bottom: 12px;
-  font-family: 'Amiri', serif;
 }
 
 .cta-description {
@@ -3157,7 +3350,7 @@ export default {
   padding-left: 40px; /* For icon */
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   color: #1e3a5f;
   outline: none;
@@ -3180,7 +3373,7 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.4);
   color: white;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s;
@@ -3261,7 +3454,7 @@ export default {
   margin-right: auto; /* Push to far left in RTL */
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: 1px solid #fee2e2;
   background: #fff5f5;
   color: #ef4444;
@@ -3281,5 +3474,652 @@ export default {
   background: #ef4444;
   color: white;
   border-color: #ef4444;
+}
+
+/* ===== Responsive Styles ===== */
+
+/* Responsive: Tablet Landscape */
+@media (max-width: 992px) {
+  .project-header {
+    height: 240px;
+  }
+  .project-title-large {
+    font-size: 28px;
+  }
+  .project-subtitle-large {
+    font-size: 14px;
+  }
+  .header-content {
+    bottom: 20px;
+    right: 20px;
+  }
+  .tabs-nav {
+    padding: 0 20px;
+    gap: 20px;
+  }
+  .tracker-container {
+    padding: 20px 16px;
+  }
+  .main-project-title {
+    font-size: 26px;
+  }
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .dash-stat-card {
+    padding: 20px;
+  }
+  .dash-value {
+    font-size: 20px;
+  }
+  .stage-content-area,
+  .documents-card {
+    padding: 24px;
+  }
+  .units-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .step-item {
+    width: 100px;
+  }
+  .step-label {
+    font-size: 12px;
+  }
+  .step-sublabel {
+    font-size: 10px;
+  }
+  .board-cta-card {
+    padding: 40px 30px;
+  }
+}
+
+/* Responsive: Tablet Portrait */
+@media (max-width: 768px) {
+  .project-header {
+    height: 200px;
+  }
+  .project-title-large {
+    font-size: 24px;
+  }
+  .project-subtitle-large {
+    font-size: 13px;
+  }
+  .header-content {
+    bottom: 16px;
+    right: 16px;
+  }
+  .header-top {
+    font-size: 11px;
+    gap: 10px;
+  }
+  .tabs-nav {
+    padding: 0 12px;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-tab {
+    padding: 14px 8px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .tracker-container {
+    padding: 16px 12px;
+  }
+  .main-project-title {
+    font-size: 22px;
+  }
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .dash-stat-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+  .dash-label {
+    font-size: 12px;
+  }
+  .dash-value {
+    font-size: 18px;
+  }
+  .project-desc-card {
+    padding: 20px;
+    border-radius: 14px;
+  }
+  .section-divider h2 {
+    font-size: 20px;
+  }
+  .tracker-title {
+    font-size: 20px;
+  }
+  .tracker-desc {
+    font-size: 13px;
+  }
+  .stepper-wrapper {
+    padding: 0 8px;
+    margin-bottom: 40px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .steps-container {
+    min-width: 600px;
+  }
+  .step-item {
+    width: 90px;
+  }
+  .step-circle {
+    width: 36px;
+    height: 36px;
+  }
+  .stage-content-area,
+  .documents-card {
+    padding: 20px;
+    max-width: 100%;
+  }
+  .stage-section-title {
+    font-size: 16px;
+  }
+  .units-cards-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .units-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .units-btns {
+    width: 100%;
+  }
+  .btn-units-primary,
+  .btn-units-outline {
+    flex: 1;
+    justify-content: center;
+    font-size: 13px;
+  }
+  .units-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .units-table {
+    min-width: 540px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-group textarea {
+    grid-column: span 1;
+  }
+  .modal-content {
+    max-width: 90%;
+    padding: 24px;
+  }
+  .board-form-container {
+    max-width: 100%;
+  }
+  .form-container {
+    padding: 16px;
+  }
+  .grid-row {
+    flex-direction: column;
+  }
+  .board-cta-card {
+    padding: 30px 20px;
+    max-width: 100%;
+  }
+  .cta-title {
+    font-size: 20px;
+  }
+  .cta-description {
+    font-size: 14px;
+  }
+  .completed-info-card {
+    padding: 24px;
+    max-width: 100%;
+  }
+}
+
+/* Responsive: Mobile */
+@media (max-width: 576px) {
+  .project-header {
+    height: 160px;
+  }
+  .project-title-large {
+    font-size: 20px;
+  }
+  .project-subtitle-large {
+    font-size: 12px;
+  }
+  .header-content {
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
+  }
+  .header-top {
+    font-size: 10px;
+    gap: 8px;
+  }
+  .tabs-nav {
+    padding: 0 8px;
+    gap: 0;
+    margin-bottom: 16px;
+  }
+  .nav-tab {
+    padding: 12px 6px;
+    font-size: 12px;
+    min-height: 44px;
+  }
+  .tab-hint {
+    display: none;
+  }
+  .tracker-container {
+    padding: 12px 8px;
+  }
+  .main-project-title {
+    font-size: 20px;
+  }
+  .location-tag {
+    font-size: 12px;
+  }
+  .dashboard-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .dash-stat-card {
+    padding: 14px;
+    border-radius: 12px;
+  }
+  .dash-label {
+    font-size: 11px;
+  }
+  .dash-value {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .dash-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+  .project-desc-card {
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+  }
+  .project-desc-card h3 {
+    font-size: 16px;
+  }
+  .project-desc-card p {
+    font-size: 13px;
+  }
+  .section-divider h2 {
+    font-size: 18px;
+  }
+  .tracker-title {
+    font-size: 18px;
+  }
+  .tracker-desc {
+    font-size: 13px;
+  }
+  .progress-indicator {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .tracker-header-box {
+    margin-bottom: 30px;
+  }
+  .stepper-wrapper {
+    margin-bottom: 30px;
+  }
+  .stage-content-area,
+  .documents-card {
+    padding: 16px;
+    border-radius: 10px;
+  }
+  .stage-section-title {
+    font-size: 15px;
+  }
+  .stage-section-subtitle {
+    font-size: 13px;
+  }
+  .units-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .unit-card {
+    padding: 16px;
+  }
+  .unit-price {
+    font-size: 18px;
+  }
+  .unit-specs {
+    font-size: 12px;
+    gap: 8px;
+  }
+  .btn-unit-details,
+  .btn-unit-reserve,
+  .btn-unit-waiting {
+    padding: 10px;
+    min-height: 44px;
+    font-size: 12px;
+  }
+  .units-table th,
+  .units-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .form-input {
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+  .update-btn {
+    padding: 12px 20px;
+    min-height: 44px;
+    width: 100%;
+  }
+  .link-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .btn-primary,
+  .btn-outline {
+    padding: 12px 16px;
+    min-height: 44px;
+    font-size: 13px;
+  }
+  .btn-units-primary,
+  .btn-units-outline {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+  .modal-content {
+    max-width: 95%;
+    padding: 20px;
+  }
+  .modal-actions {
+    flex-direction: column;
+  }
+  .modal-actions button {
+    min-height: 44px;
+  }
+  .form-container {
+    padding: 12px;
+    gap: 12px;
+  }
+  .section-header {
+    font-size: 13px;
+  }
+  .box-input {
+    padding: 10px;
+    min-height: 44px;
+    font-size: 13px;
+  }
+  .save-btn-board {
+    width: 100%;
+    min-height: 44px;
+    padding: 12px 20px;
+  }
+  .board-cta-card {
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
+  .cta-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 20px;
+  }
+  .cta-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+  .cta-title {
+    font-size: 18px;
+  }
+  .cta-description {
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  .cta-btn-premium {
+    padding: 14px 24px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+  .loading-state,
+  .error-state {
+    padding: 40px 16px;
+  }
+  .glass-select {
+    min-height: 44px;
+  }
+  .glass-btn {
+    min-height: 44px;
+    padding: 12px 20px;
+  }
+  .team-card-luxury {
+    padding: 14px;
+  }
+  .team-avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 16px;
+  }
+  .team-info h3 {
+    font-size: 14px;
+  }
+  .team-info p {
+    font-size: 12px;
+  }
+  .btn-remove {
+    opacity: 1;
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Responsive: Extra Small Mobile */
+@media (max-width: 320px) {
+  .project-header {
+    height: 130px;
+  }
+  .project-title-large {
+    font-size: 17px;
+  }
+  .project-subtitle-large {
+    font-size: 11px;
+  }
+  .header-content {
+    bottom: 8px;
+    right: 8px;
+    left: 8px;
+  }
+  .nav-tab {
+    font-size: 11px;
+    padding: 10px 4px;
+  }
+  .main-project-title {
+    font-size: 18px;
+  }
+  .dashboard-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .dash-stat-card {
+    padding: 12px;
+    flex-direction: row;
+    gap: 12px;
+    text-align: right;
+  }
+  .dash-value {
+    font-size: 18px;
+    margin-bottom: 0;
+  }
+  .tracker-title {
+    font-size: 16px;
+  }
+  .section-divider h2 {
+    font-size: 16px;
+  }
+  .stage-content-area,
+  .documents-card {
+    padding: 12px;
+  }
+  .unit-card {
+    padding: 12px;
+  }
+  .unit-price {
+    font-size: 16px;
+  }
+  .modal-content {
+    padding: 16px;
+    border-radius: 10px;
+  }
+  .board-cta-card {
+    padding: 20px 12px;
+  }
+  .cta-title {
+    font-size: 16px;
+  }
+  .cta-btn-premium {
+    font-size: 13px;
+    padding: 12px 16px;
+  }
+}
+
+/* Responsive: Large Desktop */
+@media (min-width: 1920px) {
+  .project-header {
+    height: 400px;
+  }
+  .project-title-large {
+    font-size: 48px;
+  }
+  .project-subtitle-large {
+    font-size: 20px;
+  }
+  .header-content {
+    bottom: 40px;
+    right: 40px;
+  }
+  .header-top {
+    font-size: 14px;
+  }
+  .tabs-nav {
+    padding: 0 40px;
+    gap: 40px;
+  }
+  .nav-tab {
+    padding: 24px 8px;
+    font-size: 17px;
+  }
+  .tracker-container {
+    max-width: 1500px;
+    padding: 40px 28px;
+  }
+  .main-project-title {
+    font-size: 38px;
+  }
+  .location-tag {
+    font-size: 16px;
+  }
+  .dashboard-stats-grid {
+    gap: 28px;
+  }
+  .dash-stat-card {
+    padding: 32px;
+    border-radius: 24px;
+  }
+  .dash-label {
+    font-size: 15px;
+  }
+  .dash-value {
+    font-size: 28px;
+  }
+  .project-desc-card {
+    padding: 32px;
+    border-radius: 24px;
+  }
+  .project-desc-card h3 {
+    font-size: 22px;
+  }
+  .project-desc-card p {
+    font-size: 17px;
+  }
+  .tracker-title {
+    font-size: 28px;
+  }
+  .tracker-desc {
+    font-size: 17px;
+  }
+  .step-item {
+    width: 150px;
+  }
+  .step-circle {
+    width: 50px;
+    height: 50px;
+    font-size: 18px;
+  }
+  .step-label {
+    font-size: 15px;
+  }
+  .step-sublabel {
+    font-size: 13px;
+  }
+  .stage-content-area,
+  .documents-card {
+    padding: 40px;
+    max-width: 900px;
+  }
+  .stage-section-title {
+    font-size: 22px;
+  }
+  .units-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+  }
+  .unit-card {
+    padding: 24px;
+  }
+  .unit-price {
+    font-size: 24px;
+  }
+  .board-form-container {
+    max-width: 900px;
+  }
+  .board-cta-card {
+    padding: 60px;
+    max-width: 520px;
+  }
+  .cta-title {
+    font-size: 28px;
+  }
+  .cta-description {
+    font-size: 17px;
+  }
+}
+
+/* Responsive: Ultra-wide */
+@media (min-width: 2560px) {
+  .tracker-container {
+    max-width: 1900px;
+  }
+  .project-title-large {
+    font-size: 56px;
+  }
+  .main-project-title {
+    font-size: 44px;
+  }
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 36px;
+  }
+  .units-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  }
 }
 </style>

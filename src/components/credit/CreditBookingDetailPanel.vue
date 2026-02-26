@@ -244,6 +244,7 @@
 
 <script>
 import { computed } from 'vue';
+import { useFormatters } from '../../composables/useFormatters';
 
 const TRACKER_LABELS = [
   'رفع الطلب للبنك',
@@ -262,6 +263,8 @@ export default {
   },
   emits: ['evacuation', 'delete', 'edit', 'schedule', 'cancel', 'next-stage', 'reject-financing'],
   setup(props) {
+    const { formatCurrencyAr: formatCurrency, formatDate } = useFormatters();
+
     const summaryTitle = computed(() => {
       const b = props.booking;
       if (!b) return '—';
@@ -386,27 +389,6 @@ export default {
       return s !== 'sold' && s !== 'مباع';
     });
 
-    const formatDate = d => {
-      if (!d) return '—';
-      try {
-        return new Date(d).toLocaleDateString('ar-SA', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        });
-      } catch {
-        return d;
-      }
-    };
-    const formatCurrency = v => {
-      if (v == null || v === '') return '—';
-      return new Intl.NumberFormat('ar-SA', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 0,
-      }).format(Number(v));
-    };
-
     return {
       summaryTitle,
       statusLabel,
@@ -430,7 +412,6 @@ export default {
 
 <style scoped>
 .credit-booking-detail-panel {
-  font-family: 'Tajawal', 'Cairo', sans-serif;
   direction: rtl;
 }
 
@@ -442,7 +423,7 @@ export default {
   gap: 12px;
   padding: 20px 24px;
   background: #fff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 12px;
   margin-bottom: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -454,12 +435,12 @@ export default {
 .summary-title {
   font-size: 18px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 6px 0;
 }
 .summary-subtitle {
   font-size: 14px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin: 0;
 }
 .summary-meta {
@@ -473,14 +454,13 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  background: #16a34a;
+  background: var(--color-success);
   color: #fff;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  font-family: inherit;
 }
 .btn-evacuation svg {
   width: 18px;
@@ -491,14 +471,13 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  background: #16a34a;
+  background: var(--color-success);
   color: #fff;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  font-family: inherit;
 }
 .btn-evacuation-summary svg {
   width: 18px;
@@ -512,7 +491,7 @@ export default {
 }
 .status-badge.approved {
   background: #dcfce7;
-  color: #16a34a;
+  color: var(--color-success);
 }
 .status-badge.delay {
   background: #dc2626;
@@ -520,14 +499,14 @@ export default {
 }
 .summary-date {
   font-size: 14px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 .btn-dropdown {
   background: none;
   border: none;
   padding: 4px;
   cursor: pointer;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 .btn-dropdown svg {
   width: 20px;
@@ -549,8 +528,7 @@ export default {
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  font-family: inherit;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
 }
 .btn-action svg {
   width: 18px;
@@ -562,16 +540,16 @@ export default {
   border-color: #fecaca;
 }
 .btn-edit {
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--color-light-gray);
+  color: var(--color-charcoal);
 }
 .btn-evacuation-grey {
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--color-light-gray);
+  color: var(--color-charcoal);
 }
 .btn-schedule {
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--color-light-gray);
+  color: var(--color-charcoal);
 }
 .btn-cancel {
   background: #fefce8;
@@ -581,7 +559,7 @@ export default {
 
 .tracker-section {
   background: #fff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 12px;
   padding: 20px 24px;
   margin-bottom: 24px;
@@ -589,7 +567,7 @@ export default {
 .tracker-title {
   font-size: 16px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 16px 0;
 }
 .tracker-steps {
@@ -624,8 +602,8 @@ export default {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #e2e8f0;
-  color: #64748b;
+  background: var(--color-medium-gray);
+  color: var(--color-dark-gray);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -634,7 +612,7 @@ export default {
   flex-shrink: 0;
 }
 .tracker-step.done .step-icon {
-  background: #16a34a;
+  background: var(--color-success);
   color: #fff;
 }
 .step-icon svg {
@@ -643,13 +621,13 @@ export default {
 }
 .step-label {
   font-size: 13px;
-  color: #334155;
+  color: var(--color-charcoal);
 }
 .tracker-done-msg {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #16a34a;
+  color: var(--color-success);
   font-weight: 600;
   font-size: 14px;
   margin: 14px 0 0 0;
@@ -672,7 +650,6 @@ export default {
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  font-family: inherit;
 }
 .btn-next-stage:hover {
   background: #7d5e53;
@@ -712,7 +689,7 @@ export default {
 }
 .detail-card {
   background: #fff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 12px;
   padding: 16px 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -723,14 +700,14 @@ export default {
   gap: 8px;
   font-size: 15px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 12px 0;
   padding-bottom: 10px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-light-gray);
 }
 .card-icon {
   display: flex;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 .card-icon svg {
   width: 20px;
@@ -748,10 +725,84 @@ export default {
   font-size: 13px;
 }
 .detail-key {
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 .detail-val {
-  color: #1e293b;
+  color: var(--color-charcoal);
   font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .booking-summary-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+  }
+  .summary-meta {
+    width: 100%;
+  }
+  .booking-actions {
+    flex-wrap: wrap;
+  }
+  .tracker-steps {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .tracker-step-wrap {
+    min-width: auto;
+  }
+  .tracker-section {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .booking-summary-card {
+    padding: 14px;
+    border-radius: 10px;
+  }
+  .summary-title {
+    font-size: 16px;
+  }
+  .booking-actions {
+    gap: 8px;
+  }
+  .btn-action {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .detail-card {
+    padding: 14px 16px;
+  }
+  .detail-card-title {
+    font-size: 14px;
+  }
+  .detail-row {
+    font-size: 12px;
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+@media (max-width: 320px) {
+  .booking-summary-card {
+    padding: 12px;
+  }
+  .summary-title {
+    font-size: 15px;
+  }
+  .summary-subtitle {
+    font-size: 13px;
+  }
+  .btn-action {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  .detail-card {
+    padding: 12px;
+  }
+  .tracker-section {
+    padding: 12px;
+  }
 }
 </style>

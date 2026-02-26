@@ -156,7 +156,7 @@
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2.5"
+              stroke-width="2"
             >
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -507,12 +507,12 @@ export default {
 .knowledge-title {
   font-size: 22px;
   font-weight: 700;
-  color: var(--color-navy, #1e3a5f);
+  color: var(--color-navy, var(--color-navy));
   margin: 0 0 4px 0;
 }
 .knowledge-subtitle {
   font-size: 14px;
-  color: var(--color-dark-gray, #64748b);
+  color: var(--color-dark-gray, var(--color-dark-gray));
   margin: 0;
 }
 
@@ -525,8 +525,8 @@ export default {
   border-radius: 10px;
   background: linear-gradient(
     135deg,
-    var(--color-gold, #b1a28f) 0%,
-    var(--color-gold-dark, #8c7851) 100%
+    var(--color-gold, var(--color-gold)) 0%,
+    var(--color-gold-dark, var(--color-gold-dark)) 100%
   );
   color: #fff;
   font-size: 14px;
@@ -559,24 +559,24 @@ export default {
 .filter-select {
   width: 100%;
   padding: 10px 14px;
-  border: 1px solid var(--color-medium-gray, #e2e8f0);
+  border: 1px solid var(--color-medium-gray, var(--color-medium-gray));
   border-radius: 10px;
   font-size: 13px;
   font-family: inherit;
-  color: var(--color-charcoal, #1e293b);
+  color: var(--color-charcoal, var(--color-charcoal));
   background: #fff;
   outline: none;
   transition: border-color 0.15s;
 }
 .filter-input:focus,
 .filter-select:focus {
-  border-color: var(--color-gold, #b1a28f);
+  border-color: var(--color-gold, var(--color-gold));
 }
 
 /* الجدول */
 .knowledge-table-wrap {
   background: #fff;
-  border: 1px solid var(--color-medium-gray, #e2e8f0);
+  border: 1px solid var(--color-medium-gray, var(--color-medium-gray));
   border-radius: 14px;
   overflow: hidden;
   margin-bottom: 20px;
@@ -584,7 +584,7 @@ export default {
 .knowledge-loading {
   padding: 40px;
   text-align: center;
-  color: var(--color-dark-gray, #64748b);
+  color: var(--color-dark-gray, var(--color-dark-gray));
   font-size: 14px;
 }
 .knowledge-table {
@@ -596,16 +596,16 @@ export default {
   padding: 12px 16px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-dark-gray, #64748b);
-  background: var(--color-light-gray, #f8fafc);
-  border-bottom: 1px solid var(--color-medium-gray, #e2e8f0);
+  color: var(--color-dark-gray, var(--color-dark-gray));
+  background: var(--color-light-gray, var(--color-light-gray));
+  border-bottom: 1px solid var(--color-medium-gray, var(--color-medium-gray));
   white-space: nowrap;
 }
 .knowledge-table td {
   padding: 12px 16px;
   font-size: 13px;
-  border-bottom: 1px solid #f1f5f9;
-  color: var(--color-charcoal, #1e293b);
+  border-bottom: 1px solid var(--color-light-gray);
+  color: var(--color-charcoal, var(--color-charcoal));
 }
 .knowledge-table tr:last-child td {
   border-bottom: none;
@@ -623,7 +623,7 @@ export default {
 .knowledge-empty {
   text-align: center;
   padding: 40px 16px;
-  color: var(--color-dark-gray, #64748b);
+  color: var(--color-dark-gray, var(--color-dark-gray));
 }
 
 .knowledge-lang-badge {
@@ -660,7 +660,7 @@ export default {
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: var(--color-dark-gray, #64748b);
+  color: var(--color-dark-gray, var(--color-dark-gray));
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -668,8 +668,8 @@ export default {
   transition: color 0.15s, background 0.15s;
 }
 .btn-icon:hover {
-  background: var(--color-light-gray, #f8fafc);
-  color: var(--color-navy, #1e3a5f);
+  background: var(--color-light-gray, var(--color-light-gray));
+  color: var(--color-navy, var(--color-navy));
 }
 .btn-icon-danger:hover {
   background: #fef2f2;
@@ -684,7 +684,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
   padding: 20px;
   backdrop-filter: blur(2px);
 }
@@ -702,12 +702,12 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid var(--color-medium-gray, #e2e8f0);
+  border-bottom: 1px solid var(--color-medium-gray, var(--color-medium-gray));
 }
 .knowledge-modal-header h2 {
   font-size: 18px;
   font-weight: 700;
-  color: var(--color-navy, #1e3a5f);
+  color: var(--color-navy, var(--color-navy));
   margin: 0;
 }
 .btn-close {
@@ -715,13 +715,13 @@ export default {
   border: none;
   padding: 4px;
   cursor: pointer;
-  color: var(--color-dark-gray, #64748b);
+  color: var(--color-dark-gray, var(--color-dark-gray));
   border-radius: 8px;
   display: flex;
   transition: color 0.15s;
 }
 .btn-close:hover {
-  color: var(--color-navy, #1e3a5f);
+  color: var(--color-navy, var(--color-navy));
 }
 
 .knowledge-form {
@@ -745,7 +745,7 @@ export default {
 .form-group label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-charcoal, #1e293b);
+  color: var(--color-charcoal, var(--color-charcoal));
 }
 .required {
   color: #dc2626;
@@ -755,11 +755,11 @@ export default {
 .form-group select,
 .form-group textarea {
   padding: 10px 14px;
-  border: 1px solid var(--color-medium-gray, #e2e8f0);
+  border: 1px solid var(--color-medium-gray, var(--color-medium-gray));
   border-radius: 10px;
   font-size: 13px;
   font-family: inherit;
-  color: var(--color-charcoal, #1e293b);
+  color: var(--color-charcoal, var(--color-charcoal));
   outline: none;
   transition: border-color 0.15s;
   direction: rtl;
@@ -767,7 +767,7 @@ export default {
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-  border-color: var(--color-gold, #b1a28f);
+  border-color: var(--color-gold, var(--color-gold));
 }
 .form-group textarea {
   resize: vertical;
@@ -785,7 +785,7 @@ export default {
 .form-group-checkbox input[type='checkbox'] {
   width: 18px;
   height: 18px;
-  accent-color: var(--color-gold, #b1a28f);
+  accent-color: var(--color-gold, var(--color-gold));
 }
 
 .knowledge-modal-actions {
@@ -796,16 +796,438 @@ export default {
 }
 .btn-cancel {
   padding: 10px 20px;
-  border: 1px solid var(--color-medium-gray, #e2e8f0);
+  border: 1px solid var(--color-medium-gray, var(--color-medium-gray));
   border-radius: 10px;
   background: #fff;
-  color: var(--color-charcoal, #1e293b);
+  color: var(--color-charcoal, var(--color-charcoal));
   font-size: 14px;
   font-family: inherit;
   cursor: pointer;
   transition: background 0.15s;
 }
 .btn-cancel:hover {
-  background: var(--color-light-gray, #f8fafc);
+  background: var(--color-light-gray, var(--color-light-gray));
+}
+
+/* Responsive: tablet landscape */
+@media (max-width: 992px) {
+  .knowledge-view {
+    padding: 20px;
+  }
+  .knowledge-title {
+    font-size: 20px;
+  }
+  .knowledge-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .knowledge-table {
+    min-width: 700px;
+  }
+}
+
+/* Responsive: tablet portrait */
+@media (max-width: 768px) {
+  .knowledge-view {
+    padding: 16px;
+  }
+  .knowledge-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .knowledge-title {
+    font-size: 18px;
+  }
+  .btn-primary {
+    align-self: flex-start;
+  }
+  .knowledge-filters {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .filter-group {
+    min-width: 100%;
+  }
+  .knowledge-table-wrap {
+    margin-inline: -16px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  .knowledge-modal {
+    max-width: 95vw;
+  }
+  .form-row.form-row-2 {
+    flex-direction: column;
+  }
+  .form-row.form-row-2 > .form-group {
+    flex: none;
+    width: 100%;
+  }
+  .knowledge-modal-header {
+    padding: 16px 20px;
+  }
+  .knowledge-form {
+    padding: 16px 20px 20px;
+  }
+}
+
+/* Responsive: mobile */
+@media (max-width: 576px) {
+  .knowledge-view {
+    padding: 12px;
+    overflow-x: hidden;
+  }
+  .knowledge-title {
+    font-size: 17px;
+  }
+  .knowledge-subtitle {
+    font-size: 13px;
+  }
+  .btn-primary {
+    padding: 10px 16px;
+    font-size: 13px;
+    min-height: 44px;
+    width: 100%;
+    justify-content: center;
+  }
+  .filter-input,
+  .filter-select {
+    padding: 10px 12px;
+    min-height: 44px;
+    font-size: 14px;
+  }
+  .knowledge-table th {
+    padding: 10px 10px;
+    font-size: 11px;
+  }
+  .knowledge-table td {
+    padding: 10px 10px;
+    font-size: 12px;
+  }
+  .knowledge-cell-title {
+    max-width: 150px;
+  }
+  .btn-icon {
+    padding: 10px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .knowledge-modal {
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 12px;
+  }
+  .knowledge-modal-header h2 {
+    font-size: 16px;
+  }
+  .knowledge-modal-actions {
+    flex-direction: column-reverse;
+  }
+  .btn-cancel,
+  .knowledge-modal-actions .btn-primary {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    min-height: 44px;
+  }
+  .form-group input[type='text'],
+  .form-group input[type='number'],
+  .form-group select,
+  .form-group textarea {
+    padding: 10px 12px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+}
+
+/* Responsive: extra small mobile */
+@media (max-width: 320px) {
+  .knowledge-view {
+    padding: 8px;
+  }
+  .knowledge-title {
+    font-size: 16px;
+  }
+  .knowledge-header {
+    gap: 10px;
+  }
+  .knowledge-table th,
+  .knowledge-table td {
+    padding: 8px 6px;
+    font-size: 11px;
+  }
+  .knowledge-cell-title {
+    max-width: 100px;
+    font-size: 11px;
+  }
+  .knowledge-lang-badge,
+  .knowledge-status {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+  .knowledge-modal-header {
+    padding: 12px 14px;
+  }
+  .knowledge-modal-header h2 {
+    font-size: 15px;
+  }
+  .knowledge-form {
+    padding: 12px 14px 16px;
+    gap: 12px;
+  }
+  .form-group label {
+    font-size: 12px;
+  }
+}
+
+/* Responsive: large desktop */
+@media (min-width: 1200px) {
+  .knowledge-view {
+    padding: 28px;
+  }
+  .knowledge-title {
+    font-size: 24px;
+  }
+  .knowledge-table th {
+    padding: 14px 20px;
+    font-size: 13px;
+  }
+  .knowledge-table td {
+    padding: 14px 20px;
+    font-size: 14px;
+  }
+}
+
+/* Responsive: full HD */
+@media (min-width: 1920px) {
+  .knowledge-view {
+    padding: 32px;
+  }
+  .knowledge-title {
+    font-size: 26px;
+  }
+  .knowledge-subtitle {
+    font-size: 16px;
+  }
+  .knowledge-table th {
+    padding: 16px 24px;
+    font-size: 14px;
+  }
+  .knowledge-table td {
+    padding: 16px 24px;
+    font-size: 15px;
+  }
+  .knowledge-cell-title {
+    max-width: 360px;
+  }
+  .filter-input,
+  .filter-select {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  .btn-primary {
+    padding: 12px 24px;
+    font-size: 15px;
+  }
+  .knowledge-lang-badge,
+  .knowledge-status {
+    font-size: 12px;
+    padding: 4px 12px;
+  }
+  .knowledge-modal {
+    max-width: 720px;
+  }
+  .knowledge-modal-header h2 {
+    font-size: 20px;
+  }
+  .form-group input[type='text'],
+  .form-group input[type='number'],
+  .form-group select,
+  .form-group textarea {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Responsive: 2K ultra-wide */
+@media (min-width: 2560px) {
+  .knowledge-view {
+    padding: 40px;
+  }
+  .knowledge-title {
+    font-size: 30px;
+  }
+  .knowledge-subtitle {
+    font-size: 18px;
+  }
+  .knowledge-header {
+    margin-bottom: 32px;
+  }
+  .knowledge-table-wrap {
+    border-radius: 18px;
+  }
+  .knowledge-table th {
+    padding: 18px 28px;
+    font-size: 15px;
+  }
+  .knowledge-table td {
+    padding: 18px 28px;
+    font-size: 16px;
+  }
+  .knowledge-cell-title {
+    max-width: 440px;
+  }
+  .filter-input,
+  .filter-select {
+    padding: 14px 18px;
+    font-size: 15px;
+    border-radius: 12px;
+  }
+  .knowledge-filters {
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .btn-primary {
+    padding: 14px 28px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+  .btn-icon {
+    padding: 10px;
+  }
+  .btn-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  .knowledge-lang-badge,
+  .knowledge-status {
+    font-size: 13px;
+    padding: 4px 14px;
+  }
+  .knowledge-modal {
+    max-width: 800px;
+    border-radius: 20px;
+  }
+  .knowledge-modal-header h2 {
+    font-size: 22px;
+  }
+  .form-group label {
+    font-size: 15px;
+  }
+  .form-group input[type='text'],
+  .form-group input[type='number'],
+  .form-group select,
+  .form-group textarea {
+    padding: 14px 18px;
+    font-size: 15px;
+    border-radius: 12px;
+  }
+  .btn-cancel {
+    padding: 12px 24px;
+    font-size: 15px;
+  }
+}
+
+/* Responsive: 4K */
+@media (min-width: 3840px) {
+  .knowledge-view {
+    padding: 48px;
+  }
+  .knowledge-title {
+    font-size: 36px;
+  }
+  .knowledge-subtitle {
+    font-size: 20px;
+  }
+  .knowledge-header {
+    margin-bottom: 40px;
+  }
+  .knowledge-table-wrap {
+    border-radius: 22px;
+  }
+  .knowledge-table th {
+    padding: 22px 32px;
+    font-size: 17px;
+  }
+  .knowledge-table td {
+    padding: 22px 32px;
+    font-size: 18px;
+  }
+  .knowledge-cell-title {
+    max-width: 520px;
+    font-size: 18px;
+  }
+  .filter-input,
+  .filter-select {
+    padding: 16px 22px;
+    font-size: 17px;
+    border-radius: 14px;
+  }
+  .filter-group {
+    min-width: 200px;
+  }
+  .knowledge-filters {
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  .btn-primary {
+    padding: 16px 32px;
+    font-size: 18px;
+    border-radius: 14px;
+  }
+  .btn-icon {
+    padding: 12px;
+    min-width: 48px;
+    min-height: 48px;
+  }
+  .btn-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  .knowledge-lang-badge,
+  .knowledge-status {
+    font-size: 15px;
+    padding: 6px 16px;
+    border-radius: 14px;
+  }
+  .knowledge-modal {
+    max-width: 900px;
+    border-radius: 24px;
+  }
+  .knowledge-modal-header {
+    padding: 28px 32px;
+  }
+  .knowledge-modal-header h2 {
+    font-size: 26px;
+  }
+  .knowledge-form {
+    padding: 28px 32px 32px;
+    gap: 20px;
+  }
+  .form-group label {
+    font-size: 17px;
+  }
+  .form-group input[type='text'],
+  .form-group input[type='number'],
+  .form-group select,
+  .form-group textarea {
+    padding: 16px 22px;
+    font-size: 17px;
+    border-radius: 14px;
+  }
+  .btn-cancel {
+    padding: 14px 28px;
+    font-size: 17px;
+    border-radius: 14px;
+  }
+  .knowledge-empty {
+    padding: 56px 24px;
+    font-size: 18px;
+  }
+  .knowledge-loading {
+    padding: 56px;
+    font-size: 17px;
+  }
 }
 </style>

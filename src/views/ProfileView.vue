@@ -203,7 +203,6 @@ export default {
   font-size: 24px;
   font-weight: 700;
   margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
 }
 
 .user-role {
@@ -299,7 +298,6 @@ export default {
   cursor: pointer;
   transition: all 0.2s;
   text-align: right;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .settings-btn:hover {
@@ -347,7 +345,6 @@ export default {
   font-weight: 800;
   color: #b1a28f;
   margin-bottom: 4px;
-  font-family: 'Amiri', serif;
 }
 
 .stat-label {
@@ -372,7 +369,6 @@ export default {
   color: #dc2626;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .logout-btn:hover {
@@ -383,5 +379,237 @@ export default {
 .logout-btn svg {
   width: 20px;
   height: 20px;
+}
+
+/* Responsive: Tablet Landscape */
+@media (max-width: 992px) {
+  .profile-page {
+    max-width: 100%;
+  }
+  .page-header {
+    padding: 32px 24px;
+  }
+  .avatar-large {
+    width: 88px;
+    height: 88px;
+    font-size: 36px;
+  }
+  .user-name {
+    font-size: 22px;
+  }
+  .stats-grid {
+    gap: 16px;
+  }
+  .stat-value {
+    font-size: 28px;
+  }
+}
+
+/* Responsive: Tablet Portrait */
+@media (max-width: 768px) {
+  .page-header {
+    padding: 28px 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+  }
+  .avatar-large {
+    width: 80px;
+    height: 80px;
+    font-size: 32px;
+  }
+  .user-name {
+    font-size: 20px;
+  }
+  .profile-section {
+    padding: 20px;
+  }
+  .info-grid {
+    gap: 16px;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .stat-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+  .stat-value {
+    font-size: 26px;
+  }
+  .settings-btn {
+    padding: 14px 16px;
+    min-height: 44px;
+  }
+  .logout-btn {
+    padding: 14px;
+    min-height: 44px;
+  }
+}
+
+/* Responsive: Mobile */
+@media (max-width: 576px) {
+  .page-header {
+    padding: 24px 16px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+  .avatar-large {
+    width: 72px;
+    height: 72px;
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+  .user-name {
+    font-size: 18px;
+  }
+  .user-role {
+    font-size: 12px;
+  }
+  .profile-content {
+    gap: 14px;
+  }
+  .profile-section {
+    padding: 16px;
+    border-radius: 10px;
+  }
+  .section-title {
+    font-size: 15px;
+    gap: 8px;
+  }
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .info-item p {
+    font-size: 14px;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .stat-card {
+    padding: 14px;
+    border-radius: 14px;
+  }
+  .stat-value {
+    font-size: 24px;
+  }
+  .stat-label {
+    font-size: 12px;
+  }
+  .settings-btn {
+    font-size: 13px;
+    padding: 12px 14px;
+    min-height: 44px;
+  }
+  .logout-btn {
+    font-size: 14px;
+    min-height: 44px;
+  }
+}
+
+/* Responsive: Extra Small Mobile */
+@media (max-width: 320px) {
+  .page-header {
+    padding: 20px 12px;
+  }
+  .avatar-large {
+    width: 64px;
+    height: 64px;
+    font-size: 24px;
+  }
+  .user-name {
+    font-size: 16px;
+  }
+  .profile-section {
+    padding: 12px;
+  }
+  .section-title {
+    font-size: 14px;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .stat-card {
+    padding: 12px;
+  }
+  .stat-value {
+    font-size: 20px;
+  }
+  .settings-btn {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+}
+
+/* Responsive: Large Desktop */
+@media (min-width: 1920px) {
+  .profile-page {
+    max-width: 1000px;
+  }
+  .page-header {
+    padding: 50px 40px;
+    border-radius: 20px;
+    margin-bottom: 40px;
+  }
+  .avatar-large {
+    width: 120px;
+    height: 120px;
+    font-size: 48px;
+  }
+  .user-name {
+    font-size: 28px;
+  }
+  .user-role {
+    font-size: 16px;
+  }
+  .profile-content {
+    gap: 28px;
+  }
+  .profile-section {
+    padding: 32px;
+    border-radius: 16px;
+  }
+  .section-title {
+    font-size: 18px;
+  }
+  .info-item p {
+    font-size: 16px;
+  }
+  .stats-grid {
+    gap: 24px;
+  }
+  .stat-card {
+    padding: 28px;
+  }
+  .stat-value {
+    font-size: 38px;
+  }
+  .stat-label {
+    font-size: 15px;
+  }
+  .settings-btn {
+    padding: 18px 20px;
+    font-size: 16px;
+  }
+  .logout-btn {
+    padding: 18px;
+    font-size: 16px;
+  }
+}
+
+/* Responsive: Ultra-wide */
+@media (min-width: 2560px) {
+  .profile-page {
+    max-width: 1200px;
+  }
+  .user-name {
+    font-size: 32px;
+  }
+  .stat-value {
+    font-size: 42px;
+  }
 }
 </style>

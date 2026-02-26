@@ -26,7 +26,7 @@
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="2.5"
+            stroke-width="2"
           >
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -250,7 +250,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
   padding: 20px;
   backdrop-filter: blur(2px);
   animation: fadeIn 0.3s ease;
@@ -278,7 +278,7 @@ export default {
   box-shadow: var(--shadow-lg, 0 10px 40px -10px rgba(0, 0, 0, 0.12));
   overflow: hidden;
   direction: rtl;
-  border-top: 4px solid var(--color-gold, #b1a28f);
+  border-top: 4px solid var(--color-gold, var(--color-gold));
 }
 
 .modal-header {
@@ -294,13 +294,12 @@ export default {
 .modal-title {
   font-size: 22px;
   font-weight: 700;
-  color: var(--color-navy, #1e3a5f);
+  color: var(--color-navy, var(--color-navy));
   margin: 0 0 8px 0;
-  font-family: 'Cairo', 'Amiri', serif;
 }
 .modal-subtitle {
   font-size: 14px;
-  color: var(--color-dark-gray, #64748b);
+  color: var(--color-dark-gray, var(--color-dark-gray));
   margin: 0;
 }
 .close-btn {
@@ -313,11 +312,11 @@ export default {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--color-dark-gray, #64748b);
+  color: var(--color-dark-gray, var(--color-dark-gray));
   transition: color 0.2s;
 }
 .close-btn:hover {
-  color: var(--color-charcoal, #1e293b);
+  color: var(--color-charcoal, var(--color-charcoal));
 }
 
 .modal-body {
@@ -334,13 +333,13 @@ export default {
   gap: 10px;
   font-size: 16px;
   font-weight: 700;
-  color: var(--color-navy, #1e3a5f);
+  color: var(--color-navy, var(--color-navy));
   margin: 0 0 16px 0;
 }
 .section-bar {
   width: 4px;
   height: 20px;
-  background: var(--color-gold, #b1a28f);
+  background: var(--color-gold, var(--color-gold));
   border-radius: 2px;
 }
 .form-group {
@@ -354,7 +353,7 @@ export default {
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-charcoal, #1e293b);
+  color: var(--color-charcoal, var(--color-charcoal));
   margin-bottom: 8px;
 }
 .input.textarea {
@@ -363,7 +362,7 @@ export default {
 }
 .divider {
   height: 1px;
-  background: var(--color-medium-gray, #e2e8f0);
+  background: var(--color-medium-gray, var(--color-medium-gray));
   margin: 20px 0;
 }
 
@@ -382,21 +381,21 @@ export default {
 .action-label {
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-charcoal, #1e293b);
+  color: var(--color-charcoal, var(--color-charcoal));
 }
 .toggle-switch {
   width: 48px;
   height: 26px;
   border-radius: 9999px;
   border: none;
-  background: var(--color-medium-gray, #e2e8f0);
+  background: var(--color-medium-gray, var(--color-medium-gray));
   cursor: pointer;
   padding: 0;
   position: relative;
   transition: background 0.2s;
 }
 .toggle-switch.on {
-  background: var(--color-navy, #1e3a5f);
+  background: var(--color-navy, var(--color-navy));
 }
 .toggle-knob {
   position: absolute;
@@ -421,7 +420,7 @@ export default {
   gap: 12px;
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid var(--color-medium-gray, #e2e8f0);
+  border-top: 1px solid var(--color-medium-gray, var(--color-medium-gray));
 }
 .btn-cancel,
 .btn-save {
@@ -435,5 +434,70 @@ export default {
 .btn-save:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .modal-container {
+    max-width: 95%;
+  }
+  .modal-header {
+    padding: 20px;
+  }
+  .modal-body {
+    padding: 0 20px 20px;
+  }
+  .action-row {
+    flex-direction: column;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 576px) {
+  .modal-container {
+    max-width: 100%;
+    margin: 0 8px;
+    border-radius: 12px;
+    max-height: 90vh;
+  }
+  .modal-overlay {
+    padding: 12px;
+  }
+  .modal-header {
+    padding: 16px;
+  }
+  .modal-title {
+    font-size: 18px;
+  }
+  .modal-body {
+    padding: 0 16px 16px;
+  }
+  .modal-footer-action {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-cancel,
+  .btn-save {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 320px) {
+  .modal-container {
+    margin: 0 4px;
+  }
+  .modal-header {
+    padding: 14px 12px;
+  }
+  .modal-title {
+    font-size: 16px;
+  }
+  .modal-body {
+    padding: 0 12px 12px;
+  }
+  .input {
+    font-size: 13px;
+  }
 }
 </style>

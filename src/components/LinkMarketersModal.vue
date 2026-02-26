@@ -157,7 +157,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2100;
+  z-index: var(--z-popover);
   backdrop-filter: blur(5px);
 }
 
@@ -187,7 +187,7 @@ export default {
 
 .modal-header {
   padding: 24px 30px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-light-gray);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -197,17 +197,16 @@ export default {
   margin: 0;
   font-size: 20px;
   font-weight: 800;
-  color: #1e3a5f;
-  font-family: 'Amiri', serif;
+  color: var(--color-navy);
 }
 
 .close-btn {
-  background: #f1f5f9;
+  background: var(--color-light-gray);
   border: none;
   padding: 6px;
   border-radius: 8px;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   display: flex;
 }
 
@@ -223,13 +222,12 @@ export default {
 .search-input {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-medium-gray);
   border-radius: 12px;
-  font-family: 'Tajawal', sans-serif;
   transition: all 0.2s;
 }
 .search-input:focus {
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
   outline: none;
   box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.1);
 }
@@ -247,33 +245,33 @@ export default {
   gap: 15px;
   padding: 12px;
   border-radius: 12px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--color-light-gray);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .marketer-item:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: var(--color-light-gray);
+  border-color: var(--color-medium-gray);
 }
 .marketer-item.selected {
-  background: #fdfbf7;
-  border-color: #b1a28f;
+  background: var(--color-off-white);
+  border-color: var(--color-gold);
 }
 
 .check-box {
   width: 20px;
   height: 20px;
   border-radius: 6px;
-  border: 2px solid #cbd5e1;
+  border: 2px solid var(--color-medium-gray);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
 }
 .selected .check-box {
-  background: #b1a28f;
-  border-color: #b1a28f;
+  background: var(--color-gold);
+  border-color: var(--color-gold);
 }
 .check-box svg {
   width: 14px;
@@ -285,26 +283,26 @@ export default {
 }
 .marketer-info .name {
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-charcoal);
   font-size: 14px;
 }
 .marketer-info .email {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
 }
 
 .other-team-tag {
   font-size: 10px;
   padding: 2px 8px;
-  background: #e2e8f0;
-  color: #475569;
+  background: var(--color-medium-gray);
+  color: var(--color-charcoal);
   border-radius: 10px;
   font-weight: 600;
 }
 
 .modal-footer {
   padding: 20px 24px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--color-light-gray);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -313,7 +311,7 @@ export default {
 .selected-count {
   font-size: 13px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .actions {
@@ -328,22 +326,95 @@ export default {
   font-weight: 700;
   cursor: pointer;
   border: none;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .btn-primary {
-  background: #1e3a5f;
+  background: var(--color-navy);
   color: white;
 }
 .btn-secondary {
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--color-light-gray);
+  color: var(--color-dark-gray);
 }
 
 .empty-state {
   text-align: center;
   padding: 40px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .modal-container {
+    width: 95%;
+    max-height: 85vh;
+  }
+  .modal-header {
+    padding: 20px;
+  }
+  .modal-body {
+    padding: 20px;
+  }
+  .modal-footer {
+    padding: 16px 20px;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .actions .btn-primary,
+  .actions .btn-secondary {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .modal-container {
+    max-width: 100%;
+    width: 100%;
+    max-height: 90vh;
+    border-radius: 16px;
+    margin: 0 8px;
+  }
+  .modal-header {
+    padding: 16px;
+  }
+  .modal-title {
+    font-size: 18px;
+  }
+  .modal-body {
+    padding: 16px;
+  }
+  .marketer-item {
+    padding: 10px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 320px) {
+  .modal-container {
+    border-radius: 12px;
+    margin: 0 4px;
+  }
+  .modal-header {
+    padding: 14px 12px;
+  }
+  .modal-title {
+    font-size: 16px;
+  }
+  .modal-body {
+    padding: 12px;
+  }
+  .modal-footer {
+    padding: 12px;
+  }
+  .btn-primary,
+  .btn-secondary {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
 }
 </style>

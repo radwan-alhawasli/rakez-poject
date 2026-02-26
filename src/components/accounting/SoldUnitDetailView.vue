@@ -509,6 +509,7 @@ import { ref, reactive, computed, watch, onMounted } from 'vue';
 import accountingService from '../../services/accountingService';
 import logger from '../../utils/logger';
 import { toast } from '../../composables/useToast';
+import { useFormatters } from '../../composables/useFormatters';
 
 const COMMISSION_TYPE_LABELS = {
   lead_generation: 'عمولة الجلب',
@@ -533,6 +534,7 @@ export default {
   },
   emits: ['back', 'create-commission'],
   setup(props, { emit }) {
+    const { formatCurrency, formatNumber } = useFormatters();
     const employees = ref([]);
     const commissionSummary = ref(null);
     const distributions = ref([]);
@@ -592,23 +594,6 @@ export default {
       );
       return Math.max(0, net - distTotal);
     });
-
-    const formatCurrency = val => {
-      if (!val) return '0 ر.س';
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 2,
-      }).format(val);
-    };
-
-    const formatNumber = val => {
-      if (val == null) return '0';
-      return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(val);
-    };
 
     const getTypeLabel = type => COMMISSION_TYPE_LABELS[type] || type || '—';
 
@@ -851,7 +836,7 @@ export default {
   gap: 16px;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-medium-gray);
 }
 
 .back-btn {
@@ -859,31 +844,30 @@ export default {
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-medium-gray);
   border-radius: 12px;
   background: white;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .back-btn:hover {
-  border-color: #b1a28f;
-  color: #b1a28f;
+  border-color: var(--color-gold);
+  color: var(--color-gold);
 }
 
 .page-title {
   font-size: 24px;
   font-weight: 800;
-  color: #1e3a5f;
-  font-family: 'Amiri', serif;
+  color: var(--color-navy);
   margin: 0;
 }
 
 .page-subtitle {
   font-size: 14px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin: 4px 0 0;
 }
 
@@ -900,11 +884,11 @@ export default {
 
 .unit-info-label {
   font-weight: 600;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .unit-info-value {
-  color: #1e293b;
+  color: var(--color-charcoal);
   font-weight: 500;
 }
 
@@ -924,13 +908,13 @@ export default {
 
 .price-label {
   font-size: 14px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .price-value {
   font-size: 20px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 
 .status-badge {
@@ -959,7 +943,7 @@ export default {
 
 .field-group label {
   font-size: 14px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
 }
 
@@ -968,7 +952,7 @@ export default {
 }
 
 .create-commission-section {
-  background: #f8fafc;
+  background: var(--color-light-gray);
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 28px;
@@ -977,7 +961,7 @@ export default {
 .section-title {
   font-size: 18px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin-bottom: 16px;
 }
 
@@ -997,7 +981,7 @@ export default {
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-charcoal);
   margin-bottom: 6px;
 }
 
@@ -1019,16 +1003,16 @@ export default {
 }
 
 .distribution-panel {
-  background: #f8fafc;
+  background: var(--color-light-gray);
   border-radius: 16px;
   padding: 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
 }
 
 .panel-title {
   font-size: 16px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 16px;
 }
 
@@ -1039,7 +1023,7 @@ export default {
 .subsection-title {
   font-size: 14px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin: 0 0 10px;
 }
 
@@ -1061,7 +1045,7 @@ export default {
 
 .calc-amount {
   font-weight: 600;
-  color: #1e3a5f;
+  color: var(--color-navy);
   min-width: 100px;
   text-align: left;
 }
@@ -1069,7 +1053,7 @@ export default {
 .btn-icon {
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   font-size: 20px;
   cursor: pointer;
   padding: 0 8px;
@@ -1084,7 +1068,7 @@ export default {
 }
 
 .btn-icon.delete {
-  color: #94a3b8;
+  color: var(--color-dark-gray);
 }
 
 .btn-icon.delete:hover {
@@ -1101,18 +1085,18 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  border: 2px dashed #cbd5e1;
+  border: 2px dashed var(--color-medium-gray);
   border-radius: 10px;
   background: white;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .btn-add:hover {
-  border-color: #b1a28f;
-  color: #b1a28f;
+  border-color: var(--color-gold);
+  color: var(--color-gold);
 }
 
 .management-field {
@@ -1124,7 +1108,7 @@ export default {
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-charcoal);
   cursor: pointer;
 }
 
@@ -1150,7 +1134,7 @@ export default {
 
 .mgmt-row label {
   font-size: 14px;
-  color: #1e293b;
+  color: var(--color-charcoal);
   font-weight: 500;
 }
 
@@ -1164,15 +1148,14 @@ export default {
 
 .form-input {
   padding: 10px 14px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-medium-gray);
   border-radius: 10px;
   font-size: 14px;
-  font-family: 'Cairo', sans-serif;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
 }
 
 .summary-cards {
@@ -1189,10 +1172,10 @@ export default {
 }
 
 .summary-card {
-  background: #f8fafc;
+  background: var(--color-light-gray);
   border-radius: 12px;
   padding: 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
 }
 
 .summary-card.vat .card-value {
@@ -1200,7 +1183,7 @@ export default {
 }
 
 .summary-card.net {
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   border-color: transparent;
 }
 
@@ -1212,14 +1195,14 @@ export default {
 .card-label {
   display: block;
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin-bottom: 6px;
 }
 
 .card-value {
   font-size: 18px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 
 .distribution-table-section {
@@ -1235,19 +1218,19 @@ export default {
 .distribution-table th,
 .distribution-table td {
   padding: 12px 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   text-align: right;
 }
 
 .distribution-table th {
-  background: #f8fafc;
+  background: var(--color-light-gray);
   font-weight: 600;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 
 .distribution-table .empty-row {
   text-align: center;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   padding: 24px;
 }
 
@@ -1258,7 +1241,7 @@ export default {
 
 .status-confirmed {
   font-size: 12px;
-  color: #16a34a;
+  color: var(--color-success);
   font-weight: 600;
 }
 
@@ -1276,7 +1259,7 @@ export default {
   padding: 12px 24px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
   font-weight: 700;
   cursor: pointer;
@@ -1291,5 +1274,92 @@ export default {
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .sold-unit-detail-view {
+    padding: 0 16px 30px;
+  }
+  .detail-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .unit-info-bar {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .unit-meta-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .editable-fields {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .create-form .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .distribution-row {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 576px) {
+  .sold-unit-detail-view {
+    padding: 0 12px 24px;
+  }
+  .page-title {
+    font-size: 20px;
+  }
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+  .distribution-table {
+    font-size: 12px;
+    display: block;
+    overflow-x: auto;
+  }
+  .distribution-table th,
+  .distribution-table td {
+    padding: 10px 12px;
+    white-space: nowrap;
+  }
+  .create-commission-section {
+    padding: 16px;
+  }
+  .mgmt-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 320px) {
+  .sold-unit-detail-view {
+    padding: 0 8px 20px;
+  }
+  .page-title {
+    font-size: 18px;
+  }
+  .price-value {
+    font-size: 16px;
+  }
+  .summary-card {
+    padding: 12px;
+  }
+  .card-value {
+    font-size: 16px;
+  }
+  .back-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
 }
 </style>

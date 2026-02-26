@@ -473,6 +473,7 @@ import notificationService from '../services/notificationService';
 import teamService from '../services/teamService';
 import logger from '../utils/logger';
 import { toast } from '../composables/useToast';
+import { useFormatters } from '../composables/useFormatters';
 
 export default {
   name: 'ProjectManagementView',
@@ -562,6 +563,13 @@ export default {
             ? `طلب مشروع حصري. ${p.total_units || totalUnits || 100} وحدة من نوع ${unitType}.`
             : (p.description || p.details || '').split('\n')[0] ||
               (totalUnits ? `${totalUnits} وحدة` : '');
+          // جاهز للتسويق (معتمد وله وحدات) => تقدم الإعداد 100%، وإلا نسبة الـ tracker
+          const isReadyForMarketing = p.status === 'Approved' && totalUnits > 0;
+          const setupProgressVal = isReadyForMarketing
+            ? 100
+            : p.setup_progress != null
+              ? Number(p.setup_progress)
+              : 0;
           return {
             id: p.id,
             name: p.project_name || p.name || `مشروع #${p.id}`,
@@ -579,7 +587,7 @@ export default {
             status: p.status,
             description: p.description || p.details || '',
             descriptionLine: descLine,
-            setupProgress: p.setup_progress != null ? Number(p.setup_progress) : 0,
+            setupProgress: setupProgressVal,
             soldUnitsCount: soldCount,
             soldUnitsPercent: totalUnits ? Math.round((soldCount / totalUnits) * 100) : 0,
             avgPrice: units.length
@@ -922,9 +930,7 @@ export default {
       closeWorkspaceModal();
     };
 
-    const formatCurrency = val => {
-      return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR' }).format(val);
-    };
+    const { formatCurrencyAr: formatCurrency } = useFormatters();
 
     const timelineClass = daysLeft => {
       if (daysLeft === null) return '';
@@ -1006,7 +1012,6 @@ export default {
 
 <style scoped>
 .project-management-view {
-  font-family: 'Tajawal', sans-serif;
   animation: fadeIn 0.4s ease-out;
 }
 @keyframes fadeIn {
@@ -1042,7 +1047,6 @@ export default {
   text-decoration: none;
   transition: background 0.2s;
   cursor: pointer;
-  font-family: inherit;
 }
 .btn-new-project:hover {
   background: #8c7851;
@@ -1054,7 +1058,6 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin: 0 0 5px 0;
-  font-family: 'Cairo', sans-serif;
 }
 
 .page-subtitle {
@@ -1109,7 +1112,6 @@ export default {
   border-radius: 10px;
   outline: none;
   transition: border-color 0.2s;
-  font-family: inherit;
 }
 .search-box input:focus {
   border-color: #b1a28f;
@@ -1125,7 +1127,6 @@ export default {
   border-radius: 10px;
   background: white;
   cursor: pointer;
-  font-family: inherit;
   outline: none;
   min-width: 150px;
 }
@@ -1146,7 +1147,6 @@ export default {
   cursor: pointer;
   position: relative;
   font-weight: 500;
-  font-family: inherit;
   border-radius: 10px 10px 0 0;
 }
 .tab-btn:hover {
@@ -1367,7 +1367,6 @@ export default {
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  font-family: inherit;
 }
 .btn-view-details:hover {
   background: #8c7851;
@@ -1620,5 +1619,313 @@ export default {
   padding: 10px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
+}
+
+/* Responsive: Large Tablet / Small Desktop */
+@media (max-width: 1200px) {
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .details-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Responsive: Tablet Landscape */
+@media (max-width: 992px) {
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .controls-area {
+    width: 100%;
+  }
+  .search-box {
+    width: auto;
+    flex: 1;
+    min-width: 200px;
+  }
+  .page-title {
+    font-size: 24px;
+  }
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+  .tabs-container {
+    gap: 2px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+  .tab-btn {
+    white-space: nowrap;
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+  .modal-content.large {
+    max-width: 90%;
+  }
+}
+
+/* Responsive: Tablet Portrait */
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 22px;
+  }
+  .page-subtitle {
+    font-size: 13px;
+  }
+  .controls-area {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-new-project {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+  .filter-dropdown {
+    width: 100%;
+  }
+  .filter-dropdown select {
+    width: 100%;
+    min-height: 44px;
+  }
+  .search-box {
+    width: 100%;
+    flex: none;
+  }
+  .search-box input {
+    min-height: 44px;
+  }
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .card-image {
+    height: 150px;
+  }
+  .card-content {
+    padding: 14px;
+    gap: 8px;
+  }
+  .tabs-container {
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    font-size: 13px;
+    padding: 10px 14px;
+    min-height: 44px;
+  }
+  .btn-view-details {
+    min-height: 44px;
+  }
+  .modal-content {
+    padding: 24px;
+    border-radius: 14px;
+  }
+  .details-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .assign-team-row {
+    flex-direction: column;
+  }
+  .assign-team-row .select-wrapper {
+    width: 100%;
+    min-width: unset;
+  }
+  .assign-team-row .btn-primary {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+  .menu-item {
+    min-height: 44px;
+    padding: 12px 16px;
+  }
+  .modal-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+  .modal-actions .btn-primary,
+  .modal-actions .btn-text {
+    width: 100%;
+    text-align: center;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Responsive: Mobile */
+@media (max-width: 576px) {
+  .page-header {
+    margin-bottom: 20px;
+  }
+  .page-title {
+    font-size: 20px;
+  }
+  .page-subtitle {
+    font-size: 12px;
+  }
+  .projects-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .card-image {
+    height: 140px;
+  }
+  .card-content {
+    padding: 12px;
+  }
+  .project-name {
+    font-size: 15px;
+  }
+  .tabs-container {
+    gap: 2px;
+    margin-bottom: 16px;
+    padding-bottom: 2px;
+  }
+  .tab-btn {
+    font-size: 12px;
+    padding: 8px 10px;
+    min-height: 44px;
+  }
+  .btn-new-project {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+    max-height: 85vh;
+  }
+  .modal-content h3 {
+    font-size: 18px;
+  }
+  .detail-box {
+    padding: 12px;
+  }
+  .form-group label {
+    font-size: 12px;
+  }
+  .form-input {
+    padding: 10px;
+    min-height: 44px;
+  }
+  .close-modal-btn {
+    min-height: 44px;
+  }
+  .dropdown-menu {
+    min-width: 180px;
+  }
+  .menu-item {
+    font-size: 13px;
+  }
+}
+
+/* Responsive: Extra Small Mobile */
+@media (max-width: 320px) {
+  .page-title {
+    font-size: 18px;
+  }
+  .card-image {
+    height: 120px;
+  }
+  .card-content {
+    padding: 10px;
+    gap: 6px;
+  }
+  .project-name {
+    font-size: 14px;
+  }
+  .project-location {
+    font-size: 12px;
+  }
+  .btn-view-details {
+    padding: 10px;
+    font-size: 13px;
+  }
+  .tab-btn {
+    font-size: 11px;
+    padding: 8px;
+  }
+  .modal-content {
+    padding: 16px;
+  }
+  .status-pill {
+    font-size: 11px;
+    padding: 3px 10px;
+  }
+}
+
+/* Responsive: Large Desktop */
+@media (min-width: 1920px) {
+  .page-title {
+    font-size: 34px;
+  }
+  .page-subtitle {
+    font-size: 17px;
+  }
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 28px;
+  }
+  .card-image {
+    height: 220px;
+  }
+  .card-content {
+    padding: 24px;
+    gap: 14px;
+  }
+  .project-name {
+    font-size: 18px;
+  }
+  .tab-btn {
+    font-size: 16px;
+    padding: 14px 28px;
+  }
+  .tabs-container {
+    margin-bottom: 40px;
+  }
+  .btn-new-project {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+  .search-box {
+    width: 400px;
+  }
+  .search-box input {
+    padding: 14px 44px 14px 18px;
+    font-size: 16px;
+  }
+  .filter-dropdown select {
+    padding: 14px 34px 14px 18px;
+    font-size: 16px;
+  }
+  .btn-view-details {
+    padding: 14px;
+    font-size: 16px;
+  }
+  .modal-content {
+    padding: 40px;
+  }
+}
+
+/* Responsive: Ultra-wide */
+@media (min-width: 2560px) {
+  .page-title {
+    font-size: 38px;
+  }
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 32px;
+  }
+  .card-content {
+    padding: 28px;
+  }
 }
 </style>

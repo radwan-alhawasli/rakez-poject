@@ -14,7 +14,7 @@
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2.5"
+              stroke-width="2"
             >
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -169,6 +169,7 @@ import agentService from '../services/agentService';
 import AgentModal from '../components/AgentModal.vue';
 import ConfirmModal from '../components/ConfirmModal.vue';
 import { toast } from '../composables/useToast';
+import { useFormatters } from '../composables/useFormatters';
 
 export default {
   name: 'AgentsView',
@@ -271,11 +272,7 @@ export default {
       agentToDelete.value = null;
     }
 
-    function formatDate(iso) {
-      if (!iso) return '-';
-      const d = new Date(iso);
-      return d.toLocaleDateString('ar-SA', { year: 'numeric', month: '2-digit', day: '2-digit' });
-    }
+    const { formatDate } = useFormatters();
 
     onMounted(() => {
       fetchAgents();
@@ -307,7 +304,6 @@ export default {
 <style scoped>
 .agents-view {
   padding: 0;
-  font-family: 'Cairo', 'Tajawal', sans-serif;
   animation: fadeIn 0.4s ease-out;
   direction: rtl;
 }
@@ -346,13 +342,12 @@ export default {
 .section-title.page-title {
   font-size: 28px;
   font-weight: 700;
-  color: var(--color-navy, #1e3a5f);
+  color: var(--color-navy, var(--color-navy));
   margin: 0 0 5px 0;
-  font-family: 'Cairo', 'Amiri', serif;
 }
 
 .section-subtitle.page-subtitle {
-  color: var(--color-dark-gray, #64748b);
+  color: var(--color-dark-gray, var(--color-dark-gray));
   font-size: 15px;
   margin: 0;
 }
@@ -360,8 +355,8 @@ export default {
 .add-btn {
   background: linear-gradient(
     135deg,
-    var(--color-gold, #b1a28f) 0%,
-    var(--color-gold-dark, #8c7851) 100%
+    var(--color-gold, var(--color-gold)) 0%,
+    var(--color-gold-dark, var(--color-gold-dark)) 100%
   );
   color: white;
   border: none;
@@ -374,7 +369,6 @@ export default {
   gap: 10px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(177, 162, 143, 0.25);
-  font-family: 'Cairo', 'Tajawal', sans-serif;
 }
 
 .add-btn:hover {
@@ -391,30 +385,29 @@ export default {
   display: flex;
   gap: 4px;
   margin-bottom: 24px;
-  border-bottom: 1px solid var(--color-medium-gray, #e2e8f0);
+  border-bottom: 1px solid var(--color-medium-gray, var(--color-medium-gray));
 }
 
 .tab-btn {
   padding: 12px 20px;
   font-size: 15px;
   font-weight: 600;
-  color: var(--color-dark-gray, #64748b);
+  color: var(--color-dark-gray, var(--color-dark-gray));
   background: transparent;
   border: none;
   border-bottom: 3px solid transparent;
   margin-bottom: -1px;
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s;
-  font-family: 'Cairo', 'Tajawal', sans-serif;
 }
 
 .tab-btn:hover {
-  color: var(--color-navy, #1e3a5f);
+  color: var(--color-navy, var(--color-navy));
 }
 
 .tab-btn.active {
-  color: var(--color-gold, #b1a28f);
-  border-bottom-color: var(--color-gold, #b1a28f);
+  color: var(--color-gold, var(--color-gold));
+  border-bottom-color: var(--color-gold, var(--color-gold));
 }
 
 .tab-panels {
@@ -424,7 +417,7 @@ export default {
 .tab-panel {
 }
 .tab-placeholder {
-  color: var(--color-dark-gray, #64748b);
+  color: var(--color-dark-gray, var(--color-dark-gray));
   font-size: 15px;
   margin: 0;
 }
@@ -441,15 +434,15 @@ export default {
 .empty-state {
   padding: 48px 24px;
   text-align: center;
-  color: var(--color-dark-gray, #64748b);
+  color: var(--color-dark-gray, var(--color-dark-gray));
 }
 
 .spinner {
   width: 40px;
   height: 40px;
   margin: 0 auto 16px;
-  border: 3px solid var(--color-medium-gray, #e2e8f0);
-  border-top-color: var(--color-gold, #b1a28f);
+  border: 3px solid var(--color-medium-gray, var(--color-medium-gray));
+  border-top-color: var(--color-gold, var(--color-gold));
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -469,13 +462,13 @@ export default {
 .data-table td {
   padding: 16px 20px;
   text-align: right;
-  border-bottom: 1px solid var(--color-medium-gray, #e2e8f0);
+  border-bottom: 1px solid var(--color-medium-gray, var(--color-medium-gray));
 }
 
 .data-table th {
   font-weight: 700;
-  color: var(--color-navy, #1e3a5f);
-  background: var(--color-off-white, #fdfbf7);
+  color: var(--color-navy, var(--color-navy));
+  background: var(--color-off-white, var(--color-off-white));
 }
 
 .data-table tbody tr:hover {
@@ -484,18 +477,18 @@ export default {
 
 .agent-name-cell {
   font-weight: 600;
-  color: var(--color-charcoal, #1e293b);
+  color: var(--color-charcoal, var(--color-charcoal));
 }
 
 .agent-desc-cell {
   font-size: 13px;
-  color: var(--color-dark-gray, #64748b);
+  color: var(--color-dark-gray, var(--color-dark-gray));
   margin-top: 4px;
 }
 
 .date-cell {
   font-size: 14px;
-  color: var(--color-dark-gray, #64748b);
+  color: var(--color-dark-gray, var(--color-dark-gray));
 }
 
 .status-badge {
@@ -521,10 +514,10 @@ export default {
   width: 36px;
   height: 36px;
   padding: 0;
-  border: 1px solid var(--color-medium-gray, #e2e8f0);
+  border: 1px solid var(--color-medium-gray, var(--color-medium-gray));
   border-radius: 10px;
   background: var(--color-white, #fff);
-  color: var(--color-dark-gray, #64748b);
+  color: var(--color-dark-gray, var(--color-dark-gray));
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -538,13 +531,13 @@ export default {
 }
 
 .action-btn.edit:hover {
-  border-color: var(--color-gold, #b1a28f);
-  color: var(--color-gold, #b1a28f);
+  border-color: var(--color-gold, var(--color-gold));
+  color: var(--color-gold, var(--color-gold));
 }
 
 .action-btn.delete:hover {
-  border-color: var(--color-error, #ef4444);
-  color: var(--color-error, #ef4444);
+  border-color: var(--color-error, var(--color-error));
+  color: var(--color-error, var(--color-error));
   background: #fef2f2;
 }
 
@@ -562,7 +555,7 @@ export default {
 .preview-title {
   font-size: 16px;
   font-weight: 700;
-  color: var(--color-navy, #1e3a5f);
+  color: var(--color-navy, var(--color-navy));
   margin: 0 0 16px 0;
 }
 
@@ -581,13 +574,13 @@ export default {
 
 .preview-bubble.bot {
   align-self: flex-start;
-  background: var(--color-light-gray, #f8fafc);
-  color: var(--color-charcoal, #1e293b);
+  background: var(--color-light-gray, var(--color-light-gray));
+  color: var(--color-charcoal, var(--color-charcoal));
 }
 
 .preview-bubble.user {
   align-self: flex-end;
-  background: var(--color-info, #3b82f6);
+  background: var(--color-info, var(--color-info));
   color: white;
 }
 
@@ -608,19 +601,200 @@ export default {
 }
 
 .preview-btn.primary {
-  background: var(--color-info, #3b82f6);
+  background: var(--color-info, var(--color-info));
   color: white;
 }
 
 .preview-btn.secondary {
   background: var(--color-white, #fff);
-  color: var(--color-charcoal, #1e293b);
-  border: 1px solid var(--color-medium-gray, #e2e8f0);
+  color: var(--color-charcoal, var(--color-charcoal));
+  border: 1px solid var(--color-medium-gray, var(--color-medium-gray));
 }
 
 @media (max-width: 1024px) {
   .preview-panel {
     display: none;
+  }
+}
+
+/* Responsive: Tablet Landscape */
+@media (max-width: 992px) {
+  .section-title.page-title {
+    font-size: 24px;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 12px 14px;
+  }
+}
+
+/* Responsive: Tablet Portrait */
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .add-btn {
+    align-self: flex-start;
+    padding: 10px 20px;
+  }
+  .tabs-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0;
+  }
+  .tab-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .data-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .data-table {
+    min-width: 540px;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .section-title.page-title {
+    font-size: 22px;
+  }
+  .section-subtitle.page-subtitle {
+    font-size: 13px;
+  }
+}
+
+/* Responsive: Mobile */
+@media (max-width: 576px) {
+  .agents-view {
+    padding: 0;
+  }
+  .section-title.page-title {
+    font-size: 20px;
+  }
+  .section-subtitle.page-subtitle {
+    font-size: 12px;
+  }
+  .add-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 20px;
+    min-height: 44px;
+  }
+  .tabs-wrap {
+    gap: 0;
+    margin-bottom: 16px;
+  }
+  .tab-btn {
+    padding: 10px 12px;
+    font-size: 12px;
+    min-height: 44px;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .action-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .loading-state,
+  .empty-state {
+    padding: 32px 16px;
+  }
+}
+
+/* Responsive: Extra Small Mobile */
+@media (max-width: 320px) {
+  .section-title.page-title {
+    font-size: 18px;
+  }
+  .add-btn {
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+  .tab-btn {
+    font-size: 11px;
+    padding: 8px 8px;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  .agent-name-cell {
+    font-size: 13px;
+  }
+  .agent-desc-cell {
+    font-size: 11px;
+  }
+}
+
+/* Responsive: Large Desktop */
+@media (min-width: 1920px) {
+  .section-title.page-title {
+    font-size: 34px;
+  }
+  .section-subtitle.page-subtitle {
+    font-size: 17px;
+  }
+  .add-btn {
+    padding: 14px 32px;
+    font-size: 16px;
+  }
+  .tab-btn {
+    padding: 14px 24px;
+    font-size: 17px;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 20px 24px;
+    font-size: 16px;
+  }
+  .agent-name-cell {
+    font-size: 17px;
+  }
+  .agent-desc-cell {
+    font-size: 15px;
+  }
+  .date-cell {
+    font-size: 16px;
+  }
+  .action-btn {
+    width: 42px;
+    height: 42px;
+  }
+  .action-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+  .preview-panel {
+    width: 380px;
+    padding: 28px;
+  }
+  .preview-bubble {
+    font-size: 16px;
+  }
+}
+
+/* Responsive: Ultra-wide */
+@media (min-width: 2560px) {
+  .section-title.page-title {
+    font-size: 38px;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 22px 28px;
+    font-size: 17px;
+  }
+  .preview-panel {
+    width: 420px;
   }
 }
 </style>

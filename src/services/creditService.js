@@ -661,8 +661,8 @@ const creditService = {
   // --- Claim Files (Tab 5) ---
 
   /**
-   * List claim files
-   * GET /credit/claim-files?per_page=15
+   * List claim files (individual + combined). Each item has is_combined flag.
+   * GET /credit/claim-files?per_page=15&page=1
    */
   async getClaimFiles(params = {}) {
     try {
@@ -677,8 +677,27 @@ const creditService = {
   },
 
   /**
-   * Generate claim file for a sold booking
-   * POST /credit/bookings/:booking_id/claim-file
+   * Get claim file candidates: sold bookings without an existing claim file.
+   * GET /credit/claim-files/candidates?per_page=15&page=1
+   */
+  async getClaimFileCandidates(params = {}) {
+    try {
+      const response = await apiClient.get('/credit/claim-files/candidates', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
+    } catch (error) {
+      return (
+        handleServiceError(error, 'Error fetching claim file candidates', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
+    }
+  },
+
+  /**
+   * Generate individual claim file for a sold booking (no body required).
+   * POST /credit/bookings/:id/claim-file
    */
   async generateClaimFileForBooking(bookingId) {
     requireBookingId(bookingId);
@@ -692,8 +711,40 @@ const creditService = {
   },
 
   /**
-   * Get claim file by ID
-   * GET /credit/claim-files/:claim_file_id
+   * Generate individual claim files for multiple bookings at once.
+   * POST /credit/claim-files/generate-bulk
+   * @param {Object} data - { reservation_ids: number[] }
+   * @returns {Promise<Object>} { created: { "123": 1, ... }, errors: { "125": "..." } }
+   */
+  async generateBulkClaimFiles(data) {
+    try {
+      const response = await apiClient.post('/credit/claim-files/generate-bulk', data);
+      return response.data?.data ?? response.data ?? {};
+    } catch (error) {
+      logger.error('Error generating bulk claim files:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Create a combined claim file merging multiple sold bookings into one record.
+   * POST /credit/claim-files/combined
+   * @param {Object} data - { booking_ids: number[] (min 2), claim_type: 'commission', notes?: string }
+   * @returns {Promise<Object>} Combined claim file with items array
+   */
+  async createCombinedClaimFile(data) {
+    try {
+      const response = await apiClient.post('/credit/claim-files/combined', data);
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      logger.error('Error creating combined claim file:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get claim file details by ID (combined or individual).
+   * GET /credit/claim-files/:id
    */
   async getClaimFileById(claimFileId) {
     try {
@@ -706,9 +757,8 @@ const creditService = {
   },
 
   /**
-   * Generate claim file PDF
-   * POST /credit/claim-files/:claim_file_id/pdf
-   * Returns pdf_path, download_url
+   * Generate PDF for a claim file.
+   * POST /credit/claim-files/:id/pdf
    */
   async generateClaimFilePdf(claimFileId) {
     try {
@@ -721,7 +771,8 @@ const creditService = {
   },
 
   /**
-   * Get claim file PDF download URL (same path, GET returns file stream)
+   * Get claim file PDF download URL.
+   * GET /credit/claim-files/:id/pdf (returns file stream)
    */
   getClaimFilePdfDownloadUrl(claimFileId) {
     const baseURL = apiClient.defaults?.baseURL ?? '';

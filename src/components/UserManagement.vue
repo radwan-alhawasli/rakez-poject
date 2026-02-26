@@ -12,7 +12,7 @@
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          stroke-width="2.5"
+          stroke-width="2"
         >
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -208,6 +208,7 @@ import logger from '../utils/logger';
 import { handleError } from '../utils/errorHandler';
 import appConfig from '../config/appConfig';
 import { toast } from '../composables/useToast';
+import { useFormatters } from '../composables/useFormatters';
 
 export default {
   name: 'UserManagement',
@@ -337,20 +338,41 @@ export default {
 
     const handleSaveUser = async userData => {
       isSaving.value = true;
+      const cvFile = userData.cv_file;
+      const sigFile = userData.signature_file;
+      delete userData.cv_file;
+      delete userData.signature_file;
+
       try {
+        let savedUserId = userData.id;
         if (props.useHrApi) {
           if (userData.id) {
             await hrService.updateUser(userData.id, userData);
           } else {
-            await hrService.createUser(userData);
+            const result = await hrService.createUser(userData);
+            savedUserId = result?.id ?? result?.data?.id ?? savedUserId;
           }
         } else {
           if (userData.id) {
             await hrService.updateEmployee(userData.id, userData);
           } else {
-            await hrService.createEmployee(userData);
+            const result = await hrService.createEmployee(userData);
+            savedUserId = result?.id ?? result?.data?.id ?? savedUserId;
           }
         }
+
+        if (savedUserId && (cvFile || sigFile)) {
+          try {
+            const formData = new FormData();
+            if (cvFile) formData.append('files[]', cvFile);
+            if (sigFile) formData.append('files[]', sigFile);
+            await hrService.uploadUserFiles(savedUserId, formData);
+          } catch (uploadErr) {
+            logger.error('Error uploading user files:', uploadErr);
+            toast.error('تم حفظ المستخدم لكن حدث خطأ أثناء رفع الملفات');
+          }
+        }
+
         await fetchUsers();
         closeModal();
       } catch (error) {
@@ -512,10 +534,7 @@ export default {
       return '';
     };
 
-    const formatDate = dateString => {
-      if (!dateString) return '-';
-      return new Date(dateString).toISOString().split('T')[0];
-    };
+    const { formatDateISO: formatDate } = useFormatters();
 
     const handlePageChange = page => {
       currentPage.value = page;
@@ -625,7 +644,6 @@ export default {
 <style scoped>
 .user-management {
   padding: 0;
-  font-family: 'Tajawal', sans-serif;
   animation: fadeIn 0.4s ease-out;
 }
 
@@ -650,19 +668,18 @@ export default {
 .section-title {
   font-size: 28px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 5px 0;
-  font-family: 'Amiri', serif;
 }
 
 .section-subtitle {
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 15px;
   margin: 0;
 }
 
 .add-btn {
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
   border: none;
   padding: 12px 28px;
@@ -674,7 +691,6 @@ export default {
   gap: 10px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(161, 139, 92, 0.2);
-  font-family: 'Tajawal', sans-serif;
 }
 
 .add-btn:hover {
@@ -691,8 +707,10 @@ export default {
 .data-table-container {
   background: white;
   border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  overflow: hidden;
+  border: 1px solid var(--color-medium-gray);
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
@@ -703,17 +721,17 @@ export default {
 }
 
 .data-table th {
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   font-weight: 500;
   font-size: 14px;
   padding: 20px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-light-gray);
 }
 
 .data-table td {
   padding: 20px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
+  border-bottom: 1px solid var(--color-light-gray);
+  color: var(--color-charcoal);
   font-size: 14px;
   vertical-align: middle;
 }
@@ -727,26 +745,26 @@ export default {
 .user-avatar {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, var(--color-light-gray) 0%, var(--color-medium-gray) 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #1e3a5f;
+  color: var(--color-navy);
   font-weight: 700;
   font-size: 18px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-medium-gray);
 }
 
 .user-name {
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-charcoal);
   font-size: 15px;
 }
 
 .user-email {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
 }
 
 .role-badge {
@@ -785,9 +803,9 @@ export default {
   border: 1px solid #e9d5ff;
 }
 .role-default {
-  background: #f8fafc;
-  color: #475569;
-  border: 1px solid #e2e8f0;
+  background: var(--color-light-gray);
+  color: var(--color-charcoal);
+  border: 1px solid var(--color-medium-gray);
 }
 
 .status-badge {
@@ -800,16 +818,16 @@ export default {
 
 .status-badge.active {
   background: #dcfce7;
-  color: #16a34a;
+  color: var(--color-success);
 }
 .status-badge.disabled {
   background: #fee2e2;
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .action-btn.status:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
+  border-color: var(--color-info);
+  color: var(--color-info);
   background: #eff6ff;
 }
 
@@ -820,7 +838,7 @@ export default {
 
 .action-btn {
   background: white;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--color-medium-gray);
   width: 38px;
   height: 38px;
   border-radius: 10px;
@@ -829,7 +847,7 @@ export default {
   align-items: center;
   justify-content: center;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .action-btn svg {
@@ -838,28 +856,28 @@ export default {
 }
 
 .action-btn:hover {
-  border-color: #b1a28f;
-  color: #b1a28f;
-  background: #fdfbf7;
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+  background: var(--color-off-white);
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(161, 139, 92, 0.1);
 }
 
 .action-btn.delete:hover {
-  border-color: #ef4444;
-  color: #ef4444;
+  border-color: var(--color-error);
+  color: var(--color-error);
   background: #fef2f2;
   box-shadow: 0 4px 10px rgba(239, 68, 68, 0.1);
 }
 
 .action-btn.assign {
-  border-color: #b1a28f;
-  color: #8c7851;
+  border-color: var(--color-gold);
+  color: var(--color-gold-dark);
   background: #faf8f5;
 }
 .action-btn.assign:hover {
-  border-color: #8c7851;
-  color: #8c7851;
+  border-color: var(--color-gold-dark);
+  color: var(--color-gold-dark);
   background: #f5f0e8;
   box-shadow: 0 4px 10px rgba(140, 120, 81, 0.15);
 }
@@ -872,7 +890,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
 }
 .assign-modal.modal-content {
   background: white;
@@ -886,18 +904,18 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-medium-gray);
 }
 .assign-modal .modal-header h3 {
   margin: 0;
   font-size: 18px;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 .assign-modal .close-btn {
   background: none;
   border: none;
   font-size: 24px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   cursor: pointer;
   line-height: 1;
   padding: 0;
@@ -907,7 +925,7 @@ export default {
 }
 .assign-user-name {
   font-weight: 600;
-  color: #334155;
+  color: var(--color-charcoal);
   margin: 0 0 16px 0;
 }
 .assign-modal .form-group {
@@ -917,30 +935,29 @@ export default {
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #475569;
+  color: var(--color-charcoal);
   font-size: 14px;
 }
 .assign-modal .form-input {
   width: 100%;
   padding: 12px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-medium-gray);
   border-radius: 10px;
   font-size: 14px;
-  font-family: 'Tajawal', sans-serif;
 }
 .assign-modal .modal-footer {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
   padding: 16px 20px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-medium-gray);
 }
 .assign-modal .btn-secondary {
   padding: 10px 20px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-medium-gray);
   border-radius: 10px;
   background: white;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
   cursor: pointer;
 }
@@ -948,7 +965,7 @@ export default {
   padding: 10px 20px;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
   font-weight: 600;
   cursor: pointer;
@@ -961,8 +978,8 @@ export default {
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #f1f5f9;
-  border-top-color: #b1a28f;
+  border: 3px solid var(--color-light-gray);
+  border-top-color: var(--color-gold);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 15px;
@@ -970,6 +987,54 @@ export default {
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* ============================
+   RESPONSIVE
+   ============================ */
+@media (max-width: 768px) {
+  .user-management {
+    padding: 16px 14px;
+  }
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .add-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+  .data-table {
+    min-width: 900px;
+  }
+  .actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 576px) {
+  .user-management {
+    padding: 12px 12px;
+  }
+  .data-table {
+    min-width: 700px;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 14px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 320px) {
+  .user-management {
+    padding: 10px 10px;
+  }
+  .data-table {
+    min-width: 620px;
   }
 }
 </style>

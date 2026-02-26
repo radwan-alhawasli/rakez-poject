@@ -9,7 +9,7 @@
       <div class="login-header">
         <div class="logo-area">
           <span class="logo-ar">راكز العقارية</span>
-          <span class="logo-tag">"majd  bayer"</span>
+          <span class="logo-tag">"majd bayer"</span>
         </div>
       </div>
 
@@ -109,196 +109,190 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap');
-
+/* ─── Wrapper ─── */
 .login-wrapper {
   min-height: 100vh;
-  background-color: #0f172a; /* Dark Navy Base */
-  background: radial-gradient(circle at top left, #1e293b, #0f172a);
+  min-height: 100dvh;
+  background-color: #0f172a;
+  background: radial-gradient(circle at top left, var(--color-charcoal), #0f172a);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Tajawal', sans-serif;
   position: relative;
   overflow: hidden;
   direction: rtl;
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
 }
 
-/* Geometric Shapes for Background */
+/* ─── Geometric Background ─── */
 .geo-shape {
   position: absolute;
-  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+  background: linear-gradient(135deg, var(--color-navy) 0%, #0f172a 100%);
   opacity: 0.4;
   z-index: 1;
   box-shadow: 20px 20px 60px rgba(0, 0, 0, 0.3);
 }
-
 .shape-1 {
-  width: 600px;
-  height: 600px;
+  width: clamp(300px, 40vw, 600px);
+  height: clamp(300px, 40vw, 600px);
   transform: rotate(45deg);
   top: -200px;
   right: -200px;
   border-radius: 40px;
 }
-
 .shape-2 {
-  width: 400px;
-  height: 400px;
+  width: clamp(200px, 30vw, 400px);
+  height: clamp(200px, 30vw, 400px);
   transform: rotate(30deg);
   bottom: -100px;
   left: -100px;
   background: linear-gradient(135deg, #263c52 0%, #101927 100%);
 }
-
 .shape-3 {
-  width: 200px;
-  height: 200px;
+  width: clamp(100px, 15vw, 200px);
+  height: clamp(100px, 15vw, 200px);
   top: 20%;
   left: 10%;
   border-radius: 20px;
   transform: rotate(-15deg);
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   opacity: 0.1;
 }
 
+/* ─── Card (fluid sizing: 320px → 4K) ─── */
 .login-container {
   background: white;
-  width: 420px;
-  border-radius: 16px;
-  padding: 40px;
+  width: calc(100% - 32px);
+  max-width: clamp(340px, 20vw + 150px, 720px);
+  border-radius: clamp(12px, 1vw + 6px, 28px);
+  padding: clamp(24px, 3vw + 4px, 60px);
   z-index: 10;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
   position: relative;
+  box-sizing: border-box;
 }
 
+/* ─── Header ─── */
 .login-header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: clamp(24px, 3vw, 44px);
 }
-
 .logo-area {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
 }
-
 .logo-ar {
-  font-size: 28px;
+  font-size: clamp(22px, 1.8vw + 8px, 36px);
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   letter-spacing: -0.5px;
 }
-
 .logo-tag {
-  font-size: 14px;
-  color: #94a3b8;
+  font-size: clamp(12px, 0.4vw + 8px, 16px);
+  color: var(--color-dark-gray);
   letter-spacing: 0.5px;
 }
 
+/* ─── Form ─── */
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: clamp(16px, 1.5vw + 4px, 24px);
 }
-
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
   text-align: right;
 }
-
 .form-label {
-  font-size: 13px;
-  color: #64748b;
+  font-size: clamp(12px, 0.3vw + 9px, 15px);
+  color: var(--color-dark-gray);
   font-weight: 500;
 }
-
 .form-input {
-  padding: 12px 16px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 15px;
-  background: #fdfbf7;
+  padding: clamp(12px, 1vw + 4px, 22px) clamp(14px, 1vw + 6px, 24px);
+  border: 1px solid var(--color-medium-gray);
+  border-radius: clamp(8px, 0.5vw + 2px, 16px);
+  font-size: clamp(16px, 0.4vw + 12px, 22px);
+  background: var(--color-off-white);
   transition: all 0.3s ease;
-  font-family: 'Tajawal', sans-serif;
-  color: #334155;
+  color: var(--color-charcoal);
+  width: 100%;
+  box-sizing: border-box;
 }
-
 .form-input:focus {
   outline: none;
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
   background: white;
   box-shadow: 0 0 0 3px rgba(161, 139, 92, 0.1);
 }
-
 .form-input::placeholder {
-  color: #cbd5e1;
+  color: var(--color-medium-gray);
 }
 
+/* ─── Options row ─── */
 .form-options {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-  font-size: 13px;
+  font-size: clamp(12px, 0.3vw + 9px, 15px);
 }
-
 .forgot-link {
-  color: #64748b;
+  color: var(--color-dark-gray);
   text-decoration: none;
   transition: color 0.2s;
 }
-
 .forgot-link:hover {
-  color: #b1a28f;
+  color: var(--color-gold);
 }
 
+/* ─── Button ─── */
 .login-btn {
-  margin-top: 10px;
-  background: #b1a28f; /* Gold */
+  margin-top: 8px;
+  background: var(--color-gold);
   color: white;
   border: none;
-  padding: 14px;
-  border-radius: 8px;
-  font-size: 16px;
+  padding: clamp(12px, 1vw + 4px, 22px);
+  border-radius: clamp(8px, 0.5vw + 2px, 16px);
+  font-size: clamp(15px, 0.4vw + 11px, 22px);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Tajawal', sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
 }
-
 .login-btn:hover {
-  background: #8c7851;
+  background: var(--color-gold-dark);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(161, 139, 92, 0.3);
 }
-
 .login-btn:active {
   transform: translateY(0);
 }
-
 .login-btn:disabled {
-  background: #cbd5e1;
+  background: var(--color-medium-gray);
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
+/* ─── Error ─── */
 .error-message {
-  color: #ef4444;
+  color: var(--color-error);
   background: #fef2f2;
   padding: 10px;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: clamp(12px, 0.3vw + 9px, 15px);
   text-align: center;
   border: 1px solid #fecaca;
 }
 
+/* ─── Branding (top-left logo) ─── */
 .branding {
   position: absolute;
   top: 40px;
@@ -306,59 +300,53 @@ export default {
   z-index: 5;
   opacity: 0.8;
 }
-
 .rakez-logo-large {
   text-align: center;
   color: white;
 }
-
 .r-text {
-  font-size: 40px;
+  font-size: clamp(28px, 3vw, 48px);
   font-weight: 700;
   line-height: 1;
 }
-
 .r-en {
-  font-size: 14px;
+  font-size: clamp(12px, 0.5vw + 6px, 18px);
   letter-spacing: 4px;
-  color: #b1a28f;
+  color: var(--color-gold);
   margin-top: 5px;
 }
-
 .r-sub {
-  font-size: 12px;
-  color: #94a3b8;
+  font-size: clamp(10px, 0.4vw + 5px, 14px);
+  color: var(--color-dark-gray);
   margin-top: 5px;
 }
 
+/* ─── Loader ─── */
 .loader {
   width: 20px;
   height: 20px;
-  border: 2px solid #ffffff;
+  border: 2px solid var(--color-white);
   border-bottom-color: transparent;
   border-radius: 50%;
   display: inline-block;
   box-sizing: border-box;
   animation: rotation 1s linear infinite;
 }
-
 @keyframes rotation {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ─── Mobile: hide branding, tighten card ─── */
+@media (max-width: 576px) {
+  .branding {
+    display: none;
   }
 }
 
-/* Media Queries */
-@media (max-width: 600px) {
-  .login-container {
-    width: 90%;
-    padding: 30px 20px;
-  }
-
-  .branding {
+/* ─── Extra small: hide geo shapes ─── */
+@media (max-width: 320px) {
+  .geo-shape {
     display: none;
   }
 }

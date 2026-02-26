@@ -201,7 +201,7 @@ export default {
   align-items: center;
   padding: 20px 0;
   margin-top: 20px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-medium-gray);
   flex-wrap: wrap;
   gap: 15px;
 }
@@ -210,28 +210,28 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 14px;
 }
 
 .per-page-select {
   padding: 6px 10px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 6px;
   background: white;
-  color: #1e293b;
+  color: var(--color-charcoal);
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .per-page-select:hover {
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
 }
 
 .per-page-select:focus {
   outline: none;
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
   box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.1);
 }
 
@@ -248,18 +248,18 @@ export default {
   width: 36px;
   height: 36px;
   padding: 0;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 6px;
   background: white;
-  color: #64748b;
+  color: var(--color-dark-gray);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background: #f8fafc;
-  border-color: #b1a28f;
-  color: #b1a28f;
+  background: var(--color-light-gray);
+  border-color: var(--color-gold);
+  color: var(--color-gold);
 }
 
 .pagination-btn:disabled {
@@ -282,10 +282,10 @@ export default {
   min-width: 36px;
   height: 36px;
   padding: 0 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 6px;
   background: white;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -293,14 +293,14 @@ export default {
 }
 
 .page-number:hover:not(:disabled) {
-  background: #f8fafc;
-  border-color: #b1a28f;
-  color: #b1a28f;
+  background: var(--color-light-gray);
+  border-color: var(--color-gold);
+  color: var(--color-gold);
 }
 
 .page-number.active {
-  background: #b1a28f;
-  border-color: #b1a28f;
+  background: var(--color-gold);
+  border-color: var(--color-gold);
   color: white;
   font-weight: 600;
 }
@@ -333,6 +333,92 @@ export default {
   .page-numbers {
     flex-wrap: wrap;
     justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .pagination-container {
+    gap: 10px;
+    padding: 16px 0;
+  }
+  .pagination-btn {
+    width: 34px;
+    height: 34px;
+  }
+  .page-number {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+  .pagination-info {
+    font-size: 13px;
+  }
+  .per-page-select {
+    font-size: 13px;
+    padding: 6px 8px;
+  }
+}
+
+@media (max-width: 420px) {
+  .page-numbers {
+    display: none;
+  }
+  .pagination-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 320px) {
+  .pagination-container {
+    gap: 8px;
+    padding: 12px 0;
+  }
+  .pagination-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .pagination-info {
+    font-size: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1920px) {
+  .page-btn {
+    min-width: 42px;
+    min-height: 42px;
+    font-size: 15px;
+  }
+  .pagination-info {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .page-btn {
+    min-width: 48px;
+    min-height: 48px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .page-btn {
+    min-width: 56px;
+    min-height: 56px;
+    font-size: 20px;
+    border-radius: 14px;
+  }
+  .pagination-info {
+    font-size: 18px;
+  }
+  .per-page-selector select {
+    font-size: 18px;
+    padding: 10px 14px;
   }
 }
 </style>

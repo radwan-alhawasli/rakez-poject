@@ -73,7 +73,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
   padding: 20px;
   backdrop-filter: blur(2px);
   animation: chatbotFadeIn 0.25s ease;
@@ -99,5 +99,32 @@ export default {
   flex-direction: column;
   overflow: hidden;
   box-shadow: var(--shadow-xl, 0 20px 60px -15px rgba(0, 0, 0, 0.18));
+}
+
+@media (max-width: 768px) {
+  .chatbot-modal-overlay {
+    padding: 16px;
+  }
+  .chatbot-modal-container {
+    max-width: 100%;
+    height: calc(100vh - 32px);
+  }
+}
+@media (max-width: 576px) {
+  .chatbot-modal-overlay {
+    padding: 10px;
+  }
+  .chatbot-modal-container {
+    height: calc(100vh - 20px);
+    border-radius: 12px;
+  }
+}
+@media (max-width: 320px) {
+  .chatbot-modal-overlay {
+    padding: 6px;
+  }
+  .chatbot-modal-container {
+    height: calc(100vh - 12px);
+  }
 }
 </style>

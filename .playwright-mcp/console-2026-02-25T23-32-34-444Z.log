@@ -1,0 +1,14 @@
+[ 1439712ms] [WARNING] Session expiring soon @ webpack-internal:///./src/utils/logger.js:26
+[ 1451440ms] [WARNING] Session expiring soon @ webpack-internal:///./src/utils/logger.js:26
+[ 1478533ms] [WARNING] Session expiring soon @ webpack-internal:///./src/utils/logger.js:26
+[ 1484302ms] [WARNING] Unauthenticated access attempt to: /sales/reservations @ webpack-internal:///./src/utils/logger.js:26
+[ 1517394ms] [WARNING] [RBAC] Sales bootstrap permission map drift detected. Review src/constants/permissions.js @ webpack-internal:///./src/utils/rbac.js:228
+[ 1566427ms] [WARNING] [RBAC] Sales bootstrap permission map drift detected. Review src/constants/permissions.js @ webpack-internal:///./src/utils/rbac.js:228
+[ 1587005ms] [WARNING] [RBAC] Sales bootstrap permission map drift detected. Review src/constants/permissions.js @ webpack-internal:///./src/utils/rbac.js:228
+[ 2174967ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8080/img/placeholder-project.jpg:0
+[ 2230305ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8080/img/placeholder-project.jpg:0
+[ 2252140ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8080/img/placeholder-project.jpg:0
+[ 4181560ms] [WARNING] Unauthenticated access attempt to: /sales/projects @ webpack-internal:///./src/utils/logger.js:26
+[ 4306376ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8080/img/placeholder-project.jpg:0
+[ 4348940ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8000/api/ai/v2/conversations?per_page=50:0
+[ 4348944ms] [ERROR] API Error [404]: The route api/ai/v2/conversations could not be found. @ webpack-internal:///./src/utils/logger.js:30

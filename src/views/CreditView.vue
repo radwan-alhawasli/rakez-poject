@@ -111,7 +111,7 @@
             <p class="section-desc">توزيع الحجوزات والتمويل حسب حالتها الحالية.</p>
           </div>
           <div class="chart-placeholder">
-            <p style="color: #94a3b8">مخطط بياني لتوزيع عمليات الائتمان</p>
+            <p style="color: var(--color-dark-gray)">مخطط بياني لتوزيع عمليات الائتمان</p>
           </div>
         </div>
       </div>
@@ -157,7 +157,10 @@
             </thead>
             <tbody>
               <tr v-if="creditNotifications.length === 0 && !isLoading">
-                <td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8">
+                <td
+                  colspan="5"
+                  style="text-align: center; padding: 40px; color: var(--color-dark-gray)"
+                >
                   لا توجد إشعارات.
                 </td>
               </tr>
@@ -179,7 +182,7 @@
                   >
                     تعيين كمقروء
                   </button>
-                  <span v-else style="color: #94a3b8">—</span>
+                  <span v-else style="color: var(--color-dark-gray)">—</span>
                 </td>
               </tr>
             </tbody>
@@ -332,7 +335,10 @@
                   </td>
                 </tr>
                 <tr v-if="currentBookingsList.length === 0 && !isLoading">
-                  <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8">
+                  <td
+                    colspan="6"
+                    style="text-align: center; padding: 40px; color: var(--color-dark-gray)"
+                  >
                     {{ emptyBookingsMessage }}
                   </td>
                 </tr>
@@ -395,7 +401,10 @@
                 </td>
               </tr>
               <tr v-if="financingList.length === 0 && !isLoading">
-                <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8">
+                <td
+                  colspan="6"
+                  style="text-align: center; padding: 40px; color: var(--color-dark-gray)"
+                >
                   لا توجد طلبات تمويل
                 </td>
               </tr>
@@ -458,11 +467,14 @@
                     </svg>
                     إكمال
                   </button>
-                  <span v-else style="color: #94a3b8">مكتمل</span>
+                  <span v-else style="color: var(--color-dark-gray)">مكتمل</span>
                 </td>
               </tr>
               <tr v-if="titleTransfers.length === 0 && !isLoading">
-                <td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8">
+                <td
+                  colspan="5"
+                  style="text-align: center; padding: 40px; color: var(--color-dark-gray)"
+                >
                   لا توجد طلبات نقل ملكية
                 </td>
               </tr>
@@ -515,7 +527,10 @@
                 </td>
               </tr>
               <tr v-if="soldProjects.length === 0 && !isLoading">
-                <td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8">
+                <td
+                  colspan="5"
+                  style="text-align: center; padding: 40px; color: var(--color-dark-gray)"
+                >
                   لا توجد مشاريع مباعة
                 </td>
               </tr>
@@ -536,13 +551,19 @@
       <div v-else-if="activeTab === 'claim-files'" class="management-view">
         <div
           class="section-header-compact"
-          style="display: flex; justify-content: space-between; align-items: center"
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+          "
         >
           <div>
             <h2 class="section-title">ملفات المطالبة</h2>
-            <p class="section-subtitle">إدارة ملفات المطالبة بالعمولات.</p>
+            <p class="section-subtitle">إدارة ملفات المطالبة بالعمولات (فردية ومجمّعة).</p>
           </div>
-          <button class="btn-primary" @click="openClaimFileForm">
+          <button class="btn-primary" @click="openCombinedClaimModal">
             <span class="plus-icon">+</span> إنشاء ملف مطالبة
           </button>
         </div>
@@ -551,24 +572,62 @@
             <thead>
               <tr>
                 <th>رقم الملف</th>
-                <th>رقم العقد</th>
-                <th>مبلغ المطالبة</th>
+                <th>النوع</th>
+                <th>المشروع</th>
+                <th>المبلغ</th>
                 <th>الحالة</th>
+                <th>التاريخ</th>
                 <th>الإجراءات</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="claim in claimFiles" :key="claim.id">
                 <td>{{ claim.id }}</td>
-                <td>{{ claim.contract_id || 'غير محدد' }}</td>
-                <td>{{ formatCurrency(claim.claim_amount) }}</td>
                 <td>
-                  <span class="status-tag" :class="getStatusClass(claim.status)">{{
-                    claim.status || 'قيد المعالجة'
-                  }}</span>
+                  <span v-if="claim.is_combined" class="type-badge combined">
+                    مجمّع ({{ claim.reservation_count || '—' }})
+                  </span>
+                  <span v-else class="type-badge single">فردي</span>
+                </td>
+                <td>{{ claim.project_name || 'غير محدد' }}</td>
+                <td>
+                  {{
+                    formatCurrency(
+                      claim.is_combined ? claim.total_claim_amount : claim.claim_amount
+                    )
+                  }}
                 </td>
                 <td>
-                  <div style="display: flex; gap: 8px">
+                  <span class="status-tag" :class="getClaimStatusClass(claim.status)">
+                    {{ claim.status_label_ar || claim.status || 'قيد المعالجة' }}
+                  </span>
+                </td>
+                <td>{{ formatDate(claim.created_at) }}</td>
+                <td>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                    <button
+                      v-if="claim.has_pdf"
+                      class="btn-action edit"
+                      @click="downloadClaimPdf(claim)"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      PDF
+                    </button>
+                    <button
+                      v-if="!claim.has_pdf"
+                      class="btn-action edit"
+                      @click="generateClaimPdf(claim)"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      إنشاء PDF
+                    </button>
                     <button
                       v-if="claim.status === 'pending'"
                       class="btn-action edit"
@@ -594,7 +653,10 @@
                 </td>
               </tr>
               <tr v-if="claimFiles.length === 0 && !isLoading">
-                <td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8">
+                <td
+                  colspan="7"
+                  style="text-align: center; padding: 40px; color: var(--color-dark-gray)"
+                >
                   لا توجد ملفات مطالبة
                 </td>
               </tr>
@@ -721,6 +783,17 @@
       @submit="handleClaimSubmit"
     />
 
+    <CombinedClaimFileModal
+      v-if="showCombinedClaimModal"
+      ref="combinedClaimModalRef"
+      :candidates="claimCandidates"
+      :isLoadingCandidates="isLoadingCandidates"
+      :isSubmitting="isSavingCombinedClaim"
+      @close="showCombinedClaimModal = false"
+      @submit-combined="handleCombinedClaimSubmit"
+      @submit-bulk="handleBulkClaimSubmit"
+    />
+
     <ConfirmModal
       v-if="showConfirmModal"
       :title="confirmModalConfig.title"
@@ -748,7 +821,9 @@ import ProcessWaitingModal from '../components/credit/ProcessWaitingModal.vue';
 import FinancingDetailModal from '../components/credit/FinancingDetailModal.vue';
 import TitleTransferForm from '../components/credit/TitleTransferForm.vue';
 import ClaimFileForm from '../components/credit/ClaimFileForm.vue';
+import CombinedClaimFileModal from '../components/credit/CombinedClaimFileModal.vue';
 import ConfirmModal from '../components/ConfirmModal.vue';
+import { useFormatters } from '../composables/useFormatters';
 
 export default {
   name: 'CreditView',
@@ -761,6 +836,7 @@ export default {
     FinancingDetailModal,
     TitleTransferForm,
     ClaimFileForm,
+    CombinedClaimFileModal,
     ConfirmModal,
   },
   setup() {
@@ -807,6 +883,11 @@ export default {
     const showFinancingModal = ref(false);
     const showTitleTransferModal = ref(false);
     const showClaimModal = ref(false);
+    const showCombinedClaimModal = ref(false);
+    const combinedClaimModalRef = ref(null);
+    const claimCandidates = ref([]);
+    const isLoadingCandidates = ref(false);
+    const isSavingCombinedClaim = ref(false);
     const showAdvanceConfirmModal = ref(false);
     const isAdvancing = ref(false);
     const showRejectFinancingModal = ref(false);
@@ -1697,6 +1778,101 @@ export default {
       showClaimModal.value = true;
     };
 
+    const openCombinedClaimModal = async () => {
+      showCombinedClaimModal.value = true;
+      isLoadingCandidates.value = true;
+      try {
+        const data = await creditService.getClaimFileCandidates({ per_page: 200 });
+        claimCandidates.value = data?.items ?? (Array.isArray(data) ? data : []);
+      } catch (error) {
+        logger.error('Error loading claim file candidates:', error);
+        claimCandidates.value = [];
+        toast.error('حدث خطأ أثناء تحميل الحجوزات المتاحة');
+      } finally {
+        isLoadingCandidates.value = false;
+      }
+    };
+
+    const handleCombinedClaimSubmit = async payload => {
+      isSavingCombinedClaim.value = true;
+      try {
+        const result = await creditService.createCombinedClaimFile(payload);
+        const fileId = result?.id ?? '';
+        toast.success(
+          fileId
+            ? `تم إنشاء ملف المطالبة المجمّع رقم ${fileId}`
+            : 'تم إنشاء ملف المطالبة المجمّع بنجاح'
+        );
+        showCombinedClaimModal.value = false;
+        loadClaimFiles();
+        loadDashboardMetrics();
+      } catch (error) {
+        logger.error('Error creating combined claim file:', error);
+        const msg = error?.response?.data?.message;
+        toast.error(msg || 'حدث خطأ أثناء إنشاء ملف المطالبة المجمّع');
+      } finally {
+        isSavingCombinedClaim.value = false;
+      }
+    };
+
+    const handleBulkClaimSubmit = async payload => {
+      isSavingCombinedClaim.value = true;
+      try {
+        const result = await creditService.generateBulkClaimFiles(payload);
+        const created = result?.created ?? {};
+        const errors = result?.errors ?? {};
+        const createdCount = Object.keys(created).length;
+        const errorCount = Object.keys(errors).length;
+
+        if (combinedClaimModalRef.value?.showBulkResult) {
+          combinedClaimModalRef.value.showBulkResult(result);
+        }
+
+        if (createdCount > 0 && errorCount === 0) {
+          toast.success(`تم إنشاء ${createdCount} ملف مطالبة بنجاح`);
+          showCombinedClaimModal.value = false;
+        } else if (createdCount > 0) {
+          toast.warning(`تم إنشاء ${createdCount} ملف، فشل ${errorCount}`);
+        } else {
+          toast.error('فشل إنشاء ملفات المطالبة');
+        }
+        loadClaimFiles();
+        loadDashboardMetrics();
+      } catch (error) {
+        logger.error('Error generating bulk claim files:', error);
+        const msg = error?.response?.data?.message;
+        toast.error(msg || 'حدث خطأ أثناء إنشاء ملفات المطالبة');
+      } finally {
+        isSavingCombinedClaim.value = false;
+      }
+    };
+
+    const getClaimStatusClass = status => {
+      if (!status) return 'good';
+      const s = status.toLowerCase();
+      if (s === 'completed' || s.includes('مكتمل')) return 'excellent';
+      if (s === 'under_processing' || s.includes('معالجة')) return 'good';
+      if (s === 'pending' || s.includes('معلق')) return 'good';
+      if (s === 'submitted' || s.includes('مرسل')) return 'good';
+      return 'good';
+    };
+
+    const downloadClaimPdf = claim => {
+      const url = creditService.getClaimFilePdfDownloadUrl(claim.id);
+      window.open(url, '_blank');
+    };
+
+    const generateClaimPdf = async claim => {
+      try {
+        await creditService.generateClaimFilePdf(claim.id);
+        toast.success('تم إنشاء ملف PDF بنجاح');
+        loadClaimFiles();
+      } catch (error) {
+        logger.error('Error generating claim PDF:', error);
+        toast.error('حدث خطأ أثناء إنشاء ملف PDF');
+      }
+    };
+
     const submitClaim = async claim => {
       try {
         await creditService.submitClaim(claim.id);
@@ -1735,23 +1911,11 @@ export default {
       }
     };
 
-    // Utility functions
-    const formatCurrency = val => {
-      if (!val) return '0 ر.س';
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 0,
-      }).format(val);
-    };
-
+    // Utility functions (shared composable)
+    const { formatCurrency, formatDate: _fmtDate } = useFormatters();
     const formatDate = dateStr => {
       if (!dateStr) return 'غير محدد';
-      try {
-        return new Date(dateStr).toLocaleDateString('ar-SA');
-      } catch {
-        return dateStr;
-      }
+      return _fmtDate(dateStr);
     };
 
     const getStatusClass = status => {
@@ -1864,6 +2028,17 @@ export default {
       handleTitleTransferSubmit,
       viewSoldProjectDetail,
       openClaimFileForm,
+      openCombinedClaimModal,
+      handleCombinedClaimSubmit,
+      handleBulkClaimSubmit,
+      showCombinedClaimModal,
+      combinedClaimModalRef,
+      claimCandidates,
+      isLoadingCandidates,
+      isSavingCombinedClaim,
+      getClaimStatusClass,
+      downloadClaimPdf,
+      generateClaimPdf,
       submitClaim,
       approveClaim,
       handleClaimSubmit,
@@ -1920,14 +2095,14 @@ export default {
   gap: 0;
   flex-wrap: wrap;
   margin-bottom: 20px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-medium-gray);
 }
 .btn-tab-booking {
   padding: 12px 20px;
   border: none;
   border-bottom: 3px solid transparent;
   background: transparent;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -1935,13 +2110,13 @@ export default {
   transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
 .btn-tab-booking:hover {
-  color: #1e3a5f;
-  background: #f8fafc;
+  color: var(--color-navy);
+  background: var(--color-light-gray);
 }
 .btn-tab-booking.active {
-  color: #1e3a5f;
-  border-bottom-color: #1e3a5f;
-  background: #f1f5f9;
+  color: var(--color-navy);
+  border-bottom-color: var(--color-navy);
+  background: var(--color-light-gray);
 }
 .booking-detail-inline {
   margin-top: 8px;
@@ -1967,26 +2142,28 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: var(--z-tooltip);
 }
 .advance-confirm-modal {
   background: #fff;
   border-radius: 12px;
   padding: 24px;
-  min-width: 380px;
-  max-width: 90vw;
+  box-sizing: border-box;
+  width: min(520px, 92vw);
+  max-width: 92vw;
+  min-width: 0;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }
 .advance-confirm-modal .modal-title {
   margin: 0 0 16px 0;
   font-size: 18px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 .advance-confirm-modal .modal-body {
   margin: 0 0 24px 0;
   font-size: 15px;
-  color: #475569;
+  color: var(--color-charcoal);
   line-height: 1.6;
 }
 .advance-confirm-modal .modal-actions {
@@ -1996,15 +2173,15 @@ export default {
 }
 .advance-confirm-modal .btn-modal-cancel {
   padding: 10px 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   background: #fff;
-  color: #64748b;
+  color: var(--color-dark-gray);
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
 }
 .advance-confirm-modal .btn-modal-cancel:hover {
-  background: #f1f5f9;
+  background: var(--color-light-gray);
 }
 .advance-confirm-modal .btn-modal-confirm {
   padding: 10px 20px;
@@ -2028,20 +2205,22 @@ export default {
   background: #fff;
   border-radius: 12px;
   padding: 24px;
-  min-width: 380px;
-  max-width: 90vw;
+  box-sizing: border-box;
+  width: min(520px, 92vw);
+  max-width: 92vw;
+  min-width: 0;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }
 .reject-financing-modal .modal-title {
   margin: 0 0 8px 0;
   font-size: 18px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 .reject-financing-modal .modal-body {
   margin: 0 0 12px 0;
   font-size: 15px;
-  color: #475569;
+  color: var(--color-charcoal);
 }
 .reject-financing-modal .modal-form-group {
   margin-bottom: 20px;
@@ -2049,11 +2228,11 @@ export default {
 .reject-financing-modal .modal-input {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 8px;
   font-size: 15px;
   font-family: inherit;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 .reject-financing-modal .modal-input:focus {
   outline: none;
@@ -2083,12 +2262,12 @@ export default {
   font-family: inherit;
 }
 .reject-financing-modal .btn-modal-cancel {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   background: #fff;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 .reject-financing-modal .btn-modal-cancel:hover {
-  background: #f1f5f9;
+  background: var(--color-light-gray);
 }
 .reject-financing-modal .btn-modal-confirm {
   border: none;
@@ -2111,10 +2290,10 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
+  background: var(--color-light-gray);
+  border: 1px solid var(--color-medium-gray);
   border-radius: 8px;
-  color: #475569;
+  color: var(--color-charcoal);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
@@ -2131,10 +2310,10 @@ export default {
 }
 .btn-tab-mini {
   padding: 8px 14px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 8px;
   background: #fff;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
@@ -2142,13 +2321,172 @@ export default {
   transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 .btn-tab-mini:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #1e3a5f;
+  background: var(--color-light-gray);
+  border-color: var(--color-medium-gray);
+  color: var(--color-navy);
 }
 .btn-tab-mini.active {
-  background: #1e3a5f;
-  border-color: #1e3a5f;
+  background: var(--color-navy);
+  border-color: var(--color-navy);
   color: #fff;
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.type-badge.combined {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+.type-badge.single {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+/* ============================
+   CREDIT VIEW RESPONSIVE
+   ============================ */
+@media (max-width: 768px) {
+  .credit-tabs {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    gap: 0;
+  }
+
+  .credit-tabs::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  .credit-tabs::-webkit-scrollbar-thumb {
+    background: var(--color-gold);
+    border-radius: 2px;
+  }
+
+  .credit-bookings-subtabs {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .booking-detail-grid,
+  .financing-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .btn-tab-mini {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+}
+
+@media (min-width: 1920px) {
+  .page-header h1 {
+    font-size: 32px;
+  }
+
+  .booking-detail-grid,
+  .financing-detail-grid {
+    gap: 28px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .page-header h1 {
+    font-size: 38px;
+  }
+}
+
+/* ── Responsive: Extra Small Mobile ── */
+@media (max-width: 320px) {
+  .credit-bookings-six-tabs {
+    gap: 0;
+  }
+  .btn-tab-booking {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  .btn-tab-mini {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  .btn-back-list {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  .advance-confirm-modal,
+  .reject-financing-modal {
+    padding: 16px;
+  }
+  .advance-confirm-modal .modal-title,
+  .reject-financing-modal .modal-title {
+    font-size: 16px;
+  }
+  .advance-confirm-modal .modal-body,
+  .reject-financing-modal .modal-body {
+    font-size: 13px;
+  }
+  .search-input-mini {
+    font-size: 13px;
+  }
+}
+
+/* ── Responsive: Tablet Landscape ── */
+@media (max-width: 992px) {
+  .credit-bookings-six-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+  .btn-tab-booking {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+/* ── Responsive: Large Desktop ── */
+@media (min-width: 1200px) {
+  .credit-bookings-six-tabs {
+    gap: 0;
+  }
+}
+
+@media (min-width: 3840px) {
+  .page-header h1 {
+    font-size: 48px;
+  }
+
+  .btn-tab-mini {
+    padding: 12px 20px;
+    font-size: 18px;
+  }
+
+  .type-badge {
+    font-size: 16px;
+    padding: 4px 14px;
+  }
+
+  .btn-tab-booking {
+    padding: 16px 28px;
+    font-size: 18px;
+  }
+  .btn-back-list {
+    font-size: 16px;
+    padding: 12px 20px;
+  }
 }
 </style>

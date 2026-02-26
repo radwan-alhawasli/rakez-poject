@@ -1,0 +1,2 @@
+[     523ms] [WARNING] Unauthenticated access attempt to: /sales/reservations @ webpack-internal:///./src/utils/logger.js:26
+[   15865ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8080/img/placeholder-project.jpg:0

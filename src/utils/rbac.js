@@ -28,41 +28,12 @@ import {
   ROLE_HR,
   ROLE_MARKETING,
 } from '../constants/roles';
-import { BOOTSTRAP_ROLE_MAP, ROLE_TO_BOOTSTRAP_KEY } from '../constants/permissions';
-
-const SALES_BASE_PERMISSIONS = [
-  'sales.dashboard.view',
-  'sales.projects.view',
-  'sales.units.view',
-  'sales.units.book',
-  'sales.reservations.create',
-  'sales.reservations.view',
-  'sales.reservations.confirm',
-  'sales.reservations.cancel',
-  'sales.waiting_list.create',
-  'sales.goals.view',
-  'sales.schedule.view',
-  'sales.targets.view',
-  'sales.targets.update',
-  'sales.attendance.view',
-  'notifications.view',
-  'exclusive_projects.request',
-  'exclusive_projects.contract.complete',
-  'exclusive_projects.contract.export',
-  'use-ai-assistant',
-];
-
-const SALES_LEADER_EXTRA_PERMISSIONS = [
-  'sales.waiting_list.convert',
-  'sales.goals.create',
-  'sales.team.manage',
-  'sales.attendance.manage',
-  'sales.tasks.manage',
-  'sales.tasks.create_for_marketing',
-  'sales.projects.allocate_shifts',
-  'sales.negotiation.approve',
-  'sales.payment-plan.manage',
-];
+import {
+  BOOTSTRAP_ROLE_MAP,
+  ROLE_TO_BOOTSTRAP_KEY,
+  SALES_BASE_PERMISSIONS,
+  SALES_LEADER_EXTRA_PERMISSIONS,
+} from '../constants/permissions';
 
 const isTruthyLeaderFlag = value => value === true || value === 1 || value === '1';
 
@@ -160,6 +131,11 @@ export function getEffectiveRoleKey(user) {
 export function getUserPermissions(user) {
   if (!user) return [];
   if (Array.isArray(user.permissions) && user.permissions.length > 0) {
+    // Sales leader: merge API permissions with full leader set so sidebar/routes always work
+    if (isSalesLeader(user)) {
+      const leaderPerms = [...SALES_BASE_PERMISSIONS, ...SALES_LEADER_EXTRA_PERMISSIONS];
+      return [...new Set([...user.permissions, ...leaderPerms])];
+    }
     return user.permissions;
   }
   const bootstrapKey = getEffectiveRoleKey(user);

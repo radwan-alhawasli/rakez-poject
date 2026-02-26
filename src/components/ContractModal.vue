@@ -25,7 +25,7 @@
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="2.5"
+            stroke-width="2"
           >
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -269,7 +269,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
   padding: 20px;
   backdrop-filter: blur(2px);
   animation: fadeIn 0.3s ease;
@@ -299,20 +299,12 @@ export default {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   overflow: hidden;
   direction: rtl;
-  font-family: 'Tajawal', sans-serif;
-  border-top: 4px solid #b1a28f; /* Gold Top Border */
+  border-top: 4px solid var(--color-gold); /* Gold Top Border */
 }
 
 /* Classic Typography Helpers */
-h2,
-h3,
-.modal-title,
-.section-title {
-  font-family: 'Amiri', 'Playfair Display', serif;
-}
-
 .modal-header {
-  background: #ffffff;
+  background: var(--color-white);
   padding: 24px 32px;
   /* border-bottom: 1px solid #eef2f6; */
   position: relative;
@@ -335,7 +327,7 @@ h3,
 .modal-title {
   font-size: 22px;
   font-weight: 600;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0;
 }
 
@@ -344,7 +336,6 @@ h3,
   border-radius: 20px;
   font-size: 11px;
   font-weight: 700;
-  font-family: 'Tajawal', sans-serif;
 }
 .status-badge-header.approved {
   background: #dcfce7;
@@ -364,7 +355,7 @@ h3,
 
 .modal-subtitle {
   font-size: 14px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin: 0;
   font-weight: normal;
 }
@@ -379,20 +370,20 @@ h3,
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   transition: color 0.2s;
   font-size: 24px;
 }
 
 .close-btn:hover {
-  color: #475569;
+  color: var(--color-charcoal);
 }
 
 .modal-content {
   padding: 10px 32px 32px 32px;
   overflow-y: auto;
   flex: 1;
-  background: #ffffff;
+  background: var(--color-white);
 }
 
 .details-section {
@@ -409,7 +400,7 @@ h3,
 .section-bar {
   width: 4px;
   height: 24px;
-  background: linear-gradient(180deg, #b1a28f 0%, #c9a961 100%);
+  background: linear-gradient(180deg, var(--color-gold) 0%, #c9a961 100%);
   border-radius: 2px;
   box-shadow: 0 2px 4px rgba(161, 139, 92, 0.3);
 }
@@ -417,9 +408,8 @@ h3,
 .section-title {
   font-size: 16px;
   font-weight: 600;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0;
-  font-family: 'Tajawal', sans-serif;
   letter-spacing: 0.3px;
 }
 
@@ -435,7 +425,7 @@ h3,
   align-items: baseline;
   gap: 12px;
   padding: 8px 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-light-gray);
   transition: background 0.2s ease;
 }
 
@@ -452,23 +442,22 @@ h3,
 
 .detail-label {
   font-size: 14px;
-  font-family: 'Tajawal', sans-serif;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   min-width: fit-content;
   white-space: nowrap;
 }
 
 .detail-value {
   font-size: 14px;
-  color: #475569;
+  color: var(--color-charcoal);
   font-weight: 400;
   flex: 1;
   text-align: right;
 }
 
 .detail-value.highlight {
-  color: #b1a28f;
+  color: var(--color-gold);
   font-weight: 700;
   font-size: 15px;
 }
@@ -488,7 +477,7 @@ h3,
 }
 
 .btn-approve {
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
   border: none;
   padding: 12px 32px;
@@ -497,7 +486,6 @@ h3,
   font-size: 16px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-family: 'Tajawal', sans-serif;
   box-shadow: 0 4px 12px rgba(161, 139, 92, 0.2);
 }
 
@@ -509,7 +497,7 @@ h3,
 
 .btn-reject {
   background: white;
-  color: #ef4444;
+  color: var(--color-error);
   border: 1.5px solid #fee2e2;
   padding: 12px 32px;
   border-radius: 12px;
@@ -517,7 +505,6 @@ h3,
   font-size: 16px;
   cursor: pointer;
   transition: all 0.3s;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .btn-reject:hover {
@@ -528,10 +515,10 @@ h3,
 
 .btn-close-large {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   padding: 8px 24px;
   border-radius: 6px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -539,8 +526,8 @@ h3,
 
 .btn-close-large:hover {
   background: #fdfdfd;
-  color: #b1a28f;
-  border-color: #b1a28f;
+  color: var(--color-gold);
+  border-color: var(--color-gold);
 }
 
 /* Scrollbar customization */
@@ -551,22 +538,113 @@ h3,
   background: #f1f1f1;
 }
 ::-webkit-scrollbar-thumb {
-  background: #b1a28f;
+  background: var(--color-gold);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #8c7851;
+  background: var(--color-gold-dark);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 12px;
+  }
+  .modal-container {
+    width: 95%;
+    max-width: 95vw;
+  }
+  .modal-content {
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 16px 20px 20px;
+  }
+  .modal-header {
+    padding: 20px;
+  }
+  .modal-footer-action {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .action-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  .btn-approve,
+  .btn-reject,
+  .btn-close-large {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 575px) {
+  .modal-overlay {
+    padding: 8px;
+  }
+  .modal-container {
+    width: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 16px;
+  }
+  .modal-header {
+    padding: 16px;
+  }
+  .modal-title {
+    font-size: 18px;
+  }
+  .modal-content {
+    padding: 16px;
+  }
   .detail-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
   }
-
   .section-bar {
     height: 20px;
+  }
+  .btn-approve,
+  .btn-reject,
+  .btn-close-large {
+    min-height: 44px;
+    width: 100%;
+  }
+}
+
+@media (min-width: 1920px) {
+  .modal-content {
+    max-width: 800px;
+  }
+  .detail-value,
+  .detail-label {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .modal-content {
+    max-width: 900px;
+  }
+  .detail-value,
+  .detail-label {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .modal-content {
+    max-width: 1100px;
+    padding: 40px;
+    border-radius: 24px;
+  }
+  .detail-value,
+  .detail-label {
+    font-size: 20px;
+  }
+  .section-title {
+    font-size: 22px;
   }
 }
 </style>

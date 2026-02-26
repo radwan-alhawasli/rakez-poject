@@ -280,7 +280,6 @@ export default {
 
 <style scoped>
 .boards-view {
-  font-family: 'Tajawal', sans-serif;
   animation: fadeIn 0.4s ease-out;
 }
 @keyframes fadeIn {
@@ -300,19 +299,18 @@ export default {
 .page-title {
   font-size: 28px;
   font-weight: 800;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 5px 0;
-  font-family: 'Amiri', serif;
 }
 .page-subtitle {
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 15px;
   margin: 0;
 }
 
 .tabs-container {
   display: flex;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-medium-gray);
   margin-bottom: 30px;
   gap: 30px;
 }
@@ -321,7 +319,7 @@ export default {
   border: none;
   padding: 10px 0;
   font-size: 15px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   cursor: pointer;
   position: relative;
   font-weight: 500;
@@ -329,7 +327,7 @@ export default {
   transition: color 0.2s;
 }
 .tab-btn.active {
-  color: #1e3a5f;
+  color: var(--color-navy);
   font-weight: 700;
 }
 .tab-btn.active::after {
@@ -338,7 +336,7 @@ export default {
   bottom: -1px;
   width: 100%;
   height: 3px;
-  background: #b1a28f;
+  background: var(--color-gold);
   left: 0;
   border-radius: 3px 3px 0 0;
 }
@@ -351,7 +349,7 @@ export default {
 
 .project-card {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 12px;
   padding: 20px;
   transition: all 0.2s;
@@ -370,25 +368,25 @@ export default {
 .project-name {
   font-size: 16px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-charcoal);
   margin: 0;
 }
 .project-id {
   font-size: 12px;
-  color: #94a3b8;
-  background: #f1f5f9;
+  color: var(--color-dark-gray);
+  background: var(--color-light-gray);
   padding: 2px 6px;
   border-radius: 4px;
 }
 .project-location {
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin: 0 0 20px 0;
 }
 
 .add-board-btn {
   width: 100%;
-  background: #b1a28f;
+  background: var(--color-gold);
   color: white;
   border: none;
   padding: 10px;
@@ -426,7 +424,7 @@ export default {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.6);
-  z-index: 1000;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -472,7 +470,6 @@ export default {
   text-align: center;
   font-size: 20px;
   font-weight: 800;
-  font-family: 'Amiri', serif;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
@@ -521,7 +518,6 @@ export default {
   text-align: center;
   font-weight: 800;
   font-size: 16px;
-  font-family: 'Tajawal', sans-serif;
 }
 
 /* Body Layouts */
@@ -549,21 +545,20 @@ export default {
 .box-input {
   width: 100%;
   padding: 8px 12px; /* Reduced padding */
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 6px;
   text-align: center;
   outline: none;
   font-size: 14px;
   background: white;
-  color: #334155;
+  color: var(--color-charcoal);
   transition: all 0.2s;
-  font-family: 'Tajawal', sans-serif;
   flex: 1;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .box-input::placeholder {
-  color: #94a3b8;
+  color: var(--color-dark-gray);
 }
 
 .box-input:focus {
@@ -579,7 +574,7 @@ export default {
 
 /* Save Button */
 .save-btn {
-  background: #1e293b;
+  background: var(--color-charcoal);
   color: white;
   width: fit-content;
   margin: 5px auto 0; /* Reduced margin */
@@ -598,8 +593,39 @@ export default {
   box-shadow: 0 10px 15px -3px rgba(30, 41, 59, 0.3);
 }
 
-/* Responsive */
-@media (max-width: 650px) {
+/* Responsive: Tablet Landscape */
+@media (max-width: 992px) {
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .page-title {
+    font-size: 24px;
+  }
+}
+
+/* Responsive: Tablet Portrait */
+@media (max-width: 768px) {
+  .projects-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .tabs-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    white-space: nowrap;
+    font-size: 13px;
+  }
+  .page-title {
+    font-size: 22px;
+  }
+  .page-subtitle {
+    font-size: 13px;
+  }
   .modal-content {
     width: 95%;
   }
@@ -609,6 +635,167 @@ export default {
   .grid-row {
     flex-direction: column;
     gap: 8px;
+  }
+}
+
+/* Responsive: Mobile */
+@media (max-width: 576px) {
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+  .page-title {
+    font-size: 20px;
+  }
+  .page-subtitle {
+    font-size: 12px;
+  }
+  .tabs-container {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tab-btn {
+    font-size: 12px;
+    padding: 8px 0;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .project-card {
+    padding: 14px;
+  }
+  .project-name {
+    font-size: 14px;
+  }
+  .add-board-btn,
+  .completed-badge {
+    min-height: 44px;
+    font-size: 14px;
+  }
+  .modal-header-strip {
+    font-size: 16px;
+    padding: 12px;
+  }
+  .section-header {
+    font-size: 14px;
+    padding: 8px;
+  }
+  .box-input {
+    padding: 10px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+  .save-btn {
+    width: 100%;
+    padding: 12px 20px;
+    min-height: 44px;
+    font-size: 14px;
+  }
+  .close-btn {
+    top: 10px;
+    left: 12px;
+    font-size: 20px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Responsive: Extra Small Mobile */
+@media (max-width: 320px) {
+  .page-title {
+    font-size: 18px;
+  }
+  .project-card {
+    padding: 10px;
+  }
+  .project-name {
+    font-size: 13px;
+  }
+  .project-id {
+    font-size: 10px;
+  }
+  .project-location {
+    font-size: 11px;
+  }
+  .modal-content {
+    border-radius: 12px;
+  }
+  .form-container {
+    padding: 10px;
+    gap: 10px;
+  }
+  .section-body {
+    padding: 10px;
+  }
+  .box-input {
+    font-size: 12px;
+  }
+}
+
+/* Responsive: Large Desktop */
+@media (min-width: 1920px) {
+  .page-title {
+    font-size: 34px;
+  }
+  .page-subtitle {
+    font-size: 17px;
+  }
+  .tabs-container {
+    gap: 40px;
+    margin-bottom: 36px;
+  }
+  .tab-btn {
+    font-size: 17px;
+    padding: 12px 0;
+  }
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 28px;
+  }
+  .project-card {
+    padding: 28px;
+  }
+  .project-name {
+    font-size: 18px;
+  }
+  .project-location {
+    font-size: 15px;
+  }
+  .add-board-btn,
+  .completed-badge {
+    font-size: 16px;
+    padding: 14px;
+  }
+  .modal-content {
+    width: 650px;
+  }
+  .modal-header-strip {
+    font-size: 22px;
+    padding: 18px;
+  }
+  .section-header {
+    font-size: 18px;
+  }
+  .box-input {
+    font-size: 16px;
+    padding: 12px 16px;
+  }
+  .save-btn {
+    font-size: 17px;
+    padding: 14px 70px;
+  }
+}
+
+/* Responsive: Ultra-wide */
+@media (min-width: 2560px) {
+  .page-title {
+    font-size: 40px;
+  }
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 32px;
+  }
+  .project-card {
+    padding: 32px;
   }
 }
 </style>

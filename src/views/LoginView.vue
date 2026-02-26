@@ -25,3 +25,13 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* Touch-target safety net on mobile */
+@media (max-width: 576px) {
+  :deep(input),
+  :deep(button) {
+    min-height: 44px;
+  }
+}
+</style>

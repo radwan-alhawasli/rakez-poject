@@ -585,6 +585,7 @@ import hrService from '../services/hrService';
 import authService from '../services/authService';
 import logger from '../utils/logger';
 import { toast } from '../composables/useToast';
+import { useFormatters } from '../composables/useFormatters';
 
 export default {
   name: 'HRView',
@@ -1141,14 +1142,7 @@ export default {
       }
     };
 
-    const formatCurrency = val => {
-      // Force English/Western numerals by using 'en-US' locale
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 0,
-      }).format(val);
-    };
+    const { formatCurrency } = useFormatters();
 
     const handleUserSubmit = async userData => {
       isSavingUser.value = true;
@@ -1242,7 +1236,6 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin-bottom: 5px;
-  font-family: 'Amiri', serif;
 }
 
 .view-subtitle {
@@ -1294,7 +1287,6 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin: 0 0 8px 0;
-  font-family: 'Cairo', 'Amiri', serif;
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
@@ -1322,7 +1314,6 @@ export default {
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   font-size: 15px;
   letter-spacing: 0.02em;
-  font-family: 'Cairo', sans-serif;
   position: relative;
   overflow: hidden;
 }
@@ -1371,7 +1362,6 @@ export default {
   background: none;
   border: none;
   padding: 15px 10px;
-  font-family: 'Tajawal', sans-serif;
   font-weight: 600;
   color: #94a3b8;
   cursor: pointer;
@@ -1414,7 +1404,6 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin: 0 0 10px 0;
-  font-family: 'Cairo', 'Amiri', serif;
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
@@ -1520,7 +1509,6 @@ export default {
   order: 1;
   letter-spacing: -0.01em;
   line-height: 1.4;
-  font-family: 'Cairo', sans-serif;
 }
 
 .stat-value {
@@ -1529,7 +1517,6 @@ export default {
   color: #1e293b;
   line-height: 1;
   margin: 8px 0;
-  font-family: 'Cairo', 'Amiri', serif;
   order: 2;
   letter-spacing: -0.03em;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
@@ -1548,7 +1535,6 @@ export default {
   order: 3;
   letter-spacing: 0.01em;
   opacity: 0.85;
-  font-family: 'Cairo', sans-serif;
 }
 
 .stat-icon-bg {
@@ -1651,7 +1637,6 @@ export default {
 
 .team-name {
   font-weight: 800;
-  font-family: 'Amiri', serif;
   font-size: 18px;
 }
 .team-member-count {
@@ -1675,7 +1660,6 @@ export default {
   color: #b1a28f;
   font-weight: 800;
   font-size: 14px;
-  font-family: 'Cairo', sans-serif;
 }
 
 .progress-bar {
@@ -1754,7 +1738,6 @@ export default {
   font-size: 15px;
   font-weight: 800;
   line-height: 1.2;
-  font-family: 'Cairo', sans-serif;
 }
 
 .projects-count-label {
@@ -1801,7 +1784,6 @@ export default {
   font-weight: 800;
   color: #1e293b;
   margin: 0 0 8px 0;
-  font-family: 'Cairo', sans-serif;
 }
 
 .metrics-empty-desc {
@@ -1826,7 +1808,6 @@ export default {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  font-family: 'Cairo', sans-serif;
   border-bottom: 2px solid rgba(177, 162, 143, 0.15);
 }
 
@@ -1835,7 +1816,6 @@ export default {
   border-bottom: 1px solid rgba(226, 232, 240, 0.5);
   font-size: 15px;
   font-weight: 500;
-  font-family: 'Cairo', sans-serif;
   transition: background 0.3s ease;
 }
 
@@ -1867,7 +1847,7 @@ export default {
 
 .status-tag {
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 11px;
   font-weight: 700;
 }
@@ -1924,7 +1904,7 @@ export default {
   position: relative;
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
-  border-radius: 28px;
+  border-radius: var(--radius-xl);
   padding: 30px;
   border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
@@ -1959,7 +1939,7 @@ export default {
   width: 64px;
   height: 64px;
   background: linear-gradient(135deg, #1e3a5f 0%, #2c3e50 100%);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1973,7 +1953,6 @@ export default {
   margin: 0;
   font-size: 20px;
   color: #1e3a5f;
-  font-family: 'Amiri', serif;
 }
 .emp-info .team-tag {
   font-size: 13px;
@@ -2108,7 +2087,7 @@ export default {
   border: none;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -2132,7 +2111,7 @@ export default {
   border: 1px solid #b1a28f;
   color: #b1a28f;
   padding: 5px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -2148,7 +2127,7 @@ export default {
 .badge-info {
   display: inline-block;
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 12px;
   font-weight: 700;
   background: #dbeafe;
@@ -2158,7 +2137,7 @@ export default {
 .badge-warning {
   display: inline-block;
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 12px;
   font-weight: 700;
   background: #fef3c7;
@@ -2181,7 +2160,7 @@ export default {
 /* Overview Section - Luxury Enhanced */
 .overview-section {
   background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
-  border-radius: 28px;
+  border-radius: var(--radius-xl);
   padding: 40px;
   border: 1px solid rgba(177, 162, 143, 0.15);
   min-height: 450px;
@@ -2217,7 +2196,6 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin: 0 0 10px 0;
-  font-family: 'Cairo', 'Amiri', serif;
   letter-spacing: -0.02em;
   line-height: 1.3;
 }
@@ -2236,7 +2214,7 @@ export default {
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   border: 2px dashed rgba(177, 162, 143, 0.25);
   margin-top: 25px;
   position: relative;
@@ -2255,7 +2233,6 @@ export default {
   font-size: 16px;
   font-weight: 600;
   color: #94a3b8;
-  font-family: 'Cairo', sans-serif;
 }
 
 @media (max-width: 768px) {
@@ -2313,7 +2290,7 @@ export default {
   gap: 4px;
   padding: 6px 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
   color: white;
   font-size: 11px;
@@ -2347,7 +2324,7 @@ export default {
   color: #94a3b8;
   padding: 6px 10px;
   background: rgba(148, 163, 184, 0.08);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: 1px dashed #e2e8f0;
 }
 .no-members-hint .no-members-icon {
@@ -2377,7 +2354,7 @@ export default {
 
 .btn-action {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
@@ -2439,7 +2416,6 @@ export default {
   border: 2px solid #e2e8f0;
   border-radius: 12px;
   font-size: 13px;
-  font-family: 'Tajawal', sans-serif;
   transition: all 0.2s;
 }
 
@@ -2510,14 +2486,12 @@ export default {
   font-size: 20px;
   font-weight: 800;
   color: #1e3a5f;
-  font-family: 'Amiri', serif;
 }
 
 .modal-title-team {
   font-size: 22px;
   font-weight: 800;
   color: #1e293b;
-  font-family: 'Cairo', sans-serif;
 }
 
 .modal-title-label {
@@ -2629,14 +2603,13 @@ export default {
   font-size: 13px;
   font-weight: 800;
   color: #b1a28f;
-  font-family: 'Cairo', sans-serif;
 }
 
 .project-status-tag {
   font-size: 11px;
   font-weight: 700;
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   background: #dcfce7;
   color: #16a34a;
 }
@@ -2677,7 +2650,6 @@ export default {
   justify-content: center;
   font-size: 16px;
   font-weight: 700;
-  font-family: 'Cairo', sans-serif;
   flex-shrink: 0;
 }
 
@@ -2822,7 +2794,7 @@ export default {
     width: 94%;
     max-width: none;
     padding: 20px;
-    border-radius: 20px;
+    border-radius: var(--radius-lg);
     max-height: 90vh;
     overflow: hidden;
     display: flex;
@@ -2916,6 +2888,59 @@ export default {
   .metrics-table td {
     padding: 12px 14px;
     font-size: 13px;
+  }
+}
+
+/* Large screens */
+@media (min-width: 1920px) {
+  .hr-view {
+    padding: 28px 40px;
+  }
+  .page-title {
+    font-size: 32px;
+  }
+  .data-table th,
+  .data-table td,
+  .metrics-table th,
+  .metrics-table td {
+    padding: 22px 24px;
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .hr-view {
+    padding: 36px 52px;
+  }
+  .page-title {
+    font-size: 38px;
+  }
+  .data-table th,
+  .data-table td,
+  .metrics-table th,
+  .metrics-table td {
+    padding: 26px 28px;
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .hr-view {
+    padding: 48px 60px;
+  }
+  .page-title {
+    font-size: 48px;
+  }
+  .data-table th,
+  .data-table td,
+  .metrics-table th,
+  .metrics-table td {
+    padding: 32px;
+    font-size: 20px;
+  }
+  .stat-card {
+    padding: 32px;
+    border-radius: 24px;
   }
 }
 </style>

@@ -67,7 +67,7 @@
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="1.5"
+                  stroke-width="2"
                   opacity="0.3"
                 >
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -542,6 +542,28 @@
                 <span class="nav-text">طلب مشروع حصري</span>
               </div>
             </router-link>
+
+            <!-- المهام الخاصة بي -->
+            <router-link
+              to="/tasks"
+              class="nav-item"
+              active-class="active"
+              data-tooltip="المهام الخاصة بي"
+            >
+              <div class="nav-content">
+                <svg
+                  class="nav-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                <span class="nav-text">المهام الخاصة بي</span>
+              </div>
+            </router-link>
           </template>
 
           <!-- Project Manager Sidebar -->
@@ -753,6 +775,28 @@
               </div>
             </router-link>
 
+            <!-- المهام الخاصة بي -->
+            <router-link
+              to="/tasks"
+              class="nav-item"
+              active-class="active"
+              data-tooltip="المهام الخاصة بي"
+            >
+              <div class="nav-content">
+                <svg
+                  class="nav-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                <span class="nav-text">المهام الخاصة بي</span>
+              </div>
+            </router-link>
+
             <!-- 9. الملف الشخصي -->
             <router-link
               to="/profile"
@@ -946,52 +990,7 @@
               </div>
             </router-link>
 
-            <!-- 7. التفاوضات (Sales Leader only) -->
-            <router-link
-              v-if="hasPermission('sales.negotiation.approve')"
-              to="/sales/negotiations"
-              class="nav-item"
-              exact-active-class="active"
-              data-tooltip="التفاوضات"
-            >
-              <div class="nav-content">
-                <svg
-                  class="nav-icon-svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-                <span class="nav-text">التفاوضات</span>
-              </div>
-            </router-link>
-
-            <!-- 8. قائمة الانتظار -->
-            <router-link
-              v-if="hasAnyPermission(['sales.waiting_list.create', 'sales.waiting_list.convert'])"
-              to="/sales/waiting-list"
-              class="nav-item"
-              exact-active-class="active"
-              data-tooltip="قائمة الانتظار"
-            >
-              <div class="nav-content">
-                <svg
-                  class="nav-icon-svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M9 11l3 3L22 4"></path>
-                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                </svg>
-                <span class="nav-text">قائمة الانتظار</span>
-              </div>
-            </router-link>
-
-            <!-- 9. توزيع الشفتات (Sales Leader only) -->
+            <!-- توزيع الشفتات (Sales Leader only) -->
             <router-link
               v-if="hasPermission('sales.projects.allocate_shifts')"
               to="/sales/assignments"
@@ -1037,7 +1036,103 @@
               </div>
             </router-link>
 
-            <!-- 11. الإشعارات -->
+            <!-- 11. إدارة دوام المشاريع (Sales Leader only) -->
+            <router-link
+              v-if="hasPermission('sales.attendance.manage')"
+              to="/sales/project-schedules"
+              class="nav-item"
+              active-class="active"
+              data-tooltip="إدارة دوام المشاريع"
+            >
+              <div class="nav-content">
+                <svg
+                  class="nav-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                  <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"></path>
+                </svg>
+                <span class="nav-text">إدارة دوام المشاريع</span>
+              </div>
+            </router-link>
+
+            <!-- 12. الوحدات المباعة -->
+            <router-link
+              v-if="hasPermission('sales.sold_units.view')"
+              to="/sales/sold-units"
+              class="nav-item"
+              active-class="active"
+              data-tooltip="الوحدات المباعة"
+            >
+              <div class="nav-content">
+                <svg
+                  class="nav-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span class="nav-text">الوحدات المباعة</span>
+              </div>
+            </router-link>
+
+            <!-- 13. الودائع -->
+            <router-link
+              v-if="hasPermission('sales.deposits.view')"
+              to="/sales/deposits"
+              class="nav-item"
+              active-class="active"
+              data-tooltip="الودائع"
+            >
+              <div class="nav-content">
+                <svg
+                  class="nav-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <line x1="12" y1="1" x2="12" y2="23"></line>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                <span class="nav-text">الودائع</span>
+              </div>
+            </router-link>
+
+            <!-- 14. التحليلات -->
+            <router-link
+              v-if="hasPermission('sales.analytics.view')"
+              to="/sales/analytics"
+              class="nav-item"
+              active-class="active"
+              data-tooltip="التحليلات"
+            >
+              <div class="nav-content">
+                <svg
+                  class="nav-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <line x1="18" y1="20" x2="18" y2="10"></line>
+                  <line x1="12" y1="20" x2="12" y2="4"></line>
+                  <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                <span class="nav-text">التحليلات</span>
+              </div>
+            </router-link>
+
+            <!-- 15. الإشعارات -->
             <router-link
               v-if="hasPermission('notifications.view')"
               to="/notifications"
@@ -1084,6 +1179,28 @@
                   <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
                 <span class="nav-text">طلباتي</span>
+              </div>
+            </router-link>
+
+            <!-- المهام الخاصة بي -->
+            <router-link
+              to="/tasks"
+              class="nav-item"
+              exact-active-class="active"
+              data-tooltip="المهام الخاصة بي"
+            >
+              <div class="nav-content">
+                <svg
+                  class="nav-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                <span class="nav-text">المهام الخاصة بي</span>
               </div>
             </router-link>
 
@@ -1306,6 +1423,28 @@
               </div>
             </router-link>
 
+            <!-- المهام الخاصة بي -->
+            <router-link
+              to="/tasks"
+              class="nav-item"
+              active-class="active"
+              data-tooltip="المهام الخاصة بي"
+            >
+              <div class="nav-content">
+                <svg
+                  class="nav-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                <span class="nav-text">المهام الخاصة بي</span>
+              </div>
+            </router-link>
+
             <router-link
               to="/exclusive-request"
               class="nav-item"
@@ -1326,6 +1465,28 @@
                   <line x1="9" y1="15" x2="15" y2="15"></line>
                 </svg>
                 <span class="nav-text">طلب مشروع حصري</span>
+              </div>
+            </router-link>
+
+            <!-- المهام الخاصة بي -->
+            <router-link
+              to="/tasks"
+              class="nav-item"
+              active-class="active"
+              data-tooltip="المهام الخاصة بي"
+            >
+              <div class="nav-content">
+                <svg
+                  class="nav-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                <span class="nav-text">المهام الخاصة بي</span>
               </div>
             </router-link>
 
@@ -1463,6 +1624,28 @@
                   <line x1="9" y1="15" x2="15" y2="15"></line>
                 </svg>
                 <span class="nav-text">طلب مشروع حصري</span>
+              </div>
+            </router-link>
+
+            <!-- المهام الخاصة بي -->
+            <router-link
+              to="/tasks"
+              class="nav-item"
+              active-class="active"
+              data-tooltip="المهام الخاصة بي"
+            >
+              <div class="nav-content">
+                <svg
+                  class="nav-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                <span class="nav-text">المهام الخاصة بي</span>
               </div>
             </router-link>
 
@@ -1688,6 +1871,28 @@
               </div>
             </router-link>
 
+            <!-- المهام الخاصة بي -->
+            <router-link
+              to="/tasks"
+              class="nav-item"
+              active-class="active"
+              data-tooltip="المهام الخاصة بي"
+            >
+              <div class="nav-content">
+                <svg
+                  class="nav-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                <span class="nav-text">المهام الخاصة بي</span>
+              </div>
+            </router-link>
+
             <router-link
               to="/profile"
               class="nav-item"
@@ -1789,10 +1994,11 @@
             </router-link>
 
             <router-link
-              to="/reservations"
+              v-if="hasPermission('marketing.plans.create')"
+              to="/marketing/developer-plan"
               class="nav-item"
               active-class="active"
-              data-tooltip="حجوزاتي"
+              data-tooltip="خطة المطور"
             >
               <div class="nav-content">
                 <svg
@@ -1807,15 +2013,16 @@
                   <line x1="8" y1="2" x2="8" y2="6"></line>
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
-                <span class="nav-text">حجوزاتي</span>
+                <span class="nav-text">خطة المطور</span>
               </div>
             </router-link>
 
             <router-link
-              to="/cancelled-reservations"
+              v-if="hasPermission('marketing.plans.create')"
+              to="/marketing/employee-plans"
               class="nav-item"
               active-class="active"
-              data-tooltip="الحجوزات الملغاة"
+              data-tooltip="خطط الموظفين"
             >
               <div class="nav-content">
                 <svg
@@ -1825,18 +2032,21 @@
                   stroke="currentColor"
                   stroke-width="2"
                 >
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
-                <span class="nav-text">الحجوزات الملغاة</span>
+                <span class="nav-text">خطط الموظفين</span>
               </div>
             </router-link>
 
+            <!-- المهام الخاصة بي -->
             <router-link
-              to="/my-requests"
+              to="/tasks"
               class="nav-item"
               active-class="active"
-              data-tooltip="طلباتي"
+              data-tooltip="المهام الخاصة بي"
             >
               <div class="nav-content">
                 <svg
@@ -1846,34 +2056,10 @@
                   stroke="currentColor"
                   stroke-width="2"
                 >
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
                 </svg>
-                <span class="nav-text">طلباتي</span>
-              </div>
-            </router-link>
-
-            <router-link
-              to="/exclusive-request"
-              class="nav-item"
-              active-class="active"
-              data-tooltip="طلب مشروع حصري"
-            >
-              <div class="nav-content">
-                <svg
-                  class="nav-icon-svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="12" y1="18" x2="12" y2="12"></line>
-                  <line x1="9" y1="15" x2="15" y2="15"></line>
-                </svg>
-                <span class="nav-text">طلب مشروع حصري</span>
+                <span class="nav-text">المهام الخاصة بي</span>
               </div>
             </router-link>
 
@@ -1896,51 +2082,6 @@
                   <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
                 </svg>
                 <span class="nav-text">أدائي</span>
-              </div>
-            </router-link>
-
-            <router-link
-              v-if="hasPermission('sales.targets.view')"
-              to="/sales/targets"
-              class="nav-item"
-              active-class="active"
-              data-tooltip="الأهداف"
-            >
-              <div class="nav-content">
-                <svg
-                  class="nav-icon-svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <circle cx="12" cy="12" r="6"></circle>
-                  <circle cx="12" cy="12" r="2"></circle>
-                </svg>
-                <span class="nav-text">الأهداف</span>
-              </div>
-            </router-link>
-
-            <router-link
-              v-if="hasPermission('sales.attendance.view')"
-              to="/sales/attendance"
-              class="nav-item"
-              active-class="active"
-              data-tooltip="دوامي"
-            >
-              <div class="nav-content">
-                <svg
-                  class="nav-icon-svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-                <span class="nav-text">دوامي</span>
               </div>
             </router-link>
 
@@ -2173,12 +2314,9 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Playfair+Display:wght@400;700&family=Tajawal:wght@300;400;500;700&display=swap');
-
 .app-container {
   min-height: 100vh;
-  background: #f8fafc;
-  font-family: 'Tajawal', sans-serif;
+  background: var(--color-light-gray);
   direction: rtl;
   overflow-x: hidden;
 }
@@ -2186,18 +2324,18 @@ export default {
 /* Header - Enhanced with Luxury Vitality */
 .top-header {
   height: 60px;
-  background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
+  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-off-white) 100%);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(177, 162, 143, 0.12);
-  border-bottom: 2px solid #b1a28f;
+  border-bottom: 2px solid var(--color-gold);
   position: fixed;
   top: 0;
   left: 0;
   right: 80px;
-  z-index: 100;
+  z-index: var(--z-header);
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   backdrop-filter: blur(10px);
   animation: fadeInDown 0.5s ease-out;
@@ -2214,7 +2352,7 @@ export default {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, transparent 0%, #b1a28f 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--color-gold) 50%, transparent 100%);
   opacity: 0.5;
 }
 
@@ -2222,7 +2360,7 @@ export default {
   display: none;
   background: none;
   border: none;
-  color: #1e293b;
+  color: var(--color-charcoal);
   cursor: pointer;
   padding: 5px;
 }
@@ -2235,8 +2373,8 @@ export default {
 
 .back-btn,
 .notification-btn {
-  background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
-  border: 1.5px solid #e2e8f0;
+  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-off-white) 100%);
+  border: 1.5px solid var(--color-medium-gray);
   width: 38px;
   height: 38px;
   border-radius: 10px;
@@ -2246,7 +2384,7 @@ export default {
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
-  color: #64748b;
+  color: var(--color-dark-gray);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   animation: scaleIn 0.4s ease-out;
 }
@@ -2271,9 +2409,9 @@ export default {
 
 .back-btn:hover,
 .notification-btn:hover {
-  background: linear-gradient(135deg, #fdfbf7 0%, #ffffff 100%);
-  border-color: #b1a28f;
-  color: #b1a28f;
+  background: linear-gradient(135deg, var(--color-off-white) 0%, var(--color-white) 100%);
+  border-color: var(--color-gold);
+  color: var(--color-gold);
   box-shadow: 0 8px 20px rgba(177, 162, 143, 0.25);
   transform: translateY(-4px) rotate(-3deg);
 }
@@ -2292,7 +2430,7 @@ export default {
   position: absolute;
   top: -2px;
   right: -2px; /* Adjusted for circular item */
-  background: #ef4444;
+  background: var(--color-error);
   color: white;
   border-radius: 50%;
   min-width: 16px;
@@ -2337,14 +2475,14 @@ export default {
 .update-info {
   text-align: left;
   font-size: 11px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   flex-shrink: 0;
 }
 .logo {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #1e3a5f;
+  color: var(--color-navy);
   min-width: 0;
   overflow: hidden;
 }
@@ -2357,13 +2495,12 @@ export default {
 .logo-ar {
   font-weight: 700;
   font-size: 16px;
-  font-family: 'Amiri', serif;
 }
 .logo-en {
   font-size: 12px;
   opacity: 0.7;
   margin-right: 5px;
-  color: #f8fafc;
+  color: var(--color-light-gray);
 }
 
 /* Notifications Dropdown */
@@ -2375,8 +2512,8 @@ export default {
   background: white;
   border-radius: 12px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-  z-index: 1000;
+  border: 1px solid var(--color-medium-gray);
+  z-index: var(--z-modal);
   overflow: hidden;
   animation: slideDown 0.3s ease-out;
 }
@@ -2394,8 +2531,8 @@ export default {
 
 .notifications-header {
   padding: 12px 16px;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--color-light-gray);
+  border-bottom: 1px solid var(--color-medium-gray);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -2404,12 +2541,12 @@ export default {
 .notifications-title {
   font-size: 14px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0;
 }
 .mark-read-btn {
   font-size: 11px;
-  color: #b1a28f;
+  color: var(--color-gold);
   background: none;
   border: none;
   cursor: pointer;
@@ -2430,11 +2567,11 @@ export default {
   gap: 12px;
   cursor: pointer;
   transition: background 0.2s;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-light-gray);
   position: relative;
 }
 .notification-item:hover {
-  background: #fdfbf7;
+  background: var(--color-off-white);
 }
 .notification-item.unread {
   background: rgba(161, 139, 92, 0.03);
@@ -2451,7 +2588,7 @@ export default {
 }
 .notification-icon-bg.info {
   background: rgba(161, 139, 92, 0.1);
-  color: #b1a28f;
+  color: var(--color-gold);
 }
 .notification-icon-bg.success {
   background: rgba(16, 185, 129, 0.1);
@@ -2459,7 +2596,7 @@ export default {
 }
 .notification-icon-bg.warning {
   background: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
+  color: var(--color-warning);
 }
 
 .notification-content {
@@ -2467,19 +2604,19 @@ export default {
 }
 .notification-text {
   font-size: 12px;
-  color: #1e293b;
+  color: var(--color-charcoal);
   line-height: 1.4;
   margin-bottom: 3px;
 }
 .notification-time {
   font-size: 10px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
 }
 
 .unread-dot {
   width: 5px;
   height: 5px;
-  background: #b1a28f;
+  background: var(--color-gold);
   border-radius: 50%;
   position: absolute;
   top: 12px;
@@ -2495,7 +2632,7 @@ export default {
 .no-notifications {
   padding: 40px 20px;
   text-align: center;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2513,9 +2650,9 @@ export default {
   right: 0;
   width: 80px;
   height: 100vh;
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  background: linear-gradient(180deg, var(--color-charcoal) 0%, #0f172a 100%);
   color: white;
-  z-index: 200;
+  z-index: var(--z-sidebar);
   display: flex;
   flex-direction: column;
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -2570,7 +2707,7 @@ export default {
 }
 
 .sidebar:hover .sidebar-logo-img {
-  border-color: #d4c4a8;
+  border-color: var(--color-gold-light);
   transform: rotate(360deg) scale(1.1);
   box-shadow: 0 8px 20px rgba(177, 162, 143, 0.4), 0 0 15px rgba(177, 162, 143, 0.3);
   border-radius: 8px; /* Back to rounded square when expanded */
@@ -2579,7 +2716,6 @@ export default {
 .sidebar-logo-text {
   font-size: 16px;
   font-weight: 700;
-  font-family: 'Amiri', serif;
   opacity: 0;
   transform: translateX(20px);
   transition: all 0.4s ease 0.1s;
@@ -2591,14 +2727,14 @@ export default {
 }
 
 .rakez-ar {
-  color: #b1a28f;
+  color: var(--color-gold);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 .rakez-en {
   font-size: 14px;
   opacity: 0.7;
   margin-right: 5px;
-  color: #f8fafc;
+  color: var(--color-light-gray);
 }
 
 .sidebar-nav {
@@ -2624,13 +2760,13 @@ export default {
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(180deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   border-radius: 3px;
   transition: all 0.3s ease;
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #d4c4a8 0%, #b1a28f 100%);
+  background: linear-gradient(180deg, var(--color-gold-light) 0%, var(--color-gold) 100%);
   box-shadow: 0 0 10px rgba(177, 162, 143, 0.5);
 }
 
@@ -2642,7 +2778,7 @@ export default {
   height: 44px;
   margin: 8px auto; /* Increased vertical spacing */
   padding: 0;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   text-decoration: none;
   font-size: 14px;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -2702,7 +2838,7 @@ export default {
   transform: translateY(-50%);
   width: 3px;
   height: 0;
-  background: linear-gradient(180deg, #b1a28f 0%, #d4c4a8 100%);
+  background: linear-gradient(180deg, var(--color-gold) 0%, var(--color-gold-light) 100%);
   border-radius: 2px;
   transition: height 0.3s ease;
   opacity: 0;
@@ -2710,7 +2846,7 @@ export default {
 
 .nav-item:hover {
   background: linear-gradient(135deg, rgba(177, 162, 143, 0.15) 0%, rgba(177, 162, 143, 0.08) 100%);
-  color: #f8fafc;
+  color: var(--color-light-gray);
   border-color: rgba(177, 162, 143, 0.3);
   box-shadow: 0 8px 25px rgba(177, 162, 143, 0.2), 0 0 15px rgba(177, 162, 143, 0.15);
 }
@@ -2731,7 +2867,7 @@ export default {
 
 .nav-item.active {
   background: linear-gradient(135deg, rgba(177, 162, 143, 0.25) 0%, rgba(177, 162, 143, 0.1) 100%);
-  color: #d4c4a8;
+  color: var(--color-gold-light);
   font-weight: 700;
   border: 1px solid rgba(177, 162, 143, 0.4);
   box-shadow: 0 0 15px rgba(177, 162, 143, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -2768,7 +2904,7 @@ export default {
   height: 60%;
   opacity: 1;
   width: 3px;
-  background: linear-gradient(180deg, #d4c4a8 0%, #b1a28f 100%);
+  background: linear-gradient(180deg, var(--color-gold-light) 0%, var(--color-gold) 100%);
   box-shadow: 0 0 10px rgba(177, 162, 143, 0.5);
   display: none; /* Hide side indicator when circular */
 }
@@ -2777,7 +2913,12 @@ export default {
   display: block;
   height: 80%;
   width: 4px;
-  background: linear-gradient(180deg, #d4c4a8 0%, #b1a28f 50%, #d4c4a8 100%);
+  background: linear-gradient(
+    180deg,
+    var(--color-gold-light) 0%,
+    var(--color-gold) 50%,
+    var(--color-gold-light) 100%
+  );
   box-shadow: 0 0 15px rgba(177, 162, 143, 0.8);
   animation: border-glow 2.5s ease-in-out infinite;
 }
@@ -2832,7 +2973,7 @@ export default {
 .nav-icon-svg {
   width: 20px;
   height: 20px;
-  color: #d4c4a8;
+  color: var(--color-gold-light);
   stroke-width: 2;
   flex-shrink: 0;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -2840,19 +2981,19 @@ export default {
 }
 
 .sidebar:hover .nav-icon-svg {
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   filter: none;
 }
 
 .nav-item.active .nav-icon-svg {
-  color: #d4c4a8 !important;
+  color: var(--color-gold-light) !important;
   filter: drop-shadow(0 0 8px rgba(177, 162, 143, 0.8)) !important;
   transform: scale(1.1);
 }
 
 .nav-item:hover .nav-icon-svg {
   transform: scale(1.15);
-  color: #f8fafc;
+  color: var(--color-light-gray);
 }
 
 .nav-text {
@@ -2878,7 +3019,7 @@ export default {
   content: attr(data-tooltip);
   position: absolute;
   right: 85px;
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
   padding: 6px 12px;
   border-radius: 8px;
@@ -2890,7 +3031,7 @@ export default {
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   white-space: nowrap;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  z-index: 300;
+  z-index: var(--z-tooltip);
   pointer-events: none;
   letter-spacing: 0.01em;
 }
@@ -2934,20 +3075,20 @@ export default {
 .user-name {
   font-weight: 600;
   font-size: 13px;
-  color: #f8fafc;
+  color: var(--color-light-gray);
   display: block;
   margin-bottom: 1px;
 }
 
 .user-email {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   display: block;
 }
 
 .user-role-badge {
   font-size: 11px;
-  color: #b1a28f;
+  color: var(--color-gold);
   margin-top: 4px;
   font-weight: 600;
   display: block;
@@ -2957,7 +3098,7 @@ export default {
   width: 44px;
   height: 44px;
   border-radius: 50%; /* Make it circular */
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2979,7 +3120,7 @@ export default {
 .logout-btn {
   background: rgba(239, 68, 68, 0.05);
   border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #ef4444;
+  color: var(--color-error);
   width: 44px; /* Circular size */
   height: 44px;
   padding: 0;
@@ -3078,14 +3219,13 @@ export default {
 .logo-text-main {
   font-size: 100px;
   font-weight: 900;
-  color: #b1a28f;
-  font-family: 'Amiri', serif;
+  color: var(--color-gold);
 }
 
 .footer {
   height: 40px;
   background: white;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-medium-gray);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3098,7 +3238,7 @@ export default {
 }
 
 .copyright {
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   font-size: 11px;
 }
 
@@ -3107,26 +3247,105 @@ export default {
 /* 4K / Ultra-wide (3840px+) */
 @media (min-width: 3840px) {
   .main-content {
-    max-width: 2200px;
+    max-width: 3200px;
     margin: 0 auto;
-    padding: 55px;
+    padding: 60px;
   }
 
   .top-header {
-    padding: 0 55px;
+    padding: 0 60px;
+    height: 90px;
+  }
+
+  .sidebar {
+    width: 100px;
+  }
+
+  .sidebar:hover {
+    width: 320px;
+  }
+
+  .main-wrapper {
+    margin-right: 100px;
+  }
+
+  .sidebar-logo-img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .nav-icon-svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .nav-item {
+    padding: 16px;
+  }
+
+  .logo-ar {
+    font-size: 22px;
+  }
+
+  .logo-en {
+    font-size: 16px;
+  }
+
+  .notification-btn .bell-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .notifications-dropdown {
+    width: 420px;
+  }
+
+  .user-display-name {
+    font-size: 16px;
+  }
+
+  .user-email-text {
+    font-size: 13px;
   }
 }
 
 /* 2K / QHD (2560px - 3839px) */
 @media (min-width: 2560px) and (max-width: 3839px) {
   .main-content {
-    max-width: 2200px;
+    max-width: 2400px;
     margin: 0 auto;
     padding: 52px;
   }
 
   .top-header {
     padding: 0 52px;
+    height: 80px;
+  }
+
+  .sidebar {
+    width: 90px;
+  }
+
+  .sidebar:hover {
+    width: 300px;
+  }
+
+  .main-wrapper {
+    margin-right: 90px;
+  }
+
+  .sidebar-logo-img {
+    width: 44px;
+    height: 44px;
+  }
+
+  .nav-icon-svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .notifications-dropdown {
+    width: 380px;
   }
 }
 
@@ -3367,7 +3586,7 @@ export default {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 150;
+    z-index: var(--z-overlay);
     animation: fadeIn 0.3s ease;
   }
 
@@ -3520,7 +3739,7 @@ export default {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.6);
-    z-index: 150;
+    z-index: var(--z-overlay);
     animation: fadeIn 0.3s ease;
     backdrop-filter: blur(2px);
   }
@@ -3810,13 +4029,13 @@ export default {
   position: absolute;
   top: -8px;
   right: -8px;
-  background: #b1a28f;
+  background: var(--color-gold);
   color: white;
   font-size: 10px;
   font-weight: 800;
   padding: 2px 6px;
   border-radius: 10px;
-  border: 2px solid #1e293b;
+  border: 2px solid var(--color-charcoal);
   min-width: 18px;
   text-align: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
