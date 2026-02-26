@@ -48,5 +48,5 @@ export default {
     } catch (error) {
       return handleServiceError(error, `Update task ${taskId} status`, 'patch');
     }
-  }
+  },
 };

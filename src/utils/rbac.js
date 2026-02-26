@@ -131,6 +131,11 @@ export function getEffectiveRoleKey(user) {
 export function getUserPermissions(user) {
   if (!user) return [];
   if (Array.isArray(user.permissions) && user.permissions.length > 0) {
+    // Sales leader: merge API permissions with full leader set so sidebar/routes always work
+    if (isSalesLeader(user)) {
+      const leaderPerms = [...SALES_BASE_PERMISSIONS, ...SALES_LEADER_EXTRA_PERMISSIONS];
+      return [...new Set([...user.permissions, ...leaderPerms])];
+    }
     return user.permissions;
   }
   const bootstrapKey = getEffectiveRoleKey(user);

@@ -159,7 +159,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
 }
 
 .modal-container {
@@ -177,13 +177,13 @@ export default {
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-medium-gray);
 }
 
 .modal-title {
   font-size: 20px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0;
 }
 
@@ -191,12 +191,12 @@ export default {
   background: none;
   border: none;
   font-size: 24px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   cursor: pointer;
 }
 
 .close-btn:hover {
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .detail-section {
@@ -214,17 +214,17 @@ export default {
 
 .detail-label {
   font-weight: 600;
-  color: #64748b;
+  color: var(--color-dark-gray);
   min-width: 100px;
 }
 
 .detail-value {
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 
 .detail-message {
   margin: 0;
-  color: #334155;
+  color: var(--color-charcoal);
   line-height: 1.6;
   flex: 1;
 }
@@ -242,7 +242,7 @@ export default {
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  background: #f8fafc;
+  background: var(--color-light-gray);
   border-radius: 10px;
 }
 
@@ -253,12 +253,12 @@ export default {
 
 .data-key {
   font-weight: 600;
-  color: #64748b;
+  color: var(--color-dark-gray);
   min-width: 120px;
 }
 
 .data-val {
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 
 .status-tag {
@@ -284,14 +284,14 @@ export default {
   justify-content: flex-end;
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-medium-gray);
 }
 
 .btn-primary {
   padding: 10px 20px;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
   font-weight: 600;
   cursor: pointer;
@@ -304,16 +304,67 @@ export default {
 
 .btn-secondary {
   padding: 10px 20px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-medium-gray);
   border-radius: 10px;
   background: white;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
   cursor: pointer;
 }
 
 .btn-secondary:hover {
-  border-color: #cbd5e1;
-  background: #f8fafc;
+  border-color: var(--color-medium-gray);
+  background: var(--color-light-gray);
+}
+
+/* Tablet responsive */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 12px;
+  }
+  .modal-container {
+    width: 95%;
+    max-width: 95vw;
+    padding: 20px;
+  }
+  .modal-footer {
+    flex-direction: column;
+  }
+  .modal-footer button {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+/* Mobile full-screen */
+@media (max-width: 575px) {
+  .modal-overlay {
+    padding: 8px;
+  }
+  .modal-container {
+    width: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+    overflow-y: auto;
+    border-radius: 16px;
+    padding: 16px;
+  }
+  .modal-title {
+    font-size: 18px;
+  }
+  .detail-row {
+    flex-direction: column;
+  }
+  .detail-label {
+    min-width: unset;
+  }
+  .data-key {
+    min-width: unset;
+  }
+  .btn-primary,
+  .btn-secondary {
+    min-height: 44px;
+    width: 100%;
+  }
 }
 </style>

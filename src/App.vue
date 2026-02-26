@@ -23,14 +23,13 @@ export default {
 @import './assets/responsive-enhancements.css';
 
 body {
-  font-family: 'Cairo', 'Tajawal', sans-serif;
   direction: rtl;
   margin: 0;
   padding: 0;
-  color: #1e293b;
+  color: var(--color-charcoal);
   line-height: 1.65;
   overflow-x: hidden;
-  background-color: #fdfbf7;
+  background-color: var(--color-off-white);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 

@@ -291,7 +291,6 @@ export default {
   font-size: 28px;
   font-weight: 700;
   margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
 }
 
 .page-subtitle {
@@ -484,7 +483,6 @@ export default {
 }
 
 .detail-value.iban {
-  font-family: monospace;
   font-size: 12px;
 }
 
@@ -508,5 +506,245 @@ export default {
   color: #94a3b8;
   font-size: 15px;
   margin: 0;
+}
+
+/* Responsive: Tablet Landscape */
+@media (max-width: 992px) {
+  .page-header {
+    padding: 24px;
+  }
+  .page-title {
+    font-size: 24px;
+  }
+  .card-expanded {
+    padding: 16px;
+  }
+  .details-grid {
+    gap: 14px;
+  }
+}
+
+/* Responsive: Tablet Portrait */
+@media (max-width: 768px) {
+  .page-header {
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+  }
+  .page-title {
+    font-size: 22px;
+  }
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+  .card-status {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .card-expanded {
+    padding: 16px;
+  }
+  .rejection-section {
+    padding: 14px;
+  }
+  .detail-card {
+    padding: 14px;
+  }
+  .detail-title {
+    font-size: 13px;
+  }
+  .detail-row {
+    font-size: 12px;
+  }
+  .chevron-icon {
+    margin-right: auto;
+  }
+}
+
+/* Responsive: Mobile */
+@media (max-width: 576px) {
+  .page-header {
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+  .page-title {
+    font-size: 20px;
+  }
+  .page-subtitle {
+    font-size: 12px;
+  }
+  .reservations-list {
+    gap: 10px;
+  }
+  .reservation-card {
+    border-radius: 10px;
+  }
+  .card-header {
+    padding: 12px 14px;
+    min-height: 44px;
+  }
+  .project-info {
+    font-size: 13px;
+  }
+  .client-info {
+    font-size: 11px;
+  }
+  .status-badge {
+    padding: 4px 10px;
+    font-size: 10px;
+  }
+  .date {
+    font-size: 11px;
+  }
+  .card-expanded {
+    padding: 14px;
+  }
+  .rejection-section {
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  .rejection-reason {
+    font-size: 13px;
+  }
+  .details-grid {
+    gap: 10px;
+  }
+  .detail-card {
+    padding: 12px;
+  }
+  .detail-title {
+    font-size: 13px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+  }
+  .detail-row {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  .empty-state {
+    padding: 40px 16px;
+  }
+  .empty-state svg {
+    width: 48px;
+    height: 48px;
+  }
+  .empty-state p {
+    font-size: 13px;
+  }
+}
+
+/* Responsive: Extra Small Mobile */
+@media (max-width: 320px) {
+  .page-header {
+    padding: 12px;
+  }
+  .page-title {
+    font-size: 18px;
+  }
+  .page-subtitle {
+    font-size: 11px;
+  }
+  .card-header {
+    padding: 10px 12px;
+  }
+  .project-info {
+    font-size: 12px;
+  }
+  .client-info {
+    font-size: 10px;
+  }
+  .card-expanded {
+    padding: 10px;
+  }
+  .rejection-section {
+    padding: 10px;
+  }
+  .detail-card {
+    padding: 10px;
+  }
+  .detail-title {
+    font-size: 12px;
+  }
+  .detail-row {
+    font-size: 11px;
+  }
+}
+
+/* Responsive: Large Desktop */
+@media (min-width: 1920px) {
+  .page-header {
+    padding: 40px;
+    border-radius: 20px;
+    margin-bottom: 40px;
+  }
+  .page-title {
+    font-size: 34px;
+  }
+  .page-subtitle {
+    font-size: 17px;
+  }
+  .reservations-list {
+    gap: 16px;
+  }
+  .reservation-card {
+    border-radius: 16px;
+  }
+  .card-header {
+    padding: 20px 28px;
+  }
+  .project-info {
+    font-size: 17px;
+  }
+  .client-info {
+    font-size: 14px;
+  }
+  .status-badge {
+    font-size: 13px;
+    padding: 6px 16px;
+  }
+  .date {
+    font-size: 15px;
+  }
+  .card-expanded {
+    padding: 28px;
+  }
+  .details-grid {
+    gap: 20px;
+  }
+  .detail-card {
+    padding: 24px;
+  }
+  .detail-title {
+    font-size: 16px;
+  }
+  .detail-row {
+    font-size: 15px;
+  }
+  .rejection-section {
+    padding: 24px;
+  }
+  .rejection-reason {
+    font-size: 16px;
+  }
+}
+
+/* Responsive: Ultra-wide */
+@media (min-width: 2560px) {
+  .page-title {
+    font-size: 38px;
+  }
+  .card-header {
+    padding: 24px 32px;
+  }
+  .project-info {
+    font-size: 18px;
+  }
+  .detail-row {
+    font-size: 16px;
+  }
 }
 </style>

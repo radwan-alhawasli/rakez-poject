@@ -178,7 +178,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: var(--z-modal);
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -214,13 +214,12 @@ export default {
 .modal-title {
   font-size: 22px;
   font-weight: 800;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0;
-  font-family: 'Amiri', serif;
 }
 
 .modal-subtitle {
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 14px;
   margin: 4px 0 0 0;
 }
@@ -232,13 +231,13 @@ export default {
   background: none;
   border: none;
   font-size: 28px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   cursor: pointer;
   transition: color 0.2s;
 }
 
 .close-btn:hover {
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 
 .form-grid {
@@ -256,7 +255,7 @@ export default {
   display: block;
   font-size: 14px;
   font-weight: 700;
-  color: #475569;
+  color: var(--color-charcoal);
   margin-bottom: 8px;
 }
 
@@ -274,20 +273,19 @@ export default {
 
 .premium-input {
   width: 100%;
-  background: #f8fafc;
-  border: 2px solid #e2e8f0;
+  background: var(--color-light-gray);
+  border: 2px solid var(--color-medium-gray);
   border-radius: 14px;
   padding: 12px 16px;
   padding-right: 48px;
-  font-family: inherit;
   font-size: 15px;
-  color: #1e293b;
+  color: var(--color-charcoal);
   transition: all 0.2s;
 }
 
 .premium-input:focus {
   outline: none;
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
   background: white;
   box-shadow: 0 0 0 4px rgba(177, 162, 143, 0.1);
 }
@@ -301,9 +299,9 @@ export default {
 .btn-secondary {
   padding: 12px 24px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   background: white;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -313,7 +311,7 @@ export default {
   padding: 12px 32px;
   border-radius: 12px;
   border: none;
-  background: linear-gradient(135deg, #1e3a5f 0%, #2c3e50 100%);
+  background: linear-gradient(135deg, var(--color-navy) 0%, #2c3e50 100%);
   color: white;
   font-weight: 700;
   cursor: pointer;
@@ -335,7 +333,7 @@ export default {
   padding: 0;
 }
 .embedded-subtitle {
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 14px;
   margin: 0 0 20px 0;
 }
@@ -346,6 +344,66 @@ export default {
   }
   to {
     opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-content.premium-modal {
+    max-width: 95%;
+    padding: 24px;
+  }
+}
+
+@media (max-width: 576px) {
+  .modal-content.premium-modal {
+    max-width: 100%;
+    margin: 0 8px;
+    padding: 20px;
+    border-radius: 18px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .form-group.full {
+    grid-column: span 1;
+  }
+  .modal-title {
+    font-size: 18px;
+  }
+  .header-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
+  .modal-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .modal-footer .btn-secondary,
+  .modal-footer .btn-premium {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 320px) {
+  .modal-content.premium-modal {
+    padding: 16px;
+    border-radius: 14px;
+    margin: 0 4px;
+  }
+  .modal-header {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .modal-title {
+    font-size: 16px;
+  }
+  .premium-input {
+    padding: 10px 12px;
+    padding-right: 40px;
+    font-size: 14px;
   }
 }
 </style>

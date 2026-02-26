@@ -338,7 +338,6 @@ export default {
 <style scoped>
 .team-management-view {
   direction: rtl;
-  font-family: 'Tajawal', sans-serif;
   padding: 20px 30px;
   min-height: 100vh;
   background: #f8fafc;
@@ -365,7 +364,6 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0 0 5px 0;
-  font-family: 'Amiri', serif;
 }
 
 .section-subtitle {
@@ -387,7 +385,6 @@ export default {
   gap: 10px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(161, 139, 92, 0.2);
-  font-family: 'Tajawal', sans-serif;
   font-size: 14px;
   white-space: nowrap;
 }
@@ -421,7 +418,6 @@ export default {
   border: 1.5px solid #e2e8f0;
   border-radius: 12px;
   font-size: 14px;
-  font-family: inherit;
   background: #fff;
   transition: border-color 0.2s;
   box-sizing: border-box;
@@ -668,7 +664,6 @@ export default {
   border: 1.5px solid #e2e8f0;
   border-radius: 10px;
   font-size: 14px;
-  font-family: inherit;
   transition: border-color 0.2s;
   box-sizing: border-box;
 }
@@ -700,7 +695,6 @@ textarea.form-input {
   color: #64748b;
   font-weight: 600;
   cursor: pointer;
-  font-family: inherit;
 }
 
 .btn-primary {
@@ -711,7 +705,6 @@ textarea.form-input {
   color: white;
   font-weight: 600;
   cursor: pointer;
-  font-family: inherit;
   transition: all 0.2s;
 }
 
@@ -883,6 +876,63 @@ textarea.form-input {
     width: 34px;
     height: 34px;
     border-radius: 8px;
+  }
+  .data-table-container {
+    border-radius: 10px;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── Responsive: Extra Small Mobile ── */
+@media (max-width: 320px) {
+  .team-management-view {
+    padding: 10px;
+  }
+  .section-title {
+    font-size: 18px;
+  }
+  .section-subtitle {
+    font-size: 13px;
+  }
+  .add-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+  .search-input {
+    font-size: 13px;
+    padding: 10px 12px 10px 38px;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 14px 10px;
+    font-size: 12px;
+  }
+  .team-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+  .team-name-text {
+    font-size: 13px;
+  }
+  .action-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .modal-header h3 {
+    font-size: 16px;
+  }
+  .modal-body {
+    padding: 16px;
+  }
+}
+
+/* ── Responsive: Large Desktop ── */
+@media (min-width: 1200px) {
+  .data-table th,
+  .data-table td {
+    padding: 22px;
   }
 }
 

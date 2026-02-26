@@ -8,6 +8,7 @@ import {
   hasRole,
   isAdmin,
   isManager,
+  isSalesLeader,
   getEffectiveRoleKey,
   getUserPermissions,
   hasPermission,
@@ -110,10 +111,29 @@ describe('rbac', () => {
     });
   });
 
+  describe('isSalesLeader', () => {
+    it('should return true for sales with is_manager=true', () => {
+      expect(isSalesLeader({ type: 5, is_manager: true })).toBe(true);
+    });
+
+    it('should return true for sales with is_leader=true', () => {
+      expect(isSalesLeader({ type: 5, is_leader: true })).toBe(true);
+    });
+
+    it('should return false for sales without manager/leader flag', () => {
+      expect(isSalesLeader({ type: 5 })).toBe(false);
+      expect(isSalesLeader({ type: 5, is_manager: false })).toBe(false);
+    });
+
+    it('should return false for non-sales with is_manager=true', () => {
+      expect(isSalesLeader({ type: 3, is_manager: true })).toBe(false);
+    });
+  });
+
   describe('getUserPermissions', () => {
-    it('should return user.permissions when present', () => {
+    it('should return user.permissions when present (non-sales)', () => {
       const perms = ['contracts.view', 'contracts.edit'];
-      expect(getUserPermissions({ permissions: perms })).toEqual(perms);
+      expect(getUserPermissions({ type: 3, permissions: perms })).toEqual(perms);
     });
 
     it('should return [] for null user', () => {
@@ -124,6 +144,25 @@ describe('rbac', () => {
       const result = getUserPermissions({ type: 1 });
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
+    });
+
+    it('should merge leader permissions for sales leader even when API returns permissions', () => {
+      const apiPerms = ['sales.dashboard.view', 'notifications.view'];
+      const user = { type: 5, is_manager: true, permissions: apiPerms };
+      const result = getUserPermissions(user);
+      expect(result).toContain('sales.team.manage');
+      expect(result).toContain('sales.tasks.manage');
+      expect(result).toContain('sales.negotiation.approve');
+      expect(result).toContain('sales.dashboard.view');
+      expect(result).toContain('notifications.view');
+    });
+
+    it('should NOT merge leader permissions for regular sales with API permissions', () => {
+      const apiPerms = ['sales.dashboard.view'];
+      const user = { type: 5, is_manager: false, permissions: apiPerms };
+      const result = getUserPermissions(user);
+      expect(result).toEqual(apiPerms);
+      expect(result).not.toContain('sales.team.manage');
     });
   });
 

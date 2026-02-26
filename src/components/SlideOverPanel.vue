@@ -49,7 +49,7 @@ export default {
 .slide-over-panel-wrapper {
   position: fixed;
   inset: 0;
-  z-index: 1800;
+  z-index: var(--z-modal);
   display: flex;
   justify-content: flex-end;
   pointer-events: none;
@@ -68,9 +68,10 @@ export default {
 }
 .panel-content {
   position: relative;
-  width: 100%;
-  max-width: 480px;
-  min-width: 320px;
+  box-sizing: border-box;
+  width: min(480px, 100vw);
+  max-width: 100vw;
+  min-width: 0;
   height: 100%;
   background: white;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
@@ -88,24 +89,22 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 2px solid #e2e8f0;
-  background: linear-gradient(135deg, #fdfbf7 0%, #fff 100%);
-  font-family: 'Tajawal', sans-serif;
+  border-bottom: 2px solid var(--color-medium-gray);
+  background: linear-gradient(135deg, var(--color-off-white) 0%, #fff 100%);
 }
 .panel-title {
   margin: 0;
   font-size: 20px;
   font-weight: 800;
-  color: #1e3a5f;
-  font-family: 'Amiri', serif;
+  color: var(--color-navy);
 }
 .panel-close {
   width: 40px;
   height: 40px;
   border: none;
   border-radius: 10px;
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--color-light-gray);
+  color: var(--color-dark-gray);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -114,14 +113,42 @@ export default {
 }
 .panel-close:hover {
   background: #fee2e2;
-  color: #ef4444;
+  color: var(--color-error);
 }
 .panel-body {
   flex: 1;
   overflow-y: auto;
   padding: 24px;
   direction: rtl;
-  font-family: 'Tajawal', sans-serif;
+}
+
+@media (max-width: 768px) {
+  .panel-content {
+    width: 100vw;
+    max-width: 100vw;
+  }
+}
+@media (max-width: 576px) {
+  .panel-header {
+    padding: 16px;
+  }
+  .panel-title {
+    font-size: 18px;
+  }
+  .panel-body {
+    padding: 16px;
+  }
+}
+@media (max-width: 320px) {
+  .panel-header {
+    padding: 12px;
+  }
+  .panel-title {
+    font-size: 16px;
+  }
+  .panel-body {
+    padding: 12px;
+  }
 }
 @keyframes fadeIn {
   from {

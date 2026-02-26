@@ -30,10 +30,18 @@
           <span class="status-badge" :class="task.status">{{ getStatusLabel(task.status) }}</span>
         </div>
         <div class="task-details">
-          <p v-if="task.due_at || task.due_date"><strong>تاريخ الإستحقاق:</strong> {{ formatDate(task.due_at || task.due_date) }}</p>
-          <p v-if="task.created_at"><strong>تاريخ الإنشاء:</strong> {{ formatDate(task.created_at) }}</p>
-          <p v-if="task.team_id || task.team?.name || task.team_name"><strong>الفريق:</strong> {{ task.team_name || task.team?.name || task.team_id }}</p>
-          <p v-if="task.assigned_to || task.assignee?.name"><strong>المسؤول:</strong> {{ task.assignee?.name || task.assigned_to }}</p>
+          <p v-if="task.due_at || task.due_date">
+            <strong>تاريخ الإستحقاق:</strong> {{ formatDate(task.due_at || task.due_date) }}
+          </p>
+          <p v-if="task.created_at">
+            <strong>تاريخ الإنشاء:</strong> {{ formatDate(task.created_at) }}
+          </p>
+          <p v-if="task.team_id || task.team?.name || task.team_name">
+            <strong>الفريق:</strong> {{ task.team_name || task.team?.name || task.team_id }}
+          </p>
+          <p v-if="task.assigned_to || task.assignee?.name">
+            <strong>المسؤول:</strong> {{ task.assignee?.name || task.assigned_to }}
+          </p>
           <p v-if="task.creator_name"><strong>بواسطة:</strong> {{ task.creator_name }}</p>
           <p v-if="task.cannot_complete_reason" class="reason">
             <strong>السبب:</strong> {{ task.cannot_complete_reason }}
@@ -49,7 +57,9 @@
     <div v-if="totalPages > 1" class="pagination">
       <button :disabled="currentPage === 1" @click="loadTasks(currentPage - 1)">السابق</button>
       <span>{{ currentPage }} / {{ totalPages }}</span>
-      <button :disabled="currentPage === totalPages" @click="loadTasks(currentPage + 1)">التالي</button>
+      <button :disabled="currentPage === totalPages" @click="loadTasks(currentPage + 1)">
+        التالي
+      </button>
     </div>
 
     <!-- Create Task Modal -->
@@ -95,7 +105,9 @@
             </select>
           </div>
           <div class="modal-actions">
-            <button type="button" @click="showCreateModal = false" class="btn-secondary">إلغاء</button>
+            <button type="button" @click="showCreateModal = false" class="btn-secondary">
+              إلغاء
+            </button>
             <button type="submit" class="btn-primary" :disabled="isCreating">حفظ</button>
           </div>
         </form>
@@ -148,13 +160,13 @@ const taskForm = reactive({
   team_id: '',
   due_at: '',
   assigned_to: '',
-  status: 'in_progress'
+  status: 'in_progress',
 });
 
 const showReasonModal = ref(false);
 const reasonForm = reactive({
   taskId: null,
-  reason: ''
+  reason: '',
 });
 
 const extractDropdownDataFromTasks = () => {
@@ -175,7 +187,10 @@ const extractDropdownDataFromTasks = () => {
       uniqueTeams.set(task.team_id, task.team_name || task.team?.name || `فريق ${task.team_id}`);
     }
     if (task.assigned_to) {
-      uniqueUsers.set(task.assigned_to, task.assignee_name || task.assignee?.name || `موظف ${task.assigned_to}`);
+      uniqueUsers.set(
+        task.assigned_to,
+        task.assignee_name || task.assignee?.name || `موظف ${task.assigned_to}`
+      );
     }
     if (task.created_by) {
       uniqueUsers.set(task.created_by, task.creator_name || `موظف ${task.created_by}`);
@@ -201,12 +216,12 @@ const fetchDropdownData = async () => {
     // and rely on the fallback below.
     const [teamsData, usersData] = await Promise.all([
       teamService.getTeams().catch(() => []),
-      userService.getEmployees({ per_page: 100 }).catch(() => ({ items: [] }))
+      userService.getEmployees({ per_page: 100 }).catch(() => ({ items: [] })),
     ]);
-    
-    teams.value = Array.isArray(teamsData) ? teamsData : (teamsData.items || []);
+
+    teams.value = Array.isArray(teamsData) ? teamsData : teamsData.items || [];
     users.value = usersData?.items || [];
-    
+
     extractDropdownDataFromTasks();
   } catch (error) {
     logger.error('Failed to load teams or users for dropdowns', error);
@@ -217,22 +232,22 @@ const loadTasks = async (page = 1) => {
   try {
     isLoading.value = true;
     currentPage.value = page;
-    
+
     const params = {
       page: currentPage.value,
       per_page: itemsPerPage.value,
     };
-    
+
     if (filterStatus.value) {
       params.status = filterStatus.value;
     }
 
     const data = await taskService.getMyTasks(params);
     tasks.value = data.items || [];
-    
+
     const total = data.total || 0;
     totalPages.value = Math.ceil(total / itemsPerPage.value) || 1;
-    
+
     // Extract names for the dropdowns from the loaded tasks
     extractDropdownDataFromTasks();
   } catch (error) {
@@ -242,24 +257,24 @@ const loadTasks = async (page = 1) => {
   }
 };
 
-const getStatusLabel = (status) => {
+const getStatusLabel = status => {
   const map = {
-    'in_progress': 'قيد التنفيذ',
-    'completed': 'مكتملة',
-    'could_not_complete': 'لم تكتمل',
-    'pending': 'قيد الإنتظار'
+    in_progress: 'قيد التنفيذ',
+    completed: 'مكتملة',
+    could_not_complete: 'لم تكتمل',
+    pending: 'قيد الإنتظار',
   };
   return map[status] || status;
 };
 
-const formatDate = (dateString) => {
+const formatDate = dateString => {
   if (!dateString) return '';
   return new Date(dateString).toLocaleString('ar-EG', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
 };
 
@@ -268,24 +283,24 @@ const createTask = async () => {
     isCreating.value = true;
     // Format datetime string for the backend
     const due_at_formatted = taskForm.due_at ? taskForm.due_at.replace('T', ' ') + ':00' : null;
-    
+
     await taskService.createTask({
       ...taskForm,
-      due_at: due_at_formatted
+      due_at: due_at_formatted,
     });
-    
+
     notificationService.addNotification('تم إنشاء المهمة بنجاح', 'success');
     showCreateModal.value = false;
-    
+
     // Reset form
     Object.assign(taskForm, {
       task_name: '',
       team_id: '',
       due_at: '',
       assigned_to: '',
-      status: 'in_progress'
+      status: 'in_progress',
     });
-    
+
     loadTasks(1);
   } catch (error) {
     logger.error('Failed to create task', error);
@@ -300,7 +315,7 @@ const updateStatus = async (taskId, status, reason = null) => {
     if (reason) {
       data.cannot_complete_reason = reason;
     }
-    
+
     await taskService.updateTaskStatus(taskId, data);
     notificationService.addNotification('تم تحديث حالة المهمة', 'success');
     loadTasks(currentPage.value);
@@ -309,7 +324,7 @@ const updateStatus = async (taskId, status, reason = null) => {
   }
 };
 
-const openReasonModal = (taskId) => {
+const openReasonModal = taskId => {
   reasonForm.taskId = taskId;
   reasonForm.reason = '';
   showReasonModal.value = true;
@@ -326,7 +341,7 @@ const submitReasonModal = async () => {
     notificationService.addNotification('الرجاء إدخال السبب', 'error');
     return;
   }
-  
+
   await updateStatus(reasonForm.taskId, 'could_not_complete', reasonForm.reason);
   closeReasonModal();
 };
@@ -455,7 +470,7 @@ select.form-input {
   border: 1px solid var(--border-color, #eee);
   border-radius: 8px;
   padding: 16px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
 }
@@ -548,7 +563,8 @@ select.form-input {
   cursor: not-allowed;
 }
 
-.loading-state, .empty-state {
+.loading-state,
+.empty-state {
   text-align: center;
   padding: 40px;
   color: var(--text-muted, #666);
@@ -565,8 +581,12 @@ select.form-input {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Modal Styles */
@@ -580,7 +600,7 @@ select.form-input {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
 }
 
 .modal-content {
@@ -591,7 +611,7 @@ select.form-input {
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .modal-content h3 {
@@ -605,5 +625,211 @@ select.form-input {
   justify-content: flex-end;
   gap: 12px;
   margin-top: 24px;
+}
+
+/* Responsive: Tablet Landscape */
+@media (max-width: 992px) {
+  .tasks-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .page-header h2 {
+    font-size: 1.3rem;
+  }
+  .modal-content {
+    max-width: 90%;
+  }
+}
+
+/* Responsive: Tablet Portrait */
+@media (max-width: 768px) {
+  .tasks-view {
+    padding: 16px;
+  }
+  .tasks-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .page-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .filters {
+    flex-wrap: wrap;
+  }
+  select.form-input {
+    width: 100%;
+  }
+  .task-card {
+    padding: 14px;
+  }
+  .task-title {
+    font-size: 1rem;
+  }
+  .task-details {
+    font-size: 0.85rem;
+  }
+  .modal-content {
+    padding: 20px;
+  }
+}
+
+/* Responsive: Mobile */
+@media (max-width: 576px) {
+  .tasks-view {
+    padding: 12px;
+  }
+  .tasks-grid {
+    grid-template-columns: 1fr;
+  }
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .page-header h2 {
+    font-size: 1.15rem;
+  }
+  .btn-primary,
+  .btn-secondary {
+    padding: 10px 16px;
+    min-height: 44px;
+    font-size: 0.9rem;
+  }
+  .btn-success,
+  .btn-danger {
+    padding: 10px 14px;
+    min-height: 44px;
+    font-size: 0.85rem;
+  }
+  .task-actions {
+    flex-wrap: wrap;
+  }
+  .task-actions button {
+    flex: 1;
+    min-width: 0;
+  }
+  .pagination button {
+    padding: 10px 14px;
+    min-height: 44px;
+  }
+  .modal-content {
+    max-width: 95%;
+    padding: 16px;
+    max-height: 85vh;
+  }
+  .modal-actions {
+    flex-direction: column;
+  }
+  .modal-actions button {
+    min-height: 44px;
+  }
+  .form-input {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    min-height: 44px;
+  }
+  .loading-state,
+  .empty-state {
+    padding: 24px;
+  }
+}
+
+/* Responsive: Extra Small Mobile */
+@media (max-width: 320px) {
+  .tasks-view {
+    padding: 8px;
+  }
+  .page-header h2 {
+    font-size: 1rem;
+  }
+  .task-card {
+    padding: 10px;
+  }
+  .task-title {
+    font-size: 0.9rem;
+  }
+  .task-details {
+    font-size: 0.8rem;
+  }
+  .status-badge {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+  .modal-content {
+    padding: 12px;
+    border-radius: 6px;
+  }
+  .btn-primary,
+  .btn-secondary,
+  .btn-success,
+  .btn-danger {
+    font-size: 0.8rem;
+    padding: 10px 10px;
+  }
+}
+
+/* Responsive: Large Desktop */
+@media (min-width: 1920px) {
+  .tasks-view {
+    max-width: 1600px;
+    padding: 32px;
+  }
+  .page-header h2 {
+    font-size: 1.75rem;
+  }
+  .tasks-grid {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 28px;
+  }
+  .task-card {
+    padding: 24px;
+  }
+  .task-title {
+    font-size: 1.25rem;
+  }
+  .task-details {
+    font-size: 1rem;
+  }
+  .modal-content {
+    max-width: 580px;
+    padding: 32px;
+  }
+  .form-input {
+    font-size: 1rem;
+    padding: 12px 16px;
+  }
+  .btn-primary,
+  .btn-secondary {
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+  .pagination button {
+    padding: 10px 18px;
+    font-size: 1rem;
+  }
+}
+
+/* Responsive: Ultra-wide */
+@media (min-width: 2560px) {
+  .tasks-view {
+    max-width: 2000px;
+    padding: 40px;
+  }
+  .page-header h2 {
+    font-size: 2rem;
+  }
+  .tasks-grid {
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 32px;
+  }
+  .task-card {
+    padding: 28px;
+  }
+  .task-title {
+    font-size: 1.35rem;
+  }
+  .task-details {
+    font-size: 1.05rem;
+  }
 }
 </style>

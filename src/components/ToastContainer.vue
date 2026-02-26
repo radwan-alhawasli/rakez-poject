@@ -42,7 +42,7 @@ export default {
   top: 16px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 99999;
+  z-index: var(--z-tooltip) 9;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -60,7 +60,6 @@ export default {
   pointer-events: auto;
   font-size: 14px;
   font-weight: 500;
-  font-family: 'Tajawal', 'Cairo', sans-serif;
   direction: rtl;
 }
 .toast-icon {
@@ -95,7 +94,7 @@ export default {
   border: 1px solid #86efac;
 }
 .toast-item.success .toast-icon {
-  background: #16a34a;
+  background: var(--color-success);
   color: #fff;
 }
 .toast-item.error {

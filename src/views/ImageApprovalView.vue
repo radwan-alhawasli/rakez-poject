@@ -298,7 +298,6 @@ export default {
 
 <style scoped>
 .image-approval-view {
-  font-family: 'Tajawal', sans-serif;
   animation: fadeIn 0.4s ease-out;
   padding-bottom: 50px;
 }
@@ -321,7 +320,6 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin: 0 0 5px 0;
-  font-family: 'Amiri', serif;
 }
 .page-subtitle {
   color: #64748b;
@@ -563,5 +561,373 @@ export default {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   margin-top: 10px;
+}
+
+/* Responsive: tablet landscape */
+@media (max-width: 992px) {
+  .images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .page-title {
+    font-size: 24px;
+  }
+  .modal-content {
+    max-width: 460px;
+  }
+}
+
+/* Responsive: tablet portrait */
+@media (max-width: 768px) {
+  .page-header {
+    margin-bottom: 20px;
+  }
+  .page-title {
+    font-size: 22px;
+  }
+  .page-subtitle {
+    font-size: 14px;
+  }
+  .images-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .image-card:hover {
+    transform: none;
+  }
+  .stats-bar {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .modal-content {
+    max-width: 90%;
+    padding: 24px;
+  }
+  .info-row {
+    font-size: 12px;
+  }
+}
+
+/* Responsive: mobile */
+@media (max-width: 576px) {
+  .image-approval-view {
+    overflow-x: hidden;
+    padding-bottom: 30px;
+  }
+  .page-title {
+    font-size: 20px;
+  }
+  .page-subtitle {
+    font-size: 13px;
+  }
+  .stats-bar {
+    padding: 12px 16px;
+    border-radius: 10px;
+  }
+  .stat-item {
+    font-size: 14px;
+  }
+  .image-wrapper {
+    height: 160px;
+  }
+  .card-body {
+    padding: 12px;
+  }
+  .action-btn {
+    padding: 10px;
+    min-height: 44px;
+    font-size: 13px;
+  }
+  .action-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  .info-row .label {
+    font-size: 12px;
+  }
+  .links-section {
+    padding: 8px;
+  }
+  .link-value {
+    font-size: 12px;
+    word-break: break-all;
+  }
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  .modal-content h3 {
+    font-size: 16px;
+  }
+  .modal-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+  .btn-text,
+  .btn-danger-solid {
+    min-height: 44px;
+    width: 100%;
+    text-align: center;
+  }
+  .btn-danger-solid {
+    padding: 12px 16px;
+    border-radius: 8px;
+  }
+  .empty-state,
+  .loading-state {
+    padding: 32px 16px;
+  }
+}
+
+/* Responsive: extra small mobile */
+@media (max-width: 320px) {
+  .image-approval-view {
+    overflow-x: hidden;
+  }
+  .page-title {
+    font-size: 18px;
+  }
+  .page-subtitle {
+    font-size: 12px;
+  }
+  .stats-bar {
+    padding: 10px 12px;
+    border-radius: 8px;
+  }
+  .stat-item {
+    font-size: 13px;
+    gap: 6px;
+  }
+  .image-wrapper {
+    height: 140px;
+  }
+  .image-card {
+    border-radius: 12px;
+  }
+  .card-body {
+    padding: 10px;
+  }
+  .overlay {
+    padding: 10px;
+  }
+  .project-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+  .action-btn {
+    font-size: 12px;
+    border-radius: 6px;
+  }
+  .description {
+    font-size: 12px;
+  }
+  .modal-content {
+    width: 98%;
+    padding: 16px;
+  }
+  .form-input {
+    font-size: 14px;
+    min-height: 44px;
+  }
+}
+
+/* Responsive: large desktop */
+@media (min-width: 1200px) {
+  .images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 28px;
+  }
+  .page-title {
+    font-size: 30px;
+  }
+}
+
+/* Responsive: full HD */
+@media (min-width: 1920px) {
+  .images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 32px;
+  }
+  .page-title {
+    font-size: 32px;
+  }
+  .page-subtitle {
+    font-size: 16px;
+  }
+  .image-card {
+    border-radius: 20px;
+  }
+  .image-wrapper {
+    height: 220px;
+  }
+  .card-body {
+    padding: 20px;
+  }
+  .info-row {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  .action-btn {
+    padding: 12px;
+    font-size: 14px;
+  }
+  .stats-bar {
+    padding: 18px 24px;
+  }
+  .stat-item {
+    font-size: 16px;
+  }
+  .page-header {
+    margin-bottom: 36px;
+  }
+  .modal-content {
+    max-width: 560px;
+    padding: 36px;
+  }
+}
+
+/* Responsive: 2K ultra-wide */
+@media (min-width: 2560px) {
+  .images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+    gap: 36px;
+  }
+  .page-title {
+    font-size: 36px;
+  }
+  .page-subtitle {
+    font-size: 18px;
+  }
+  .image-card {
+    border-radius: 24px;
+  }
+  .image-wrapper {
+    height: 260px;
+  }
+  .card-body {
+    padding: 24px;
+  }
+  .overlay {
+    padding: 20px;
+  }
+  .project-badge {
+    font-size: 14px;
+    padding: 6px 14px;
+  }
+  .info-row {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  .description {
+    font-size: 15px;
+  }
+  .link-value {
+    font-size: 14px;
+  }
+  .action-btn {
+    padding: 14px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+  .action-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+  .stats-bar {
+    padding: 20px 28px;
+    border-radius: 16px;
+  }
+  .modal-content {
+    max-width: 640px;
+    padding: 40px;
+    border-radius: 16px;
+  }
+}
+
+/* Responsive: 4K */
+@media (min-width: 3840px) {
+  .images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(540px, 1fr));
+    gap: 44px;
+  }
+  .page-title {
+    font-size: 42px;
+  }
+  .page-subtitle {
+    font-size: 22px;
+  }
+  .image-card {
+    border-radius: 28px;
+  }
+  .image-wrapper {
+    height: 320px;
+  }
+  .card-body {
+    padding: 28px;
+  }
+  .overlay {
+    padding: 24px;
+  }
+  .project-badge {
+    font-size: 16px;
+    padding: 8px 16px;
+    border-radius: 10px;
+  }
+  .info-row {
+    font-size: 18px;
+    margin-bottom: 14px;
+  }
+  .info-row .label {
+    font-size: 17px;
+  }
+  .description {
+    font-size: 17px;
+  }
+  .links-section {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  .action-btn {
+    padding: 16px;
+    font-size: 17px;
+    border-radius: 12px;
+  }
+  .action-btn svg {
+    width: 22px;
+    height: 22px;
+  }
+  .stats-bar {
+    padding: 24px 32px;
+    border-radius: 18px;
+  }
+  .stat-item {
+    font-size: 18px;
+  }
+  .page-header {
+    margin-bottom: 44px;
+  }
+  .empty-state,
+  .loading-state {
+    padding: 64px 32px;
+    font-size: 18px;
+  }
+  .spinner {
+    width: 52px;
+    height: 52px;
+  }
+  .modal-content {
+    max-width: 740px;
+    padding: 48px;
+    border-radius: 20px;
+  }
+  .modal-content h3 {
+    font-size: 22px;
+  }
+  .btn-danger-solid {
+    padding: 14px 28px;
+    font-size: 16px;
+    border-radius: 10px;
+  }
 }
 </style>

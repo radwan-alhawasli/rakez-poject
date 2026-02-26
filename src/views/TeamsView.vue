@@ -228,7 +228,6 @@ export default {
 
 <style scoped>
 .teams-view {
-  font-family: 'Tajawal', sans-serif;
   animation: fadeIn 0.4s ease-out;
   padding-bottom: 50px;
 }
@@ -249,12 +248,11 @@ export default {
 .page-title {
   font-size: 28px;
   font-weight: 800;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 5px 0;
-  font-family: 'Amiri', serif;
 }
 .page-subtitle {
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 15px;
   margin: 0;
 }
@@ -263,15 +261,15 @@ export default {
   margin-bottom: 40px;
   background: white;
   border-radius: 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   padding: 25px;
 }
 
 .team-title {
   font-size: 20px;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 20px 0;
-  border-bottom: 2px solid #f1f5f9;
+  border-bottom: 2px solid var(--color-light-gray);
   padding-bottom: 10px;
   display: flex;
   align-items: center;
@@ -282,10 +280,10 @@ export default {
 }
 .count-badge {
   font-size: 12px;
-  background: #f1f5f9;
+  background: var(--color-light-gray);
   padding: 4px 10px;
   border-radius: 20px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: normal;
   margin-right: auto;
 }
@@ -297,8 +295,8 @@ export default {
 }
 
 .member-card {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--color-light-gray);
+  border: 1px solid var(--color-medium-gray);
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -312,20 +310,20 @@ export default {
   transform: translateY(-3px);
   background: white;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
 }
 
 .member-avatar {
   width: 60px;
   height: 60px;
-  background: #e2e8f0;
+  background: var(--color-medium-gray);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin-bottom: 15px;
   border: 2px solid white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
@@ -334,30 +332,30 @@ export default {
 .member-name {
   font-size: 15px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 5px 0;
 }
 .member-role {
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin: 0 0 15px 0;
 }
 
 .view-btn {
   margin-top: auto;
   width: 100%;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-medium-gray);
   background: white;
   padding: 8px;
   border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
-  color: #475569;
+  color: var(--color-charcoal);
 }
 .view-btn:hover {
-  background: #1e3a5f;
+  background: var(--color-navy);
   color: white;
-  border-color: #1e3a5f;
+  border-color: var(--color-navy);
 }
 
 /* Modal */
@@ -368,7 +366,7 @@ export default {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -389,14 +387,13 @@ export default {
 }
 .modal-header h3 {
   margin: 0;
-  color: #1e3a5f;
-  font-family: 'Amiri', serif;
+  color: var(--color-navy);
 }
 .close-btn {
   background: none;
   border: none;
   font-size: 24px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   cursor: pointer;
 }
 
@@ -409,7 +406,7 @@ export default {
 .large-avatar {
   width: 80px;
   height: 80px;
-  background: #1e3a5f;
+  background: var(--color-navy);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -418,22 +415,22 @@ export default {
   font-size: 32px;
   font-weight: 700;
   margin-bottom: 15px;
-  border: 4px solid #f1f5f9;
+  border: 4px solid var(--color-light-gray);
 }
 .profile-header h3 {
   margin: 0 0 5px 0;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 .role-badge {
-  background: #f1f5f9;
+  background: var(--color-light-gray);
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .details-list {
-  background: #f8fafc;
+  background: var(--color-light-gray);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 25px;
@@ -442,18 +439,18 @@ export default {
   display: flex;
   justify-content: space-between;
   padding: 10px 0;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-medium-gray);
   font-size: 14px;
 }
 .detail-item:last-child {
   border-bottom: none;
 }
 .detail-item .label {
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 .detail-item .value {
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 
 .modal-actions {
@@ -491,34 +488,317 @@ export default {
   width: 100%;
   padding: 12px;
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 8px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   cursor: pointer;
   font-weight: 600;
 }
 .btn-secondary:hover {
-  background: #f1f5f9;
+  background: var(--color-light-gray);
 }
 
 .loading-state,
 .empty-state {
   text-align: center;
   padding: 50px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
 }
 .spinner {
   width: 40px;
   height: 40px;
   margin: 0 auto 15px;
   border-radius: 50%;
-  border: 3px solid #f1f5f9;
-  border-top-color: #b1a28f;
+  border: 3px solid var(--color-light-gray);
+  border-top-color: var(--color-gold);
   animation: spin 1s linear infinite;
 }
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* ── Responsive: Tablet Landscape ── */
+@media (max-width: 992px) {
+  .members-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .team-section {
+    padding: 20px;
+  }
+}
+
+/* ── Responsive: Tablet Portrait ── */
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 24px;
+  }
+  .page-subtitle {
+    font-size: 14px;
+  }
+  .members-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .team-section {
+    padding: 16px;
+    margin-bottom: 24px;
+    border-radius: 12px;
+  }
+  .team-title {
+    font-size: 18px;
+    flex-wrap: wrap;
+  }
+  .member-card {
+    padding: 16px;
+  }
+  .member-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+  }
+}
+
+/* ── Responsive: Mobile ── */
+@media (max-width: 576px) {
+  .teams-view {
+    padding-bottom: 30px;
+  }
+  .page-header {
+    margin-bottom: 20px;
+  }
+  .page-title {
+    font-size: 22px;
+  }
+  .members-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .member-card {
+    flex-direction: row;
+    text-align: right;
+    padding: 14px;
+    gap: 12px;
+  }
+  .member-avatar {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+  .member-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .member-name {
+    font-size: 14px;
+  }
+  .member-role {
+    margin-bottom: 0;
+  }
+  .view-btn {
+    margin-top: 0;
+    width: auto;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px 16px;
+    align-self: center;
+  }
+  .team-section {
+    padding: 14px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+  .team-title {
+    font-size: 16px;
+    gap: 8px;
+  }
+  .contact-btn {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-secondary {
+    min-height: 44px;
+  }
+  .close-btn {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay {
+    align-items: flex-end;
+  }
+  .modal-content {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 12px 12px 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .loading-state,
+  .empty-state {
+    padding: 30px 16px;
+  }
+  .details-list {
+    padding: 14px;
+  }
+  .detail-item {
+    font-size: 13px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
+/* ── Responsive: Extra Small Mobile ── */
+@media (max-width: 320px) {
+  .page-title {
+    font-size: 20px;
+  }
+  .page-subtitle {
+    font-size: 13px;
+  }
+  .team-section {
+    padding: 10px;
+  }
+  .member-card {
+    padding: 10px;
+    gap: 8px;
+  }
+  .member-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  .member-name {
+    font-size: 13px;
+  }
+  .member-role {
+    font-size: 11px;
+  }
+  .modal-content {
+    padding: 16px;
+  }
+  .large-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+  .contact-actions {
+    flex-direction: column;
+  }
+}
+
+/* ── Responsive: Large Desktop ── */
+@media (min-width: 1200px) {
+  .members-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 22px;
+  }
+}
+
+/* ── Responsive: Full HD ── */
+@media (min-width: 1920px) {
+  .page-title {
+    font-size: 32px;
+  }
+  .page-subtitle {
+    font-size: 17px;
+  }
+  .team-section {
+    padding: 30px;
+  }
+  .member-card {
+    padding: 24px;
+  }
+  .member-avatar {
+    width: 68px;
+    height: 68px;
+    font-size: 28px;
+  }
+  .member-name {
+    font-size: 17px;
+  }
+  .modal-content {
+    max-width: 520px;
+  }
+}
+
+/* ── Responsive: QHD ── */
+@media (min-width: 2560px) {
+  .page-title {
+    font-size: 38px;
+  }
+  .team-section {
+    padding: 36px;
+    border-radius: 20px;
+  }
+  .member-card {
+    padding: 28px;
+    border-radius: 16px;
+  }
+  .member-avatar {
+    width: 76px;
+    height: 76px;
+    font-size: 32px;
+  }
+  .member-name {
+    font-size: 18px;
+  }
+  .view-btn {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+/* ── Responsive: 4K ── */
+@media (min-width: 3840px) {
+  .page-title {
+    font-size: 48px;
+  }
+  .page-subtitle {
+    font-size: 20px;
+  }
+  .team-section {
+    padding: 44px;
+    border-radius: 24px;
+  }
+  .member-card {
+    padding: 32px;
+    border-radius: 20px;
+  }
+  .member-avatar {
+    width: 88px;
+    height: 88px;
+    font-size: 38px;
+  }
+  .member-name {
+    font-size: 20px;
+  }
+  .member-role {
+    font-size: 15px;
+  }
+  .view-btn {
+    font-size: 16px;
+    padding: 12px;
+  }
+  .modal-content {
+    max-width: 600px;
+    padding: 36px;
   }
 }
 </style>

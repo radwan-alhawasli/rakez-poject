@@ -697,6 +697,7 @@ import DepositConfirmationModal from '../components/accounting/DepositConfirmati
 import SalaryDistributionModal from '../components/accounting/SalaryDistributionModal.vue';
 import ConfirmationHistoryModal from '../components/accounting/ConfirmationHistoryModal.vue';
 import NotificationDetailModal from '../components/accounting/NotificationDetailModal.vue';
+import { useFormatters } from '../composables/useFormatters';
 
 export default {
   name: 'AccountingView',
@@ -1180,23 +1181,11 @@ export default {
       showConfirmationHistoryModal.value = true;
     };
 
-    // Utility functions
-    const formatCurrency = val => {
-      if (!val) return '0 ر.س';
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 0,
-      }).format(val);
-    };
-
+    // Utility functions (shared composable)
+    const { formatCurrency, formatDate: _fmtDate } = useFormatters();
     const formatDate = dateStr => {
       if (!dateStr) return 'غير محدد';
-      try {
-        return new Date(dateStr).toLocaleDateString('ar-SA');
-      } catch {
-        return dateStr;
-      }
+      return _fmtDate(dateStr);
     };
 
     const getStatusClass = status => {
@@ -1420,7 +1409,6 @@ export default {
   margin: 0 0 22px 0;
   padding-bottom: 14px;
   border-bottom: 1px solid rgba(177, 162, 143, 0.2);
-  font-family: 'Cairo', 'Amiri', serif;
   letter-spacing: -0.01em;
 }
 
@@ -1572,6 +1560,10 @@ export default {
 .dashboard-date-range .form-input {
   border-radius: 10px;
   border: 2px solid #e2e8f0;
+  width: auto !important;
+  max-width: 200px;
+  min-width: 0;
+  flex: 1 1 140px;
 }
 
 .dashboard-date-range .form-input:focus {
@@ -1594,7 +1586,8 @@ export default {
 }
 
 .notification-type-filter {
-  width: 200px;
+  width: 100%;
+  max-width: 200px;
 }
 
 .notification-actions {
@@ -1678,6 +1671,82 @@ export default {
   }
 }
 
+/* ── Responsive: Extra Small Mobile ── */
+@media (max-width: 320px) {
+  .dashboard-date-range {
+    padding: 12px;
+    gap: 8px;
+  }
+  .dashboard-date-range label {
+    font-size: 13px;
+  }
+  .dashboard-date-range .form-input {
+    font-size: 13px;
+  }
+  .notifications-header-controls {
+    flex-direction: column;
+    width: 100%;
+  }
+  .notification-type-filter {
+    max-width: 100%;
+  }
+  .deposits-sub-tabs {
+    gap: 8px;
+  }
+  .sub-tab-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  .kpi-list-card {
+    padding: 16px 14px;
+  }
+  .kpi-line {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .kpi-label {
+    font-size: 12px;
+  }
+  .kpi-value {
+    font-size: 13px;
+  }
+}
+
+/* ── Responsive: Tablet Landscape ── */
+@media (max-width: 992px) {
+  .dashboard-date-range {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .dashboard-date-range .form-input {
+    width: 100% !important;
+    max-width: 100%;
+  }
+  .notifications-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .notifications-header-controls {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .notification-type-filter {
+    max-width: 100%;
+    flex: 1;
+  }
+}
+
+/* ── Responsive: Large Desktop ── */
+@media (min-width: 1200px) {
+  .stats-grid-three {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .dashboard-date-range .form-input {
+    max-width: 200px;
+  }
+}
+
 @media (min-width: 3840px) {
   .page-title {
     font-size: 48px;
@@ -1690,6 +1759,19 @@ export default {
   .btn-action {
     width: 46px;
     height: 46px;
+  }
+  .kpi-list-card {
+    padding: 36px 32px;
+  }
+  .kpi-label {
+    font-size: 18px;
+  }
+  .kpi-value {
+    font-size: 20px;
+  }
+  .dashboard-date-range .form-input {
+    font-size: 18px;
+    padding: 16px 20px;
   }
 }
 </style>

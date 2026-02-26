@@ -30,123 +30,123 @@
           <p>جاري تحميل البيانات...</p>
         </div>
 
-        <div v-else-if="dashboardData" class="dashboard-grid">
-          <div class="stat-card">
-            <div class="stat-icon reserved">
+        <div v-else-if="dashboardData" class="stats-grid">
+          <div class="stat-card animate-fade-in-up animate-stagger-1 hover-lift hover-shine">
+            <div class="stat-content">
+              <span class="stat-label">الوحدات المحجوزة</span>
+              <span class="stat-value number">{{ dashboardData.reserved_units || 0 }}</span>
+            </div>
+            <div class="stat-icon-bg reserved">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
               </svg>
             </div>
-            <div class="stat-info">
-              <span class="stat-label">الوحدات المحجوزة</span>
-              <span class="stat-value">{{ dashboardData.reserved_units || 0 }}</span>
-            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon available">
+          <div class="stat-card animate-fade-in-up animate-stagger-2 hover-lift hover-shine">
+            <div class="stat-content">
+              <span class="stat-label">الوحدات المتاحة</span>
+              <span class="stat-value number">{{ dashboardData.available_units || 0 }}</span>
+            </div>
+            <div class="stat-icon-bg available">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
             </div>
-            <div class="stat-info">
-              <span class="stat-label">الوحدات المتاحة</span>
-              <span class="stat-value">{{ dashboardData.available_units || 0 }}</span>
-            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon marketing">
+          <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift hover-shine">
+            <div class="stat-content">
+              <span class="stat-label">مشاريع تحت التسويق</span>
+              <span class="stat-value number">{{ dashboardData.projects_under_marketing || 0 }}</span>
+            </div>
+            <div class="stat-icon-bg marketing">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="20" x2="18" y2="10"></line>
                 <line x1="12" y1="20" x2="12" y2="4"></line>
                 <line x1="6" y1="20" x2="6" y2="14"></line>
               </svg>
             </div>
-            <div class="stat-info">
-              <span class="stat-label">مشاريع تحت التسويق</span>
-              <span class="stat-value">{{ dashboardData.projects_under_marketing || 0 }}</span>
-            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon confirmed">
+          <div class="stat-card animate-fade-in-up animate-stagger-4 hover-lift hover-shine">
+            <div class="stat-content">
+              <span class="stat-label">حجوزات مؤكدة</span>
+              <span class="stat-value number">{{ dashboardData.confirmed_count || dashboardData.confirmed_reservations || 0 }}</span>
+            </div>
+            <div class="stat-icon-bg confirmed">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
-            <div class="stat-info">
-              <span class="stat-label">حجوزات مؤكدة</span>
-              <span class="stat-value">{{ dashboardData.confirmed_count || dashboardData.confirmed_reservations || 0 }}</span>
-            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon negotiation">
+          <div class="stat-card animate-fade-in-up animate-stagger-5 hover-lift hover-shine">
+            <div class="stat-content">
+              <span class="stat-label">حجوزات تحت التفاوض</span>
+              <span class="stat-value number">{{ dashboardData.negotiation_count || dashboardData.negotiation_reservations || 0 }}</span>
+            </div>
+            <div class="stat-icon-bg negotiation">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
               </svg>
             </div>
-            <div class="stat-info">
-              <span class="stat-label">حجوزات تحت التفاوض</span>
-              <span class="stat-value">{{ dashboardData.negotiation_count || dashboardData.negotiation_reservations || 0 }}</span>
-            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon ratio">
+          <div class="stat-card animate-fade-in-up animate-stagger-6 hover-lift hover-shine">
+            <div class="stat-content">
+              <span class="stat-label">نسبة التأكيد</span>
+              <span class="stat-value number">{{ dashboardData.percent_confirmed || 0 }}%</span>
+            </div>
+            <div class="stat-icon-bg ratio">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                 <polyline points="17 6 23 6 23 12"></polyline>
               </svg>
             </div>
-            <div class="stat-info">
-              <span class="stat-label">نسبة التأكيد</span>
-              <span class="stat-value">{{ dashboardData.percent_confirmed || 0 }}%</span>
-            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon sold">
+          <div class="stat-card animate-fade-in-up animate-stagger-7 hover-lift hover-shine">
+            <div class="stat-content">
+              <span class="stat-label">الوحدات المباعة</span>
+              <span class="stat-value number">{{ dashboardData.sold_units_count || 0 }}</span>
+            </div>
+            <div class="stat-icon-bg sold">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
               </svg>
             </div>
-            <div class="stat-info">
-              <span class="stat-label">الوحدات المباعة</span>
-              <span class="stat-value">{{ dashboardData.sold_units_count || 0 }}</span>
-            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon total-res">
+          <div class="stat-card animate-fade-in-up animate-stagger-8 hover-lift hover-shine">
+            <div class="stat-content">
+              <span class="stat-label">إجمالي الحجوزات</span>
+              <span class="stat-value number">{{ dashboardData.total_reservations || 0 }}</span>
+            </div>
+            <div class="stat-icon-bg total-res">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
                 <line x1="1" y1="10" x2="23" y2="10"></line>
               </svg>
             </div>
-            <div class="stat-info">
-              <span class="stat-label">إجمالي الحجوزات</span>
-              <span class="stat-value">{{ dashboardData.total_reservations || 0 }}</span>
-            </div>
           </div>
-          <div class="stat-card wide">
-            <div class="stat-icon deposits">
+          <div class="stat-card animate-fade-in-up animate-stagger-9 hover-lift hover-shine">
+            <div class="stat-content">
+              <span class="stat-label">الدفعات المستلمة</span>
+              <span class="stat-value number">{{ formatCurrency(dashboardData.total_received_deposits || 0) }}</span>
+            </div>
+            <div class="stat-icon-bg deposits">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="1" x2="12" y2="23"></line>
                 <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
               </svg>
             </div>
-            <div class="stat-info">
-              <span class="stat-label">الدفعات المستلمة</span>
-              <span class="stat-value">{{ formatCurrency(dashboardData.total_received_deposits || 0) }}</span>
-            </div>
           </div>
-          <div class="stat-card wide">
-            <div class="stat-icon revenue">
+          <div class="stat-card animate-fade-in-up animate-stagger-10 hover-lift hover-shine">
+            <div class="stat-content">
+              <span class="stat-label">إجمالي الإيرادات</span>
+              <span class="stat-value number">{{ formatCurrency(dashboardData.total_revenue || 0) }}</span>
+            </div>
+            <div class="stat-icon-bg revenue">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                 <polyline points="17 6 23 6 23 12"></polyline>
               </svg>
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">إجمالي الإيرادات</span>
-              <span class="stat-value">{{ formatCurrency(dashboardData.total_revenue || 0) }}</span>
             </div>
           </div>
         </div>
@@ -1293,56 +1293,56 @@
             </svg>
             <p>لا توجد بيانات تحليلية. اضغط "تحديث" لتحميلها.</p>
           </div>
-          <div v-else class="analytics-grid">
-            <div class="stat-card">
-              <div class="stat-icon confirmed">
+          <div v-else class="stats-grid analytics-grid">
+            <div class="stat-card animate-fade-in-up hover-lift">
+              <div class="stat-content">
+                <span class="stat-label">إجمالي الوحدات المباعة</span>
+                <span class="stat-value number">{{ analyticsDashboard.total_sold_units || 0 }}</span>
+              </div>
+              <div class="stat-icon-bg confirmed">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                 </svg>
               </div>
-              <div class="stat-info">
-                <span class="stat-label">إجمالي الوحدات المباعة</span>
-                <span class="stat-value">{{ analyticsDashboard.total_sold_units || 0 }}</span>
-              </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-icon marketing">
+            <div class="stat-card animate-fade-in-up hover-lift">
+              <div class="stat-content">
+                <span class="stat-label">إجمالي العمولات</span>
+                <span class="stat-value number">{{
+                  formatCurrency(analyticsDashboard.total_commissions || 0)
+                }}</span>
+              </div>
+              <div class="stat-icon-bg deposits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="12" y1="1" x2="12" y2="23"></line>
                   <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                 </svg>
               </div>
-              <div class="stat-info">
-                <span class="stat-label">إجمالي العمولات</span>
-                <span class="stat-value">{{
-                  formatCurrency(analyticsDashboard.total_commissions || 0)
+            </div>
+            <div class="stat-card animate-fade-in-up hover-lift">
+              <div class="stat-content">
+                <span class="stat-label">الودائع المعلقة</span>
+                <span class="stat-value number">{{
+                  formatCurrency(analyticsDashboard.pending_deposits || 0)
                 }}</span>
               </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon reserved">
+              <div class="stat-icon-bg reserved">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10"></circle>
                   <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
               </div>
-              <div class="stat-info">
-                <span class="stat-label">الودائع المعلقة</span>
-                <span class="stat-value">{{
-                  formatCurrency(analyticsDashboard.pending_deposits || 0)
-                }}</span>
-              </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-icon ratio">
+            <div class="stat-card animate-fade-in-up hover-lift">
+              <div class="stat-content">
+                <span class="stat-label">نسبة إتمام المبيعات</span>
+                <span class="stat-value number">{{ analyticsDashboard.completion_rate || 0 }}%</span>
+              </div>
+              <div class="stat-icon-bg ratio">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                   <polyline points="17 6 23 6 23 12"></polyline>
                 </svg>
-              </div>
-              <div class="stat-info">
-                <span class="stat-label">نسبة إتمام المبيعات</span>
-                <span class="stat-value">{{ analyticsDashboard.completion_rate || 0 }}%</span>
               </div>
             </div>
           </div>
@@ -2104,6 +2104,7 @@ import logger from '../utils/logger';
 import { usePermissions } from '../composables/usePermissions';
 import authService from '../services/authService';
 import { isSalesLeader } from '../utils/rbac';
+import { useFormatters } from '../composables/useFormatters';
 import PaymentPlanModal from '../components/sales/PaymentPlanModal.vue';
 import TitleTransferDateModal from '../components/sales/TitleTransferDateModal.vue';
 import NegotiationApprovalModal from '../components/sales/NegotiationApprovalModal.vue';
@@ -3551,19 +3552,8 @@ export default {
       }
     };
 
-    // Utility functions
-    const formatCurrency = value => {
-      return new Intl.NumberFormat('ar-SA', {
-        style: 'currency',
-        currency: 'SAR',
-        minimumFractionDigits: 0,
-      }).format(value || 0);
-    };
-
-    const formatDate = dateString => {
-      if (!dateString) return '—';
-      return new Date(dateString).toLocaleDateString('ar-SA');
-    };
+    // Utility functions (shared composable)
+    const { formatCurrencyAr: formatCurrency, formatDate } = useFormatters();
 
     const getProgressPercentage = target => {
       if (!target.target_value) return 0;
@@ -4006,9 +3996,8 @@ export default {
 .sales-view {
   direction: rtl;
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--color-light-gray);
   padding: 20px 30px;
-  font-family: 'Tajawal', sans-serif;
 }
 
 /* Tab Content */
@@ -4020,7 +4009,7 @@ export default {
 /* Dashboard Projects Summary */
 .dashboard-projects {
   margin-top: 40px;
-  background: white;
+  background: var(--color-white);
   padding: 30px;
   border-radius: 24px;
   box-shadow: 0 10px 25px rgba(30, 58, 95, 0.05);
@@ -4037,15 +4026,14 @@ export default {
 .dashboard-projects .section-header h3 {
   font-size: 22px;
   font-weight: 800;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0;
-  font-family: 'Amiri', serif;
 }
 
 .btn-text-link {
   background: none;
   border: none;
-  color: #b1a28f;
+  color: var(--color-gold);
   font-weight: 700;
   cursor: pointer;
   font-size: 14px;
@@ -4053,7 +4041,7 @@ export default {
 }
 
 .btn-text-link:hover {
-  color: #1e3a5f;
+  color: var(--color-navy);
   text-decoration: underline;
 }
 
@@ -4068,7 +4056,7 @@ export default {
   align-items: center;
   gap: 20px;
   padding: 16px;
-  background: #fdfbf7;
+  background: var(--color-off-white);
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -4076,7 +4064,7 @@ export default {
 }
 
 .mini-project-card:hover {
-  background: #fff;
+  background: var(--color-white);
   border-color: rgba(177, 162, 143, 0.3);
   transform: translateY(-5px);
   box-shadow: 0 12px 20px rgba(177, 162, 143, 0.15);
@@ -4105,7 +4093,7 @@ export default {
   margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 
 .p-stats {
@@ -4123,7 +4111,7 @@ export default {
 }
 
 .p-arrow {
-  color: #b1a28f;
+  color: var(--color-gold);
   font-size: 20px;
   font-weight: bold;
   opacity: 0.3;
@@ -4157,7 +4145,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  background: white;
+  background: var(--color-white);
   padding: 20px;
   border-radius: 16px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
@@ -4175,16 +4163,15 @@ export default {
 .page-title {
   font-size: 28px;
   font-weight: 800;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 5px 0;
-  font-family: 'Amiri', serif;
 }
 
 /* Tabs Style (Like Project Management) */
 .tabs-container {
   display: flex;
   gap: 30px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-medium-gray);
   margin-bottom: 30px;
 }
 
@@ -4194,14 +4181,14 @@ export default {
   padding: 12px 5px;
   font-size: 15px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--color-dark-gray);
   cursor: pointer;
   position: relative;
   transition: all 0.3s;
 }
 
 .tab-btn.active {
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 
 .tab-btn.active::after {
@@ -4211,14 +4198,14 @@ export default {
   left: 0;
   width: 100%;
   height: 3px;
-  background: #b1a28f;
+  background: var(--color-gold);
   border-radius: 3px 3px 0 0;
 }
 
 /* Luxury Card Design */
 .project-card.luxury {
-  background: white;
-  border-radius: 20px;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid #f1f5f9;
   transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -4251,14 +4238,13 @@ export default {
 .project-name {
   font-size: 18px;
   font-weight: 800;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin-bottom: 8px;
-  font-family: 'Amiri', serif;
 }
 
 .project-location {
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   display: flex;
   align-items: center;
   gap: 5px;
@@ -4269,7 +4255,7 @@ export default {
   display: flex;
   gap: 15px;
   margin-bottom: 20px;
-  background: #f8fafc;
+  background: var(--color-light-gray);
   padding: 10px;
   border-radius: 12px;
 }
@@ -4279,7 +4265,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-left: 1px solid #e2e8f0;
+  border-left: 1px solid var(--color-medium-gray);
 }
 
 .mini-stat:last-child {
@@ -4296,7 +4282,7 @@ export default {
 .mini-stat .v {
   font-size: 15px;
   font-weight: 800;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 
 .mini-stat .v.success {
@@ -4316,15 +4302,15 @@ export default {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .btn-view-tracker {
-  background: #1e3a5f;
+  background: var(--color-navy);
   color: white;
   border: none;
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
@@ -4350,7 +4336,7 @@ export default {
 }
 .project-management-design .tabs-container {
   display: flex;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-medium-gray);
   margin-bottom: 30px;
   gap: 4px;
 }
@@ -4360,21 +4346,20 @@ export default {
   border-bottom: none;
   padding: 12px 20px;
   font-size: 15px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   cursor: pointer;
   position: relative;
   font-weight: 500;
-  font-family: inherit;
   border-radius: 10px 10px 0 0;
 }
 .project-management-design .tab-btn:hover {
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 .project-management-design .tab-btn.active {
-  background: white;
-  color: #1e3a5f;
+  background: var(--color-white);
+  color: var(--color-navy);
   font-weight: 700;
-  border-color: #e2e8f0;
+  border-color: var(--color-medium-gray);
   border-bottom: 1px solid white;
   margin-bottom: -1px;
 }
@@ -4387,8 +4372,8 @@ export default {
   gap: 20px;
 }
 .project-management-design .project-card {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-white);
+  border: 1px solid var(--color-medium-gray);
   border-radius: 16px;
   overflow: visible;
   transition: transform 0.2s, box-shadow 0.2s;
@@ -4427,14 +4412,14 @@ export default {
 .project-management-design .placeholder-name {
   font-size: 14px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 .project-management-design .status-badge {
   position: absolute;
   top: 12px;
   right: 12px;
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 11px;
   font-weight: 700;
   background: rgba(0, 0, 0, 0.5);
@@ -4471,22 +4456,22 @@ export default {
   width: 32px;
   height: 32px;
   background: rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 .project-management-design .dropdown-menu {
   position: absolute;
   top: 40px;
   left: 0;
-  background: white;
-  border-radius: 8px;
+  background: var(--color-white);
+  border-radius: var(--radius-sm);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   min-width: 220px;
   width: max-content;
   max-width: 320px;
@@ -4503,18 +4488,17 @@ export default {
 .project-management-design .card-content .project-name {
   font-size: 16px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-charcoal);
   margin: 0;
-  font-family: inherit;
 }
 .project-management-design .card-content .project-location {
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 13px;
   margin: 0;
 }
 .project-management-design .project-description-line {
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin: 0;
 }
 .project-management-design .assignee {
@@ -4522,7 +4506,7 @@ export default {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 .project-management-design .progress-row {
   display: flex;
@@ -4532,31 +4516,31 @@ export default {
 }
 .project-management-design .progress-label {
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 .project-management-design .progress-value {
   font-size: 12px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-charcoal);
   margin-right: auto;
 }
 .project-management-design .progress-bar {
   height: 6px;
-  background: #e2e8f0;
+  background: var(--color-medium-gray);
   border-radius: 3px;
   flex: 1 1 100%;
   overflow: hidden;
 }
 .project-management-design .progress-fill {
   height: 100%;
-  background: #b1a28f;
+  background: var(--color-gold);
   border-radius: 3px;
   transition: width 0.2s;
 }
 .project-management-design .status-pill {
   display: inline-block;
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 12px;
   font-weight: 600;
   background: #fef9c3;
@@ -4570,17 +4554,16 @@ export default {
   margin-top: 8px;
   width: 100%;
   padding: 12px;
-  background: #b1a28f;
+  background: var(--color-gold);
   color: white;
   border: none;
   border-radius: 10px;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  font-family: inherit;
 }
 .project-management-design .btn-view-details:hover {
-  background: #8c7851;
+  background: var(--color-gold-dark);
 }
 .project-management-design .loading-state,
 .project-management-design .empty-state {
@@ -4590,7 +4573,7 @@ export default {
 }
 
 .page-subtitle {
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 15px;
   margin: 0;
 }
@@ -4606,10 +4589,10 @@ export default {
   position: absolute;
   top: 40px;
   left: 0;
-  background: white;
+  background: var(--color-white);
   border-radius: 10px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   width: 180px;
   z-index: 100;
   overflow: hidden;
@@ -4618,7 +4601,7 @@ export default {
 .menu-item {
   padding: 12px 16px;
   font-size: 13px;
-  color: #1e293b;
+  color: var(--color-charcoal);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -4628,8 +4611,8 @@ export default {
   font-weight: 500;
 }
 .menu-item:hover {
-  background: #f8fafc;
-  color: #b1a28f;
+  background: var(--color-light-gray);
+  color: var(--color-gold);
 }
 .menu-backdrop {
   position: fixed;
@@ -4643,10 +4626,10 @@ export default {
 
 .btn-add {
   padding: 10px 20px;
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -4666,106 +4649,150 @@ export default {
 }
 
 /* Dashboard Styles */
-.dashboard-grid {
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(14px, 3vw, 32px);
   margin-top: 20px;
+  margin-bottom: 40px;
+  animation: fadeInUp 0.8s ease-out;
 }
 
-.stat-card {
-  background: white;
-  padding: 24px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-}
-
-.stat-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-}
-.stat-icon svg {
-  width: 28px;
-  height: 28px;
-}
-
-.stat-icon.reserved {
-  background: #fee2e2;
-  color: #991b1b;
-}
-.stat-icon.available {
-  background: #d1fae5;
-  color: #065f46;
-}
-.stat-icon.marketing {
-  background: #dbeafe;
-  color: #1e40af;
-}
-.stat-icon.confirmed {
-  background: #fef3c7;
-  color: #92400e;
-}
-.stat-icon.negotiation {
-  background: #f3e8ff;
-  color: #6b21a8;
-}
-.stat-icon.ratio {
-  background: #ffedd5;
-  color: #9a3412;
-}
-.stat-icon.sold {
-  background: #fce7f3;
-  color: #9d174d;
-}
-.stat-icon.total-res {
-  background: #e0e7ff;
-  color: #3730a3;
-}
-.stat-icon.deposits {
-  background: #d1fae5;
-  color: #047857;
-}
-.stat-icon.revenue {
-  background: #fef3c7;
-  color: #b45309;
-}
-.stat-card.wide {
-  grid-column: span 2;
-}
-@media (max-width: 768px) {
-  .stat-card.wide {
-    grid-column: span 1;
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-.stat-info {
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-card {
+  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-off-white) 100%);
+  border-radius: 24px;
+  padding: 32px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border: 1px solid rgba(177, 162, 143, 0.12);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: default;
+  box-shadow: 0 8px 30px -8px rgba(30, 58, 95, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  border-color: rgba(177, 162, 143, 0.35);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 50px -12px rgba(177, 162, 143, 0.25), 0 8px 20px rgba(30, 58, 95, 0.12);
+}
+
+.stat-icon-bg {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.stat-icon-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  filter: blur(20px);
+  opacity: 0.5;
+}
+
+.stat-icon-bg svg {
+  width: 36px;
+  height: 36px;
+  position: relative;
+  z-index: 1;
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.stat-card:hover .stat-icon-bg {
+  transform: scale(1.12) rotate(-8deg);
+}
+
+.stat-icon-bg.reserved {
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+}
+.stat-icon-bg.available {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+}
+.stat-icon-bg.marketing {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+}
+.stat-icon-bg.confirmed {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+.stat-icon-bg.negotiation {
+  background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%);
+}
+.stat-icon-bg.ratio {
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+}
+.stat-icon-bg.sold {
+  background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+}
+.stat-icon-bg.total-res {
+  background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+}
+.stat-icon-bg.deposits {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+.stat-icon-bg.revenue {
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+}
+
+.stat-content {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  text-align: right;
+  gap: 6px;
+  min-width: 0;
 }
 
 .stat-label {
   font-size: 14px;
-  color: #64748b;
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--color-dark-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .stat-value {
-  font-size: 24px;
-  font-weight: 800;
-  color: #1e293b;
+  font-size: 42px;
+  font-weight: 900;
+  color: var(--color-charcoal);
+  line-height: 1;
+  margin: 8px 0;
+  letter-spacing: -0.03em;
+  transition: all 0.3s ease;
+  direction: ltr;
+  unicode-bidi: embed;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-card:hover .stat-value {
+  color: var(--color-gold);
 }
 
 .date-filters {
@@ -4784,10 +4811,10 @@ export default {
 
 .date-input {
   padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border: 1px solid var(--color-medium-gray);
+  border-radius: var(--radius-sm);
   font-size: 14px;
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 
 .clickable {
@@ -4796,8 +4823,8 @@ export default {
 }
 
 .clickable:hover {
-  border-color: #b1a28f;
-  background-color: #f8fafc;
+  border-color: var(--color-gold);
+  background-color: var(--color-light-gray);
 }
 
 /* Targets Grid */
@@ -4808,8 +4835,8 @@ export default {
 }
 
 .target-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-light-gray) 100%);
+  border: 1px solid var(--color-medium-gray);
   border-radius: 12px;
   padding: 20px;
   transition: all 0.3s ease;
@@ -4818,7 +4845,7 @@ export default {
 .target-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
 }
 
 .target-header {
@@ -4831,14 +4858,14 @@ export default {
 .target-info h3 {
   margin: 0 0 4px 0;
   font-size: 18px;
-  color: #1e3a5f;
+  color: var(--color-navy);
   font-weight: 700;
 }
 
 .target-marketer {
   margin: 0;
   font-size: 14px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .target-value {
@@ -4854,7 +4881,7 @@ export default {
 .progress-bar {
   width: 100%;
   height: 8px;
-  background: #e2e8f0;
+  background: var(--color-medium-gray);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -4870,7 +4897,7 @@ export default {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .target-footer {
@@ -4878,7 +4905,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding-top: 12px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-medium-gray);
 }
 
 .target-deadline {
@@ -4886,7 +4913,7 @@ export default {
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .target-deadline svg {
@@ -4932,12 +4959,12 @@ export default {
 }
 
 .attendance-table th {
-  background: #f8fafc;
+  background: var(--color-light-gray);
   padding: 12px;
   text-align: right;
   font-weight: 600;
   color: #475569;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-medium-gray);
 }
 
 .attendance-table td {
@@ -4946,7 +4973,7 @@ export default {
 }
 
 .attendance-table tr:hover {
-  background: #f8fafc;
+  background: var(--color-light-gray);
 }
 
 .attendance-status {
@@ -4986,9 +5013,9 @@ export default {
 .team-section h3 {
   margin: 0 0 20px 0;
   font-size: 20px;
-  color: #1e3a5f;
+  color: var(--color-navy);
   padding-bottom: 12px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-medium-gray);
 }
 
 .team-members-grid {
@@ -5001,7 +5028,7 @@ export default {
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: #f8fafc;
+  background: var(--color-light-gray);
   border-radius: 12px;
   transition: all 0.3s ease;
 }
@@ -5015,7 +5042,7 @@ export default {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
   display: flex;
   align-items: center;
@@ -5031,13 +5058,13 @@ export default {
 .member-info h4 {
   margin: 0 0 4px 0;
   font-size: 16px;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 
 .member-info p {
   margin: 0 0 8px 0;
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .member-stats {
@@ -5054,15 +5081,15 @@ export default {
 
 .team-project-card {
   padding: 16px;
-  background: #f8fafc;
+  background: var(--color-light-gray);
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
 }
 
 .team-project-card h4 {
   margin: 0 0 12px 0;
   font-size: 16px;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 
 .project-stats {
@@ -5077,11 +5104,11 @@ export default {
 }
 
 .project-stats .label {
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .project-stats .value {
-  color: #1e3a5f;
+  color: var(--color-navy);
   font-weight: 600;
 }
 
@@ -5093,14 +5120,14 @@ export default {
 
 .task-card {
   padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-light-gray) 100%);
+  border: 1px solid var(--color-medium-gray);
   border-radius: 12px;
   transition: all 0.3s ease;
 }
 
 .task-card:hover {
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -5114,7 +5141,7 @@ export default {
 .task-header h3 {
   margin: 0;
   font-size: 18px;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 
 .task-status {
@@ -5156,7 +5183,7 @@ export default {
 
 .btn-task {
   padding: 8px 16px;
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
   border: none;
   border-radius: 6px;
@@ -5191,7 +5218,7 @@ export default {
 }
 
 .modal-content {
-  background: white;
+  background: var(--color-white);
   border-radius: 16px;
   max-width: 600px;
   width: 100%;
@@ -5202,7 +5229,7 @@ export default {
 
 .modal-header {
   padding: 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-medium-gray);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -5211,8 +5238,7 @@ export default {
 .modal-header h3 {
   margin: 0;
   font-size: 20px;
-  color: #1e3a5f;
-  font-family: 'Amiri', serif;
+  color: var(--color-navy);
 }
 
 .modal-close {
@@ -5220,16 +5246,16 @@ export default {
   height: 36px;
   border: none;
   background: #f1f5f9;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 24px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .modal-close:hover {
-  background: #e2e8f0;
-  color: #1e293b;
+  background: var(--color-medium-gray);
+  color: var(--color-charcoal);
 }
 
 .modal-body {
@@ -5257,14 +5283,14 @@ export default {
 .form-input {
   padding: 10px 15px;
   border: 1px solid #cbd5e1;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   transition: border-color 0.3s;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
 }
 
 .form-actions {
@@ -5272,21 +5298,21 @@ export default {
   gap: 12px;
   justify-content: flex-end;
   padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-medium-gray);
 }
 
 .btn-primary,
 .btn-secondary {
   padding: 10px 20px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
 }
 
@@ -5301,7 +5327,7 @@ export default {
 }
 
 .btn-secondary:hover {
-  background: #e2e8f0;
+  background: var(--color-medium-gray);
 }
 
 /* Loading & Empty States */
@@ -5312,14 +5338,14 @@ export default {
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #b1a28f;
+  border: 4px solid var(--color-medium-gray);
+  border-top-color: var(--color-gold);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -5411,14 +5437,13 @@ export default {
 .search-box input {
   width: 100%;
   padding: 12px 40px 12px 15px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 10px;
   outline: none;
   transition: border-color 0.2s;
-  font-family: inherit;
 }
 .search-box input:focus {
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
 }
 
 /* Enhanced Projects Grid */
@@ -5429,8 +5454,8 @@ export default {
 }
 
 .project-card {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-white);
+  border: 1px solid var(--color-medium-gray);
   border-radius: 16px;
   overflow: visible;
   transition: all 0.3s ease;
@@ -5442,7 +5467,7 @@ export default {
 .project-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
 }
 
 .card-image {
@@ -5456,7 +5481,7 @@ export default {
   top: 12px;
   right: 12px;
   padding: 6px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 11px;
   font-weight: 700;
   background: rgba(0, 0, 0, 0.5);
@@ -5483,12 +5508,11 @@ export default {
 .project-name {
   font-size: 18px;
   font-weight: 800;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 6px 0;
-  font-family: 'Amiri', serif;
 }
 .project-location {
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 14px;
   margin: 0 0 16px 0;
   display: flex;
@@ -5519,27 +5543,27 @@ export default {
 }
 
 .tracker-btn {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: #1e3a5f;
+  background: var(--color-light-gray);
+  border: 1px solid var(--color-medium-gray);
+  color: var(--color-navy);
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
 }
 .tracker-btn:hover {
-  background: #b1a28f;
+  background: var(--color-gold);
   color: white;
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
 }
 
 /* Project Modal Enhancements */
 .project-modal {
   max-width: 900px !important;
   width: 95% !important;
-  border-radius: 20px !important;
+  border-radius: var(--radius-lg) !important;
 }
 
 .modal-header {
@@ -5554,8 +5578,7 @@ export default {
   margin: 0;
   font-size: 20px;
   font-weight: 800;
-  color: #1e3a5f;
-  font-family: 'Amiri', serif;
+  color: var(--color-navy);
 }
 
 .modal-close {
@@ -5568,7 +5591,7 @@ export default {
   align-items: center;
   justify-content: center;
   font-size: 22px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -5636,7 +5659,6 @@ export default {
   margin: 8px 0 0 0;
   font-size: 24px;
   font-weight: 800;
-  font-family: 'Amiri', serif;
 }
 
 /* Media Quick Access */
@@ -5646,7 +5668,7 @@ export default {
 .section-title-sm {
   font-size: 16px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 16px 0;
 }
 .media-links-grid {
@@ -5658,15 +5680,15 @@ export default {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-white);
+  border: 1px solid var(--color-medium-gray);
   border-radius: 12px;
   padding: 12px;
   text-decoration: none;
   transition: all 0.2s;
 }
 .media-link-card:hover {
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -5696,19 +5718,19 @@ export default {
 .link-label {
   font-size: 13px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 .link-action {
   font-size: 11px;
-  color: #b1a28f;
+  color: var(--color-gold);
   font-weight: 600;
   margin-top: 2px;
 }
 .detail-box {
-  background: #f8fafc;
+  background: var(--color-light-gray);
   padding: 20px;
   border-radius: 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -5717,13 +5739,13 @@ export default {
 }
 .detail-box:hover {
   transform: translateY(-4px);
-  border-color: #b1a28f;
-  background: white;
+  border-color: var(--color-gold);
+  background: var(--color-white);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
 }
 .detail-box .label {
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin-bottom: 8px;
   font-weight: 700;
   text-transform: uppercase;
@@ -5731,20 +5753,19 @@ export default {
 }
 .detail-box .value {
   font-weight: 800;
-  color: #1e3a5f;
+  color: var(--color-navy);
   font-size: 16px;
   margin-bottom: 8px;
-  font-family: 'Amiri', serif;
 }
 .detail-box .value.highlight {
-  color: #b1a28f;
+  color: var(--color-gold);
   font-size: 18px;
 }
 
 .status-mini {
   font-size: 10px;
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-weight: 800;
 }
 .status-mini.ok {
@@ -5767,22 +5788,22 @@ export default {
 .units-section h4 {
   margin: 0 0 16px 0;
   font-size: 18px;
-  color: #1e3a5f;
+  color: var(--color-navy);
   padding-bottom: 12px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-medium-gray);
 }
 
 /* Project Modal - Description & Units Table */
 .description-card {
   margin-bottom: 24px;
   padding: 20px;
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-white);
+  border: 1px solid var(--color-medium-gray);
   border-radius: 12px;
 }
 .description-card h4 {
   margin: 0 0 10px 0;
-  color: #1e3a5f;
+  color: var(--color-navy);
   font-size: 16px;
   font-weight: 700;
 }
@@ -5802,12 +5823,12 @@ export default {
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-medium-gray);
 }
 .units-header-row h4 {
   margin: 0;
   font-size: 18px;
-  color: #1e3a5f;
+  color: var(--color-navy);
   font-weight: 700;
 }
 
@@ -5817,10 +5838,10 @@ export default {
   min-width: 600px;
 }
 .units-table th {
-  background: #f8fafc;
+  background: var(--color-light-gray);
   padding: 12px;
   text-align: right;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
   font-size: 13px;
 }
@@ -5828,11 +5849,11 @@ export default {
   padding: 12px;
   border-bottom: 1px solid #f1f5f9;
   font-size: 13px;
-  color: #1e293b;
+  color: var(--color-charcoal);
   vertical-align: middle;
 }
 .units-table tr:hover {
-  background: #f8fafc;
+  background: var(--color-light-gray);
 }
 
 .unit-status-badge {
@@ -5878,20 +5899,20 @@ export default {
   left: 12px;
   width: 32px;
   height: 32px;
-  background: white;
-  border-radius: 8px;
+  background: var(--color-white);
+  border-radius: var(--radius-sm);
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #64748b;
+  color: var(--color-dark-gray);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
 }
 .menu-btn-card:hover {
-  background: #f8fafc;
-  color: #1e293b;
+  background: var(--color-light-gray);
+  color: var(--color-charcoal);
 }
 
 .assignee {
@@ -5899,7 +5920,7 @@ export default {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin-left: auto;
 }
 
@@ -5913,20 +5934,19 @@ export default {
 .my-reservations-pm .page-title {
   font-size: 28px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
 }
 .my-reservations-pm .page-subtitle {
   font-size: 15px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin: 0;
 }
 .my-reservations-pm .filter-tabs {
   display: flex;
   gap: 24px;
   margin-bottom: 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-medium-gray);
 }
 .my-reservations-pm .filter-tabs .tab-btn {
   padding: 12px 0;
@@ -5935,17 +5955,16 @@ export default {
   border-bottom: 3px solid transparent;
   font-size: 15px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--color-dark-gray);
   cursor: pointer;
   transition: all 0.2s;
-  font-family: 'Tajawal', sans-serif;
 }
 .my-reservations-pm .filter-tabs .tab-btn:hover {
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 .my-reservations-pm .filter-tabs .tab-btn.active {
-  color: #1e3a5f;
-  border-bottom-color: #1e3a5f;
+  color: var(--color-navy);
+  border-bottom-color: var(--color-navy);
 }
 .my-reservations-pm .reservations-list {
   display: grid;
@@ -5954,10 +5973,10 @@ export default {
 }
 .my-reservations-pm .reservation-card {
   position: relative;
-  background: white;
+  background: var(--color-white);
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   overflow: hidden;
 }
 .my-reservations-pm .card-status-badge {
@@ -5965,7 +5984,7 @@ export default {
   top: 16px;
   left: 16px;
   padding: 6px 14px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 12px;
   font-weight: 600;
   color: white;
@@ -5993,17 +6012,17 @@ export default {
 .my-reservations-pm .card-unit {
   font-size: 18px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-charcoal);
   margin-bottom: 6px;
 }
 .my-reservations-pm .card-project {
   font-size: 14px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin-bottom: 4px;
 }
 .my-reservations-pm .card-date {
   font-size: 14px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin-bottom: 16px;
 }
 .my-reservations-pm .card-actions {
@@ -6016,12 +6035,11 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 10px 18px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: 'Tajawal', sans-serif;
 }
 .my-reservations-pm .card-actions button svg {
   width: 18px;
@@ -6029,14 +6047,14 @@ export default {
 }
 .my-reservations-pm .btn-details,
 .my-reservations-pm .btn-edit {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-white);
+  border: 1px solid var(--color-medium-gray);
   color: #475569;
 }
 .my-reservations-pm .btn-details:hover,
 .my-reservations-pm .btn-edit:hover {
-  border-color: #b1a28f;
-  color: #b1a28f;
+  border-color: var(--color-gold);
+  color: var(--color-gold);
 }
 .my-reservations-pm .btn-cancel {
   background: transparent;
@@ -6058,7 +6076,7 @@ export default {
   padding: 20px;
 }
 .my-reservations-pm .detail-modal {
-  background: white;
+  background: var(--color-white);
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   max-width: 480px;
@@ -6071,13 +6089,13 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-medium-gray);
 }
 .my-reservations-pm .detail-modal-header h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 .my-reservations-pm .detail-modal-close {
   background: none;
@@ -6089,7 +6107,7 @@ export default {
   padding: 0;
 }
 .my-reservations-pm .detail-modal-close:hover {
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 .my-reservations-pm .detail-modal-body {
   padding: 24px;
@@ -6103,7 +6121,7 @@ export default {
 .my-reservations-pm .detail-section h4 {
   font-size: 14px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin: 0 0 10px 0;
   padding-bottom: 6px;
   border-bottom: 1px solid #f1f5f9;
@@ -6111,14 +6129,14 @@ export default {
 .my-reservations-pm .detail-section p {
   margin: 0 0 6px 0;
   font-size: 14px;
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 .my-reservations-pm .reservations-list .empty-state {
   text-align: center;
   padding: 60px 20px;
-  background: white;
+  background: var(--color-white);
   border-radius: 12px;
-  border: 1px dashed #e2e8f0;
+  border: 1px dashed var(--color-medium-gray);
   grid-column: 1 / -1;
 }
 .my-reservations-pm .reservations-list .empty-state svg {
@@ -6165,16 +6183,15 @@ export default {
 .waiting-list-design .page-title {
   font-size: 28px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0;
-  font-family: 'Amiri', serif;
 }
 .waiting-list-table-wrapper {
   overflow-x: auto;
-  background: white;
+  background: var(--color-white);
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
 }
 .waiting-list-table {
   width: 100%;
@@ -6185,17 +6202,17 @@ export default {
 .waiting-list-design .waiting-list-table td {
   padding: 14px 16px;
   text-align: right;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-medium-gray);
   vertical-align: middle;
 }
 .waiting-list-design .waiting-list-table th {
   font-weight: 600;
   color: #475569;
   background: #fafafa;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-medium-gray);
 }
 .waiting-list-design .waiting-list-table td {
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 .waiting-list-design .waiting-list-table tbody tr:last-child td {
   border-bottom: none;
@@ -6233,9 +6250,9 @@ export default {
   height: 36px;
   min-width: 36px;
   padding: 0;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 6px;
-  background: white;
+  background: var(--color-white);
   color: #16a34a;
   cursor: pointer;
   display: inline-flex;
@@ -6264,12 +6281,12 @@ export default {
 }
 
 .reservations-table th {
-  background: #f8fafc;
+  background: var(--color-light-gray);
   padding: 12px;
   text-align: right;
   font-weight: 600;
   color: #475569;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-medium-gray);
   font-size: 14px;
 }
 
@@ -6280,7 +6297,7 @@ export default {
 }
 
 .reservation-row:hover {
-  background: #f8fafc;
+  background: var(--color-light-gray);
 }
 
 .client-info {
@@ -6291,18 +6308,18 @@ export default {
 
 .client-name {
   font-weight: 600;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 
 .client-mobile {
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .reservation-type {
   padding: 4px 10px;
   background: #f1f5f9;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 600;
   color: #475569;
@@ -6404,7 +6421,7 @@ export default {
 
 /* Negotiations Table */
 .negotiations-table-container {
-  background: white;
+  background: var(--color-white);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -6416,31 +6433,31 @@ export default {
 }
 
 .negotiations-table thead {
-  background: #f8fafc;
+  background: var(--color-light-gray);
 }
 
 .negotiations-table th {
   padding: 16px;
   text-align: right;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   font-size: 14px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-medium-gray);
 }
 
 .negotiations-table td {
   padding: 16px;
   border-bottom: 1px solid #f1f5f9;
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 
 .negotiations-table tbody tr:hover {
-  background: #f8fafc;
+  background: var(--color-light-gray);
 }
 
 .negotiations-table .amount {
   font-weight: 600;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 
 .negotiations-table .amount.highlight {
@@ -6459,9 +6476,9 @@ export default {
 .form-section h4 {
   margin: 0 0 16px 0;
   font-size: 16px;
-  color: #1e3a5f;
+  color: var(--color-navy);
   padding-bottom: 12px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-medium-gray);
 }
 
 .form-group {
@@ -6484,14 +6501,14 @@ export default {
   width: 100%;
   padding: 10px 15px;
   border: 1px solid #cbd5e1;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   transition: border-color 0.3s;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
 }
 
 .form-input:disabled {
@@ -6519,8 +6536,8 @@ textarea.form-input {
 }
 
 .schedule-project-card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--color-white);
+  border: 1px solid var(--color-medium-gray);
   border-radius: 16px;
   padding: 28px 24px;
   cursor: pointer;
@@ -6529,7 +6546,7 @@ textarea.form-input {
 }
 
 .schedule-project-card:hover {
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
   box-shadow: 0 6px 20px rgba(177, 162, 143, 0.18);
   transform: translateY(-2px);
 }
@@ -6537,13 +6554,13 @@ textarea.form-input {
 .project-card-title {
   font-size: clamp(16px, 1.2vw, 20px);
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-charcoal);
   margin: 0 0 8px 0;
 }
 
 .project-card-activity {
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin: 0 0 4px 0;
 }
 
@@ -6565,13 +6582,12 @@ textarea.form-input {
   align-items: center;
   gap: 6px;
   background: none;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border: 1px solid var(--color-medium-gray);
+  border-radius: var(--radius-sm);
   padding: 8px 16px;
   font-size: 14px;
   color: #475569;
   cursor: pointer;
-  font-family: inherit;
   transition: all 0.2s;
   width: fit-content;
   margin-bottom: 8px;
@@ -6593,10 +6609,10 @@ textarea.form-input {
 .section-label {
   font-size: 16px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 16px 0;
   padding-bottom: 12px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-medium-gray);
 }
 
 /* Members List */
@@ -6607,8 +6623,8 @@ textarea.form-input {
 }
 
 .schedule-member-card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--color-white);
+  border: 1px solid var(--color-medium-gray);
   border-radius: 12px;
   padding: 16px 20px;
   transition: border-color 0.2s;
@@ -6646,7 +6662,7 @@ textarea.form-input {
 .member-name-label {
   font-size: 15px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 
 /* Toggle Switch */
@@ -6679,7 +6695,7 @@ textarea.form-input {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--color-white);
   top: 3px;
   right: 3px;
   transition: transform 0.3s;
@@ -6705,7 +6721,7 @@ textarea.form-input {
 
 .schedule-day {
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 500;
 }
 
@@ -6724,8 +6740,8 @@ textarea.form-input {
 
 /* Emergency Contact */
 .emergency-contact-section {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--color-white);
+  border: 1px solid var(--color-medium-gray);
   border-radius: 16px;
   padding: 24px;
   height: fit-content;
@@ -6749,16 +6765,15 @@ textarea.form-input {
   width: 100%;
   padding: 10px 14px;
   border: 1px solid #cbd5e1;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
-  font-family: inherit;
   transition: border-color 0.2s;
   box-sizing: border-box;
 }
 
 .emergency-form .form-input:focus {
   outline: none;
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
 }
 
 /* Save Bar */
@@ -6772,7 +6787,7 @@ textarea.form-input {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #b1a28f, #8c7851);
+  background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -6780,7 +6795,6 @@ textarea.form-input {
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  font-family: inherit;
   transition: all 0.2s;
   box-shadow: 0 4px 12px rgba(177, 162, 143, 0.3);
 }
@@ -6832,7 +6846,7 @@ textarea.form-input {
   .schedule-save-bar {
     position: sticky;
     bottom: 0;
-    background: #f8fafc;
+    background: var(--color-light-gray);
     padding: 16px 0;
     margin-top: 16px;
   }
@@ -6926,7 +6940,7 @@ textarea.form-input {
   }
 
   .tabs-container::-webkit-scrollbar-thumb {
-    background: #b1a28f;
+    background: var(--color-gold);
     border-radius: 2px;
   }
 
@@ -7086,7 +7100,7 @@ textarea.form-input {
   }
 
   .project-card.luxury {
-    border-radius: 28px;
+    border-radius: var(--radius-xl);
   }
 
   .card-content {
@@ -7109,7 +7123,7 @@ textarea.form-input {
   display: flex;
   gap: 8px;
   margin-bottom: 20px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-medium-gray);
   padding-bottom: 0;
 }
 
@@ -7121,10 +7135,9 @@ textarea.form-input {
   margin-bottom: -2px;
   font-size: 14px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--color-dark-gray);
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s;
-  font-family: inherit;
 }
 
 .sub-tab-btn.active {
@@ -7137,7 +7150,7 @@ textarea.form-input {
 }
 
 .commission-panel {
-  background: #fff;
+  background: var(--color-white);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
@@ -7154,7 +7167,7 @@ textarea.form-input {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 
 .commission-details .detail-grid {
@@ -7164,7 +7177,7 @@ textarea.form-input {
 }
 
 .detail-card {
-  background: #f8fafc;
+  background: var(--color-light-gray);
   border-radius: 10px;
   padding: 16px;
   display: flex;
@@ -7174,14 +7187,14 @@ textarea.form-input {
 
 .detail-label {
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 500;
 }
 
 .detail-value {
   font-size: 18px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 
 .detail-value.success {
@@ -7199,9 +7212,6 @@ textarea.form-input {
 }
 
 .analytics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
   margin-bottom: 24px;
 }
 
@@ -7209,7 +7219,7 @@ textarea.form-input {
   background: #dbeafe;
   color: #1d4ed8;
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 12px;
   font-weight: 600;
 }
@@ -7218,7 +7228,7 @@ textarea.form-input {
   background: #dcfce7;
   color: #16a34a;
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 12px;
   font-weight: 600;
 }
@@ -7227,7 +7237,7 @@ textarea.form-input {
   background: #fee2e2;
   color: #dc2626;
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 12px;
   font-weight: 600;
 }
@@ -7236,7 +7246,7 @@ textarea.form-input {
   background: #fef3c7;
   color: #d97706;
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 12px;
   font-weight: 600;
 }
@@ -7255,7 +7265,7 @@ textarea.form-input {
 }
 
 .btn-icon-sm:hover {
-  background: #e2e8f0;
-  color: #1e293b;
+  background: var(--color-medium-gray);
+  color: var(--color-charcoal);
 }
 </style>

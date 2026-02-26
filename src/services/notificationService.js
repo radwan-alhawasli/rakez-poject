@@ -295,9 +295,13 @@ const notificationService = {
       ? '/accounting/notifications/read-all'
       : '/notifications/mark-all-read';
     try {
-      await apiClient.patch(markAllEndpoint).catch(() =>
-        apiClient.post(isAccounting ? '/accounting/notifications/read-all' : '/notifications/read-all')
-      );
+      await apiClient
+        .patch(markAllEndpoint)
+        .catch(() =>
+          apiClient.post(
+            isAccounting ? '/accounting/notifications/read-all' : '/notifications/read-all'
+          )
+        );
       notifications.value.forEach(n => {
         n.read = true;
         n.actionRequired = false;

@@ -12,10 +12,11 @@ body * {
   direction: inherit;
 }
 
-/* But keep numbers LTR */
-.number, .stat-value, .metric-value, .count, .price,
-input[type="number"], input[type="tel"],
-[class*="value"], [class*="count"], [class*="stat"] {
+/* Keep numeric elements LTR */
+.number, .stat-value, .stat-desc,
+.metric-value, .count, .price,
+.detail-value,
+input[type="number"], input[type="tel"] {
   direction: ltr !important;
   unicode-bidi: embed !important;
   font-variant-numeric: lining-nums !important;
@@ -52,7 +53,7 @@ input[type="number"], input[type="tel"],
 .main-title {
   font-size: 32px;
   font-weight: 800;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 10px 0;
   font-family: 'Cairo', 'Amiri', serif;
   letter-spacing: -0.02em;
@@ -63,7 +64,7 @@ input[type="number"], input[type="tel"],
 .welcome-subtitle,
 .page-subtitle,
 .main-subtitle {
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 16px;
   margin: 0;
   font-weight: 500;
@@ -133,7 +134,7 @@ input[type="number"], input[type="tel"],
   background: radial-gradient(circle at top right, rgba(177, 162, 143, 0.06) 0%, transparent 60%);
   border-radius: 0 24px 0 100%;
   opacity: 0.5;
-  transition: opacity 0.5s ease;
+  transition: opacity var(--transition-slow);
 }
 
 .stat-card:hover {
@@ -169,7 +170,7 @@ input[type="number"], input[type="tel"],
 
 .stat-label {
   font-size: 14px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
   margin-bottom: 0;
   order: 1;
@@ -190,7 +191,7 @@ input[type="number"], input[type="tel"],
   order: 2;
   letter-spacing: -0.03em !important;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   direction: ltr !important;
   unicode-bidi: embed !important;
   /* Auto-protect against long numbers on small screens */
@@ -216,13 +217,13 @@ input[type="number"], input[type="tel"],
 }
 
 .stat-card:hover .stat-value {
-  color: #B1A28F !important;
+  color: var(--color-gold) !important;
   transform: scale(1.05);
 }
 
 .stat-desc {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   font-weight: 500;
   order: 3;
   letter-spacing: 0.01em;
@@ -325,7 +326,7 @@ input[type="number"], input[type="tel"],
 .overview-section,
 .data-section {
   background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
-  border-radius: 28px;
+  border-radius: var(--radius-xl);
   padding: 40px;
   border: 1px solid rgba(177, 162, 143, 0.15);
   box-shadow: 0 12px 40px -10px rgba(30, 58, 95, 0.12), 0 4px 16px rgba(0, 0, 0, 0.06);
@@ -375,10 +376,10 @@ input[type="number"], input[type="tel"],
 .luxury-table th,
 .metrics-table th,
 .data-table th {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, var(--color-light-gray) 0%, #f1f5f9 100%);
   padding: 22px 24px;
   font-size: 13px;
-  color: #475569;
+  color: var(--color-dark-gray);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -394,7 +395,7 @@ input[type="number"], input[type="tel"],
   font-size: 15px;
   font-weight: 500;
   font-family: 'Cairo', sans-serif;
-  transition: background 0.3s ease;
+  transition: background var(--transition-base);
   direction: ltr;
   unicode-bidi: embed;
 }
@@ -489,11 +490,11 @@ input[type="number"], input[type="tel"],
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid #e2e8f0;
-  background: white;
-  color: #64748b;
+  border: 1px solid var(--color-medium-gray);
+  background: var(--color-white);
+  color: var(--color-dark-gray);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
   font-family: 'Cairo', sans-serif;
 }
 
@@ -504,9 +505,9 @@ input[type="number"], input[type="tel"],
 }
 
 .btn-action:hover {
-  border-color: #B1A28F;
-  color: #B1A28F;
-  background: #fdfbf7;
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+  background: var(--color-off-white);
 }
 
 .btn-action.delete {
@@ -538,7 +539,7 @@ input[type="number"], input[type="tel"],
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
 }
 
 .empty-state-icon {
@@ -551,13 +552,13 @@ input[type="number"], input[type="tel"],
 .empty-state-text {
   font-size: 16px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin-bottom: 10px;
 }
 
 .empty-state-subtext {
   font-size: 14px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
 }
 
 /* Enhanced Responsive Design - All Screen Sizes */
@@ -729,7 +730,7 @@ input[type="number"], input[type="tel"],
   
   .stat-card {
     padding: 22px 18px;
-    border-radius: 20px;
+    border-radius: var(--radius-lg);
   }
   
   .stat-value {
@@ -771,7 +772,7 @@ input[type="number"], input[type="tel"],
   .luxury-table-container,
   .metrics-table-container,
   .data-table-container {
-    border-radius: 20px;
+    border-radius: var(--radius-lg);
   }
   
   .luxury-table th,
@@ -849,7 +850,7 @@ input[type="number"], input[type="tel"],
   .overview-section,
   .data-section {
     padding: 24px;
-    border-radius: 20px;
+    border-radius: var(--radius-lg);
     margin-bottom: 20px;
   }
   

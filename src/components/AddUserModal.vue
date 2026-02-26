@@ -652,7 +652,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: var(--z-modal);
   backdrop-filter: blur(6px);
 }
 
@@ -666,7 +666,6 @@ export default {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-family: 'Tajawal', sans-serif;
   direction: rtl;
   animation: modalSlideIn 0.3s ease-out;
 }
@@ -684,29 +683,28 @@ export default {
 
 .modal-header {
   padding: 30px;
-  border-bottom: 2px solid #f1f5f9;
+  border-bottom: 2px solid var(--color-light-gray);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  background: linear-gradient(135deg, #fdfbf7 0%, #ffffff 100%);
+  background: linear-gradient(135deg, var(--color-off-white) 0%, var(--color-white) 100%);
 }
 
 .modal-title {
   font-size: 26px;
   font-weight: 800;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
 }
 
 .modal-subtitle {
   font-size: 14px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin: 0;
 }
 
 .close-btn {
-  background: #f8fafc;
+  background: var(--color-light-gray);
   border: none;
   width: 40px;
   height: 40px;
@@ -714,7 +712,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -726,7 +724,7 @@ export default {
 
 .close-btn:hover {
   background: #fee2e2;
-  color: #ef4444;
+  color: var(--color-error);
   transform: rotate(90deg);
 }
 
@@ -750,20 +748,19 @@ export default {
 .section-title {
   font-size: 18px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 10px 0;
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: 'Amiri', serif;
   padding-bottom: 10px;
-  border-bottom: 2px solid #b1a28f;
+  border-bottom: 2px solid var(--color-gold);
 }
 
 .section-icon {
   width: 22px;
   height: 22px;
-  color: #b1a28f;
+  color: var(--color-gold);
 }
 
 .form-row {
@@ -781,25 +778,24 @@ export default {
 .label {
   font-size: 14px;
   font-weight: 600;
-  color: #334155;
+  color: var(--color-charcoal);
 }
 
 .input,
 .textarea {
   padding: 12px 14px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-medium-gray);
   border-radius: 10px;
   font-size: 14px;
-  color: #1e293b;
+  color: var(--color-charcoal);
   background: white;
   transition: all 0.2s;
-  font-family: inherit;
 }
 
 .input:focus,
 .textarea:focus {
   outline: none;
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
   box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.1);
 }
 
@@ -819,7 +815,7 @@ export default {
 
 .hint {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
 }
 
 .date-type-toggle {
@@ -831,20 +827,19 @@ export default {
 .toggle-btn {
   flex: 1;
   padding: 8px;
-  background: #f1f5f9;
-  border: 2px solid #e2e8f0;
+  background: var(--color-light-gray);
+  border: 2px solid var(--color-medium-gray);
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--color-dark-gray);
   cursor: pointer;
   transition: all 0.2s;
-  font-family: inherit;
 }
 
 .toggle-btn.active {
-  background: #b1a28f;
-  border-color: #b1a28f;
+  background: var(--color-gold);
+  border-color: var(--color-gold);
   color: white;
 }
 
@@ -861,9 +856,9 @@ export default {
 .upload-btn {
   padding: 12px 20px;
   background: white;
-  border: 2px dashed #cbd5e1;
+  border: 2px dashed var(--color-medium-gray);
   border-radius: 10px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -872,7 +867,6 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  font-family: inherit;
 }
 
 .upload-btn svg {
@@ -881,9 +875,9 @@ export default {
 }
 
 .upload-btn:hover {
-  border-color: #b1a28f;
-  color: #b1a28f;
-  background: #fdfbf7;
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+  background: var(--color-off-white);
 }
 
 .file-name {
@@ -894,7 +888,7 @@ export default {
 
 .consent-group {
   padding: 15px;
-  background: #f8fafc;
+  background: var(--color-light-gray);
   border-radius: 10px;
 }
 
@@ -904,14 +898,14 @@ export default {
   gap: 12px;
   cursor: pointer;
   font-size: 14px;
-  color: #334155;
+  color: var(--color-charcoal);
 }
 
 .checkbox {
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: #b1a28f;
+  accent-color: var(--color-gold);
 }
 
 .contract-notice {
@@ -939,7 +933,7 @@ export default {
 
 .divider {
   height: 2px;
-  background: linear-gradient(to left, transparent, #e2e8f0, transparent);
+  background: linear-gradient(to left, transparent, var(--color-medium-gray), transparent);
   margin: 10px 0;
 }
 
@@ -949,7 +943,7 @@ export default {
   gap: 15px;
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 2px solid #f1f5f9;
+  border-top: 2px solid var(--color-light-gray);
 }
 
 .btn {
@@ -960,7 +954,6 @@ export default {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
-  font-family: inherit;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -968,17 +961,17 @@ export default {
 }
 
 .btn-cancel {
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--color-light-gray);
+  color: var(--color-dark-gray);
 }
 
 .btn-cancel:hover {
-  background: #e2e8f0;
-  color: #475569;
+  background: var(--color-medium-gray);
+  color: var(--color-charcoal);
 }
 
 .btn-submit {
-  background: linear-gradient(135deg, #1e3a5f 0%, #2c3e50 100%);
+  background: linear-gradient(135deg, var(--color-navy) 0%, #2c3e50 100%);
   color: white;
   box-shadow: 0 4px 15px rgba(30, 58, 95, 0.3);
 }
@@ -989,7 +982,7 @@ export default {
 }
 
 .btn-submit:disabled {
-  background: #cbd5e1;
+  background: var(--color-medium-gray);
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -1017,14 +1010,55 @@ export default {
 }
 
 @media (max-width: 768px) {
+  .modal-backdrop {
+    padding: 12px;
+  }
   .form-row {
     grid-template-columns: 1fr;
   }
+  .modal-container {
+    width: 95%;
+    max-width: 95vw;
+    max-height: 90vh;
+    padding: 20px;
+  }
+  .modal-header {
+    padding: 20px;
+  }
+  .modal-body {
+    padding: 20px;
+  }
+  .modal-actions {
+    flex-direction: column;
+  }
+  .modal-actions .btn {
+    width: 100%;
+    min-height: 44px;
+  }
+}
 
+@media (max-width: 575px) {
+  .modal-backdrop {
+    padding: 8px;
+  }
   .modal-container {
     width: 100%;
+    max-width: 100vw;
     max-height: 100vh;
-    border-radius: 0;
+    border-radius: 16px;
+    padding: 16px;
+  }
+  .modal-header {
+    padding: 16px;
+  }
+  .modal-body {
+    padding: 16px;
+  }
+  .modal-title {
+    font-size: 20px;
+  }
+  .btn {
+    min-height: 44px;
   }
 }
 
@@ -1044,7 +1078,9 @@ export default {
   .modal-container {
     max-width: 800px;
   }
-  .input, .select, .textarea {
+  .input,
+  .select,
+  .textarea {
     padding: 14px 16px;
     font-size: 15px;
   }
@@ -1060,7 +1096,9 @@ export default {
   .modal-container {
     max-width: 900px;
   }
-  .input, .select, .textarea {
+  .input,
+  .select,
+  .textarea {
     padding: 16px 18px;
     font-size: 16px;
     border-radius: 12px;
@@ -1074,7 +1112,9 @@ export default {
   .modal-container {
     max-width: 1100px;
   }
-  .input, .select, .textarea {
+  .input,
+  .select,
+  .textarea {
     padding: 20px 22px;
     font-size: 20px;
     border-radius: 14px;
@@ -1085,7 +1125,8 @@ export default {
   .modal-header h2 {
     font-size: 32px;
   }
-  .btn-submit, .btn-cancel {
+  .btn-submit,
+  .btn-cancel {
     padding: 16px 32px;
     font-size: 20px;
   }

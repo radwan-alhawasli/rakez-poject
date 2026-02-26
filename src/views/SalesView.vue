@@ -1,7 +1,8 @@
 <!--
-  LEGACY: This view is not used by the router. All sales routes use SalesViewExtended.vue.
+  @deprecated — Use SalesViewExtended.vue instead.
+  LEGACY: This view is not used by the router. All sales routes now point to SalesViewExtended.vue.
   Kept for reference only (simpler tabs: dashboard, projects, reservations).
-  Do not import or route to this component.
+  Do NOT import, route to, or extend this component.
 -->
 <template>
   <div class="sales-view">
@@ -1014,8 +1015,6 @@ export default {
 </script>
 
 <style scoped>
-@import '../assets/luxury-theme.css';
-
 .sales-view {
   direction: rtl;
   min-height: 100vh;
@@ -1035,14 +1034,13 @@ export default {
 .view-title {
   font-size: 32px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
 }
 
 .view-subtitle {
   font-size: 16px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   margin: 0;
 }
 
@@ -1062,7 +1060,7 @@ export default {
   padding: 12px 20px;
   border: none;
   background: transparent;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 15px;
   font-weight: 600;
   border-radius: 8px;
@@ -1075,12 +1073,12 @@ export default {
 }
 
 .nav-tab:hover {
-  background: #f1f5f9;
-  color: #1e3a5f;
+  background: var(--color-light-gray);
+  color: var(--color-navy);
 }
 
 .nav-tab.active {
-  background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8f 100%);
+  background: linear-gradient(135deg, var(--color-navy) 0%, #2d5a8f 100%);
   color: white;
 }
 
@@ -1104,7 +1102,7 @@ export default {
   gap: 15px;
   margin-bottom: 30px;
   padding: 20px;
-  background: #f8fafc;
+  background: var(--color-light-gray);
   border-radius: 12px;
 }
 
@@ -1115,7 +1113,7 @@ export default {
 .filter-group label {
   display: block;
   margin-bottom: 8px;
-  color: #475569;
+  color: var(--color-charcoal);
   font-weight: 600;
   font-size: 14px;
 }
@@ -1124,7 +1122,7 @@ export default {
 .filter-input {
   width: 100%;
   padding: 10px 15px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 8px;
   font-size: 14px;
   transition: border-color 0.3s;
@@ -1133,7 +1131,7 @@ export default {
 .filter-select:focus,
 .filter-input:focus {
   outline: none;
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
 }
 
 .stats-grid {
@@ -1180,13 +1178,13 @@ export default {
 .stat-value {
   font-size: 28px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-charcoal);
   margin-bottom: 4px;
 }
 
 .stat-label {
   font-size: 14px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 /* Projects Grid */
@@ -1198,7 +1196,7 @@ export default {
 
 .project-card {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 12px;
   padding: 20px;
   cursor: pointer;
@@ -1208,7 +1206,7 @@ export default {
 .project-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
 }
 
 .project-header {
@@ -1221,7 +1219,7 @@ export default {
 .project-header h3 {
   margin: 0;
   font-size: 18px;
-  color: #1e3a5f;
+  color: var(--color-navy);
   font-weight: 700;
 }
 
@@ -1255,16 +1253,16 @@ export default {
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-light-gray);
 }
 
 .detail-label {
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 14px;
 }
 
 .detail-value {
-  color: #1e293b;
+  color: var(--color-charcoal);
   font-weight: 600;
   font-size: 14px;
 }
@@ -1272,7 +1270,7 @@ export default {
 .btn-view-project {
   width: 100%;
   padding: 10px;
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -1306,21 +1304,21 @@ export default {
 }
 
 .reservations-table th {
-  background: #f8fafc;
+  background: var(--color-light-gray);
   padding: 12px;
   text-align: right;
   font-weight: 600;
-  color: #475569;
-  border-bottom: 2px solid #e2e8f0;
+  color: var(--color-charcoal);
+  border-bottom: 2px solid var(--color-medium-gray);
 }
 
 .reservations-table td {
   padding: 12px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-light-gray);
 }
 
 .reservation-row:hover {
-  background: #f8fafc;
+  background: var(--color-light-gray);
 }
 
 .client-info {
@@ -1331,20 +1329,20 @@ export default {
 
 .client-name {
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 
 .client-mobile {
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .reservation-type {
   padding: 4px 10px;
-  background: #f1f5f9;
+  background: var(--color-light-gray);
   border-radius: 6px;
   font-size: 13px;
-  color: #475569;
+  color: var(--color-charcoal);
 }
 
 .amount {
@@ -1412,7 +1410,7 @@ export default {
 }
 
 .btn-action.cancel:hover {
-  background: #ef4444;
+  background: var(--color-error);
   color: white;
 }
 
@@ -1422,7 +1420,7 @@ export default {
 }
 
 .btn-action.download:hover {
-  background: #3b82f6;
+  background: var(--color-info);
   color: white;
 }
 
@@ -1437,7 +1435,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
   padding: 20px;
 }
 
@@ -1453,7 +1451,7 @@ export default {
 
 .modal-header {
   padding: 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-medium-gray);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1462,25 +1460,24 @@ export default {
 .modal-header h3 {
   margin: 0;
   font-size: 24px;
-  color: #1e3a5f;
-  font-family: 'Amiri', serif;
+  color: var(--color-navy);
 }
 
 .modal-close {
   width: 36px;
   height: 36px;
   border: none;
-  background: #f1f5f9;
+  background: var(--color-light-gray);
   border-radius: 8px;
   font-size: 24px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .modal-close:hover {
-  background: #e2e8f0;
-  color: #1e293b;
+  background: var(--color-medium-gray);
+  color: var(--color-charcoal);
 }
 
 .modal-body {
@@ -1494,7 +1491,7 @@ export default {
   gap: 15px;
   margin-bottom: 30px;
   padding: 20px;
-  background: #f8fafc;
+  background: var(--color-light-gray);
   border-radius: 12px;
 }
 
@@ -1506,13 +1503,13 @@ export default {
 
 .info-label {
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
 }
 
 .info-value {
   font-size: 15px;
-  color: #1e293b;
+  color: var(--color-charcoal);
   font-weight: 600;
 }
 
@@ -1520,7 +1517,7 @@ export default {
 .units-section h4 {
   margin: 0 0 20px 0;
   font-size: 20px;
-  color: #1e3a5f;
+  color: var(--color-navy);
 }
 
 .units-grid {
@@ -1531,14 +1528,14 @@ export default {
 
 .unit-card {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 12px;
   padding: 16px;
   transition: all 0.3s ease;
 }
 
 .unit-card:hover {
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
@@ -1551,7 +1548,7 @@ export default {
 
 .unit-number {
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   font-size: 16px;
 }
 
@@ -1573,8 +1570,8 @@ export default {
 }
 
 .unit-sold {
-  background: #e2e8f0;
-  color: #475569;
+  background: var(--color-medium-gray);
+  color: var(--color-charcoal);
 }
 
 .unit-details {
@@ -1589,11 +1586,11 @@ export default {
 }
 
 .unit-detail .label {
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .unit-detail .value {
-  color: #1e293b;
+  color: var(--color-charcoal);
   font-weight: 600;
 }
 
@@ -1633,10 +1630,10 @@ export default {
 
 .form-section h4 {
   margin: 0 0 20px 0;
-  color: #1e3a5f;
+  color: var(--color-navy);
   font-size: 18px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-medium-gray);
 }
 
 .form-group {
@@ -1650,7 +1647,7 @@ export default {
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  color: #475569;
+  color: var(--color-charcoal);
   font-weight: 600;
   font-size: 14px;
 }
@@ -1658,7 +1655,7 @@ export default {
 .form-input {
   width: 100%;
   padding: 10px 15px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 8px;
   font-size: 14px;
   transition: border-color 0.3s;
@@ -1666,7 +1663,7 @@ export default {
 
 .form-input:focus {
   outline: none;
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
 }
 
 textarea.form-input {
@@ -1679,7 +1676,7 @@ textarea.form-input {
   gap: 12px;
   justify-content: flex-end;
   padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-medium-gray);
 }
 
 .btn-primary,
@@ -1693,7 +1690,7 @@ textarea.form-input {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
 }
 
@@ -1708,12 +1705,12 @@ textarea.form-input {
 }
 
 .btn-secondary {
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--color-light-gray);
+  color: var(--color-charcoal);
 }
 
 .btn-secondary:hover {
-  background: #e2e8f0;
+  background: var(--color-medium-gray);
 }
 
 /* Loading & Empty States */
@@ -1724,14 +1721,14 @@ textarea.form-input {
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #b1a28f;
+  border: 4px solid var(--color-medium-gray);
+  border-top-color: var(--color-gold);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;

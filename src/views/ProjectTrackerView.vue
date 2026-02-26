@@ -271,7 +271,7 @@
                 margin-top: 15px;
                 background: #fee2e2;
                 padding: 10px;
-                border-radius: 8px;
+                border-radius: var(--radius-sm);
                 color: #991b1b;
               "
             >
@@ -391,7 +391,7 @@
                   text-align: left;
                   padding: 15px;
                   background: #f9fafb;
-                  border-radius: 8px;
+                  border-radius: var(--radius-sm);
                 "
               >
                 <div v-if="photographyForm.status !== 'approved'">
@@ -2167,7 +2167,6 @@ export default {
 <style scoped>
 /* Reuse existing styles plus new ones */
 .project-tracker-view {
-  font-family: 'Tajawal', sans-serif;
   padding-bottom: 50px;
 }
 
@@ -2222,7 +2221,6 @@ export default {
   font-size: 36px;
   font-weight: 800;
   margin: 0 0 5px 0;
-  font-family: 'Amiri', serif;
 }
 
 .project-subtitle-large {
@@ -2245,7 +2243,6 @@ export default {
   padding: 20px 5px;
   background: none;
   border: none;
-  font-family: 'Tajawal', sans-serif;
   font-size: 15px;
   color: #64748b;
   cursor: pointer;
@@ -2308,7 +2305,6 @@ export default {
   font-size: 32px;
   font-weight: 800;
   color: #1e3a5f;
-  font-family: 'Amiri', serif;
   margin: 0;
 }
 
@@ -2321,7 +2317,7 @@ export default {
 
 .dash-stat-card {
   background: white;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   padding: 25px;
   display: flex;
   flex-direction: column;
@@ -2350,7 +2346,6 @@ export default {
   font-weight: 800;
   color: #b1a28f;
   margin-bottom: 15px;
-  font-family: 'Amiri', serif;
 }
 
 .dash-badge {
@@ -2388,7 +2383,7 @@ export default {
 
 .project-desc-card {
   background: white;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   padding: 25px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   border: 1px solid #f1f5f9;
@@ -2426,7 +2421,6 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin: 0;
-  font-family: 'Amiri', serif;
 }
 
 @keyframes slideUp {
@@ -2450,7 +2444,6 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0 0 10px 0;
-  font-family: 'Amiri', serif;
 }
 
 .tracker-desc {
@@ -2582,7 +2575,6 @@ export default {
   color: #1e3a5f;
   font-size: 18px;
   margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
 }
 .stage-section-subtitle {
   font-size: 14px;
@@ -2608,7 +2600,6 @@ export default {
   color: #1e3a5f;
   font-size: 18px;
   margin: 0 0 20px 0;
-  font-family: 'Amiri', serif;
 }
 .documents-update-btn {
   margin-top: 16px;
@@ -2626,7 +2617,7 @@ export default {
   color: #047857;
   font-size: 12px;
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   margin-right: 15px;
   vertical-align: middle;
   border: 1px solid #a7f3d0;
@@ -2650,9 +2641,8 @@ export default {
   flex: 1;
   padding: 12px 14px;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #f8fafc;
-  font-family: 'Tajawal', sans-serif;
   color: #1e293b;
   transition: border-color 0.2s;
 }
@@ -2674,7 +2664,7 @@ export default {
   height: 42px;
   border: 1px solid #e2e8f0;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2688,10 +2678,9 @@ export default {
   color: white;
   border: none;
   padding: 10px 24px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
   cursor: pointer;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .update-btn.secondary {
@@ -2733,7 +2722,6 @@ export default {
   margin: 0 0 4px 0;
   font-size: 20px;
   color: #1e3a5f;
-  font-family: 'Amiri', serif;
 }
 .units-subtitle {
   margin: 0;
@@ -2799,7 +2787,7 @@ export default {
 }
 .unit-status-pill {
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 12px;
   font-weight: 600;
 }
@@ -2854,7 +2842,7 @@ export default {
   color: #1e3a5f;
   border: 1px solid #e2e8f0;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -2872,7 +2860,7 @@ export default {
   color: white;
   border: none;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -2886,7 +2874,7 @@ export default {
   color: white;
   border: none;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -2941,7 +2929,7 @@ export default {
   width: 100%;
   border-collapse: collapse;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -3048,7 +3036,6 @@ export default {
   padding: 8px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  font-family: inherit;
 }
 .form-group textarea {
   grid-column: span 2;
@@ -3086,7 +3073,6 @@ export default {
   text-align: center;
   font-size: 18px;
   font-weight: 800;
-  font-family: 'Amiri', serif;
 }
 
 .form-container {
@@ -3152,7 +3138,7 @@ export default {
   width: 100%;
   padding: 10px;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   text-align: center;
   outline: none;
   font-size: 14px;
@@ -3200,7 +3186,7 @@ export default {
 .completed-info-card {
   background: white;
   padding: 40px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   border: 1px solid #e2e8f0;
   max-width: 500px;
   margin: 0 auto;
@@ -3232,7 +3218,6 @@ export default {
   font-weight: 700;
   text-decoration: underline;
   cursor: pointer;
-  font-family: inherit;
 }
 /* --- Premium CTA Styles --- */
 .board-cta-container {
@@ -3289,7 +3274,6 @@ export default {
   font-weight: 800;
   color: #1e3a5f;
   margin-bottom: 12px;
-  font-family: 'Amiri', serif;
 }
 
 .cta-description {
@@ -3367,7 +3351,7 @@ export default {
   padding-left: 40px; /* For icon */
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   color: #1e3a5f;
   outline: none;
@@ -3390,7 +3374,7 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.4);
   color: white;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s;
@@ -3471,7 +3455,7 @@ export default {
   margin-right: auto; /* Push to far left in RTL */
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: 1px solid #fee2e2;
   background: #fff5f5;
   color: #ef4444;
@@ -3491,5 +3475,652 @@ export default {
   background: #ef4444;
   color: white;
   border-color: #ef4444;
+}
+
+/* ===== Responsive Styles ===== */
+
+/* Responsive: Tablet Landscape */
+@media (max-width: 992px) {
+  .project-header {
+    height: 240px;
+  }
+  .project-title-large {
+    font-size: 28px;
+  }
+  .project-subtitle-large {
+    font-size: 14px;
+  }
+  .header-content {
+    bottom: 20px;
+    right: 20px;
+  }
+  .tabs-nav {
+    padding: 0 20px;
+    gap: 20px;
+  }
+  .tracker-container {
+    padding: 20px 16px;
+  }
+  .main-project-title {
+    font-size: 26px;
+  }
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .dash-stat-card {
+    padding: 20px;
+  }
+  .dash-value {
+    font-size: 20px;
+  }
+  .stage-content-area,
+  .documents-card {
+    padding: 24px;
+  }
+  .units-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .step-item {
+    width: 100px;
+  }
+  .step-label {
+    font-size: 12px;
+  }
+  .step-sublabel {
+    font-size: 10px;
+  }
+  .board-cta-card {
+    padding: 40px 30px;
+  }
+}
+
+/* Responsive: Tablet Portrait */
+@media (max-width: 768px) {
+  .project-header {
+    height: 200px;
+  }
+  .project-title-large {
+    font-size: 24px;
+  }
+  .project-subtitle-large {
+    font-size: 13px;
+  }
+  .header-content {
+    bottom: 16px;
+    right: 16px;
+  }
+  .header-top {
+    font-size: 11px;
+    gap: 10px;
+  }
+  .tabs-nav {
+    padding: 0 12px;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-tab {
+    padding: 14px 8px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .tracker-container {
+    padding: 16px 12px;
+  }
+  .main-project-title {
+    font-size: 22px;
+  }
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .dash-stat-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+  .dash-label {
+    font-size: 12px;
+  }
+  .dash-value {
+    font-size: 18px;
+  }
+  .project-desc-card {
+    padding: 20px;
+    border-radius: 14px;
+  }
+  .section-divider h2 {
+    font-size: 20px;
+  }
+  .tracker-title {
+    font-size: 20px;
+  }
+  .tracker-desc {
+    font-size: 13px;
+  }
+  .stepper-wrapper {
+    padding: 0 8px;
+    margin-bottom: 40px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .steps-container {
+    min-width: 600px;
+  }
+  .step-item {
+    width: 90px;
+  }
+  .step-circle {
+    width: 36px;
+    height: 36px;
+  }
+  .stage-content-area,
+  .documents-card {
+    padding: 20px;
+    max-width: 100%;
+  }
+  .stage-section-title {
+    font-size: 16px;
+  }
+  .units-cards-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .units-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .units-btns {
+    width: 100%;
+  }
+  .btn-units-primary,
+  .btn-units-outline {
+    flex: 1;
+    justify-content: center;
+    font-size: 13px;
+  }
+  .units-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .units-table {
+    min-width: 540px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-group textarea {
+    grid-column: span 1;
+  }
+  .modal-content {
+    max-width: 90%;
+    padding: 24px;
+  }
+  .board-form-container {
+    max-width: 100%;
+  }
+  .form-container {
+    padding: 16px;
+  }
+  .grid-row {
+    flex-direction: column;
+  }
+  .board-cta-card {
+    padding: 30px 20px;
+    max-width: 100%;
+  }
+  .cta-title {
+    font-size: 20px;
+  }
+  .cta-description {
+    font-size: 14px;
+  }
+  .completed-info-card {
+    padding: 24px;
+    max-width: 100%;
+  }
+}
+
+/* Responsive: Mobile */
+@media (max-width: 576px) {
+  .project-header {
+    height: 160px;
+  }
+  .project-title-large {
+    font-size: 20px;
+  }
+  .project-subtitle-large {
+    font-size: 12px;
+  }
+  .header-content {
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
+  }
+  .header-top {
+    font-size: 10px;
+    gap: 8px;
+  }
+  .tabs-nav {
+    padding: 0 8px;
+    gap: 0;
+    margin-bottom: 16px;
+  }
+  .nav-tab {
+    padding: 12px 6px;
+    font-size: 12px;
+    min-height: 44px;
+  }
+  .tab-hint {
+    display: none;
+  }
+  .tracker-container {
+    padding: 12px 8px;
+  }
+  .main-project-title {
+    font-size: 20px;
+  }
+  .location-tag {
+    font-size: 12px;
+  }
+  .dashboard-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .dash-stat-card {
+    padding: 14px;
+    border-radius: 12px;
+  }
+  .dash-label {
+    font-size: 11px;
+  }
+  .dash-value {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .dash-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+  .project-desc-card {
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+  }
+  .project-desc-card h3 {
+    font-size: 16px;
+  }
+  .project-desc-card p {
+    font-size: 13px;
+  }
+  .section-divider h2 {
+    font-size: 18px;
+  }
+  .tracker-title {
+    font-size: 18px;
+  }
+  .tracker-desc {
+    font-size: 13px;
+  }
+  .progress-indicator {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .tracker-header-box {
+    margin-bottom: 30px;
+  }
+  .stepper-wrapper {
+    margin-bottom: 30px;
+  }
+  .stage-content-area,
+  .documents-card {
+    padding: 16px;
+    border-radius: 10px;
+  }
+  .stage-section-title {
+    font-size: 15px;
+  }
+  .stage-section-subtitle {
+    font-size: 13px;
+  }
+  .units-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .unit-card {
+    padding: 16px;
+  }
+  .unit-price {
+    font-size: 18px;
+  }
+  .unit-specs {
+    font-size: 12px;
+    gap: 8px;
+  }
+  .btn-unit-details,
+  .btn-unit-reserve,
+  .btn-unit-waiting {
+    padding: 10px;
+    min-height: 44px;
+    font-size: 12px;
+  }
+  .units-table th,
+  .units-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .form-input {
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+  .update-btn {
+    padding: 12px 20px;
+    min-height: 44px;
+    width: 100%;
+  }
+  .link-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .btn-primary,
+  .btn-outline {
+    padding: 12px 16px;
+    min-height: 44px;
+    font-size: 13px;
+  }
+  .btn-units-primary,
+  .btn-units-outline {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+  .modal-content {
+    max-width: 95%;
+    padding: 20px;
+  }
+  .modal-actions {
+    flex-direction: column;
+  }
+  .modal-actions button {
+    min-height: 44px;
+  }
+  .form-container {
+    padding: 12px;
+    gap: 12px;
+  }
+  .section-header {
+    font-size: 13px;
+  }
+  .box-input {
+    padding: 10px;
+    min-height: 44px;
+    font-size: 13px;
+  }
+  .save-btn-board {
+    width: 100%;
+    min-height: 44px;
+    padding: 12px 20px;
+  }
+  .board-cta-card {
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
+  .cta-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 20px;
+  }
+  .cta-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+  .cta-title {
+    font-size: 18px;
+  }
+  .cta-description {
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  .cta-btn-premium {
+    padding: 14px 24px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+  .loading-state,
+  .error-state {
+    padding: 40px 16px;
+  }
+  .glass-select {
+    min-height: 44px;
+  }
+  .glass-btn {
+    min-height: 44px;
+    padding: 12px 20px;
+  }
+  .team-card-luxury {
+    padding: 14px;
+  }
+  .team-avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 16px;
+  }
+  .team-info h3 {
+    font-size: 14px;
+  }
+  .team-info p {
+    font-size: 12px;
+  }
+  .btn-remove {
+    opacity: 1;
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Responsive: Extra Small Mobile */
+@media (max-width: 320px) {
+  .project-header {
+    height: 130px;
+  }
+  .project-title-large {
+    font-size: 17px;
+  }
+  .project-subtitle-large {
+    font-size: 11px;
+  }
+  .header-content {
+    bottom: 8px;
+    right: 8px;
+    left: 8px;
+  }
+  .nav-tab {
+    font-size: 11px;
+    padding: 10px 4px;
+  }
+  .main-project-title {
+    font-size: 18px;
+  }
+  .dashboard-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .dash-stat-card {
+    padding: 12px;
+    flex-direction: row;
+    gap: 12px;
+    text-align: right;
+  }
+  .dash-value {
+    font-size: 18px;
+    margin-bottom: 0;
+  }
+  .tracker-title {
+    font-size: 16px;
+  }
+  .section-divider h2 {
+    font-size: 16px;
+  }
+  .stage-content-area,
+  .documents-card {
+    padding: 12px;
+  }
+  .unit-card {
+    padding: 12px;
+  }
+  .unit-price {
+    font-size: 16px;
+  }
+  .modal-content {
+    padding: 16px;
+    border-radius: 10px;
+  }
+  .board-cta-card {
+    padding: 20px 12px;
+  }
+  .cta-title {
+    font-size: 16px;
+  }
+  .cta-btn-premium {
+    font-size: 13px;
+    padding: 12px 16px;
+  }
+}
+
+/* Responsive: Large Desktop */
+@media (min-width: 1920px) {
+  .project-header {
+    height: 400px;
+  }
+  .project-title-large {
+    font-size: 48px;
+  }
+  .project-subtitle-large {
+    font-size: 20px;
+  }
+  .header-content {
+    bottom: 40px;
+    right: 40px;
+  }
+  .header-top {
+    font-size: 14px;
+  }
+  .tabs-nav {
+    padding: 0 40px;
+    gap: 40px;
+  }
+  .nav-tab {
+    padding: 24px 8px;
+    font-size: 17px;
+  }
+  .tracker-container {
+    max-width: 1500px;
+    padding: 40px 28px;
+  }
+  .main-project-title {
+    font-size: 38px;
+  }
+  .location-tag {
+    font-size: 16px;
+  }
+  .dashboard-stats-grid {
+    gap: 28px;
+  }
+  .dash-stat-card {
+    padding: 32px;
+    border-radius: 24px;
+  }
+  .dash-label {
+    font-size: 15px;
+  }
+  .dash-value {
+    font-size: 28px;
+  }
+  .project-desc-card {
+    padding: 32px;
+    border-radius: 24px;
+  }
+  .project-desc-card h3 {
+    font-size: 22px;
+  }
+  .project-desc-card p {
+    font-size: 17px;
+  }
+  .tracker-title {
+    font-size: 28px;
+  }
+  .tracker-desc {
+    font-size: 17px;
+  }
+  .step-item {
+    width: 150px;
+  }
+  .step-circle {
+    width: 50px;
+    height: 50px;
+    font-size: 18px;
+  }
+  .step-label {
+    font-size: 15px;
+  }
+  .step-sublabel {
+    font-size: 13px;
+  }
+  .stage-content-area,
+  .documents-card {
+    padding: 40px;
+    max-width: 900px;
+  }
+  .stage-section-title {
+    font-size: 22px;
+  }
+  .units-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+  }
+  .unit-card {
+    padding: 24px;
+  }
+  .unit-price {
+    font-size: 24px;
+  }
+  .board-form-container {
+    max-width: 900px;
+  }
+  .board-cta-card {
+    padding: 60px;
+    max-width: 520px;
+  }
+  .cta-title {
+    font-size: 28px;
+  }
+  .cta-description {
+    font-size: 17px;
+  }
+}
+
+/* Responsive: Ultra-wide */
+@media (min-width: 2560px) {
+  .tracker-container {
+    max-width: 1900px;
+  }
+  .project-title-large {
+    font-size: 56px;
+  }
+  .main-project-title {
+    font-size: 44px;
+  }
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 36px;
+  }
+  .units-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  }
 }
 </style>

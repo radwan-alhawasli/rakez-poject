@@ -48,7 +48,7 @@
               <span class="project-count">لديه {{ dev.projectCount }} مشاريع</span>
             </div>
             <div class="dev-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
                 <line x1="9" y1="2" x2="9" y2="22"></line>
                 <line x1="15" y1="2" x2="15" y2="22"></line>
@@ -169,7 +169,6 @@ export default {
 
 <style scoped>
 .developers-view {
-  font-family: 'Tajawal', sans-serif;
   animation: fadeIn 0.4s ease-out;
 }
 @keyframes fadeIn {
@@ -192,12 +191,11 @@ export default {
 .page-title {
   font-size: 28px;
   font-weight: 800;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 5px 0;
-  font-family: 'Amiri', serif;
 }
 .page-subtitle {
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-size: 15px;
   margin: 0;
 }
@@ -212,14 +210,14 @@ export default {
 .search-box input {
   width: 100%;
   padding: 12px 40px 12px 15px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 10px;
   font-family: inherit;
   font-size: 14px;
   transition: border 0.3s;
 }
 .search-box input:focus {
-  border-color: #1e3a5f;
+  border-color: var(--color-navy);
   outline: none;
 }
 .search-icon {
@@ -228,7 +226,7 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   width: 18px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
 }
 
 .developers-grid {
@@ -239,7 +237,7 @@ export default {
 
 .developer-card {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 12px;
   padding: 24px;
   transition: transform 0.2s, box-shadow 0.2s;
@@ -260,19 +258,19 @@ export default {
 .dev-name {
   font-size: 18px;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin: 0 0 4px 0;
 }
 .project-count {
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 .dev-icon {
   width: 40px;
   height: 40px;
-  background: #f1f5f9;
+  background: var(--color-light-gray);
   border-radius: 8px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -285,13 +283,13 @@ export default {
   flex: 1;
   margin: 0 0 20px 0;
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   line-height: 1.5;
 }
 
 .view-projects-btn {
   width: 100%;
-  background: #1e3a5f;
+  background: var(--color-navy);
   color: white;
   border: none;
   padding: 10px;
@@ -307,14 +305,14 @@ export default {
 .loading-state {
   text-align: center;
   padding: 48px 24px;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 .loading-state .spinner {
   display: inline-block;
   width: 28px;
   height: 28px;
-  border: 2px solid #e2e8f0;
-  border-top-color: #1e3a5f;
+  border: 2px solid var(--color-medium-gray);
+  border-top-color: var(--color-navy);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 12px;
@@ -335,17 +333,17 @@ export default {
 }
 .pagination-btn {
   padding: 8px 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-medium-gray);
   border-radius: 8px;
   background: #fff;
-  color: #1e3a5f;
+  color: var(--color-navy);
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
 }
 .pagination-btn:hover:not(:disabled) {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
+  background: var(--color-light-gray);
+  border-color: var(--color-medium-gray);
 }
 .pagination-btn:disabled {
   opacity: 0.5;
@@ -353,6 +351,273 @@ export default {
 }
 .pagination-info {
   font-size: 14px;
-  color: #64748b;
+  color: var(--color-dark-gray);
+}
+
+/* Responsive: tablet landscape */
+@media (max-width: 992px) {
+  .developers-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .page-title {
+    font-size: 24px;
+  }
+}
+
+/* Responsive: tablet portrait */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  .page-title {
+    font-size: 22px;
+  }
+  .page-subtitle {
+    font-size: 14px;
+  }
+  .search-box {
+    max-width: 100%;
+  }
+  .developers-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .developer-card {
+    padding: 20px;
+  }
+  .pagination {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+/* Responsive: mobile */
+@media (max-width: 576px) {
+  .developers-view {
+    overflow-x: hidden;
+  }
+  .page-title {
+    font-size: 20px;
+  }
+  .page-subtitle {
+    font-size: 13px;
+  }
+  .search-container {
+    margin-bottom: 20px;
+  }
+  .search-box input {
+    padding: 10px 36px 10px 12px;
+    font-size: 13px;
+  }
+  .developer-card {
+    padding: 16px;
+    border-radius: 10px;
+  }
+  .dev-name {
+    font-size: 16px;
+  }
+  .card-disclaimer {
+    font-size: 12px;
+  }
+  .view-projects-btn {
+    padding: 12px;
+    min-height: 44px;
+    font-size: 14px;
+  }
+  .pagination-btn {
+    padding: 10px 14px;
+    min-height: 44px;
+    font-size: 13px;
+  }
+  .pagination-info {
+    font-size: 13px;
+  }
+}
+
+/* Responsive: extra small mobile */
+@media (max-width: 320px) {
+  .page-title {
+    font-size: 18px;
+  }
+  .developer-card {
+    padding: 12px;
+  }
+  .card-header {
+    gap: 8px;
+  }
+  .dev-name {
+    font-size: 15px;
+  }
+  .dev-icon {
+    width: 34px;
+    height: 34px;
+  }
+  .dev-icon svg {
+    width: 16px;
+  }
+  .card-disclaimer {
+    font-size: 11px;
+    margin-bottom: 14px;
+  }
+  .view-projects-btn {
+    font-size: 13px;
+  }
+  .pagination {
+    padding: 10px 0;
+  }
+  .pagination-btn {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+}
+
+/* Responsive: large desktop */
+@media (min-width: 1200px) {
+  .developers-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+  }
+  .page-title {
+    font-size: 30px;
+  }
+}
+
+/* Responsive: full HD */
+@media (min-width: 1920px) {
+  .developers-grid {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 28px;
+  }
+  .page-title {
+    font-size: 32px;
+  }
+  .page-subtitle {
+    font-size: 16px;
+  }
+  .developer-card {
+    padding: 28px;
+  }
+  .dev-name {
+    font-size: 20px;
+  }
+  .card-disclaimer {
+    font-size: 14px;
+  }
+  .view-projects-btn {
+    padding: 12px;
+    font-size: 15px;
+  }
+  .search-box input {
+    padding: 14px 44px 14px 18px;
+    font-size: 15px;
+  }
+  .page-header {
+    margin-bottom: 36px;
+  }
+}
+
+/* Responsive: 2K ultra-wide */
+@media (min-width: 2560px) {
+  .developers-grid {
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 32px;
+  }
+  .page-title {
+    font-size: 36px;
+  }
+  .page-subtitle {
+    font-size: 18px;
+  }
+  .developer-card {
+    padding: 32px;
+    border-radius: 16px;
+  }
+  .dev-name {
+    font-size: 22px;
+  }
+  .dev-icon {
+    width: 48px;
+    height: 48px;
+  }
+  .dev-icon svg {
+    width: 24px;
+  }
+  .card-disclaimer {
+    font-size: 15px;
+  }
+  .view-projects-btn {
+    padding: 14px;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+  .search-box {
+    max-width: 600px;
+  }
+  .search-box input {
+    padding: 16px 48px 16px 20px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+  .pagination-btn {
+    padding: 12px 24px;
+    font-size: 16px;
+  }
+}
+
+/* Responsive: 4K */
+@media (min-width: 3840px) {
+  .developers-grid {
+    grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+    gap: 40px;
+  }
+  .page-title {
+    font-size: 42px;
+  }
+  .page-subtitle {
+    font-size: 20px;
+  }
+  .developer-card {
+    padding: 40px;
+    border-radius: 20px;
+  }
+  .dev-name {
+    font-size: 26px;
+  }
+  .project-count {
+    font-size: 16px;
+  }
+  .dev-icon {
+    width: 56px;
+    height: 56px;
+  }
+  .card-disclaimer {
+    font-size: 17px;
+  }
+  .view-projects-btn {
+    padding: 16px;
+    font-size: 18px;
+    border-radius: 12px;
+  }
+  .search-box {
+    max-width: 700px;
+  }
+  .search-box input {
+    padding: 18px 52px 18px 22px;
+    font-size: 18px;
+  }
+  .page-header {
+    margin-bottom: 44px;
+  }
+  .pagination-btn {
+    padding: 14px 28px;
+    font-size: 18px;
+    border-radius: 10px;
+  }
+  .pagination-info {
+    font-size: 18px;
+  }
 }
 </style>

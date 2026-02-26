@@ -290,7 +290,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
   animation: fadeIn 0.3s ease;
   padding: 20px;
 }
@@ -334,21 +334,20 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 25px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-light-gray);
   padding-bottom: 15px;
 }
 
 .modal-title {
   font-size: 20px;
   font-weight: 800;
-  color: #1e3a5f;
-  font-family: 'Amiri', serif;
+  color: var(--color-navy);
 }
 
 .close-btn {
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   cursor: pointer;
   padding: 0;
   width: 32px;
@@ -360,7 +359,7 @@ export default {
 }
 
 .close-btn:hover {
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .modal-body {
@@ -379,10 +378,10 @@ export default {
 .section-title {
   font-size: 16px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-charcoal);
   margin-bottom: 15px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #f1f5f9;
+  border-bottom: 2px solid var(--color-light-gray);
 }
 
 .detail-grid {
@@ -400,13 +399,13 @@ export default {
 .detail-label {
   font-size: 12px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--color-dark-gray);
   text-transform: uppercase;
 }
 
 .detail-value {
   font-size: 15px;
-  color: #1e293b;
+  color: var(--color-charcoal);
   font-weight: 600;
 }
 
@@ -415,7 +414,7 @@ export default {
   align-items: center;
   gap: 20px;
   padding: 20px;
-  background: #f8fafc;
+  background: var(--color-light-gray);
   border-radius: 12px;
   margin-bottom: 15px;
   flex-wrap: wrap;
@@ -429,7 +428,7 @@ export default {
 
 .price-label {
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
 }
 
@@ -439,7 +438,7 @@ export default {
 }
 
 .price-value.original {
-  color: #1e293b;
+  color: var(--color-charcoal);
 }
 
 .price-value.proposed {
@@ -448,7 +447,7 @@ export default {
 
 .price-arrow {
   font-size: 24px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
 }
 
 .price-difference {
@@ -460,7 +459,7 @@ export default {
 
 .difference-label {
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
 }
 
@@ -481,7 +480,7 @@ export default {
   padding: 15px;
   background: #fef3c7;
   border-radius: 12px;
-  border-right: 4px solid #f59e0b;
+  border-right: 4px solid var(--color-warning);
 }
 
 .reason-label {
@@ -502,7 +501,7 @@ export default {
 .action-section {
   margin-top: 30px;
   padding-top: 30px;
-  border-top: 2px solid #f1f5f9;
+  border-top: 2px solid var(--color-light-gray);
 }
 
 .action-tabs {
@@ -514,23 +513,23 @@ export default {
 .action-tab {
   flex: 1;
   padding: 12px 20px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-medium-gray);
   border-radius: 12px;
   background: white;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .action-tab:hover {
-  border-color: #cbd5e1;
-  background: #f8fafc;
+  border-color: var(--color-medium-gray);
+  background: var(--color-light-gray);
 }
 
 .action-tab.active {
-  border-color: #b1a28f;
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  border-color: var(--color-gold);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
 }
 
@@ -549,17 +548,16 @@ export default {
 .form-label {
   font-size: 14px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-charcoal);
   margin-bottom: 8px;
 }
 
 .form-textarea {
   width: 100%;
   padding: 12px 15px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-medium-gray);
   border-radius: 12px;
   font-size: 15px;
-  font-family: 'Cairo', sans-serif;
   transition: all 0.2s;
   resize: vertical;
   min-height: 100px;
@@ -567,7 +565,7 @@ export default {
 
 .form-textarea:focus {
   outline: none;
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
   box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.1);
 }
 
@@ -594,7 +592,7 @@ export default {
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: linear-gradient(135deg, var(--color-error) 0%, #dc2626 100%);
   color: white;
 }
 
@@ -607,5 +605,64 @@ export default {
 .btn-danger:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Tablet responsive */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 12px;
+  }
+  .modal-container {
+    width: 95%;
+    max-width: 95vw;
+    padding: 20px;
+  }
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .price-comparison {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .price-arrow {
+    transform: rotate(90deg);
+    align-self: center;
+  }
+  .action-tabs button {
+    min-height: 44px;
+  }
+  .btn-primary,
+  .btn-danger {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+/* Mobile full-screen */
+@media (max-width: 575px) {
+  .modal-overlay {
+    padding: 8px;
+  }
+  .modal-container {
+    width: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 16px;
+    padding: 16px;
+  }
+  .modal-title {
+    font-size: 18px;
+  }
+  .price-value {
+    font-size: 16px;
+  }
+  .difference-value {
+    font-size: 15px;
+  }
+  .btn-primary,
+  .btn-danger {
+    min-height: 44px;
+    width: 100%;
+  }
 }
 </style>

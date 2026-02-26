@@ -1949,6 +1949,7 @@ import notificationService from '../services/notificationService';
 import userService from '../services/userService';
 import aiService from '../services/aiService';
 import logger from '../utils/logger';
+import { useFormatters } from '../composables/useFormatters';
 import contractService from '../services/contractService';
 import teamService from '../services/teamService';
 import hrService from '../services/hrService';
@@ -2744,15 +2745,14 @@ export default {
       // TODO: Open lead details modal
     };
 
-    // --- Utility Functions ---
-
-    const formatCurrency = value => new Intl.NumberFormat('en-US').format(Number(value) || 0);
-    const formatNumber = value => new Intl.NumberFormat('en-US').format(Number(value) || 0);
+    // --- Utility Functions (shared composable) ---
+    const { formatNumber } = useFormatters();
+    const formatCurrency = formatNumber;
 
     const formatDate = dateString => {
       if (!dateString) return 'غير محدد';
       const date = new Date(dateString);
-      return new Intl.DateTimeFormat('en-GB').format(date); // English numerals
+      return new Intl.DateTimeFormat('en-GB').format(date);
     };
 
     const truncateDesc = (text, maxLen = 80) => {
@@ -3590,12 +3590,6 @@ export default {
 </script>
 
 <style scoped>
-/* استيراد الأنماط من HRView.vue مع تخصيصات للتسويق */
-
-/* استخدام نفس الأنماط الفاخرة */
-@import '../assets/luxury-theme.css';
-@import '../assets/global-luxury-styles.css';
-
 .marketing-view {
   direction: rtl;
   animation: fadeIn 0.4s ease-out;
@@ -3655,7 +3649,6 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0 0 10px 0;
-  font-family: 'Amiri', serif;
   background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8f 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -3666,7 +3659,6 @@ export default {
   font-size: 16px;
   color: #64748b;
   margin: 0;
-  font-family: 'Tajawal', sans-serif;
 }
 
 /* Stats Grid */
@@ -3680,7 +3672,7 @@ export default {
 .stat-card {
   position: relative;
   background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   padding: 32px;
   display: flex;
   align-items: center;
@@ -3759,14 +3751,12 @@ export default {
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .stat-value {
   font-size: 36px;
   font-weight: 700;
   color: #1e3a5f;
-  font-family: 'Amiri', serif;
   line-height: 1;
 }
 
@@ -3777,7 +3767,6 @@ export default {
 .stat-desc {
   font-size: 13px;
   color: #94a3b8;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .stat-icon-bg {
@@ -3828,7 +3817,7 @@ export default {
 /* Overview Section */
 .overview-section {
   background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   padding: 32px;
   border: 1px solid rgba(177, 162, 143, 0.15);
   box-shadow: 0 4px 6px -1px rgba(30, 58, 95, 0.03), 0 10px 20px -5px rgba(30, 58, 95, 0.05);
@@ -3843,14 +3832,12 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
 }
 
 .section-desc {
   font-size: 14px;
   color: #64748b;
   margin: 0;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .chart-placeholder {
@@ -3873,14 +3860,12 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
 }
 
 .section-subtitle {
   font-size: 14px;
   color: #64748b;
   margin: 0;
-  font-family: 'Tajawal', sans-serif;
 }
 
 /* Buttons */
@@ -3898,7 +3883,6 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .btn-primary:hover {
@@ -3925,7 +3909,6 @@ export default {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .btn-secondary:hover {
@@ -3972,13 +3955,12 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0;
-  font-family: 'Amiri', serif;
   flex: 1;
 }
 
 .project-status {
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
@@ -4053,7 +4035,6 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .btn-view {
@@ -4167,7 +4148,6 @@ export default {
   font-weight: 600;
   color: #1e3a5f;
   margin: 0 0 4px 0;
-  font-family: 'Tajawal', sans-serif;
   transition: all 0.3s ease;
 }
 
@@ -4180,12 +4160,11 @@ export default {
   font-size: 14px;
   color: #64748b;
   margin: 0;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .task-status-badge {
   padding: 6px 14px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
@@ -4214,7 +4193,6 @@ export default {
   align-items: center;
   font-size: 13px;
   color: #94a3b8;
-  font-family: 'Tajawal', sans-serif;
 }
 
 /* Leads Table */
@@ -4230,7 +4208,6 @@ export default {
 .luxury-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .luxury-table thead {
@@ -4365,7 +4342,7 @@ export default {
   margin-bottom: 8px;
   padding: 8px 12px;
   background: rgba(177, 162, 143, 0.05);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .f-name {
@@ -4374,7 +4351,6 @@ export default {
 }
 .f-math {
   color: #1e3a5f;
-  font-family: 'Amiri', serif;
   font-weight: 700;
 }
 
@@ -4394,7 +4370,7 @@ export default {
   height: clamp(520px, 70dvh, 760px);
   max-height: calc(100dvh - 220px);
   background: white;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid rgba(177, 162, 143, 0.15);
   box-shadow: 0 10px 30px rgba(177, 161, 142, 0.08);
@@ -4597,7 +4573,6 @@ export default {
   border: none;
   outline: none;
   padding: 10px 0;
-  font-family: inherit;
   resize: none;
   max-height: 100px;
 }
@@ -4718,7 +4693,7 @@ export default {
 .lead-source-badge {
   display: inline-block;
   padding: 6px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
@@ -4817,7 +4792,7 @@ export default {
   border: 1px solid rgba(177, 162, 143, 0.2);
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4878,7 +4853,6 @@ export default {
   font-size: 16px;
   color: #64748b;
   margin: 0;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .empty-state svg {
@@ -4899,7 +4873,6 @@ export default {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .btn-tab-mini:hover {
@@ -4931,7 +4904,7 @@ export default {
 
 .modal-content {
   background: white;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   max-width: 500px;
   width: 100%;
   max-height: 90vh;
@@ -4967,7 +4940,6 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0;
-  font-family: 'Amiri', serif;
 }
 
 .modal-close {
@@ -4975,7 +4947,7 @@ export default {
   height: 32px;
   border: none;
   background: rgba(177, 162, 143, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 24px;
   line-height: 1;
   color: #64748b;
@@ -5002,7 +4974,6 @@ export default {
   font-weight: 600;
   color: #64748b;
   margin-bottom: 8px;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .form-group label .required {
@@ -5018,7 +4989,6 @@ export default {
   font-size: 15px;
   background: #fdfbf7;
   transition: all 0.2s;
-  font-family: 'Tajawal', sans-serif;
   color: #1e3a5f;
   text-align: right;
 }
@@ -5104,6 +5074,89 @@ export default {
 
   .stat-card {
     padding: 14px;
+  }
+
+  .form-input {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .premium-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+}
+
+/* ── Responsive: Extra Small Mobile ── */
+@media (max-width: 320px) {
+  .tab-content {
+    padding: 10px;
+  }
+
+  .welcome-title {
+    font-size: 18px;
+  }
+
+  .section-title {
+    font-size: 16px;
+  }
+
+  .stat-card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
+
+  .stat-icon-bg {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+  }
+
+  .stat-icon-bg svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .luxury-table th,
+  .luxury-table td {
+    padding: 8px 6px;
+    font-size: 11px;
+  }
+
+  .form-input {
+    padding: 10px 12px;
+    font-size: 14px;
+    min-width: 0;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+/* ── Responsive: Large Desktop ── */
+@media (min-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   }
 }
 

@@ -119,7 +119,7 @@ export default {
 
     const formData = reactive({
       name: '',
-      color: '#B1A28F',
+      color: 'var(--color-gold)',
       locations: '',
       monthlyGoal: 0,
       description: '',
@@ -182,7 +182,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
   backdrop-filter: blur(4px);
 }
 
@@ -213,22 +213,21 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 25px 30px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-light-gray);
 }
 
 .modal-title {
   margin: 0;
   font-size: 22px;
   font-weight: 800;
-  color: #1e3a5f;
-  font-family: 'Amiri', serif;
+  color: var(--color-navy);
 }
 
 .close-btn {
   background: none;
   border: none;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   padding: 8px;
   display: flex;
   align-items: center;
@@ -238,8 +237,8 @@ export default {
 }
 
 .close-btn:hover {
-  background: #f1f5f9;
-  color: #1e3a5f;
+  background: var(--color-light-gray);
+  color: var(--color-navy);
 }
 
 .modal-body {
@@ -255,7 +254,7 @@ export default {
 .form-label {
   display: block;
   font-weight: 700;
-  color: #1e3a5f;
+  color: var(--color-navy);
   margin-bottom: 8px;
   font-size: 14px;
 }
@@ -264,10 +263,10 @@ export default {
 .form-textarea {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-medium-gray);
   border-radius: 12px;
   font-size: 14px;
-  font-family: 'Tajawal', sans-serif;
+  font-family: 'Cairo', 'Tajawal', sans-serif;
   transition: all 0.2s;
   box-sizing: border-box;
 }
@@ -275,7 +274,7 @@ export default {
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #b1a28f;
+  border-color: var(--color-gold);
   box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.1);
 }
 
@@ -288,7 +287,7 @@ export default {
   display: block;
   margin-top: 5px;
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
 }
 
 .color-picker {
@@ -300,7 +299,7 @@ export default {
 .color-input {
   width: 60px;
   height: 40px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-medium-gray);
   border-radius: 12px;
   cursor: pointer;
 }
@@ -309,7 +308,7 @@ export default {
   font-family: 'Courier New', monospace;
   font-size: 14px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--color-dark-gray);
 }
 
 .modal-footer {
@@ -318,7 +317,7 @@ export default {
   justify-content: flex-end;
   margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--color-light-gray);
 }
 
 .btn-primary,
@@ -330,11 +329,10 @@ export default {
   cursor: pointer;
   transition: all 0.2s;
   border: none;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #1e3a5f 0%, #2c3e50 100%);
+  background: linear-gradient(135deg, var(--color-navy) 0%, #2c3e50 100%);
   color: white;
   box-shadow: 0 4px 15px rgba(30, 58, 95, 0.2);
 }
@@ -351,12 +349,72 @@ export default {
 
 .btn-secondary {
   background: white;
-  color: #64748b;
-  border: 2px solid #e2e8f0;
+  color: var(--color-dark-gray);
+  border: 2px solid var(--color-medium-gray);
 }
 
 .btn-secondary:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: var(--color-light-gray);
+  border-color: var(--color-medium-gray);
+}
+
+@media (max-width: 768px) {
+  .modal-container {
+    width: 95%;
+  }
+  .modal-header {
+    padding: 20px;
+  }
+  .modal-body {
+    padding: 24px 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .modal-container {
+    width: 100%;
+    margin: 0 8px;
+    border-radius: 16px;
+  }
+  .modal-header {
+    padding: 16px;
+  }
+  .modal-title {
+    font-size: 18px;
+  }
+  .modal-body {
+    padding: 20px 16px;
+  }
+  .modal-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .modal-footer .btn-primary,
+  .modal-footer .btn-secondary {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 320px) {
+  .modal-container {
+    border-radius: 12px;
+    margin: 0 4px;
+  }
+  .modal-header {
+    padding: 14px 12px;
+  }
+  .modal-title {
+    font-size: 16px;
+  }
+  .modal-body {
+    padding: 16px 12px;
+  }
+  .form-input,
+  .form-textarea {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
 }
 </style>

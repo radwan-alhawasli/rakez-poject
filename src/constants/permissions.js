@@ -127,7 +127,8 @@ export const PERMISSION_DEFINITIONS = {
   'sales.sold_units.view': 'View sold units list and commission summaries.',
   'sales.deposits.view': 'View deposit management and follow-up data.',
   'sales.analytics.view': 'View sales analytics dashboard and commission reports.',
-  'tasks.create': 'Create and manage tasks (إدارة المهام - إضافة مهمة، مهامي). System-wide: POST /api/tasks, GET /api/my-tasks, PATCH /api/my-tasks/{id}/status.',
+  'tasks.create':
+    'Create and manage tasks (إدارة المهام - إضافة مهمة، مهامي). System-wide: POST /api/tasks, GET /api/my-tasks, PATCH /api/my-tasks/{id}/status.',
   'ai-calls.manage': 'Manage AI calling system: initiate, view, retry calls and manage scripts.',
   'editing.projects.view': 'View projects and units.',
   'editing.media.upload': 'Upload edited images and videos.',
@@ -471,12 +472,7 @@ export const BOOTSTRAP_ROLE_MAP = {
     'use-ai-assistant',
     'tasks.create',
   ],
-  default: [
-    'contracts.view',
-    'notifications.view',
-    'use-ai-assistant',
-    'tasks.create',
-  ],
+  default: ['contracts.view', 'notifications.view', 'use-ai-assistant', 'tasks.create'],
 };
 
 /**

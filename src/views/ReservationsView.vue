@@ -583,7 +583,6 @@ export default {
 .my-reservations {
   padding: 0;
   direction: rtl;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .page-header {
@@ -595,7 +594,6 @@ export default {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0 0 8px 0;
-  font-family: 'Amiri', serif;
 }
 
 .page-subtitle {
@@ -621,7 +619,6 @@ export default {
   color: #64748b;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: 'Tajawal', sans-serif;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -774,7 +771,6 @@ export default {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: 'Tajawal', sans-serif;
 }
 
 .card-actions button svg {
@@ -915,16 +911,37 @@ export default {
   margin: 0;
 }
 
+/* ── Responsive: Large Desktop ── */
+@media (min-width: 1200px) {
+  .reservations-list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
 @media (max-width: 1024px) {
   .reservations-list {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
+/* ── Responsive: Tablet Landscape ── */
+@media (max-width: 992px) {
+  .reservations-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .page-title {
+    font-size: 24px;
+  }
+}
+
+/* ── Responsive: Tablet Portrait ── */
 @media (max-width: 768px) {
   .filter-tabs {
     gap: 12px;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .tab-btn {
     white-space: nowrap;
@@ -947,6 +964,201 @@ export default {
   .card-actions button {
     width: 100%;
     justify-content: center;
+    min-height: 44px;
+  }
+  .detail-modal {
+    max-width: 100%;
+    border-radius: 12px;
+  }
+  .detail-modal-body {
+    padding: 16px;
+  }
+}
+
+/* ── Responsive: Mobile ── */
+@media (max-width: 576px) {
+  .page-title {
+    font-size: 22px;
+  }
+  .page-subtitle {
+    font-size: 14px;
+  }
+  .filter-tabs {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tab-btn {
+    font-size: 13px;
+    padding: 10px 0;
+  }
+  .reservation-card {
+    border-radius: 10px;
+  }
+  .card-body {
+    padding: 16px;
+  }
+  .card-unit {
+    font-size: 16px;
+  }
+  .card-project,
+  .card-client,
+  .card-date,
+  .card-payment {
+    font-size: 13px;
+  }
+  .card-actions button {
+    padding: 10px 14px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+  .detail-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .detail-modal {
+    max-width: 100%;
+    border-radius: 12px 12px 0 0;
+    max-height: 90vh;
+  }
+  .detail-modal-header {
+    padding: 16px;
+  }
+  .detail-modal-body {
+    padding: 16px;
+  }
+  .detail-section h4 {
+    font-size: 13px;
+  }
+  .detail-section p {
+    font-size: 13px;
+  }
+}
+
+/* ── Responsive: Extra Small Mobile ── */
+@media (max-width: 320px) {
+  .page-title {
+    font-size: 20px;
+  }
+  .page-subtitle {
+    font-size: 13px;
+  }
+  .tab-btn {
+    font-size: 12px;
+    padding: 8px 0;
+  }
+  .tab-count {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+  .card-body {
+    padding: 12px;
+  }
+  .card-unit {
+    font-size: 15px;
+  }
+  .card-actions button {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .detail-modal-header h3 {
+    font-size: 16px;
+  }
+}
+
+/* ── Responsive: Full HD ── */
+@media (min-width: 1920px) {
+  .page-title {
+    font-size: 32px;
+  }
+  .page-subtitle {
+    font-size: 17px;
+  }
+  .reservations-list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .card-unit {
+    font-size: 20px;
+  }
+  .card-project,
+  .card-client,
+  .card-date,
+  .card-payment {
+    font-size: 15px;
+  }
+  .card-actions button {
+    font-size: 15px;
+  }
+  .detail-modal {
+    max-width: 600px;
+  }
+}
+
+/* ── Responsive: QHD ── */
+@media (min-width: 2560px) {
+  .page-title {
+    font-size: 38px;
+  }
+  .reservations-list {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px;
+  }
+  .reservation-card {
+    border-radius: 16px;
+  }
+  .card-body {
+    padding: 24px 24px 24px 60px;
+  }
+  .card-unit {
+    font-size: 22px;
+  }
+  .tab-btn {
+    font-size: 17px;
+  }
+}
+
+/* ── Responsive: 4K ── */
+@media (min-width: 3840px) {
+  .page-title {
+    font-size: 48px;
+  }
+  .page-subtitle {
+    font-size: 20px;
+  }
+  .reservations-list {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+  }
+  .reservation-card {
+    border-radius: 20px;
+  }
+  .card-body {
+    padding: 28px 28px 28px 68px;
+  }
+  .card-unit {
+    font-size: 24px;
+  }
+  .card-project,
+  .card-client,
+  .card-date,
+  .card-payment {
+    font-size: 18px;
+  }
+  .card-actions button {
+    font-size: 18px;
+    padding: 14px 24px;
+  }
+  .tab-btn {
+    font-size: 20px;
+  }
+  .detail-modal {
+    max-width: 720px;
+  }
+  .detail-section h4 {
+    font-size: 18px;
+  }
+  .detail-section p {
+    font-size: 17px;
   }
 }
 </style>

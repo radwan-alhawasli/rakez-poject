@@ -388,8 +388,6 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Playfair+Display:wght@400;700&family=Tajawal:wght@300;400;500;700&display=swap');
-
 .contracts-view {
   animation: fadeIn 0.4s ease-out;
 }
@@ -444,7 +442,6 @@ export default {
   border: none;
   background: transparent;
   border-radius: 8px;
-  font-family: inherit;
   font-size: 14px;
   font-weight: 600;
   color: #64748b;
@@ -499,7 +496,6 @@ export default {
   border: 1.5px solid #e2e8f0;
   border-radius: 10px;
   background: white;
-  font-family: 'Tajawal', sans-serif;
   color: #1e293b;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   direction: rtl;
@@ -641,5 +637,219 @@ export default {
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
+}
+
+/* Responsive: Tablet Landscape */
+@media (max-width: 992px) {
+  .page-title {
+    font-size: 26px;
+  }
+  .controls-Modern-area {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .modern-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+  .tab-item {
+    white-space: nowrap;
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  .search-container {
+    min-width: unset;
+    width: 100%;
+  }
+  .custom-table th,
+  .custom-table td {
+    padding: 16px 14px;
+  }
+}
+
+/* Responsive: Tablet Portrait */
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 22px;
+  }
+  .page-subtitle {
+    font-size: 14px;
+  }
+  .modern-tabs {
+    gap: 4px;
+    padding: 4px;
+    border-radius: 10px;
+  }
+  .tab-item {
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+  .tab-count {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 10px;
+  }
+  .custom-table {
+    min-width: 640px;
+  }
+  .custom-table th,
+  .custom-table td {
+    padding: 12px;
+    font-size: 13px;
+  }
+  .search-input {
+    font-size: 13px;
+  }
+  .loading-state,
+  .error-state {
+    padding: 40px 20px;
+  }
+}
+
+/* Responsive: Mobile */
+@media (max-width: 576px) {
+  .contracts-view {
+    padding: 0;
+  }
+  .page-header {
+    margin-bottom: 20px;
+  }
+  .page-title {
+    font-size: 20px;
+  }
+  .page-subtitle {
+    font-size: 13px;
+  }
+  .controls-Modern-area {
+    margin-bottom: 20px;
+    gap: 12px;
+  }
+  .modern-tabs {
+    padding: 3px;
+    border-radius: 8px;
+    gap: 2px;
+  }
+  .tab-item {
+    padding: 8px 10px;
+    font-size: 11px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .search-input {
+    padding: 10px 36px 10px 10px;
+    min-height: 44px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+  .custom-table th {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+  .custom-table td {
+    padding: 12px 8px;
+    font-size: 12px;
+  }
+  .badge-type {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  .status-badge-custom {
+    padding: 4px 10px;
+    font-size: 11px;
+    min-width: 70px;
+  }
+  .view-link {
+    font-size: 13px;
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .retry-btn {
+    min-height: 44px;
+    width: 100%;
+    font-size: 14px;
+  }
+  .loading-state,
+  .error-state {
+    padding: 32px 16px;
+    border-radius: 10px;
+  }
+}
+
+/* Responsive: Extra Small Mobile */
+@media (max-width: 320px) {
+  .page-title {
+    font-size: 18px;
+  }
+  .page-subtitle {
+    font-size: 12px;
+  }
+  .tab-item {
+    padding: 6px 6px;
+    font-size: 10px;
+    gap: 4px;
+  }
+  .tab-count {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+  .custom-table th,
+  .custom-table td {
+    padding: 8px 6px;
+    font-size: 11px;
+  }
+  .search-input {
+    font-size: 12px;
+  }
+}
+
+/* Responsive: Large Desktop */
+@media (min-width: 1920px) {
+  .page-title {
+    font-size: 38px;
+  }
+  .page-subtitle {
+    font-size: 18px;
+  }
+  .controls-Modern-area {
+    margin-bottom: 36px;
+  }
+  .tab-item {
+    padding: 12px 28px;
+    font-size: 16px;
+  }
+  .tab-count {
+    font-size: 14px;
+  }
+  .search-input {
+    padding: 14px 44px 14px 18px;
+    font-size: 16px;
+  }
+  .custom-table th {
+    padding: 22px 24px;
+    font-size: 16px;
+  }
+  .custom-table td {
+    padding: 26px 24px;
+    font-size: 16px;
+  }
+  .badge-type {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+  .status-badge-custom {
+    font-size: 15px;
+    padding: 8px 20px;
+  }
 }
 </style>

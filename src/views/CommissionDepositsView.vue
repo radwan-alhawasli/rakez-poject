@@ -71,7 +71,10 @@
                 </td>
               </tr>
               <tr v-if="commissions.length === 0 && !isLoading">
-                <td colspan="4" style="text-align: center; padding: 40px; color: #94a3b8">
+                <td
+                  colspan="4"
+                  style="text-align: center; padding: 40px; color: var(--color-dark-gray)"
+                >
                   لا توجد عمولات
                 </td>
               </tr>
@@ -117,7 +120,10 @@
                 </td>
               </tr>
               <tr v-if="deposits.length === 0 && !isLoading">
-                <td colspan="4" style="text-align: center; padding: 40px; color: #94a3b8">
+                <td
+                  colspan="4"
+                  style="text-align: center; padding: 40px; color: var(--color-dark-gray)"
+                >
                   لا توجد ودائع
                 </td>
               </tr>
@@ -144,6 +150,7 @@ import commissionService from '../services/commissionService';
 import authService from '../services/authService';
 import Pagination from '../components/Pagination.vue';
 import logger from '../utils/logger';
+import { useFormatters } from '../composables/useFormatters';
 
 export default {
   name: 'CommissionDepositsView',
@@ -236,14 +243,7 @@ export default {
     const viewCommissionDetail = () => {};
     const viewDepositDetail = () => {};
 
-    const formatCurrency = val => {
-      if (!val) return '0 ر.س';
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 0,
-      }).format(val);
-    };
+    const { formatCurrency } = useFormatters();
 
     watch(
       activeTab,
@@ -282,5 +282,173 @@ export default {
 <style scoped>
 .commission-deposits-view {
   /* Inherit from hr-view */
+}
+
+/* Responsive: Tablet Landscape */
+@media (max-width: 992px) {
+  .commission-deposits-view :deep(.stats-grid) {
+    grid-template-columns: 1fr 1fr;
+  }
+  .commission-deposits-view :deep(.welcome-title) {
+    font-size: 22px;
+  }
+}
+
+/* Responsive: Tablet Portrait */
+@media (max-width: 768px) {
+  .commission-deposits-view :deep(.stats-grid) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .commission-deposits-view :deep(.welcome-header) {
+    padding: 16px;
+  }
+  .commission-deposits-view :deep(.welcome-title) {
+    font-size: 20px;
+  }
+  .commission-deposits-view :deep(.welcome-subtitle) {
+    font-size: 13px;
+  }
+  .commission-deposits-view :deep(.section-header-compact) {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .commission-deposits-view :deep(.section-title) {
+    font-size: 18px;
+  }
+  .commission-deposits-view :deep(.metrics-table-container) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .commission-deposits-view :deep(.metrics-table) {
+    min-width: 500px;
+  }
+  .commission-deposits-view :deep(.metrics-table th),
+  .commission-deposits-view :deep(.metrics-table td) {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .commission-deposits-view :deep(.btn-action) {
+    min-height: 44px;
+    padding: 8px 14px;
+  }
+}
+
+/* Responsive: Mobile */
+@media (max-width: 576px) {
+  .commission-deposits-view :deep(.stat-card) {
+    padding: 14px;
+  }
+  .commission-deposits-view :deep(.stat-value) {
+    font-size: 20px;
+  }
+  .commission-deposits-view :deep(.stat-label) {
+    font-size: 12px;
+  }
+  .commission-deposits-view :deep(.section-title) {
+    font-size: 16px;
+  }
+  .commission-deposits-view :deep(.section-subtitle) {
+    font-size: 12px;
+  }
+  .commission-deposits-view :deep(.metrics-table) {
+    min-width: 440px;
+  }
+  .commission-deposits-view :deep(.metrics-table th),
+  .commission-deposits-view :deep(.metrics-table td) {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .commission-deposits-view :deep(.status-tag) {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+}
+
+/* Responsive: Extra Small Mobile */
+@media (max-width: 320px) {
+  .commission-deposits-view :deep(.welcome-title) {
+    font-size: 17px;
+  }
+  .commission-deposits-view :deep(.welcome-subtitle) {
+    font-size: 11px;
+  }
+  .commission-deposits-view :deep(.stat-value) {
+    font-size: 18px;
+  }
+  .commission-deposits-view :deep(.stat-card) {
+    padding: 12px;
+  }
+  .commission-deposits-view :deep(.section-title) {
+    font-size: 15px;
+  }
+  .commission-deposits-view :deep(.metrics-table) {
+    min-width: 380px;
+  }
+  .commission-deposits-view :deep(.metrics-table th),
+  .commission-deposits-view :deep(.metrics-table td) {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  .commission-deposits-view :deep(.btn-action) {
+    font-size: 11px;
+    padding: 6px 10px;
+    min-height: 44px;
+  }
+}
+
+/* Responsive: Large Desktop */
+@media (min-width: 1920px) {
+  .commission-deposits-view :deep(.welcome-header) {
+    padding: 32px;
+  }
+  .commission-deposits-view :deep(.welcome-title) {
+    font-size: 30px;
+  }
+  .commission-deposits-view :deep(.welcome-subtitle) {
+    font-size: 17px;
+  }
+  .commission-deposits-view :deep(.stats-grid) {
+    gap: 24px;
+  }
+  .commission-deposits-view :deep(.stat-card) {
+    padding: 28px;
+  }
+  .commission-deposits-view :deep(.stat-value) {
+    font-size: 32px;
+  }
+  .commission-deposits-view :deep(.stat-label) {
+    font-size: 15px;
+  }
+  .commission-deposits-view :deep(.section-title) {
+    font-size: 24px;
+  }
+  .commission-deposits-view :deep(.section-subtitle) {
+    font-size: 16px;
+  }
+  .commission-deposits-view :deep(.metrics-table th),
+  .commission-deposits-view :deep(.metrics-table td) {
+    padding: 18px 24px;
+    font-size: 16px;
+  }
+  .commission-deposits-view :deep(.btn-action) {
+    padding: 10px 20px;
+    font-size: 15px;
+  }
+}
+
+/* Responsive: Ultra-wide */
+@media (min-width: 2560px) {
+  .commission-deposits-view :deep(.welcome-title) {
+    font-size: 34px;
+  }
+  .commission-deposits-view :deep(.stat-value) {
+    font-size: 36px;
+  }
+  .commission-deposits-view :deep(.metrics-table th),
+  .commission-deposits-view :deep(.metrics-table td) {
+    padding: 20px 28px;
+    font-size: 17px;
+  }
 }
 </style>

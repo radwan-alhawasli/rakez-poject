@@ -27,7 +27,10 @@
                 <td><span class="status-tag excellent">مؤكد</span></td>
               </tr>
               <tr v-if="history.length === 0">
-                <td colspan="3" style="text-align: center; padding: 40px; color: #94a3b8">
+                <td
+                  colspan="3"
+                  style="text-align: center; padding: 40px; color: var(--color-dark-gray)"
+                >
                   لا يوجد تاريخ
                 </td>
               </tr>
@@ -132,7 +135,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
   animation: fadeIn 0.3s ease;
 }
 
@@ -163,31 +166,30 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 25px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-light-gray);
   padding-bottom: 15px;
 }
 
 .modal-title {
   font-size: 20px;
   font-weight: 800;
-  color: #1e3a5f;
-  font-family: 'Amiri', serif;
+  color: var(--color-navy);
 }
 
 .close-btn {
   background: none;
   border: none;
   font-size: 28px;
-  color: #94a3b8;
+  color: var(--color-dark-gray);
   cursor: pointer;
 }
 
 .close-btn:hover {
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .metrics-table-container {
-  background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
+  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-off-white) 100%);
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(30, 58, 95, 0.08);
@@ -201,10 +203,10 @@ export default {
 }
 
 .metrics-table th {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, var(--color-light-gray) 0%, var(--color-light-gray) 100%);
   padding: 22px 24px;
   font-size: 13px;
-  color: #475569;
+  color: var(--color-charcoal);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -227,7 +229,7 @@ export default {
 
 .status-tag.excellent {
   background: #dcfce7;
-  color: #16a34a;
+  color: var(--color-success);
 }
 
 .modal-footer {
@@ -236,16 +238,62 @@ export default {
   justify-content: flex-end;
   margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--color-light-gray);
 }
 
 .btn-secondary {
   padding: 12px 24px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-medium-gray);
   border-radius: 12px;
   background: white;
-  color: #64748b;
+  color: var(--color-dark-gray);
   font-weight: 600;
   cursor: pointer;
+}
+
+/* Tablet responsive */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 12px;
+  }
+  .modal-container {
+    width: 95%;
+    max-width: 95vw;
+    padding: 20px;
+  }
+  .metrics-table th,
+  .metrics-table td {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  .modal-footer button {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+/* Mobile full-screen */
+@media (max-width: 575px) {
+  .modal-overlay {
+    padding: 8px;
+  }
+  .modal-container {
+    width: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+    overflow-y: auto;
+    border-radius: 16px;
+    padding: 16px;
+  }
+  .modal-title {
+    font-size: 18px;
+  }
+  .metrics-table-container {
+    border-radius: 12px;
+  }
+  .btn-secondary {
+    min-height: 44px;
+    width: 100%;
+  }
 }
 </style>
