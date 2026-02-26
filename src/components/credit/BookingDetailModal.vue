@@ -164,6 +164,7 @@
 
 <script>
 import { onMounted, onUnmounted } from 'vue';
+import { useFormatters } from '../../composables/useFormatters';
 
 export default {
   name: 'BookingDetailModal',
@@ -175,23 +176,7 @@ export default {
   },
   emits: ['close'],
   setup(props, { emit }) {
-    const formatDate = dateStr => {
-      if (!dateStr) return '—';
-      try {
-        return new Date(dateStr).toLocaleDateString('ar-SA');
-      } catch {
-        return dateStr;
-      }
-    };
-
-    const formatCurrency = val => {
-      if (val == null || val === '') return '—';
-      return new Intl.NumberFormat('ar-SA', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 0,
-      }).format(Number(val));
-    };
+    const { formatCurrencyAr: formatCurrency, formatDate } = useFormatters();
 
     // Handle Escape key
     const handleEscape = e => {

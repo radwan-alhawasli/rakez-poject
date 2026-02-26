@@ -533,24 +533,99 @@
         <div class="team-sections">
           <!-- Team Members -->
           <div class="team-section">
-            <h3>أعضاء الفريق</h3>
-            <div v-if="isLoadingTeam" class="loading-state">
+            <div class="team-section-header">
+              <h3>أعضاء الفريق</h3>
+              <label class="sort-toggle">
+                <input type="checkbox" v-model="teamSortByRecommendation" />
+                <span>ترتيب بالتوصية (ذكاء اصطناعي)</span>
+              </label>
+            </div>
+            <div
+              v-if="isLoadingTeam || (teamSortByRecommendation && isLoadingTeamRecommendations)"
+              class="loading-state"
+            >
               <div class="spinner"></div>
+              <p v-if="teamSortByRecommendation && isLoadingTeamRecommendations">
+                جاري تحميل التوصيات...
+              </p>
             </div>
             <div v-else class="team-members-grid">
               <div
-                v-for="member in teamMembers"
+                v-for="member in teamMembersDisplay"
                 :key="member.id"
                 class="member-card"
-                v-memo="[member.id, member.name, member.email]"
+                v-memo="[member.id, member.name, member.email, member.rating, member.comment, member.recommendationScore, memberCommentEditId, memberCommentDrafts[member.id]]"
               >
                 <div class="member-avatar">{{ (member.name || '?').charAt(0) }}</div>
                 <div class="member-info">
                   <h4>{{ member.name }}</h4>
-                  <p>{{ member.role }}</p>
+                  <p>{{ member.role || 'عضو فريق' }}</p>
+                  <!-- تقييم من 1 إلى 5 نجوم + تعليق مدير المبيعات (مدير الفريق فقط) -->
+                  <div class="member-rating" v-if="hasPermission('sales.team.manage')">
+                    <button
+                      v-for="star in 5"
+                      :key="star"
+                      type="button"
+                      class="star-btn"
+                      :class="{ filled: (member.rating || 0) >= star }"
+                      :disabled="memberRatingSaving === member.id"
+                      @click="setMemberRating(member.id, star)"
+                      :title="`تقييم ${star} من 5`"
+                    >
+                      ★
+                    </button>
+                  </div>
+                  <div v-if="member.comment" class="member-leader-comment">
+                    <span class="comment-label">تعليق المدير:</span>
+                    <p class="comment-text">{{ member.comment }}</p>
+                  </div>
+                  <div v-if="hasPermission('sales.team.manage')" class="member-comment-edit">
+                    <button
+                      v-if="memberCommentEditId !== member.id"
+                      type="button"
+                      class="btn-link-comment"
+                      @click="openMemberComment(member)"
+                    >
+                      {{ member.comment ? 'تعديل التعليق' : 'إضافة تعليق' }}
+                    </button>
+                    <template v-else>
+                      <textarea
+                        :key="'draft-' + member.id"
+                        v-model="memberCommentDrafts[member.id]"
+                        class="comment-textarea"
+                        rows="2"
+                        placeholder="تعليق عن أداء الموظف..."
+                        maxlength="2000"
+                      />
+                      <div class="comment-actions">
+                        <button type="button" class="btn-text" @click="cancelMemberComment">
+                          إلغاء
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-primary small"
+                          :disabled="memberRatingSaving === member.id || !(memberCommentDrafts[member.id] || '').trim()"
+                          @click="saveMemberComment(member)"
+                        >
+                          {{ memberRatingSaving === member.id ? 'جاري...' : 'حفظ التعليق' }}
+                        </button>
+                      </div>
+                    </template>
+                  </div>
                   <div class="member-stats">
                     <span>{{ member.total_sales || 0 }} مبيعة</span>
                     <span>{{ formatCurrency(member.total_value || 0) }}</span>
+                  </div>
+                  <div class="member-actions" v-if="hasPermission('sales.team.manage')">
+                    <button
+                      type="button"
+                      class="btn-remove-member"
+                      :disabled="memberRemoveLoading === member.id"
+                      @click="confirmRemoveMember(member)"
+                      title="إخراج من الفريق"
+                    >
+                      إقالة
+                    </button>
                   </div>
                 </div>
               </div>
@@ -582,6 +657,25 @@
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- تأكيد إقالة عضو الفريق -->
+        <div v-if="memberToRemove" class="modal-overlay" @click.self="memberToRemove = null">
+          <div class="modal-content small">
+            <h3>تأكيد إخراج العضو من الفريق</h3>
+            <p>هل أنت متأكد من إخراج <strong>{{ memberToRemove.name }}</strong> من الفريق؟</p>
+            <div class="modal-actions">
+              <button type="button" class="btn-text" @click="memberToRemove = null">إلغاء</button>
+              <button
+                type="button"
+                class="btn-primary danger"
+                :disabled="memberRemoveLoading"
+                @click="doRemoveMember"
+              >
+                {{ memberRemoveLoading ? 'جاري...' : 'إقالة وإخراج من الفريق' }}
+              </button>
             </div>
           </div>
         </div>
@@ -785,9 +879,34 @@
             <p>جاري تحميل بيانات الجداول...</p>
           </div>
 
-          <div v-else ref="scheduleDetailRef" class="schedule-detail-layout">
-            <!-- Right: Team Members Schedules -->
-            <div class="schedule-members-section">
+          <template v-else>
+            <!-- التاريخ المعروض: يتحكم بكل البيانات والحفظ -->
+            <div class="schedule-date-bar">
+            <div class="schedule-date-display">
+              <span class="update-label">تاريخ التحديث:</span>
+              <span class="update-value">{{ scheduleDisplayDate }}</span>
+              <span class="update-label">توقيت التحديث:</span>
+              <span class="update-value">{{ scheduleDisplayTime }}</span>
+            </div>
+              <div class="schedule-date-picker-wrap">
+                <label for="schedule-view-date">عرض دوام تاريخ:</label>
+                <input
+                  id="schedule-view-date"
+                  v-model="scheduleViewDate"
+                  type="date"
+                  class="form-input schedule-date-input"
+                  @change="loadScheduleForSelectedDate"
+                />
+              </div>
+            </div>
+
+            <div
+              ref="scheduleDetailRef"
+              class="schedule-detail-layout"
+              :class="{ 'schedule-form--saving': isSavingSchedules }"
+            >
+              <!-- Right: Team Members Schedules -->
+              <div class="schedule-members-section">
               <h3 class="section-label">جداول المسوقين</h3>
               <div class="schedule-members-list">
                 <div
@@ -809,16 +928,40 @@
                       <input
                         type="checkbox"
                         :checked="member.is_present"
+                        :disabled="isSavingSchedules"
                         @change="toggleScheduleMember(member)"
                       />
                       <span class="toggle-slider"></span>
                     </label>
                   </div>
                   <div class="member-schedule-info">
-                    <span class="schedule-day">{{ getTodayArabicDay() }}</span>
+                    <span class="schedule-day">{{ scheduleDisplayDayName }}</span>
                     <span class="schedule-status" :class="member.is_present ? 'present' : 'absent'">
                       {{ member.is_present ? 'متواجد اليوم' : 'غير متواجد اليوم' }}
                     </span>
+                  </div>
+                  <div class="member-time-row">
+                    <span class="time-label">الدوام</span>
+                    <div class="time-inputs">
+                      <label class="time-field">
+                        <span>من</span>
+                        <input
+                          type="time"
+                          :value="member.start_time || '08:00'"
+                          :disabled="isSavingSchedules"
+                          @input="updateMemberScheduleTime(member, 'start_time', $event.target.value)"
+                        />
+                      </label>
+                      <label class="time-field">
+                        <span>إلى</span>
+                        <input
+                          type="time"
+                          :value="member.end_time || '17:00'"
+                          :disabled="isSavingSchedules"
+                          @input="updateMemberScheduleTime(member, 'end_time', $event.target.value)"
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -834,6 +977,7 @@
                     v-model="emergencyContact.name"
                     type="text"
                     class="form-input"
+                    :disabled="isSavingSchedules"
                     placeholder="مثال: خالد الأحمد"
                   />
                 </div>
@@ -843,13 +987,18 @@
                     v-model="emergencyContact.phone"
                     type="tel"
                     class="form-input"
+                    :disabled="isSavingSchedules"
                     placeholder="05.."
                     dir="ltr"
                   />
                 </div>
                 <div class="form-group">
                   <label>الدور</label>
-                  <select v-model="emergencyContact.role" class="form-input">
+                  <select
+                    v-model="emergencyContact.role"
+                    class="form-input"
+                    :disabled="isSavingSchedules"
+                  >
                     <option value="أخرى">أخرى</option>
                     <option value="مدير المشروع">مدير المشروع</option>
                     <option value="مشرف الموقع">مشرف الموقع</option>
@@ -864,11 +1013,15 @@
           <!-- Save Button -->
           <div class="schedule-save-bar">
             <button
+              type="button"
               class="btn-save-schedules"
+              :class="{ 'btn-save-schedules--saving': isSavingSchedules }"
               @click="saveAllSchedules"
               :disabled="isSavingSchedules"
             >
+              <span v-if="isSavingSchedules" class="btn-save-spinner" aria-hidden="true"></span>
               <svg
+                v-else
                 viewBox="0 0 24 24"
                 width="18"
                 height="18"
@@ -883,6 +1036,7 @@
               {{ isSavingSchedules ? 'جاري الحفظ والإرسال...' : 'حفظ وإرسال للفريق' }}
             </button>
           </div>
+          </template>
         </template>
       </div>
 
@@ -2157,6 +2311,10 @@ export default {
       }
     );
 
+    watch(teamSortByRecommendation, isOn => {
+      if (isOn && activeTab.value === 'team') loadTeamRecommendations();
+    });
+
     const allTabs = [
       {
         id: 'dashboard',
@@ -2286,8 +2444,11 @@ export default {
         await loadDashboard();
       } else if (tabId === 'targets' && targets.value.length === 0) {
         await loadTargets();
-      } else if (tabId === 'projects' && projects.value.length === 0) {
-        await loadProjects();
+      } else if (tabId === 'projects') {
+        if (projects.value.length === 0) await loadProjects();
+        // مدير المبيعات: اعرض تبويب "مشاريع جاهزة للتسويق" عند فتح صفحة المشاريع
+        const user = authService.getCurrentUser();
+        if (user && isSalesLeader(user)) projectsTab.value = 'ready';
       } else if (tabId === 'reservations' && reservations.value.length === 0) {
         await loadReservations();
       } else if (tabId === 'attendance' && attendanceRecords.value.length === 0) {
@@ -2295,6 +2456,7 @@ export default {
       } else if (tabId === 'team') {
         if (teamMembers.value.length === 0) await loadTeamMembers();
         if (teamProjects.value.length === 0) await loadTeamProjects();
+        if (teamSortByRecommendation.value) await loadTeamRecommendations();
       } else if (tabId === 'tasks' && marketingTasks.value.length === 0) {
         await loadTasks();
       } else if (tabId === 'negotiations' && pendingNegotiations.value.length === 0) {
@@ -2382,6 +2544,15 @@ export default {
     const teamProjects = shallowRef([]);
     const isLoadingTeam = ref(false);
     const isLoadingTeamProjects = ref(false);
+    const teamSortByRecommendation = ref(false);
+    const teamRecommendations = shallowRef([]);
+    const isLoadingTeamRecommendations = ref(false);
+    const memberRatingSaving = ref(null);
+    const memberCommentEditId = ref(null);
+    /** مسودة التعليق لكل عضو حسب id لضمان ربط صحيح مع الـ textarea */
+    const memberCommentDrafts = ref({});
+    const memberToRemove = ref(null);
+    const memberRemoveLoading = ref(false);
 
     // Project Schedules (Leader)
     const scheduleProjects = shallowRef([]);
@@ -2392,6 +2563,13 @@ export default {
     const isSavingSchedules = ref(false);
     const emergencyContact = reactive({ name: '', phone: '', role: 'أخرى' });
     const scheduleDetailRef = ref(null);
+    /** التاريخ المعروض في إدارة الدوام — يتحكم بالتحميل والحفظ وعرض اليوم */
+    const scheduleViewDate = ref(new Date().toISOString().slice(0, 10));
+    const scheduleViewTime = ref('');
+    /** من الـ API: تاريخ وتوقيت واسم اليوم حسب السيرفر (app timezone) — 100% match */
+    const scheduleServerDate = ref('');
+    const scheduleServerTime = ref('');
+    const scheduleDayNameAr = ref('');
 
     // Tasks - Using shallowRef for better performance with large arrays
     const marketingTasks = shallowRef([]);
@@ -2532,6 +2710,17 @@ export default {
           const img = p.project_image_url || p.image || '';
           const hasImage = !!(img && String(img).trim());
 
+          // جاهز للتسويق => تقدم الإعداد 100%، وإلا نسبة الـ tracker
+          const isReadyForMarketing =
+            p.is_ready === true ||
+            p.is_ready === 1 ||
+            (['approved', 'ready', 'ready_for_marketing', 'completed', 'active'].includes(
+              contractStatus
+            ) &&
+              (total > 0 || (p.available_units ?? 0) >= 0));
+          const setupProgressVal =
+            isReadyForMarketing ? 100 : p.setup_progress != null ? Number(p.setup_progress) : 0;
+
           return {
             ...p,
             id,
@@ -2550,7 +2739,7 @@ export default {
             reserved_units: reserved,
             sold_units: sold,
             assignee: p.team_name || p.marketer_name || p.marketer || null,
-            setupProgress: p.setup_progress != null ? Number(p.setup_progress) : 0,
+            setupProgress: setupProgressVal,
             soldUnitsPercent: soldPct,
             soldUnitsCount: sold,
             daysLeft,
@@ -3132,6 +3321,125 @@ export default {
       }
     };
 
+    const loadTeamRecommendations = async () => {
+      isLoadingTeamRecommendations.value = true;
+      try {
+        teamRecommendations.value = await salesService.getTeamRecommendations();
+      } catch (error) {
+        logger.error('Error loading team recommendations:', error);
+        teamRecommendations.value = [];
+      } finally {
+        isLoadingTeamRecommendations.value = false;
+      }
+    };
+
+    /** عرض الأعضاء: عند تفعيل "ترتيب بالتوصية" نعرض نتيجة GET /team/recommendations، وإلا قائمة الأعضاء مع ترتيب احتياطي */
+    const teamMembersDisplay = computed(() => {
+      if (teamSortByRecommendation.value && teamRecommendations.value.length > 0) {
+        return teamRecommendations.value;
+      }
+      const list = Array.isArray(teamMembers.value) ? teamMembers.value : [];
+      const withScore = list.map(m => {
+        const totalRes = Math.max(1, Number(m.total_reservations) || 0);
+        const confirmedRate = (Number(m.confirmed_bookings) || 0) / totalRes;
+        const villaCount = Number(m.villa_count) || 0;
+        const totalVal = Number(m.total_value) || 0;
+        const score = totalVal * 0.0001 + confirmedRate * 100 + villaCount * 50;
+        return { ...m, recommendationScore: score };
+      });
+      if (teamSortByRecommendation.value) {
+        return [...withScore].sort((a, b) => (b.recommendationScore || 0) - (a.recommendationScore || 0));
+      }
+      return withScore;
+    });
+
+    const setMemberRating = async (memberId, rating) => {
+      if (!hasPermission('sales.team.manage')) return;
+      memberRatingSaving.value = memberId;
+      try {
+        await salesService.rateTeamMember(memberId, rating);
+        const updateComment = (arr, id, fn) => Array.isArray(arr) ? arr.map(m => (m.id === id ? fn(m) : m)) : [];
+        teamMembers.value = updateComment(teamMembers.value, memberId, m => ({ ...m, rating }));
+        teamRecommendations.value = updateComment(teamRecommendations.value, memberId, m => ({ ...m, rating }));
+        notificationService.addNotification('تم تحديث التقييم', 'success');
+      } catch (error) {
+        logger.error('Error rating team member:', error);
+        notificationService.addNotification('حدث خطأ أثناء حفظ التقييم', 'error');
+      } finally {
+        memberRatingSaving.value = null;
+      }
+    };
+
+    const openMemberComment = member => {
+      if (!member?.id) return;
+      memberCommentEditId.value = member.id;
+      memberCommentDrafts.value = {
+        ...memberCommentDrafts.value,
+        [member.id]: member.comment || '',
+      };
+    };
+
+    const cancelMemberComment = () => {
+      memberCommentEditId.value = null;
+    };
+
+    const saveMemberComment = async member => {
+      if (!hasPermission('sales.team.manage')) return;
+      if (!member?.id) {
+        notificationService.addNotification('خطأ: معرّف العضو غير متوفر', 'error');
+        return;
+      }
+      const comment = String(memberCommentDrafts.value[member.id] ?? '').trim();
+      if (!comment) {
+        notificationService.addNotification('أدخل نص التعليق أولاً', 'error');
+        return;
+      }
+      memberRatingSaving.value = member.id;
+      try {
+        await salesService.rateTeamMember(member.id, undefined, comment);
+        const updateC = (arr, id) =>
+          Array.isArray(arr) ? arr.map(m => (m.id === id ? { ...m, comment } : m)) : [];
+        teamMembers.value = updateC(teamMembers.value, member.id);
+        teamRecommendations.value = updateC(teamRecommendations.value, member.id);
+        notificationService.addNotification('تم حفظ التعليق عن الموظف بنجاح', 'success');
+        memberCommentEditId.value = null;
+        const next = { ...memberCommentDrafts.value };
+        delete next[member.id];
+        memberCommentDrafts.value = next;
+      } catch (error) {
+        logger.error('Error saving member comment:', error);
+        notificationService.addNotification(
+          error?.response?.data?.message || 'حدث خطأ أثناء حفظ التعليق',
+          'error'
+        );
+      } finally {
+        memberRatingSaving.value = null;
+      }
+    };
+
+    const confirmRemoveMember = member => {
+      memberToRemove.value = member;
+    };
+
+    const doRemoveMember = async () => {
+      if (!memberToRemove.value) return;
+      memberRemoveLoading.value = true;
+      try {
+        await salesService.removeTeamMember(memberToRemove.value.id);
+        notificationService.addNotification('تم إخراج العضو من الفريق', 'success');
+        memberToRemove.value = null;
+        await loadTeamMembers();
+      } catch (error) {
+        logger.error('Error removing team member:', error);
+        notificationService.addNotification(
+          error?.response?.data?.message || 'حدث خطأ أثناء إخراج العضو من الفريق',
+          'error'
+        );
+      } finally {
+        memberRemoveLoading.value = false;
+      }
+    };
+
     const loadTeamProjects = async () => {
       isLoadingTeamProjects.value = true;
       try {
@@ -3447,16 +3755,119 @@ export default {
       }
     };
 
+    const scheduleViewDateFormatted = computed(() => {
+      const d = scheduleViewDate.value;
+      if (!d) return '—';
+      try {
+        const [y, m, day] = d.split('-').map(Number);
+        return new Date(y, m - 1, day).toLocaleDateString('ar-SA', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        });
+      } catch {
+        return d;
+      }
+    });
+
+    /** عرض التاريخ: من السيرفر إن وُجد (100% match) وإلا من المحلي */
+    const scheduleDisplayDate = computed(() => {
+      const s = scheduleServerDate.value;
+      if (s && s.trim()) return s;
+      return scheduleViewDateFormatted.value;
+    });
+
+    /** عرض التوقيت: من السيرفر إن وُجد (H:i:s) وإلا من المحلي */
+    const scheduleDisplayTime = computed(() => {
+      const s = scheduleServerTime.value;
+      if (s != null && String(s).trim()) {
+        const parts = String(s).trim().split(':');
+        if (parts.length >= 2) {
+          const h = parseInt(parts[0], 10);
+          const m = parts[1];
+          const sec = parts[2] || '00';
+          if (h >= 0 && h <= 23) {
+            const period = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            return `${h12}:${m}:${sec} ${period}`;
+          }
+        }
+        return s;
+      }
+      return scheduleViewTime.value;
+    });
+
+    /** اسم اليوم: من السيرفر (day_name_ar) إن وُجد وإلا محسوب من التاريخ المعروض */
+    const scheduleDisplayDayName = computed(() => {
+      const ar = scheduleDayNameAr.value;
+      if (ar && ar.trim()) return ar;
+      return getArabicDayForDate(scheduleViewDate.value);
+    });
+
+    const updateScheduleViewTime = () => {
+      const now = new Date();
+      scheduleViewTime.value = now.toLocaleTimeString('ar-SA', {
+        hour12: true,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+    };
+
+    const getArabicDayForDate = dateStr => {
+      if (!dateStr) return getArabicDayForDate(new Date().toISOString().slice(0, 10));
+      const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+      try {
+        const [y, m, d] = dateStr.slice(0, 10).split('-').map(Number);
+        const date = new Date(y, m - 1, d);
+        return days[date.getDay()];
+      } catch {
+        return days[new Date().getDay()];
+      }
+    };
+
+    const loadScheduleForSelectedDate = async () => {
+      const project = selectedScheduleProject.value;
+      if (!project) return;
+      const projectId = project.contract_id || project.id;
+      const date = scheduleViewDate.value || new Date().toISOString().slice(0, 10);
+      isLoadingScheduleDetail.value = true;
+      try {
+        const result = await salesService.getProjectScheduleMembers(projectId, date);
+        const list = result.members ?? [];
+        scheduleMembers.value = list.map(m => normalizeScheduleMember(m));
+        scheduleServerDate.value = result.server_date ?? '';
+        scheduleServerTime.value = result.server_time ?? '';
+        scheduleDayNameAr.value = result.day_name_ar ?? '';
+        if (!result.server_time) updateScheduleViewTime();
+      } catch (error) {
+        logger.error('Error loading schedule for date:', error);
+        notificationService.addNotification('حدث خطأ أثناء تحميل دوام التاريخ المحدد', 'error');
+      } finally {
+        isLoadingScheduleDetail.value = false;
+      }
+    };
+
     const openProjectSchedule = async project => {
       selectedScheduleProject.value = project;
+      scheduleViewDate.value = new Date().toISOString().slice(0, 10);
+      scheduleServerDate.value = '';
+      scheduleServerTime.value = '';
+      scheduleDayNameAr.value = '';
       isLoadingScheduleDetail.value = true;
       try {
         const projectId = project.contract_id || project.id;
-        const [members, ecData] = await Promise.all([
-          salesService.getProjectScheduleMembers(projectId),
+        const date = scheduleViewDate.value;
+        const [scheduleResult, ecData] = await Promise.all([
+          salesService.getProjectScheduleMembers(projectId, date),
           salesService.getEmergencyContacts(projectId).catch(() => ({})),
         ]);
-        scheduleMembers.value = members.map(m => ({ ...m, is_present: !!m.is_present }));
+        const list = scheduleResult.members ?? [];
+        scheduleMembers.value = list.map(m => normalizeScheduleMember(m));
+        scheduleServerDate.value = scheduleResult.server_date ?? '';
+        scheduleServerTime.value = scheduleResult.server_time ?? '';
+        scheduleDayNameAr.value = scheduleResult.day_name_ar ?? '';
+        if (!scheduleResult.server_time) updateScheduleViewTime();
         const ec = Array.isArray(ecData) ? ecData[0] : ecData;
         if (ec) {
           emergencyContact.name = ec.name || ec.contact_name || '';
@@ -3471,6 +3882,32 @@ export default {
         notificationService.addNotification('حدث خطأ أثناء تحميل بيانات المشروع', 'error');
       } finally {
         isLoadingScheduleDetail.value = false;
+      }
+    };
+
+    const toTimeHHMM = v => {
+      if (v == null || v === '') return null;
+      const s = String(v).trim();
+      if (!s) return null;
+      const part = s.slice(0, 5);
+      return /^\d{1,2}:\d{2}$/.test(part) ? part : null;
+    };
+
+    const normalizeScheduleMember = m => ({
+      ...m,
+      is_present: !!(m.is_present ?? m.present),
+      start_time: toTimeHHMM(m.start_time ?? m.check_in_time) || '08:00',
+      end_time: toTimeHHMM(m.end_time ?? m.check_out_time) || '17:00',
+    });
+
+    // Used in template for schedule time inputs (من / إلى)
+    // eslint-disable-next-line no-unused-vars -- used in template @input
+    const updateMemberScheduleTime = (member, field, value) => {
+      const idx = scheduleMembers.value.findIndex(m => m.id === member.id);
+      if (idx !== -1 && (field === 'start_time' || field === 'end_time')) {
+        const next = { ...scheduleMembers.value[idx], [field]: value || (field === 'start_time' ? '08:00' : '17:00') };
+        scheduleMembers.value[idx] = next;
+        scheduleMembers.value = [...scheduleMembers.value];
       }
     };
 
@@ -3499,28 +3936,29 @@ export default {
       return colors[(id || 0) % colors.length];
     };
 
-    const getTodayArabicDay = () => {
-      const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-      return days[new Date().getDay()];
-    };
-
     const saveAllSchedules = async () => {
       isSavingSchedules.value = true;
       try {
         const projectId =
           selectedScheduleProject.value?.contract_id || selectedScheduleProject.value?.id;
+        const date = scheduleViewDate.value || new Date().toISOString().slice(0, 10);
         const schedules = scheduleMembers.value.map(m => ({
           user_id: m.id,
-          is_present: m.is_present,
+          is_present: !!(m.is_present ?? m.present),
+          start_time: m.start_time || '08:00',
+          end_time: m.end_time || '17:00',
         }));
 
-        // Bulk save triggers backend notifications to each affected team member
-        await salesService.saveProjectSchedules(projectId, schedules);
+        // Bulk save for the selected date — triggers backend notifications
+        const result = await salesService.saveProjectSchedules(projectId, schedules, date);
         await salesService.updateEmergencyContacts(projectId, {
           name: emergencyContact.name,
           phone: emergencyContact.phone,
           role: emergencyContact.role,
         });
+
+        // Reload schedule from server so UI shows saved state and updated timestamp
+        await loadScheduleForSelectedDate();
 
         // Capture attendance view as a shareable image
         if (scheduleDetailRef.value) {
@@ -3531,8 +3969,8 @@ export default {
               backgroundColor: '#f8fafc',
             });
             const link = document.createElement('a');
-            const today = new Date().toISOString().slice(0, 10);
-            link.download = `attendance-${today}.png`;
+            const dateForFile = scheduleViewDate.value || new Date().toISOString().slice(0, 10);
+            link.download = `attendance-${dateForFile}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
           } catch (imgErr) {
@@ -3540,10 +3978,19 @@ export default {
           }
         }
 
-        notificationService.addNotification(
-          'تم حفظ الجداول وإرسال الإشعارات للفريق بنجاح',
-          'success'
-        );
+        // رسالة نجاح من الاستجابة إن وُجدت (day_name_ar، schedule_date، start_time، end_time)
+        const items = result?.items ?? result?.schedules ?? (Array.isArray(result) ? result : []);
+        const first = items[0];
+        const dayName = first?.day_name_ar ?? scheduleDisplayDayName.value ?? '';
+        const scheduleDate = first?.schedule_date ?? date ?? scheduleViewDate.value ?? '';
+        const startTime = first?.start_time ?? schedules[0]?.start_time ?? '08:00';
+        const endTime = first?.end_time ?? schedules[0]?.end_time ?? '17:00';
+        const timeRange = `${String(startTime).slice(0, 5)} إلى ${String(endTime).slice(0, 5)}`;
+        const detailMsg =
+          dayName && scheduleDate
+            ? `تم تعيين الدوام: ${dayName} ${scheduleDate} من ${timeRange}`
+            : 'تم حفظ الجداول وإرسال الإشعارات للفريق بنجاح';
+        notificationService.addNotification(detailMsg, 'success');
       } catch (error) {
         logger.error('Error saving schedules:', error);
         notificationService.addNotification('حدث خطأ أثناء حفظ البيانات', 'error');
@@ -3834,6 +4281,19 @@ export default {
       openScheduleModal,
       createSchedule,
       teamMembers,
+      teamMembersDisplay,
+      teamSortByRecommendation,
+      memberRatingSaving,
+      memberCommentEditId,
+      memberCommentDrafts,
+      openMemberComment,
+      cancelMemberComment,
+      saveMemberComment,
+      memberToRemove,
+      memberRemoveLoading,
+      setMemberRating,
+      confirmRemoveMember,
+      doRemoveMember,
       teamProjects,
       taskProjectOptions,
       isLoadingTeam,
@@ -3923,11 +4383,18 @@ export default {
       isSavingSchedules,
       emergencyContact,
       scheduleDetailRef,
+      scheduleViewDate,
+      scheduleViewDateFormatted,
+      scheduleViewTime,
+      scheduleDisplayDate,
+      scheduleDisplayTime,
+      scheduleDisplayDayName,
+      getArabicDayForDate,
+      loadScheduleForSelectedDate,
       loadScheduleProjects,
       openProjectSchedule,
       toggleScheduleMember,
       getAvatarColor,
-      getTodayArabicDay,
       saveAllSchedules,
       // Pagination
       paginatedReservations,
@@ -5003,44 +5470,125 @@ export default {
   color: #1e40af;
 }
 
-/* Team Sections */
+/* Team Tab – responsive container */
+.team-tab {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 4px;
+}
+
+/* Team Sections – عمود واحد على الموبايل، عمودين على الشاشات الأوسع */
 .team-sections {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
+  grid-template-columns: 1fr;
+  gap: 28px;
+}
+
+@media (min-width: 900px) {
+  .team-sections {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+}
+
+.team-section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.team-section-header h3 {
+  margin: 0;
+  font-size: clamp(18px, 4vw, 20px);
+  color: var(--color-navy);
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--color-medium-gray);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sort-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: clamp(13px, 2.5vw, 14px);
+  color: var(--color-dark-gray);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sort-toggle input {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  cursor: pointer;
 }
 
 .team-section h3 {
   margin: 0 0 20px 0;
-  font-size: 20px;
+  font-size: clamp(18px, 4vw, 20px);
   color: var(--color-navy);
   padding-bottom: 12px;
   border-bottom: 2px solid var(--color-medium-gray);
 }
 
+/* شبكة البطاقات: عمود على الموبايل، 2 من ~520px، 3 من ~768px، auto-fill للشاشات الكبيرة */
 .team-members-grid {
   display: grid;
+  grid-template-columns: 1fr;
   gap: 16px;
 }
 
+@media (min-width: 520px) {
+  .team-members-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (min-width: 768px) {
+  .team-members-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .team-members-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 22px;
+  }
+}
+
+/* بطاقة العضو – منظمة، ظل خفيف، ومساحة مريحة */
 .member-card {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: var(--color-light-gray);
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px;
+  background: var(--color-white);
+  border: 1px solid var(--color-medium-gray);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+  min-width: 0;
 }
 
 .member-card:hover {
-  background: #f1f5f9;
-  transform: translateX(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  border-color: rgba(177, 162, 143, 0.35);
+  transform: translateY(-2px);
 }
 
 .member-avatar {
-  width: 50px;
-  height: 50px;
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  min-height: 52px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
@@ -5049,29 +5597,174 @@ export default {
   justify-content: center;
   font-size: 20px;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .member-info {
   flex: 1;
+  min-width: 0;
 }
 
 .member-info h4 {
   margin: 0 0 4px 0;
-  font-size: 16px;
+  font-size: clamp(15px, 3vw, 16px);
   color: var(--color-navy);
+  font-weight: 600;
+  line-height: 1.3;
+  word-break: break-word;
 }
 
 .member-info p {
   margin: 0 0 8px 0;
   font-size: 13px;
   color: var(--color-dark-gray);
+  line-height: 1.4;
+}
+
+.member-rating {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.member-rating .star-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  margin: -4px;
+  font-size: 20px;
+  line-height: 1;
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: color 0.15s;
+  min-width: 32px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.member-rating .star-btn.filled {
+  color: #fbbf24;
+}
+
+.member-rating .star-btn:hover:not(:disabled) {
+  color: #fbbf24;
+}
+
+.member-rating .star-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.member-leader-comment {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  background: rgba(30, 58, 95, 0.06);
+  border-radius: 8px;
+  border-right: 3px solid var(--color-gold);
+}
+
+.member-leader-comment .comment-label {
+  font-size: 11px;
+  color: #64748b;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.member-leader-comment .comment-text {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-navy);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.member-comment-edit {
+  margin-bottom: 8px;
+}
+
+.btn-link-comment {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  color: var(--color-gold-dark);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.btn-link-comment:hover {
+  color: var(--color-gold);
+}
+
+.member-comment-edit .comment-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 13px;
+  border: 1px solid var(--color-medium-gray);
+  border-radius: 8px;
+  resize: vertical;
+  margin-bottom: 8px;
+}
+
+.member-comment-edit .comment-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.member-comment-edit .btn-primary.small {
+  padding: 6px 12px;
+  font-size: 13px;
 }
 
 .member-stats {
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 12px 16px;
   font-size: 12px;
   color: #475569;
+  margin-bottom: 4px;
+}
+
+.member-actions {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.btn-remove-member {
+  padding: 8px 14px;
+  font-size: 13px;
+  color: #b91c1c;
+  background: rgba(185, 28, 28, 0.08);
+  border: 1px solid rgba(185, 28, 28, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  min-height: 40px;
+}
+
+.btn-remove-member:hover:not(:disabled) {
+  background: rgba(185, 28, 28, 0.15);
+  color: #991b1b;
+}
+
+.btn-remove-member:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal-actions .btn-primary.danger {
+  background: #b91c1c;
+  color: white;
+  border-color: #b91c1c;
+}
+
+.modal-actions .btn-primary.danger:hover:not(:disabled) {
+  background: #991b1b;
 }
 
 .team-projects-list {
@@ -5389,6 +6082,27 @@ export default {
 
   .team-sections {
     grid-template-columns: 1fr;
+  }
+
+  .team-members-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .member-card {
+    padding: 16px;
+  }
+
+  .member-rating .star-btn {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 8px;
+    margin: -8px;
+  }
+
+  .btn-remove-member {
+    min-height: 44px;
+    padding: 10px 16px;
   }
 
   .projects-grid,
@@ -6598,6 +7312,56 @@ textarea.form-input {
   border-color: #cbd5e1;
 }
 
+/* Schedule date bar — 100% match with date */
+.schedule-date-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  background: var(--color-light-gray);
+  border: 1px solid var(--color-medium-gray);
+  border-radius: 12px;
+  margin-top: 16px;
+}
+
+.schedule-date-display {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+}
+
+.schedule-date-display .update-label {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.schedule-date-display .update-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.schedule-date-picker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.schedule-date-picker-wrap label {
+  font-size: 14px;
+  color: var(--color-dark-gray);
+  white-space: nowrap;
+}
+
+.schedule-date-input {
+  width: auto;
+  min-width: 160px;
+  padding: 8px 12px;
+}
+
 /* Detail Layout */
 .schedule-detail-layout {
   display: grid;
@@ -6719,6 +7483,53 @@ textarea.form-input {
   border-top: 1px solid #f1f5f9;
 }
 
+.member-time-row {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.member-time-row .time-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-dark-gray);
+  margin-bottom: 8px;
+}
+
+.member-time-row .time-inputs {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.member-time-row .time-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-charcoal);
+}
+
+.member-time-row .time-field span {
+  font-weight: 500;
+  min-width: 24px;
+}
+
+.member-time-row .time-field input {
+  padding: 6px 10px;
+  border: 1px solid var(--color-medium-gray);
+  border-radius: 8px;
+  font-size: 14px;
+  min-width: 100px;
+}
+
+.member-time-row .time-field input:focus {
+  outline: none;
+  border-color: var(--color-primary, #2563eb);
+}
+
 .schedule-day {
   font-size: 13px;
   color: var(--color-dark-gray);
@@ -6804,9 +7615,47 @@ textarea.form-input {
   box-shadow: 0 6px 16px rgba(177, 162, 143, 0.4);
 }
 
-.btn-save-schedules:disabled {
-  opacity: 0.6;
+.btn-save-schedules:disabled,
+.btn-save-schedules--saving {
+  opacity: 1;
+  cursor: wait;
+  background: linear-gradient(135deg, #94a3b8, #64748b) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
+  transform: none;
+}
+
+.btn-save-schedules--saving:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
+}
+
+.btn-save-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: btn-save-spin 0.7s linear infinite;
+}
+
+@keyframes btn-save-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.schedule-form--saving .schedule-member-card,
+.schedule-form--saving .emergency-contact-section {
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.schedule-form--saving .schedule-member-card input:disabled,
+.schedule-form--saving .emergency-contact-section input:disabled,
+.schedule-form--saving .emergency-contact-section select:disabled {
   cursor: not-allowed;
+  background: var(--color-light-gray);
 }
 
 .btn-save-schedules svg {

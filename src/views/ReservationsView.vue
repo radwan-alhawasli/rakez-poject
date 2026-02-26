@@ -281,6 +281,7 @@
 import { ref, computed, onMounted } from 'vue';
 import ConfirmModal from '../components/ConfirmModal.vue';
 import { toast } from '../composables/useToast';
+import { useFormatters } from '../composables/useFormatters';
 import salesService from '../services/salesService';
 import { hasPermission } from '../utils/rbac';
 import logger from '../utils/logger';
@@ -369,14 +370,7 @@ export default {
       activeTab.value = tab;
     };
 
-    const formatDate = dateStr => {
-      if (!dateStr) return '—';
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return dateStr;
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    };
-
-    const formatCurrency = amount => new Intl.NumberFormat('en-US').format(amount || 0);
+    const { formatDateISO: formatDate, formatNumber: formatCurrency } = useFormatters();
 
     const getStatusLabel = status => {
       const labels = {

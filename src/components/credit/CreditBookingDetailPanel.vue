@@ -244,6 +244,7 @@
 
 <script>
 import { computed } from 'vue';
+import { useFormatters } from '../../composables/useFormatters';
 
 const TRACKER_LABELS = [
   'رفع الطلب للبنك',
@@ -262,6 +263,8 @@ export default {
   },
   emits: ['evacuation', 'delete', 'edit', 'schedule', 'cancel', 'next-stage', 'reject-financing'],
   setup(props) {
+    const { formatCurrencyAr: formatCurrency, formatDate } = useFormatters();
+
     const summaryTitle = computed(() => {
       const b = props.booking;
       if (!b) return '—';
@@ -385,27 +388,6 @@ export default {
       const s = props.booking?.credit_status ?? props.booking?.status;
       return s !== 'sold' && s !== 'مباع';
     });
-
-    const formatDate = d => {
-      if (!d) return '—';
-      try {
-        return new Date(d).toLocaleDateString('ar-SA', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        });
-      } catch {
-        return d;
-      }
-    };
-    const formatCurrency = v => {
-      if (v == null || v === '') return '—';
-      return new Intl.NumberFormat('ar-SA', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 0,
-      }).format(Number(v));
-    };
 
     return {
       summaryTitle,

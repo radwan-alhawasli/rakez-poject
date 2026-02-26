@@ -641,6 +641,7 @@ import { ref, reactive, onMounted } from 'vue';
 import salesService from '../services/salesService';
 import notificationService from '../services/notificationService';
 import logger from '../utils/logger';
+import { useFormatters } from '../composables/useFormatters';
 import ConfirmModal from '../components/ConfirmModal.vue';
 
 export default {
@@ -880,23 +881,7 @@ export default {
       }
     };
 
-    // Utility functions
-    const formatCurrency = value => {
-      return new Intl.NumberFormat('ar-SA', {
-        style: 'currency',
-        currency: 'SAR',
-        minimumFractionDigits: 0,
-      }).format(value || 0);
-    };
-
-    const formatNumber = value => {
-      return new Intl.NumberFormat('ar-SA').format(value || 0);
-    };
-
-    const formatDate = dateString => {
-      if (!dateString) return '—';
-      return new Date(dateString).toLocaleDateString('ar-SA');
-    };
+    const { formatCurrencyAr: formatCurrency, formatNumber, formatDate } = useFormatters();
 
     const getStatusClass = status => {
       const statusMap = {

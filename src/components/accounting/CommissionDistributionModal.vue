@@ -136,6 +136,7 @@
 <script>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import accountingService from '../../services/accountingService';
+import { useFormatters } from '../../composables/useFormatters';
 
 export default {
   name: 'CommissionDistributionModal',
@@ -145,6 +146,7 @@ export default {
   },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
+    const { formatCurrency } = useFormatters();
     const handleEscape = e => {
       if (e.key === 'Escape') emit('close');
     };
@@ -182,15 +184,6 @@ export default {
     };
 
     const getCommissionTypeLabel = type => COMMISSION_TYPE_LABELS[type] || type || '—';
-
-    const formatCurrency = val => {
-      if (!val) return '0 ر.س';
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 0,
-      }).format(val);
-    };
 
     const loadSummary = async () => {
       if (!props.commission?.id) return;

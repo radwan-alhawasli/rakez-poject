@@ -417,10 +417,12 @@ const salesService = {
   },
 
   /**
-   * Create single schedule (leader only)
+   * تعيين دوام فردي (مدير المبيعات فقط)
    * POST /sales/attendance/schedules
-   * @param {Object} data - { contract_id, user_id, schedule_date, start_time, end_time }
-   * @returns {Promise<Object>} Created schedule
+   * المدير يرسل: schedule_date (Y-m-d), start_time, end_time. اليوم (day_name_ar) يُستنتج من التاريخ ويُرجع في الاستجابة.
+   * الساعات: يمكن إرسال "08:00" أو "08:00:00"؛ يتم تحويلها داخلياً إلى H:i:s.
+   * @param {Object} data - { contract_id, user_id, schedule_date (Y-m-d), start_time, end_time }
+   * @returns {Promise<Object>} SalesAttendanceResource: schedule_date, day_name_ar, day_of_week, start_time, end_time, user_id, user_name, project_id, project_name, project_location
    */
   createSchedule(data) {
     return apiClient.post('/sales/attendance/schedules', data);
@@ -477,19 +479,92 @@ const salesService = {
 
   /**
    * Get team members
-   * GET /sales/team/members
-   * @returns {Promise<Array>} List of team members { id, name, email, team }
+   * GET /api/sales/team/members
+   * @param {Object} params - with_ratings (default: true) — when true, includes leader_rating and confirmed_reservations_count
+   * @returns {Promise<Array>} List of team members with id, name, email, team, rating (leader_rating), confirmed_bookings, etc.
    */
-  async getTeamMembers() {
-    const response = await apiClient.get('/sales/team/members');
+  async getTeamMembers(params = {}) {
+    const { with_ratings = true } = params;
+    const response = await apiClient.get('/sales/team/members', {
+      params: { with_ratings },
+    });
     const raw = response?.data?.data ?? response?.data ?? [];
     const list = Array.isArray(raw) ? raw : [];
     return list.map(m => ({
+      ...m,
       id: m.id ?? m.user_id ?? m.marketer_id,
       name: m.name ?? m.full_name ?? m.marketer_name ?? m.email ?? `#${m.id ?? m.user_id ?? ''}`,
       email: m.email ?? null,
       team: m.team ?? m.team_name ?? null,
+      total_sales: m.total_sales ?? m.sales_count ?? 0,
+      total_value: m.total_value ?? m.sales_value ?? m.total_sales_value ?? 0,
+      rating: m.leader_rating != null ? Number(m.leader_rating) : (m.rating != null ? Number(m.rating) : null),
+      comment: m.leader_rating_comment ?? m.comment ?? null,
+      confirmed_bookings: m.confirmed_reservations_count ?? m.confirmed_bookings ?? m.confirmed_count ?? 0,
+      total_reservations: m.total_reservations ?? m.reservations_count ?? 0,
+      villa_count: m.villa_count ?? m.villas_sold ?? 0,
     }));
+  },
+
+  /**
+   * Team recommendations (ترشيح بالذكاء الاصطناعي) — members sorted by recommendation score.
+   * GET /api/sales/team/recommendations
+   * @returns {Promise<Array>} Same shape as getTeamMembers with recommendation_score, confirmed_percent, unit_type_avg_score, etc.
+   */
+  async getTeamRecommendations() {
+    const response = await apiClient.get('/sales/team/recommendations');
+    const raw = response?.data?.data ?? response?.data ?? [];
+    const list = Array.isArray(raw) ? raw : [];
+    return list.map(m => ({
+      ...m,
+      id: m.id ?? m.user_id ?? m.marketer_id,
+      name: m.name ?? m.full_name ?? m.marketer_name ?? m.email ?? `#${m.id ?? m.user_id ?? ''}`,
+      email: m.email ?? null,
+      team: m.team ?? m.team_name ?? null,
+      total_sales: m.total_sales ?? m.sales_count ?? 0,
+      total_value: m.total_value ?? m.sales_value ?? m.total_sales_value ?? 0,
+      rating: m.leader_rating != null ? Number(m.leader_rating) : (m.rating != null ? Number(m.rating) : null),
+      comment: m.leader_rating_comment ?? m.comment ?? null,
+      confirmed_bookings: m.confirmed_count ?? m.confirmed_reservations_count ?? m.confirmed_bookings ?? 0,
+      total_reservations: m.total_reservations ?? m.reservations_count ?? 0,
+      recommendation_score: m.recommendation_score != null ? Number(m.recommendation_score) : null,
+      confirmed_percent: m.confirmed_percent != null ? Number(m.confirmed_percent) : null,
+      unit_type_avg_score: m.unit_type_avg_score != null ? Number(m.unit_type_avg_score) : null,
+      recommendation_highlights: Array.isArray(m.recommendation_highlights)
+        ? m.recommendation_highlights
+        : [],
+      confirmed_recent_90: m.confirmed_recent_90 != null ? Number(m.confirmed_recent_90) : null,
+    }));
+  },
+
+  /**
+   * Rate and/or comment on a team member. Leader only.
+   * PATCH /api/sales/team/members/{memberId}/rating
+   * - تعليق فقط: { "comment": "..." }
+   * - تقييم فقط: { "rating": 1..5 }
+   * - تقييم + تعليق: { "rating": 4, "comment": "..." }
+   * يحدّث فقط الحقول المرسلة (التعليق لا يمس التقييم والعكس).
+   * @param {number|string} memberId - Team member user id
+   * @param {number|null|undefined} [rating] - 1 to 5 (optional; null/undefined = لا تغيير)
+   * @param {string|null|undefined} [comment] - تعليق مدير المبيعات حتى 2000 حرف (optional)
+   * @returns {Promise<Object>} data.rating, data.comment
+   */
+  rateTeamMember(memberId, rating, comment = null) {
+    const body = {};
+    if (rating != null && rating !== '') body.rating = Number(rating);
+    if (comment != null && String(comment).trim() !== '') body.comment = String(comment).trim();
+    if (Object.keys(body).length === 0) return Promise.reject(new Error('يجب إرسال التقييم و/أو التعليق'));
+    return apiClient.patch(`/sales/team/members/${memberId}/rating`, body);
+  },
+
+  /**
+   * Remove (fire) a team member from the leader's team. Leader only.
+   * POST /api/sales/team/members/{memberId}/remove
+   * @param {number|string} memberId - Team member user id
+   * @returns {Promise<Object>}
+   */
+  removeTeamMember(memberId) {
+    return apiClient.post(`/sales/team/members/${memberId}/remove`);
   },
 
   /**
@@ -765,12 +840,12 @@ const salesService = {
   // Project Schedule Management (Leader)
 
   /**
-   * Get project attendance overview — team members with today's presence status
-   * GET /sales/attendance/project/{contractId}
-   * Falls back to getTeamMembers + getTeamAttendance if endpoint unavailable
+   * Get project attendance overview — team members with presence status for the given date.
+   * GET /sales/attendance/project/{contractId}?date=YYYY-MM-DD
+   * API returns server_date, server_time, day_name_ar for 100% match with backend (app timezone).
    * @param {number|string} projectId - Project/Contract ID
    * @param {string} [date] - Optional date (YYYY-MM-DD), defaults to today
-   * @returns {Promise<Array>} Members with schedule/attendance info
+   * @returns {Promise<{ members: Array, server_date?: string, server_time?: string, day_name_ar?: string }>}
    */
   async getProjectScheduleMembers(projectId, date) {
     const params = {};
@@ -779,17 +854,23 @@ const salesService = {
       const response = await apiClient.get(`/sales/attendance/project/${projectId}`, { params });
       const payload = response?.data?.data ?? response?.data ?? {};
       const raw = payload?.members ?? (Array.isArray(payload) ? payload : []);
-      return Array.isArray(raw) ? raw : [];
+      const members = Array.isArray(raw) ? raw : [];
+      return {
+        members,
+        server_date: payload.server_date ?? payload.date ?? date ?? null,
+        server_time: payload.server_time ?? null,
+        day_name_ar: payload.day_name_ar ?? null,
+      };
     } catch {
-      const [members, attendance] = await Promise.all([
+      const [teamMembers, attendance] = await Promise.all([
         this.getTeamMembers(),
         this.getTeamAttendance({ contract_id: projectId }).catch(() => []),
       ]);
-      const today = (date || new Date().toISOString()).slice(0, 10);
+      const today = (date || new Date().toISOString().slice(0, 10)).toString().slice(0, 10);
       const todayRecords = attendance.filter(
         r => (r.date || r.schedule_date || '').slice(0, 10) === today
       );
-      return members.map(m => {
+      const members = teamMembers.map(m => {
         const record = todayRecords.find(r => (r.user_id ?? r.employee_id) === m.id);
         return {
           ...m,
@@ -799,6 +880,7 @@ const salesService = {
           status: record?.status || 'absent',
         };
       });
+      return { members, server_date: today, server_time: null, day_name_ar: null };
     }
   },
 
@@ -964,26 +1046,33 @@ const salesService = {
   /**
    * Bulk save project attendance (and triggers backend notifications)
    * POST /sales/attendance/project/{contractId}/bulk
-   * Falls back to individual createSchedule calls
+   * BulkAttendanceRequest: date (Y-m-d), schedules[].user_id, present, start_time?, end_time?.
+   * الساعات: يمكن إرسال "08:00" أو "08:00:00"؛ يتم تحويلها داخلياً إلى H:i:s.
+   * Falls back to individual createSchedule calls on error.
    * @param {number|string} projectId - Project/Contract ID
-   * @param {Array} schedules - Array of { user_id, present, start_time?, end_time? }
-   * @param {string} [date] - Date string (YYYY-MM-DD), defaults to today
-   * @returns {Promise<Object>} Result with created/updated/removed counts
+   * @param {Array} schedules - Array of { user_id, is_present|present, start_time?, end_time? }
+   * @param {string} [date] - schedule_date (YYYY-MM-DD), defaults to today
+   * @returns {Promise<Object>} Result with created/updated/removed counts; may include items[] (SalesAttendanceResource with schedule_date, day_name_ar, start_time, end_time, ...)
    */
   async saveProjectSchedules(projectId, schedules, date) {
-    const today = date || new Date().toISOString().slice(0, 10);
+    const schedule_date = (date || new Date().toISOString().slice(0, 10)).replace(/\//g, '-');
+    const toTime = v => {
+      if (!v) return '08:00';
+      const s = String(v).trim();
+      return s.length > 5 ? s.slice(0, 8) : s; // "08:00" or "08:00:00"
+    };
     try {
       const payload = {
-        date: today,
+        date: schedule_date,
         schedules: schedules.map(s => ({
           user_id: s.user_id,
           present: s.is_present ?? s.present ?? false,
-          start_time: s.start_time || '08:00',
-          end_time: s.end_time || '17:00',
+          start_time: toTime(s.start_time) || '08:00',
+          end_time: toTime(s.end_time) || '17:00',
         })),
       };
       const response = await apiClient.post(`/sales/attendance/project/${projectId}/bulk`, payload);
-      return response.data?.data || response.data || {};
+      return response.data?.data ?? response.data ?? {};
     } catch {
       const presentMembers = schedules.filter(s => s.is_present ?? s.present);
       const results = await Promise.allSettled(
@@ -991,13 +1080,14 @@ const salesService = {
           this.createSchedule({
             contract_id: projectId,
             user_id: s.user_id,
-            schedule_date: today,
-            start_time: s.start_time || '08:00',
-            end_time: s.end_time || '17:00',
+            schedule_date,
+            start_time: toTime(s.start_time) || '08:00',
+            end_time: toTime(s.end_time) || '17:00',
           })
         )
       );
-      return { saved: results.filter(r => r.status === 'fulfilled').length };
+      const fulfilled = results.filter(r => r.status === 'fulfilled');
+      return { saved: fulfilled.length, items: fulfilled.map(r => r.value?.data?.data ?? r.value?.data ?? r.value) };
     }
   },
 };

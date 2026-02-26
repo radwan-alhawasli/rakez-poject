@@ -111,6 +111,7 @@
 
 <script>
 import { reactive, computed, onMounted, onUnmounted } from 'vue';
+import { useFormatters } from '../../composables/useFormatters';
 
 export default {
   name: 'SalaryDistributionModal',
@@ -120,19 +121,12 @@ export default {
   },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
+    const { formatCurrency } = useFormatters();
     const isSalesJob = computed(() => {
       const title = (props.salary?.job_title || props.salary?.title || '').toLowerCase();
       return title.includes('سيلز') || title.includes('sales') || title.includes('مسوق');
     });
 
-    const formatCurrency = val => {
-      if (!val) return '0 ر.س';
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 0,
-      }).format(val);
-    };
     // Handle Escape key
     const handleEscape = e => {
       if (e.key === 'Escape') {

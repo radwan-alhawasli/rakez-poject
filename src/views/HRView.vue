@@ -585,6 +585,7 @@ import hrService from '../services/hrService';
 import authService from '../services/authService';
 import logger from '../utils/logger';
 import { toast } from '../composables/useToast';
+import { useFormatters } from '../composables/useFormatters';
 
 export default {
   name: 'HRView',
@@ -1141,14 +1142,7 @@ export default {
       }
     };
 
-    const formatCurrency = val => {
-      // Force English/Western numerals by using 'en-US' locale
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 0,
-      }).format(val);
-    };
+    const { formatCurrency } = useFormatters();
 
     const handleUserSubmit = async userData => {
       isSavingUser.value = true;

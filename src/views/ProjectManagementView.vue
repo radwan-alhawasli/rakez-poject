@@ -473,6 +473,7 @@ import notificationService from '../services/notificationService';
 import teamService from '../services/teamService';
 import logger from '../utils/logger';
 import { toast } from '../composables/useToast';
+import { useFormatters } from '../composables/useFormatters';
 
 export default {
   name: 'ProjectManagementView',
@@ -562,6 +563,13 @@ export default {
             ? `طلب مشروع حصري. ${p.total_units || totalUnits || 100} وحدة من نوع ${unitType}.`
             : (p.description || p.details || '').split('\n')[0] ||
               (totalUnits ? `${totalUnits} وحدة` : '');
+          // جاهز للتسويق (معتمد وله وحدات) => تقدم الإعداد 100%، وإلا نسبة الـ tracker
+          const isReadyForMarketing = p.status === 'Approved' && totalUnits > 0;
+          const setupProgressVal = isReadyForMarketing
+            ? 100
+            : p.setup_progress != null
+              ? Number(p.setup_progress)
+              : 0;
           return {
             id: p.id,
             name: p.project_name || p.name || `مشروع #${p.id}`,
@@ -579,7 +587,7 @@ export default {
             status: p.status,
             description: p.description || p.details || '',
             descriptionLine: descLine,
-            setupProgress: p.setup_progress != null ? Number(p.setup_progress) : 0,
+            setupProgress: setupProgressVal,
             soldUnitsCount: soldCount,
             soldUnitsPercent: totalUnits ? Math.round((soldCount / totalUnits) * 100) : 0,
             avgPrice: units.length
@@ -922,9 +930,7 @@ export default {
       closeWorkspaceModal();
     };
 
-    const formatCurrency = val => {
-      return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR' }).format(val);
-    };
+    const { formatCurrencyAr: formatCurrency } = useFormatters();
 
     const timelineClass = daysLeft => {
       if (daysLeft === null) return '';

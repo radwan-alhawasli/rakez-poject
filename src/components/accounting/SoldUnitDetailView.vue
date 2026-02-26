@@ -509,6 +509,7 @@ import { ref, reactive, computed, watch, onMounted } from 'vue';
 import accountingService from '../../services/accountingService';
 import logger from '../../utils/logger';
 import { toast } from '../../composables/useToast';
+import { useFormatters } from '../../composables/useFormatters';
 
 const COMMISSION_TYPE_LABELS = {
   lead_generation: 'عمولة الجلب',
@@ -533,6 +534,7 @@ export default {
   },
   emits: ['back', 'create-commission'],
   setup(props, { emit }) {
+    const { formatCurrency, formatNumber } = useFormatters();
     const employees = ref([]);
     const commissionSummary = ref(null);
     const distributions = ref([]);
@@ -592,23 +594,6 @@ export default {
       );
       return Math.max(0, net - distTotal);
     });
-
-    const formatCurrency = val => {
-      if (!val) return '0 ر.س';
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 2,
-      }).format(val);
-    };
-
-    const formatNumber = val => {
-      if (val == null) return '0';
-      return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(val);
-    };
 
     const getTypeLabel = type => COMMISSION_TYPE_LABELS[type] || type || '—';
 

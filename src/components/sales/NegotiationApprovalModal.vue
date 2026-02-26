@@ -168,6 +168,7 @@
 
 <script>
 import { ref, reactive, onMounted, onUnmounted, computed } from 'vue';
+import { useFormatters } from '../../composables/useFormatters';
 import { toast } from '../../composables/useToast';
 
 export default {
@@ -184,6 +185,8 @@ export default {
   },
   emits: ['close', 'approve', 'reject'],
   setup(props, { emit }) {
+    const { formatCurrencyAr: formatCurrency, formatDateLong: formatDate } = useFormatters();
+
     const actionType = ref('approve');
     const isProcessing = computed(() => props.isLoading);
 
@@ -195,23 +198,6 @@ export default {
       reason: '',
       notes: '',
     });
-
-    const formatCurrency = amount => {
-      return new Intl.NumberFormat('ar-SA', {
-        style: 'currency',
-        currency: 'SAR',
-      }).format(amount || 0);
-    };
-
-    const formatDate = dateString => {
-      if (!dateString) return '—';
-      const date = new Date(dateString);
-      return date.toLocaleDateString('ar-SA', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-    };
 
     const getDifferencePercentage = () => {
       if (!props.negotiation) return '0';

@@ -208,6 +208,7 @@ import logger from '../utils/logger';
 import { handleError } from '../utils/errorHandler';
 import appConfig from '../config/appConfig';
 import { toast } from '../composables/useToast';
+import { useFormatters } from '../composables/useFormatters';
 
 export default {
   name: 'UserManagement',
@@ -533,10 +534,7 @@ export default {
       return '';
     };
 
-    const formatDate = dateString => {
-      if (!dateString) return '-';
-      return new Date(dateString).toISOString().split('T')[0];
-    };
+    const { formatDateISO: formatDate } = useFormatters();
 
     const handlePageChange = page => {
       currentPage.value = page;

@@ -86,6 +86,7 @@
 
 <script>
 import { reactive, computed, onMounted, onUnmounted } from 'vue';
+import { useFormatters } from '../../composables/useFormatters';
 
 export default {
   name: 'DepositConfirmationModal',
@@ -95,6 +96,7 @@ export default {
   },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
+    const { formatCurrency } = useFormatters();
     const action = computed(() => (props.deposit?.status === 'pending' ? 'confirm' : 'refund'));
     const formData = reactive({
       confirmed_amount: props.deposit?.amount || 0,
@@ -120,15 +122,6 @@ export default {
       document.body.style.overflow = '';
       document.removeEventListener('keydown', handleEscape);
     });
-
-    const formatCurrency = val => {
-      if (!val) return '0 ر.س';
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 0,
-      }).format(val);
-    };
 
     const handleSubmit = () => {
       emit('submit', { action: action.value, ...formData });

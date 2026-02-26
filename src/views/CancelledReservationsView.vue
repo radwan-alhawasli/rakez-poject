@@ -179,6 +179,7 @@
 
 <script>
 import { ref } from 'vue';
+import { useFormatters } from '../composables/useFormatters';
 
 export default {
   name: 'CancelledReservationsView',
@@ -254,9 +255,7 @@ export default {
       },
     ]);
 
-    const formatCurrency = amount => {
-      return new Intl.NumberFormat('en-US').format(amount);
-    };
+    const { formatNumber: formatCurrency } = useFormatters();
 
     const toggleExpand = id => {
       expandedId.value = expandedId.value === id ? null : id;

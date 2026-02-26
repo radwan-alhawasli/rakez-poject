@@ -162,6 +162,7 @@
 
 <script>
 import { ref, reactive, onMounted, onUnmounted, computed } from 'vue';
+import { useFormatters } from '../../composables/useFormatters';
 import ConfirmModal from '../ConfirmModal.vue';
 import salesService from '../../services/salesService';
 import logger from '../../utils/logger';
@@ -178,6 +179,8 @@ export default {
   },
   emits: ['close', 'saved'],
   setup(props, { emit }) {
+    const { formatCurrencyAr: formatCurrency, formatDateLong: formatDate } = useFormatters();
+
     const isLoading = ref(false);
     const isSaving = ref(false);
     const installments = ref([]);
@@ -202,23 +205,6 @@ export default {
       tomorrow.setDate(tomorrow.getDate() + 1);
       return tomorrow.toISOString().split('T')[0];
     });
-
-    const formatCurrency = amount => {
-      return new Intl.NumberFormat('ar-SA', {
-        style: 'currency',
-        currency: 'SAR',
-      }).format(amount || 0);
-    };
-
-    const formatDate = dateString => {
-      if (!dateString) return '—';
-      const date = new Date(dateString);
-      return date.toLocaleDateString('ar-SA', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-    };
 
     const loadPaymentPlan = async () => {
       isLoading.value = true;

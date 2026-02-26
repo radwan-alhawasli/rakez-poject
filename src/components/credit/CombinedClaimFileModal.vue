@@ -171,6 +171,7 @@
 
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useFormatters } from '../../composables/useFormatters';
 
 export default {
   name: 'CombinedClaimFileModal',
@@ -190,6 +191,8 @@ export default {
   },
   emits: ['close', 'submit-combined', 'submit-bulk'],
   setup(props, { emit }) {
+    const { formatCurrency } = useFormatters();
+
     const selectedIds = ref([]);
     const notes = ref('');
     const searchTerm = ref('');
@@ -246,15 +249,6 @@ export default {
         filteredCandidates.value.forEach(c => current.add(c.reservation_id));
         selectedIds.value = [...current];
       }
-    }
-
-    function formatCurrency(val) {
-      if (!val) return '0 ر.س';
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 0,
-      }).format(val);
     }
 
     function handleSubmit() {

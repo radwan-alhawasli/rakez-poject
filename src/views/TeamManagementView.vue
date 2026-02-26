@@ -187,6 +187,7 @@ import ConfirmModal from '../components/ConfirmModal.vue';
 import teamService from '../services/teamService';
 import logger from '../utils/logger';
 import { toast } from '../composables/useToast';
+import { useFormatters } from '../composables/useFormatters';
 
 export default {
   name: 'TeamManagementView',
@@ -311,10 +312,7 @@ export default {
       showConfirmModal.value = false;
     };
 
-    const formatDate = dateStr => {
-      if (!dateStr) return '—';
-      return new Date(dateStr).toISOString().split('T')[0];
-    };
+    const { formatDateISO: formatDate } = useFormatters();
 
     const chipColor = id => {
       const colors = ['#2ecc71', '#3498db', '#9b59b6', '#e67e22', '#1abc9c', '#e74c3c', '#f39c12'];

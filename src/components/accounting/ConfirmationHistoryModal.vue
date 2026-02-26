@@ -49,6 +49,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import accountingService from '../../services/accountingService';
 import logger from '../../utils/logger';
+import { useFormatters } from '../../composables/useFormatters';
 
 export default {
   name: 'ConfirmationHistoryModal',
@@ -57,6 +58,11 @@ export default {
   },
   emits: ['close'],
   setup(props, { emit }) {
+    const { formatCurrency, formatDate: _fmtDate } = useFormatters();
+    const formatDate = dateStr => {
+      if (!dateStr) return 'غير محدد';
+      return _fmtDate(dateStr);
+    };
     const history = ref([]);
 
     // Handle Escape key
@@ -86,15 +92,6 @@ export default {
       document.removeEventListener('keydown', handleEscape);
     });
 
-    const formatCurrency = val => {
-      if (!val) return '0 ر.س';
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'SAR',
-        maximumFractionDigits: 0,
-      }).format(val);
-    };
-
     const getDateValue = item => {
       return (
         item?.confirmed_at ??
@@ -105,17 +102,6 @@ export default {
         item?.confirmationDate ??
         item?.createdAt
       );
-    };
-
-    const formatDate = dateStr => {
-      if (dateStr == null || dateStr === '') return 'غير محدد';
-      try {
-        const d = new Date(dateStr);
-        if (Number.isNaN(d.getTime())) return 'غير محدد';
-        return d.toLocaleDateString('ar-SA');
-      } catch {
-        return String(dateStr);
-      }
     };
 
     return { history, formatCurrency, formatDate, getDateValue };

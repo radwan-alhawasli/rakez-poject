@@ -1201,6 +1201,7 @@ import salesService from '../services/salesService';
 import notificationService from '../services/notificationService';
 import logger from '../utils/logger';
 import { toast } from '../composables/useToast';
+import { useFormatters } from '../composables/useFormatters';
 import ConfirmModal from '../components/ConfirmModal.vue';
 
 export default {
@@ -1833,9 +1834,7 @@ export default {
       unitsLoading.value = false;
     };
 
-    const formatCurrency = val => {
-      return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR' }).format(val);
-    };
+    const { formatCurrencyAr: formatCurrency } = useFormatters();
 
     const resetUnitForm = () => {
       unitForm.unit_number = '';

@@ -169,6 +169,7 @@ import agentService from '../services/agentService';
 import AgentModal from '../components/AgentModal.vue';
 import ConfirmModal from '../components/ConfirmModal.vue';
 import { toast } from '../composables/useToast';
+import { useFormatters } from '../composables/useFormatters';
 
 export default {
   name: 'AgentsView',
@@ -271,11 +272,7 @@ export default {
       agentToDelete.value = null;
     }
 
-    function formatDate(iso) {
-      if (!iso) return '-';
-      const d = new Date(iso);
-      return d.toLocaleDateString('ar-SA', { year: 'numeric', month: '2-digit', day: '2-digit' });
-    }
+    const { formatDate } = useFormatters();
 
     onMounted(() => {
       fetchAgents();

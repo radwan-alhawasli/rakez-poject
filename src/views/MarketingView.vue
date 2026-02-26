@@ -310,16 +310,16 @@
                 عرض التفاصيل
               </button>
               <button
-                v-if="hasPermission('marketing.plans.create')"
+                v-if="hasPermission('marketing.plans.create') || hasPermission('marketing.projects.view')"
                 class="btn-plan"
-                @click="managePlan(project.id)"
+                @click="viewProjectPlan(project)"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="3" y1="9" x2="21" y2="9"></line>
                   <line x1="9" y1="21" x2="9" y2="9"></line>
                 </svg>
-                إدارة الخطة
+                عرض الخطة
               </button>
             </div>
           </div>
@@ -1928,6 +1928,44 @@
       </div>
     </div>
 
+    <!-- Plan Unavailable Modal (عرض الخطة - لا توجد خطة مرفقة) -->
+    <div
+      v-if="showPlanUnavailableModal"
+      class="modal-overlay"
+      @click.self="closePlanUnavailableModal"
+    >
+      <div class="modal-content luxury-modal animate-scale-in" style="max-width: 420px">
+        <div class="modal-header">
+          <h3 class="modal-title">عرض خطة المشروع</h3>
+          <button type="button" class="modal-close" @click="closePlanUnavailableModal">×</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-message">
+            لا توجد خطة مرفقة لهذا المشروع حالياً.
+            <template v-if="planUnavailableProject?.project_name || planUnavailableProject?.name">
+              ({{ planUnavailableProject.project_name || planUnavailableProject.name }})
+            </template>
+          </p>
+          <p class="modal-message sub">
+            يمكنك إعداد الخطة من تبويب «خطة المطور» ثم اختيار المشروع.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" @click="closePlanUnavailableModal">
+            إغلاق
+          </button>
+          <button
+            v-if="hasPermission('marketing.plans.create')"
+            type="button"
+            class="btn-primary"
+            @click="goToManagePlanFromModal"
+          >
+            الانتقال لإعداد الخطة
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Confirm Modal -->
     <ConfirmModal
       v-if="showConfirmModal"
@@ -2740,6 +2778,76 @@ export default {
       router.push({ name: 'MarketingPlans', query: { sub: 'developer' } }).catch(() => {});
     };
 
+    const showPlanUnavailableModal = ref(false);
+    const planUnavailableProject = ref(null);
+
+    const viewProjectPlan = async project => {
+      const raw =
+        project?.project_plans ||
+        project?.marketing_project?.project_plans ||
+        project?.plan_url ||
+        '';
+      const planUrl =
+        typeof raw === 'string' && raw.trim()
+          ? raw.startsWith('http')
+            ? raw
+            : `${window.location.origin}${raw.startsWith('/') ? raw : '/' + raw}`
+          : '';
+      if (planUrl) {
+        window.open(planUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      // لا يوجد رابط مرفق — تحقق إن كانت خطة المطور محفوظة لهذا المشروع
+      const contractId =
+        project?.marketing_project?.contract_id ??
+        project?.contract_id ??
+        project?.contractId ??
+        project?.id;
+      if (contractId) {
+        try {
+          const plan = await marketingService.getDeveloperPlan(contractId);
+          if (plan?.raw_plan || plan?.rawPlan || (plan && Object.keys(plan).length > 0)) {
+            activeTab.value = 'developer-plan';
+            activePlanSubTab.value = 'developer';
+            developerPlanForm.project_id = project.id ?? project.marketing_project_id;
+            developerPlanForm.contract_id = String(
+              project?.marketing_project?.contract_id ??
+                project?.contract_id ??
+                project?.contractId ??
+                contractId ??
+                ''
+            );
+            developerPlanForm.marketing_value = String(
+              project?.marketing_value ?? project?.marketingValue ?? plan?.raw_plan?.marketing_value ?? ''
+            );
+            developerPlanSummary.value = plan || null;
+            const r = plan?.raw_plan || plan?.rawPlan;
+            if (r) {
+              developerPlanForm.average_cpm = String(r.average_cpm ?? developerPlanForm.average_cpm ?? '');
+              developerPlanForm.average_cpc = String(r.average_cpc ?? developerPlanForm.average_cpc ?? '');
+            }
+            router.push({ name: 'MarketingPlans', query: { sub: 'developer' } }).catch(() => {});
+            return;
+          }
+        } catch (e) {
+          logger.debug('No developer plan for project', contractId, e);
+        }
+      }
+      planUnavailableProject.value = project;
+      showPlanUnavailableModal.value = true;
+    };
+
+    const closePlanUnavailableModal = () => {
+      showPlanUnavailableModal.value = false;
+      planUnavailableProject.value = null;
+    };
+
+    const goToManagePlanFromModal = () => {
+      const p = planUnavailableProject.value;
+      closePlanUnavailableModal();
+      if (p?.id) managePlan(p.id);
+    };
+
     const viewLeadDetails = leadId => {
       logger.debug('View lead details:', leadId);
       // TODO: Open lead details modal
@@ -3500,6 +3608,11 @@ export default {
       toggleTaskStatus,
       viewProjectDetails,
       managePlan,
+      viewProjectPlan,
+      showPlanUnavailableModal,
+      planUnavailableProject,
+      closePlanUnavailableModal,
+      goToManagePlanFromModal,
       viewLeadDetails,
       formatCurrency,
       formatDate,
