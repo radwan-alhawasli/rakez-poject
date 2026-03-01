@@ -93,23 +93,19 @@
       <p>لا توجد مشاريع مطابقة للعرض.</p>
     </div>
 
-    <div v-else class="projects-grid">
+    <div v-else class="projects-grid sales-style-cards">
       <div
         v-for="project in filteredProjects"
         :key="project.id"
-        class="project-card"
+        class="project-card rakez-card"
         :class="{ 'card-no-image': !project.hasImage }"
       >
-        <!-- Card top: image or placeholder -->
         <div class="card-image" :class="{ 'card-image-placeholder': !project.hasImage }">
           <template v-if="project.hasImage">
             <img
               :src="project.image"
               alt=""
-              @error="
-                $event.target.src =
-                  'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23e2e8f0%22%2F%3E%3C%2Fsvg%3E'
-              "
+              @error="$event.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23e2e8f0%22%2F%3E%3C%2Fsvg%3E'"
             />
           </template>
           <template v-else>
@@ -117,155 +113,66 @@
               <span class="placeholder-name">{{ project.name }}</span>
             </div>
           </template>
-          <div class="status-badge" :class="project.statusClass">{{ project.statusLabel }}</div>
+          <div class="status-badge status-available">{{ project.rakezStatusLabel }}</div>
+          <div class="location-tag">{{ project.location }}</div>
           <div class="menu-container" @click.stop="toggleMenu(project.id)">
-            <button class="menu-btn" type="button">
-              <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                stroke="currentColor"
-                stroke-width="2"
-                fill="none"
-              >
+            <button class="menu-btn" type="button" aria-label="القائمة">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
                 <circle cx="12" cy="12" r="1"></circle>
                 <circle cx="12" cy="5" r="1"></circle>
                 <circle cx="12" cy="19" r="1"></circle>
               </svg>
             </button>
             <div v-if="activeMenuId === project.id" class="dropdown-menu">
-              <div class="menu-item" @click.stop="onEditProject(project)">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="16"
-                  height="16"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                </svg>
-                تعديل المشروع
-              </div>
-              <div class="menu-item" @click.stop="onAssignTeam(project)">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="16"
-                  height="16"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-                تعيين الفريق
-              </div>
-              <div class="menu-item" @click.stop="onArchiveProject(project)">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="16"
-                  height="16"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path
-                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-                  ></path>
-                  <line x1="10" y1="11" x2="10" y2="17"></line>
-                  <line x1="14" y1="11" x2="14" y2="17"></line>
-                </svg>
-                أرشفة المشروع
-              </div>
-              <div class="menu-item" @click.stop="onMarkComplete(project)">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="16"
-                  height="16"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-                تحديد كمكتمل
-              </div>
-              <div class="menu-item" @click.stop="onDownloadContract(project)">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="16"
-                  height="16"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                تحميل العقد
-              </div>
+              <div class="menu-item" @click.stop="onEditProject(project)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> تعديل المشروع</div>
+              <div class="menu-item" @click.stop="onAssignTeam(project)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> تعيين الفريق</div>
+              <div class="menu-item" @click.stop="onArchiveProject(project)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg> أرشفة المشروع</div>
+              <div class="menu-item" @click.stop="onMarkComplete(project)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> تحديد كمكتمل</div>
+              <div class="menu-item" @click.stop="onDownloadContract(project)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> تحميل العقد</div>
             </div>
           </div>
-          <div
-            v-if="activeMenuId === project.id"
-            class="menu-backdrop"
-            @click.stop="activeMenuId = null"
-          ></div>
+          <div v-if="activeMenuId === project.id" class="menu-backdrop" @click.stop="activeMenuId = null"></div>
+        </div>
+
+        <div class="card-title-block">
+          <h3 class="card-title-main">{{ project.name }}</h3>
+          <p class="card-title-type">{{ project.propertyTypeLabel }}</p>
         </div>
 
         <div class="card-content">
-          <h3 class="project-name">{{ project.name }}</h3>
-          <p class="project-location">{{ project.location }}</p>
-          <p class="project-description-line">{{ project.descriptionLine }}</p>
-          <div class="assignee">
-            <svg
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              stroke="currentColor"
-              stroke-width="2"
-              fill="none"
-            >
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            <span>{{ project.assignee || 'غير معين' }}</span>
-          </div>
-          <div class="progress-row">
-            <span class="progress-label">تقدم الإعداد</span>
-            <span class="progress-value">{{ project.setupProgress }}%</span>
-            <div class="progress-bar">
-              <div
-                class="progress-fill"
-                :style="{ width: Math.min(100, project.setupProgress) + '%' }"
-              ></div>
-            </div>
-          </div>
-          <div class="progress-row">
-            <span class="progress-label">الوحدات المباعة</span>
+          <div class="progress-row rakez-progress" title="وحدة مباعة">
+            <span class="progress-label">وحدة مباعة</span>
             <span class="progress-value">{{ project.soldUnitsPercent }}%</span>
             <div class="progress-bar">
-              <div
-                class="progress-fill"
-                :style="{ width: Math.min(100, project.soldUnitsPercent) + '%' }"
-              ></div>
+              <div class="progress-fill progress-fill-green" :style="{ width: Math.min(100, project.soldUnitsPercent) + '%' }"></div>
             </div>
           </div>
-          <div
-            class="status-pill"
-            :class="{ expired: project.daysLeft !== null && project.daysLeft < 0 }"
-          >
-            {{ project.timelinePillLabel }}
+          <div class="price-row" title="السعر">
+            <span class="price-label">ريال سعودي</span>
+            <span class="price-value">{{ project.priceRangeText }}</span>
           </div>
-          <button class="btn-view-details" @click="viewTracker(project)">عرض التفاصيل</button>
+          <div class="specs-row">
+            <span class="spec-item" title="الغرف">
+              <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+              {{ project.bedroomsRange }}
+            </span>
+            <span class="spec-item" title="المساحة (م²)">
+              <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              </svg>
+              {{ project.areaRange }}
+            </span>
+          </div>
+          <button class="btn-view-details rakez-btn" @click="viewTracker(project)">
+            شاهد التفاصيل
+            <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </button>
         </div>
       </div>
     </div>
@@ -570,6 +477,33 @@ export default {
             : p.setup_progress != null
               ? Number(p.setup_progress)
               : 0;
+
+          // حقول عرض بنفس تصميم السيلز: سعر، مساحة، غرف، كود إعلان، نوع عقار
+          const unitPrices = units.map(u => Number(u.price) || 0).filter(Boolean);
+          const priceMin = p.price_min ?? p.min_price ?? (unitPrices.length ? Math.min(...unitPrices) : null);
+          const priceMax = p.price_max ?? p.max_price ?? (unitPrices.length ? Math.max(...unitPrices) : null);
+          const avgPrice = units.length ? units.reduce((a, b) => a + (Number(b.price) || 0), 0) / units.length : (p.average_unit_price ?? p.avg_unit_price);
+          let priceRangeText = '—';
+          if (priceMin != null && priceMax != null && priceMin !== priceMax) {
+            priceRangeText = `${Number(priceMax).toLocaleString('ar-SA')} - ${Number(priceMin).toLocaleString('ar-SA')}`;
+          } else if (priceMin != null || priceMax != null) {
+            const single = priceMax ?? priceMin;
+            priceRangeText = `${Number(single).toLocaleString('ar-SA')} - ${Number(single).toLocaleString('ar-SA')}`;
+          } else if (avgPrice != null && Number(avgPrice) > 0) {
+            priceRangeText = `${Number(avgPrice).toLocaleString('ar-SA')} - ${Number(avgPrice).toLocaleString('ar-SA')}`;
+          }
+          const unitAreas = units.map(u => Number(u.area) || Number(u.area_m2) || 0).filter(Boolean);
+          const areaMin = p.area_min_m2 ?? p.area_min ?? (unitAreas.length ? Math.min(...unitAreas) : null);
+          const areaMax = p.area_max_m2 ?? p.area_max ?? (unitAreas.length ? Math.max(...unitAreas) : null);
+          const areaRange =
+            areaMin != null && areaMax != null ? `${areaMax} - ${areaMin} م²` : areaMax != null ? `${areaMax} م²` : areaMin != null ? `${areaMin} م²` : '—';
+          const bedroomsMin = p.bedrooms_min ?? (units[0] && units[0].bedrooms);
+          const bedroomsMax = p.bedrooms_max ?? (units[0] && units[0].bedrooms);
+          const bedroomsRange =
+            bedroomsMin != null && bedroomsMax != null ? `${bedroomsMax} - ${bedroomsMin}` : bedroomsMax != null ? `${bedroomsMax}` : bedroomsMin != null ? `${bedroomsMin}` : '—';
+          const rakezStatusLabel = p.status === 'Approved' ? 'متاح' : (p.status === 'Rejected' || p.status === 'Refused' ? 'مؤرشف' : (p.statusLabel || p.status || '—'));
+          const propertyTypeLabel = (p.unit_type_label_ar && String(p.unit_type_label_ar).trim()) || unitType || (totalUnits ? 'وحدات' : 'مشروع');
+
           return {
             id: p.id,
             name: p.project_name || p.name || `مشروع #${p.id}`,
@@ -619,6 +553,11 @@ export default {
                 : `خلال ${daysLeftVal} أيام`,
             distance: p.distance || '15',
             landmark: p.landmark || 'مطار الملك خالد',
+            priceRangeText,
+            areaRange,
+            bedroomsRange,
+            rakezStatusLabel,
+            propertyTypeLabel,
           };
         });
       } catch (err) {
@@ -1360,7 +1299,7 @@ export default {
   margin-top: 8px;
   width: 100%;
   padding: 12px;
-  background: #b1a28f;
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -1369,7 +1308,155 @@ export default {
   cursor: pointer;
 }
 .btn-view-details:hover {
-  background: #8c7851;
+  background: linear-gradient(135deg, var(--color-gold-dark) 0%, var(--color-gold) 100%);
+  filter: brightness(1.05);
+}
+
+/* تصميم البطاقات مطابق لقسم المبيعات (Sales) */
+.sales-style-cards.projects-grid .rakez-card .card-image {
+  height: 220px;
+  position: relative;
+}
+.sales-style-cards .rakez-card .status-badge.status-available {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: auto;
+  background: #6b7c3c;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.sales-style-cards .rakez-card .location-tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  left: auto;
+  background: rgba(55, 65, 81, 0.9);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sales-style-cards .rakez-card .card-title-block {
+  background: #1e3a5f;
+  color: #fff;
+  padding: 14px 16px;
+  margin: 0;
+}
+.sales-style-cards .rakez-card .card-title-main {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+.sales-style-cards .rakez-card .card-title-type {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+.sales-style-cards .rakez-card .card-content {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sales-style-cards .rakez-card .rakez-progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.sales-style-cards .rakez-card .rakez-progress .progress-bar {
+  flex: 1 1 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+.sales-style-cards .rakez-card .progress-fill-green {
+  background: #22c55e;
+  border-radius: 4px;
+  height: 100%;
+  transition: width 0.2s;
+}
+.sales-style-cards .rakez-card .price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.sales-style-cards .rakez-card .price-label {
+  color: #6b7280;
+  font-weight: 500;
+}
+.sales-style-cards .rakez-card .price-value {
+  color: #111827;
+  font-weight: 700;
+}
+.sales-style-cards .rakez-card .specs-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: #374151;
+}
+.sales-style-cards .rakez-card .spec-icon {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+.sales-style-cards .rakez-card .ad-code-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #6b7280;
+}
+.sales-style-cards .rakez-card .ad-code-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.sales-style-cards .rakez-card .ad-code-value {
+  font-weight: 600;
+  color: #111827;
+}
+.sales-style-cards .rakez-card .btn-view-details.rakez-btn {
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+  color: #fff;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  width: 100%;
+}
+.sales-style-cards .rakez-card .btn-view-details.rakez-btn:hover {
+  background: linear-gradient(135deg, var(--color-gold-dark) 0%, var(--color-gold) 100%);
+  filter: brightness(1.05);
+}
+.sales-style-cards .rakez-card .btn-arrow {
+  width: 18px;
+  height: 18px;
+}
+.sales-style-cards .rakez-card .card-image .menu-container {
+  left: auto;
+  right: 12px;
 }
 
 .card-image-placeholder {

@@ -362,14 +362,14 @@ const accountingService = {
   /**
    * Confirm deposit receipt
    * POST /accounting/deposits/:deposit_id/confirm
-   * API: No body required
+   * API body: { received_date?, bank_reference? }
    * @param {number|string} depositId - Deposit ID
-   * @param {Object} data - Optional (ignored per API spec)
+   * @param {Object} data - { received_date, bank_reference } (optional but recommended)
    * @returns {Promise<Object>} Confirmed deposit
    */
-  async confirmDeposit(depositId) {
+  async confirmDeposit(depositId, data = {}) {
     try {
-      const response = await apiClient.post(`/accounting/deposits/${depositId}/confirm`, {});
+      const response = await apiClient.post(`/accounting/deposits/${depositId}/confirm`, data);
       return response.data?.data || response.data || {};
     } catch (error) {
       logger.error(`Error confirming deposit ${depositId}:`, error);
@@ -401,14 +401,14 @@ const accountingService = {
   /**
    * Process deposit refund (owner-paid commission only)
    * POST /accounting/deposits/:deposit_id/refund
-   * API: No body required
+   * API body: { reason?, refund_amount? }
    * @param {number|string} depositId - Deposit ID
-   * @param {Object} data - Optional (ignored per API spec)
+   * @param {Object} data - { reason, refund_amount } (optional but recommended)
    * @returns {Promise<Object>} Refunded deposit
    */
-  async processRefund(depositId) {
+  async processRefund(depositId, data = {}) {
     try {
-      const response = await apiClient.post(`/accounting/deposits/${depositId}/refund`, {});
+      const response = await apiClient.post(`/accounting/deposits/${depositId}/refund`, data);
       return response.data?.data || response.data || {};
     } catch (error) {
       logger.error(`Error processing refund for deposit ${depositId}:`, error);
@@ -588,17 +588,22 @@ const accountingService = {
   },
 
   /**
-   * Confirm down payment (Legacy)
-   * POST /accounting/confirm/:reservation_id
-   * @param {number|string} reservationId - Reservation ID
-   * @returns {Promise<Object>} Confirmed down payment
+   * Confirm confirmation (align with API collection)
+   * POST /accounting/confirmations/:id/confirm
+   * API body: { confirmed_date? }
+   * @param {number|string} confirmationId - Confirmation ID (or reservation id if backend accepts)
+   * @param {Object} data - { confirmed_date } (optional, e.g. "2026-03-01")
+   * @returns {Promise<Object>} Confirmed result
    */
-  async confirmDownPayment(reservationId) {
+  async confirmDownPayment(confirmationId, data = {}) {
     try {
-      const response = await apiClient.post(`/accounting/confirm/${reservationId}`);
+      const response = await apiClient.post(
+        `/accounting/confirmations/${confirmationId}/confirm`,
+        data
+      );
       return response.data?.data || response.data || {};
     } catch (error) {
-      logger.error(`Error confirming down payment for reservation ${reservationId}:`, error);
+      logger.error(`Error confirming for confirmation ${confirmationId}:`, error);
       throw error;
     }
   },
