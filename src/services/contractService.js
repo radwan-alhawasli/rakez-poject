@@ -11,13 +11,13 @@ const contractService = {
 
   /**
    * جلب جميع العقود (للمسؤول)
-   * GET /admin/contracts/adminIndex
+   * GET /contracts/admin-index (aligned with API collection)
    * @param {Object} params - page, per_page, status (pending|approved|rejected)
    * @returns {Promise<{ items: Array, total: number }>}
    */
   async getAllContracts(params = {}) {
     try {
-      const response = await apiClient.get('/admin/contracts/adminIndex', { params });
+      const response = await apiClient.get('/contracts/admin-index', { params });
       const { items, total } = extractPaginatedData(response, []);
       return { items, total };
     } catch (error) {

@@ -30,7 +30,7 @@
         </div>
       </div>
 
-      <!-- Navigation Tabs (design match: only two tabs) -->
+      <!-- Navigation Tabs (مطابق لقسم المبيعات + تبويبات إضافية لمدير المشاريع حسب الصلاحيات) -->
       <div class="tabs-nav">
         <button
           class="nav-tab"
@@ -49,6 +49,38 @@
           <span v-if="!isTrackerCompleted && !isSalesUser" class="tab-hint">{{
             isManager ? '(مفتوح للمدير)' : '(مغلق)'
           }}</span>
+        </button>
+        <button
+          v-if="isManager"
+          class="nav-tab"
+          :class="{ active: activeTab === 'photography' }"
+          @click="activeTab = 'photography'"
+        >
+          التصوير
+        </button>
+        <button
+          v-if="isManager"
+          class="nav-tab"
+          :class="{ active: activeTab === 'boards' }"
+          @click="activeTab = 'boards'"
+        >
+          اللوحات
+        </button>
+        <button
+          v-if="isManager && !isProjectManager"
+          class="nav-tab"
+          :class="{ active: activeTab === 'teams' }"
+          @click="selectTeamsTab"
+        >
+          الفرق
+        </button>
+        <button
+          v-if="isManager && !isProjectManager"
+          class="nav-tab"
+          :class="{ active: activeTab === 'reservations' }"
+          @click="selectReservationsTab"
+        >
+          الحجوزات
         </button>
       </div>
 
@@ -594,10 +626,16 @@
         <div v-else-if="activeTab === 'units'" class="tab-content">
           <div class="units-header-actions">
             <div class="units-header-title">
-              <h3>وحدات المشروع</h3>
+              <h3>جدول الوحدات</h3>
               <p class="units-subtitle">{{ (unitCountFromApi != null ? unitCountFromApi : units.length) }} وحدة</p>
             </div>
-            <div v-if="!isSalesUser" class="units-btns">
+            <div class="units-filter-tabs">
+              <button type="button" class="units-filter-tab" :class="{ active: unitsFilterTab === 'all' }" @click="unitsFilterTab = 'all'">الجميع</button>
+              <button type="button" class="units-filter-tab" :class="{ active: unitsFilterTab === 'available' }" @click="unitsFilterTab = 'available'">متاح</button>
+              <button type="button" class="units-filter-tab" :class="{ active: unitsFilterTab === 'sold' }" @click="unitsFilterTab = 'sold'">مباع</button>
+              <button type="button" class="units-filter-tab" :class="{ active: unitsFilterTab === 'reserved' }" @click="unitsFilterTab = 'reserved'">محجوز</button>
+            </div>
+            <div v-if="!isSalesUser && !isProjectManager" class="units-btns">
               <button class="btn-units-primary" @click="showAddUnitModal = true">
                 <svg
                   viewBox="0 0 24 24"
@@ -657,7 +695,7 @@
             <p>لا توجد وحدات مضافة لهذا المشروع حتى الآن.</p>
           </div>
           <div v-else class="units-cards-grid">
-            <div v-for="unit in units" :key="unit.id" class="unit-card">
+            <div v-for="unit in filteredUnits" :key="unit.id" class="unit-card">
               <div class="unit-card-top">
                 <span class="unit-status-pill" :class="unit.status">{{
                   unit.status === 'available' ? 'متاحة' : unit.status === 'reserved' ? 'محجوزة' : unit.status === 'sold' ? 'مباعة' : unit.status || 'قيد الانتظار'
@@ -712,26 +750,28 @@
                 >
               </div>
               <div class="unit-card-actions">
-                <button class="btn-unit-details" @click="openEditUnit(unit)">شاهد التفاصيل</button>
-                <button
-                  v-if="unit.status === 'available'"
-                  class="btn-unit-reserve"
-                  @click="openReserveModal(unit)"
-                >
-                  حجز
-                </button>
-                <button
-                  v-else-if="unit.status === 'reserved'"
-                  class="btn-unit-waiting"
-                  @click="openWaitingListModal(unit)"
-                >
-                  حجز انتظار
-                </button>
-                <button v-else class="btn-unit-details" disabled>
-                  {{ unit.status === 'sold' ? 'مباعة' : 'حجز' }}
-                </button>
+                <button type="button" class="btn-unit-details" @click="(isSalesUser || isProjectManager) ? openUnitDetail(unit) : openEditUnit(unit)">شاهد التفاصيل</button>
+                <template v-if="!isSalesUser && !isProjectManager">
+                  <button
+                    v-if="unit.status === 'available'"
+                    class="btn-unit-reserve"
+                    @click="openReserveModal(unit)"
+                  >
+                    حجز
+                  </button>
+                  <button
+                    v-else-if="unit.status === 'reserved'"
+                    class="btn-unit-waiting"
+                    @click="openWaitingListModal(unit)"
+                  >
+                    حجز انتظار
+                  </button>
+                  <button v-else class="btn-unit-details" disabled>
+                    {{ unit.status === 'sold' ? 'مباعة' : 'حجز' }}
+                  </button>
+                </template>
               </div>
-              <div v-if="!isSalesUser" class="unit-card-footer">
+              <div v-if="!isSalesUser && !isProjectManager" class="unit-card-footer">
                 <button type="button" class="icon-btn" @click="openEditUnit(unit)" title="تعديل">
                   <svg
                     viewBox="0 0 24 24"
@@ -762,6 +802,56 @@
                     <line x1="14" y1="11" x2="14" y2="17"></line>
                   </svg>
                 </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Unit Detail Modal -->
+          <div v-if="showUnitDetailModal && selectedUnitForDetail" class="unit-detail-overlay" @click.self="closeUnitDetail">
+            <div class="unit-detail-modal">
+              <div class="unit-detail-header">
+                <button type="button" class="unit-detail-back" @click="closeUnitDetail" aria-label="إغلاق">
+                  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <span class="unit-status-pill" :class="selectedUnitForDetail.status">{{
+                  selectedUnitForDetail.status === 'available' ? 'متاحة' : selectedUnitForDetail.status === 'reserved' ? 'محجوزة' : selectedUnitForDetail.status === 'sold' ? 'مباعة' : selectedUnitForDetail.status || 'قيد الانتظار'
+                }}</span>
+                <button type="button" class="btn-units-outline" @click="downloadUnitPdf">تحميل PDF</button>
+              </div>
+              <div class="unit-detail-body">
+                <div class="unit-detail-row unit-detail-id">#{{ selectedUnitForDetail.unit_number || selectedUnitForDetail.id }}</div>
+                <div class="unit-detail-row">
+                  <span class="unit-detail-label">الدور</span>
+                  <span class="unit-detail-value">{{ selectedUnitForDetail.floor != null && !Number.isNaN(Number(selectedUnitForDetail.floor)) ? selectedUnitForDetail.floor : '—' }}</span>
+                </div>
+                <div class="unit-detail-row">
+                  <span class="unit-detail-label">المساحة</span>
+                  <span class="unit-detail-value">{{ selectedUnitForDetail.area != null ? selectedUnitForDetail.area + ' م²' : '—' }}</span>
+                </div>
+                <div class="unit-detail-row">
+                  <span class="unit-detail-label">المساحة الخاصة</span>
+                  <span class="unit-detail-value">{{ (selectedUnitForDetail.private_area != null ? selectedUnitForDetail.private_area + ' م²' : null) || (selectedUnitForDetail.balcony_area != null ? selectedUnitForDetail.balcony_area + ' م²' : null) || '—' }}</span>
+                </div>
+                <div class="unit-detail-row">
+                  <span class="unit-detail-label">إجمالي المساحة</span>
+                  <span class="unit-detail-value">{{ (selectedUnitForDetail.total_area != null ? selectedUnitForDetail.total_area + ' م²' : null) || (selectedUnitForDetail.area != null ? selectedUnitForDetail.area + ' م²' : null) || '—' }}</span>
+                </div>
+                <div class="unit-detail-row">
+                  <span class="unit-detail-label">الغرف</span>
+                  <span class="unit-detail-value">{{ selectedUnitForDetail.bedrooms ?? selectedUnitForDetail.rooms ?? '—' }}</span>
+                </div>
+                <div class="unit-detail-row">
+                  <span class="unit-detail-label">الواجهة</span>
+                  <span class="unit-detail-value">{{ selectedUnitForDetail.facade || selectedUnitForDetail.view || '—' }}</span>
+                </div>
+                <div class="unit-detail-row">
+                  <span class="unit-detail-label">السعر</span>
+                  <span class="unit-detail-value">{{ formatCurrency(selectedUnitForDetail.price) }} ريال</span>
+                </div>
+              </div>
+              <div class="unit-detail-actions">
+                <button v-if="selectedUnitForDetail.status === 'available' && canReserve" type="button" class="btn-unit-reserve" @click="openReserveFromDetail">حجز</button>
+                <button v-else-if="selectedUnitForDetail.status === 'reserved' && canReserve" type="button" class="btn-unit-waiting" @click="closeUnitDetail(); openWaitingListModal(selectedUnitForDetail)">حجز انتظار</button>
               </div>
             </div>
           </div>
@@ -1009,64 +1099,17 @@
           </div>
         </div>
 
-        <!-- RESERVATION MODAL -->
-        <div
+        <!-- نموذج حجز الوحدة (نفس التصميم في السيلز) -->
+        <UnitReservationModal
           v-if="showReservationModal"
-          class="modal-overlay"
-          @click.self="showReservationModal = false"
-        >
-          <div class="modal-content" style="max-width: 600px">
-            <h3>إنشاء حجز جديد: وحدة {{ selectedUnit?.unit_number }}</h3>
-
-            <form @submit.prevent="submitReservation" class="reservation-form">
-              <div class="form-grid">
-                <div class="form-group">
-                  <label>اسم العميل *</label>
-                  <input
-                    v-model="reservationForm.client_name"
-                    required
-                    type="text"
-                    placeholder="الاسم الكامل"
-                  />
-                </div>
-                <div class="form-group">
-                  <label>رقم الجوال *</label>
-                  <input
-                    v-model="reservationForm.client_mobile"
-                    required
-                    type="text"
-                    placeholder="05xxxxxxxx"
-                  />
-                </div>
-                <div class="form-group">
-                  <label>نوع الحجز *</label>
-                  <select v-model="reservationForm.reservation_type">
-                    <option value="negotiation">تفاوض</option>
-                    <option value="booking">حجز مبدئي</option>
-                    <option value="contract">عقد</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>مبلغ العربون</label>
-                  <input v-model="reservationForm.down_payment_amount" type="number" min="0" />
-                </div>
-                <div class="form-group" style="grid-column: span 2">
-                  <label>ملاحظات</label>
-                  <textarea v-model="reservationForm.negotiation_notes" rows="3"></textarea>
-                </div>
-              </div>
-
-              <div class="modal-actions">
-                <button type="button" class="btn-text" @click="showReservationModal = false">
-                  إلغاء
-                </button>
-                <button type="submit" class="btn-primary" :disabled="isSubmitting">
-                  {{ isSubmitting ? 'جاري الحجز...' : 'تأكيد الحجز' }}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+          :unit="selectedUnit"
+          :context="reservationContextRef"
+          :lookups="reservationLookupsForModal"
+          :form-data="reservationForm"
+          :is-submitting="isSubmitting"
+          @close="showReservationModal = false"
+          @submit="submitReservationPayload"
+        />
 
         <!-- WAITING LIST MODAL (حجز انتظار للوحدة المحجوزة) -->
         <div
@@ -1203,6 +1246,8 @@ import logger from '../utils/logger';
 import { toast } from '../composables/useToast';
 import { useFormatters } from '../composables/useFormatters';
 import ConfirmModal from '../components/ConfirmModal.vue';
+import UnitReservationModal from '../components/sales/UnitReservationModal.vue';
+import { NATIONALITIES } from '../constants/lookups';
 
 export default {
   name: 'ProjectTracker',
@@ -1222,6 +1267,22 @@ export default {
     const showReservationModal = ref(false);
     const selectedUnit = ref(null);
     const isSubmitting = ref(false);
+    const reservationLookups = ref(null);
+    const reservationContextRef = ref(null);
+    const reservationLookupsForModal = computed(() => {
+      const l = reservationLookups.value?.nationalities;
+      const nationalities = Array.isArray(l) && l.length
+        ? l.map(n => ({ value: n.value ?? n, label: n.label ?? n }))
+        : NATIONALITIES;
+      return {
+        nationalities,
+        reservation_types: reservationLookups.value?.reservation_types ?? [],
+        payment_methods: reservationLookups.value?.payment_methods ?? [],
+        down_payment_statuses: reservationLookups.value?.down_payment_statuses ?? [],
+        purchase_mechanisms: reservationLookups.value?.purchase_mechanisms ?? [],
+      };
+    });
+    const reservationNationalities = computed(() => reservationLookupsForModal.value.nationalities);
     const reservationForm = reactive({
       contract_id: route.params.id,
       contract_unit_id: '',
@@ -1229,7 +1290,12 @@ export default {
       contract_date: new Date().toISOString().split('T')[0],
       client_name: '',
       client_mobile: '',
+      client_nationality: 'Saudi',
+      client_iban: '',
+      payment_method: 'bank_transfer',
       down_payment_amount: 0,
+      down_payment_status: 'pending',
+      purchase_mechanism: 'cash',
       negotiation_notes: '',
     });
 
@@ -1251,9 +1317,27 @@ export default {
       }
     };
 
-    const openReserveModal = unit => {
+    const openReserveModal = async unit => {
       selectedUnit.value = unit;
+      reservationForm.contract_id = project.value?.id || route.params.id;
       reservationForm.contract_unit_id = unit.id;
+      reservationContextRef.value = null;
+      try {
+        const response = await salesService.getReservationContext(unit.id);
+        const data = response?.data?.data || response?.data;
+        reservationContextRef.value = data ?? null;
+        if (data?.lookups) {
+          reservationLookups.value = data.lookups;
+          const lookups = data.lookups;
+          if (lookups.reservation_types?.length) reservationForm.reservation_type = lookups.reservation_types[0].value;
+          if (lookups.payment_methods?.length) reservationForm.payment_method = lookups.payment_methods[0].value;
+          if (lookups.down_payment_statuses?.length) reservationForm.down_payment_status = lookups.down_payment_statuses[0].value;
+          if (lookups.purchase_mechanisms?.length) reservationForm.purchase_mechanism = lookups.purchase_mechanisms[0].value;
+        }
+      } catch (e) {
+        logger.error('Reservation context', e);
+        reservationLookups.value = null;
+      }
       showReservationModal.value = true;
     };
 
@@ -1314,6 +1398,28 @@ export default {
         showReservationModal.value = false;
         loadProjectReservations();
         loadUnits(); // Refresh unit status
+      } catch (e) {
+        logger.error(e);
+        notificationService.addNotification('فشل الحجز', 'error');
+      } finally {
+        isSubmitting.value = false;
+      }
+    };
+
+    const submitReservationPayload = async payload => {
+      isSubmitting.value = true;
+      try {
+        await salesService.createReservation(payload);
+        notificationService.addNotification('تم الحجز بنجاح', 'success');
+        showReservationModal.value = false;
+        reservationForm.client_name = '';
+        reservationForm.client_mobile = '';
+        reservationForm.client_nationality = 'Saudi';
+        reservationForm.client_iban = '';
+        reservationForm.down_payment_amount = 0;
+        reservationForm.negotiation_notes = '';
+        loadProjectReservations();
+        loadUnits();
       } catch (e) {
         logger.error(e);
         notificationService.addNotification('فشل الحجز', 'error');
@@ -1386,6 +1492,15 @@ export default {
       const user = authService.getCurrentUser();
       return user?.type == 5;
     });
+
+    /** مدير المشاريع (إدارة المشاريع) — يرى تفاصيل الوحدة مثل المبيعات لكن بدون صلاحية الحجز */
+    const isProjectManager = computed(() => {
+      const user = authService.getCurrentUser();
+      return user?.type == 3;
+    });
+
+    /** صلاحية الحجز: للمبيعات فقط، وليس لمدير المشاريع */
+    const canReserve = computed(() => isSalesUser.value);
 
     const canEditTracker = computed(() => isManager.value && !isSalesUser.value);
 
@@ -1477,9 +1592,35 @@ export default {
     const units = ref([]);
     const unitCountFromApi = ref(null); // unit_count من الـ API للعرض
     const unitsLoading = ref(false);
+    const unitsFilterTab = ref('all'); // all | available | sold | reserved
+    const filteredUnits = computed(() => {
+      const list = Array.isArray(units.value) ? units.value : [];
+      const tab = unitsFilterTab.value;
+      if (tab === 'all') return list;
+      return list.filter(u => (u.status || '').toLowerCase() === tab);
+    });
     const showAddUnitModal = ref(false);
     const isEditingUnit = ref(false);
     const editingUnitId = ref(null);
+    const showUnitDetailModal = ref(false);
+    const selectedUnitForDetail = ref(null);
+    const openUnitDetail = unit => {
+      selectedUnitForDetail.value = unit;
+      showUnitDetailModal.value = true;
+    };
+    const closeUnitDetail = () => {
+      showUnitDetailModal.value = false;
+      selectedUnitForDetail.value = null;
+    };
+    const openReserveFromDetail = () => {
+      if (selectedUnitForDetail.value?.status === 'available') {
+        openReserveModal(selectedUnitForDetail.value);
+        closeUnitDetail();
+      }
+    };
+    const downloadUnitPdf = () => {
+      notificationService.addNotification('تحميل PDF غير متوفر لهذه الوحدة حالياً', 'info');
+    };
 
     const unitForm = reactive({
       unit_number: '',
@@ -2075,6 +2216,9 @@ export default {
     onMounted(async () => {
       await fetchProject();
       fetchBoardData();
+      if (isProjectManager.value && (activeTab.value === 'teams' || activeTab.value === 'reservations')) {
+        activeTab.value = 'progress';
+      }
     });
 
     return {
@@ -2096,8 +2240,16 @@ export default {
       selectUnitsTab,
       // Units
       units,
+      unitsFilterTab,
+      filteredUnits,
       unitCountFromApi,
       unitsLoading,
+      showUnitDetailModal,
+      selectedUnitForDetail,
+      openUnitDetail,
+      closeUnitDetail,
+      openReserveFromDetail,
+      downloadUnitPdf,
       showAddUnitModal,
       unitForm,
       isEditingUnit,
@@ -2123,6 +2275,8 @@ export default {
       saveBoard,
       isManager,
       isSalesUser,
+      isProjectManager,
+      canReserve,
       canEditTracker,
       isEditingPending,
       cancelPhotoEdit,
@@ -2142,9 +2296,14 @@ export default {
       showReservationModal,
       selectedUnit,
       isSubmitting,
+      reservationContextRef,
+      reservationLookupsForModal,
+      reservationLookups,
+      reservationNationalities,
       reservationForm,
       openReserveModal,
       submitReservation,
+      submitReservationPayload,
       showWaitingListModal,
       waitingListUnit,
       waitingListForm,
@@ -2159,7 +2318,7 @@ export default {
       onConfirmModalConfirm,
     };
   },
-  components: { ConfirmModal },
+  components: { ConfirmModal, UnitReservationModal },
 };
 </script>
 
@@ -2728,6 +2887,33 @@ export default {
   color: #64748b;
 }
 
+.units-filter-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-bottom: 16px;
+}
+.units-filter-tab {
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+}
+.units-filter-tab:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+.units-filter-tab.active {
+  background: #1e3a5f;
+  border-color: #1e3a5f;
+  color: #fff;
+}
+
 .units-btns {
   display: flex;
   gap: 10px;
@@ -2898,6 +3084,80 @@ export default {
 .icon-btn:hover {
   background: #f1f5f9;
   color: #1e3a5f;
+}
+
+/* Unit Detail Modal */
+.unit-detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.unit-detail-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  max-width: 420px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.unit-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.unit-detail-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: #f1f5f9;
+  border-radius: 8px;
+  color: #1e3a5f;
+  cursor: pointer;
+}
+.unit-detail-back:hover {
+  background: #e2e8f0;
+}
+.unit-detail-body {
+  padding: 20px;
+}
+.unit-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+}
+.unit-detail-row.unit-detail-id {
+  font-weight: 700;
+  font-size: 16px;
+  color: #1e3a5f;
+  border-bottom-color: #e2e8f0;
+}
+.unit-detail-label {
+  color: #64748b;
+}
+.unit-detail-value {
+  font-weight: 600;
+  color: #1e3a5f;
+}
+.unit-detail-actions {
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+}
+.unit-detail-actions .btn-unit-reserve {
+  width: 100%;
 }
 
 .btn-primary {

@@ -505,7 +505,7 @@ const routes = [
       },
       {
         path: 'editor',
-        component: () => import('../views/EditorView.vue'),
+        component: () => import('../layouts/EditorLayout.vue'),
         meta: { roles: [ROLE_EDITOR] },
         children: [
           { path: '', name: 'Editor', redirect: { name: 'EditorContracts' } },
@@ -515,8 +515,43 @@ const routes = [
             component: () => import('../views/EditorView.vue'),
           },
           {
+            path: 'contracts/:id',
+            name: 'EditorContractDetail',
+            component: () => import('../views/EditorDetailView.vue'),
+          },
+          {
+            path: 'second-party',
+            name: 'EditorSecondParty',
+            component: () => import('../views/EditorView.vue'),
+          },
+          {
+            path: 'units',
+            name: 'EditorUnits',
+            component: () => import('../views/EditorView.vue'),
+          },
+          {
+            path: 'developers',
+            name: 'EditorDevelopers',
+            component: () => import('../views/EditorView.vue'),
+          },
+          {
+            path: 'developers/:developerNumber',
+            name: 'EditorDeveloperDetail',
+            component: () => import('../views/EditorDetailView.vue'),
+          },
+          {
+            path: 'montage',
+            name: 'EditorMontage',
+            component: () => import('../views/EditorView.vue'),
+          },
+          {
             path: 'photography',
             name: 'EditorPhotography',
+            component: () => import('../views/EditorView.vue'),
+          },
+          {
+            path: 'boards',
+            name: 'EditorBoards',
             component: () => import('../views/EditorView.vue'),
           },
           {

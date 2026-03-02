@@ -3,6 +3,13 @@ import { handleServiceError } from '../utils/serviceErrorHandler';
 import { extractPaginatedData } from '../utils/paginationUtils';
 
 /**
+ * Sales Module API — Base URL: /api/sales (Auth: Bearer token, Content-Type: application/json)
+ * Aligned with: "Sales Module - Complete API Collection"
+ * - Part 1: Sales Staff (dashboard, projects, units, reservation-context, reservations CRUD, targets, attendance, waiting-list, sold-units, deposits, analytics, notifications)
+ * - Part 2: Sales Leader (team/projects, team/members, rating, remove, recommendations, emergency-contacts, targets, attendance/schedules, attendance/project, marketing-tasks, waiting-list/convert)
+ * - Admin: project-assignments
+ * Create reservation (1.6): reservation_type aliases (عقد→confirmed_reservation, تفاوض→negotiation), required fields and defaults applied in _normalizeReservationPayload. Cancel (1.9): body { cancellation_reason }.
+ *
  * Sales API registry (Union of both Postman collections, priority: 249 collection)
  * - preferred_249: endpoint exists in "RAKEZ ERP - Complete API Collection _249 Endpoints_.postman_collection.json"
  * - merge_only: endpoint taken from "RAKEZ_ERP_COMPLETE_API_COLLECTION.postman_collection.json" when missing in 249
@@ -208,9 +215,9 @@ const salesService = {
   // Projects
   /**
    * Get list of sales projects
-   * GET /sales/projects
-   * @param {Object} params - status (available|pending), q, city, district, scope (me|team|all), per_page
-   * @returns {Promise<Object>} Axios response; data array + meta (current_page, last_page, total)
+   * GET /api/sales/projects — Permission: sales.projects.view
+   * @param {Object} params - status (available|pending), q (search by project name), city, district, scope (me|team|all; default me for sales, all for sales_leader), per_page (default 15)
+   * @returns {Promise<Object>} { success, data: Array, meta: { current_page, last_page, per_page, total } }
    */
   getProjects(params = {}) {
     return apiClient.get('/sales/projects', { params });
@@ -271,13 +278,56 @@ const salesService = {
   },
 
   /**
+   * Normalize reservation payload per API spec 1.6: reservation_type aliases, required fields, defaults.
+   * Aliases: عقد|contract|confirmed → confirmed_reservation; تفاوض|negotiation → negotiation.
+   */
+  _normalizeReservationPayload(data) {
+    const typeRaw = data?.reservation_type ?? data?.reservationType ?? 'negotiation';
+    const typeMap = {
+      عقد: 'confirmed_reservation',
+      contract: 'confirmed_reservation',
+      confirmed: 'confirmed_reservation',
+      تفاوض: 'negotiation',
+      negotiation: 'negotiation',
+    };
+    const reservation_type =
+      typeMap[typeRaw] ?? (typeRaw === 'confirmed_reservation' || typeRaw === 'negotiation' ? typeRaw : 'negotiation');
+
+    const payload = {
+      contract_id: data?.contract_id,
+      contract_unit_id: data?.contract_unit_id,
+      contract_date: data?.contract_date || new Date().toISOString().split('T')[0],
+      reservation_type,
+      client_name: data?.client_name ?? '',
+      client_mobile: data?.client_mobile ?? data?.phone ?? data?.mobile ?? '',
+      client_nationality: data?.client_nationality ?? 'غير محدد',
+      client_iban: data?.client_iban ?? data?.clientIban ?? '',
+      payment_method: data?.payment_method ?? data?.paymentMethod ?? 'cash',
+      down_payment_amount: Number(data?.down_payment_amount ?? data?.downPaymentAmount ?? 0),
+      down_payment_status: data?.down_payment_status ?? data?.downPaymentStatus ?? 'refundable',
+      purchase_mechanism: data?.purchase_mechanism ?? data?.purchaseMechanism ?? 'cash',
+    };
+    if (data?.evacuation_date) payload.evacuation_date = data.evacuation_date;
+    if (reservation_type === 'negotiation') {
+      payload.negotiation_notes = data?.negotiation_notes ?? '';
+      payload.negotiation_reason = data?.negotiation_reason ?? 'other';
+      payload.proposed_price =
+        data?.proposed_price != null && data?.proposed_price !== ''
+          ? Number(data.proposed_price)
+          : 0;
+    }
+    return payload;
+  },
+
+  /**
    * Create a new reservation
-   * POST /sales/reservations
-   * @param {Object} data - contract_id, contract_unit_id, contract_date, reservation_type (confirmed_reservation|negotiation), client_name, client_mobile, client_nationality, client_iban?, payment_method, down_payment_amount, down_payment_status, purchase_mechanism, evacuation_date?; for negotiation add negotiation_notes, negotiation_reason?, proposed_price?
+   * POST /sales/reservations — Spec 1.6
+   * @param {Object} data - contract_id, contract_unit_id, contract_date, reservation_type (confirmed_reservation|negotiation or aliases عقد/تفاوض), client_name, client_mobile, client_nationality, client_iban, payment_method, down_payment_amount, down_payment_status, purchase_mechanism; for negotiation: negotiation_notes, negotiation_reason, proposed_price
    * @returns {Promise<Object>} Created reservation (reservation_id, status, voucher_url, etc.)
    */
   createReservation(data) {
-    return apiClient.post('/sales/reservations', data);
+    const payload = this._normalizeReservationPayload(data);
+    return apiClient.post('/sales/reservations', payload);
   },
 
   /**
@@ -319,12 +369,16 @@ const salesService = {
   /**
    * Cancel a reservation
    * POST /sales/reservations/{id}/cancel
+   * API body: { cancellation_reason } (optional). Spec 1.9.
    * @param {number|string} reservationId - Reservation ID
-   * @param {Object} data - { cancellation_reason } (optional)
+   * @param {Object} data - { cancellation_reason } or { reason } (reason mapped to cancellation_reason)
    * @returns {Promise<Object>} Cancelled reservation
    */
   cancelReservation(reservationId, data = {}) {
-    return apiClient.post(`/sales/reservations/${reservationId}/cancel`, data);
+    const cancellation_reason = data?.cancellation_reason ?? data?.reason ?? '';
+    return apiClient.post(`/sales/reservations/${reservationId}/cancel`, {
+      cancellation_reason: String(cancellation_reason),
+    });
   },
 
   /**

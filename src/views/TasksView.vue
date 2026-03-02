@@ -23,13 +23,17 @@
       <p>لا توجد مهام مطابقة للبحث</p>
     </div>
 
-    <div v-else class="tasks-grid">
+        <div v-else class="tasks-grid">
       <div v-for="task in tasks" :key="task.id" class="task-card">
         <div class="task-header">
           <h3 class="task-title">{{ task.task_name || task.name || task.title }}</h3>
           <span class="status-badge" :class="task.status">{{ getStatusLabel(task.status) }}</span>
         </div>
         <div class="task-details">
+              <p v-if="task.section_label || task.section_key">
+                <strong>القسم:</strong>
+                {{ task.section_label || getSectionLabel(task.section_key) }}
+              </p>
           <p v-if="task.due_at || task.due_date">
             <strong>تاريخ الإستحقاق:</strong> {{ formatDate(task.due_at || task.due_date) }}
           </p>
@@ -72,11 +76,11 @@
             <input v-model="taskForm.task_name" required class="form-input" />
           </div>
           <div class="form-group">
-            <label>الفريق</label>
-            <select v-model="taskForm.team_id" required class="form-input">
-              <option value="" disabled>اختر الفريق...</option>
-              <option v-for="team in teams" :key="team.id" :value="team.id">
-                {{ team.name }}
+            <label>القسم</label>
+            <select v-model="taskForm.section_key" required class="form-input">
+              <option value="" disabled>اختر القسم...</option>
+              <option v-for="section in TASK_SECTIONS" :key="section.key" :value="section.key">
+                {{ section.label }}
               </option>
             </select>
           </div>
@@ -89,19 +93,19 @@
             <label>المسؤول</label>
             <select v-model="taskForm.assigned_to" required class="form-input">
               <option value="" disabled>اختر الموظف المسؤول...</option>
-              <option v-if="currentUser" :value="currentUser.id">
+              <option
+                v-if="
+                  currentUser &&
+                  (!taskForm.section_key ||
+                    filteredUsers.some(user => user.id === currentUser.id))
+                "
+                :value="currentUser.id"
+              >
                 -- تعيين لنفسي ({{ currentUser.name }}) --
               </option>
-              <option v-for="user in users" :key="user.id" :value="user.id">
+              <option v-for="user in filteredUsers" :key="user.id" :value="user.id">
                 {{ user.name }}
               </option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>الحالة</label>
-            <select v-model="taskForm.status" required class="form-input">
-              <option value="in_progress">قيد التنفيذ</option>
-              <option value="completed">مكتملة</option>
             </select>
           </div>
           <div class="modal-actions">
@@ -134,18 +138,40 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed, watch } from 'vue';
 import taskService from '../services/taskService';
 import notificationService from '../services/notificationService';
 import teamService from '../services/teamService';
 import userService from '../services/userService';
 import authService from '../services/authService';
 import logger from '../utils/logger';
+import { ROLE_MAP } from '../constants/roles';
 
 const tasks = ref([]);
 const teams = ref([]);
 const users = ref([]);
 const currentUser = authService.getCurrentUser();
+
+// Global sections/departments that can receive tasks
+const TASK_SECTIONS = [
+  { key: 'marketing', label: 'قسم التسويق' },
+  { key: 'sales', label: 'قسم المبيعات' },
+  { key: 'accounting', label: 'قسم المحاسبة' },
+  { key: 'credit', label: 'قسم الائتمان' },
+  { key: 'project_management', label: 'قسم إدارة المشاريع' },
+  { key: 'editor', label: 'قسم المونتاج' },
+  { key: 'hr', label: 'قسم الموارد البشرية' },
+];
+
+const SECTION_ROLE_MAP = {
+  marketing: ROLE_MAP.marketing,
+  sales: ROLE_MAP.sales,
+  accounting: ROLE_MAP.accounting,
+  credit: ROLE_MAP.credit,
+  project_management: ROLE_MAP.project_management,
+  editor: ROLE_MAP.editor,
+  hr: ROLE_MAP.hr,
+};
 
 const isLoading = ref(false);
 const filterStatus = ref('');
@@ -157,6 +183,7 @@ const showCreateModal = ref(false);
 const isCreating = ref(false);
 const taskForm = reactive({
   task_name: '',
+  section_key: '',
   team_id: '',
   due_at: '',
   assigned_to: '',
@@ -209,6 +236,27 @@ const extractDropdownDataFromTasks = () => {
   teams.value = Array.from(uniqueTeams.entries()).map(([id, name]) => ({ id, name }));
   users.value = Array.from(uniqueUsers.entries()).map(([id, name]) => ({ id, name }));
 };
+
+const filteredUsers = computed(() => {
+  const sectionKey = taskForm.section_key;
+  if (!sectionKey) return users.value;
+
+  const roleType = SECTION_ROLE_MAP[sectionKey];
+  if (roleType == null) return users.value;
+
+  return users.value.filter(u => {
+    const normalizedType =
+      typeof u.type === 'string' && ROLE_MAP[u.type] !== undefined ? ROLE_MAP[u.type] : u.type;
+    return normalizedType === roleType;
+  });
+});
+
+watch(
+  () => taskForm.section_key,
+  () => {
+    taskForm.assigned_to = '';
+  }
+);
 
 const fetchDropdownData = async () => {
   try {
@@ -267,6 +315,12 @@ const getStatusLabel = status => {
   return map[status] || status;
 };
 
+const getSectionLabel = sectionKey => {
+  if (!sectionKey) return '';
+  const section = TASK_SECTIONS.find(s => s.key === sectionKey);
+  return section ? section.label : sectionKey;
+};
+
 const formatDate = dateString => {
   if (!dateString) return '';
   return new Date(dateString).toLocaleString('ar-EG', {
@@ -295,6 +349,7 @@ const createTask = async () => {
     // Reset form
     Object.assign(taskForm, {
       task_name: '',
+      section_key: '',
       team_id: '',
       due_at: '',
       assigned_to: '',

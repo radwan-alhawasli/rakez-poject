@@ -67,15 +67,15 @@ export const getDashboardMetrics = async () => {
   }
 };
 
-// ==================== Employee/User Management APIs ====================
+// ==================== Employee/User Management APIs (aligned with API collection) ====================
 
 /**
- * Get all employees (api: GET /hr/users)
+ * Get all employees (api: GET /hr/list_employees)
  * @param {Object} params - Query parameters including search term
  */
 export const getEmployees = async (params = {}) => {
   try {
-    const response = await apiClient.get('/hr/users', { params });
+    const response = await apiClient.get('/hr/list_employees', { params });
     const { items, total } = extractPaginatedData(response, []);
     return { items, total };
   } catch (error) {
@@ -84,11 +84,11 @@ export const getEmployees = async (params = {}) => {
 };
 
 /**
- * Get employee by ID (api: GET /hr/users/:id)
+ * Get employee by ID (api: GET /hr/show_employee/:id)
  */
 export const getEmployeeById = async employeeId => {
   try {
-    const response = await apiClient.get(`/hr/users/${employeeId}`);
+    const response = await apiClient.get(`/hr/show_employee/${employeeId}`);
     return response.data?.data ?? response.data ?? {};
   } catch (error) {
     logger.error(`Error fetching employee ${employeeId}:`, error);
@@ -97,12 +97,12 @@ export const getEmployeeById = async employeeId => {
 };
 
 /**
- * Create new employee (api: POST /hr/users)
- * @param {Object} employeeData - Employee info
+ * Create new employee (api: POST /hr/add_employee)
+ * @param {Object} employeeData - Employee info (name, email, type, password, etc.)
  */
 export const createEmployee = async employeeData => {
   try {
-    const response = await apiClient.post('/hr/users', employeeData);
+    const response = await apiClient.post('/hr/add_employee', employeeData);
     return response.data?.data ?? response.data ?? {};
   } catch (error) {
     logger.error('Error creating employee:', error);
@@ -111,11 +111,11 @@ export const createEmployee = async employeeData => {
 };
 
 /**
- * Update employee (api: PUT /hr/users/:id)
+ * Update employee (api: PUT /hr/update_employee/:id)
  */
 export const updateEmployee = async (employeeId, employeeData) => {
   try {
-    const response = await apiClient.put(`/hr/users/${employeeId}`, employeeData);
+    const response = await apiClient.put(`/hr/update_employee/${employeeId}`, employeeData);
     return response.data?.data ?? response.data ?? {};
   } catch (error) {
     logger.error(`Error updating employee ${employeeId}:`, error);
@@ -124,11 +124,11 @@ export const updateEmployee = async (employeeId, employeeData) => {
 };
 
 /**
- * Delete employee (api: DELETE /hr/users/:id)
+ * Delete employee (api: DELETE /hr/delete_employee/:id)
  */
 export const deleteEmployee = async employeeId => {
   try {
-    const response = await apiClient.delete(`/hr/users/${employeeId}`);
+    const response = await apiClient.delete(`/hr/delete_employee/${employeeId}`);
     return response.data?.data ?? response.data ?? {};
   } catch (error) {
     logger.error(`Error deleting employee ${employeeId}:`, error);
@@ -291,8 +291,9 @@ export const generateExpiringContractsReport = async (days = 30, format = 'pdf')
 // ==================== Team Management APIs ====================
 
 /**
- * Get paginated HR teams with performance data
- * GET /hr/teams?per_page=&page=&year=&month=
+ * Get paginated HR teams with performance data.
+ * Tries GET /hr/teams first; if backend returns 404 (route not in API collection),
+ * falls back to GET /project_management/teams/index so HR view still gets teams.
  * @param {Object} params - page, per_page (1-100), year, month
  * @returns {Promise<{ items: Array, total: number }>}
  */
@@ -300,8 +301,18 @@ export const getTeams = async (params = {}) => {
   try {
     const response = await apiClient.get('/hr/teams', { params });
     const { items, total } = extractPaginatedData(response, []);
-    return { items, total };
+    return { items: items ?? [], total: total ?? 0 };
   } catch (error) {
+    const status = error?.response?.status;
+    if (status === 404) {
+      try {
+        const fallback = await apiClient.get('/project_management/teams/index', { params });
+        const { items, total } = extractPaginatedData(fallback, []);
+        return { items: items ?? [], total: total ?? 0 };
+      } catch (_) {
+        return { items: [], total: 0 };
+      }
+    }
     return handleServiceError(error, 'Error fetching HR teams', 'get') || { items: [], total: 0 };
   }
 };
