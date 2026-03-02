@@ -79,7 +79,7 @@
             <label>القسم</label>
             <select v-model="taskForm.section_key" required class="form-input">
               <option value="" disabled>اختر القسم...</option>
-              <option v-for="section in TASK_SECTIONS" :key="section.key" :value="section.key">
+              <option v-for="section in taskSections" :key="section.key" :value="section.key">
                 {{ section.label }}
               </option>
             </select>
@@ -91,19 +91,26 @@
           </div>
           <div class="form-group">
             <label>المسؤول</label>
-            <select v-model="taskForm.assigned_to" required class="form-input">
-              <option value="" disabled>اختر الموظف المسؤول...</option>
+            <select
+              v-model="taskForm.assigned_to"
+              required
+              class="form-input"
+              :disabled="!taskForm.section_key || sectionUsersLoading"
+            >
+              <option value="" disabled>
+                {{ !taskForm.section_key ? 'اختر القسم أولاً' : (sectionUsersLoading ? 'جاري التحميل...' : 'اختر الموظف المسؤول...') }}
+              </option>
               <option
                 v-if="
+                  taskForm.section_key &&
                   currentUser &&
-                  (!taskForm.section_key ||
-                    filteredUsers.some(user => user.id === currentUser.id))
+                  sectionUsers.some(user => user.id === currentUser.id)
                 "
                 :value="currentUser.id"
               >
                 -- تعيين لنفسي ({{ currentUser.name }}) --
               </option>
-              <option v-for="user in filteredUsers" :key="user.id" :value="user.id">
+              <option v-for="user in sectionUsers" :key="user.id" :value="user.id">
                 {{ user.name }}
               </option>
             </select>
@@ -138,22 +145,21 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed, watch } from 'vue';
+import { ref, reactive, onMounted, watch } from 'vue';
 import taskService from '../services/taskService';
 import notificationService from '../services/notificationService';
 import teamService from '../services/teamService';
 import userService from '../services/userService';
 import authService from '../services/authService';
 import logger from '../utils/logger';
-import { ROLE_MAP } from '../constants/roles';
 
 const tasks = ref([]);
 const teams = ref([]);
 const users = ref([]);
 const currentUser = authService.getCurrentUser();
 
-// Global sections/departments that can receive tasks
-const TASK_SECTIONS = [
+// Fallback sections when API is unavailable (key + Arabic label)
+const TASK_SECTIONS_FALLBACK = [
   { key: 'marketing', label: 'قسم التسويق' },
   { key: 'sales', label: 'قسم المبيعات' },
   { key: 'accounting', label: 'قسم المحاسبة' },
@@ -163,15 +169,8 @@ const TASK_SECTIONS = [
   { key: 'hr', label: 'قسم الموارد البشرية' },
 ];
 
-const SECTION_ROLE_MAP = {
-  marketing: ROLE_MAP.marketing,
-  sales: ROLE_MAP.sales,
-  accounting: ROLE_MAP.accounting,
-  credit: ROLE_MAP.credit,
-  project_management: ROLE_MAP.project_management,
-  editor: ROLE_MAP.editor,
-  hr: ROLE_MAP.hr,
-};
+// Sections for dropdown: from API (GET /tasks/sections) or fallback
+const taskSections = ref([]);
 
 const isLoading = ref(false);
 const filterStatus = ref('');
@@ -195,6 +194,10 @@ const reasonForm = reactive({
   taskId: null,
   reason: '',
 });
+
+// Section-scoped users for assignee dropdown (fetched when section is selected)
+const sectionUsers = ref([]);
+const sectionUsersLoading = ref(false);
 
 const extractDropdownDataFromTasks = () => {
   const uniqueTeams = new Map();
@@ -237,26 +240,59 @@ const extractDropdownDataFromTasks = () => {
   users.value = Array.from(uniqueUsers.entries()).map(([id, name]) => ({ id, name }));
 };
 
-const filteredUsers = computed(() => {
-  const sectionKey = taskForm.section_key;
-  if (!sectionKey) return users.value;
-
-  const roleType = SECTION_ROLE_MAP[sectionKey];
-  if (roleType == null) return users.value;
-
-  return users.value.filter(u => {
-    const normalizedType =
-      typeof u.type === 'string' && ROLE_MAP[u.type] !== undefined ? ROLE_MAP[u.type] : u.type;
-    return normalizedType === roleType;
-  });
-});
+/** Fetch users for the selected section via GET /tasks/sections/:section/users. */
+const fetchSectionUsers = async sectionKey => {
+  if (!sectionKey) {
+    sectionUsers.value = [];
+    return;
+  }
+  sectionUsersLoading.value = true;
+  taskForm.assigned_to = '';
+  try {
+    const items = await taskService.getSectionUsers(sectionKey);
+    sectionUsers.value = Array.isArray(items) ? items : [];
+  } catch (error) {
+    logger.error('Failed to load section users for assignee dropdown', error);
+    sectionUsers.value = [];
+  } finally {
+    sectionUsersLoading.value = false;
+  }
+};
 
 watch(
   () => taskForm.section_key,
-  () => {
+  (newSectionKey) => {
     taskForm.assigned_to = '';
+    if (!newSectionKey) {
+      sectionUsers.value = [];
+      sectionUsersLoading.value = false;
+      return;
+    }
+    fetchSectionUsers(newSectionKey);
   }
 );
+
+watch(showCreateModal, (isOpen) => {
+  if (isOpen) {
+    sectionUsers.value = [];
+    sectionUsersLoading.value = false;
+  }
+});
+
+/** Load sections from API (GET /tasks/sections); fallback to static list. */
+const loadTaskSections = async () => {
+  try {
+    const list = await taskService.getTaskSections();
+    const normalized = (list || []).map(s => ({
+      key: s.value ?? s.key,
+      label: s.label ?? s.value ?? s.key,
+    }));
+    taskSections.value = normalized.length > 0 ? normalized : TASK_SECTIONS_FALLBACK;
+  } catch (error) {
+    logger.error('Failed to load task sections', error);
+    taskSections.value = TASK_SECTIONS_FALLBACK;
+  }
+};
 
 const fetchDropdownData = async () => {
   try {
@@ -317,8 +353,10 @@ const getStatusLabel = status => {
 
 const getSectionLabel = sectionKey => {
   if (!sectionKey) return '';
-  const section = TASK_SECTIONS.find(s => s.key === sectionKey);
-  return section ? section.label : sectionKey;
+  const section = taskSections.value.find(s => s.key === sectionKey);
+  if (section) return section.label;
+  const fallback = TASK_SECTIONS_FALLBACK.find(s => s.key === sectionKey);
+  return fallback ? fallback.label : sectionKey;
 };
 
 const formatDate = dateString => {
@@ -339,8 +377,12 @@ const createTask = async () => {
     const due_at_formatted = taskForm.due_at ? taskForm.due_at.replace('T', ' ') + ':00' : null;
 
     await taskService.createTask({
-      ...taskForm,
+      task_name: taskForm.task_name,
+      section: taskForm.section_key,
+      assigned_to: taskForm.assigned_to,
       due_at: due_at_formatted,
+      status: taskForm.status,
+      ...(taskForm.team_id && { team_id: taskForm.team_id }),
     });
 
     notificationService.addNotification('تم إنشاء المهمة بنجاح', 'success');
@@ -403,6 +445,7 @@ const submitReasonModal = async () => {
 
 onMounted(() => {
   loadTasks();
+  loadTaskSections();
   fetchDropdownData();
 });
 </script>

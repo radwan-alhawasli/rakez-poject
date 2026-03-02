@@ -30,7 +30,9 @@ const isDevelopment = env === 'development';
 const isProduction = env === 'production';
 
 // API Base URL — بدون شرطة نهائية (e.g. http://localhost:8000/api)
-const apiBaseUrl = (process.env.VUE_APP_API_BASE_URL || 'https://api.rakez.com.sa/api').replace(
+// In development, default to local backend; otherwise use env or production URL.
+const defaultApiUrl = isDevelopment ? 'http://localhost:8000/api' : 'https://api.rakez.com.sa/api';
+const apiBaseUrl = (process.env.VUE_APP_API_BASE_URL || defaultApiUrl).replace(
   /\/+$/,
   ''
 );
