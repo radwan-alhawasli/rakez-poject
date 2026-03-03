@@ -1048,7 +1048,7 @@
           </div>
 
           <!-- Sold units table -->
-          <div v-else class="table-container">
+          <div v-else class="table-container table-responsive">
             <table class="data-table">
               <thead>
                 <tr>
@@ -1161,7 +1161,7 @@
             </svg>
             <p>لا توجد ودائع لإدارتها حالياً.</p>
           </div>
-          <div v-else class="table-container">
+          <div v-else class="table-container table-responsive">
             <table class="data-table">
               <thead>
                 <tr>
@@ -1228,7 +1228,7 @@
             </svg>
             <p>لا توجد ودائع تحتاج متابعة حالياً.</p>
           </div>
-          <div v-else class="table-container">
+          <div v-else class="table-container table-responsive">
             <table class="data-table">
               <thead>
                 <tr>
@@ -1417,7 +1417,7 @@
           <div v-else-if="!analyticsMonthlyReport" class="empty-state">
             <p>لا توجد بيانات. اضغط على "تقرير العمولات الشهري" لتحميله.</p>
           </div>
-          <div v-else class="table-container">
+          <div v-else class="table-container table-responsive">
             <div class="report-summary">
               <div class="detail-card">
                 <span class="detail-label">إجمالي العمولات الشهرية</span>
@@ -1887,7 +1887,7 @@
                 <p>لا توجد وحدات متاحة للعرض لهذا المشروع.</p>
               </div>
 
-              <div v-else class="table-wrapper">
+              <div v-else class="table-wrapper table-responsive">
                 <table class="units-table">
                   <thead>
                     <tr>
@@ -2047,10 +2047,6 @@ export default {
         }
       }
     );
-
-    watch(teamSortByRecommendation, isOn => {
-      if (isOn && activeTab.value === 'team') loadTeamRecommendations();
-    });
 
     const allTabs = [
       {
@@ -2317,6 +2313,10 @@ export default {
     const teamSortByRecommendation = ref(false);
     const teamRecommendations = shallowRef([]);
     const isLoadingTeamRecommendations = ref(false);
+
+    watch(teamSortByRecommendation, isOn => {
+      if (isOn && activeTab.value === 'team') loadTeamRecommendations();
+    });
     const memberRatingSaving = ref(null);
     const memberCommentEditId = ref(null);
     /** مسودة التعليق لكل عضو حسب id لضمان ربط صحيح مع الـ textarea */

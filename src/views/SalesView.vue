@@ -230,6 +230,7 @@
         </div>
 
         <div v-else class="reservations-table-container">
+          <div class="table-responsive">
           <table class="reservations-table">
             <thead>
               <tr>
@@ -306,6 +307,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>
@@ -424,20 +426,13 @@
                 <h4>معلومات العميل</h4>
                 <div class="form-group">
                   <label>اسم العميل *</label>
-                  <input
-                    type="text"
-                    v-model="reservationForm.client_name"
-                    required
-                    class="form-input"
-                  />
+                  <Input v-model="reservationForm.client_name" type="text" />
                 </div>
                 <div class="form-group">
                   <label>رقم الجوال *</label>
-                  <input
-                    type="tel"
+                  <Input
                     v-model="reservationForm.client_mobile"
-                    required
-                    class="form-input"
+                    type="tel"
                     placeholder="05xxxxxxxx"
                   />
                 </div>
@@ -611,13 +606,12 @@
             </div>
 
             <div class="form-actions">
-              <button type="button" @click="showReservationModal = false" class="btn-secondary">
+              <Button type="button" variant="secondary" @click="showReservationModal = false">
                 إلغاء
-              </button>
-              <button type="submit" class="btn-primary" :disabled="isSubmitting">
-                <span v-if="isSubmitting">جاري الحفظ...</span>
-                <span v-else>تأكيد الحجز</span>
-              </button>
+              </Button>
+              <Button type="submit" :disabled="isSubmitting" :loading="isSubmitting">
+                تأكيد الحجز
+              </Button>
             </div>
           </form>
         </div>
@@ -643,10 +637,12 @@ import notificationService from '../services/notificationService';
 import logger from '../utils/logger';
 import { useFormatters } from '../composables/useFormatters';
 import ConfirmModal from '../components/ConfirmModal.vue';
+import Button from '@/components/ui/Button.vue';
+import Input from '@/components/ui/Input.vue';
 
 export default {
   name: 'SalesView',
-  components: { ConfirmModal },
+  components: { ConfirmModal, Button, Input },
   setup() {
     const activeTab = ref('dashboard');
     const tabs = [

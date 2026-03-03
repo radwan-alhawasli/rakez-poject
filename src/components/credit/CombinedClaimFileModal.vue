@@ -62,7 +62,7 @@
           />
         </div>
 
-        <div class="table-wrapper">
+        <div class="table-wrapper table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>

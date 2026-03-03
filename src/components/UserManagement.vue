@@ -32,7 +32,8 @@
         <p>لا يوجد مستخدمين لعرضهم حالياً.</p>
       </div>
 
-      <table v-else class="data-table">
+      <div v-else class="table-responsive">
+        <table class="data-table">
         <thead>
           <tr>
             <th>المستخدم</th>
@@ -127,6 +128,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
 
     <!-- Add/Edit Modal -->
@@ -163,24 +165,24 @@
           </p>
           <div class="form-group">
             <label>الفريق</label>
-            <select v-model="selectedTeamId" class="form-input">
+            <Select v-model="selectedTeamId">
               <option value="">اختر الفريق...</option>
               <option v-for="t in teamsList" :key="t.id" :value="t.id">
                 {{ t.name }}
               </option>
-            </select>
+            </Select>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn-secondary" @click="closeAssignModal">إلغاء</button>
-          <button
+          <Button type="button" variant="secondary" @click="closeAssignModal">إلغاء</Button>
+          <Button
             type="button"
-            class="btn-primary"
             :disabled="!selectedTeamId || isAssigning"
+            :loading="isAssigning"
             @click="submitAssignTeam"
           >
-            {{ isAssigning ? 'جاري التعيين...' : 'تعيين' }}
-          </button>
+            تعيين
+          </Button>
         </div>
       </div>
     </div>
@@ -203,6 +205,8 @@ import hrService from '../services/hrService';
 import AddUserModal from './AddUserModal.vue';
 import ConfirmModal from './ConfirmModal.vue';
 import Pagination from './Pagination.vue';
+import Button from '@/components/ui/Button.vue';
+import Select from '@/components/ui/Select.vue';
 import { getRoleLabel, getRoleClass } from '../constants/roles';
 import logger from '../utils/logger';
 import { handleError } from '../utils/errorHandler';
@@ -216,6 +220,8 @@ export default {
     AddUserModal,
     ConfirmModal,
     Pagination,
+    Button,
+    Select,
   },
   props: {
     /** When true, use HR API (GET/POST/PUT /hr/users) instead of admin employees API */

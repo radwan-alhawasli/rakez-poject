@@ -1,25 +1,26 @@
 <template>
-  <div
-    class="app-container"
-    :class="{ 'sidebar-open': isSidebarOpen, 'sidebar-hovered': isSidebarHovered }"
+  <SidebarProvider
+    v-model:open-mobile="isSidebarOpen"
+    @update:hovered="isSidebarHovered = $event"
   >
-    <!-- الهيدر العلوي -->
-    <header class="top-header">
-      <div class="header-left">
-        <button class="mobile-toggle" @click="toggleSidebar">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
+    <!-- Overlay: click to close sidebar on mobile (only when open and below 992px) -->
+    <div
+      v-if="isSidebarOpen && isMobile"
+      class="sidebar-overlay"
+      role="button"
+      tabindex="-1"
+      aria-label="إغلاق القائمة"
+      @click="isSidebarOpen = false"
+      @keydown.enter.space.prevent="isSidebarOpen = false"
+    />
+    <div
+      class="app-container flex min-h-screen w-full flex-col"
+      :class="{ 'sidebar-open': isSidebarOpen, 'sidebar-hovered': isSidebarHovered }"
+    >
+      <!-- الهيدر العلوي -->
+      <header class="top-header">
+        <div class="header-left">
+          <SidebarTrigger />
         <button class="back-btn" @click="$router.back()">
           <svg
             class="arrow-icon"
@@ -152,22 +153,15 @@
       </div>
     </header>
 
-    <div class="main-wrapper" :class="{ 'sidebar-open': isSidebarOpen }">
-      <!-- القائمة الجانبية -->
-      <aside
-        class="sidebar"
-        :class="{ open: isSidebarOpen }"
-        @mouseenter="onSidebarEnter"
-        @mouseleave="onSidebarLeave"
-      >
-        <div class="sidebar-header">
-          <img src="/img/logo-circle.png" class="sidebar-logo-img" alt="Logo" />
-          <div class="sidebar-logo-text">
-            <span class="rakez-ar">راكز</span> | <span class="rakez-en">Rakez</span>
-          </div>
+    <Sidebar side="right" class="sidebar sidebar-luxury">
+      <SidebarHeader>
+        <img src="/img/logo-circle.png" class="sidebar-logo-img" alt="Logo" />
+        <div class="sidebar-logo-text">
+          <span class="rakez-ar">راكز</span> | <span class="rakez-en">Rakez</span>
         </div>
+      </SidebarHeader>
 
-        <nav class="sidebar-nav">
+      <SidebarContent>
           <!-- AI Assistant - for all users -->
           <router-link
             to="/ai-assistant"
@@ -2020,10 +2014,10 @@
               </div>
             </router-link>
           </template>
-        </nav>
+      </SidebarContent>
 
-        <div class="sidebar-footer">
-          <div class="user-profile">
+      <SidebarFooter>
+        <div class="user-profile">
             <div class="avatar">
               <span class="avatar-text">{{ (user?.name || 'A').charAt(0).toUpperCase() }}</span>
             </div>
@@ -2049,54 +2043,91 @@
             ></span>
             <span class="logout-text">تسجيل الخروج</span>
           </button>
-        </div>
-      </aside>
+      </SidebarFooter>
+    </Sidebar>
 
-      <!-- Watermark Background -->
-
-      <!-- المحتوى المتغير -->
-      <main class="main-content">
+    <SidebarInset>
+      <main
+        class="main-content flex-1 min-h-0 overflow-auto overflow-x-hidden"
+        role="main"
+      >
         <router-view v-slot="{ Component, route }">
           <transition name="fade-slide" mode="out-in">
             <component v-if="Component" :is="Component" :key="route.path" />
           </transition>
         </router-view>
       </main>
-    </div>
+    </SidebarInset>
 
     <footer class="footer">
       <p class="copyright">جميع الحقوق محفوظة © شركة راكز العقارية 2025</p>
     </footer>
-  </div>
+    </div>
+  </SidebarProvider>
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import notificationService from '../services/notificationService';
 import authService from '../services/authService';
 import { usePermissions } from '../composables/usePermissions';
 import { getRoleLabel } from '../constants/roles';
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarFooter,
+  SidebarInset,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
 
 export default {
   name: 'MainLayout',
+  components: {
+    SidebarProvider,
+    Sidebar,
+    SidebarHeader,
+    SidebarContent,
+    SidebarFooter,
+    SidebarInset,
+    SidebarTrigger,
+  },
   setup() {
     const route = useRoute();
     const router = useRouter();
 
     const isSidebarOpen = ref(false);
-    const toggleSidebar = () => {
-      isSidebarOpen.value = !isSidebarOpen.value;
+    const isSidebarHovered = ref(false);
+
+    const MOBILE_BREAKPOINT = 992;
+    const isMobile = ref(false);
+    const updateMobile = () => {
+      if (typeof window !== 'undefined') {
+        isMobile.value = window.innerWidth < MOBILE_BREAKPOINT;
+      }
     };
 
-    // Used to "push" layout on hover for pointer devices
-    const isSidebarHovered = ref(false);
-    const onSidebarEnter = () => {
-      isSidebarHovered.value = true;
-    };
-    const onSidebarLeave = () => {
-      isSidebarHovered.value = false;
-    };
+    watch(
+      () => route.path,
+      () => {
+        isSidebarOpen.value = false;
+      }
+    );
+
+    watch(
+      [isSidebarOpen, isMobile],
+      ([open, mobile]) => {
+        if (typeof document === 'undefined') return;
+        if (open && mobile) {
+          document.body.classList.add('sidebar-drawer-open');
+        } else {
+          document.body.classList.remove('sidebar-drawer-open');
+        }
+      },
+      { immediate: true }
+    );
 
     const user = computed(() => {
       route.path;
@@ -2197,10 +2228,17 @@ export default {
 
     onMounted(() => {
       notificationService.init();
+      updateMobile();
+      if (typeof window !== 'undefined') {
+        window.addEventListener('resize', updateMobile);
+      }
     });
 
     onUnmounted(() => {
       notificationService.disconnect();
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', updateMobile);
+      }
     });
 
     return {
@@ -2215,9 +2253,7 @@ export default {
       unreadCount,
       isSidebarOpen,
       isSidebarHovered,
-      toggleSidebar,
-      onSidebarEnter,
-      onSidebarLeave,
+      isMobile,
       toggleNotifications,
       markAsRead,
       markAllAsRead,
@@ -2229,7 +2265,6 @@ export default {
 
 <style scoped>
 .app-container {
-  min-height: 100vh;
   background: var(--color-light-gray);
   direction: rtl;
   overflow-x: hidden;
@@ -2255,7 +2290,7 @@ export default {
   animation: fadeInDown 0.5s ease-out;
 }
 
-.sidebar:hover ~ .top-header {
+:deep(.sidebar):hover ~ .top-header {
   right: 260px;
 }
 
@@ -2359,7 +2394,7 @@ export default {
   animation: pulse 2s infinite;
 }
 
-.sidebar:hover .notification-badge {
+:deep(.sidebar):hover .notification-badge {
   top: -4px;
   right: -4px;
 }
@@ -2538,7 +2573,7 @@ export default {
   box-shadow: 0 0 8px rgba(177, 162, 143, 0.8);
 }
 
-.sidebar:hover .unread-dot {
+:deep(.sidebar):hover .unread-dot {
   top: 18px;
   left: 12px;
 }
@@ -2557,8 +2592,8 @@ export default {
   margin: 0;
 }
 
-/* Sidebar - Enhanced Luxury with Hover Expand */
-.sidebar {
+/* Sidebar - Enhanced Luxury with Hover Expand (use :deep so child component is styled) */
+:deep(.sidebar) {
   position: fixed;
   top: 0;
   right: 0;
@@ -2577,7 +2612,7 @@ export default {
   animation: slideInFromRight 0.6s ease-out;
 }
 
-.sidebar::before {
+:deep(.sidebar)::before {
   content: '';
   position: absolute;
   top: 0;
@@ -2588,12 +2623,12 @@ export default {
   pointer-events: none;
 }
 
-.sidebar:hover {
+:deep(.sidebar):hover {
   width: 260px;
   box-shadow: 15px 0 60px rgba(0, 0, 0, 0.35), 8px 0 30px rgba(177, 162, 143, 0.2);
 }
 
-.sidebar.open {
+:deep(.sidebar).open {
   right: 0 !important;
   width: 260px;
 }
@@ -2620,7 +2655,7 @@ export default {
   transition: all 0.3s ease;
 }
 
-.sidebar:hover .sidebar-logo-img {
+:deep(.sidebar):hover .sidebar-logo-img {
   border-color: var(--color-gold-light);
   transform: rotate(360deg) scale(1.1);
   box-shadow: 0 8px 20px rgba(177, 162, 143, 0.4), 0 0 15px rgba(177, 162, 143, 0.3);
@@ -2635,7 +2670,7 @@ export default {
   transition: all 0.4s ease 0.1s;
 }
 
-.sidebar:hover .sidebar-logo-text {
+:deep(.sidebar):hover .sidebar-logo-text {
   opacity: 1;
   transform: translateX(0);
 }
@@ -2703,7 +2738,7 @@ export default {
   animation: fadeInRight 0.5s ease-out backwards;
 }
 
-.sidebar:hover .nav-item {
+:deep(.sidebar):hover .nav-item {
   width: 100%;
   height: 48px;
   border-radius: 12px;
@@ -2765,7 +2800,7 @@ export default {
   box-shadow: 0 8px 25px rgba(177, 162, 143, 0.2), 0 0 15px rgba(177, 162, 143, 0.15);
 }
 
-.sidebar:hover .nav-item:hover {
+:deep(.sidebar):hover .nav-item:hover {
   transform: translateX(-6px);
 }
 
@@ -2775,7 +2810,7 @@ export default {
   box-shadow: 0 0 10px rgba(177, 162, 143, 0.6);
 }
 
-.sidebar:not(:hover) .nav-item:hover::before {
+:deep(.sidebar):not(:hover) .nav-item:hover::before {
   display: none;
 }
 
@@ -2789,7 +2824,7 @@ export default {
   border-radius: 50%; /* Explicitly circular when closed */
 }
 
-.sidebar:hover .nav-item.active {
+:deep(.sidebar):hover .nav-item.active {
   transform: translateX(-4px);
   background: linear-gradient(135deg, rgba(177, 162, 143, 0.3) 0%, rgba(177, 162, 143, 0.1) 100%);
   box-shadow: 0 0 30px rgba(177, 162, 143, 0.4), 0 0 15px rgba(177, 162, 143, 0.3),
@@ -2799,7 +2834,7 @@ export default {
 }
 
 /* إشعاع متوهج للعنصر النشط فقط عند فتح القائمة */
-.sidebar:hover .nav-item.active::after {
+:deep(.sidebar):hover .nav-item.active::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -2823,7 +2858,7 @@ export default {
   display: none; /* Hide side indicator when circular */
 }
 
-.sidebar:hover .nav-item.active::before {
+:deep(.sidebar):hover .nav-item.active::before {
   display: block;
   height: 80%;
   width: 4px;
@@ -2879,7 +2914,7 @@ export default {
   width: 100%;
 }
 
-.sidebar:hover .nav-content {
+:deep(.sidebar):hover .nav-content {
   justify-content: flex-start;
   gap: 20px;
 }
@@ -2894,7 +2929,7 @@ export default {
   filter: drop-shadow(0 0 5px rgba(177, 162, 143, 0.6));
 }
 
-.sidebar:hover .nav-icon-svg {
+:deep(.sidebar):hover .nav-icon-svg {
   color: var(--color-dark-gray);
   filter: none;
 }
@@ -2920,7 +2955,7 @@ export default {
   right: 60px;
 }
 
-.sidebar:hover .nav-text {
+:deep(.sidebar):hover .nav-text {
   opacity: 1;
   transform: translateX(0);
   pointer-events: auto;
@@ -2950,7 +2985,7 @@ export default {
   letter-spacing: 0.01em;
 }
 
-.sidebar:not(:hover) .nav-item:hover::after {
+:deep(.sidebar):not(:hover) .nav-item:hover::after {
   opacity: 1;
   visibility: visible;
   transform: translateX(0);
@@ -2981,7 +3016,7 @@ export default {
   transition: all 0.4s ease 0.1s;
 }
 
-.sidebar:hover .user-info {
+:deep(.sidebar):hover .user-info {
   opacity: 1;
   transform: translateX(0);
 }
@@ -3024,7 +3059,7 @@ export default {
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.sidebar:hover .avatar {
+:deep(.sidebar):hover .avatar {
   transform: scale(1.08);
   border-color: rgba(177, 162, 143, 0.5);
   box-shadow: 0 8px 20px rgba(177, 162, 143, 0.4), 0 0 15px rgba(177, 162, 143, 0.3);
@@ -3050,7 +3085,7 @@ export default {
   margin: 0 auto;
 }
 
-.sidebar:hover .logout-btn {
+:deep(.sidebar):hover .logout-btn {
   width: 100%;
   height: 44px;
   padding: 0 15px;
@@ -3082,29 +3117,58 @@ export default {
   font-size: 13px;
 }
 
-.sidebar:hover .logout-text {
+:deep(.sidebar):hover .logout-text {
   opacity: 1;
   transform: translateX(0);
 }
 
-/* Main Wrapper */
+/* Clickable overlay to close sidebar on mobile (above content, below sidebar) */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-sidebar) - 1);
+  background: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.2s ease;
+  cursor: pointer;
+}
+@media (max-width: 575px) {
+  .sidebar-overlay {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+  }
+}
+@media (min-width: 992px) {
+  .sidebar-overlay {
+    display: none !important;
+  }
+}
+
+/* Main Wrapper - sidebar margin/transition only; layout via Tailwind (flex flex-1 flex-col min-h-0) */
 .main-wrapper {
   margin-right: 80px;
   padding-top: 60px;
   min-height: 100vh;
   position: relative;
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: margin-right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.sidebar:hover ~ .main-wrapper {
+:deep(.sidebar):hover ~ .main-wrapper {
   margin-right: 260px;
 }
 
+/* Header/footer shift on hover (header is before sidebar in DOM so use app-container class) */
+.app-container.sidebar-hovered .top-header {
+  right: 260px;
+}
+.app-container.sidebar-hovered .footer {
+  margin-right: 260px;
+}
+
+/* Main content: padding and z-index only; flex/overflow from Tailwind (flex-1 min-h-0 overflow-auto) */
 .main-content {
   padding: 40px;
   position: relative;
   z-index: 5;
-  overflow-x: hidden;
   min-width: 0;
 }
 
@@ -3114,7 +3178,7 @@ export default {
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.sidebar:hover ~ .top-header {
+:deep(.sidebar):hover ~ .top-header {
   right: 260px;
 }
 
@@ -3144,10 +3208,10 @@ export default {
   align-items: center;
   justify-content: center;
   margin-right: 80px;
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: margin-right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.sidebar:hover ~ .footer {
+:deep(.sidebar):hover ~ .footer {
   margin-right: 260px;
 }
 
@@ -3171,11 +3235,11 @@ export default {
     height: 90px;
   }
 
-  .sidebar {
+  :deep(.sidebar) {
     width: 100px;
   }
 
-  .sidebar:hover {
+  :deep(.sidebar):hover {
     width: 320px;
   }
 
@@ -3236,11 +3300,11 @@ export default {
     height: 80px;
   }
 
-  .sidebar {
+  :deep(.sidebar) {
     width: 90px;
   }
 
-  .sidebar:hover {
+  :deep(.sidebar):hover {
     width: 300px;
   }
 
@@ -3298,15 +3362,15 @@ export default {
   }
 }
 
-/* Tablet & Small Desktop (992px - 1199px) */
+/* Tablet & Small Desktop (992px - 1199px) - sidebar off-canvas, open on trigger */
 @media (min-width: 992px) and (max-width: 1199px) {
   .top-header {
     right: 0 !important;
     padding: 0 20px;
   }
 
-  .sidebar {
-    right: -280px;
+  :deep(.sidebar) {
+    right: -280px !important;
     width: 280px !important;
   }
 
@@ -3355,12 +3419,12 @@ export default {
     display: none !important;
   }
 
-  .sidebar:hover {
+  :deep(.sidebar):hover {
     width: 280px;
   }
 }
 
-/* Tablet Portrait (768px - 991px) */
+/* Tablet Portrait (768px - 991px) - sidebar off-canvas, open on trigger */
 @media (min-width: 768px) and (max-width: 991px) {
   .top-header {
     right: 0 !important;
@@ -3368,12 +3432,12 @@ export default {
     height: 65px;
   }
 
-  .sidebar {
-    right: -280px;
+  :deep(.sidebar) {
+    right: -280px !important;
     width: 280px !important;
   }
 
-  .sidebar.open {
+  :deep(.sidebar).open {
     right: 0 !important;
   }
 
@@ -3478,12 +3542,12 @@ export default {
     height: 60px;
   }
 
-  .sidebar {
-    right: -100%;
+  :deep(.sidebar) {
+    right: -100% !important;
     width: 280px !important;
   }
 
-  .sidebar.open {
+  :deep(.sidebar).open {
     right: 0 !important;
   }
 
@@ -3492,16 +3556,10 @@ export default {
     margin-right: 0 !important;
   }
 
+  /* Overlay handled by .sidebar-overlay (clickable) below sidebar z-index */
   .main-wrapper.sidebar-open::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: var(--z-overlay);
-    animation: fadeIn 0.3s ease;
+    content: none;
+    display: none;
   }
 
   .mobile-toggle {
@@ -3629,13 +3687,13 @@ export default {
     height: 60px;
   }
 
-  .sidebar {
-    right: -100%;
+  :deep(.sidebar) {
+    right: -100% !important;
     width: 85% !important;
     max-width: 300px;
   }
 
-  .sidebar.open {
+  :deep(.sidebar).open {
     right: 0 !important;
     box-shadow: -10px 0 50px rgba(0, 0, 0, 0.5);
   }
@@ -3645,17 +3703,10 @@ export default {
     margin-right: 0 !important;
   }
 
+  /* Overlay handled by .sidebar-overlay (clickable) */
   .main-wrapper.sidebar-open::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: var(--z-overlay);
-    animation: fadeIn 0.3s ease;
-    backdrop-filter: blur(2px);
+    content: none;
+    display: none;
   }
 
   .mobile-toggle {
@@ -3870,7 +3921,7 @@ export default {
     padding: 18px 10px;
   }
 
-  .sidebar {
+  :deep(.sidebar) {
     width: 90% !important;
   }
 
@@ -4003,6 +4054,8 @@ export default {
   }
 }
 
+/* Desktop only (>= 1200px): sidebar rail on-screen; below 1200px sidebar is off-canvas, open on trigger */
+@media (min-width: 1200px) {
 /* Keep header/content/footer clear of the compact rail */
 .top-header {
   right: var(--sidebar-collapsed-width) !important;
@@ -4016,25 +4069,22 @@ export default {
   margin-right: var(--sidebar-collapsed-width) !important;
 }
 
-/* Sidebar is always on-screen; never off-canvas */
-.sidebar {
+/* Sidebar is always on-screen on desktop; on mobile it is off-canvas (see max-width rules) */
+:deep(.sidebar) {
   right: 0 !important;
   width: var(--sidebar-collapsed-width) !important;
 }
 
-.sidebar:hover {
+:deep(.sidebar):hover {
   width: var(--sidebar-expanded-width) !important;
 }
 
-.sidebar.open {
+:deep(.sidebar).open {
   width: var(--sidebar-expanded-width) !important;
 }
 
-/* ------------------------------------------------------
-   Rail mode (collapsed): center icons + tight spacing
-   Applies on ALL screen sizes, ensuring consistent look.
-   ------------------------------------------------------ */
-.sidebar:not(:hover):not(.open) .sidebar-nav {
+/* Rail mode (collapsed): center icons + tight spacing - desktop only */
+:deep(.sidebar):not(:hover):not(.open) .sidebar-nav {
   padding: var(--sidebar-rail-padding-y) 0 !important;
   gap: var(--sidebar-rail-gap) !important;
   align-items: center !important;
@@ -4042,11 +4092,11 @@ export default {
   /* Prevent scrollbar from shifting centering */
   scrollbar-width: none;
 }
-.sidebar:not(:hover):not(.open) .sidebar-nav::-webkit-scrollbar {
+:deep(.sidebar):not(:hover):not(.open) .sidebar-nav::-webkit-scrollbar {
   width: 0 !important;
 }
 
-.sidebar:not(:hover):not(.open) .nav-item {
+:deep(.sidebar):not(:hover):not(.open) .nav-item {
   width: var(--sidebar-rail-item) !important;
   height: var(--sidebar-rail-item) !important;
   margin: 0 !important;
@@ -4055,50 +4105,50 @@ export default {
   justify-content: center !important;
 }
 
-.sidebar:not(:hover):not(.open) .nav-content {
+:deep(.sidebar):not(:hover):not(.open) .nav-content {
   justify-content: center !important;
 }
 
-.sidebar:not(:hover):not(.open) .nav-text {
+:deep(.sidebar):not(:hover):not(.open) .nav-text {
   display: none !important;
 }
 
-.sidebar:not(:hover):not(.open) .sidebar-header {
+:deep(.sidebar):not(:hover):not(.open) .sidebar-header {
   justify-content: center !important;
   padding: 0 !important;
   gap: 0 !important;
 }
 
-.sidebar:not(:hover):not(.open) .sidebar-logo-text {
+:deep(.sidebar):not(:hover):not(.open) .sidebar-logo-text {
   /* Prevent the stray "ر" from peeking in collapsed mode */
   display: none !important;
 }
 
-.sidebar:not(:hover):not(.open) .nav-item::after {
+:deep(.sidebar):not(:hover):not(.open) .nav-item::after {
   /* No tooltips in rail mode (prevents layout jitter on small screens) */
   display: none !important;
 }
 
-.sidebar:not(:hover):not(.open) .sidebar-footer {
+:deep(.sidebar):not(:hover):not(.open) .sidebar-footer {
   padding: 12px 8px !important;
   align-items: center;
 }
 
-.sidebar:not(:hover):not(.open) .user-profile {
+:deep(.sidebar):not(:hover):not(.open) .user-profile {
   justify-content: center;
   gap: 0 !important;
 }
 
-.sidebar:not(:hover):not(.open) .user-info {
+:deep(.sidebar):not(:hover):not(.open) .user-info {
   /* Hide layout box too, not only opacity (fixes bottom cut text) */
   display: none !important;
 }
 
-.sidebar:not(:hover):not(.open) .logout-text {
+:deep(.sidebar):not(:hover):not(.open) .logout-text {
   display: none !important;
 }
 
-.sidebar:not(:hover):not(.open) .logout-btn {
+:deep(.sidebar):not(:hover):not(.open) .logout-btn {
   width: var(--sidebar-rail-item) !important;
   height: var(--sidebar-rail-item) !important;
   border-radius: 50% !important;
@@ -4107,21 +4157,22 @@ export default {
   margin: 0 auto !important;
 }
 
+/* Disable hover-expand on touch devices (use toggle only) - desktop touch */
+@media (hover: none) and (pointer: coarse) {
+  :deep(.sidebar):hover {
+    width: var(--sidebar-collapsed-width) !important;
+  }
+}
+}
+
 /* When opened on mobile/tablet, don't block the page with overlay */
 .main-wrapper.sidebar-open::after {
   display: none !important;
   content: none !important;
 }
 
-/* Disable hover-expand on touch devices (use toggle only) */
-@media (hover: none) and (pointer: coarse) {
-  .sidebar:hover {
-    width: var(--sidebar-collapsed-width) !important;
-  }
-}
-
-/* Push layout on pointer devices (hover/open) */
-@media (min-width: 992px) {
+/* Push layout on pointer devices (hover/open) - large desktop only */
+@media (min-width: 1200px) {
   .app-container.sidebar-open .top-header,
   .app-container.sidebar-hovered .top-header {
     right: var(--sidebar-expanded-width) !important;
@@ -4139,16 +4190,16 @@ export default {
 }
 
 /* Make "open" behave like hover (show texts/layout) */
-.sidebar.open .sidebar-logo-text,
-.sidebar.open .nav-text,
-.sidebar.open .user-info,
-.sidebar.open .logout-text {
+:deep(.sidebar).open .sidebar-logo-text,
+:deep(.sidebar).open .nav-text,
+:deep(.sidebar).open .user-info,
+:deep(.sidebar).open .logout-text {
   opacity: 1 !important;
   transform: none !important;
   pointer-events: auto;
 }
 
-.sidebar.open .nav-item {
+:deep(.sidebar).open .nav-item {
   width: 100% !important;
   height: 48px !important;
   border-radius: 12px !important;
@@ -4157,17 +4208,17 @@ export default {
   margin: 0 !important;
 }
 
-.sidebar.open .nav-content {
+:deep(.sidebar).open .nav-content {
   justify-content: flex-start !important;
   gap: 20px !important;
 }
 
-.sidebar.open .nav-text {
+:deep(.sidebar).open .nav-text {
   position: relative !important;
   right: auto !important;
 }
 
-.sidebar.open .logout-btn {
+:deep(.sidebar).open .logout-btn {
   width: 100% !important;
   padding: 0 15px !important;
   justify-content: flex-start !important;
@@ -4231,5 +4282,13 @@ export default {
   .sidebar-nav::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.08);
   }
+}
+</style>
+
+<!-- Body scroll lock when mobile sidebar is open (global, unscoped) -->
+<style>
+body.sidebar-drawer-open {
+  overflow: hidden;
+  touch-action: none;
 }
 </style>

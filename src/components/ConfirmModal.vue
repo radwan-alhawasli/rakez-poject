@@ -1,61 +1,100 @@
 <template>
-  <div class="modal-overlay" @click.self="handleCancel" tabindex="-1">
-    <div class="modal-container">
-      <div class="modal-icon" :class="iconType">
-        <svg
-          v-if="type === 'danger'"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        <svg
-          v-else-if="type === 'warning'"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path
-            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-          ></path>
-          <line x1="12" y1="9" x2="12" y2="13"></line>
-          <line x1="12" y1="17" x2="12.01" y2="17"></line>
-        </svg>
-        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 16 12 12 12 8"></polyline>
-        </svg>
+  <AlertDialog
+    :open="isOpen"
+    @update:open="onOpenChange"
+  >
+    <AlertDialogContent class="confirm-alert-content max-w-md rounded-2xl border-0 bg-white p-0 shadow-xl" dir="rtl">
+      <AlertDialogHeader class="px-6 pt-6 pb-2 text-center sm:text-center">
+        <AlertDialogTitle class="text-xl font-extrabold text-[var(--color-navy)]">
+          {{ title }}
+        </AlertDialogTitle>
+      </AlertDialogHeader>
+      <div class="confirm-modal-body px-6 pb-6 pt-2 text-center">
+        <div class="confirm-modal-icon mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full" :class="iconType">
+          <svg
+            v-if="type === 'danger'"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="h-10 w-10"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <svg
+            v-else-if="type === 'warning'"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="h-10 w-10"
+          >
+            <path
+              d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+            ></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-10 w-10">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 16 12 12 12 8"></polyline>
+          </svg>
+        </div>
+        <AlertDialogDescription class="confirm-modal-message text-base font-medium text-[var(--color-dark-gray)]">
+          {{ message }}
+        </AlertDialogDescription>
       </div>
-
-      <h3 class="modal-title">{{ title }}</h3>
-      <p class="modal-message">{{ message }}</p>
-
-      <div class="modal-actions">
-        <button class="btn btn-cancel" @click="handleCancel">إلغاء</button>
-        <button
-          class="btn btn-confirm"
-          :class="confirmButtonClass"
-          @click="handleConfirm"
+      <AlertDialogFooter class="flex flex-row flex-wrap justify-center gap-3 border-t border-[var(--color-light-gray)] px-6 py-4 sm:justify-center">
+        <AlertDialogCancel
+          type="button"
+          class="btn-cancel min-w-[120px] rounded-xl border-2 border-[var(--color-medium-gray)] bg-[var(--color-light-gray)] px-8 py-3.5 text-[15px] font-bold text-[var(--color-dark-gray)] hover:bg-[var(--color-light-gray)] hover:text-[var(--color-charcoal)]"
           :disabled="isLoading"
+          @click="handleCancel"
         >
-          <span v-if="isLoading" class="btn-spinner"></span>
-          <span v-else>{{ confirmText }}</span>
-        </button>
-      </div>
-    </div>
-  </div>
+          {{ cancelText }}
+        </AlertDialogCancel>
+        <AlertDialogAction
+          type="button"
+          class="btn-confirm min-w-[120px] rounded-xl px-8 py-3.5 text-[15px] font-bold text-white shadow-md"
+          :class="confirmButtonClass"
+          :disabled="isLoading"
+          @click="handleConfirm"
+        >
+          <span v-if="isLoading" class="btn-spinner" aria-hidden="true"></span>
+          <template v-else>{{ confirmText }}</template>
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
 </template>
 
 <script>
-import { onMounted, onUnmounted, computed } from 'vue';
+import { computed, ref } from 'vue'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 export default {
   name: 'ConfirmModal',
+  components: {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+  },
   props: {
     title: {
       type: String,
@@ -67,8 +106,8 @@ export default {
     },
     type: {
       type: String,
-      default: 'warning', // 'warning', 'danger', 'info'
-      validator: value => ['warning', 'danger', 'info'].includes(value),
+      default: 'warning',
+      validator: (value) => ['warning', 'danger', 'info'].includes(value),
     },
     confirmText: {
       type: String,
@@ -78,251 +117,116 @@ export default {
       type: String,
       default: 'إلغاء',
     },
+    open: {
+      type: Boolean,
+      default: undefined,
+    },
     isLoading: {
       type: Boolean,
       default: false,
     },
   },
-  emits: ['confirm', 'cancel', 'close'],
+  emits: ['confirm', 'cancel', 'close', 'update:open'],
   setup(props, { emit }) {
-    const iconType = computed(() => {
-      return `icon-${props.type}`;
-    });
+    const internalOpen = ref(true)
+    const closeSource = ref(null) // 'confirm' | 'cancel' | null
+
+    const isOpen = computed(() =>
+      props.open !== undefined ? props.open : internalOpen.value
+    )
+
+    const iconType = computed(() => `icon-${props.type}`)
 
     const confirmButtonClass = computed(() => {
-      if (props.type === 'danger') return 'btn-danger';
-      if (props.type === 'warning') return 'btn-warning';
-      return 'btn-primary';
-    });
+      if (props.type === 'danger') return 'btn-danger'
+      if (props.type === 'warning') return 'btn-warning'
+      return 'btn-primary'
+    })
 
-    const handleEscape = e => {
-      if (e.key === 'Escape' && !props.isLoading) {
-        handleCancel();
+    const onOpenChange = (value) => {
+      if (props.open === undefined) internalOpen.value = value
+      emit('update:open', value)
+      if (value === false && !props.isLoading) {
+        emit('close')
+        if (closeSource.value !== 'confirm') emit('cancel')
+        closeSource.value = null
       }
-    };
+    }
 
     const handleConfirm = () => {
       if (!props.isLoading) {
-        emit('confirm');
+        closeSource.value = 'confirm'
+        emit('confirm')
       }
-    };
+    }
 
     const handleCancel = () => {
       if (!props.isLoading) {
-        emit('cancel');
-        emit('close');
+        closeSource.value = 'cancel'
       }
-    };
-
-    onMounted(() => {
-      document.body.style.overflow = 'hidden';
-      document.addEventListener('keydown', handleEscape);
-    });
-
-    onUnmounted(() => {
-      document.body.style.overflow = '';
-      document.removeEventListener('keydown', handleEscape);
-    });
+    }
 
     return {
+      isOpen,
       iconType,
       confirmButtonClass,
+      onOpenChange,
       handleConfirm,
       handleCancel,
-    };
+    }
   },
-};
+}
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  padding: 20px;
-  animation: fadeIn 0.3s ease;
-  direction: rtl;
+.confirm-modal-body {
+  padding-top: 0.5rem;
 }
 
-.modal-overlay:focus {
-  outline: none;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-container {
-  background: white;
-  border-radius: 20px;
-  max-width: 480px;
-  width: 100%;
-  padding: 40px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.3s ease-out;
-  text-align: center;
-  position: relative;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.modal-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 24px;
-  animation: scaleIn 0.4s ease-out 0.1s both;
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.5);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.modal-icon svg {
-  width: 40px;
-  height: 40px;
-}
-
-.icon-warning {
+.confirm-modal-icon.icon-warning {
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
   color: #d97706;
   border: 3px solid #fbbf24;
 }
 
-.icon-danger {
+.confirm-modal-icon.icon-danger {
   background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
   color: #dc2626;
   border: 3px solid #f87171;
 }
 
-.icon-info {
+.confirm-modal-icon.icon-info {
   background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
   color: #2563eb;
   border: 3px solid #60a5fa;
 }
 
-.modal-title {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--color-navy);
-  margin: 0 0 16px 0;
-}
-
-.modal-message {
-  font-size: 16px;
-  color: var(--color-dark-gray);
+.confirm-modal-message {
   line-height: 1.6;
-  margin: 0 0 32px 0;
-  font-weight: 500;
+  margin: 0;
 }
 
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-direction: row-reverse;
-}
-
-.btn {
-  padding: 14px 32px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-width: 120px;
-  position: relative;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-.btn-cancel {
-  background: var(--color-light-gray);
-  color: var(--color-dark-gray);
-  border: 2px solid var(--color-medium-gray);
-}
-
-.btn-cancel:hover:not(:disabled) {
-  background: var(--color-light-gray);
-  border-color: var(--color-medium-gray);
-  color: var(--color-charcoal);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.btn-confirm {
-  color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.btn-primary {
+.btn-confirm.btn-primary {
   background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
 }
 
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(177, 162, 143, 0.3);
+.btn-confirm.btn-primary:hover:not(:disabled) {
   filter: brightness(1.1);
 }
 
-.btn-warning {
+.btn-confirm.btn-warning {
   background: linear-gradient(135deg, var(--color-warning) 0%, #d97706 100%);
 }
 
-.btn-warning:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+.btn-confirm.btn-warning:hover:not(:disabled) {
   filter: brightness(1.1);
 }
 
-.btn-danger {
+.btn-confirm.btn-danger {
   background: linear-gradient(135deg, var(--color-error) 0%, #dc2626 100%);
 }
 
-.btn-danger:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+.btn-confirm.btn-danger:hover:not(:disabled) {
   filter: brightness(1.1);
 }
 
@@ -341,55 +245,19 @@ export default {
   }
 }
 
-/* Tablet */
-@media (max-width: 768px) {
-  .modal-overlay {
-    padding: 12px;
-  }
-  .modal-container {
-    padding: 30px 24px;
-    max-width: 95vw;
-  }
-  .btn {
-    min-height: 44px;
-  }
-}
-
-/* Mobile */
 @media (max-width: 575px) {
-  .modal-overlay {
-    padding: 8px;
-  }
-  .modal-container {
-    padding: 24px 16px;
-    width: 100%;
-    max-width: 100vw;
-    max-height: 100vh;
-    overflow-y: auto;
-    border-radius: 16px;
-  }
-  .modal-icon {
+  .confirm-modal-icon {
     width: 64px;
     height: 64px;
     margin-bottom: 20px;
   }
-  .modal-icon svg {
+  .confirm-modal-icon svg {
     width: 32px;
     height: 32px;
   }
-  .modal-title {
-    font-size: 20px;
-  }
-  .modal-message {
+  .confirm-modal-message {
     font-size: 14px;
-    margin-bottom: 24px;
-  }
-  .modal-actions {
-    flex-direction: column;
-  }
-  .btn {
-    width: 100%;
-    min-height: 44px;
+    margin-bottom: 20px;
   }
 }
 </style>

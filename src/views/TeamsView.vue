@@ -56,13 +56,12 @@
       </div>
     </div>
 
-    <!-- Member Details Modal -->
-    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>بيانات العضو</h3>
-          <button class="close-btn" @click="closeModal">×</button>
-        </div>
+    <!-- Member Details Modal (Dialog) -->
+    <Dialog :open="showModal" @update:open="showModal = $event">
+      <DialogContent class="teams-member-dialog max-w-[450px] rounded-2xl p-6" dir="rtl">
+        <DialogHeader>
+          <DialogTitle class="text-[var(--color-navy)]">بيانات العضو</DialogTitle>
+        </DialogHeader>
 
         <div class="profile-header">
           <div class="large-avatar">
@@ -92,8 +91,8 @@
           <!-- Salary and sensitive info EXCLUDED as per requirements -->
         </div>
 
-        <div class="modal-actions">
-          <div class="contact-actions">
+        <DialogFooter class="flex-col gap-3 sm:flex-row sm:justify-end">
+          <div class="contact-actions flex w-full gap-2 sm:w-auto">
             <a
               v-if="selectedMember?.email"
               :href="'mailto:' + selectedMember.email"
@@ -136,10 +135,10 @@
               اتصال
             </a>
           </div>
-          <button class="btn-secondary" @click="closeModal">إغلاق</button>
-        </div>
-      </div>
-    </div>
+          <button type="button" class="btn-secondary" @click="closeModal">إغلاق</button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
@@ -148,9 +147,23 @@ import { ref, onMounted, computed } from 'vue';
 import userService from '../services/userService';
 import { getRoleLabel } from '../constants/roles';
 import logger from '../utils/logger';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default {
   name: 'TeamsView',
+  components: {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+  },
   setup() {
     const isLoading = ref(true);
     const employees = ref([]);
@@ -358,45 +371,7 @@ export default {
   border-color: var(--color-navy);
 }
 
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: var(--z-modal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 16px;
-  width: 90%;
-  max-width: 450px;
-  position: relative;
-}
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-}
-.modal-header h3 {
-  margin: 0;
-  color: var(--color-navy);
-}
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: var(--color-dark-gray);
-  cursor: pointer;
-}
-
+/* Member dialog content (Dialog component) */
 .profile-header {
   display: flex;
   flex-direction: column;
@@ -453,11 +428,6 @@ export default {
   color: var(--color-charcoal);
 }
 
-.modal-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
 .contact-actions {
   display: flex;
   gap: 10px;
@@ -559,7 +529,7 @@ export default {
     height: 50px;
     font-size: 20px;
   }
-  .modal-content {
+  .teams-member-dialog {
     width: 95%;
     padding: 20px;
   }
@@ -629,17 +599,7 @@ export default {
   .btn-secondary {
     min-height: 44px;
   }
-  .close-btn {
-    min-width: 44px;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal-overlay {
-    align-items: flex-end;
-  }
-  .modal-content {
+  .teams-member-dialog {
     width: 100%;
     max-width: 100%;
     border-radius: 12px 12px 0 0;
@@ -690,7 +650,7 @@ export default {
   .member-role {
     font-size: 11px;
   }
-  .modal-content {
+  .teams-member-dialog {
     padding: 16px;
   }
   .large-avatar {
@@ -733,7 +693,7 @@ export default {
   .member-name {
     font-size: 17px;
   }
-  .modal-content {
+  .teams-member-dialog {
     max-width: 520px;
   }
 }
@@ -796,7 +756,7 @@ export default {
     font-size: 16px;
     padding: 12px;
   }
-  .modal-content {
+  .teams-member-dialog {
     max-width: 600px;
     padding: 36px;
   }

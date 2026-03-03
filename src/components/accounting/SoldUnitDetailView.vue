@@ -461,6 +461,7 @@
         <!-- Distribution table -->
         <div class="distribution-table-section">
           <h3 class="section-title">توزيع العمولة الصافية</h3>
+          <div class="table-responsive">
           <table class="distribution-table">
             <thead>
               <tr>
@@ -498,6 +499,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       </template>
     </div>

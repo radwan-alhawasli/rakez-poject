@@ -36,7 +36,8 @@
         <button class="add-btn small" @click="openCreateModal">إنشاء فريق جديد</button>
       </div>
 
-      <table v-else class="data-table">
+      <div v-else class="table-responsive">
+      <table class="data-table">
         <thead>
           <tr>
             <th>الفريق</th>
@@ -97,6 +98,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
 
     <!-- Create/Edit Modal -->

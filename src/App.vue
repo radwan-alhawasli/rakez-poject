@@ -17,11 +17,7 @@ export default {
 </script>
 
 <style>
-@import './assets/luxury-theme.css';
-@import './assets/global-luxury-styles.css';
-@import './assets/responsive-breakpoints.css';
-@import './assets/responsive-enhancements.css';
-
+/* Global theme/tailwind loaded via main.js (app.css) */
 body {
   direction: rtl;
   margin: 0;

@@ -16,24 +16,22 @@
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
           <label for="email" class="form-label">البريد الإلكتروني</label>
-          <input
-            type="email"
+          <Input
             id="email"
             v-model="email"
-            class="form-input"
+            type="email"
             placeholder="user@rakez.com"
-            required
             dir="auto"
+            required
           />
         </div>
 
         <div class="form-group">
           <label for="password" class="form-label">كلمة المرور</label>
-          <input
-            type="password"
+          <Input
             id="password"
             v-model="password"
-            class="form-input"
+            type="password"
             placeholder="••••••••"
             required
           />
@@ -45,10 +43,9 @@
           </div>
         </div>
 
-        <button type="submit" class="login-btn" :disabled="isLoading">
-          <span v-if="isLoading" class="loader"></span>
-          <span v-else>تسجيل الدخول</span>
-        </button>
+        <Button type="submit" class="login-btn" :disabled="isLoading" :loading="isLoading">
+          تسجيل الدخول
+        </Button>
 
         <div v-if="error" class="error-message">
           {{ error }}
@@ -70,9 +67,12 @@
 import { ref } from 'vue';
 import authService from '../services/authService';
 import logger from '../utils/logger';
+import Button from '@/components/ui/Button.vue';
+import Input from '@/components/ui/Input.vue';
 
 export default {
   name: 'LoginPage',
+  components: { Button, Input },
   emits: ['login-success'],
   setup(props, { emit }) {
     const email = ref('');

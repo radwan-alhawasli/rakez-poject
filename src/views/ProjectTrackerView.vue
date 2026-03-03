@@ -101,41 +101,7 @@
           </div>
 
           <!-- Stepper -->
-          <div class="stepper-wrapper">
-            <div class="stepper-line">
-              <div class="stepper-line-fill" :style="{ width: progressPercentage + '%' }"></div>
-            </div>
-
-            <div class="steps-container">
-              <div
-                v-for="(stage, index) in stages"
-                :key="index"
-                class="step-item"
-                :class="{
-                  completed: stage.status === 'completed',
-                  active: activeStageIndex === index,
-                }"
-                @click="selectStage(index)"
-              >
-                <div class="step-circle">
-                  <span v-if="stage.status === 'completed'"
-                    ><svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      width="16"
-                      height="16"
-                    >
-                      <polyline points="20 6 9 17 4 12"></polyline></svg
-                  ></span>
-                  <span v-else>{{ index + 1 }}</span>
-                </div>
-                <span class="step-label">{{ stage.name }}</span>
-                <span v-if="stage.completedAt" class="step-date">{{ stage.completedAt }}</span>
-              </div>
-            </div>
-          </div>
+          <Stepper v-model="activeStageIndex" :steps="stages" />
 
           <!-- Stage details card (design match) — مخفي عن المبيعات: يشوفون التتبع فقط بدون أي فورم -->
           <div v-if="!isSalesUser" class="stage-content-area">
@@ -1043,6 +1009,7 @@
           </div>
 
           <div v-else class="units-table-container">
+            <div class="table-responsive">
             <table class="units-table">
               <thead>
                 <tr>
@@ -1096,6 +1063,7 @@
                 </tr>
               </tbody>
             </table>
+            </div>
           </div>
         </div>
 
@@ -1247,6 +1215,7 @@ import { toast } from '../composables/useToast';
 import { useFormatters } from '../composables/useFormatters';
 import ConfirmModal from '../components/ConfirmModal.vue';
 import UnitReservationModal from '../components/sales/UnitReservationModal.vue';
+import Stepper from '@/components/ui/Stepper.vue';
 import { NATIONALITIES } from '../constants/lookups';
 
 export default {
@@ -2318,7 +2287,7 @@ export default {
       onConfirmModalConfirm,
     };
   },
-  components: { ConfirmModal, UnitReservationModal },
+  components: { ConfirmModal, UnitReservationModal, Stepper },
 };
 </script>
 
@@ -2627,96 +2596,6 @@ export default {
   font-size: 16px;
   font-weight: 700;
   color: #b1a28f;
-}
-
-/* Stepper */
-.stepper-wrapper {
-  position: relative;
-  margin-bottom: 60px;
-  padding: 0 20px;
-}
-
-.stepper-line {
-  position: absolute;
-  top: 20px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #e2e8f0;
-  z-index: 1;
-}
-
-.stepper-line-fill {
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 100%;
-  background: #b1a28f;
-  transition: width 0.3s ease;
-}
-
-.steps-container {
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  z-index: 2;
-  direction: rtl; /* Should naturally flow */
-}
-
-.step-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  position: relative;
-  width: 120px; /* fixed width for centering text */
-}
-
-.step-circle {
-  width: 40px;
-  height: 40px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  color: #64748b;
-  transition: all 0.2s;
-}
-
-.step-item.active .step-circle {
-  border-color: #b1a28f;
-  color: #b1a28f;
-  box-shadow: 0 0 0 4px rgba(177, 162, 143, 0.1);
-}
-
-.step-item.completed .step-circle {
-  background: #b1a28f;
-  border-color: #b1a28f;
-  color: white;
-}
-
-.step-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: #1e3a5f;
-  text-align: center;
-}
-
-.step-sublabel {
-  font-size: 11px;
-  color: #94a3b8;
-  text-align: center;
-}
-
-.step-date {
-  font-size: 10px;
-  color: #28a745;
-  font-weight: 600;
-  margin-top: 2px;
 }
 
 /* Stage Content */
@@ -3781,15 +3660,6 @@ export default {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 16px;
   }
-  .step-item {
-    width: 100px;
-  }
-  .step-label {
-    font-size: 12px;
-  }
-  .step-sublabel {
-    font-size: 10px;
-  }
   .board-cta-card {
     padding: 40px 30px;
   }
@@ -3857,22 +3727,6 @@ export default {
   }
   .tracker-desc {
     font-size: 13px;
-  }
-  .stepper-wrapper {
-    padding: 0 8px;
-    margin-bottom: 40px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .steps-container {
-    min-width: 600px;
-  }
-  .step-item {
-    width: 90px;
-  }
-  .step-circle {
-    width: 36px;
-    height: 36px;
   }
   .stage-content-area,
   .documents-card {
@@ -4031,9 +3885,6 @@ export default {
     margin-top: 8px;
   }
   .tracker-header-box {
-    margin-bottom: 30px;
-  }
-  .stepper-wrapper {
     margin-bottom: 30px;
   }
   .stage-content-area,
@@ -4315,20 +4166,6 @@ export default {
   }
   .tracker-desc {
     font-size: 17px;
-  }
-  .step-item {
-    width: 150px;
-  }
-  .step-circle {
-    width: 50px;
-    height: 50px;
-    font-size: 18px;
-  }
-  .step-label {
-    font-size: 15px;
-  }
-  .step-sublabel {
-    font-size: 13px;
   }
   .stage-content-area,
   .documents-card {

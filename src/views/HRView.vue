@@ -278,7 +278,8 @@
             <p class="metrics-empty-title">لا توجد بيانات أفرقة</p>
             <p class="metrics-empty-desc">لم يتم تحميل بيانات أداء الأفرقة بعد أو لا توجد فرق.</p>
           </div>
-          <table v-else class="metrics-table">
+          <div v-else class="table-responsive">
+          <table class="metrics-table">
             <thead>
               <tr>
                 <th>الفريق</th>
@@ -307,6 +308,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 
@@ -328,7 +330,8 @@
               لم يتم تحميل بيانات الأداء بعد أو لا يوجد مسوقين لعرضهم.
             </p>
           </div>
-          <table v-else class="metrics-table">
+          <div v-else class="table-responsive">
+          <table class="metrics-table">
             <thead>
               <tr>
                 <th>اسم الموظف</th>
@@ -368,6 +371,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 

@@ -48,7 +48,8 @@
               <div v-else-if="agents.length === 0" class="empty-state">
                 <p>لا يوجد وكلاء. أضف وكيلاً جديداً للبدء.</p>
               </div>
-              <table v-else class="data-table">
+              <div v-else class="table-responsive">
+              <table class="data-table">
                 <thead>
                   <tr>
                     <th>الاسم</th>
@@ -106,6 +107,7 @@
                   </tr>
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
           <div v-show="activeTab === 'action_buttons'" class="tab-panel">

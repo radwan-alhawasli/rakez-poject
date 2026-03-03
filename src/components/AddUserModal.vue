@@ -1,25 +1,12 @@
 <template>
-  <div class="modal-backdrop" @click.self="$emit('close')">
-    <div class="modal-container">
-      <div class="modal-header">
-        <div class="header-text">
-          <h2 class="modal-title">{{ isEdit ? 'تعديل بيانات الموظف' : 'إضافة موظف جديد' }}</h2>
-          <p class="modal-subtitle">
-            {{
-              isEdit ? 'تعديل تفاصيل الموظف في النظام.' : 'أدخل تفاصيل الموظف الجديد لإنشاء حسابه.'
-            }}
-          </p>
-        </div>
-        <button class="close-btn" @click="$emit('close')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <form @submit.prevent="handleSubmit" class="user-form">
+  <AppModal
+    :open="true"
+    :title="isEdit ? 'تعديل بيانات الموظف' : 'إضافة موظف جديد'"
+    :subtitle="isEdit ? 'تعديل تفاصيل الموظف في النظام.' : 'أدخل تفاصيل الموظف الجديد لإنشاء حسابه.'"
+    size="wide"
+    @update:open="(v) => { if (v === false) $emit('close') }"
+  >
+    <form @submit.prevent="handleSubmit" class="user-form">
           <!-- البيانات الشخصية (Personal Data) -->
           <div class="form-section">
             <h3 class="section-title">
@@ -387,40 +374,42 @@
             </div>
           </div>
 
-          <div class="modal-actions">
-            <button type="button" class="btn btn-cancel" @click="$emit('close')">إلغاء</button>
-            <button type="submit" class="btn btn-submit" :disabled="isLoading">
-              <span v-if="isLoading" class="loader-state">
-                <svg class="spinner-icon" viewBox="0 0 24 24">
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                    fill="none"
-                  ></circle>
-                </svg>
-                جاري الحفظ...
-              </span>
-              <span v-else>{{ isEdit ? 'حفظ التعديلات' : 'إنشاء الموظف' }}</span>
-            </button>
-          </div>
         </form>
+    <template #footer>
+      <div class="modal-actions flex gap-3 flex-wrap justify-end">
+        <button type="button" class="btn btn-cancel" @click="$emit('close')">إلغاء</button>
+        <button type="button" class="btn btn-submit" :disabled="isLoading" @click="handleSubmit">
+          <span v-if="isLoading" class="loader-state">
+            <svg class="spinner-icon" viewBox="0 0 24 24">
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+                fill="none"
+              ></circle>
+            </svg>
+            جاري الحفظ...
+          </span>
+          <span v-else>{{ isEdit ? 'حفظ التعديلات' : 'إنشاء الموظف' }}</span>
+        </button>
       </div>
-    </div>
-  </div>
+    </template>
+  </AppModal>
 </template>
 
 <script>
-import { ref, watch, onMounted } from 'vue';
-import { ROLE_MAP } from '../constants/roles';
-import { NATIONALITIES, MARITAL_STATUSES } from '../constants/lookups';
-import hrService from '../services/hrService';
-import logger from '../utils/logger';
+import { ref, watch, onMounted } from 'vue'
+import AppModal from '@/components/AppModal.vue'
+import { ROLE_MAP } from '../constants/roles'
+import { NATIONALITIES, MARITAL_STATUSES } from '../constants/lookups'
+import hrService from '../services/hrService'
+import logger from '../utils/logger'
 
 export default {
   name: 'AddUserModal',
+  components: { AppModal },
   props: {
     editUser: {
       type: Object,
@@ -642,97 +631,6 @@ export default {
 </script>
 
 <style scoped>
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  backdrop-filter: blur(6px);
-}
-
-.modal-container {
-  background: white;
-  width: 900px;
-  max-width: 95%;
-  max-height: 90vh;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  direction: rtl;
-  animation: modalSlideIn 0.3s ease-out;
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.modal-header {
-  padding: 30px;
-  border-bottom: 2px solid var(--color-light-gray);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  background: linear-gradient(135deg, var(--color-off-white) 0%, var(--color-white) 100%);
-}
-
-.modal-title {
-  font-size: 26px;
-  font-weight: 800;
-  color: var(--color-navy);
-  margin: 0 0 8px 0;
-}
-
-.modal-subtitle {
-  font-size: 14px;
-  color: var(--color-dark-gray);
-  margin: 0;
-}
-
-.close-btn {
-  background: var(--color-light-gray);
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-dark-gray);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.close-btn svg {
-  width: 20px;
-  height: 20px;
-}
-
-.close-btn:hover {
-  background: #fee2e2;
-  color: var(--color-error);
-  transform: rotate(90deg);
-}
-
-.modal-body {
-  padding: 30px;
-  overflow-y: auto;
-}
-
 .user-form {
   display: flex;
   flex-direction: column;
@@ -1010,23 +908,8 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .modal-backdrop {
-    padding: 12px;
-  }
   .form-row {
     grid-template-columns: 1fr;
-  }
-  .modal-container {
-    width: 95%;
-    max-width: 95vw;
-    max-height: 90vh;
-    padding: 20px;
-  }
-  .modal-header {
-    padding: 20px;
-  }
-  .modal-body {
-    padding: 20px;
   }
   .modal-actions {
     flex-direction: column;
@@ -1038,25 +921,6 @@ export default {
 }
 
 @media (max-width: 575px) {
-  .modal-backdrop {
-    padding: 8px;
-  }
-  .modal-container {
-    width: 100%;
-    max-width: 100vw;
-    max-height: 100vh;
-    border-radius: 16px;
-    padding: 16px;
-  }
-  .modal-header {
-    padding: 16px;
-  }
-  .modal-body {
-    padding: 16px;
-  }
-  .modal-title {
-    font-size: 20px;
-  }
   .btn {
     min-height: 44px;
   }
@@ -1075,9 +939,6 @@ export default {
 
 /* Large screen enhancements */
 @media (min-width: 1920px) {
-  .modal-container {
-    max-width: 800px;
-  }
   .input,
   .select,
   .textarea {
@@ -1087,15 +948,9 @@ export default {
   .label {
     font-size: 15px;
   }
-  .modal-header h2 {
-    font-size: 24px;
-  }
 }
 
 @media (min-width: 2560px) {
-  .modal-container {
-    max-width: 900px;
-  }
   .input,
   .select,
   .textarea {
@@ -1109,9 +964,6 @@ export default {
 }
 
 @media (min-width: 3840px) {
-  .modal-container {
-    max-width: 1100px;
-  }
   .input,
   .select,
   .textarea {
@@ -1121,9 +973,6 @@ export default {
   }
   .label {
     font-size: 20px;
-  }
-  .modal-header h2 {
-    font-size: 32px;
   }
   .btn-submit,
   .btn-cancel {

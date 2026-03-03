@@ -734,7 +734,7 @@
             <p>لا توجد خطط موظفين لهذا المشروع</p>
           </div>
 
-          <div v-else class="leads-table-container">
+          <div v-else class="leads-table-container table-responsive">
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 12px">
               <button type="button" class="btn-secondary" @click="exportEmployeePlansExcel">
                 Excel
@@ -765,8 +765,8 @@
                 </tr>
               </tbody>
             </table>
-          </div>
         </div>
+      </div>
 
       <!-- 4. Tasks Tab -->
       <div v-else-if="activeTab === 'tasks'" class="marketing-tasks-view">
@@ -844,7 +844,7 @@
         </div>
 
         <!-- Leads Table -->
-        <div v-if="!isLoadingLeads && leads.length > 0" class="leads-table-container">
+        <div v-if="!isLoadingLeads && leads.length > 0" class="leads-table-container table-responsive">
           <table class="luxury-table">
             <thead>
               <tr>
@@ -979,7 +979,7 @@
           </div>
         </div>
 
-        <div class="leads-table-container">
+        <div class="leads-table-container table-responsive">
           <table class="luxury-table">
             <thead>
               <tr>
@@ -1048,7 +1048,7 @@
             <button class="btn-primary" @click="loadReports">تحميل التقارير</button>
           </div>
         </div>
-        <div class="leads-table-container">
+        <div class="leads-table-container table-responsive">
           <table class="luxury-table">
             <thead>
               <tr>
@@ -1076,7 +1076,7 @@
             </tbody>
           </table>
         </div>
-        <div class="leads-table-container" style="margin-top: 12px">
+        <div class="leads-table-container table-responsive" style="margin-top: 12px">
           <table class="luxury-table">
             <thead>
               <tr>
@@ -1732,7 +1732,7 @@
 
               <div
                 v-if="(selectedProjectDetails.employee_plans || []).length > 0"
-                class="leads-table-container"
+                class="leads-table-container table-responsive"
                 style="margin-top: 18px"
               >
                 <div class="section-header" style="margin-bottom: 10px">
@@ -1821,7 +1821,7 @@
                 <p>لا توجد وحدات مضافة.</p>
               </div>
 
-              <div v-else class="table-wrapper" style="max-height: 400px; overflow-y: auto">
+              <div v-else class="table-wrapper table-responsive" style="max-height: 400px; overflow-y: auto">
                 <table class="luxury-table" style="width: 100%">
                   <thead>
                     <tr>

@@ -1,40 +1,11 @@
 <template>
-  <div
-    class="modal-overlay"
-    role="dialog"
-    aria-modal="true"
-    :aria-label="isEdit ? 'تعديل وكيل' : 'إضافة وكيل'"
-    tabindex="-1"
-    @click.self="$emit('close')"
-    @keydown.esc="$emit('close')"
-    ref="overlayRef"
+  <AppModal
+    :open="true"
+    :title="isEdit ? 'تعديل وكيل' : 'إضافة وكيل'"
+    :subtitle="isEdit ? 'تعديل إعدادات وكيل المحادثة.' : 'إنشاء وكيل محادثة جديد مع أزرار الإجراءات.'"
+    @update:open="(v) => { if (v === false) $emit('close') }"
   >
-    <div class="modal-container" ref="containerRef" @keydown.tab="handleTab">
-      <div class="modal-header">
-        <div class="header-content">
-          <h2 class="modal-title">{{ isEdit ? 'تعديل وكيل' : 'إضافة وكيل' }}</h2>
-          <p class="modal-subtitle">
-            {{
-              isEdit ? 'تعديل إعدادات وكيل المحادثة.' : 'إنشاء وكيل محادثة جديد مع أزرار الإجراءات.'
-            }}
-          </p>
-        </div>
-        <button type="button" class="close-btn" @click="$emit('close')" aria-label="إغلاق">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-
-      <form class="modal-body" @submit.prevent="handleSubmit">
+    <form class="modal-body" @submit.prevent="handleSubmit" ref="containerRef" @keydown.tab="handleTab">
         <!-- General -->
         <section class="form-section">
           <h3 class="section-title">
@@ -118,21 +89,23 @@
           </div>
         </section>
 
-        <div class="modal-footer-action">
-          <button type="button" class="btn-cancel btn-luxury-outline" @click="$emit('close')">
-            إلغاء
-          </button>
-          <button type="submit" class="btn-save btn-primary" :disabled="isSaving">
-            {{ isSaving ? 'جاري الحفظ...' : 'حفظ' }}
-          </button>
-        </div>
       </form>
-    </div>
-  </div>
+    <template #footer>
+      <div class="modal-footer-action flex gap-3 justify-end flex-wrap">
+        <button type="button" class="btn-cancel btn-luxury-outline" @click="$emit('close')">
+          إلغاء
+        </button>
+        <button type="button" class="btn-save btn-primary" :disabled="isSaving" @click="handleSubmit">
+          {{ isSaving ? 'جاري الحفظ...' : 'حفظ' }}
+        </button>
+      </div>
+    </template>
+  </AppModal>
 </template>
 
 <script>
-import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, computed, watch } from 'vue'
+import AppModal from '@/components/AppModal.vue'
 
 const defaultForm = () => ({
   name: '',
@@ -145,13 +118,13 @@ const defaultForm = () => ({
 
 export default {
   name: 'AgentModal',
+  components: { AppModal },
   props: {
     editAgent: { type: Object, default: null },
     isLoading: { type: Boolean, default: false },
   },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
-    const overlayRef = ref(null);
     const containerRef = ref(null);
     const isSaving = ref(false);
     const form = reactive({ ...defaultForm() });
@@ -212,25 +185,7 @@ export default {
       isSaving.value = false;
     }
 
-    function handleEscape(e) {
-      if (e.key === 'Escape') emit('close');
-    }
-
-    onMounted(() => {
-      document.body.style.overflow = 'hidden';
-      document.addEventListener('keydown', handleEscape);
-      const focusables = getFocusables();
-      if (focusables.length) focusables[0].focus();
-      else overlayRef.value?.focus();
-    });
-
-    onUnmounted(() => {
-      document.body.style.overflow = '';
-      document.removeEventListener('keydown', handleEscape);
-    });
-
     return {
-      overlayRef,
       containerRef,
       form,
       isEdit,
@@ -243,82 +198,6 @@ export default {
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(30, 58, 95, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  padding: 20px;
-  backdrop-filter: blur(2px);
-  animation: fadeIn 0.3s ease;
-}
-.modal-overlay:focus {
-  outline: none;
-}
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-container {
-  background: var(--color-white, #fff);
-  border-radius: var(--radius-md, 14px);
-  width: 100%;
-  max-width: 650px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: var(--shadow-lg, 0 10px 40px -10px rgba(0, 0, 0, 0.12));
-  overflow: hidden;
-  direction: rtl;
-  border-top: 4px solid var(--color-gold, var(--color-gold));
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 24px 28px;
-  background: var(--color-white, #fff);
-}
-.header-content {
-  flex: 1;
-}
-.modal-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--color-navy, var(--color-navy));
-  margin: 0 0 8px 0;
-}
-.modal-subtitle {
-  font-size: 14px;
-  color: var(--color-dark-gray, var(--color-dark-gray));
-  margin: 0;
-}
-.close-btn {
-  background: transparent;
-  border: none;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--color-dark-gray, var(--color-dark-gray));
-  transition: color 0.2s;
-}
-.close-btn:hover {
-  color: var(--color-charcoal, var(--color-charcoal));
-}
-
 .modal-body {
   padding: 0 28px 28px;
   overflow-y: auto;
@@ -437,12 +316,6 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .modal-container {
-    max-width: 95%;
-  }
-  .modal-header {
-    padding: 20px;
-  }
   .modal-body {
     padding: 0 20px 20px;
   }
@@ -453,21 +326,6 @@ export default {
 }
 
 @media (max-width: 576px) {
-  .modal-container {
-    max-width: 100%;
-    margin: 0 8px;
-    border-radius: 12px;
-    max-height: 90vh;
-  }
-  .modal-overlay {
-    padding: 12px;
-  }
-  .modal-header {
-    padding: 16px;
-  }
-  .modal-title {
-    font-size: 18px;
-  }
   .modal-body {
     padding: 0 16px 16px;
   }
@@ -484,15 +342,6 @@ export default {
 }
 
 @media (max-width: 320px) {
-  .modal-container {
-    margin: 0 4px;
-  }
-  .modal-header {
-    padding: 14px 12px;
-  }
-  .modal-title {
-    font-size: 16px;
-  }
   .modal-body {
     padding: 0 12px 12px;
   }

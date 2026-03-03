@@ -17,6 +17,7 @@
         <p class="table-count" v-if="!isLoading">تم العثور على {{ requests.length }} طلب.</p>
       </div>
 
+      <div class="table-responsive">
       <table class="custom-table">
         <thead>
           <tr>
@@ -68,6 +69,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
   </div>
 </template>

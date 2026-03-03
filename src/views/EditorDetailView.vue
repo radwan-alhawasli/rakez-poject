@@ -21,7 +21,7 @@
       <template v-else-if="isContract && contractSections.length > 0">
         <div v-for="section in contractSections" :key="section.id" class="detail-section">
           <h2 class="detail-section-title">{{ section.title }}</h2>
-          <div class="detail-card">
+          <div class="detail-card table-responsive">
             <template v-if="section.type === 'keyValue'">
               <table class="detail-table">
                 <tbody>
@@ -33,7 +33,7 @@
               </table>
             </template>
             <template v-else-if="section.type === 'units'">
-              <div class="detail-nested-scroll">
+              <div class="detail-nested-scroll table-responsive">
                 <table class="detail-table detail-units-table">
                   <thead>
                     <tr>
@@ -55,7 +55,7 @@
       <!-- عرض المطور: جدول واحد منظم -->
       <template v-else-if="isDeveloper && developerDetailRows.length > 0">
         <div class="detail-section">
-          <div class="detail-card">
+          <div class="detail-card table-responsive">
             <table class="detail-table">
               <thead>
                 <tr>

@@ -1,16 +1,10 @@
 <template>
-  <div
-    class="modal-overlay"
-    @click.self="$emit('close')"
-    @keydown.esc="$emit('close')"
-    tabindex="-1"
+  <AppModal
+    :open="true"
+    title="إدارة توزيع الراتب"
+    @update:open="(v) => { if (v === false) $emit('close') }"
   >
-    <div class="modal-container">
-      <div class="modal-header">
-        <h2 class="modal-title">إدارة توزيع الراتب</h2>
-        <button class="close-btn" @click="$emit('close')">×</button>
-      </div>
-      <form @submit.prevent="handleSubmit" class="modal-body" v-if="salary">
+    <form @submit.prevent="handleSubmit" class="modal-body" v-if="salary">
         <div class="salary-detail-section">
           <h3 class="detail-title">بيانات الموظف</h3>
           <div class="detail-grid">
@@ -49,6 +43,7 @@
           </div>
           <div v-if="salary.unit_breakdown && salary.unit_breakdown.length" class="unit-breakdown">
             <h4 class="breakdown-subtitle">سعر البيع النهائي ونسبة العمولة من كل مشروع</h4>
+            <div class="table-responsive">
             <table class="breakdown-table">
               <thead>
                 <tr>
@@ -67,6 +62,7 @@
                 </tr>
               </tbody>
             </table>
+            </div>
           </div>
         </div>
 
@@ -98,23 +94,26 @@
             required
           />
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" @click="$emit('close')">إلغاء</button>
-          <button type="submit" class="btn-primary" :disabled="isLoading">
-            {{ salary.distribution_id ? 'تحديث' : 'إنشاء' }}
-          </button>
-        </div>
       </form>
-    </div>
-  </div>
+    <template #footer>
+      <div v-if="salary" class="modal-footer flex gap-3 justify-end flex-wrap">
+        <button type="button" class="btn-secondary" @click="$emit('close')">إلغاء</button>
+        <button type="button" class="btn-primary" :disabled="isLoading" @click="handleSubmit">
+          {{ salary.distribution_id ? 'تحديث' : 'إنشاء' }}
+        </button>
+      </div>
+    </template>
+  </AppModal>
 </template>
 
 <script>
-import { reactive, computed, onMounted, onUnmounted } from 'vue';
-import { useFormatters } from '../../composables/useFormatters';
+import { reactive, computed } from 'vue'
+import AppModal from '@/components/AppModal.vue'
+import { useFormatters } from '../../composables/useFormatters'
 
 export default {
   name: 'SalaryDistributionModal',
+  components: { AppModal },
   props: {
     salary: { type: Object, default: null },
     isLoading: { type: Boolean, default: false },
@@ -127,23 +126,6 @@ export default {
       return title.includes('سيلز') || title.includes('sales') || title.includes('مسوق');
     });
 
-    // Handle Escape key
-    const handleEscape = e => {
-      if (e.key === 'Escape') {
-        emit('close');
-      }
-    };
-
-    // Lock body scroll when modal is open
-    onMounted(() => {
-      document.body.style.overflow = 'hidden';
-      document.addEventListener('keydown', handleEscape);
-    });
-
-    onUnmounted(() => {
-      document.body.style.overflow = '';
-      document.removeEventListener('keydown', handleEscape);
-    });
     const formData = reactive({
       month: new Date().getMonth() + 1,
       year: new Date().getFullYear(),
@@ -161,70 +143,6 @@ export default {
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  animation: fadeIn 0.3s ease;
-}
-
-.modal-overlay:focus {
-  outline: none;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-container {
-  background: white;
-  width: 90%;
-  max-width: 500px;
-  border-radius: 24px;
-  padding: 30px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-  border-bottom: 1px solid var(--color-light-gray);
-  padding-bottom: 15px;
-}
-
-.modal-title {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--color-navy);
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 28px;
-  color: var(--color-dark-gray);
-  cursor: pointer;
-}
-
-.close-btn:hover {
-  color: var(--color-error);
-}
-
 .salary-detail-section,
 .sales-commission-section {
   background: var(--color-light-gray);

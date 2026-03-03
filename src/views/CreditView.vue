@@ -145,6 +145,7 @@
           </button>
         </div>
         <div class="metrics-table-container">
+          <div class="table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -187,6 +188,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
         <Pagination
           v-if="creditTotalItems > 0"
@@ -285,6 +287,7 @@
             />
           </div>
           <div class="metrics-table-container">
+            <div class="table-responsive">
             <table class="metrics-table">
               <thead>
                 <tr>
@@ -345,6 +348,7 @@
               </tbody>
             </table>
           </div>
+        </div>
           <Pagination
             v-if="creditTotalItems > 0"
             :current-page="creditCurrentPage"
@@ -368,6 +372,7 @@
           </div>
         </div>
         <div class="metrics-table-container">
+          <div class="table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -410,6 +415,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
         <Pagination
           v-if="creditTotalItems > 0"
@@ -436,6 +442,7 @@
           </button>
         </div>
         <div class="metrics-table-container">
+          <div class="table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -480,6 +487,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
         <Pagination
           v-if="creditTotalItems > 0"
@@ -500,6 +508,7 @@
           </div>
         </div>
         <div class="metrics-table-container">
+          <div class="table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -536,6 +545,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
         <Pagination
           v-if="creditTotalItems > 0"
@@ -568,6 +578,7 @@
           </button>
         </div>
         <div class="metrics-table-container">
+          <div class="table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -662,6 +673,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
         <Pagination
           v-if="creditTotalItems > 0"

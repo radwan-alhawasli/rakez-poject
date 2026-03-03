@@ -152,7 +152,7 @@
             </button>
           </div>
         </div>
-        <div class="metrics-table-container">
+        <div class="metrics-table-container table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -232,7 +232,7 @@
               <p class="section-subtitle">قائمة بالوحدات المباعة مع معلومات العمولات.</p>
             </div>
           </div>
-          <div class="metrics-table-container">
+          <div class="metrics-table-container table-responsive">
             <table class="metrics-table">
               <thead>
                 <tr>
@@ -300,7 +300,7 @@
             <p class="section-subtitle">إدارة توزيعات العمولات والموافقات.</p>
           </div>
         </div>
-        <div class="metrics-table-container">
+        <div class="metrics-table-container table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -378,7 +378,7 @@
         </div>
 
         <!-- 3.5.1 إدارة العربون -->
-        <div v-if="depositsSubTab === 'manage'" class="metrics-table-container">
+        <div v-if="depositsSubTab === 'manage'" class="metrics-table-container table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -438,7 +438,7 @@
         </div>
 
         <!-- 3.5.2 المتابعة -->
-        <div v-if="depositsSubTab === 'follow-up'" class="metrics-table-container">
+        <div v-if="depositsSubTab === 'follow-up'" class="metrics-table-container table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -532,7 +532,7 @@
             />
           </div>
         </div>
-        <div class="metrics-table-container">
+        <div class="metrics-table-container table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -597,7 +597,7 @@
             <p class="section-subtitle">تأكيدات الدفعات المقدمة (Legacy).</p>
           </div>
         </div>
-        <div class="metrics-table-container">
+        <div class="metrics-table-container table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>

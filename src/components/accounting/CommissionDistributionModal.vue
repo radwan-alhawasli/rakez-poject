@@ -1,16 +1,11 @@
 <template>
-  <div
-    class="modal-overlay"
-    @click.self="$emit('close')"
-    @keydown.esc="$emit('close')"
-    tabindex="-1"
+  <AppModal
+    :open="true"
+    title="ملخص العمولة وتوزيعات العمولات"
+    size="wide"
+    @update:open="(v) => { if (v === false) $emit('close') }"
   >
-    <div class="modal-container commission-modal-wide">
-      <div class="modal-header">
-        <h2 class="modal-title">ملخص العمولة وتوزيعات العمولات</h2>
-        <button class="close-btn" @click="$emit('close')">×</button>
-      </div>
-      <div class="modal-body" v-if="commission">
+    <div class="modal-body" v-if="commission">
         <div v-if="commissionSummary" class="commission-summary-section">
           <h3 class="detail-title">ملخص العمولة (من المالك أو المشتري)</h3>
           <div class="summary-grid">
@@ -43,6 +38,7 @@
 
         <div class="distribution-table-section">
           <h3 class="detail-title">جدول توزيع العمولات</h3>
+          <div class="table-responsive">
           <table class="distribution-table">
             <thead>
               <tr>
@@ -80,6 +76,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
 
         <div class="form-group">
@@ -124,22 +121,25 @@
           <button @click="addEditDistribution" class="btn-secondary">إضافة توزيع</button>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" @click="$emit('close')">إلغاء</button>
-          <button @click="handleUpdate" class="btn-primary" :disabled="isLoading">تحديث</button>
-        </div>
-      </div>
     </div>
-  </div>
+    <template #footer>
+      <div v-if="commission" class="modal-footer flex gap-3 justify-end flex-wrap">
+        <button type="button" class="btn-secondary" @click="$emit('close')">إلغاء</button>
+        <button @click="handleUpdate" class="btn-primary" :disabled="isLoading">تحديث</button>
+      </div>
+    </template>
+  </AppModal>
 </template>
 
 <script>
-import { ref, watch, onMounted, onUnmounted } from 'vue';
-import accountingService from '../../services/accountingService';
-import { useFormatters } from '../../composables/useFormatters';
+import { ref, watch } from 'vue'
+import AppModal from '@/components/AppModal.vue'
+import accountingService from '../../services/accountingService'
+import { useFormatters } from '../../composables/useFormatters'
 
 export default {
   name: 'CommissionDistributionModal',
+  components: { AppModal },
   props: {
     commission: { type: Object, default: null },
     isLoading: { type: Boolean, default: false },
@@ -147,20 +147,6 @@ export default {
   emits: ['close', 'submit'],
   setup(props, { emit }) {
     const { formatCurrency } = useFormatters();
-    const handleEscape = e => {
-      if (e.key === 'Escape') emit('close');
-    };
-
-    onMounted(() => {
-      document.body.style.overflow = 'hidden';
-      document.addEventListener('keydown', handleEscape);
-    });
-
-    onUnmounted(() => {
-      document.body.style.overflow = '';
-      document.removeEventListener('keydown', handleEscape);
-    });
-
     const commissionSummary = ref(null);
     const distributions = ref([]);
     const editDistributions = ref([]);
@@ -265,44 +251,6 @@ export default {
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  animation: fadeIn 0.3s ease;
-}
-
-.modal-overlay:focus {
-  outline: none;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-container {
-  background: white;
-  width: 90%;
-  max-width: 600px;
-}
-
-.commission-modal-wide {
-  max-width: 900px;
-}
-
 .commission-summary-section {
   background: var(--color-light-gray);
   border-radius: 12px;
@@ -388,33 +336,6 @@ export default {
   border-radius: 24px;
   padding: 30px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-  border-bottom: 1px solid var(--color-light-gray);
-  padding-bottom: 15px;
-}
-
-.modal-title {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--color-navy);
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 28px;
-  color: var(--color-dark-gray);
-  cursor: pointer;
-}
-
-.close-btn:hover {
-  color: var(--color-error);
 }
 
 .distribution-item {

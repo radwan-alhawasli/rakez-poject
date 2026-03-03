@@ -48,6 +48,7 @@
           </div>
         </div>
         <div class="metrics-table-container">
+          <div class="table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -80,6 +81,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
         <Pagination
           v-if="totalItems > 0"
@@ -99,6 +101,7 @@
           </div>
         </div>
         <div class="metrics-table-container">
+          <div class="table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -129,6 +132,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
         <Pagination
           v-if="depositsTotalItems > 0"

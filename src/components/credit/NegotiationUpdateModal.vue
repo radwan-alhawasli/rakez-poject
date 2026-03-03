@@ -1,31 +1,14 @@
 <template>
-  <div
-    class="modal-overlay"
-    @click.self="$emit('close')"
-    @keydown.esc="$emit('close')"
-    tabindex="-1"
-  >
-    <div class="modal-container">
-      <div class="modal-header">
-        <h2 class="modal-title">تحديث حالة التفاوض</h2>
-        <button class="close-btn" @click="$emit('close')">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M18 6L6 18M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
+  <Dialog :open="openRef" @update:open="onOpenChange">
+    <DialogContent class="negotiation-update-dialog max-w-[500px] rounded-3xl border-0 p-0 shadow-xl" dir="rtl">
+      <DialogHeader class="border-b border-[var(--color-light-gray)] px-6 pb-4 pt-6">
+        <DialogTitle class="text-xl font-extrabold text-[var(--color-navy)]">تحديث حالة التفاوض</DialogTitle>
+      </DialogHeader>
 
-      <form @submit.prevent="handleSubmit" class="modal-body">
-        <div class="form-group">
-          <label class="form-label">حالة التفاوض</label>
-          <select v-model="formData.status" class="form-input" required>
+      <form id="negotiation-form" @submit.prevent="handleSubmit" class="modal-body px-6 py-6">
+        <div class="form-group mb-5">
+          <label class="form-label mb-2 block text-sm font-semibold text-[var(--color-charcoal)]">حالة التفاوض</label>
+          <select v-model="formData.status" class="form-input w-full rounded-xl border-2 border-[var(--color-medium-gray)] px-4 py-3 text-[15px] focus:border-[var(--color-gold)] focus:outline-none focus:ring-2 focus:ring-[var(--color-gold)]/20" required>
             <option value="agreed">تم الاتفاق</option>
             <option value="pending">قيد التفاوض</option>
             <option value="rejected">مرفوض</option>
@@ -33,32 +16,48 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">ملاحظات</label>
+          <label class="form-label mb-2 block text-sm font-semibold text-[var(--color-charcoal)]">ملاحظات</label>
           <textarea
             v-model="formData.notes"
-            class="form-textarea"
+            class="form-textarea min-h-[100px] w-full resize-y rounded-xl border-2 border-[var(--color-medium-gray)] px-4 py-3 text-[15px] focus:border-[var(--color-gold)] focus:outline-none focus:ring-2 focus:ring-[var(--color-gold)]/20"
             placeholder="أدخل ملاحظات حول حالة التفاوض"
             rows="4"
           ></textarea>
         </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" @click="$emit('close')">إلغاء</button>
-          <button type="submit" class="btn-primary" :disabled="isLoading">
-            <span v-if="!isLoading">حفظ التعديلات</span>
-            <span v-else>جاري الحفظ...</span>
-          </button>
-        </div>
       </form>
-    </div>
-  </div>
+
+      <DialogFooter class="flex flex-row gap-3 border-t border-[var(--color-light-gray)] px-6 py-5">
+        <button type="button" class="btn-secondary rounded-xl border-2 border-[var(--color-medium-gray)] bg-white px-6 py-3 font-semibold text-[var(--color-dark-gray)] hover:bg-[var(--color-light-gray)]" @click="onOpenChange(false)">
+          إلغاء
+        </button>
+        <button type="submit" form="negotiation-form" class="btn-primary rounded-xl border-0 px-6 py-3 font-bold text-white shadow-md disabled:opacity-60" :disabled="isLoading">
+          <span v-if="!isLoading">حفظ التعديلات</span>
+          <span v-else>جاري الحفظ...</span>
+        </button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script>
-import { reactive, watch, onMounted, onUnmounted } from 'vue';
+import { reactive, ref, watch } from 'vue';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default {
   name: 'NegotiationUpdateModal',
+  components: {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+  },
   props: {
     booking: {
       type: Object,
@@ -71,12 +70,12 @@ export default {
   },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
+    const openRef = ref(true);
     const formData = reactive({
       status: props.booking?.negotiation_status || 'pending',
       notes: props.booking?.notes || '',
     });
 
-    // Watch for prop changes to update form data
     watch(
       () => props.booking,
       newBooking => {
@@ -88,225 +87,49 @@ export default {
       { immediate: true }
     );
 
-    // Handle Escape key
-    const handleEscape = e => {
-      if (e.key === 'Escape') {
-        emit('close');
-      }
+    const onOpenChange = (value) => {
+      openRef.value = value;
+      if (value === false) emit('close');
     };
-
-    // Lock body scroll when modal is open
-    onMounted(() => {
-      document.body.style.overflow = 'hidden';
-      document.addEventListener('keydown', handleEscape);
-    });
-
-    onUnmounted(() => {
-      document.body.style.overflow = '';
-      document.removeEventListener('keydown', handleEscape);
-    });
 
     const handleSubmit = () => {
       emit('submit', { ...formData });
     };
 
     return {
+      openRef,
       formData,
       handleSubmit,
+      onOpenChange,
     };
   },
 };
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  animation: fadeIn 0.3s ease;
-}
-
-.modal-overlay:focus {
-  outline: none;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-container {
-  background: white;
-  width: 90%;
-  max-width: 500px;
-  border-radius: 24px;
-  padding: 30px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-  border-bottom: 1px solid var(--color-light-gray);
-  padding-bottom: 15px;
-}
-
-.modal-title {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--color-navy);
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  color: var(--color-dark-gray);
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.close-btn:hover {
-  color: var(--color-error);
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-label {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-charcoal);
-  margin-bottom: 8px;
-}
-
-.form-input,
-.form-textarea {
-  width: 100%;
-  padding: 12px 15px;
-  border: 2px solid var(--color-medium-gray);
-  border-radius: 12px;
-  font-size: 15px;
-  transition: all 0.2s;
-}
-
-.form-input:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: var(--color-gold);
-  box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.1);
-}
-
-.form-textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-
-.modal-footer {
-  display: flex;
-  gap: 15px;
-  justify-content: flex-end;
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid var(--color-light-gray);
-}
-
-.btn-secondary {
-  padding: 12px 24px;
-  border: 2px solid var(--color-medium-gray);
-  border-radius: 12px;
-  background: white;
-  color: var(--color-dark-gray);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-secondary:hover {
-  border-color: var(--color-medium-gray);
-  background: var(--color-light-gray);
-}
-
 .btn-primary {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 12px;
   background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
 }
 
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(177, 162, 143, 0.3);
 }
 
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Tablet responsive */
 @media (max-width: 768px) {
-  .modal-overlay {
-    padding: 12px;
-  }
-  .modal-container {
+  .negotiation-update-dialog {
     width: 95%;
     max-width: 95vw;
-    padding: 20px;
-  }
-  .modal-footer {
-    flex-direction: column;
-  }
-  .modal-footer button {
-    width: 100%;
-    min-height: 44px;
+    padding: 0;
   }
 }
 
-/* Mobile full-screen */
 @media (max-width: 575px) {
-  .modal-overlay {
-    padding: 8px;
-  }
-  .modal-container {
+  .negotiation-update-dialog {
     width: 100%;
     max-width: 100vw;
     max-height: 100vh;
     overflow-y: auto;
     border-radius: 16px;
-    padding: 16px;
-  }
-  .modal-title {
-    font-size: 18px;
-  }
-  .btn-primary,
-  .btn-secondary {
-    min-height: 44px;
-    width: 100%;
   }
 }
 </style>

@@ -63,7 +63,8 @@
     <!-- الجدول -->
     <div class="knowledge-table-wrap">
       <div v-if="loading" class="knowledge-loading">جاري التحميل...</div>
-      <table v-else class="knowledge-table">
+      <div v-else class="table-responsive">
+      <table class="knowledge-table">
         <thead>
           <tr>
             <th>العنوان</th>
@@ -132,6 +133,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
 
     <!-- ترقيم الصفحات -->

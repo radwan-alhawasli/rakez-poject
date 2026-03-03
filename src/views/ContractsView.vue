@@ -92,6 +92,7 @@
 
     <!-- جدول البيانات -->
     <div v-else class="table-container">
+      <div class="table-responsive">
       <table class="custom-table">
         <thead>
           <tr>
@@ -129,6 +130,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
 
     <!-- مودال تفاصيل العقد -->
