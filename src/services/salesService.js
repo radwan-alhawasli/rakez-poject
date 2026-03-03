@@ -405,6 +405,28 @@ const salesService = {
     return response?.data instanceof Blob ? response.data : response;
   },
 
+  /**
+   * Download unit details PDF
+   * GET /sales/units/:unitId/pdf
+   * @param {number|string} unitId - Unit ID (contract_unit_id / id from contract_units)
+   * @returns {Promise<{ blob: Blob, filename?: string }>} PDF blob and optional filename from Content-Disposition
+   * @throws On 404/403/503 with API message in error response
+   */
+  async downloadUnitPdf(unitId) {
+    const response = await apiClient.get(`/sales/units/${unitId}/pdf`, {
+      responseType: 'blob',
+      headers: { Accept: 'application/pdf' },
+    });
+    const blob = response?.data instanceof Blob ? response.data : response;
+    let filename;
+    const contentDisposition = response?.headers?.['content-disposition'];
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename="?([^";]+)"?/);
+      if (match) filename = match[1].trim();
+    }
+    return { blob, filename };
+  },
+
   // Targets
   /**
    * Get my sales targets

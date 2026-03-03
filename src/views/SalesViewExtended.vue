@@ -8,21 +8,6 @@
             <h1 class="page-title">لوحة التحكم</h1>
             <p class="page-subtitle">نظرة عامة على أدائك ونتائج المبيعات.</p>
           </div>
-          <div class="date-filters">
-            <input
-              type="date"
-              v-model="dashboardFilters.from"
-              @change="loadDashboard"
-              class="date-input"
-            />
-            <span>إلى</span>
-            <input
-              type="date"
-              v-model="dashboardFilters.to"
-              @change="loadDashboard"
-              class="date-input"
-            />
-          </div>
         </div>
 
         <div v-if="isLoadingDashboard" class="loading-state">
@@ -35,68 +20,78 @@
           <div class="kpi-section">
             <h3 class="kpi-section-title">المؤشرات الرئيسية</h3>
             <div class="stats-grid stats-grid-primary">
-              <div class="stat-card animate-fade-in-up animate-stagger-1 hover-lift hover-shine">
-                <div class="stat-content">
-                  <span class="stat-label">عدد الوحدات المحجوزة</span>
-                  <span class="stat-value number">{{ dashboardData.reserved_units || 0 }}</span>
-                </div>
-                <div class="stat-icon-bg reserved">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                  </svg>
-                </div>
-              </div>
-              <div class="stat-card animate-fade-in-up animate-stagger-2 hover-lift hover-shine">
-                <div class="stat-content">
-                  <span class="stat-label">عدد الوحدات المتاحة</span>
-                  <span class="stat-value number">{{ dashboardData.available_units || 0 }}</span>
-                </div>
-                <div class="stat-icon-bg available">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                  </svg>
-                </div>
-              </div>
-              <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift hover-shine">
-                <div class="stat-content">
-                  <span class="stat-label">عدد المشاريع قيد التسويق</span>
-                  <span class="stat-value number">{{ dashboardData.projects_under_marketing || 0 }}</span>
-                </div>
-                <div class="stat-icon-bg marketing">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="20" x2="18" y2="10"></line>
-                    <line x1="12" y1="20" x2="12" y2="4"></line>
-                    <line x1="6" y1="20" x2="6" y2="14"></line>
-                  </svg>
-                </div>
-              </div>
-              <div class="stat-card animate-fade-in-up animate-stagger-4 hover-lift hover-shine">
-                <div class="stat-content">
-                  <span class="stat-label">نسبة الحجوزات المؤكدة مقابل التفاوض</span>
-                  <span class="stat-value number">{{ computedConfirmedVsNegotiationRatio }}%</span>
-                  <span class="stat-sublabel">مؤكدة: {{ dashboardData.confirmed_count ?? dashboardData.confirmed_reservations ?? 0 }} — تفاوض: {{ dashboardData.negotiation_count ?? dashboardData.negotiation_reservations ?? 0 }}</span>
-                </div>
-                <div class="stat-icon-bg ratio">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                    <polyline points="17 6 23 6 23 12"></polyline>
-                  </svg>
-                </div>
-              </div>
-              <div class="stat-card animate-fade-in-up animate-stagger-5 hover-lift hover-shine">
-                <div class="stat-content">
-                  <span class="stat-label">العرابين</span>
-                  <span class="stat-value number">{{ formatCurrency(dashboardData.total_received_deposits ?? dashboardData.deposits_total ?? 0) }}</span>
-                </div>
-                <div class="stat-icon-bg deposits">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="1" x2="12" y2="23"></line>
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                  </svg>
-                </div>
-              </div>
+              <Card class="kpi-card stat-card animate-fade-in-up animate-stagger-1 hover-lift hover-shine h-full min-h-[160px] rounded-2xl border-[var(--color-medium-gray)] bg-gradient-to-br from-white to-[var(--color-off-white)] shadow-md transition-all duration-300">
+                <CardContent class="flex flex-row items-center justify-between gap-4 p-6">
+                  <div class="stat-content min-w-0 flex-1">
+                    <span class="stat-label block text-sm font-medium text-[var(--color-dark-gray)]">عدد الوحدات المحجوزة</span>
+                    <span class="stat-value number mt-1 block text-2xl font-bold tabular-nums text-[var(--color-charcoal)]">{{ dashboardData.reserved_units ?? '...' }}</span>
+                  </div>
+                  <div class="stat-icon-bg reserved flex h-14 w-14 shrink-0 items-center justify-center rounded-full">
+                    <svg class="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card class="kpi-card stat-card animate-fade-in-up animate-stagger-2 hover-lift hover-shine h-full min-h-[160px] rounded-2xl border-[var(--color-medium-gray)] bg-gradient-to-br from-white to-[var(--color-off-white)] shadow-md transition-all duration-300">
+                <CardContent class="flex flex-row items-center justify-between gap-4 p-6">
+                  <div class="stat-content min-w-0 flex-1">
+                    <span class="stat-label block text-sm font-medium text-[var(--color-dark-gray)]">عدد الوحدات المتاحة</span>
+                    <span class="stat-value number mt-1 block text-2xl font-bold tabular-nums text-[var(--color-charcoal)]">{{ dashboardData.available_units ?? '...' }}</span>
+                  </div>
+                  <div class="stat-icon-bg available flex h-14 w-14 shrink-0 items-center justify-center rounded-full">
+                    <svg class="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card class="kpi-card stat-card animate-fade-in-up animate-stagger-3 hover-lift hover-shine h-full min-h-[160px] rounded-2xl border-[var(--color-medium-gray)] bg-gradient-to-br from-white to-[var(--color-off-white)] shadow-md transition-all duration-300">
+                <CardContent class="flex flex-row items-center justify-between gap-4 p-6">
+                  <div class="stat-content min-w-0 flex-1">
+                    <span class="stat-label block text-sm font-medium text-[var(--color-dark-gray)]">عدد المشاريع قيد التسويق</span>
+                    <span class="stat-value number mt-1 block text-2xl font-bold tabular-nums text-[var(--color-charcoal)]">{{ dashboardData.projects_under_marketing ?? '...' }}</span>
+                  </div>
+                  <div class="stat-icon-bg marketing flex h-14 w-14 shrink-0 items-center justify-center rounded-full">
+                    <svg class="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="20" x2="18" y2="10"></line>
+                      <line x1="12" y1="20" x2="12" y2="4"></line>
+                      <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card class="kpi-card stat-card animate-fade-in-up animate-stagger-4 hover-lift hover-shine h-full min-h-[160px] rounded-2xl border-[var(--color-medium-gray)] bg-gradient-to-br from-white to-[var(--color-off-white)] shadow-md transition-all duration-300">
+                <CardContent class="flex flex-row items-center justify-between gap-4 p-6">
+                  <div class="stat-content min-w-0 flex-1">
+                    <span class="stat-label block text-sm font-medium text-[var(--color-dark-gray)]">نسبة الحجوزات المؤكدة مقابل التفاوض</span>
+                    <span class="stat-value number mt-1 block text-2xl font-bold tabular-nums text-[var(--color-charcoal)]">{{ computedConfirmedVsNegotiationRatio }}%</span>
+                    <span class="stat-sublabel mt-1 block text-xs text-[var(--color-dark-gray)]">مؤكدة: {{ dashboardData.confirmed_count ?? dashboardData.confirmed_reservations ?? 0 }} — تفاوض: {{ dashboardData.negotiation_count ?? dashboardData.negotiation_reservations ?? 0 }}</span>
+                  </div>
+                  <div class="stat-icon-bg ratio flex h-14 w-14 shrink-0 items-center justify-center rounded-full">
+                    <svg class="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                      <polyline points="17 6 23 6 23 12"></polyline>
+                    </svg>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card class="kpi-card stat-card animate-fade-in-up animate-stagger-5 hover-lift hover-shine h-full min-h-[160px] rounded-2xl border-[var(--color-medium-gray)] bg-gradient-to-br from-white to-[var(--color-off-white)] shadow-md transition-all duration-300">
+                <CardContent class="flex flex-row items-center justify-between gap-4 p-6">
+                  <div class="stat-content min-w-0 flex-1">
+                    <span class="stat-label block text-sm font-medium text-[var(--color-dark-gray)]">العرابين</span>
+                    <span class="stat-value number mt-1 block text-2xl font-bold tabular-nums text-[var(--color-charcoal)]">{{ formatCurrency(dashboardData.total_received_deposits ?? dashboardData.deposits_total ?? 0) }}</span>
+                  </div>
+                  <div class="stat-icon-bg deposits flex h-14 w-14 shrink-0 items-center justify-center rounded-full">
+                    <svg class="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="12" y1="1" x2="12" y2="23"></line>
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
@@ -329,8 +324,8 @@
                 </div>
               </div>
               <div class="price-row" title="السعر">
-                <span class="price-label">ريال سعودي</span>
                 <span class="price-value">{{ project.priceRangeText }}</span>
+                <span class="price-label">ريال سعودي</span>
               </div>
               <div class="specs-row">
                 <span class="spec-item" title="الغرف">
@@ -2003,6 +1998,7 @@ import ConfirmModal from '../components/ConfirmModal.vue';
 import ReservationsView from './ReservationsView.vue';
 import SlideOverPanel from '../components/SlideOverPanel.vue';
 import Pagination from '../components/Pagination.vue';
+import { Card, CardContent } from '@/components/ui/card';
 import { NATIONALITIES } from '../constants/lookups';
 
 export default {
@@ -2407,8 +2403,9 @@ export default {
       try {
         const user = authService.getCurrentUser();
         const isLeader = user && isSalesLeader(user);
+        // مدير مبيعات: مشاريع المسندة لفريقه فقط. موظف مبيعات: مشاريع المسندة لفريق المستخدم فقط
         const params = {
-          scope: isLeader ? 'all' : 'me',
+          scope: isLeader ? 'team' : 'me',
           per_page: 100,
         };
         const response = await salesService.getProjects(params);
@@ -2518,11 +2515,12 @@ export default {
             const n = Number(avgPrice);
             priceRangeText = `${n.toLocaleString('ar-SA')} - ${n.toLocaleString('ar-SA')}`;
           }
+          // أقل واعظم عدد غرف (min - max) للعرض على البطاقة
           const bedroomsMin = p.bedrooms_min ?? p.min_bedrooms ?? p.rooms_min;
           const bedroomsMax = p.bedrooms_max ?? p.max_bedrooms ?? p.rooms_max;
           const bedroomsRange =
             bedroomsMin != null && bedroomsMax != null
-              ? `${bedroomsMax} - ${bedroomsMin}`
+              ? `${bedroomsMin} - ${bedroomsMax}`
               : bedroomsMax != null
                 ? `${bedroomsMax} - ${bedroomsMax}`
                 : bedroomsMin != null
@@ -2532,7 +2530,7 @@ export default {
           const areaMax = p.area_max_m2 ?? p.area_max ?? p.max_area ?? p.area_m2_max;
           const areaRange =
             areaMin != null && areaMax != null
-              ? `${areaMax} - ${areaMin}`
+              ? `${areaMin} - ${areaMax}`
               : areaMax != null
                 ? `${areaMax} - ${areaMax}`
                 : areaMin != null
@@ -3645,9 +3643,12 @@ export default {
           scheduleProjects.value = normalizeProjects(assignRaw);
           return;
         }
-        // Fallback: general projects list
-        const projects = await salesService.getProjects();
-        const projRaw = Array.isArray(projects) ? projects : projects?.data ?? [];
+        // Fallback: general projects list (نفس النطاق: فريق لمدير المبيعات، me لموظف المبيعات)
+        const user = authService.getCurrentUser();
+        const scope = user && isSalesLeader(user) ? 'team' : 'me';
+        const res = await salesService.getProjects({ scope, per_page: 100 });
+        const list = res?.data?.data ?? res?.data ?? res;
+        const projRaw = Array.isArray(list) ? list : [];
         scheduleProjects.value = normalizeProjects(projRaw);
       } catch (error) {
         logger.error('Error loading schedule projects:', error);
@@ -4389,6 +4390,8 @@ export default {
     };
   },
   components: {
+    Card,
+    CardContent,
     PaymentPlanModal,
     TitleTransferDateModal,
     NegotiationApprovalModal,
@@ -5041,7 +5044,7 @@ export default {
 .project-management-design .rakez-card .price-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   font-size: 14px;
 }
 .project-management-design .rakez-card .price-label {

@@ -33,6 +33,7 @@
       <!-- Navigation Tabs (مطابق لقسم المبيعات + تبويبات إضافية لمدير المشاريع حسب الصلاحيات) -->
       <div class="tabs-nav">
         <button
+          v-if="!isSalesUser"
           class="nav-tab"
           :class="{ active: activeTab === 'progress' }"
           @click="activeTab = 'progress'"
@@ -664,7 +665,15 @@
             <div v-for="unit in filteredUnits" :key="unit.id" class="unit-card">
               <div class="unit-card-top">
                 <span class="unit-status-pill" :class="unit.status">{{
-                  unit.status === 'available' ? 'متاحة' : unit.status === 'reserved' ? 'محجوزة' : unit.status === 'sold' ? 'مباعة' : unit.status || 'قيد الانتظار'
+                  unit.status === 'available'
+                    ? 'متاحة'
+                    : unit.status === 'reserved'
+                      ? 'محجوزة'
+                      : unit.status === 'sold'
+                        ? 'مباعة'
+                        : unit.status === 'pending'
+                          ? 'قيد التفاوض'
+                          : unit.status || 'قيد الانتظار'
                 }}</span>
                 <span class="unit-id">#{{ unit.unit_number || unit.id }}</span>
               </div>
@@ -716,7 +725,13 @@
                 >
               </div>
               <div class="unit-card-actions">
-                <button type="button" class="btn-unit-details" @click="(isSalesUser || isProjectManager) ? openUnitDetail(unit) : openEditUnit(unit)">شاهد التفاصيل</button>
+                <button
+                  type="button"
+                  class="btn-unit-details"
+                  @click="(isSalesUser || isProjectManager) ? openUnitDetail(unit) : openEditUnit(unit)"
+                >
+                  شاهد التفاصيل
+                </button>
                 <template v-if="!isSalesUser && !isProjectManager">
                   <button
                     v-if="unit.status === 'available'"
@@ -732,11 +747,34 @@
                   >
                     حجز انتظار
                   </button>
-                  <button v-else class="btn-unit-details" disabled>
-                    {{ unit.status === 'sold' ? 'مباعة' : 'حجز' }}
+                  <button v-else-if="unit.status !== 'sold'" class="btn-unit-details" disabled>
+                    حجز
                   </button>
                 </template>
               </div>
+              <template v-if="canReserve">
+                <div class="unit-card-actions unit-card-actions-reserve">
+                  <button
+                    v-if="unit.status === 'available'"
+                    type="button"
+                    class="btn-unit-reserve"
+                    @click="openReserveModal(unit)"
+                  >
+                    حجز
+                  </button>
+                  <button
+                    v-else-if="unit.status === 'reserved'"
+                    type="button"
+                    class="btn-unit-waiting"
+                    @click="openWaitingListModal(unit)"
+                  >
+                    حجز انتظار
+                  </button>
+                  <button v-else-if="unit.status !== 'sold'" type="button" class="btn-unit-details" disabled>
+                    حجز
+                  </button>
+                </div>
+              </template>
               <div v-if="!isSalesUser && !isProjectManager" class="unit-card-footer">
                 <button type="button" class="icon-btn" @click="openEditUnit(unit)" title="تعديل">
                   <svg
@@ -814,10 +852,6 @@
                   <span class="unit-detail-label">السعر</span>
                   <span class="unit-detail-value">{{ formatCurrency(selectedUnitForDetail.price) }} ريال</span>
                 </div>
-              </div>
-              <div class="unit-detail-actions">
-                <button v-if="selectedUnitForDetail.status === 'available' && canReserve" type="button" class="btn-unit-reserve" @click="openReserveFromDetail">حجز</button>
-                <button v-else-if="selectedUnitForDetail.status === 'reserved' && canReserve" type="button" class="btn-unit-waiting" @click="closeUnitDetail(); openWaitingListModal(selectedUnitForDetail)">حجز انتظار</button>
               </div>
             </div>
           </div>
@@ -1202,7 +1236,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, reactive } from 'vue';
+import { ref, onMounted, computed, reactive, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import contractService from '../services/contractService';
 import teamService from '../services/teamService';
@@ -1210,6 +1244,7 @@ import authService from '../services/authService';
 
 import salesService from '../services/salesService';
 import notificationService from '../services/notificationService';
+import { generateUnitDetailsPdf } from '../services/pdfService';
 import logger from '../utils/logger';
 import { toast } from '../composables/useToast';
 import { useFormatters } from '../composables/useFormatters';
@@ -1473,6 +1508,15 @@ export default {
 
     const canEditTracker = computed(() => isManager.value && !isSalesUser.value);
 
+    // عند السيلز: إخفاء تبويب تقدم المشروع والمستندات — التبديل تلقائياً إلى الوحدات
+    watch(
+      isSalesUser,
+      (sales) => {
+        if (sales && activeTab.value === 'progress') activeTab.value = 'units';
+      },
+      { immediate: true }
+    );
+
     // Boards State
     const boardsTabState = ref('pending'); // 'pending' or 'completed'
     const boardsFormData = reactive({
@@ -1587,8 +1631,53 @@ export default {
         closeUnitDetail();
       }
     };
-    const downloadUnitPdf = () => {
-      notificationService.addNotification('تحميل PDF غير متوفر لهذه الوحدة حالياً', 'info');
+    const downloadUnitPdf = async () => {
+      const unit = selectedUnitForDetail.value;
+      if (!unit) {
+        notificationService.addNotification('لا توجد وحدة محددة للتحميل', 'info');
+        return;
+      }
+      const unitId = unit.id ?? unit.contract_unit_id ?? unit.unit_id;
+      const defaultMessage = 'تحميل PDF غير متوفر لهذه الوحدة حالياً';
+
+      try {
+        const { blob, filename } = await salesService.downloadUnitPdf(unitId);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename || `unit_${unit.unit_number ?? unitId ?? 'details'}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        notificationService.addNotification('تم تحميل ملف PDF بنجاح', 'success');
+      } catch (e) {
+        let message = defaultMessage;
+        if (e?.response?.data instanceof Blob) {
+          try {
+            const text = await e.response.data.text();
+            const data = JSON.parse(text);
+            if (data?.message) message = data.message;
+          } catch (_) {}
+        } else if (e?.response?.data?.message) {
+          message = e.response.data.message;
+        }
+        logger.error('Unit PDF download failed', e);
+        notificationService.addNotification(message, 'error');
+        try {
+          const pdfBytes = await generateUnitDetailsPdf(unit, {
+            projectName: project.value?.name || project.value?.project_name || '',
+          });
+          const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `unit_${unit.unit_number ?? unit.id ?? 'details'}.pdf`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+          notificationService.addNotification('تم تحميل ملف PDF (نسخة محلية)', 'success');
+        } catch (fallbackErr) {
+          logger.error('Unit PDF fallback failed', fallbackErr);
+        }
+      }
     };
 
     const unitForm = reactive({

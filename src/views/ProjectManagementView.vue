@@ -148,8 +148,8 @@
             </div>
           </div>
           <div class="price-row" title="السعر">
-            <span class="price-label">ريال سعودي</span>
             <span class="price-value">{{ project.priceRangeText }}</span>
+            <span class="price-label">ريال سعودي</span>
           </div>
           <div class="specs-row">
             <span class="spec-item" title="الغرف">
@@ -496,11 +496,12 @@ export default {
           const areaMin = p.area_min_m2 ?? p.area_min ?? (unitAreas.length ? Math.min(...unitAreas) : null);
           const areaMax = p.area_max_m2 ?? p.area_max ?? (unitAreas.length ? Math.max(...unitAreas) : null);
           const areaRange =
-            areaMin != null && areaMax != null ? `${areaMax} - ${areaMin} م²` : areaMax != null ? `${areaMax} م²` : areaMin != null ? `${areaMin} م²` : '—';
+            areaMin != null && areaMax != null ? `${areaMin} - ${areaMax} م²` : areaMax != null ? `${areaMax} م²` : areaMin != null ? `${areaMin} م²` : '—';
+          // أقل واعظم عدد غرف (min - max) للعرض على البطاقة
           const bedroomsMin = p.bedrooms_min ?? (units[0] && units[0].bedrooms);
           const bedroomsMax = p.bedrooms_max ?? (units[0] && units[0].bedrooms);
           const bedroomsRange =
-            bedroomsMin != null && bedroomsMax != null ? `${bedroomsMax} - ${bedroomsMin}` : bedroomsMax != null ? `${bedroomsMax}` : bedroomsMin != null ? `${bedroomsMin}` : '—';
+            bedroomsMin != null && bedroomsMax != null ? `${bedroomsMin} - ${bedroomsMax}` : bedroomsMax != null ? `${bedroomsMax}` : bedroomsMin != null ? `${bedroomsMin}` : '—';
           const rakezStatusLabel = p.status === 'Approved' ? 'متاح' : (p.status === 'Rejected' || p.status === 'Refused' ? 'مؤرشف' : (p.statusLabel || p.status || '—'));
           const propertyTypeLabel = (p.unit_type_label_ar && String(p.unit_type_label_ar).trim()) || unitType || (totalUnits ? 'وحدات' : 'مشروع');
 
@@ -1390,7 +1391,7 @@ export default {
 .sales-style-cards .rakez-card .price-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   font-size: 14px;
 }
 .sales-style-cards .rakez-card .price-label {
