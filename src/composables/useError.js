@@ -4,8 +4,7 @@
  */
 
 import { ref } from 'vue';
-import { handleError, retryWithBackoff } from '../utils/errorHandler';
-import notificationService from '../services/notificationService';
+import { handleError, retryWithBackoff } from '@/utils/errorHandler';
 
 /**
  * Error handling composable
@@ -32,11 +31,6 @@ export function useError(options = {}) {
       showNotification: showNotifications,
       log: autoLog,
     });
-
-    // Show notification only if message exists and it's not an expected error
-    if (showNotifications && errorInfo.message && !errorInfo.isExpected) {
-      notificationService.addNotification(errorInfo.message, 'error', { duration: 5000 });
-    }
 
     return errorInfo;
   };

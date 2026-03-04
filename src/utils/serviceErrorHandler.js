@@ -6,7 +6,7 @@
  */
 
 import logger from './logger';
-import appConfig from '../config/appConfig';
+import appConfig from '@/config/appConfig';
 
 /**
  * Handle service errors gracefully

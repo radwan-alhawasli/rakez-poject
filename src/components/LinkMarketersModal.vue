@@ -75,8 +75,8 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue';
-import userService from '../services/userService';
-import logger from '../utils/logger';
+import userService from '@/services/userService';
+import logger from '@/utils/logger';
 
 export default {
   name: 'LinkMarketersModal',

@@ -8,12 +8,11 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import ToastContainer from './components/ToastContainer.vue';
-export default {
-  name: 'App',
-  components: { ToastContainer },
-};
+import { useDarkMode } from './composables/useDarkMode';
+
+useDarkMode();
 </script>
 
 <style>

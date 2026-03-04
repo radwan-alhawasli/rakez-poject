@@ -1,5 +1,5 @@
-import apiClient from '../api/apiClient';
-import { handleServiceError } from '../utils/serviceErrorHandler';
+import apiClient from '@/api/apiClient';
+import { handleServiceError } from '@/utils/serviceErrorHandler';
 
 /**
  * Boards Department Service

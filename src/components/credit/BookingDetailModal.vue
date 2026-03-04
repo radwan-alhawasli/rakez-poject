@@ -164,7 +164,7 @@
 
 <script>
 import { onMounted, onUnmounted } from 'vue';
-import { useFormatters } from '../../composables/useFormatters';
+import { useFormatters } from '@/composables/useFormatters';
 
 export default {
   name: 'BookingDetailModal',

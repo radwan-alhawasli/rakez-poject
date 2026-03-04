@@ -139,10 +139,10 @@
 
 <script>
 import { ref, onMounted } from 'vue';
-import ConfirmModal from '../components/ConfirmModal.vue';
-import contractService from '../services/contractService';
-import logger from '../utils/logger';
-import { toast } from '../composables/useToast';
+import ConfirmModal from '@/components/ConfirmModal.vue';
+import contractService from '@/services/contractService';
+import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
 import {
   Dialog,
   DialogContent,

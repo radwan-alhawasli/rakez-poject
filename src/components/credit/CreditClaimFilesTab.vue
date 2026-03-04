@@ -1,0 +1,189 @@
+<template>
+  <div class="management-view">
+    <div
+      class="section-header-compact"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+      "
+    >
+      <div>
+        <h2 class="section-title">ملفات المطالبة</h2>
+        <p class="section-subtitle">إدارة ملفات المطالبة بالعمولات (فردية ومجمّعة).</p>
+      </div>
+      <button class="btn-primary" @click="openCombinedClaimModal">
+        <span class="plus-icon">+</span> إنشاء ملف مطالبة
+      </button>
+    </div>
+    <div class="metrics-table-container">
+      <div class="table-responsive">
+      <table class="metrics-table">
+        <thead>
+          <tr>
+            <th>رقم الملف</th>
+            <th>النوع</th>
+            <th>المشروع</th>
+            <th>المبلغ</th>
+            <th>الحالة</th>
+            <th>التاريخ</th>
+            <th>الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="claim in claimFiles" :key="claim.id">
+            <td>{{ claim.id }}</td>
+            <td>
+              <span v-if="claim.is_combined" class="type-badge combined">
+                مجمّع ({{ claim.reservation_count || '—' }})
+              </span>
+              <span v-else class="type-badge single">فردي</span>
+            </td>
+            <td>{{ claim.project_name || 'غير محدد' }}</td>
+            <td>
+              {{
+                formatCurrency(
+                  claim.is_combined ? claim.total_claim_amount : claim.claim_amount
+                )
+              }}
+            </td>
+            <td>
+              <span class="status-tag" :class="getClaimStatusClass(claim.status)">
+                {{ claim.status_label_ar || claim.status || 'قيد المعالجة' }}
+              </span>
+            </td>
+            <td>{{ formatDate(claim.created_at) }}</td>
+            <td>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <button
+                  v-if="claim.has_pdf"
+                  class="btn-action edit"
+                  @click="downloadClaimPdf(claim)"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  PDF
+                </button>
+                <button
+                  v-if="!claim.has_pdf"
+                  class="btn-action edit"
+                  @click="generateClaimPdf(claim)"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                  </svg>
+                  إنشاء PDF
+                </button>
+                <button
+                  v-if="claim.status === 'pending'"
+                  class="btn-action edit"
+                  @click="submitClaim(claim)"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  إرسال
+                </button>
+                <button
+                  v-if="claim.status === 'submitted'"
+                  class="btn-action edit"
+                  @click="approveClaim(claim)"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                  الموافقة
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr v-if="claimFiles.length === 0 && !isLoading">
+            <td
+              colspan="7"
+              style="text-align: center; padding: 40px; color: var(--color-dark-gray)"
+            >
+              لا توجد ملفات مطالبة
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+    <Pagination
+      v-if="creditTotalItems > 0"
+      :current-page="creditCurrentPage"
+      :total-items="creditTotalItems"
+      :per-page="creditPerPage"
+      @page-change="handlePageChange"
+      @per-page-change="handlePerPageChange"
+    />
+
+    <ClaimFileForm
+      v-if="showClaimModal"
+      :claim="selectedClaim"
+      :isLoading="isSavingClaim"
+      @close="showClaimModal = false"
+      @submit="handleClaimSubmit"
+    />
+
+    <CombinedClaimFileModal
+      v-if="showCombinedClaimModal"
+      ref="combinedClaimModalRef"
+      :candidates="claimCandidates"
+      :isLoadingCandidates="isLoadingCandidates"
+      :isSubmitting="isSavingCombinedClaim"
+      @close="showCombinedClaimModal = false"
+      @submit-combined="handleCombinedClaimSubmit"
+      @submit-bulk="handleBulkClaimSubmit"
+    />
+  </div>
+</template>
+
+<script setup>
+import { onMounted } from 'vue';
+import Pagination from '@/components/Pagination.vue';
+import ClaimFileForm from '@/components/credit/ClaimFileForm.vue';
+import CombinedClaimFileModal from '@/components/credit/CombinedClaimFileModal.vue';
+import { useCreditClaimFiles } from '@/composables/credit/useCreditClaimFiles';
+
+const {
+  isLoading,
+  claimFiles,
+  currentPage: creditCurrentPage,
+  perPage: creditPerPage,
+  totalItems: creditTotalItems,
+  showClaimModal,
+  showCombinedClaimModal,
+  combinedClaimModalRef,
+  selectedClaim,
+  isSavingClaim,
+  claimCandidates,
+  isLoadingCandidates,
+  isSavingCombinedClaim,
+  formatCurrency,
+  formatDate,
+  getClaimStatusClass,
+  loadClaimFiles,
+  openCombinedClaimModal,
+  handleCombinedClaimSubmit,
+  handleBulkClaimSubmit,
+  downloadClaimPdf,
+  generateClaimPdf,
+  submitClaim,
+  approveClaim,
+  handleClaimSubmit,
+  handlePageChange,
+  handlePerPageChange,
+} = useCreditClaimFiles();
+
+onMounted(() => {
+  loadClaimFiles();
+});
+</script>

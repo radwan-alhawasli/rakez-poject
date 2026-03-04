@@ -1,8 +1,8 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import authService from '../services/authService';
-import { canAccessRoute, getDashboardPathForUser, isSalesLeader } from '../utils/rbac';
-import notificationService from '../services/notificationService';
-import logger from '../utils/logger';
+import { createRouter, createWebHistory, createMemoryHistory } from 'vue-router';
+import authService from '@/services/authService';
+import { canAccessRoute, getDashboardPathForUser, isSalesLeader } from '@/utils/rbac';
+import notificationService from '@/services/notificationService';
+import logger from '@/utils/logger';
 import {
   ROLE_ADMIN,
   ROLE_PROJECT_MANAGEMENT,
@@ -12,8 +12,8 @@ import {
   ROLE_SALES,
   ROLE_CREDIT,
   ROLE_EDITOR,
-} from '../constants/roles';
-import { PERMISSIONS } from '../constants/permissions';
+} from '@/constants/roles';
+import { PERMISSIONS } from '@/constants/permissions';
 
 const routes = [
   {
@@ -115,13 +115,6 @@ const routes = [
         name: 'Reservations',
         component: () => import('../views/ReservationsView.vue'),
       },
-      /*
-                        {
-                            path: 'boards',
-                            name: 'Boards',
-                            component: () => import('../views/BoardsView.vue')
-                        },
-            */
       {
         path: 'cancelled-reservations',
         name: 'CancelledReservations',
@@ -293,6 +286,12 @@ const routes = [
             meta: { permissions: [PERMISSIONS.SALES_PROJECTS_VIEW] },
           },
           {
+            path: 'unit-search',
+            name: 'SalesUnitSearch',
+            component: () => import('../views/SalesViewExtended.vue'),
+            meta: { permissions: [PERMISSIONS.SALES_PROJECTS_VIEW] },
+          },
+          {
             path: 'reservations',
             name: 'SalesReservations',
             component: () => import('../views/ReservationsView.vue'),
@@ -372,7 +371,7 @@ const routes = [
       },
       {
         path: 'teams',
-        name: 'Teams',
+        name: 'AllTeams',
         component: () => import('../views/TeamsView.vue'),
       },
       {
@@ -565,7 +564,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: import.meta.env?.VITEST ? createMemoryHistory() : createWebHistory(),
   routes,
 });
 

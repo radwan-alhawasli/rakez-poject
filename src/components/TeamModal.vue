@@ -12,9 +12,11 @@
             v-model="formData.name"
             type="text"
             class="form-input"
+            :class="{ 'input-error': getFieldError('name') }"
             placeholder="مثال: فريق المبيعات الرياض"
             required
           />
+          <span v-if="getFieldError('name')" class="field-error">{{ getFieldError('name') }}</span>
         </div>
 
         <!-- Team Color -->
@@ -79,6 +81,8 @@
 <script>
 import { ref, reactive, watch, onMounted, onUnmounted } from 'vue'
 import AppModal from '@/components/AppModal.vue'
+import { teamSchema } from '@/validation/schemas'
+import { useValidation } from '@/composables/useValidation'
 
 export default {
   name: 'TeamModal',
@@ -100,6 +104,7 @@ export default {
   emits: ['close', 'submit'],
   setup(props, { emit }) {
     const isEditMode = ref(!!props.team);
+    const { validate, getFieldError, clearErrors } = useValidation(teamSchema.pick({ name: true }));
 
     const formData = reactive({
       name: '',
@@ -143,12 +148,15 @@ export default {
     });
 
     const handleSubmit = () => {
+      clearErrors();
+      if (!validate({ name: formData.name })) return;
       emit('submit', { ...formData });
     };
 
     return {
       isEditMode,
       formData,
+      getFieldError,
       handleSubmit,
     };
   },
@@ -304,5 +312,14 @@ export default {
     padding: 10px 12px;
     font-size: 13px;
   }
+}
+
+.field-error {
+  color: var(--color-error, #ef4444);
+  font-size: clamp(11px, 0.3vw + 8px, 13px);
+  margin-top: 2px;
+}
+.input-error {
+  border-color: var(--color-error, #ef4444) !important;
 }
 </style>

@@ -1,7 +1,7 @@
-import apiClient from '../api/apiClient';
-import { ROLE_MAP } from '../constants/roles';
-import { handleServiceError } from '../utils/serviceErrorHandler';
-import { extractPaginatedData } from '../utils/paginationUtils';
+import apiClient from '@/api/apiClient';
+import { ROLE_MAP } from '@/constants/roles';
+import { handleServiceError } from '@/utils/serviceErrorHandler';
+import { extractPaginatedData } from '@/utils/paginationUtils';
 
 const userService = {
   /**

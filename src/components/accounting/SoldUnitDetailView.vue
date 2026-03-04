@@ -508,10 +508,10 @@
 
 <script>
 import { ref, reactive, computed, watch, onMounted } from 'vue';
-import accountingService from '../../services/accountingService';
-import logger from '../../utils/logger';
-import { toast } from '../../composables/useToast';
-import { useFormatters } from '../../composables/useFormatters';
+import accountingService from '@/services/accountingService';
+import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
+import { useFormatters } from '@/composables/useFormatters';
 
 const COMMISSION_TYPE_LABELS = {
   lead_generation: 'عمولة الجلب',

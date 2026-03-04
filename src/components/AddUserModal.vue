@@ -30,9 +30,11 @@
                   v-model="form.name"
                   type="text"
                   class="input"
+                  :class="{ 'input-error': getFieldError('name') }"
                   placeholder="مثال: علي أحمد الأحمد"
                   required
                 />
+                <span v-if="getFieldError('name')" class="field-error">{{ getFieldError('name') }}</span>
               </div>
               <div class="form-group">
                 <label class="label">رقم الهوية *</label>
@@ -78,9 +80,11 @@
                   v-model="form.phone"
                   type="text"
                   class="input"
+                  :class="{ 'input-error': getFieldError('phone') }"
                   placeholder="05xxxxxxxx"
                   required
                 />
+                <span v-if="getFieldError('phone')" class="field-error">{{ getFieldError('phone') }}</span>
               </div>
             </div>
 
@@ -134,7 +138,7 @@
               </div>
               <div class="form-group">
                 <label class="label">القسم / الإدارة *</label>
-                <select v-model="form.type" class="input select" required>
+                <select v-model="form.type" class="input select" :class="{ 'input-error': getFieldError('role') }" required>
                   <option value="" disabled>اختر القسم</option>
                   <option :value="0">التسويق / Marketing</option>
                   <option :value="1">الإدارة / Admin</option>
@@ -147,6 +151,7 @@
                   <option :value="7">الائتمان / Credit</option>
                   <option :value="8">الموارد البشرية / HR</option>
                 </select>
+                <span v-if="getFieldError('role')" class="field-error">{{ getFieldError('role') }}</span>
               </div>
             </div>
 
@@ -241,9 +246,11 @@
                   v-model="form.email"
                   type="email"
                   class="input"
+                  :class="{ 'input-error': getFieldError('email') }"
                   placeholder="user@example.com"
                   required
                 />
+                <span v-if="getFieldError('email')" class="field-error">{{ getFieldError('email') }}</span>
               </div>
               <div class="form-group">
                 <label class="label">رقم حساب البنك (IBAN)</label>
@@ -259,9 +266,11 @@
                 v-model="form.password"
                 type="password"
                 class="input"
+                :class="{ 'input-error': getFieldError('password') }"
                 placeholder="••••••"
                 :required="!isEdit"
               />
+              <span v-if="getFieldError('password')" class="field-error">{{ getFieldError('password') }}</span>
             </div>
           </div>
 
@@ -402,10 +411,12 @@
 <script>
 import { ref, watch, onMounted } from 'vue'
 import AppModal from '@/components/AppModal.vue'
-import { ROLE_MAP } from '../constants/roles'
-import { NATIONALITIES, MARITAL_STATUSES } from '../constants/lookups'
-import hrService from '../services/hrService'
-import logger from '../utils/logger'
+import { ROLE_MAP } from '@/constants/roles'
+import { NATIONALITIES, MARITAL_STATUSES } from '@/constants/lookups'
+import hrService from '@/services/hrService'
+import logger from '@/utils/logger'
+import { createUserSchema, editUserSchema } from '@/validation/schemas'
+import { useValidation } from '@/composables/useValidation'
 
 export default {
   name: 'AddUserModal',
@@ -425,6 +436,13 @@ export default {
     const isEdit = ref(false);
     const dateType = ref('gregorian'); // gregorian or hijri
     const cvFileInput = ref(null);
+
+    const createValidation = useValidation(createUserSchema);
+    const editValidation = useValidation(editUserSchema);
+    const getFieldError = (field) => {
+      const v = isEdit.value ? editValidation : createValidation;
+      return v.getFieldError(field);
+    };
     const signatureFileInput = ref(null);
     const teamsList = ref([]);
 
@@ -556,6 +574,22 @@ export default {
     );
 
     const handleSubmit = () => {
+      const v = isEdit.value ? editValidation : createValidation;
+      v.clearErrors();
+      const dataToValidate = {
+        name: form.value.name,
+        email: form.value.email,
+        phone: form.value.phone || '',
+        role: String(form.value.type || ''),
+        ...(isEdit.value ? {} : {
+          password: form.value.password,
+          password_confirmation: form.value.password,
+        }),
+      };
+      if (!v.validate(dataToValidate)) {
+        return;
+      }
+
       const submissionData = {
         id: props.editUser?.id,
         name: form.value.name,
@@ -618,6 +652,7 @@ export default {
       isEdit,
       dateType,
       teamsList,
+      getFieldError,
       NATIONALITIES,
       MARITAL_STATUSES,
       cvFileInput,
@@ -979,5 +1014,14 @@ export default {
     padding: 16px 32px;
     font-size: 20px;
   }
+}
+
+.field-error {
+  color: var(--color-error, #ef4444);
+  font-size: clamp(11px, 0.3vw + 8px, 13px);
+  margin-top: 2px;
+}
+.input-error {
+  border-color: var(--color-error, #ef4444) !important;
 }
 </style>

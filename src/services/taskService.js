@@ -1,6 +1,6 @@
-import apiClient from '../api/apiClient';
-import { handleServiceError } from '../utils/serviceErrorHandler';
-import { extractPaginatedData } from '../utils/paginationUtils';
+import apiClient from '@/api/apiClient';
+import { handleServiceError } from '@/utils/serviceErrorHandler';
+import { extractPaginatedData } from '@/utils/paginationUtils';
 
 /**
  * Task Service
@@ -65,6 +65,20 @@ export default {
       return extractPaginatedData(response, []);
     } catch (error) {
       return handleServiceError(error, 'Fetch my tasks', 'get', { items: [], total: 0 });
+    }
+  },
+
+  /**
+   * Get tasks created/requested by the current user and assigned to others
+   * @param {Object} params - Query parameters (status, per_page, page)
+   * @returns {Promise<Object>} Paginated task list { items: [...], total: ... }
+   */
+  async getRequestedTasks(params = {}) {
+    try {
+      const response = await apiClient.get('/requested-tasks', { params });
+      return extractPaginatedData(response, []);
+    } catch (error) {
+      return handleServiceError(error, 'Fetch requested tasks', 'get', { items: [], total: 0 });
     }
   },
 

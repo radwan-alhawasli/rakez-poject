@@ -143,121 +143,98 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import ChatbotPanel from '../components/ChatbotPanel.vue';
-import aiService from '../services/aiService';
-import logger from '../utils/logger';
+import ChatbotPanel from '@/components/ChatbotPanel.vue';
+import aiService from '@/services/aiService';
+import logger from '@/utils/logger';
 
-export default {
-  name: 'AiAssistantView',
-  components: { ChatbotPanel },
-  setup() {
-    const route = useRoute();
-    const sessionKey = ref(0);
-    const historyItems = ref([]);
-    const loadingHistory = ref(false);
-    const activeSessionId = ref(null);
-    const historySearch = ref('');
-    const sections = ref([]);
-    const selectedSection = ref(null);
+const route = useRoute();
+const sessionKey = ref(0);
+const historyItems = ref([]);
+const loadingHistory = ref(false);
+const activeSessionId = ref(null);
+const historySearch = ref('');
+const sections = ref([]);
+const selectedSection = ref(null);
 
-    /** تصفية المحادثات حسب نص البحث */
-    const filteredHistory = computed(() => {
-      let items = historyItems.value;
-      const q = historySearch.value?.trim().toLowerCase();
-      if (q) {
-        items = items.filter(item => (item.title || '').toLowerCase().includes(q));
-      }
-      return items;
-    });
+/** تصفية المحادثات حسب نص البحث */
+const filteredHistory = computed(() => {
+  let items = historyItems.value;
+  const q = historySearch.value?.trim().toLowerCase();
+  if (q) {
+    items = items.filter(item => (item.title || '').toLowerCase().includes(q));
+  }
+  return items;
+});
 
-    /** تحميل قائمة المحادثات من الخادم */
-    async function loadConversations() {
-      loadingHistory.value = true;
-      try {
-        const result = await aiService.getConversations(50, selectedSection.value);
-        logger.debug('[تشخيص] المحادثات السابقة:', result);
-        historyItems.value = result?.items || [];
-      } catch (err) {
-        logger.error('فشل تحميل المحادثات:', err);
-      } finally {
-        loadingHistory.value = false;
-      }
+/** تحميل قائمة المحادثات من الخادم */
+async function loadConversations() {
+  loadingHistory.value = true;
+  try {
+    const result = await aiService.getConversations(50, selectedSection.value);
+    logger.debug('[تشخيص] المحادثات السابقة:', result);
+    historyItems.value = result?.items || [];
+  } catch (err) {
+    logger.error('فشل تحميل المحادثات:', err);
+  } finally {
+    loadingHistory.value = false;
+  }
+}
+
+/** تحميل الأقسام المتاحة */
+async function loadSections() {
+  try {
+    const data = await aiService.getAvailableSections();
+    sections.value = Array.isArray(data) ? data : [];
+  } catch (err) {
+    logger.error('فشل تحميل أقسام المساعد الذكي:', err);
+  }
+}
+
+/** بدء دردشة جديدة */
+function startNewChat() {
+  activeSessionId.value = null;
+  sessionKey.value += 1;
+}
+
+function selectConversation(item) {
+  const sid = item.session_id || item.id;
+  if (activeSessionId.value !== sid) {
+    activeSessionId.value = sid;
+    sessionKey.value += 1;
+  }
+}
+
+/** حذف محادثة */
+async function deleteConversation(item) {
+  const sid = item.session_id || item.id;
+  try {
+    await aiService.deleteConversation(sid);
+    historyItems.value = historyItems.value.filter(h => (h.session_id || h.id) !== sid);
+    if (activeSessionId.value === sid) {
+      startNewChat();
     }
+  } catch (err) {
+    logger.error('فشل حذف المحادثة:', err);
+  }
+}
 
-    /** تحميل الأقسام المتاحة */
-    async function loadSections() {
-      try {
-        const data = await aiService.getAvailableSections();
-        sections.value = Array.isArray(data) ? data : [];
-      } catch (err) {
-        logger.error('فشل تحميل أقسام المساعد الذكي:', err);
-      }
-    }
+/** عند إرسال أول رسالة يتم تحديث قائمة المحادثات */
+function onFirstMessage() {
+  loadConversations();
+}
 
-    /** بدء دردشة جديدة */
-    function startNewChat() {
-      activeSessionId.value = null;
-      sessionKey.value += 1;
-    }
+/** تحديث معرّف الجلسة عند تغييره من لوحة الدردشة */
+function onSessionUpdate(newSessionId) {
+  activeSessionId.value = newSessionId;
+}
 
-    function selectConversation(item) {
-      const sid = item.session_id || item.id;
-      if (activeSessionId.value !== sid) {
-        activeSessionId.value = sid;
-        sessionKey.value += 1;
-      }
-    }
-
-    /** حذف محادثة */
-    async function deleteConversation(item) {
-      const sid = item.session_id || item.id;
-      try {
-        await aiService.deleteConversation(sid);
-        historyItems.value = historyItems.value.filter(h => (h.session_id || h.id) !== sid);
-        if (activeSessionId.value === sid) {
-          startNewChat();
-        }
-      } catch (err) {
-        logger.error('فشل حذف المحادثة:', err);
-      }
-    }
-
-    /** عند إرسال أول رسالة يتم تحديث قائمة المحادثات */
-    function onFirstMessage() {
-      loadConversations();
-    }
-
-    /** تحديث معرّف الجلسة عند تغييره من لوحة الدردشة */
-    function onSessionUpdate(newSessionId) {
-      activeSessionId.value = newSessionId;
-    }
-
-    onMounted(() => {
-      loadConversations();
-      loadSections();
-    });
-
-    return {
-      route,
-      sessionKey,
-      historyItems,
-      filteredHistory,
-      loadingHistory,
-      activeSessionId,
-      historySearch,
-      sections,
-      selectedSection,
-      startNewChat,
-      selectConversation,
-      deleteConversation,
-      onFirstMessage,
-      onSessionUpdate,
-    };
-  },
-};
+onMounted(() => {
+  loadConversations();
+  loadSections();
+});
 </script>
 
 <style scoped>

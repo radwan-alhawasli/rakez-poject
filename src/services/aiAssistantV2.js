@@ -4,10 +4,10 @@
  * نقاط الوصول: POST /ai/v2/chat، POST /ai/v2/search، POST /ai/v2/explain-access
  */
 
-import apiClient from '../api/apiClient';
-import logger from '../utils/logger';
-import secureStorage from '../utils/secureStorage';
-import appConfig from '../config/appConfig';
+import apiClient from '@/api/apiClient';
+import logger from '@/utils/logger';
+import secureStorage from '@/utils/secureStorage';
+import appConfig from '@/config/appConfig';
 
 /** رسائل المستخدم للحالات 403/503 (عربي) */
 export const AI_V2_MESSAGES = {
@@ -166,7 +166,6 @@ export async function chatStream(
   const decoder = new TextDecoder();
   let sseBuffer = '';
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;

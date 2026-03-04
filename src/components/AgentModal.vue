@@ -18,9 +18,11 @@
               v-model="form.name"
               type="text"
               class="input input-luxury"
+              :class="{ 'input-error': getFieldError('name') }"
               placeholder="مثال: مساعد المبيعات"
               required
             />
+            <span v-if="getFieldError('name')" class="field-error">{{ getFieldError('name') }}</span>
           </div>
           <div class="form-group">
             <label class="label">الوصف</label>
@@ -106,6 +108,8 @@
 <script>
 import { ref, reactive, computed, watch } from 'vue'
 import AppModal from '@/components/AppModal.vue'
+import { chatbotAgentSchema } from '@/validation/schemas'
+import { useValidation } from '@/composables/useValidation'
 
 const defaultForm = () => ({
   name: '',
@@ -128,6 +132,7 @@ export default {
     const containerRef = ref(null);
     const isSaving = ref(false);
     const form = reactive({ ...defaultForm() });
+    const { validate, getFieldError, clearErrors } = useValidation(chatbotAgentSchema);
 
     const isEdit = computed(() => !!props.editAgent?.id);
 
@@ -172,7 +177,8 @@ export default {
     watch(() => props.editAgent, resetForm, { immediate: true });
 
     function handleSubmit() {
-      if (!form.name?.trim()) return;
+      clearErrors();
+      if (!validate({ name: form.name?.trim() || '' })) return;
       isSaving.value = true;
       emit('submit', {
         name: form.name.trim(),
@@ -189,6 +195,7 @@ export default {
       containerRef,
       form,
       isEdit,
+      getFieldError,
       isSaving: computed(() => props.isLoading || isSaving.value),
       handleSubmit,
       handleTab,
@@ -348,5 +355,14 @@ export default {
   .input {
     font-size: 13px;
   }
+}
+
+.field-error {
+  color: var(--color-error, #ef4444);
+  font-size: clamp(11px, 0.3vw + 8px, 13px);
+  margin-top: 2px;
+}
+.input-error {
+  border-color: var(--color-error, #ef4444) !important;
 }
 </style>

@@ -168,8 +168,8 @@
 
 <script>
 import { ref, reactive, onMounted, onUnmounted, computed } from 'vue';
-import { useFormatters } from '../../composables/useFormatters';
-import { toast } from '../../composables/useToast';
+import { useFormatters } from '@/composables/useFormatters';
+import { toast } from '@/composables/useToast';
 
 export default {
   name: 'NegotiationApprovalModal',

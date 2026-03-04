@@ -23,7 +23,9 @@
             placeholder="user@rakez.com"
             dir="auto"
             required
+            :class="{ 'input-error': getFieldError('email') }"
           />
+          <span v-if="getFieldError('email')" class="field-error">{{ getFieldError('email') }}</span>
         </div>
 
         <div class="form-group">
@@ -34,7 +36,9 @@
             type="password"
             placeholder="••••••••"
             required
+            :class="{ 'input-error': getFieldError('password') }"
           />
+          <span v-if="getFieldError('password')" class="field-error">{{ getFieldError('password') }}</span>
         </div>
 
         <div class="form-options">
@@ -65,10 +69,12 @@
 
 <script>
 import { ref } from 'vue';
-import authService from '../services/authService';
-import logger from '../utils/logger';
+import authService from '@/services/authService';
+import logger from '@/utils/logger';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
+import { loginSchema } from '@/validation/schemas';
+import { useValidation } from '@/composables/useValidation';
 
 export default {
   name: 'LoginPage',
@@ -80,11 +86,17 @@ export default {
     const isLoading = ref(false);
     const error = ref('');
 
+    const { validate, getFieldError, clearErrors } = useValidation(loginSchema);
+
     const handleLogin = async () => {
-      if (!email.value || !password.value) return;
+      clearErrors();
+      error.value = '';
+
+      if (!validate({ email: email.value, password: password.value })) {
+        return;
+      }
 
       isLoading.value = true;
-      error.value = '';
 
       try {
         const user = await authService.login(email.value, password.value);
@@ -103,6 +115,7 @@ export default {
       isLoading,
       error,
       handleLogin,
+      getFieldError,
     };
   },
 };
@@ -281,6 +294,16 @@ export default {
   box-shadow: none;
 }
 
+/* ─── Field Error ─── */
+.field-error {
+  color: var(--color-error, #ef4444);
+  font-size: clamp(11px, 0.3vw + 8px, 13px);
+  margin-top: 2px;
+}
+.input-error {
+  border-color: var(--color-error, #ef4444) !important;
+}
+
 /* ─── Error ─── */
 .error-message {
   color: var(--color-error);
@@ -350,4 +373,15 @@ export default {
     display: none;
   }
 }
+</style>
+
+<style>
+/* Dark Mode for Login */
+html.dark .login-wrapper { background: #0f172a; }
+html.dark .login-container { background: #1e293b; border-color: #334155; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); }
+html.dark .login-container input { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+html.dark .login-container input::placeholder { color: #64748b; }
+html.dark .login-container input:focus { border-color: var(--color-gold); }
+html.dark .login-header { border-color: #334155; }
+html.dark .geo-shape { opacity: 0.03; }
 </style>

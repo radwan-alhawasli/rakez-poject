@@ -421,8 +421,8 @@
 <script>
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import editorService from '../services/editorService';
-import logger from '../utils/logger';
+import editorService from '@/services/editorService';
+import logger from '@/utils/logger';
 
 const EDITOR_TABS = [
   { id: 'contracts', name: 'EditorContracts', label: 'عقود' },

@@ -1,12 +1,12 @@
-import apiClient from '../api/apiClient';
-import { handleServiceError } from '../utils/serviceErrorHandler';
-import { extractPaginatedData } from '../utils/paginationUtils';
+import apiClient from '@/api/apiClient';
+import { handleServiceError } from '@/utils/serviceErrorHandler';
+import { extractPaginatedData } from '@/utils/paginationUtils';
 import {
   normalizeMarketingDashboard,
   normalizeProjectDetails,
   normalizeExpectedSale,
   normalizeListResponse,
-} from '../utils/marketingNormalizers';
+} from '@/utils/marketingNormalizers';
 
 const unwrap = (response, fallback = {}) => response?.data?.data ?? response?.data ?? fallback;
 
@@ -282,6 +282,15 @@ const marketingService = {
           total: 0,
         }
       );
+    }
+  },
+
+  async getLeadById(leadId) {
+    try {
+      const response = await apiClient.get(`/marketing/leads/${leadId}`);
+      return unwrap(response, null);
+    } catch (error) {
+      return handleServiceError(error, 'Fetch lead details', 'get');
     }
   },
 

@@ -23,10 +23,12 @@
                 v-model="form.targetValue"
                 type="number"
                 class="premium-input"
+                :class="{ 'input-error': getFieldError('targetValue') }"
                 placeholder="مثلاً: 50,000"
                 required
               />
             </div>
+            <span v-if="getFieldError('targetValue')" class="field-error">{{ getFieldError('targetValue') }}</span>
           </div>
           <div class="form-group">
             <label class="label">الفترة الزمنية</label>
@@ -100,10 +102,12 @@
                     v-model="form.targetValue"
                     type="number"
                     class="premium-input"
+                    :class="{ 'input-error': getFieldError('targetValue') }"
                     placeholder="مثلاً: 50,000"
                     required
                   />
                 </div>
+                <span v-if="getFieldError('targetValue')" class="field-error">{{ getFieldError('targetValue') }}</span>
               </div>
 
               <div class="form-group">
@@ -141,6 +145,8 @@
 
 <script>
 import { reactive } from 'vue';
+import { setTargetSchema } from '@/validation/schemas';
+import { useValidation } from '@/composables/useValidation';
 
 export default {
   name: 'SetTargetModal',
@@ -156,12 +162,15 @@ export default {
       period: 'monthly',
       type: 'sales',
     });
+    const { validate, getFieldError, clearErrors } = useValidation(setTargetSchema);
 
     const handleSubmit = () => {
+      clearErrors();
+      if (!validate({ targetValue: Number(form.targetValue) || 0 })) return;
       emit('submit', { ...form, employeeId: props.employee.id });
     };
 
-    return { form, handleSubmit };
+    return { form, getFieldError, handleSubmit };
   },
 };
 </script>
@@ -405,5 +414,14 @@ export default {
     padding-right: 40px;
     font-size: 14px;
   }
+}
+
+.field-error {
+  color: var(--color-error, #ef4444);
+  font-size: clamp(11px, 0.3vw + 8px, 13px);
+  margin-top: 2px;
+}
+.input-error {
+  border-color: var(--color-error, #ef4444) !important;
 }
 </style>

@@ -5,9 +5,9 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import contractService from '../services/contractService';
+import contractService from '@/services/contractService';
 import { useAuthStore } from './authStore';
-import logger from '../utils/logger';
+import logger from '@/utils/logger';
 
 export const useContractStore = defineStore('contract', () => {
   // State

@@ -4,12 +4,12 @@
  */
 
 import { computed } from 'vue';
-import authService from '../services/authService';
+import authService from '@/services/authService';
 import {
   getUserPermissions,
   hasPermission as rbacHasPermission,
   hasAnyPermission as rbacHasAnyPermission,
-} from '../utils/rbac';
+} from '@/utils/rbac';
 
 /**
  * Use permissions in a component

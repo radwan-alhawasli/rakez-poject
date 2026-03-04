@@ -167,11 +167,11 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue';
-import agentService from '../services/agentService';
-import AgentModal from '../components/AgentModal.vue';
-import ConfirmModal from '../components/ConfirmModal.vue';
-import { toast } from '../composables/useToast';
-import { useFormatters } from '../composables/useFormatters';
+import agentService from '@/services/agentService';
+import AgentModal from '@/components/AgentModal.vue';
+import ConfirmModal from '@/components/ConfirmModal.vue';
+import { toast } from '@/composables/useToast';
+import { useFormatters } from '@/composables/useFormatters';
 
 export default {
   name: 'AgentsView',

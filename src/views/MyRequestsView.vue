@@ -77,8 +77,8 @@
 <script>
 import { ref, onMounted, onActivated } from 'vue';
 import { useRouter } from 'vue-router';
-import contractService from '../services/contractService';
-import logger from '../utils/logger';
+import contractService from '@/services/contractService';
+import logger from '@/utils/logger';
 
 export default {
   name: 'MyRequestsView',

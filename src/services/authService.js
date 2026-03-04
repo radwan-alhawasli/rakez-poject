@@ -11,10 +11,10 @@
  * @property {boolean} [is_manager]
  */
 
-import apiClient from '../api/apiClient';
-import { ROLE_MAP } from '../constants/roles';
-import secureStorage from '../utils/secureStorage';
-import { handleServiceError } from '../utils/serviceErrorHandler';
+import apiClient from '@/api/apiClient';
+import { ROLE_MAP } from '@/constants/roles';
+import secureStorage from '@/utils/secureStorage';
+import { handleServiceError } from '@/utils/serviceErrorHandler';
 
 const authService = {
   /**

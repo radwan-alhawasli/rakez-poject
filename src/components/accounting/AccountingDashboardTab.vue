@@ -1,0 +1,74 @@
+<template>
+  <div class="hr-dashboard-grid-view">
+    <div class="welcome-header">
+      <h1 class="welcome-title">أهلاً بعودتك، {{ userName }}!</h1>
+      <p class="welcome-subtitle">المؤشرات الرئيسية للمحاسبة والمالية.</p>
+    </div>
+    <div class="stats-grid stats-grid-three">
+      <div class="stat-card kpi-list-card animate-fade-in-up animate-stagger-1 hover-lift">
+        <h3 class="kpi-card-title">مؤشرات الأداء</h3>
+        <ul class="kpi-list">
+          <li class="kpi-line kpi-line-1"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">عدد الوحدات المباعة</span></span><span class="kpi-value number">{{ dashboardMetrics.totalUnitsSold || '0' }}</span></li>
+          <li class="kpi-line kpi-line-2"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">إجمالي العربون المستلم</span></span><span class="kpi-value number">{{ formatCurrency(dashboardMetrics.totalDeposits) }}</span></li>
+          <li class="kpi-line kpi-line-3"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">إجمالي العربون المسترد</span></span><span class="kpi-value number">{{ formatCurrency(dashboardMetrics.totalDepositsRefunded) }}</span></li>
+          <li class="kpi-line kpi-line-4"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">إجمالي قيمة المشاريع المستلمة</span></span><span class="kpi-value number">{{ formatCurrency(dashboardMetrics.totalProjectsValue) }}</span></li>
+          <li class="kpi-line kpi-line-5"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">إجمالي قيمة المبيعات</span><span class="kpi-desc">اعتمادًا على سعر البيع النهائي</span></span><span class="kpi-value number">{{ formatCurrency(dashboardMetrics.totalSalesValue) }}</span></li>
+        </ul>
+      </div>
+      <div class="stat-card stat-card-pending animate-fade-in-up animate-stagger-2 hover-lift">
+        <div class="stat-content">
+          <span class="stat-label">الودائع والرواتب المعلقة</span>
+          <span class="stat-value number">{{ (dashboardMetrics.pendingDeposits || 0) + (dashboardMetrics.pendingSalaries || 0) }}</span>
+          <span class="stat-desc">ودائع: {{ dashboardMetrics.pendingDeposits || '0' }} – رواتب: {{ dashboardMetrics.pendingSalaries || '0' }}</span>
+        </div>
+        <div class="stat-icon-bg orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+      </div>
+      <div class="stat-card stat-card-notifications animate-fade-in-up animate-stagger-3 hover-lift">
+        <div class="stat-content">
+          <span class="stat-label">الإشعارات غير المقروءة</span>
+          <span class="stat-value number">{{ dashboardMetrics.unreadNotifications || '0' }}</span>
+          <span class="stat-desc">عدد الإشعارات غير المقروءة</span>
+        </div>
+        <div class="stat-icon-bg green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        </div>
+      </div>
+    </div>
+    <div class="dashboard-date-range">
+      <label>الفترة:</label>
+      <input v-model="dashboardFromDate" type="date" class="form-input" style="width: 160px" @change="loadDashboardMetrics" />
+      <span>إلى</span>
+      <input v-model="dashboardToDate" type="date" class="form-input" style="width: 160px" @change="loadDashboardMetrics" />
+    </div>
+    <div class="overview-section">
+      <div class="section-header">
+        <h3 class="section-title-chart">نظرة عامة على العمليات المالية</h3>
+        <p class="section-desc">توزيع الوحدات المباعة والعمولات والودائع.</p>
+      </div>
+      <div class="chart-placeholder"><p style="color: #94a3b8">مخطط بياني للعمليات المالية</p></div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { onMounted } from 'vue';
+import { useAccountingDashboard } from '@/composables/accounting/useAccountingDashboard';
+
+const props = defineProps({
+  userName: { type: String, default: 'قسم المحاسبة' },
+});
+
+const {
+  dashboardMetrics,
+  dashboardFromDate,
+  dashboardToDate,
+  loadDashboardMetrics,
+  formatCurrency,
+} = useAccountingDashboard();
+
+onMounted(() => {
+  loadDashboardMetrics();
+});
+</script>

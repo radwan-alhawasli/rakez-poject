@@ -10,7 +10,6 @@ import {
   DialogOverlay,
   DialogPortal,
 } from 'radix-vue'
-import { computed } from 'vue'
 import { X } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 

@@ -91,7 +91,8 @@
               </div>
               <div class="field-group">
                 <label>تاريخ ميلادي</label>
-                <input type="date" v-model="form.gregorian_date" class="form-input" />
+                <input type="date" v-model="form.gregorian_date" class="form-input" :class="{ 'input-error': getFieldError('gregorian_date') }" />
+                <span v-if="getFieldError('gregorian_date')" class="field-error">{{ getFieldError('gregorian_date') }}</span>
               </div>
             </div>
 
@@ -102,8 +103,10 @@
                   type="number"
                   v-model="form.agreement_duration_days"
                   class="form-input"
+                  :class="{ 'input-error': getFieldError('agreement_duration_days') }"
                   placeholder="مثال: 3"
                 />
+                <span v-if="getFieldError('agreement_duration_days')" class="field-error">{{ getFieldError('agreement_duration_days') }}</span>
               </div>
             </div>
           </div>
@@ -132,8 +135,10 @@
                   type="number"
                   v-model="form.commission_percent"
                   class="form-input"
+                  :class="{ 'input-error': getFieldError('commission_percent') }"
                   placeholder="0"
                 />
+                <span v-if="getFieldError('commission_percent')" class="field-error">{{ getFieldError('commission_percent') }}</span>
               </div>
             </div>
 
@@ -183,7 +188,8 @@
               </div>
               <div class="field-group">
                 <label>اسم الطرف الثاني</label>
-                <input type="text" v-model="form.second_party_name" class="form-input" />
+                <input type="text" v-model="form.second_party_name" class="form-input" :class="{ 'input-error': getFieldError('second_party_name') }" />
+                <span v-if="getFieldError('second_party_name')" class="field-error">{{ getFieldError('second_party_name') }}</span>
               </div>
             </div>
 
@@ -199,7 +205,8 @@
               </div>
               <div class="field-group">
                 <label>هوية رقم</label>
-                <input type="text" v-model="form.second_party_id" class="form-input" />
+                <input type="text" v-model="form.second_party_id" class="form-input" :class="{ 'input-error': getFieldError('second_party_id') }" />
+                <span v-if="getFieldError('second_party_id')" class="field-error">{{ getFieldError('second_party_id') }}</span>
               </div>
               <div class="field-group">
                 <label>يمثلها بالتوقيع على هذا العقد</label>
@@ -244,7 +251,8 @@
               </div>
               <div class="field-group">
                 <label>اسم المشروع</label>
-                <input type="text" v-model="form.project_name" class="form-input" />
+                <input type="text" v-model="form.project_name" class="form-input" :class="{ 'input-error': getFieldError('project_name') }" />
+                <span v-if="getFieldError('project_name')" class="field-error">{{ getFieldError('project_name') }}</span>
               </div>
             </div>
 
@@ -259,7 +267,8 @@
               </div>
               <div class="field-group">
                 <label>المدينة</label>
-                <input type="text" v-model="form.city" class="form-input" />
+                <input type="text" v-model="form.city" class="form-input" :class="{ 'input-error': getFieldError('city') }" />
+                <span v-if="getFieldError('city')" class="field-error">{{ getFieldError('city') }}</span>
               </div>
             </div>
 
@@ -362,10 +371,12 @@
 <script>
 import { ref, reactive, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import contractService from '../services/contractService';
-import { downloadFilledContract } from '../services/pdfService';
-import logger from '../utils/logger';
-import { toast } from '../composables/useToast';
+import contractService from '@/services/contractService';
+import { downloadFilledContract } from '@/services/pdfService';
+import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
+import { contractInfoSchema } from '@/validation/schemas';
+import { useValidation } from '@/composables/useValidation';
 import {
   Dialog,
   DialogContent,
@@ -390,6 +401,7 @@ export default {
     const isDownloading = ref(false);
     const showDownloadModal = ref(false);
     const requestId = route.params.id;
+    const { validate, getFieldError, clearErrors } = useValidation(contractInfoSchema);
 
     const form = reactive({
       // First Party - Readonly usually
@@ -535,6 +547,18 @@ export default {
     onMounted(fetchContractDetails);
 
     const saveChanges = async () => {
+      clearErrors();
+      const dataToValidate = {
+        second_party_name: form.second_party_name,
+        second_party_id: form.second_party_id,
+        gregorian_date: form.gregorian_date,
+        agreement_duration_days: String(form.agreement_duration_days || ''),
+        commission_percent: form.commission_percent,
+        project_name: form.project_name,
+        city: form.city,
+      };
+      if (!validate(dataToValidate)) return;
+
       isSaving.value = true;
       try {
         logger.debug('Updating contract:', requestId, form);
@@ -610,6 +634,7 @@ export default {
       isSaving,
       isDownloading,
       showDownloadModal,
+      getFieldError,
       saveChanges,
       downloadContract,
       closeModal,
@@ -1133,5 +1158,14 @@ export default {
   .field-group label {
     font-size: 16px;
   }
+}
+
+.field-error {
+  color: var(--color-error, #ef4444);
+  font-size: clamp(11px, 0.3vw + 8px, 13px);
+  margin-top: 2px;
+}
+.input-error {
+  border-color: var(--color-error, #ef4444) !important;
 }
 </style>

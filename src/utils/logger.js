@@ -1,9 +1,8 @@
-/* eslint-disable no-console */
 // Centralized logger:
 // - In production: suppress debug/info/log/warn to keep console clean.
 // - Keep error logging in production to aid troubleshooting.
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = import.meta.env.PROD;
 
 const noop = () => {};
 

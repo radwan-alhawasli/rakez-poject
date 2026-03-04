@@ -5,9 +5,9 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import authService from '../services/authService';
-import secureStorage from '../utils/secureStorage';
-import logger from '../utils/logger';
+import authService from '@/services/authService';
+import secureStorage from '@/utils/secureStorage';
+import logger from '@/utils/logger';
 
 export const useAuthStore = defineStore('auth', () => {
   // State

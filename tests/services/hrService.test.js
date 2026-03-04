@@ -23,14 +23,14 @@ describe('hrService', () => {
   });
 
   it('getEmployees returns paginated shape', async () => {
-    mock.onGet('/hr/users').reply(200, { data: [{ id: 1 }], meta: { total: 1 } });
+    mock.onGet('/hr/list_employees').reply(200, { data: [{ id: 1 }], meta: { total: 1 } });
     const result = await hrService.getEmployees();
     expect(Array.isArray(result.items)).toBe(true);
     expect(result.total).toBe(1);
   });
 
   it('getEmployeeById returns employee details', async () => {
-    mock.onGet('/hr/users/1').reply(200, { data: { id: 1, name: 'User 1' } });
+    mock.onGet('/hr/show_employee/1').reply(200, { data: { id: 1, name: 'User 1' } });
     const result = await hrService.getEmployeeById(1);
     expect(result).toBeDefined();
   });

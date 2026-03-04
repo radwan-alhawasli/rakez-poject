@@ -104,7 +104,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import AppModal from '@/components/AppModal.vue'
 import ConfirmModal from './ConfirmModal.vue'
-import { usePermissions } from '../composables/usePermissions'
+import { usePermissions } from '@/composables/usePermissions'
 
 export default {
   name: 'ContractModal',

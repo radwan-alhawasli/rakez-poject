@@ -80,7 +80,7 @@
 <script>
 import { reactive, computed } from 'vue'
 import AppModal from '@/components/AppModal.vue'
-import { useFormatters } from '../../composables/useFormatters'
+import { useFormatters } from '@/composables/useFormatters'
 
 export default {
   name: 'DepositConfirmationModal',

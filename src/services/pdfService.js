@@ -1,4 +1,4 @@
-import logger from '../utils/logger';
+import logger from '@/utils/logger';
 
 let _pdfDepsPromise = null;
 async function getPdfDeps() {
@@ -50,7 +50,7 @@ function formatDate(dateString) {
       return `${parts[2]}-${parts[1]}-${parts[0]}`;
     }
     return dateString;
-  } catch (e) {
+  } catch (_err) {
     return dateString;
   }
 }
@@ -261,7 +261,7 @@ export const generateUnitDetailsPdf = async (unit, options = {}) => {
     const arabicFont = await pdfDoc.embedFont(fontBytes);
 
     const page = pdfDoc.addPage([595, 842]); // A4
-    const { width, height } = page.getSize();
+    const { width: _width, height } = page.getSize();
     const margin = 50;
     const lineHeight = 22;
     let y = height - margin;

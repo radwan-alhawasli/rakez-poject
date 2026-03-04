@@ -4,7 +4,7 @@
  */
 
 import axios from 'axios';
-import appConfig from '../config/appConfig';
+import appConfig from '@/config/appConfig';
 import logger from './logger';
 
 let csrfToken = null;
@@ -155,7 +155,6 @@ export function setupCsrfInterceptor(client = null) {
   }
 
   clientInstance.interceptors.request.use(
-    // eslint-disable-next-line no-undef
     async config => {
       // Skip CSRF for GET requests and public endpoints
       if (config.method === 'get' || config.url?.includes('/public/')) {
@@ -167,7 +166,6 @@ export function setupCsrfInterceptor(client = null) {
       if (token) {
         config.headers[appConfig.csrfTokenHeader] = token;
       }
-      // eslint-disable-next-line no-undef
       return config;
     },
     error => Promise.reject(error)

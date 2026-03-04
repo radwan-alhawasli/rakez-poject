@@ -22,7 +22,7 @@
  * @property {boolean} enableErrorReporting
  * @property {number} apiTimeout - ms
  */
-import logger from '../utils/logger';
+import logger from '@/utils/logger';
 
 // Vite exposes env via import.meta.env (process.env is not available in browser).
 // Use VITE_APP_* in .env for client-side config.

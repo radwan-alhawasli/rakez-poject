@@ -64,6 +64,7 @@
 <script>
 import { computed } from 'vue'
 import AppModal from '@/components/AppModal.vue'
+import { useFormatters } from '@/composables/useFormatters'
 
 const NOTIFICATION_TYPE_LABELS = {
   unit_reserved: 'تم حجز وحدة',
@@ -82,26 +83,13 @@ export default {
     isLoading: { type: Boolean, default: false },
   },
   emits: ['close', 'mark-read'],
-  setup(props, { emit }) {
+  setup(props, { emit: _emit }) {
     const typeLabel = computed(() => {
       const t = props.notification?.type;
       return NOTIFICATION_TYPE_LABELS[t] || t || 'عام';
     });
 
-    const formatDate = dateStr => {
-      if (!dateStr) return '—';
-      try {
-        return new Date(dateStr).toLocaleDateString('ar-SA', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-      } catch {
-        return dateStr;
-      }
-    };
+    const { formatDateLong: formatDate } = useFormatters();
 
     const formatDataKey = key => {
       const map = {

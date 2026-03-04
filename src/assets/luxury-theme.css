@@ -788,10 +788,6 @@ body {
   overflow-x: hidden;
 }
 
-* {
-  max-width: 100%;
-}
-
 img, video, iframe {
   max-width: 100%;
   height: auto;
@@ -845,9 +841,511 @@ textarea:focus-visible {
   }
 }
 
-/* Dark Mode Support (if needed) */
-@media (prefers-color-scheme: dark) {
-  /* Add dark mode styles if needed */
+/* ======================================================
+   DARK MODE — Class-based (.dark on <html>)
+   ====================================================== */
+html.dark {
+  /* Backgrounds → deep dark tones */
+  --color-off-white: #0f172a;
+  --color-light-gray: #1e293b;
+  --color-medium-gray: #334155;
+
+  /* Text → light for readability */
+  --color-charcoal: #e2e8f0;
+  --color-dark-gray: #94a3b8;
+
+  /* Surfaces (cards, inputs, dropdowns) */
+  --color-white: #1e293b;
+
+  /* Gold accent — slightly brighter for contrast on dark */
+  --color-gold: #c4b5a2;
+  --color-gold-light: #d4c4a8;
+  --color-gold-dark: #a89070;
+
+  /* Navy — lighter for text, still works as bg */
+  --color-navy: #60a5fa;
+  --color-navy-light: #93c5fd;
+  --color-navy-dark: #3b82f6;
+
+  /* Shadows — deeper for dark surfaces */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 20px -5px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 40px -10px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 60px -15px rgba(0, 0, 0, 0.7), 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-gold: 0 8px 32px rgba(196, 181, 162, 0.08);
+  --shadow-navy: 0 8px 32px rgba(96, 165, 250, 0.10);
+
+  color-scheme: dark;
+}
+
+/* ---- Body & App Shell ---- */
+html.dark body {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+html.dark #app::before {
+  background: rgba(15, 23, 42, 0.92);
+}
+
+/* ---- Ensure white text on accent-background buttons ---- */
+html.dark .btn-luxury,
+html.dark .btn-primary,
+html.dark .btn-navy {
+  color: #ffffff;
+}
+
+/* ---- Elements using hardcoded white backgrounds ---- */
+html.dark .luxury-card,
+html.dark .stat-card,
+html.dark .modal-content,
+html.dark .modal-overlay .modal-content,
+html.dark .notifications-dropdown,
+html.dark .data-table,
+html.dark .luxury-table {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+/* ---- Tables ---- */
+html.dark .data-table th,
+html.dark .luxury-table th {
+  background: #0f172a;
+  color: #94a3b8;
+  border-color: #334155;
+}
+html.dark .data-table td,
+html.dark .luxury-table td {
+  border-color: #1e293b;
+  color: #cbd5e1;
+}
+html.dark .data-table tbody tr:hover,
+html.dark .luxury-table tbody tr:hover {
+  background: rgba(96, 165, 250, 0.05);
+}
+
+/* ---- Inputs & Form Controls ---- */
+html.dark input,
+html.dark textarea,
+html.dark select,
+html.dark .form-input {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b;
+}
+html.dark input:focus,
+html.dark textarea:focus,
+html.dark select:focus {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(196, 181, 162, 0.15);
+}
+
+/* ---- Modal Overlay ---- */
+html.dark .modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* ---- Badges & Status Tags ---- */
+html.dark .status-badge {
+  border-color: transparent;
+}
+html.dark .badge-info {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+}
+html.dark .badge-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+}
+html.dark .status-tag.excellent {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+}
+html.dark .status-tag.good {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+}
+html.dark .status-tag.average {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+}
+html.dark .status-tag.poor {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+/* ---- Cards & Panels (hardcoded backgrounds) ---- */
+html.dark [class*="card"]:not(.btn-primary):not([class*="badge"]) {
+  border-color: #334155;
+}
+html.dark .premium-card {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: #334155;
+}
+html.dark .premium-card:hover {
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+  border-color: rgba(196, 181, 162, 0.3);
+}
+
+/* ---- Stat cards ---- */
+html.dark .stat-icon-bg {
+  opacity: 0.85;
+}
+
+/* ---- Tab navigation ---- */
+html.dark .tab-btn {
+  color: #94a3b8;
+}
+html.dark .tab-btn:hover {
+  color: #e2e8f0;
+}
+html.dark .tab-btn.active {
+  color: var(--color-gold);
+}
+
+html.dark .btn-tab-mini {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+html.dark .btn-tab-mini:hover {
+  background: #334155;
+  color: #e2e8f0;
+}
+html.dark .btn-tab-mini.active {
+  background: var(--color-navy-dark);
+  border-color: var(--color-navy-dark);
+  color: #ffffff;
+}
+
+/* ---- Search inputs ---- */
+html.dark .search-box-mini,
+html.dark .search-input-mini {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+/* ---- Scrollbar ---- */
+html.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+html.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+html.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* ---- Hardcoded light backgrounds used across components ---- */
+html.dark .section-header-compact {
+  border-color: #334155;
+}
+
+/* ---- Loading spinner ---- */
+html.dark .loading-state {
+  color: #94a3b8;
+}
+html.dark .spinner {
+  border-color: #334155;
+  border-top-color: var(--color-gold);
+}
+
+/* ---- Empty states ---- */
+html.dark .empty-state {
+  color: #64748b;
+}
+
+/* ---- Skeleton loading ---- */
+html.dark .skeleton-shimmer {
+  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+}
+
+/* ---- Progress bars ---- */
+html.dark .progress-bar {
+  background: #334155;
+}
+
+/* ---- Notification dropdown in header ---- */
+html.dark .top-header .notifications-dropdown {
+  background: #1e293b;
+  border-color: #334155;
+}
+html.dark .top-header .notifications-header {
+  background: #0f172a;
+  border-color: #334155;
+}
+html.dark .top-header .notification-item {
+  border-color: #1e293b;
+}
+html.dark .top-header .notification-item:hover {
+  background: #334155;
+}
+html.dark .top-header .notification-item.unread {
+  background: rgba(196, 181, 162, 0.05);
+}
+
+/* ---- Header itself ---- */
+html.dark .top-header {
+  background: #0f172a;
+  border-color: #334155;
+}
+html.dark .top-header .dark-mode-btn,
+html.dark .top-header .back-btn,
+html.dark .top-header .notification-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+html.dark .top-header .dark-mode-btn:hover,
+html.dark .top-header .back-btn:hover,
+html.dark .top-header .notification-btn:hover {
+  background: #334155;
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+html.dark .top-header .logo {
+  color: #e2e8f0;
+}
+html.dark .top-header .update-info {
+  color: #64748b;
+}
+
+/* ---- Toast / Alerts ---- */
+html.dark .toast-container .toast {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+/* ---- Chatbot panel ---- */
+html.dark .chat-bubble.user {
+  background: var(--color-navy-dark);
+  color: #ffffff;
+}
+html.dark .chat-bubble.assistant .bubble-content {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+/* ---- Catch-all: common hardcoded light text/headings ---- */
+html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6 {
+  color: #e2e8f0;
+}
+html.dark p {
+  color: #cbd5e1;
+}
+html.dark label {
+  color: #94a3b8;
+}
+html.dark a:not(.btn-primary):not(.btn-luxury):not([class*="btn-"]) {
+  color: var(--color-gold);
+}
+
+/* ---- Catch-all: team cards, project cards, modals ---- */
+html.dark .team-card,
+html.dark .project-card,
+html.dark .task-card,
+html.dark .reservation-card,
+html.dark .rakez-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+html.dark .team-card:hover,
+html.dark .project-card:hover,
+html.dark .task-card:hover,
+html.dark .reservation-card:hover,
+html.dark .rakez-card:hover {
+  border-color: rgba(196, 181, 162, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* ---- Catch-all: modals ---- */
+html.dark .modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+html.dark .modal-content,
+html.dark .modal-dialog {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+html.dark .modal-header {
+  border-color: #334155;
+}
+html.dark .modal-body {
+  color: #cbd5e1;
+}
+html.dark .modal-footer {
+  border-color: #334155;
+}
+html.dark .modal-title {
+  color: #e2e8f0;
+}
+
+/* ---- Catch-all: overview/section backgrounds ---- */
+html.dark .overview-section,
+html.dark .content-section {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+/* ---- Catch-all: table styling for all tables ---- */
+html.dark table thead,
+html.dark table th {
+  background: #0f172a;
+  color: #94a3b8;
+  border-color: #334155;
+}
+html.dark table td {
+  color: #cbd5e1;
+  border-color: #1e293b;
+}
+html.dark table tbody tr:hover {
+  background: rgba(96, 165, 250, 0.05);
+}
+
+/* ---- Catch-all: form groups & labels ---- */
+html.dark .form-group label {
+  color: #94a3b8;
+}
+html.dark .form-group input,
+html.dark .form-group textarea,
+html.dark .form-group select {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+/* ---- Catch-all: page headers ---- */
+html.dark .page-header {
+  color: #e2e8f0;
+}
+html.dark .page-title {
+  color: #e2e8f0;
+}
+html.dark .page-subtitle {
+  color: #94a3b8;
+}
+
+/* ---- Catch-all: buttons ---- */
+html.dark .btn-action {
+  border-color: #334155;
+}
+html.dark .btn-secondary,
+html.dark .btn-outline {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+html.dark .btn-secondary:hover,
+html.dark .btn-outline:hover {
+  background: #334155;
+  color: #e2e8f0;
+}
+
+/* ---- Catch-all: close buttons ---- */
+html.dark .close-btn {
+  background: #334155;
+  color: #94a3b8;
+}
+html.dark .close-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+/* ---- Catch-all: tooltips ---- */
+html.dark [class*="tooltip"] {
+  background: #334155;
+  color: #e2e8f0;
+  border-color: #475569;
+}
+
+/* ---- Catch-all: dropdowns ---- */
+html.dark .dropdown-menu,
+html.dark [class*="dropdown"] > ul,
+html.dark [class*="dropdown"] > div {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+/* ---- AI Assistant View ---- */
+html.dark .ai-assistant-view,
+html.dark .ai-chat-container {
+  background: #1e293b;
+  border-color: #334155;
+}
+html.dark .ai-sidebar {
+  background: #0f172a;
+  border-color: #334155;
+}
+html.dark .ai-main-chat {
+  background: #1e293b;
+}
+
+/* ---- Status badges (global catch-all) ---- */
+html.dark .status-badge.status-active { background: rgba(234, 179, 8, 0.15); color: #fcd34d; }
+html.dark .status-badge.status-pending { background: rgba(234, 179, 8, 0.15); color: #fcd34d; }
+html.dark .status-badge.status-completed { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+html.dark .status-badge.status-cancelled { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+html.dark .status-badge.approved { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
+html.dark .status-badge.rejected { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+html.dark .status-badge.res-pending { background: rgba(234, 179, 8, 0.15); color: #fcd34d; }
+html.dark .status-badge.res-confirmed { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+html.dark .status-badge.res-cancelled { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+
+/* ---- KnowledgeManagement, EditorView, etc. ---- */
+html.dark .knowledge-management,
+html.dark .editor-view,
+html.dark .contracts-view,
+html.dark .image-approval-view,
+html.dark .team-management-view,
+html.dark .agents-view,
+html.dark .notifications-view,
+html.dark .profile-view,
+html.dark .tasks-view,
+html.dark .boards-view,
+html.dark .exclusive-project-view {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+/* ---- Welcome headers (Dashboard, etc.) ---- */
+html.dark .welcome-header {
+  color: #e2e8f0;
+}
+html.dark .welcome-title {
+  color: #e2e8f0;
+}
+html.dark .welcome-subtitle {
+  color: #94a3b8;
+}
+
+/* ---- Sidebar (complement the Tailwind sidebar vars) ---- */
+html.dark .sidebar-nav a,
+html.dark .sidebar-nav .nav-link {
+  color: #94a3b8;
+}
+html.dark .sidebar-nav a:hover,
+html.dark .sidebar-nav .nav-link:hover {
+  color: #e2e8f0;
+  background: rgba(196, 181, 162, 0.08);
+}
+html.dark .sidebar-nav a.router-link-active,
+html.dark .sidebar-nav .nav-link.active {
+  color: var(--color-gold);
+  background: rgba(196, 181, 162, 0.1);
+}
+
+/* ---- Selection color in dark mode ---- */
+html.dark ::selection {
+  background: rgba(196, 181, 162, 0.3);
+  color: #ffffff;
 }
 
 /* High Contrast Mode Support */

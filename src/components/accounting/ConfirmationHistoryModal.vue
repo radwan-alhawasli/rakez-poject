@@ -43,9 +43,9 @@
 <script>
 import { ref, onMounted } from 'vue'
 import AppModal from '@/components/AppModal.vue'
-import accountingService from '../../services/accountingService'
-import logger from '../../utils/logger'
-import { useFormatters } from '../../composables/useFormatters'
+import accountingService from '@/services/accountingService'
+import logger from '@/utils/logger'
+import { useFormatters } from '@/composables/useFormatters'
 
 export default {
   name: 'ConfirmationHistoryModal',
@@ -54,12 +54,9 @@ export default {
     reservationId: { type: [Number, String], default: null },
   },
   emits: ['close'],
-  setup(props, { emit }) {
-    const { formatCurrency, formatDate: _fmtDate } = useFormatters();
-    const formatDate = dateStr => {
-      if (!dateStr) return 'غير محدد';
-      return _fmtDate(dateStr);
-    };
+  setup(props, { emit: _emit }) {
+    const { formatCurrency, formatDate: _formatDate } = useFormatters();
+    const formatDate = dateStr => _formatDate(dateStr, 'غير محدد');
     const history = ref([]);
 
     onMounted(async () => {

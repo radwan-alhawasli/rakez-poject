@@ -36,14 +36,18 @@ export function useFormatters() {
     return numberFormatter.format(Number(val) || 0);
   };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '—';
+  /**
+   * @param {string} dateStr - ISO date string
+   * @param {string} [fallback='—'] - Value returned for empty/invalid dates
+   */
+  const formatDate = (dateStr, fallback = '—') => {
+    if (!dateStr) return fallback;
     try {
       const d = new Date(dateStr);
-      if (Number.isNaN(d.getTime())) return dateStr;
+      if (Number.isNaN(d.getTime())) return fallback;
       return d.toLocaleDateString('ar-SA');
     } catch {
-      return dateStr;
+      return fallback;
     }
   };
 
@@ -71,6 +75,24 @@ export function useFormatters() {
     }
   };
 
+  /** Format date with time (hours + minutes) using ar-EG locale */
+  const formatDateTime = (dateStr, fallback = '—') => {
+    if (!dateStr) return fallback;
+    try {
+      const d = new Date(dateStr);
+      if (Number.isNaN(d.getTime())) return fallback;
+      return d.toLocaleDateString('ar-EG', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return fallback;
+    }
+  };
+
   return {
     formatCurrency,
     formatCurrencyAr,
@@ -78,5 +100,6 @@ export function useFormatters() {
     formatDate,
     formatDateLong,
     formatDateISO,
+    formatDateTime,
   };
 }

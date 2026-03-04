@@ -1,11 +1,20 @@
 /**
  * Validation Composable
- * Provides form validation functionality
+ * Provides form validation functionality.
+ *
+ * Supports two modes:
+ *  1. Legacy schema (array of rule objects) — uses validator.js internally
+ *  2. Zod schema — pass a z.ZodObject, returns errors in the same shape
+ *
+ * @example Zod usage:
+ *   import { loginSchema } from '@/validation/schemas';
+ *   const { validate, errors } = useValidation(loginSchema, { zodMode: true });
+ *   if (validate(formData)) { ... }
  */
 
 import { reactive, computed } from 'vue';
-import { validateForm } from '../utils/validator';
-import { sanitizeFormData } from '../utils/sanitizer';
+import { validateForm } from '@/utils/validator';
+import { sanitizeFormData } from '@/utils/sanitizer';
 
 /**
  * Validation composable
@@ -14,7 +23,10 @@ import { sanitizeFormData } from '../utils/sanitizer';
  * @returns {Object} Validation utilities
  */
 export function useValidation(schema = {}, options = {}) {
-  const { autoSanitize = true, validateOnChange = false } = options;
+  const { autoSanitize = true, validateOnChange = false, zodMode = false } = options;
+
+  // Detect zod schema automatically (has a .safeParse method)
+  const isZodSchema = zodMode || (typeof schema?.safeParse === 'function');
 
   const errors = reactive({});
   const touched = reactive({});
@@ -86,15 +98,21 @@ export function useValidation(schema = {}, options = {}) {
     // Clear previous errors
     Object.keys(errors).forEach(key => delete errors[key]);
 
-    // Sanitize if enabled
+    if (isZodSchema) {
+      // Zod validation path
+      const result = schema.safeParse(formData);
+      if (!result.success) {
+        const fieldErrors = result.error.flatten().fieldErrors;
+        Object.assign(errors, fieldErrors);
+        return false;
+      }
+      return true;
+    }
+
+    // Legacy validation path
     const dataToValidate = autoSanitize ? sanitizeFormData(formData, schema) : formData;
-
-    // Validate
     const result = validateForm(dataToValidate, schema);
-
-    // Set errors
     Object.assign(errors, result.errors);
-
     return result.isValid;
   }
 

@@ -120,51 +120,39 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import authService from '../services/authService';
-import { getRoleLabel } from '../constants/roles';
+import authService from '@/services/authService';
+import { getRoleLabel } from '@/constants/roles';
 
-export default {
-  name: 'ProfileView',
-  setup() {
-    const router = useRouter();
+const router = useRouter();
 
-    const user = computed(
-      () =>
-        authService.getCurrentUser() || {
-          name: 'مستخدم',
-          email: 'user@rakez.com',
-          type: 3,
-        }
-    );
+const user = computed(
+  () =>
+    authService.getCurrentUser() || {
+      name: 'مستخدم',
+      email: 'user@rakez.com',
+      type: 3,
+    }
+);
 
-    const userInitial = computed(() => {
-      return (user.value.name || 'م').charAt(0).toUpperCase();
-    });
+const userInitial = computed(() => {
+  return (user.value.name || 'م').charAt(0).toUpperCase();
+});
 
-    /** الدور الوظيفي من type في استجابة تسجيل الدخول (رقم أو نص) */
-    const jobRoleLabel = computed(() => {
-      const u = user.value;
-      if (!u) return 'غير محدد';
-      return (
-        getRoleLabel(u.type, u.is_manager) || (typeof u.type === 'string' ? u.type : 'غير محدد')
-      );
-    });
+/** الدور الوظيفي من type في استجابة تسجيل الدخول (رقم أو نص) */
+const jobRoleLabel = computed(() => {
+  const u = user.value;
+  if (!u) return 'غير محدد';
+  return (
+    getRoleLabel(u.type, u.is_manager) || (typeof u.type === 'string' ? u.type : 'غير محدد')
+  );
+});
 
-    const handleLogout = async () => {
-      await authService.logout();
-      router.push('/login');
-    };
-
-    return {
-      user,
-      userInitial,
-      jobRoleLabel,
-      handleLogout,
-    };
-  },
+const handleLogout = async () => {
+  await authService.logout();
+  router.push('/login');
 };
 </script>
 

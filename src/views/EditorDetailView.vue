@@ -96,8 +96,8 @@
 <script>
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import editorService from '../services/editorService';
-import logger from '../utils/logger';
+import editorService from '@/services/editorService';
+import logger from '@/utils/logger';
 
 /** تسميات عربية لجميع الحقول */
 const FIELD_LABELS = {

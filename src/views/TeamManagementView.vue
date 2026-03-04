@@ -185,11 +185,11 @@
 
 <script>
 import { ref, reactive, onMounted } from 'vue';
-import ConfirmModal from '../components/ConfirmModal.vue';
-import teamService from '../services/teamService';
-import logger from '../utils/logger';
-import { toast } from '../composables/useToast';
-import { useFormatters } from '../composables/useFormatters';
+import ConfirmModal from '@/components/ConfirmModal.vue';
+import teamService from '@/services/teamService';
+import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
+import { useFormatters } from '@/composables/useFormatters';
 
 export default {
   name: 'TeamManagementView',

@@ -134,8 +134,8 @@
 <script>
 import { ref, watch } from 'vue'
 import AppModal from '@/components/AppModal.vue'
-import accountingService from '../../services/accountingService'
-import { useFormatters } from '../../composables/useFormatters'
+import accountingService from '@/services/accountingService'
+import { useFormatters } from '@/composables/useFormatters'
 
 export default {
   name: 'CommissionDistributionModal',

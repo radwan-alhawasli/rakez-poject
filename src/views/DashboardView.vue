@@ -88,95 +88,81 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import authService from '../services/authService';
-import contractService from '../services/contractService';
-import logger from '../utils/logger';
+import authService from '@/services/authService';
+import contractService from '@/services/contractService';
+import logger from '@/utils/logger';
 
-export default {
-  name: 'DashboardView',
-  setup() {
-    const router = useRouter();
-    const user = ref(authService.getCurrentUser());
-    const userName = computed(() => user.value?.name || 'مستخدم');
+const router = useRouter();
+const user = ref(authService.getCurrentUser());
+const userName = computed(() => user.value?.name || 'مستخدم');
 
-    // Stats
-    const totalProjectValue = ref(0);
-    const availableUnits = ref(0);
-    const totalProjects = ref(0);
-    const readyProjects = ref(0);
-    const notReadyProjects = ref(0);
+// Stats
+const totalProjectValue = ref(0);
+const availableUnits = ref(0);
+const totalProjects = ref(0);
+const readyProjects = ref(0);
+const notReadyProjects = ref(0);
 
-    const fetchData = async () => {
-      try {
-        let apps = [];
-        // Check if user is admin (type 1)
-        const isUserAdmin = user.value && (user.value.type === 1 || user.value.type === 'admin');
-        const isUserEditor = user.value && user.value.type === 4;
+const fetchData = async () => {
+  try {
+    let apps = [];
+    // Check if user is admin (type 1)
+    const isUserAdmin = user.value && (user.value.type === 1 || user.value.type === 'admin');
+    const isUserEditor = user.value && user.value.type === 4;
 
-        if (isUserAdmin) {
-          apps = await contractService.getAllContracts();
-        } else if (isUserEditor) {
-          apps = await contractService.getEditorContracts();
-        } else {
-          apps = await contractService.getContracts();
-        }
+    if (isUserAdmin) {
+      apps = await contractService.getAllContracts();
+    } else if (isUserEditor) {
+      apps = await contractService.getEditorContracts();
+    } else {
+      apps = await contractService.getContracts();
+    }
 
-        const projects = Array.isArray(apps) ? apps : [];
+    const projects = Array.isArray(apps) ? apps : [];
 
-        totalProjects.value = projects.length;
+    totalProjects.value = projects.length;
 
-        // Logic for Ready/Not Ready
-        readyProjects.value = projects.filter(
-          p => p.status === 'Approved' || (p.units && p.units.length > 0)
-        ).length;
-        notReadyProjects.value = projects.filter(p => p.status !== 'Approved').length;
+    // Logic for Ready/Not Ready
+    readyProjects.value = projects.filter(
+      p => p.status === 'Approved' || (p.units && p.units.length > 0)
+    ).length;
+    notReadyProjects.value = projects.filter(p => p.status !== 'Approved').length;
 
-        // Calculate Total Value and Available Units
-        let valueSum = 0;
-        let unitsSum = 0;
+    // Calculate Total Value and Available Units
+    let valueSum = 0;
+    let unitsSum = 0;
 
-        projects.forEach(p => {
-          if (p.units && Array.isArray(p.units)) {
-            p.units.forEach(u => {
-              const count = parseInt(u.count) || 1;
-              const price = parseFloat(u.price) || 0;
-              unitsSum += count;
-              valueSum += price * count;
-            });
-          }
+    projects.forEach(p => {
+      if (p.units && Array.isArray(p.units)) {
+        p.units.forEach(u => {
+          const count = parseInt(u.count) || 1;
+          const price = parseFloat(u.price) || 0;
+          unitsSum += count;
+          valueSum += price * count;
         });
-
-        availableUnits.value = unitsSum;
-        // Format to Millions if large enough, else keep as is
-        totalProjectValue.value = (valueSum / 1000000).toFixed(2);
-      } catch (e) {
-        logger.error('Error fetching dashboard data', e);
       }
-    };
-
-    onMounted(() => {
-      // Redirect HR users to their specialized dashboard
-      const currentUser = authService.getCurrentUser();
-      if (currentUser?.type == 8) {
-        router.push('/hr/dashboard');
-        return;
-      }
-      fetchData();
     });
 
-    return {
-      userName,
-      totalProjectValue,
-      availableUnits,
-      totalProjects,
-      readyProjects,
-      notReadyProjects,
-    };
-  },
+    availableUnits.value = unitsSum;
+    // Format to Millions if large enough, else keep as is
+    totalProjectValue.value = (valueSum / 1000000).toFixed(2);
+  } catch (e) {
+    logger.error('Error fetching dashboard data', e);
+  }
 };
+
+onMounted(() => {
+  // Redirect HR users to their specialized dashboard
+  const currentUser = authService.getCurrentUser();
+  if (currentUser?.type == 8) {
+    router.push('/hr/dashboard');
+    return;
+  }
+  fetchData();
+});
 </script>
 
 <style scoped>

@@ -9,6 +9,7 @@ export default defineConfig({
     environment: 'jsdom',
     fileParallelism: false,
     setupFiles: ['./tests/setup.js'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -27,10 +28,7 @@ export default defineConfig({
         'src/router/**',
         'src/plugins/**',
         'src/strategies/**',
-        'src/views/**/*.vue',
-        'src/components/**/*.vue',
-        'src/layouts/**/*.vue',
-        'src/App.vue',
+        'src/components/ui/**',
       ],
       include: ['src/**/*.js', 'src/**/*.vue'],
       thresholds: {

@@ -5,9 +5,9 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import userService from '../services/userService';
+import userService from '@/services/userService';
 import { useAuthStore } from './authStore';
-import logger from '../utils/logger';
+import logger from '@/utils/logger';
 
 export const useUserStore = defineStore('user', () => {
   // State
@@ -27,8 +27,9 @@ export const useUserStore = defineStore('user', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const data = await userService.getUsers();
-      users.value = Array.isArray(data) ? data : data?.data || [];
+      const data = await userService.getEmployees();
+      const list = data?.items ?? (Array.isArray(data) ? data : data?.data || []);
+      users.value = list;
       return users.value;
     } catch (err) {
       error.value = err;
@@ -43,7 +44,7 @@ export const useUserStore = defineStore('user', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const data = await userService.getUserById(userId);
+      const data = await userService.getEmployee(userId);
       return data;
     } catch (err) {
       error.value = err;
@@ -58,7 +59,7 @@ export const useUserStore = defineStore('user', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const newUser = await userService.createUser(userData);
+      const newUser = await userService.addEmployee(userData);
       users.value.push(newUser);
       return newUser;
     } catch (err) {
@@ -74,7 +75,7 @@ export const useUserStore = defineStore('user', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const updatedUser = await userService.updateUser(userId, userData);
+      const updatedUser = await userService.updateEmployee(userId, userData);
       const index = users.value.findIndex(u => u.id === userId);
       if (index !== -1) {
         users.value[index] = updatedUser;
@@ -93,7 +94,7 @@ export const useUserStore = defineStore('user', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      await userService.deleteUser(userId);
+      await userService.deleteEmployee(userId);
       users.value = users.value.filter(u => u.id !== userId);
     } catch (err) {
       error.value = err;
@@ -115,7 +116,7 @@ export const useUserStore = defineStore('user', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const profile = await userService.getUserById(currentUserId);
+      const profile = await userService.getEmployee(currentUserId);
       currentUserProfile.value = profile;
       return profile;
     } catch (err) {

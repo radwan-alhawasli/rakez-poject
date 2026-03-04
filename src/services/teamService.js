@@ -1,6 +1,6 @@
-import apiClient from '../api/apiClient';
-import { handleServiceError } from '../utils/serviceErrorHandler';
-import { extractPaginatedData } from '../utils/paginationUtils';
+import apiClient from '@/api/apiClient';
+import { handleServiceError } from '@/utils/serviceErrorHandler';
+import { extractPaginatedData } from '@/utils/paginationUtils';
 
 /**
  * Team Service - Manages team operations
@@ -98,7 +98,7 @@ export const updateTeam = async (id, teamData) => {
     try {
       const response = await apiClient.put(`/project_management/teams/update/${id}`, teamData);
       return response.data;
-    } catch (putError) {
+    } catch (_putErr) {
       // Fallback to POST if PUT fails
       const response = await apiClient.post(`/project_management/teams/update/${id}`, teamData);
       return response.data;

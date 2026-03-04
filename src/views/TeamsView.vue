@@ -144,9 +144,9 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue';
-import userService from '../services/userService';
-import { getRoleLabel } from '../constants/roles';
-import logger from '../utils/logger';
+import userService from '@/services/userService';
+import { getRoleLabel } from '@/constants/roles';
+import logger from '@/utils/logger';
 import {
   Dialog,
   DialogContent,

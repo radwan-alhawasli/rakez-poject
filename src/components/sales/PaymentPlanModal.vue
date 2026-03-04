@@ -23,10 +23,7 @@
       </div>
 
       <div class="modal-body">
-        <div v-if="isLoading" class="loading-state">
-          <div class="spinner"></div>
-          <p>جاري تحميل البيانات...</p>
-        </div>
+        <LoadingSpinner v-if="isLoading" text="جاري تحميل البيانات..." />
 
         <div v-else>
           <!-- Existing Installments -->
@@ -162,15 +159,16 @@
 
 <script>
 import { ref, reactive, onMounted, onUnmounted, computed } from 'vue';
-import { useFormatters } from '../../composables/useFormatters';
-import ConfirmModal from '../ConfirmModal.vue';
-import salesService from '../../services/salesService';
-import logger from '../../utils/logger';
-import notificationService from '../../services/notificationService';
+import { useFormatters } from '@/composables/useFormatters';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import ConfirmModal from '@/components/ConfirmModal.vue';
+import salesService from '@/services/salesService';
+import logger from '@/utils/logger';
+import notificationService from '@/services/notificationService';
 
 export default {
   name: 'PaymentPlanModal',
-  components: { ConfirmModal },
+  components: { LoadingSpinner, ConfirmModal },
   props: {
     reservationId: {
       type: [Number, String],

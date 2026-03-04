@@ -1,12 +1,35 @@
 <template>
   <div class="tasks-view">
     <div class="page-header">
-      <h2>المهام الخاصة بي</h2>
+      <h2>إدارة المهام</h2>
       <button class="btn-primary" @click="showCreateModal = true">إضافة مهمة</button>
     </div>
 
+    <!-- Tabs -->
+    <div class="tabs-container">
+      <button
+        class="tab-btn"
+        :class="{ active: activeTab === 'assigned' }"
+        @click="switchTab('assigned')"
+      >
+        <span class="tab-icon">📋</span>
+        مهام مطلوبة مني
+        <span v-if="assignedTotal > 0" class="tab-count">{{ assignedTotal }}</span>
+      </button>
+      <button
+        class="tab-btn"
+        :class="{ active: activeTab === 'requested' }"
+        @click="switchTab('requested')"
+      >
+        <span class="tab-icon">📤</span>
+        مهام طلبتها من الآخرين
+        <span v-if="requestedTotal > 0" class="tab-count">{{ requestedTotal }}</span>
+      </button>
+    </div>
+
+    <!-- Filters -->
     <div class="filters">
-      <select v-model="filterStatus" @change="loadTasks(1)" class="form-input">
+      <select v-model="filterStatus" @change="loadCurrentTab(1)" class="form-input">
         <option value="">جميع الحالات</option>
         <option value="in_progress">قيد التنفيذ</option>
         <option value="completed">مكتملة</option>
@@ -14,28 +37,45 @@
       </select>
     </div>
 
+    <!-- Loading -->
     <div v-if="isLoading" class="loading-state">
       <div class="spinner"></div>
       <p>جاري التحميل...</p>
     </div>
 
-    <div v-else-if="tasks.length === 0" class="empty-state">
-      <p>لا توجد مهام مطابقة للبحث</p>
+    <!-- Empty State -->
+    <div v-else-if="currentTasks.length === 0" class="empty-state">
+      <p v-if="activeTab === 'assigned'">لا توجد مهام مطلوبة منك حالياً</p>
+      <p v-else>لم تطلب أي مهام من الآخرين بعد</p>
     </div>
 
-        <div v-else class="tasks-grid">
-      <div v-for="task in tasks" :key="task.id" class="task-card">
+    <!-- Tasks Grid -->
+    <div v-else class="tasks-grid">
+      <div v-for="task in currentTasks" :key="task.id" class="task-card">
         <div class="task-header">
           <h3 class="task-title">{{ task.task_name || task.name || task.title }}</h3>
           <span class="status-badge" :class="task.status">{{ getStatusLabel(task.status) }}</span>
         </div>
+
+        <!-- Origin Badge -->
+        <div class="task-origin">
+          <span v-if="activeTab === 'assigned'" class="origin-badge assigned-badge">
+            <span class="origin-icon">⬇️</span>
+            مطلوبة مني
+          </span>
+          <span v-else class="origin-badge requested-badge">
+            <span class="origin-icon">⬆️</span>
+            طلبتها من آخرين
+          </span>
+        </div>
+
         <div class="task-details">
-              <p v-if="task.section_label || task.section_key">
-                <strong>القسم:</strong>
-                {{ task.section_label || getSectionLabel(task.section_key) }}
-              </p>
+          <p v-if="task.section_label || task.section_key">
+            <strong>القسم:</strong>
+            {{ task.section_label || getSectionLabel(task.section_key) }}
+          </p>
           <p v-if="task.due_at || task.due_date">
-            <strong>تاريخ الإستحقاق:</strong> {{ formatDate(task.due_at || task.due_date) }}
+            <strong>تاريخ الاستحقاق:</strong> {{ formatDate(task.due_at || task.due_date) }}
           </p>
           <p v-if="task.created_at">
             <strong>تاريخ الإنشاء:</strong> {{ formatDate(task.created_at) }}
@@ -43,25 +83,62 @@
           <p v-if="task.team_id || task.team?.name || task.team_name">
             <strong>الفريق:</strong> {{ task.team_name || task.team?.name || task.team_id }}
           </p>
-          <p v-if="task.assigned_to || task.assignee?.name">
+
+          <!-- For tasks assigned to me: show who requested it -->
+          <p v-if="activeTab === 'assigned' && (task.creator_name || task.created_by_name)">
+            <strong>طُلبت بواسطة:</strong>
+            <span class="person-name requester">{{ task.creator_name || task.created_by_name }}</span>
+          </p>
+
+          <!-- For tasks I requested: show who is assigned -->
+          <p v-if="activeTab === 'requested' && (task.assignee?.name || task.assigned_to_name || task.assignee_name)">
+            <strong>مُكلَّف بها:</strong>
+            <span class="person-name assignee">{{ task.assignee?.name || task.assigned_to_name || task.assignee_name }}</span>
+          </p>
+
+          <!-- For tasks assigned to me: show assignee if different context -->
+          <p v-if="activeTab === 'assigned' && (task.assigned_to || task.assignee?.name) && !task.creator_name && !task.created_by_name">
             <strong>المسؤول:</strong> {{ task.assignee?.name || task.assigned_to }}
           </p>
-          <p v-if="task.creator_name"><strong>بواسطة:</strong> {{ task.creator_name }}</p>
+
           <p v-if="task.cannot_complete_reason" class="reason">
             <strong>السبب:</strong> {{ task.cannot_complete_reason }}
           </p>
         </div>
-        <div class="task-actions" v-if="task.status === 'in_progress'">
+
+        <!-- Status progress indicator -->
+        <div class="status-indicator">
+          <div class="status-steps">
+            <div class="step" :class="{ done: true }">
+              <span class="step-dot"></span>
+              <span class="step-label">تم الإنشاء</span>
+            </div>
+            <div class="step-line" :class="{ active: task.status !== 'pending' }"></div>
+            <div class="step" :class="{ done: task.status === 'in_progress' || task.status === 'completed' }">
+              <span class="step-dot"></span>
+              <span class="step-label">قيد التنفيذ</span>
+            </div>
+            <div class="step-line" :class="{ active: task.status === 'completed' }"></div>
+            <div class="step" :class="{ done: task.status === 'completed', failed: task.status === 'could_not_complete' }">
+              <span class="step-dot"></span>
+              <span class="step-label">{{ task.status === 'could_not_complete' ? 'لم تكتمل' : 'مكتملة' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions only for tasks assigned to me and in progress -->
+        <div class="task-actions" v-if="activeTab === 'assigned' && task.status === 'in_progress'">
           <button class="btn-success" @click="updateStatus(task.id, 'completed')">إكمال</button>
           <button class="btn-danger" @click="openReasonModal(task.id)">تعذر الإكمال</button>
         </div>
       </div>
     </div>
 
-    <div v-if="totalPages > 1" class="pagination">
-      <button :disabled="currentPage === 1" @click="loadTasks(currentPage - 1)">السابق</button>
-      <span>{{ currentPage }} / {{ totalPages }}</span>
-      <button :disabled="currentPage === totalPages" @click="loadTasks(currentPage + 1)">
+    <!-- Pagination -->
+    <div v-if="currentTotalPages > 1" class="pagination">
+      <button :disabled="currentPage === 1" @click="loadCurrentTab(currentPage - 1)">السابق</button>
+      <span>{{ currentPage }} / {{ currentTotalPages }}</span>
+      <button :disabled="currentPage === currentTotalPages" @click="loadCurrentTab(currentPage + 1)">
         التالي
       </button>
     </div>
@@ -85,8 +162,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label>موعد الإستحقاق</label>
-            <!-- input datetime-local -->
+            <label>موعد الاستحقاق</label>
             <input type="datetime-local" v-model="taskForm.due_at" required class="form-input" />
           </div>
           <div class="form-group">
@@ -145,20 +221,31 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
-import taskService from '../services/taskService';
-import notificationService from '../services/notificationService';
-import teamService from '../services/teamService';
-import userService from '../services/userService';
-import authService from '../services/authService';
-import logger from '../utils/logger';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
+import taskService from '@/services/taskService';
+import notificationService from '@/services/notificationService';
+import teamService from '@/services/teamService';
+import userService from '@/services/userService';
+import authService from '@/services/authService';
+import logger from '@/utils/logger';
 
-const tasks = ref([]);
-const teams = ref([]);
-const users = ref([]);
 const currentUser = authService.getCurrentUser();
 
-// Fallback sections when API is unavailable (key + Arabic label)
+const activeTab = ref('assigned');
+
+const assignedTasks = ref([]);
+const requestedTasks = ref([]);
+const assignedTotal = ref(0);
+const requestedTotal = ref(0);
+
+const assignedPage = ref(1);
+const requestedPage = ref(1);
+const assignedTotalPages = ref(1);
+const requestedTotalPages = ref(1);
+
+const teams = ref([]);
+const users = ref([]);
+
 const TASK_SECTIONS_FALLBACK = [
   { key: 'marketing', label: 'قسم التسويق' },
   { key: 'sales', label: 'قسم المبيعات' },
@@ -169,13 +256,9 @@ const TASK_SECTIONS_FALLBACK = [
   { key: 'hr', label: 'قسم الموارد البشرية' },
 ];
 
-// Sections for dropdown: from API (GET /tasks/sections) or fallback
 const taskSections = ref([]);
-
 const isLoading = ref(false);
 const filterStatus = ref('');
-const currentPage = ref(1);
-const totalPages = ref(1);
 const itemsPerPage = ref(10);
 
 const showCreateModal = ref(false);
@@ -195,15 +278,32 @@ const reasonForm = reactive({
   reason: '',
 });
 
-// Section-scoped users for assignee dropdown (fetched when section is selected)
 const sectionUsers = ref([]);
 const sectionUsersLoading = ref(false);
+
+const currentTasks = computed(() =>
+  activeTab.value === 'assigned' ? assignedTasks.value : requestedTasks.value
+);
+
+const currentPage = computed(() =>
+  activeTab.value === 'assigned' ? assignedPage.value : requestedPage.value
+);
+
+const currentTotalPages = computed(() =>
+  activeTab.value === 'assigned' ? assignedTotalPages.value : requestedTotalPages.value
+);
+
+const switchTab = (tab) => {
+  if (activeTab.value === tab) return;
+  activeTab.value = tab;
+  filterStatus.value = '';
+  loadCurrentTab(1);
+};
 
 const extractDropdownDataFromTasks = () => {
   const uniqueTeams = new Map();
   const uniqueUsers = new Map();
 
-  // 1. Add current user as base fallback
   if (currentUser) {
     uniqueUsers.set(currentUser.id, currentUser.name);
     if (currentUser.team_id) {
@@ -211,8 +311,8 @@ const extractDropdownDataFromTasks = () => {
     }
   }
 
-  // 2. Extract from loaded tasks to give context-aware options without permissions
-  tasks.value.forEach(task => {
+  const allTasks = [...assignedTasks.value, ...requestedTasks.value];
+  allTasks.forEach(task => {
     if (task.team_id) {
       uniqueTeams.set(task.team_id, task.team_name || task.team?.name || `فريق ${task.team_id}`);
     }
@@ -227,7 +327,6 @@ const extractDropdownDataFromTasks = () => {
     }
   });
 
-  // 3. Keep any existing data if it successfully loaded via API
   teams.value.forEach(team => {
     if (team.id) uniqueTeams.set(team.id, team.name);
   });
@@ -235,12 +334,10 @@ const extractDropdownDataFromTasks = () => {
     if (user.id) uniqueUsers.set(user.id, user.name);
   });
 
-  // 4. Update the arrays used by the dropdowns
   teams.value = Array.from(uniqueTeams.entries()).map(([id, name]) => ({ id, name }));
   users.value = Array.from(uniqueUsers.entries()).map(([id, name]) => ({ id, name }));
 };
 
-/** Fetch users for the selected section via GET /tasks/sections/:section/users. */
 const fetchSectionUsers = async sectionKey => {
   if (!sectionKey) {
     sectionUsers.value = [];
@@ -279,7 +376,6 @@ watch(showCreateModal, (isOpen) => {
   }
 });
 
-/** Load sections from API (GET /tasks/sections); fallback to static list. */
 const loadTaskSections = async () => {
   try {
     const list = await taskService.getTaskSections();
@@ -296,8 +392,6 @@ const loadTaskSections = async () => {
 
 const fetchDropdownData = async () => {
   try {
-    // If the user doesn't have permissions to fetch all teams or users, we silently catch the error
-    // and rely on the fallback below.
     const [teamsData, usersData] = await Promise.all([
       teamService.getTeams().catch(() => []),
       userService.getEmployees({ per_page: 100 }).catch(() => ({ items: [] })),
@@ -312,32 +406,72 @@ const fetchDropdownData = async () => {
   }
 };
 
-const loadTasks = async (page = 1) => {
+const loadAssignedTasks = async (page = 1) => {
   try {
     isLoading.value = true;
-    currentPage.value = page;
+    assignedPage.value = page;
 
     const params = {
-      page: currentPage.value,
+      page,
       per_page: itemsPerPage.value,
     };
-
-    if (filterStatus.value) {
-      params.status = filterStatus.value;
-    }
+    if (filterStatus.value) params.status = filterStatus.value;
 
     const data = await taskService.getMyTasks(params);
-    tasks.value = data.items || [];
+    assignedTasks.value = data.items || [];
+    assignedTotal.value = data.total || 0;
+    assignedTotalPages.value = Math.ceil(assignedTotal.value / itemsPerPage.value) || 1;
 
-    const total = data.total || 0;
-    totalPages.value = Math.ceil(total / itemsPerPage.value) || 1;
-
-    // Extract names for the dropdowns from the loaded tasks
     extractDropdownDataFromTasks();
   } catch (error) {
-    logger.error('Failed to load tasks', error);
+    logger.error('Failed to load assigned tasks', error);
   } finally {
     isLoading.value = false;
+  }
+};
+
+const loadRequestedTasks = async (page = 1) => {
+  try {
+    isLoading.value = true;
+    requestedPage.value = page;
+
+    const params = {
+      page,
+      per_page: itemsPerPage.value,
+    };
+    if (filterStatus.value) params.status = filterStatus.value;
+
+    const data = await taskService.getRequestedTasks(params);
+    requestedTasks.value = data.items || [];
+    requestedTotal.value = data.total || 0;
+    requestedTotalPages.value = Math.ceil(requestedTotal.value / itemsPerPage.value) || 1;
+
+    extractDropdownDataFromTasks();
+  } catch (error) {
+    logger.error('Failed to load requested tasks', error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const loadCurrentTab = (page = 1) => {
+  if (activeTab.value === 'assigned') {
+    loadAssignedTasks(page);
+  } else {
+    loadRequestedTasks(page);
+  }
+};
+
+const loadInitialCounts = async () => {
+  try {
+    const [assignedData, requestedData] = await Promise.all([
+      taskService.getMyTasks({ page: 1, per_page: 1 }).catch(() => ({ total: 0 })),
+      taskService.getRequestedTasks({ page: 1, per_page: 1 }).catch(() => ({ total: 0 })),
+    ]);
+    assignedTotal.value = assignedData.total || 0;
+    requestedTotal.value = requestedData.total || 0;
+  } catch {
+    // counts will remain 0
   }
 };
 
@@ -346,7 +480,7 @@ const getStatusLabel = status => {
     in_progress: 'قيد التنفيذ',
     completed: 'مكتملة',
     could_not_complete: 'لم تكتمل',
-    pending: 'قيد الإنتظار',
+    pending: 'قيد الانتظار',
   };
   return map[status] || status;
 };
@@ -373,7 +507,6 @@ const formatDate = dateString => {
 const createTask = async () => {
   try {
     isCreating.value = true;
-    // Format datetime string for the backend
     const due_at_formatted = taskForm.due_at ? taskForm.due_at.replace('T', ' ') + ':00' : null;
 
     await taskService.createTask({
@@ -388,7 +521,6 @@ const createTask = async () => {
     notificationService.addNotification('تم إنشاء المهمة بنجاح', 'success');
     showCreateModal.value = false;
 
-    // Reset form
     Object.assign(taskForm, {
       task_name: '',
       section_key: '',
@@ -398,7 +530,8 @@ const createTask = async () => {
       status: 'in_progress',
     });
 
-    loadTasks(1);
+    loadAssignedTasks(1);
+    loadRequestedTasks(1);
   } catch (error) {
     logger.error('Failed to create task', error);
   } finally {
@@ -415,7 +548,7 @@ const updateStatus = async (taskId, status, reason = null) => {
 
     await taskService.updateTaskStatus(taskId, data);
     notificationService.addNotification('تم تحديث حالة المهمة', 'success');
-    loadTasks(currentPage.value);
+    loadCurrentTab(currentPage.value);
   } catch (error) {
     logger.error(`Failed to update task ${taskId}`, error);
   }
@@ -444,7 +577,8 @@ const submitReasonModal = async () => {
 };
 
 onMounted(() => {
-  loadTasks();
+  loadAssignedTasks();
+  loadInitialCounts();
   loadTaskSections();
   fetchDropdownData();
 });
@@ -470,6 +604,65 @@ onMounted(() => {
   margin: 0;
 }
 
+/* Tabs */
+.tabs-container {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border-color, #e0e0e0);
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-muted, #888);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: var(--primary-color, #007bff);
+  background: rgba(0, 123, 255, 0.04);
+}
+
+.tab-btn.active {
+  color: var(--primary-color, #007bff);
+  border-bottom-color: var(--primary-color, #007bff);
+  font-weight: 600;
+}
+
+.tab-icon {
+  font-size: 1.1rem;
+}
+
+.tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-color, #007bff);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+}
+
+.tab-btn:not(.active) .tab-count {
+  background: var(--text-muted, #aaa);
+}
+
+/* Filters */
 .filters {
   margin-bottom: 20px;
   display: flex;
@@ -501,6 +694,7 @@ select.form-input {
   color: var(--text-color, #333);
 }
 
+/* Buttons */
 .btn-primary {
   background-color: var(--primary-color, #007bff);
   color: white;
@@ -556,9 +750,10 @@ select.form-input {
   font-size: 0.85rem;
 }
 
+/* Tasks Grid */
 .tasks-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
   margin-bottom: 24px;
 }
@@ -566,34 +761,41 @@ select.form-input {
 .task-card {
   background: var(--card-bg, #fff);
   border: 1px solid var(--border-color, #eee);
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
+  transition: box-shadow 0.2s ease;
+}
+
+.task-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .task-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .task-title {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   color: var(--text-color, #333);
   word-break: break-word;
+  line-height: 1.4;
 }
 
 .status-badge {
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 12px;
-  font-size: 0.75rem;
+  font-size: 0.73rem;
   font-weight: bold;
   white-space: nowrap;
   margin-right: 12px;
+  flex-shrink: 0;
 }
 
 .status-badge.in_progress {
@@ -613,14 +815,44 @@ select.form-input {
 
 .status-badge.pending {
   background-color: rgba(255, 193, 7, 0.1);
-  color: #ffc107;
+  color: #d39e00;
 }
 
+/* Origin Badge */
+.task-origin {
+  margin-bottom: 10px;
+}
+
+.origin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.origin-icon {
+  font-size: 0.8rem;
+}
+
+.assigned-badge {
+  background-color: rgba(108, 92, 231, 0.1);
+  color: #6c5ce7;
+}
+
+.requested-badge {
+  background-color: rgba(253, 203, 110, 0.2);
+  color: #b8860b;
+}
+
+/* Task Details */
 .task-details {
   flex-grow: 1;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--text-muted, #666);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .task-details p {
@@ -632,6 +864,91 @@ select.form-input {
   margin-top: 8px;
 }
 
+.person-name {
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.person-name.requester {
+  background: rgba(108, 92, 231, 0.08);
+  color: #6c5ce7;
+}
+
+.person-name.assignee {
+  background: rgba(253, 203, 110, 0.15);
+  color: #b8860b;
+}
+
+/* Status Progress */
+.status-indicator {
+  margin-bottom: 12px;
+  padding: 8px 0;
+}
+
+.status-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.step-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--border-color, #ddd);
+  border: 2px solid var(--border-color, #ccc);
+  transition: all 0.3s ease;
+}
+
+.step.done .step-dot {
+  background: var(--success-color, #28a745);
+  border-color: var(--success-color, #28a745);
+}
+
+.step.failed .step-dot {
+  background: var(--danger-color, #dc3545);
+  border-color: var(--danger-color, #dc3545);
+}
+
+.step-label {
+  font-size: 0.65rem;
+  color: var(--text-muted, #999);
+  white-space: nowrap;
+}
+
+.step.done .step-label {
+  color: var(--success-color, #28a745);
+  font-weight: 600;
+}
+
+.step.failed .step-label {
+  color: var(--danger-color, #dc3545);
+  font-weight: 600;
+}
+
+.step-line {
+  width: 40px;
+  height: 2px;
+  background: var(--border-color, #ddd);
+  margin: 0 4px;
+  margin-bottom: 18px;
+  transition: background 0.3s ease;
+}
+
+.step-line.active {
+  background: var(--success-color, #28a745);
+}
+
+/* Task Actions */
 .task-actions {
   display: flex;
   gap: 8px;
@@ -639,6 +956,7 @@ select.form-input {
   padding-top: 12px;
 }
 
+/* Pagination */
 .pagination {
   display: flex;
   justify-content: center;
@@ -661,6 +979,7 @@ select.form-input {
   cursor: not-allowed;
 }
 
+/* Loading / Empty */
 .loading-state,
 .empty-state {
   text-align: center;
@@ -679,15 +998,11 @@ select.form-input {
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-/* Modal Styles */
+/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -725,10 +1040,10 @@ select.form-input {
   margin-top: 24px;
 }
 
-/* Responsive: Tablet Landscape */
+/* Responsive */
 @media (max-width: 992px) {
   .tasks-grid {
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 16px;
   }
   .page-header h2 {
@@ -739,7 +1054,6 @@ select.form-input {
   }
 }
 
-/* Responsive: Tablet Portrait */
 @media (max-width: 768px) {
   .tasks-view {
     padding: 16px;
@@ -758,6 +1072,10 @@ select.form-input {
   select.form-input {
     width: 100%;
   }
+  .tab-btn {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+  }
   .task-card {
     padding: 14px;
   }
@@ -770,9 +1088,11 @@ select.form-input {
   .modal-content {
     padding: 20px;
   }
+  .step-line {
+    width: 28px;
+  }
 }
 
-/* Responsive: Mobile */
 @media (max-width: 576px) {
   .tasks-view {
     padding: 12px;
@@ -786,6 +1106,18 @@ select.form-input {
   }
   .page-header h2 {
     font-size: 1.15rem;
+  }
+  .tabs-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-btn {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    min-width: 0;
+  }
+  .tab-icon {
+    display: none;
   }
   .btn-primary,
   .btn-secondary {
@@ -830,9 +1162,14 @@ select.form-input {
   .empty-state {
     padding: 24px;
   }
+  .status-steps {
+    transform: scale(0.9);
+  }
+  .step-line {
+    width: 20px;
+  }
 }
 
-/* Responsive: Extra Small Mobile */
 @media (max-width: 320px) {
   .tasks-view {
     padding: 8px;
@@ -866,7 +1203,6 @@ select.form-input {
   }
 }
 
-/* Responsive: Large Desktop */
 @media (min-width: 1920px) {
   .tasks-view {
     max-width: 1600px;
@@ -905,9 +1241,12 @@ select.form-input {
     padding: 10px 18px;
     font-size: 1rem;
   }
+  .tab-btn {
+    padding: 14px 28px;
+    font-size: 1.05rem;
+  }
 }
 
-/* Responsive: Ultra-wide */
 @media (min-width: 2560px) {
   .tasks-view {
     max-width: 2000px;
