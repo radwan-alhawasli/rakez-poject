@@ -8,7 +8,7 @@
     </div>
     <div class="metrics-table-container">
       <div class="table-responsive">
-      <table class="metrics-table">
+      <table class="metrics-table table-mobile-stacked">
         <thead>
           <tr>
             <th>رقم المشروع</th>
@@ -20,11 +20,11 @@
         </thead>
         <tbody>
           <tr v-for="project in soldProjects" :key="project.id">
-            <td>{{ project.id }}</td>
-            <td>{{ project.name || 'غير محدد' }}</td>
-            <td>{{ project.units_count || 0 }}</td>
-            <td>{{ formatCurrency(project.total_value) }}</td>
-            <td>
+            <td data-label="رقم المشروع">{{ project.id }}</td>
+            <td data-label="اسم المشروع">{{ project.name || 'غير محدد' }}</td>
+            <td data-label="عدد الوحدات">{{ project.units_count || 0 }}</td>
+            <td data-label="القيمة الإجمالية">{{ formatCurrency(project.total_value) }}</td>
+            <td data-label="الإجراءات">
               <button class="btn-action edit" @click="viewSoldProjectDetail(project)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -79,3 +79,15 @@ onMounted(() => {
   loadSoldProjects();
 });
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  .section-header-compact { padding: 16px; }
+  .section-title { font-size: 18px; }
+  .section-subtitle { font-size: 13px; }
+}
+@media (max-width: 576px) {
+  .section-header-compact { padding: 12px; }
+  .table-responsive { margin: 0 -12px; }
+}
+</style>

@@ -45,8 +45,12 @@ const editorService = {
    * @returns {Promise<Object>} Contract details
    */
   async getContractById(contractId) {
-    const response = await apiClient.get(`/editor/contracts/show/${contractId}`);
-    return response.data?.data || response.data || {};
+    try {
+      const response = await apiClient.get(`/editor/contracts/show/${contractId}`);
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      return handleServiceError(error, 'Fetch editor contract by id', 'get', {});
+    }
   },
 
   // --- Second Party Data (second_party.view) ---

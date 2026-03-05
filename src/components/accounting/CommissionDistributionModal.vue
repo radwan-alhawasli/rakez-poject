@@ -329,17 +329,6 @@ export default {
 
 .distribution-item {
   display: grid;
-  grid-template-columns: 120px 1fr 140px 80px auto;
-  gap: 10px;
-  margin-bottom: 10px;
-  align-items: center;
-  border-radius: 24px;
-  padding: 30px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-}
-
-.distribution-item {
-  display: grid;
   grid-template-columns: 1fr 1fr 1fr auto;
   gap: 10px;
   margin-bottom: 10px;
@@ -406,17 +395,6 @@ export default {
 
 /* Tablet responsive */
 @media (max-width: 768px) {
-  .modal-overlay {
-    padding: 12px;
-  }
-  .modal-container {
-    width: 95%;
-    max-width: 95vw;
-    padding: 20px;
-  }
-  .commission-modal-wide {
-    max-width: 95vw;
-  }
   .distribution-table {
     font-size: 12px;
   }
@@ -439,20 +417,6 @@ export default {
 
 /* Mobile full-screen */
 @media (max-width: 575px) {
-  .modal-overlay {
-    padding: 8px;
-  }
-  .modal-container {
-    width: 100%;
-    max-width: 100vw;
-    max-height: 100vh;
-    overflow-y: auto;
-    border-radius: 16px;
-    padding: 16px;
-  }
-  .modal-title {
-    font-size: 18px;
-  }
   .distribution-item {
     grid-template-columns: 1fr;
   }

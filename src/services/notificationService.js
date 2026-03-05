@@ -3,6 +3,7 @@ import apiClient from '@/api/apiClient';
 import authService from './authService';
 import { createPusher } from '@/plugins/pusher';
 import logger from '@/utils/logger';
+import { ROLE_ADMIN, ROLE_ACCOUNTING } from '@/constants/roles';
 
 const notifications = ref([]);
 const unreadCount = ref(0);
@@ -65,7 +66,7 @@ const notificationService = {
     }
 
     // Subscribe to Admin Private
-    if (user && user.type === 1) {
+    if (user && user.type === ROLE_ADMIN) {
       const adminChannel = pusher.subscribe('private-admin-notifications');
       adminChannel.bind('admin.notification', data => {
         this.addReceivedNotification(data, 'admin');
@@ -81,11 +82,11 @@ const notificationService = {
    */
   async fetchAll() {
     const user = authService.getCurrentUser();
-    const isAdmin = user && user.type === 1;
+    const isAdmin = user && user.type === ROLE_ADMIN;
     const isAccounting =
       user &&
-      (user.type === 7 ||
-        String(user.type) === '7' ||
+      (user.type === ROLE_ACCOUNTING ||
+        String(user.type) === String(ROLE_ACCOUNTING) ||
         String(user.role || '').toLowerCase() === 'accounting');
 
     const fetchSafe = async path => {
@@ -254,8 +255,8 @@ const notificationService = {
     const user = authService.getCurrentUser();
     const isAccounting =
       user &&
-      (user.type === 7 ||
-        String(user.type) === '7' ||
+      (user.type === ROLE_ACCOUNTING ||
+        String(user.type) === String(ROLE_ACCOUNTING) ||
         String(user.role || '').toLowerCase() === 'accounting');
     const endpoint = isAccounting
       ? `/accounting/notifications/${id}/read`
@@ -292,8 +293,8 @@ const notificationService = {
     const user = authService.getCurrentUser();
     const isAccounting =
       user &&
-      (user.type === 7 ||
-        String(user.type) === '7' ||
+      (user.type === ROLE_ACCOUNTING ||
+        String(user.type) === String(ROLE_ACCOUNTING) ||
         String(user.role || '').toLowerCase() === 'accounting');
     try {
       if (isAccounting) {

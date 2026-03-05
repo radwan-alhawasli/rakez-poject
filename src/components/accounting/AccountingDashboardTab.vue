@@ -47,13 +47,21 @@
         <h3 class="section-title-chart">نظرة عامة على العمليات المالية</h3>
         <p class="section-desc">توزيع الوحدات المباعة والعمولات والودائع.</p>
       </div>
-      <div class="chart-placeholder"><p style="color: #94a3b8">مخطط بياني للعمليات المالية</p></div>
+      <div class="chart-placeholder" style="min-height: 260px; display: flex; align-items: center; justify-content: center;">
+        <VisXYContainer :data="chartData" :height="240" :style="{ width: '100%' }">
+          <VisGroupedBar :x="(d, i) => i" :y="barAccessors" :color="barColors" :roundedCorners="4" :barPadding="0.2" />
+          <VisAxis type="x" :tickFormat="xTickFormat" :gridLine="false" />
+          <VisAxis type="y" :gridLine="true" />
+          <VisTooltip />
+        </VisXYContainer>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
+import { VisXYContainer, VisGroupedBar, VisAxis, VisTooltip } from '@unovis/vue';
 import { useAccountingDashboard } from '@/composables/accounting/useAccountingDashboard';
 
 const props = defineProps({
@@ -68,7 +76,31 @@ const {
   formatCurrency,
 } = useAccountingDashboard();
 
+const chartLabels = ['الوحدات المباعة', 'الودائع', 'المسترد', 'قيمة المشاريع', 'قيمة المبيعات', 'العمولات'];
+
+const chartData = computed(() => [
+  { label: chartLabels[0], value: dashboardMetrics.totalUnitsSold || 0 },
+  { label: chartLabels[1], value: dashboardMetrics.totalDeposits || 0 },
+  { label: chartLabels[2], value: dashboardMetrics.totalDepositsRefunded || 0 },
+  { label: chartLabels[3], value: dashboardMetrics.totalProjectsValue || 0 },
+  { label: chartLabels[4], value: dashboardMetrics.totalSalesValue || 0 },
+  { label: chartLabels[5], value: dashboardMetrics.totalCommissions || 0 },
+]);
+
+const barAccessors = [(d) => d.value];
+const barColors = ['#b1a28f'];
+const xTickFormat = (i) => chartLabels[i] ?? '';
+
 onMounted(() => {
   loadDashboardMetrics();
 });
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  .chart-placeholder, .chart-container, [class*="chart"] { height: 240px; }
+}
+@media (max-width: 576px) {
+  .chart-placeholder, .chart-container, [class*="chart"] { height: 200px; }
+}
+</style>

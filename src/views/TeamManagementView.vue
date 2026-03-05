@@ -37,7 +37,7 @@
       </div>
 
       <div v-else class="table-responsive">
-      <table class="data-table">
+      <table class="data-table table-mobile-stacked">
         <thead>
           <tr>
             <th>الفريق</th>
@@ -51,7 +51,7 @@
         </thead>
         <tbody>
           <tr v-for="team in teams" :key="team.id">
-            <td>
+            <td data-label="الفريق">
               <div class="team-cell">
                 <div class="team-avatar">{{ (team.name || '?').charAt(0) }}</div>
                 <div class="team-details">
@@ -60,20 +60,20 @@
                 </div>
               </div>
             </td>
-            <td>
+            <td data-label="عدد الأعضاء">
               <span class="count-badge">{{ team.members_count ?? team.members?.length ?? 0 }}</span>
             </td>
-            <td>{{ team.leader_name || team.leader?.name || '—' }}</td>
-            <td>
+            <td data-label="القائد">{{ team.leader_name || team.leader?.name || '—' }}</td>
+            <td data-label="المشاريع المعينة">
               <span class="count-badge projects">{{ team.contracts_count ?? team.projects_count ?? 0 }}</span>
             </td>
-            <td class="date-cell">{{ formatDate(team.created_at) }}</td>
-            <td>
+            <td data-label="تاريخ الإنشاء" class="date-cell">{{ formatDate(team.created_at) }}</td>
+            <td data-label="الحالة">
               <span class="status-badge" :class="team.is_active === false ? 'disabled' : 'active'">
                 {{ team.is_active === false ? 'غير فعال' : 'فعال' }}
               </span>
             </td>
-            <td>
+            <td data-label="الإجراءات">
               <div class="actions">
                 <button class="action-btn view" @click="viewTeamDetails(team)" title="عرض التفاصيل">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

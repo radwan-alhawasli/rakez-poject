@@ -231,6 +231,44 @@ const activeTab = computed(() => {
 .marketing-view .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes mktTyping { from { opacity: 0.3; transform: translateY(0); } to { opacity: 1; transform: translateY(-4px); } }
 
+/* Streaming cursor (ChatGPT-style) */
+.marketing-view .bubble-text { white-space: pre-wrap; word-break: break-word; line-height: 1.7; }
+.marketing-view .streaming-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 1.1em;
+  background: #1e3a5f;
+  margin-right: 4px;
+  vertical-align: text-bottom;
+  border-radius: 2px;
+  animation: streamBlink 0.6s steps(2) infinite;
+}
+@keyframes streamBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+.marketing-view .chat-bubble.streaming .bubble-content {
+  background: #f8fafc;
+  border: 1px solid rgba(30, 58, 95, 0.08);
+}
+
+/* Stop streaming button */
+.marketing-view .btn-stop-ai {
+  background: #dc2626;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  animation: stopPulse 1.5s ease-in-out infinite;
+}
+.marketing-view .btn-stop-ai:hover { background: #b91c1c; transform: scale(1.05); }
+.marketing-view .btn-stop-ai svg { width: 18px; height: 18px; }
+@keyframes stopPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.3); } 50% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); } }
+
 .marketing-view .lead-contact { direction: ltr; text-align: left; font-variant-numeric: lining-nums tabular-nums; }
 .marketing-view .lead-source-badge { display: inline-block; padding: 6px 12px; border-radius: var(--radius-lg); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
 .marketing-view .source-snapchat { background: rgba(255, 252, 0, 0.1); color: #ffd700; }

@@ -49,7 +49,7 @@
                 <p>لا يوجد وكلاء. أضف وكيلاً جديداً للبدء.</p>
               </div>
               <div v-else class="table-responsive">
-              <table class="data-table">
+              <table class="data-table table-mobile-stacked">
                 <thead>
                   <tr>
                     <th>الاسم</th>
@@ -60,17 +60,17 @@
                 </thead>
                 <tbody>
                   <tr v-for="agent in agents" :key="agent.id">
-                    <td>
+                    <td data-label="الاسم">
                       <div class="agent-name-cell">{{ agent.name }}</div>
                       <div v-if="agent.description" class="agent-desc-cell">
                         {{ agent.description }}
                       </div>
                     </td>
-                    <td>
+                    <td data-label="الحالة">
                       <span class="status-badge active">نشط</span>
                     </td>
-                    <td class="date-cell">{{ formatDate(agent.updatedAt || agent.createdAt) }}</td>
-                    <td>
+                    <td data-label="آخر تحديث" class="date-cell">{{ formatDate(agent.updatedAt || agent.createdAt) }}</td>
+                    <td data-label="الإجراءات">
                       <div class="actions">
                         <button class="action-btn edit" @click="editAgent(agent)" title="تعديل">
                           <svg

@@ -1,5 +1,18 @@
 <template>
   <div class="dashboard-view">
+    <!-- Loading State -->
+    <div v-if="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>جاري التحميل...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="error-state">
+      <p>{{ error }}</p>
+      <button @click="fetchData">إعادة المحاولة</button>
+    </div>
+
+    <template v-else>
     <!-- Header -->
     <div class="welcome-header">
       <h1 class="welcome-title">أهلاً بعودتك، {{ userName }}!</h1>
@@ -85,6 +98,7 @@
         <p style="color: var(--color-dark-gray); margin-top: 40px">مخطط بياني لتوزيع المشاريع</p>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
@@ -99,6 +113,9 @@ const router = useRouter();
 const user = ref(authService.getCurrentUser());
 const userName = computed(() => user.value?.name || 'مستخدم');
 
+const isLoading = ref(true);
+const error = ref(null);
+
 // Stats
 const totalProjectValue = ref(0);
 const availableUnits = ref(0);
@@ -107,6 +124,8 @@ const readyProjects = ref(0);
 const notReadyProjects = ref(0);
 
 const fetchData = async () => {
+  isLoading.value = true;
+  error.value = null;
   try {
     let apps = [];
     // Check if user is admin (type 1)
@@ -151,6 +170,9 @@ const fetchData = async () => {
     totalProjectValue.value = (valueSum / 1000000).toFixed(2);
   } catch (e) {
     logger.error('Error fetching dashboard data', e);
+    error.value = 'حدث خطأ في تحميل البيانات';
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -476,6 +498,50 @@ onMounted(() => {
   color: var(--color-dark-gray);
 }
 
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-dark-gray);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  border: 3px solid var(--color-light-gray);
+  border-top-color: var(--color-gold);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-dark-gray);
+}
+
+.error-state button {
+  margin-top: 15px;
+  padding: 10px 24px;
+  background: var(--color-navy);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.error-state button:hover {
+  opacity: 0.9;
+}
+
 /* ============================
    DASHBOARD RESPONSIVE
    ============================ */
@@ -544,5 +610,12 @@ onMounted(() => {
     padding: 80px 60px;
     border-radius: 24px;
   }
+}
+
+@media (max-width: 768px) {
+  .chart-placeholder, .chart-container, [class*="chart"] { height: 240px; }
+}
+@media (max-width: 576px) {
+  .chart-placeholder, .chart-container, [class*="chart"] { height: 200px; }
 }
 </style>

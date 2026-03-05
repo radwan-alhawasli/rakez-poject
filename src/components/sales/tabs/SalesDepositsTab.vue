@@ -46,7 +46,7 @@
         <p>Ù„Ø§ ØªÙˆØ¬Ø¯ ÙˆØ¯Ø§Ø¦Ø¹ Ù„Ø¥Ø¯Ø§Ø±ØªÙ‡Ø§ Ø­Ø§Ù„ÙŠØ§Ù‹.</p>
       </div>
       <div v-else class="table-container table-responsive">
-        <table class="data-table">
+        <table class="data-table table-mobile-stacked">
           <thead>
             <tr>
               <th>#</th>
@@ -60,12 +60,12 @@
           </thead>
           <tbody>
             <tr v-for="(dep, idx) in depositsManagement" :key="dep.id || idx">
-              <td>{{ idx + 1 }}</td>
-              <td>{{ dep.unit_number || dep.unit_id || 'â€”' }}</td>
-              <td>{{ dep.client_name || 'â€”' }}</td>
-              <td>{{ formatCurrency(dep.amount || 0) }}</td>
-              <td>{{ formatDate(dep.deposit_date || dep.created_at) }}</td>
-              <td>{{ dep.due_date ? formatDate(dep.due_date) : 'â€”' }}</td>
+              <td data-label="#">{{ idx + 1 }}</td>
+              <td data-label="الوحدة">{{ dep.unit_number || dep.unit_id || 'â€”' }}</td>
+              <td data-label="العميل">{{ dep.client_name || 'â€”' }}</td>
+              <td data-label="المبلغ">{{ formatCurrency(dep.amount || 0) }}</td>
+              <td data-label="تاريخ الإيداع">{{ formatDate(dep.deposit_date || dep.created_at) }}</td>
+              <td data-label="تاريخ الاستحقاق">{{ dep.due_date ? formatDate(dep.due_date) : 'â€”' }}</td>
               <td>
                 <span
                   :class="[
@@ -113,7 +113,7 @@
         <p>Ù„Ø§ ØªÙˆØ¬Ø¯ ÙˆØ¯Ø§Ø¦Ø¹ ØªØ­ØªØ§Ø¬ Ù…ØªØ§Ø¨Ø¹Ø© Ø­Ø§Ù„ÙŠØ§Ù‹.</p>
       </div>
       <div v-else class="table-container table-responsive">
-        <table class="data-table">
+        <table class="data-table table-mobile-stacked">
           <thead>
             <tr>
               <th>#</th>
@@ -127,11 +127,11 @@
           </thead>
           <tbody>
             <tr v-for="(dep, idx) in depositsFollowUp" :key="dep.id || idx">
-              <td>{{ idx + 1 }}</td>
-              <td>{{ dep.unit_number || dep.unit_id || 'â€”' }}</td>
-              <td>{{ dep.client_name || 'â€”' }}</td>
-              <td>{{ formatCurrency(dep.amount || dep.outstanding_amount || 0) }}</td>
-              <td>{{ dep.due_date ? formatDate(dep.due_date) : 'â€”' }}</td>
+              <td data-label="#">{{ idx + 1 }}</td>
+              <td data-label="الوحدة">{{ dep.unit_number || dep.unit_id || 'â€”' }}</td>
+              <td data-label="العميل">{{ dep.client_name || 'â€”' }}</td>
+              <td data-label="المبلغ المستحق">{{ formatCurrency(dep.amount || dep.outstanding_amount || 0) }}</td>
+              <td data-label="تاريخ الاستحقاق">{{ dep.due_date ? formatDate(dep.due_date) : 'â€”' }}</td>
               <td>
                 <span
                   :class="[
@@ -142,7 +142,7 @@
                   {{ dep.overdue_days || 0 }} ÙŠÙˆÙ…
                 </span>
               </td>
-              <td>
+              <td data-label="الحالة">
                 <span class="badge badge-warning">
                   {{ dep.follow_up_status || 'Ø¨Ø§Ù†ØªØ¸Ø§Ø± Ø§Ù„Ù…ØªØ§Ø¨Ø¹Ø©' }}
                 </span>

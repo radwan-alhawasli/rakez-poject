@@ -6,50 +6,52 @@
         <p class="section-subtitle">مراجعة واعتماد وتتبع طلبات الحجز المقدمة من المسوقين.</p>
       </div>
     </div>
-    <div class="credit-bookings-six-tabs">
-      <button
-        type="button"
-        :class="['btn-tab-booking', { active: bookingsSubTab === 'all' }]"
-        @click="setBookingsSubTab('all')"
-      >
-        الكل
-      </button>
-      <button
-        type="button"
-        :class="['btn-tab-booking', { active: bookingsSubTab === 'confirmed' }]"
-        @click="setBookingsSubTab('confirmed')"
-      >
-        الحجوزات المؤكدة
-      </button>
-      <button
-        type="button"
-        :class="['btn-tab-booking', { active: bookingsSubTab === 'negotiation' }]"
-        @click="setBookingsSubTab('negotiation')"
-      >
-        حجوزات التفاوض
-      </button>
-      <button
-        type="button"
-        :class="['btn-tab-booking', { active: bookingsSubTab === 'waiting' }]"
-        @click="setBookingsSubTab('waiting')"
-      >
-        حجوزات الانتظار
-      </button>
-      <button
-        type="button"
-        :class="['btn-tab-booking', { active: bookingsSubTab === 'sold' }]"
-        @click="setBookingsSubTab('sold')"
-      >
-        مباعة
-      </button>
-      <button
-        type="button"
-        :class="['btn-tab-booking', { active: bookingsSubTab === 'rejected' }]"
-        @click="setBookingsSubTab('rejected')"
-      >
-        مرفوضة / ملغاة
-      </button>
-    </div>
+    <MobileFilterSheet>
+      <div class="credit-bookings-six-tabs">
+        <button
+          type="button"
+          :class="['btn-tab-booking', { active: bookingsSubTab === 'all' }]"
+          @click="setBookingsSubTab('all')"
+        >
+          الكل
+        </button>
+        <button
+          type="button"
+          :class="['btn-tab-booking', { active: bookingsSubTab === 'confirmed' }]"
+          @click="setBookingsSubTab('confirmed')"
+        >
+          الحجوزات المؤكدة
+        </button>
+        <button
+          type="button"
+          :class="['btn-tab-booking', { active: bookingsSubTab === 'negotiation' }]"
+          @click="setBookingsSubTab('negotiation')"
+        >
+          حجوزات التفاوض
+        </button>
+        <button
+          type="button"
+          :class="['btn-tab-booking', { active: bookingsSubTab === 'waiting' }]"
+          @click="setBookingsSubTab('waiting')"
+        >
+          حجوزات الانتظار
+        </button>
+        <button
+          type="button"
+          :class="['btn-tab-booking', { active: bookingsSubTab === 'sold' }]"
+          @click="setBookingsSubTab('sold')"
+        >
+          مباعة
+        </button>
+        <button
+          type="button"
+          :class="['btn-tab-booking', { active: bookingsSubTab === 'rejected' }]"
+          @click="setBookingsSubTab('rejected')"
+        >
+          مرفوضة / ملغاة
+        </button>
+      </div>
+    </MobileFilterSheet>
     <div v-if="selectedBooking && selectedBookingId()" class="booking-detail-inline">
       <div class="booking-detail-header">
         <button type="button" class="btn-back-list" @click="clearSelectedBooking">
@@ -86,7 +88,7 @@
       </div>
       <div class="metrics-table-container">
         <div class="table-responsive">
-        <table class="metrics-table">
+        <table class="metrics-table table-mobile-stacked">
           <thead>
             <tr>
               <th>رقم الحجز</th>
@@ -102,37 +104,44 @@
               v-for="(booking, index) in currentBookingsList"
               :key="booking.id ?? booking.reservation_id ?? `row-${index}`"
             >
-              <td>{{ booking.id }}</td>
-              <td>{{ booking.client_name ?? booking.customer_name }}</td>
-              <td>{{ booking.project_name }}</td>
-              <td>{{ formatDate(booking.booking_date ?? booking.created_at) }}</td>
-              <td>
+              <td data-label="رقم الحجز">{{ booking.id }}</td>
+              <td data-label="اسم العميل">{{ booking.client_name ?? booking.customer_name }}</td>
+              <td data-label="المشروع">{{ booking.project_name }}</td>
+              <td data-label="تاريخ الحجز">{{ formatDate(booking.booking_date ?? booking.created_at) }}</td>
+              <td data-label="الحالة">
                 <span class="status-tag" :class="getBookingStatusClass(booking)">{{
                   getBookingStatusLabel(booking)
                 }}</span>
               </td>
-              <td>
-                <button class="btn-action edit" @click="viewBookingDetail(booking)">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                  عرض التفاصيل
-                </button>
-                <button
-                  v-if="bookingsSubTab === 'negotiation'"
-                  class="btn-action edit"
-                  @click="openNegotiationUpdate(booking)"
-                >
-                  تحديث
-                </button>
-                <button
-                  v-if="bookingsSubTab === 'waiting'"
-                  class="btn-action edit"
-                  @click="openProcessWaiting(booking)"
-                >
-                  معالجة
-                </button>
+              <td data-label="الإجراءات">
+                <RowActions>
+                  <button class="btn-action edit" @click="viewBookingDetail(booking)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    عرض التفاصيل
+                  </button>
+                  <button
+                    v-if="bookingsSubTab === 'negotiation'"
+                    class="btn-action edit"
+                    @click="openNegotiationUpdate(booking)"
+                  >
+                    تحديث
+                  </button>
+                  <button
+                    v-if="bookingsSubTab === 'waiting'"
+                    class="btn-action edit"
+                    @click="openProcessWaiting(booking)"
+                  >
+                    معالجة
+                  </button>
+                  <template #menu>
+                    <DropdownMenuItem @click="viewBookingDetail(booking)">عرض التفاصيل</DropdownMenuItem>
+                    <DropdownMenuItem v-if="bookingsSubTab === 'negotiation'" @click="openNegotiationUpdate(booking)">تحديث</DropdownMenuItem>
+                    <DropdownMenuItem v-if="bookingsSubTab === 'waiting'" @click="openProcessWaiting(booking)">معالجة</DropdownMenuItem>
+                  </template>
+                </RowActions>
               </td>
             </tr>
             <tr v-if="currentBookingsList.length === 0 && !isLoading">
@@ -244,6 +253,26 @@
       @confirm="onConfirmModalConfirm"
       @close="showConfirmModal = false"
     />
+
+    <!-- Schedule Date Modal (replaces browser prompt) -->
+    <AppModal v-if="showScheduleDateModal" :open="true" title="تحديد موعد الإفراغ" @update:open="(v) => { if (v === false) showScheduleDateModal = false }">
+      <template #default>
+        <div class="form-group">
+          <label class="form-label">تاريخ الإفراغ</label>
+          <input
+            type="date"
+            v-model="scheduleDateInput"
+            class="form-input"
+          />
+        </div>
+      </template>
+      <template #footer>
+        <div class="modal-footer">
+          <button class="btn-secondary" @click="showScheduleDateModal = false">إلغاء</button>
+          <button class="btn-primary" @click="confirmScheduleDate" :disabled="!scheduleDateInput">تأكيد</button>
+        </div>
+      </template>
+    </AppModal>
   </div>
 </template>
 
@@ -254,6 +283,10 @@ import CreditBookingDetailPanel from '@/components/credit/CreditBookingDetailPan
 import NegotiationUpdateModal from '@/components/credit/NegotiationUpdateModal.vue';
 import ProcessWaitingModal from '@/components/credit/ProcessWaitingModal.vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
+import AppModal from '@/components/AppModal.vue';
+import MobileFilterSheet from '@/components/MobileFilterSheet.vue';
+import RowActions from '@/components/RowActions.vue';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useCreditBookings } from '@/composables/credit/useCreditBookings';
 
 const {
@@ -292,6 +325,9 @@ const {
   onBookingDelete,
   onBookingEdit,
   onBookingSchedule,
+  showScheduleDateModal,
+  scheduleDateInput,
+  confirmScheduleDate,
   onBookingCancel,
   onBookingNextStage,
   onBookingRejectFinancing,

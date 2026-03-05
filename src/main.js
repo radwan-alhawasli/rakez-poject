@@ -3,6 +3,7 @@ import { createPinia } from 'pinia';
 import './assets/app.css';
 import App from './App.vue';
 import router from './router';
+import i18n from './i18n';
 import vPermission from './directives/permission';
 import { registerErrorReporter } from './utils/errorReporter';
 
@@ -41,6 +42,7 @@ const pinia = createPinia();
 
 app.use(pinia);
 app.use(router);
+app.use(i18n);
 app.directive('permission', vPermission);
 
 // Initialize Sentry if DSN is configured (optional dep: npm i @sentry/vue)
@@ -62,3 +64,13 @@ if (sentryDsn && import.meta.env.PROD) {
 }
 
 app.mount('#app');
+
+// Accordion toggle for .table-mobile-stacked rows on mobile (<768px)
+document.addEventListener('click', (e) => {
+  if (window.innerWidth >= 768) return;
+  const tr = e.target.closest('.table-mobile-stacked tr');
+  if (!tr) return;
+  if (tr.querySelector('td[colspan]')) return;
+  if (e.target.closest('button, a, input, select, textarea, [role="menuitem"]')) return;
+  tr.classList.toggle('expanded');
+});

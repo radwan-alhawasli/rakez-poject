@@ -17,7 +17,7 @@
 
     <div v-else class="units-table-container">
       <div class="table-responsive">
-      <table class="units-table">
+      <table class="units-table table-mobile-stacked">
         <thead>
           <tr>
             <th>رقم الحجز</th>
@@ -31,11 +31,11 @@
         </thead>
         <tbody>
           <tr v-for="res in projectReservations" :key="res.id">
-            <td>#{{ res.id }}</td>
-            <td>{{ res.client_name }}</td>
-            <td>{{ res.unit_number || '—' }}</td>
-            <td>{{ formatCurrency(res.down_payment_amount) }}</td>
-            <td>
+            <td data-label="رقم الحجز">#{{ res.id }}</td>
+            <td data-label="العميل">{{ res.client_name }}</td>
+            <td data-label="الوحدة">{{ res.unit_number || '—' }}</td>
+            <td data-label="المبلغ">{{ formatCurrency(res.down_payment_amount) }}</td>
+            <td data-label="الحالة">
               <span class="status-badge" :class="res.status">{{
                 res.status === 'confirmed'
                   ? 'مؤكد'
@@ -44,9 +44,9 @@
                   : 'معلق'
               }}</span>
             </td>
-            <td>{{ res.contract_date }}</td>
-            <td>
-              <div style="display: flex; gap: 5px">
+            <td data-label="التاريخ">{{ res.contract_date }}</td>
+            <td data-label="إجراءات">
+              <RowActions>
                 <button class="btn-sm" @click="downloadVoucher(res.id)">⬇</button>
                 <button
                   v-if="res.status === 'pending'"
@@ -65,7 +65,11 @@
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
                 </button>
-              </div>
+                <template #menu>
+                  <DropdownMenuItem @click="downloadVoucher(res.id)">تحميل الإيصال</DropdownMenuItem>
+                  <DropdownMenuItem v-if="res.status === 'pending'" @click="confirmReservation(res.id)">تأكيد الحجز</DropdownMenuItem>
+                </template>
+              </RowActions>
             </td>
           </tr>
         </tbody>
@@ -88,6 +92,8 @@
 <script setup>
 import { onMounted } from 'vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
+import RowActions from '@/components/RowActions.vue';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useProjectReservations } from '@/composables/project/useProjectReservations';
 
 const props = defineProps({
@@ -195,7 +201,6 @@ onMounted(() => {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  .units-table { min-width: 540px; }
 }
 @media (max-width: 576px) {
   .units-table th,

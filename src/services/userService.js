@@ -121,8 +121,12 @@ const userService = {
    * @returns {Promise<Object>} Employee details
    */
   async getEmployee(id) {
-    const response = await apiClient.get(`/hr/users/${id}`);
-    return response.data?.data ?? response.data ?? {};
+    try {
+      const response = await apiClient.get(`/hr/users/${id}`);
+      return response.data?.data ?? response.data ?? {};
+    } catch (error) {
+      return handleServiceError(error, `Fetch employee ${id}`, 'get', {});
+    }
   },
 
   /**

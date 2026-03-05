@@ -354,15 +354,15 @@
                   <h3 class="section-title-chart" style="margin: 0">خطط الموظفين</h3>
                   <p class="section-desc" style="margin: 6px 0 0">حسب employee_plans في API.</p>
                 </div>
-                <table class="luxury-table">
+                <table class="luxury-table table-mobile-stacked">
                   <thead><tr><th>الموظف</th><th>قيمة التسويق</th><th>قيمة العمولة</th><th>توزيع المنصات</th><th>توزيع الحملات</th></tr></thead>
                   <tbody>
                     <tr v-for="p in selectedProjectDetails.employee_plans" :key="p.id" class="hover-row">
-                      <td>{{ p.user?.name || 'User #' + (p.user_id ?? '—') }}</td>
-                      <td class="number">{{ formatCurrency(p.marketing_value || 0) }}</td>
-                      <td class="number">{{ formatCurrency(p.commission_value || 0) }}</td>
-                      <td>{{ formatDistribution(p.platform_distribution) }}</td>
-                      <td>{{ formatDistribution(p.campaign_distribution) }}</td>
+                      <td data-label="الموظف">{{ p.user?.name || 'User #' + (p.user_id ?? '—') }}</td>
+                      <td data-label="قيمة التسويق" class="number">{{ formatCurrency(p.marketing_value || 0) }}</td>
+                      <td data-label="قيمة العمولة" class="number">{{ formatCurrency(p.commission_value || 0) }}</td>
+                      <td data-label="توزيع المنصات">{{ formatDistribution(p.platform_distribution) }}</td>
+                      <td data-label="توزيع الحملات">{{ formatDistribution(p.campaign_distribution) }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -383,15 +383,15 @@
                 <p>لا توجد وحدات مضافة.</p>
               </div>
               <div v-else class="table-wrapper table-responsive" style="max-height: 400px; overflow-y: auto">
-                <table class="luxury-table" style="width: 100%">
+                <table class="luxury-table table-mobile-stacked" style="width: 100%">
                   <thead><tr><th>رقم الوحدة</th><th>الدور</th><th>الغرف</th><th>مساحة</th><th>السعر</th></tr></thead>
                   <tbody>
                     <tr v-for="unit in selectedProjectDetails.units" :key="unit.id" class="hover-row">
-                      <td>{{ unit.unit_number || '-' }}</td>
-                      <td>{{ unit.floor != null && !Number.isNaN(Number(unit.floor)) ? unit.floor : '-' }}</td>
-                      <td>{{ unit.rooms || '-' }}</td>
-                      <td>{{ unit.area ? unit.area + ' م²' : '-' }}</td>
-                      <td class="number">{{ unit.price ? formatCurrency(unit.price) : '-' }}</td>
+                      <td data-label="رقم الوحدة">{{ unit.unit_number || '-' }}</td>
+                      <td data-label="الدور">{{ unit.floor != null && !Number.isNaN(Number(unit.floor)) ? unit.floor : '-' }}</td>
+                      <td data-label="الغرف">{{ unit.rooms || '-' }}</td>
+                      <td data-label="مساحة">{{ unit.area ? unit.area + ' م²' : '-' }}</td>
+                      <td data-label="السعر" class="number">{{ unit.price ? formatCurrency(unit.price) : '-' }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -492,3 +492,24 @@ const {
   hasPermission,
 } = useMarketingProjects();
 </script>
+
+<style scoped>
+@media (max-width: 1200px) {
+  .projects-grid { grid-template-columns: repeat(2, 1fr); }
+  .details-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .section-header-compact { padding: 16px; }
+  .section-title { font-size: 18px; }
+  .section-subtitle { font-size: 13px; }
+  .projects-grid { grid-template-columns: 1fr; }
+  .details-grid { grid-template-columns: 1fr; }
+  .modal-content { margin: 10px; max-width: 100% !important; }
+}
+@media (max-width: 576px) {
+  .section-header-compact { padding: 12px; }
+  .project-card { padding: 14px; }
+  .project-name { font-size: 15px; }
+  .table-responsive { margin: 0 -12px; }
+}
+</style>

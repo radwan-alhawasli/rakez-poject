@@ -163,7 +163,7 @@ const accountingService = {
   async createManualCommission(reservationId, data) {
     try {
       const body = {
-        contract_unit_id: data.contract_unit_id || 1,
+        contract_unit_id: data.contract_unit_id,
         final_selling_price: data.final_selling_price ?? data.amount ?? data.total_value,
         commission_percentage: data.commission_percentage,
         commission_source: data.commission_source || 'owner',

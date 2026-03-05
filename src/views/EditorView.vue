@@ -18,128 +18,26 @@
     </nav>
 
     <div class="tab-content custom-scrollbar">
-      <!-- 1. Contracts -->
-      <div v-if="activeTab === 'contracts'" class="management-view">
-        <div class="section-header-compact">
-          <div>
-            <h2 class="section-title">عقود المحرر</h2>
-            <p class="section-subtitle">قائمة العقود المتاحة للمحرر.</p>
-          </div>
-        </div>
-        <div class="metrics-table-container table-responsive">
-          <table class="metrics-table">
-            <thead>
-              <tr>
-                <th>رقم العقد</th>
-                <th>المشروع</th>
-                <th>الحالة</th>
-                <th>الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="contract in contracts"
-                :key="contract.id"
-                :style="selectedContractId === contract.id ? 'background: var(--color-light-gray)' : ''"
-              >
-                <td>{{ contract.id }}</td>
-                <td>{{ contract.project_name || contract.contract_name || 'غير محدد' }}</td>
-                <td>
-                  <span class="status-tag good">{{ translateStatus(contract.status) }}</span>
-                </td>
-                <td>
-                  <router-link :to="{ name: 'EditorContractDetail', params: { id: String(contract.id) } }" class="btn-action edit">
-                    عرض
-                  </router-link>
-                </td>
-              </tr>
-              <tr v-if="contracts.length === 0 && !isLoading">
-                <td
-                  colspan="4"
-                  style="text-align: center; padding: 40px; color: var(--color-dark-gray)"
-                >
-                  لا توجد عقود
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <EditorContractsSection
+        v-if="activeTab === 'contracts'"
+        :contracts="contracts"
+        :is-loading="isLoading"
+        :selected-contract-id="selectedContractId"
+      />
 
-      </div>
+      <EditorSecondPartySection
+        v-else-if="activeTab === 'second-party'"
+        :selected-contract-id="selectedContractId"
+        :second-party-data="secondPartyData"
+        :is-loading="isLoadingSecondParty"
+      />
 
-      <!-- 2. Second party data -->
-      <div v-else-if="activeTab === 'second-party'" class="management-view">
-        <div class="section-header-compact">
-          <div>
-            <h2 class="section-title">الطرف الثاني</h2>
-            <p class="section-subtitle">عرض بيانات الطرف الثاني للعقد.</p>
-          </div>
-        </div>
-        <div v-if="!selectedContractId" class="empty-state">
-          <p>اختر عقداً من تبويب العقود لعرض بيانات الطرف الثاني.</p>
-        </div>
-        <div v-else-if="isLoadingSecondParty" class="empty-state">
-          <p>جاري التحميل...</p>
-        </div>
-        <div v-else-if="secondPartyData && Object.keys(secondPartyData).length > 0" class="metrics-table-container table-responsive">
-          <table class="metrics-table">
-            <thead>
-              <tr>
-                <th>الحقل</th>
-                <th>القيمة</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(value, key) in secondPartyData" :key="key">
-                <td>{{ key }}</td>
-                <td>{{ value !== null && value !== undefined ? value : '—' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else class="empty-state">
-          <p>لا توجد بيانات للطرف الثاني لهذا العقد.</p>
-        </div>
-      </div>
-
-      <!-- 3. Contract units -->
-      <div v-else-if="activeTab === 'units'" class="management-view">
-        <div class="section-header-compact">
-          <div>
-            <h2 class="section-title">وحدات العقد</h2>
-            <p class="section-subtitle">وحدات العقد حسب المشروع.</p>
-          </div>
-        </div>
-        <div v-if="!selectedContractId" class="empty-state">
-          <p>اختر عقداً لعرض الوحدات المرتبطة به.</p>
-        </div>
-        <div v-else-if="isLoadingUnits" class="empty-state">
-          <p>جاري التحميل...</p>
-        </div>
-        <div v-else class="metrics-table-container table-responsive">
-          <table class="metrics-table">
-            <thead>
-              <tr>
-                <th>رقم الوحدة</th>
-                <th>النوع</th>
-                <th>الحالة</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="unit in contractUnits" :key="unit.id">
-                <td>{{ unit.unit_number || unit.id }}</td>
-                <td>{{ unit.type || unit.unit_type || '—' }}</td>
-                <td>{{ unit.status || '—' }}</td>
-              </tr>
-              <tr v-if="contractUnits.length === 0">
-                <td colspan="3" style="text-align: center; padding: 40px; color: var(--color-dark-gray)">
-                  لا توجد وحدات لهذا العقد.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <EditorUnitsSection
+        v-else-if="activeTab === 'units'"
+        :selected-contract-id="selectedContractId"
+        :contract-units="contractUnits"
+        :is-loading="isLoadingUnits"
+      />
 
       <!-- 4. Developers -->
       <div v-else-if="activeTab === 'developers'" class="management-view">
@@ -213,75 +111,19 @@
         </div>
       </div>
 
-      <!-- 6. Photography -->
-      <div v-else-if="activeTab === 'photography'" class="management-view">
-        <div class="section-header-compact">
-          <div>
-            <h2 class="section-title">قسم التصوير</h2>
-            <p class="section-subtitle">المشاريع المعلقة للتصوير.</p>
-          </div>
-        </div>
-        <div v-if="!selectedContractId" class="empty-state">
-          <p>إدارة بيانات التصوير للمشاريع من هنا أو من إدارة المشاريع.</p>
-        </div>
-        <div v-else-if="isLoadingPhotography" class="empty-state">
-          <p>جاري التحميل...</p>
-        </div>
-        <div v-else-if="photographyData && Object.keys(photographyData).length > 0" class="metrics-table-container table-responsive">
-          <table class="metrics-table">
-            <thead>
-              <tr>
-                <th>الحقل</th>
-                <th>القيمة</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(value, key) in photographyData" :key="key">
-                <td>{{ key }}</td>
-                <td>{{ value !== null && value !== undefined ? value : '—' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else class="empty-state">
-          <p>لا توجد بيانات تصوير لهذا العقد.</p>
-        </div>
-      </div>
+      <EditorPhotographySection
+        v-else-if="activeTab === 'photography'"
+        :selected-contract-id="selectedContractId"
+        :photography-data="photographyData"
+        :is-loading="isLoadingPhotography"
+      />
 
-      <!-- 7. Boards -->
-      <div v-else-if="activeTab === 'boards'" class="management-view">
-        <div class="section-header-compact">
-          <div>
-            <h2 class="section-title">قسم اللوحات</h2>
-            <p class="section-subtitle">إدارة بيانات اللوحات.</p>
-          </div>
-        </div>
-        <div v-if="!selectedContractId" class="empty-state">
-          <p>اختر عقداً لإدارة بيانات قسم اللوحات.</p>
-        </div>
-        <div v-else-if="isLoadingBoards" class="empty-state">
-          <p>جاري التحميل...</p>
-        </div>
-        <div v-else-if="boardsData && Object.keys(boardsData).length > 0" class="metrics-table-container table-responsive">
-          <table class="metrics-table">
-            <thead>
-              <tr>
-                <th>الحقل</th>
-                <th>القيمة</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(value, key) in boardsData" :key="key">
-                <td>{{ key }}</td>
-                <td>{{ value !== null && value !== undefined ? value : '—' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else class="empty-state">
-          <p>لا توجد بيانات لوحات لهذا العقد.</p>
-        </div>
-      </div>
+      <EditorBoardsSection
+        v-else-if="activeTab === 'boards'"
+        :selected-contract-id="selectedContractId"
+        :boards-data="boardsData"
+        :is-loading="isLoadingBoards"
+      />
 
       <!-- 8. Media -->
       <div v-else-if="activeTab === 'media'" class="management-view">
@@ -298,65 +140,14 @@
     </div>
 
     <!-- Modal: تفاصيل العقد -->
-    <div v-if="showContractModal" class="editor-modal-overlay" @click.self="closeContractModal">
-      <div class="editor-modal" role="dialog" aria-labelledby="contract-modal-title">
-        <div class="editor-modal-header">
-          <h2 id="contract-modal-title" class="editor-modal-title">تفاصيل العقد #{{ selectedContractId }}</h2>
-          <button type="button" class="editor-modal-close" @click="closeContractModal" aria-label="إغلاق">&times;</button>
-        </div>
-        <div class="editor-modal-body">
-          <div v-if="isLoadingContractDetail" class="editor-modal-loading">جاري تحميل تفاصيل العقد...</div>
-          <template v-else-if="selectedContract && contractDetailRows.length > 0">
-            <div class="metrics-table-container table-responsive">
-              <table class="metrics-table">
-                <thead>
-                  <tr>
-                    <th>الحقل</th>
-                    <th>القيمة</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="row in contractDetailRows" :key="row.key">
-                    <td class="detail-key-cell">{{ row.label }}</td>
-                    <td class="detail-value-cell">
-                      <template v-if="row.type === 'scalar'">{{ row.value }}</template>
-                      <template v-else-if="row.type === 'array'">
-                        <div v-if="!row.data || row.data.length === 0">—</div>
-                        <div v-else class="nested-array">
-                          <table class="metrics-table nested-table">
-                            <thead>
-                              <tr>
-                                <th v-for="col in row.columns" :key="col">{{ formatDetailKey(col) }}</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr v-for="(item, idx) in row.data" :key="idx">
-                                <td v-for="col in row.columns" :key="col">{{ formatNestedValue(item[col], col) }}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </template>
-                      <template v-else-if="row.type === 'object'">
-                        <div v-if="!row.data || Object.keys(row.data).length === 0">—</div>
-                        <table v-else class="metrics-table nested-table">
-                          <tbody>
-                            <tr v-for="(v, k) in row.data" :key="k">
-                              <td class="nested-key">{{ formatDetailKey(k) }}</td>
-                              <td>{{ formatNestedValue(v, k) }}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </template>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </template>
-        </div>
-      </div>
-    </div>
+    <EditorContractDetailSection
+      v-if="showContractModal"
+      :contract-id="selectedContractId"
+      :selected-contract="selectedContract"
+      :contract-detail-rows="contractDetailRows"
+      :is-loading="isLoadingContractDetail"
+      @close="closeContractModal"
+    />
 
     <!-- Modal: تفاصيل المطور -->
     <div v-if="showDeveloperModal" class="editor-modal-overlay" @click.self="closeDeveloperModal">
@@ -423,6 +214,12 @@ import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import editorService from '@/services/editorService';
 import logger from '@/utils/logger';
+import EditorContractsSection from '@/components/editor/EditorContractsSection.vue';
+import EditorContractDetailSection from '@/components/editor/EditorContractDetailSection.vue';
+import EditorSecondPartySection from '@/components/editor/EditorSecondPartySection.vue';
+import EditorUnitsSection from '@/components/editor/EditorUnitsSection.vue';
+import EditorPhotographySection from '@/components/editor/EditorPhotographySection.vue';
+import EditorBoardsSection from '@/components/editor/EditorBoardsSection.vue';
 
 const EDITOR_TABS = [
   { id: 'contracts', name: 'EditorContracts', label: 'عقود' },
@@ -437,6 +234,14 @@ const EDITOR_TABS = [
 
 export default {
   name: 'EditorView',
+  components: {
+    EditorContractsSection,
+    EditorContractDetailSection,
+    EditorSecondPartySection,
+    EditorUnitsSection,
+    EditorPhotographySection,
+    EditorBoardsSection,
+  },
   setup() {
     const route = useRoute();
 
@@ -562,7 +367,6 @@ export default {
     const showContractModal = ref(false);
     const showDeveloperModal = ref(false);
 
-    /** Normalize API response: backend may return { data: {...} } or { contract: {...} } or the object directly */
     function normalizeContractPayload(raw) {
       if (!raw || typeof raw !== 'object') return {};
       if (raw.data && typeof raw.data === 'object' && !Array.isArray(raw.data)) return raw.data;
@@ -666,7 +470,6 @@ export default {
       updated_at: 'تاريخ التحديث',
     };
 
-    /** Format ISO date string for display; returns '—' if not a date */
     function formatDisplayDate(val) {
       if (val === null || val === undefined) return '—';
       const s = String(val).trim();
@@ -682,21 +485,18 @@ export default {
       });
     }
 
-    /** Format a single value for detail table (no JSON dump) */
     function formatDetailValueForRow(value) {
       if (value === null || value === undefined) return '—';
       if (typeof value === 'boolean') return value ? 'نعم' : 'لا';
       if (Array.isArray(value)) return value.length ? `${value.length} عنصر` : '—';
       if (typeof value === 'object') return '—';
       const str = String(value);
-      // Translate known status/enum values to Arabic
       if (CONTRACT_STATUS_LABELS[str]) return CONTRACT_STATUS_LABELS[str];
       const date = new Date(str);
       if (str.length >= 10 && !Number.isNaN(date.getTime())) return formatDisplayDate(str);
       return str;
     }
 
-    /** Format value in nested tables (scalar, date, or object as readable text) */
     function formatNestedValue(value) {
       if (value === null || value === undefined) return '—';
       if (typeof value === 'boolean') return value ? 'نعم' : 'لا';
@@ -710,7 +510,6 @@ export default {
       return str;
     }
 
-    /** All keys from array of objects (union) for table columns */
     function getAllKeysFromItems(items) {
       if (!Array.isArray(items) || items.length === 0) return [];
       const set = new Set();
@@ -720,7 +519,6 @@ export default {
       return Array.from(set);
     }
 
-    /** Rows for contract modal: كل التفاصيل — scalar, array (as sub-table), object (as nested key-value) */
     const contractDetailRows = computed(() => {
       const c = selectedContract.value;
       if (!c || typeof c !== 'object') return [];
@@ -751,7 +549,6 @@ export default {
       });
     });
 
-    /** Rows for developer modal: كل التفاصيل */
     const developerDetailRows = computed(() => {
       const d = selectedDeveloper.value;
       if (!d || typeof d !== 'object') return [];
@@ -823,7 +620,6 @@ export default {
       }
     };
 
-    // Load data when switching tabs
     watch(
       activeTab,
       newTab => {
@@ -838,7 +634,6 @@ export default {
       { immediate: true }
     );
 
-    // Reload current contract-dependent tab when contract selection changes
     watch(selectedContractId, () => {
       const tab = activeTab.value;
       if (tab === 'second-party') loadSecondParty();
@@ -1014,7 +809,7 @@ export default {
   border-radius: 12px;
 }
 
-/* Editor modals */
+/* Developer modal */
 .editor-modal-overlay {
   position: fixed;
   inset: 0;

@@ -42,14 +42,11 @@ const authService = {
           secureStorage.setRefreshToken(refresh_token);
         }
 
-        // If user object is returned, save it. Otherwise create a mock one based on email
-        const userData = user
-          ? { ...user }
-          : {
-              name: 'Admin',
-              email: email,
-              type: 1, // Default to admin if nothing returned
-            };
+        if (!user) {
+          throw new Error('Authentication failed: no user data returned');
+        }
+
+        const userData = { ...user };
 
         // Normalize type if it comes as string "admin" from backend
         if (typeof userData.type === 'string' && ROLE_MAP[userData.type] !== undefined) {

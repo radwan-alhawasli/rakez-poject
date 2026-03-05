@@ -30,7 +30,7 @@
       </div>
 
       <div v-else class="table-responsive">
-        <table class="data-table">
+        <table class="data-table table-mobile-stacked">
         <thead>
           <tr>
             <th>المستخدم</th>
@@ -43,7 +43,7 @@
         </thead>
         <tbody>
           <tr v-for="user in users" :key="user.id">
-            <td>
+            <td data-label="المستخدم">
               <div class="user-cell">
                 <div class="user-avatar">{{ (user.name || '?').charAt(0).toUpperCase() }}</div>
                 <div class="user-details">
@@ -52,19 +52,19 @@
                 </div>
               </div>
             </td>
-            <td>
+            <td data-label="الدور">
               <div class="role-badge" :class="getRoleClass(user.type)">
                 {{ getRoleLabel(user.type, user.is_manager) }}
               </div>
             </td>
-            <td>{{ getTeamDisplay(user.team) }}</td>
-            <td class="date-cell">{{ formatDate(user.created_at) }}</td>
-            <td>
+            <td data-label="الفريق">{{ getTeamDisplay(user.team) }}</td>
+            <td data-label="تاريخ الإنشاء" class="date-cell">{{ formatDate(user.created_at) }}</td>
+            <td data-label="الحالة">
               <span class="status-badge" :class="isUserDisabled(user) ? 'disabled' : 'active'">
                 {{ isUserDisabled(user) ? 'معطل' : 'نشط' }}
               </span>
             </td>
-            <td>
+            <td data-label="الإجراءات">
               <div class="actions">
                 <button
                   class="action-btn status"

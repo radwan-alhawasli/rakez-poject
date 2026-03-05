@@ -30,6 +30,12 @@
       <p>جاري تحميل المشاريع...</p>
     </div>
 
+    <!-- Error State -->
+    <div v-else-if="error" class="error-state">
+      <p>{{ error }}</p>
+      <button @click="fetchProjects">إعادة المحاولة</button>
+    </div>
+
     <!-- Content -->
     <div v-else>
       <!-- Projects List -->
@@ -170,6 +176,7 @@ export default {
   setup() {
     const activeTab = ref('pending');
     const isLoading = ref(false);
+    const error = ref(null);
     const allProjects = ref([]);
     const showForm = ref(false);
     const selectedProject = ref(null);
@@ -190,9 +197,9 @@ export default {
 
     const fetchProjects = async () => {
       isLoading.value = true;
+      error.value = null;
       try {
         const data = await contractService.getContracts();
-        // Map and merge with local storage state
         allProjects.value = (Array.isArray(data) ? data : []).map(p => {
           const savedBoard = localStorage.getItem(`board_${p.id}`);
           return {
@@ -204,6 +211,7 @@ export default {
         });
       } catch (err) {
         logger.error('Error fetching boards projects:', err);
+        error.value = 'حدث خطأ في تحميل المشاريع';
       } finally {
         isLoading.value = false;
       }
@@ -265,6 +273,7 @@ export default {
     return {
       activeTab,
       isLoading,
+      error,
       pendingProjects,
       completedProjects,
       projectsToDisplay,
@@ -273,6 +282,7 @@ export default {
       openBoardForm,
       closeForm,
       saveBoard,
+      fetchProjects,
     };
   },
 };
@@ -591,6 +601,51 @@ export default {
   transform: translateY(-2px);
   background: #0f172a;
   box-shadow: 0 10px 15px -3px rgba(30, 41, 59, 0.3);
+}
+
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 50px;
+  color: var(--color-dark-gray);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  border: 3px solid var(--color-light-gray);
+  border-top-color: var(--color-gold);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-state {
+  text-align: center;
+  padding: 50px;
+  color: var(--color-dark-gray);
+}
+
+.error-state button {
+  margin-top: 15px;
+  padding: 10px 24px;
+  background: var(--color-navy);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.error-state button:hover {
+  opacity: 0.9;
 }
 
 /* Responsive: Tablet Landscape */

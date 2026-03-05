@@ -328,41 +328,8 @@ export function useHRTeams(isHR) {
       });
     } catch (error) {
       logger.error('Error loading teams:', error);
-      teamsData.value = [
-        {
-          id: 1,
-          name: 'فريق المبيعات الرياض',
-          members: ['أحمد', 'خالد', 'سارة', 'فهد', 'محمد', 'نورة'],
-          goalProgress: 85,
-          soldProjects: 12,
-          totalValue: '1.2M',
-          color: '#B1A28F',
-          locations: 'الرياض - حي الياسمين، حي النرجس',
-          salesAverage: 2.5,
-        },
-        {
-          id: 2,
-          name: 'فريق التطوير العقاري',
-          members: ['علي', 'عمر', 'ريم', 'ليلى', 'حسن'],
-          goalProgress: 60,
-          soldProjects: 4,
-          totalValue: '3.5M',
-          color: '#1e3a5f',
-          locations: 'جدة - أبحر الشمالية',
-          salesAverage: 1.8,
-        },
-        {
-          id: 3,
-          name: 'فريق التسويق الميداني',
-          members: ['سلطان', 'ماجد', 'أمل', 'نواف'],
-          goalProgress: 92,
-          soldProjects: 24,
-          totalValue: '850K',
-          color: '#B1A28F',
-          locations: 'الدمام - حي الشاطئ',
-          salesAverage: 3.2,
-        },
-      ];
+      toast.error('حدث خطأ أثناء تحميل بيانات الفرق');
+      teamsData.value = [];
     }
   };
 

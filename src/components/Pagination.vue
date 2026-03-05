@@ -342,12 +342,12 @@ export default {
     padding: 16px 0;
   }
   .pagination-btn {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
   }
   .page-number {
-    min-width: 34px;
-    height: 34px;
+    min-width: 44px;
+    height: 44px;
     padding: 0 8px;
     font-size: 13px;
   }
@@ -357,6 +357,7 @@ export default {
   .per-page-select {
     font-size: 13px;
     padding: 6px 8px;
+    min-height: 44px;
   }
 }
 
@@ -376,8 +377,8 @@ export default {
     padding: 12px 0;
   }
   .pagination-btn {
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
   }
   .pagination-info {
     font-size: 12px;
@@ -387,7 +388,8 @@ export default {
 }
 
 @media (min-width: 1920px) {
-  .page-btn {
+  .pagination-btn,
+  .page-number {
     min-width: 42px;
     min-height: 42px;
     font-size: 15px;
@@ -398,7 +400,8 @@ export default {
 }
 
 @media (min-width: 2560px) {
-  .page-btn {
+  .pagination-btn,
+  .page-number {
     min-width: 48px;
     min-height: 48px;
     font-size: 16px;
@@ -407,7 +410,8 @@ export default {
 }
 
 @media (min-width: 3840px) {
-  .page-btn {
+  .pagination-btn,
+  .page-number {
     min-width: 56px;
     min-height: 56px;
     font-size: 20px;
@@ -416,7 +420,7 @@ export default {
   .pagination-info {
     font-size: 18px;
   }
-  .per-page-selector select {
+  .per-page-select {
     font-size: 18px;
     padding: 10px 14px;
   }

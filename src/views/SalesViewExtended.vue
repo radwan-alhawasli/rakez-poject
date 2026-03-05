@@ -1506,7 +1506,6 @@ export default {
 .sales-view .reservations-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1000px;
 }
 
 .sales-view .reservations-table th {

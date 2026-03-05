@@ -1113,18 +1113,6 @@ export default {
   }
 }
 
-/* Main Wrapper - sidebar margin/transition only; layout via Tailwind (flex flex-1 flex-col min-h-0) */
-.main-wrapper {
-  margin-right: 80px;
-  padding-top: 60px;
-  min-height: 100vh;
-  position: relative;
-  transition: margin-right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-:deep(.sidebar):hover ~ .main-wrapper {
-  margin-right: 260px;
-}
 
 /* Header/footer shift on hover (header is before sidebar in DOM so use app-container class) */
 .app-container.sidebar-hovered .top-header {

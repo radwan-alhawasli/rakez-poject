@@ -19,15 +19,15 @@
       </div>
     </div>
     <div class="metrics-table-container table-responsive">
-      <table class="metrics-table">
+      <table class="metrics-table table-mobile-stacked">
         <thead><tr><th>العنوان</th><th>النوع</th><th>التاريخ</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
         <tbody>
           <tr v-for="notification in notifications" :key="notification.id">
-            <td>{{ notification.title || 'إشعار' }}</td>
-            <td>{{ getNotificationTypeLabel(notification.type) }}</td>
-            <td>{{ formatDate(notification.created_at) }}</td>
-            <td><span class="status-tag" :class="notification.read ? 'excellent' : 'good'">{{ notification.read ? 'مقروء' : 'غير مقروء' }}</span></td>
-            <td>
+            <td data-label="العنوان">{{ notification.title || 'إشعار' }}</td>
+            <td data-label="النوع">{{ getNotificationTypeLabel(notification.type) }}</td>
+            <td data-label="التاريخ">{{ formatDate(notification.created_at) }}</td>
+            <td data-label="الحالة"><span class="status-tag" :class="notification.read ? 'excellent' : 'good'">{{ notification.read ? 'مقروء' : 'غير مقروء' }}</span></td>
+            <td data-label="الإجراءات">
               <div class="notification-actions">
                 <button class="btn-action view" @click="viewNotificationDetail(notification)" title="عرض التفاصيل">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -40,7 +40,7 @@
               </div>
             </td>
           </tr>
-          <tr v-if="notifications.length === 0 && !isLoading"><td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8">لا توجد إشعارات</td></tr>
+          <tr v-if="notifications.length === 0 && !isLoading"><td colspan="5" data-label="" style="text-align: center; padding: 40px; color: #94a3b8">لا توجد إشعارات</td></tr>
         </tbody>
       </table>
     </div>

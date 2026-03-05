@@ -95,7 +95,7 @@
 
       <!-- Sold units table -->
       <div v-else class="table-container table-responsive">
-        <table class="data-table">
+        <table class="data-table table-mobile-stacked">
           <thead>
             <tr>
               <th>#</th>
@@ -110,16 +110,16 @@
           </thead>
           <tbody>
             <tr v-for="(unit, idx) in soldUnits" :key="unit.id">
-              <td>{{ (soldUnitsPage - 1) * soldUnitsPerPage + idx + 1 }}</td>
-              <td>{{ unit.unit_number || unit.id }}</td>
-              <td>{{ unit.project_name || unit.contract_name || 'â€”' }}</td>
-              <td>{{ unit.client_name || 'â€”' }}</td>
-              <td>{{ formatCurrency(unit.sale_price || unit.price || 0) }}</td>
-              <td>{{ formatDate(unit.sold_at || unit.created_at) }}</td>
-              <td>
+              <td data-label="#">{{ (soldUnitsPage - 1) * soldUnitsPerPage + idx + 1 }}</td>
+              <td data-label="رقم الوحدة">{{ unit.unit_number || unit.id }}</td>
+              <td data-label="المشروع">{{ unit.project_name || unit.contract_name || 'â€”' }}</td>
+              <td data-label="العميل">{{ unit.client_name || 'â€”' }}</td>
+              <td data-label="سعر البيع">{{ formatCurrency(unit.sale_price || unit.price || 0) }}</td>
+              <td data-label="تاريخ البيع">{{ formatDate(unit.sold_at || unit.created_at) }}</td>
+              <td data-label="الحالة">
                 <span class="badge badge-sold">Ù…Ø¨Ø§Ø¹Ø©</span>
               </td>
-              <td>
+              <td data-label="إجراءات">
                 <button
                   class="btn-icon-sm"
                   title="Ù…Ù„Ø®Øµ Ø§Ù„Ø¹Ù…ÙˆÙ„Ø©"

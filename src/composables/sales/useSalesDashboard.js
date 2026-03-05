@@ -10,10 +10,14 @@ export function useSalesDashboard() {
 
   const dashboardData = ref(null);
   const isLoadingDashboard = ref(false);
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
   const dashboardFilters = reactive({
     scope: 'me',
-    from: '2026-01-01',
-    to: '2026-01-31',
+    from: `${year}-${month}-01`,
+    to: `${year}-${month}-${String(lastDay).padStart(2, '0')}`,
   });
 
   const projects = shallowRef([]);

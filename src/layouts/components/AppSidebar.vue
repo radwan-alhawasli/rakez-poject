@@ -75,7 +75,7 @@
             </div>
           </router-link>
   
-          <a href="#" class="nav-item" data-tooltip="التحليلات">
+          <router-link to="/sales/analytics" class="nav-item" active-class="active" data-tooltip="التحليلات">
             <div class="nav-content">
               <svg
                 class="nav-icon-svg"
@@ -89,7 +89,7 @@
               </svg>
               <span class="nav-text">التحليلات</span>
             </div>
-          </a>
+          </router-link>
   
           <router-link
             to="/project-management"
@@ -260,7 +260,7 @@
             </div>
           </router-link>
   
-          <a href="#" class="nav-item" data-tooltip="إحضار المشاريع">
+          <router-link to="/contracts" class="nav-item" active-class="active" data-tooltip="إحضار المشاريع">
             <div class="nav-content">
               <svg
                 class="nav-icon-svg"
@@ -274,9 +274,9 @@
               </svg>
               <span class="nav-text">إحضار المشاريع</span>
             </div>
-          </a>
+          </router-link>
   
-          <a href="#" class="nav-item" data-tooltip="الحجوزات">
+          <router-link to="/reservations" class="nav-item" active-class="active" data-tooltip="الحجوزات">
             <div class="nav-content">
               <svg
                 class="nav-icon-svg"
@@ -290,9 +290,9 @@
               </svg>
               <span class="nav-text">الحجوزات</span>
             </div>
-          </a>
+          </router-link>
   
-          <a href="#" class="nav-item" data-tooltip="الحجوزات الملغاة">
+          <router-link to="/cancelled-reservations" class="nav-item" active-class="active" data-tooltip="الحجوزات الملغاة">
             <div class="nav-content">
               <svg
                 class="nav-icon-svg"
@@ -306,9 +306,9 @@
               </svg>
               <span class="nav-text">الحجوزات الملغاة</span>
             </div>
-          </a>
+          </router-link>
   
-          <a href="#" class="nav-item" data-tooltip="الوحدات المباعة">
+          <router-link to="/sales/sold-units" class="nav-item" active-class="active" data-tooltip="الوحدات المباعة">
             <div class="nav-content">
               <svg
                 class="nav-icon-svg"
@@ -322,9 +322,9 @@
               </svg>
               <span class="nav-text">الوحدات المباعة</span>
             </div>
-          </a>
+          </router-link>
   
-          <a href="#" class="nav-item" data-tooltip="الحسابات">
+          <router-link to="/accounting/dashboard" class="nav-item" active-class="active" data-tooltip="الحسابات">
             <div class="nav-content">
               <svg
                 class="nav-icon-svg"
@@ -337,7 +337,7 @@
               </svg>
               <span class="nav-text">الحسابات</span>
             </div>
-          </a>
+          </router-link>
   
           <router-link
             to="/exclusive-request"

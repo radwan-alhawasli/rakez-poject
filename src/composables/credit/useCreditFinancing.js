@@ -3,6 +3,7 @@ import creditService from '@/services/creditService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
+import { getStatusClass } from '@/utils/statusHelpers';
 
 export function useCreditFinancing() {
   const isLoading = ref(false);
@@ -17,25 +18,6 @@ export function useCreditFinancing() {
 
   const { formatCurrency } = useFormatters();
 
-  const getStatusClass = status => {
-    if (!status) return 'good';
-    const statusLower = status.toLowerCase();
-    if (
-      statusLower.includes('completed') ||
-      statusLower.includes('approved') ||
-      statusLower.includes('مكتمل') ||
-      statusLower.includes('موافق')
-    )
-      return 'excellent';
-    if (
-      statusLower.includes('pending') ||
-      statusLower.includes('waiting') ||
-      statusLower.includes('معلق') ||
-      statusLower.includes('منتظر')
-    )
-      return 'good';
-    return 'good';
-  };
 
   const getApiErrorMessage = (error, fallback) => {
     const msg = error?.response?.data?.message;

@@ -7,60 +7,62 @@
     </div>
 
     <!-- فلتر العرض الحديث -->
-    <div class="controls-Modern-area">
-      <div class="modern-tabs">
-        <button
-          :class="['tab-item', { active: activeFilter === 'all' }]"
-          @click="activeFilter = 'all'"
-        >
-          كل السجلات <span class="tab-count">{{ totalCount }}</span>
-        </button>
+    <MobileFilterSheet>
+      <div class="controls-Modern-area">
+        <div class="modern-tabs">
+          <button
+            :class="['tab-item', { active: activeFilter === 'all' }]"
+            @click="activeFilter = 'all'"
+          >
+            كل السجلات <span class="tab-count">{{ totalCount }}</span>
+          </button>
 
-        <button
-          :class="['tab-item', { active: activeFilter === 'pending' }]"
-          @click="activeFilter = 'pending'"
-        >
-          المعلقة <span class="tab-count">{{ pendingCount }}</span>
-        </button>
+          <button
+            :class="['tab-item', { active: activeFilter === 'pending' }]"
+            @click="activeFilter = 'pending'"
+          >
+            المعلقة <span class="tab-count">{{ pendingCount }}</span>
+          </button>
 
-        <button
-          :class="['tab-item', { active: activeFilter === 'approved' }]"
-          @click="activeFilter = 'approved'"
-        >
-          العقود المقبولة <span class="tab-count">{{ approvedCount }}</span>
-        </button>
+          <button
+            :class="['tab-item', { active: activeFilter === 'approved' }]"
+            @click="activeFilter = 'approved'"
+          >
+            العقود المقبولة <span class="tab-count">{{ approvedCount }}</span>
+          </button>
 
-        <button
-          :class="['tab-item', { active: activeFilter === 'archive' }]"
-          @click="activeFilter = 'archive'"
-        >
-          الأرشيف <span class="tab-count">{{ archiveCount }}</span>
-        </button>
+          <button
+            :class="['tab-item', { active: activeFilter === 'archive' }]"
+            @click="activeFilter = 'archive'"
+          >
+            الأرشيف <span class="tab-count">{{ archiveCount }}</span>
+          </button>
+        </div>
+
+        <!-- حقل البحث -->
+        <div class="search-container">
+          <svg
+            class="search-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="search-input"
+            placeholder="البحث برقم العقد أو اسم المشروع..."
+          />
+        </div>
       </div>
-
-      <!-- حقل البحث -->
-      <div class="search-container">
-        <svg
-          class="search-icon"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" />
-        </svg>
-        <input
-          v-model="searchQuery"
-          type="text"
-          class="search-input"
-          placeholder="البحث برقم العقد أو اسم المشروع..."
-        />
-      </div>
-    </div>
+    </MobileFilterSheet>
 
     <!-- حالة التحميل -->
     <div v-if="isLoading" class="loading-state">
@@ -93,7 +95,7 @@
     <!-- جدول البيانات -->
     <div v-else class="table-container">
       <div class="table-responsive">
-      <table class="custom-table">
+      <table class="custom-table table-mobile-stacked">
         <thead>
           <tr>
             <th>النوع</th>
@@ -106,13 +108,13 @@
         </thead>
         <tbody>
           <tr v-for="contract in paginatedContracts" :key="contract.id">
-            <td>
+            <td data-label="النوع">
               <span class="badge-type">{{ contract.type }}</span>
             </td>
-            <td class="font-bold">{{ contract.number }}</td>
-            <td class="dev-name">{{ contract.developer }}</td>
-            <td class="dir-ltr">{{ contract.createdDate }}</td>
-            <td>
+            <td class="font-bold" data-label="رقم العقد/الطلب">{{ contract.number }}</td>
+            <td class="dev-name" data-label="المطور">{{ contract.developer }}</td>
+            <td class="dir-ltr" data-label="تاريخ الإنشاء">{{ contract.createdDate }}</td>
+            <td data-label="الحالة">
               <span
                 :class="[
                   'status-badge-custom',
@@ -126,7 +128,7 @@
                 {{ contract.status }}
               </span>
             </td>
-            <td><button class="view-link" @click="viewContract(contract)">عرض</button></td>
+            <td data-label="الإجراء"><button class="view-link" @click="viewContract(contract)">عرض</button></td>
           </tr>
         </tbody>
       </table>
@@ -158,6 +160,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import ContractModal from '@/components/ContractModal.vue';
 import Pagination from '@/components/Pagination.vue';
+import MobileFilterSheet from '@/components/MobileFilterSheet.vue';
 import contractService from '@/services/contractService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';

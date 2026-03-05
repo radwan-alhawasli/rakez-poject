@@ -3,6 +3,7 @@ import creditService from '@/services/creditService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
+import { getClaimStatusClass } from '@/utils/statusHelpers';
 
 export function useCreditClaimFiles() {
   const isLoading = ref(false);
@@ -23,15 +24,6 @@ export function useCreditClaimFiles() {
   const { formatCurrency, formatDate: _fmtDate } = useFormatters();
   const formatDate = dateStr => (!dateStr ? 'غير محدد' : _fmtDate(dateStr));
 
-  const getClaimStatusClass = status => {
-    if (!status) return 'good';
-    const s = status.toLowerCase();
-    if (s === 'completed' || s.includes('مكتمل')) return 'excellent';
-    if (s === 'under_processing' || s.includes('معالجة')) return 'good';
-    if (s === 'pending' || s.includes('معلق')) return 'good';
-    if (s === 'submitted' || s.includes('مرسل')) return 'good';
-    return 'good';
-  };
 
   const loadClaimFiles = async () => {
     isLoading.value = true;

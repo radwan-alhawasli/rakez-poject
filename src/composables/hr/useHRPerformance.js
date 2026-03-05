@@ -1,8 +1,11 @@
-import { reactive } from 'vue';
+import { ref, reactive } from 'vue';
 import hrService from '@/services/hrService';
 import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
 
 export function useHRPerformance() {
+  const error = ref(null);
+
   const performanceData = reactive({
     teams: [],
     employees: [],
@@ -11,29 +14,15 @@ export function useHRPerformance() {
   const marketerPerformanceData = reactive([]);
 
   const loadTeamPerformance = async () => {
+    error.value = null;
     try {
       const data = await hrService.getTeamPerformance();
       performanceData.teams = data;
-    } catch (error) {
-      logger.error('Error loading team performance:', error);
-      performanceData.teams = [
-        {
-          name: 'مبيعات الوسطى',
-          achievement: 94,
-          productivity: 88,
-          quality: 95,
-          status: 'excellent',
-          statusLabel: 'ممتاز',
-        },
-        {
-          name: 'مبيعات الغربية',
-          achievement: 72,
-          productivity: 75,
-          quality: 82,
-          status: 'good',
-          statusLabel: 'جيد',
-        },
-      ];
+    } catch (err) {
+      logger.error('Error loading team performance:', err);
+      error.value = 'حدث خطأ أثناء تحميل أداء الفرق';
+      toast.error('حدث خطأ أثناء تحميل أداء الفرق');
+      performanceData.teams = [];
     }
   };
 
@@ -59,6 +48,7 @@ export function useHRPerformance() {
   };
 
   return {
+    error,
     performanceData,
     marketerPerformanceData,
     loadTeamPerformance,
