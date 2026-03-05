@@ -22,15 +22,21 @@
  * @property {boolean} enableErrorReporting
  * @property {number} apiTimeout - ms
  */
-import logger from '../utils/logger';
+import logger from '@/utils/logger';
+
+// Vite exposes env via import.meta.env (process.env is not available in browser).
+// Use VITE_APP_* in .env for client-side config.
+const getEnv = (key) => (typeof import.meta.env !== 'undefined' && import.meta.env[key]) || '';
 
 // Determine environment first (needed for API URL logic)
-const env = String(process.env.NODE_ENV || 'development').toLowerCase();
+const env = String(import.meta.env?.MODE || 'development').toLowerCase();
 const isDevelopment = env === 'development';
 const isProduction = env === 'production';
 
 // API Base URL — بدون شرطة نهائية (e.g. http://localhost:8000/api)
-const apiBaseUrl = (process.env.VUE_APP_API_BASE_URL || 'https://api.rakez.com.sa/api').replace(
+// In development, default to local backend; otherwise use env or production URL.
+const defaultApiUrl = isDevelopment ? 'http://localhost:8000/api' : 'https://api.rakez.com.sa/api';
+const apiBaseUrl = (getEnv('VITE_APP_API_BASE_URL') || defaultApiUrl).replace(
   /\/+$/,
   ''
 );
@@ -51,28 +57,28 @@ const appConfig = {
   isDevelopment,
 
   // Security
-  enableCSRF: process.env.VUE_APP_ENABLE_CSRF !== 'false',
+  enableCSRF: getEnv('VITE_APP_ENABLE_CSRF') !== 'false',
   csrfTokenHeader: 'X-CSRF-TOKEN',
 
   // Session
-  sessionTimeout: parseInt(process.env.VUE_APP_SESSION_TIMEOUT, 10) || 30 * 60 * 1000, // 30 minutes
-  sessionWarningTime: parseInt(process.env.VUE_APP_SESSION_WARNING_TIME, 10) || 5 * 60 * 1000, // 5 minutes
+  sessionTimeout: parseInt(getEnv('VITE_APP_SESSION_TIMEOUT'), 10) || 30 * 60 * 1000, // 30 minutes
+  sessionWarningTime: parseInt(getEnv('VITE_APP_SESSION_WARNING_TIME'), 10) || 5 * 60 * 1000, // 5 minutes
 
   // Pusher / Reverb (WebSocket) Configuration
-  pusherKey: process.env.VUE_APP_PUSHER_KEY || '',
-  pusherCluster: process.env.VUE_APP_PUSHER_CLUSTER || 'mt1',
-  pusherAuthEndpoint: process.env.VUE_APP_PUSHER_AUTH_ENDPOINT || '/api/broadcasting/auth',
-  // Reverb: same host/port as Reverb server (e.g. VUE_APP_PUSHER_WS_HOST=localhost, VUE_APP_PUSHER_WS_PORT=8080)
-  pusherWsHost: process.env.VUE_APP_PUSHER_WS_HOST || '',
-  pusherWsPort: parseInt(process.env.VUE_APP_PUSHER_WS_PORT, 10) || 8080,
-  pusherForceTLS: process.env.VUE_APP_PUSHER_FORCE_TLS === 'true',
+  pusherKey: getEnv('VITE_APP_PUSHER_KEY') || '',
+  pusherCluster: getEnv('VITE_APP_PUSHER_CLUSTER') || 'mt1',
+  pusherAuthEndpoint: getEnv('VITE_APP_PUSHER_AUTH_ENDPOINT') || '/api/broadcasting/auth',
+  // Reverb: same host/port as Reverb server (e.g. VITE_APP_PUSHER_WS_HOST=localhost, VITE_APP_PUSHER_WS_PORT=8080)
+  pusherWsHost: getEnv('VITE_APP_PUSHER_WS_HOST') || '',
+  pusherWsPort: parseInt(getEnv('VITE_APP_PUSHER_WS_PORT'), 10) || 8080,
+  pusherForceTLS: getEnv('VITE_APP_PUSHER_FORCE_TLS') === 'true',
 
   // Feature Flags
-  enableAnalytics: process.env.VUE_APP_ENABLE_ANALYTICS === 'true',
-  enableErrorReporting: process.env.VUE_APP_ENABLE_ERROR_REPORTING !== 'false',
+  enableAnalytics: getEnv('VITE_APP_ENABLE_ANALYTICS') === 'true',
+  enableErrorReporting: getEnv('VITE_APP_ENABLE_ERROR_REPORTING') !== 'false',
 
   // API timeout (ms) - increase for slow endpoints like accounting/sold-units
-  apiTimeout: parseInt(process.env.VUE_APP_API_TIMEOUT, 10) || 30000,
+  apiTimeout: parseInt(getEnv('VITE_APP_API_TIMEOUT'), 10) || 30000,
 };
 
 /** @type {AppConfig} */

@@ -177,97 +177,85 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue';
-import { useFormatters } from '../composables/useFormatters';
+import { useFormatters } from '@/composables/useFormatters';
 
-export default {
-  name: 'CancelledReservationsView',
-  setup() {
-    const expandedId = ref(null);
+const expandedId = ref(null);
 
-    const cancelledReservations = ref([
-      {
-        id: 1,
-        unitNumber: 'a2231',
-        projectName: 'الامبراطور',
-        clientName: 'محمد الشامي',
-        marketerName: 'نوره الشويني',
-        date: '2025-10-15',
-        status: 'cancelled',
-        rejectionReason: 'غلاء',
-        clientPhone: '6519908191',
-        clientNationality: 'Saudi',
-        clientIBAN: 'lk',
-        depositAmount: 7500,
-        depositDate: '2025-10-15',
-        paymentMethod: 'كاش',
-        neighborhood: 'الروشه',
-        propertyType: 'Apartment',
-        propertyValue: 3000000,
-        projectTeam: 'Team B',
-        sellerTeam: 'Team B',
-        purchaseMethod: 'Cash',
-      },
-      {
-        id: 2,
-        unitNumber: 'b70750',
-        projectName: 'برج الشام 5',
-        clientName: 'SAAD6',
-        marketerName: 'Aboshama',
-        date: '2025-10-05',
-        status: 'cancelled',
-        rejectionReason: 'تم إلغاء الحجز بناء على طلب العميل',
-        clientPhone: '6519908191',
-        clientNationality: 'Saudi',
-        clientIBAN: 'xxx',
-        depositAmount: 7500,
-        depositDate: '2025-10-05',
-        paymentMethod: 'تحويل بنكي',
-        neighborhood: 'ع_ب المرابط',
-        propertyType: 'Apartment',
-        propertyValue: 2000000,
-        projectTeam: 'Team B',
-        sellerTeam: 'غير معين',
-        purchaseMethod: 'Cash',
-      },
-      {
-        id: 3,
-        unitNumber: 'b22',
-        projectName: 'عين أوسس',
-        clientName: 'محمد العربي',
-        marketerName: 'مسوق 3',
-        date: '2025-10-02',
-        status: 'rejected',
-        rejectionReason: 'عدم توفر المستندات المطلوبة',
-        clientPhone: '6519908191',
-        clientNationality: 'Saudi',
-        clientIBAN: '999888',
-        depositAmount: 10000,
-        depositDate: '2025-10-02',
-        paymentMethod: 'كاش',
-        neighborhood: 'القريه',
-        propertyType: 'Villa',
-        propertyValue: 1800000,
-        projectTeam: 'team-a',
-        sellerTeam: 'team-b',
-        purchaseMethod: 'Cash',
-      },
-    ]);
-
-    const { formatNumber: formatCurrency } = useFormatters();
-
-    const toggleExpand = id => {
-      expandedId.value = expandedId.value === id ? null : id;
-    };
-
-    return {
-      expandedId,
-      cancelledReservations,
-      formatCurrency,
-      toggleExpand,
-    };
+const cancelledReservations = ref([
+  {
+    id: 1,
+    unitNumber: 'a2231',
+    projectName: 'الامبراطور',
+    clientName: 'محمد الشامي',
+    marketerName: 'نوره الشويني',
+    date: '2025-10-15',
+    status: 'cancelled',
+    rejectionReason: 'غلاء',
+    clientPhone: '6519908191',
+    clientNationality: 'Saudi',
+    clientIBAN: 'lk',
+    depositAmount: 7500,
+    depositDate: '2025-10-15',
+    paymentMethod: 'كاش',
+    neighborhood: 'الروشه',
+    propertyType: 'Apartment',
+    propertyValue: 3000000,
+    projectTeam: 'Team B',
+    sellerTeam: 'Team B',
+    purchaseMethod: 'Cash',
   },
+  {
+    id: 2,
+    unitNumber: 'b70750',
+    projectName: 'برج الشام 5',
+    clientName: 'SAAD6',
+    marketerName: 'Aboshama',
+    date: '2025-10-05',
+    status: 'cancelled',
+    rejectionReason: 'تم إلغاء الحجز بناء على طلب العميل',
+    clientPhone: '6519908191',
+    clientNationality: 'Saudi',
+    clientIBAN: 'xxx',
+    depositAmount: 7500,
+    depositDate: '2025-10-05',
+    paymentMethod: 'تحويل بنكي',
+    neighborhood: 'ع_ب المرابط',
+    propertyType: 'Apartment',
+    propertyValue: 2000000,
+    projectTeam: 'Team B',
+    sellerTeam: 'غير معين',
+    purchaseMethod: 'Cash',
+  },
+  {
+    id: 3,
+    unitNumber: 'b22',
+    projectName: 'عين أوسس',
+    clientName: 'محمد العربي',
+    marketerName: 'مسوق 3',
+    date: '2025-10-02',
+    status: 'rejected',
+    rejectionReason: 'عدم توفر المستندات المطلوبة',
+    clientPhone: '6519908191',
+    clientNationality: 'Saudi',
+    clientIBAN: '999888',
+    depositAmount: 10000,
+    depositDate: '2025-10-02',
+    paymentMethod: 'كاش',
+    neighborhood: 'القريه',
+    propertyType: 'Villa',
+    propertyValue: 1800000,
+    projectTeam: 'team-a',
+    sellerTeam: 'team-b',
+    purchaseMethod: 'Cash',
+  },
+]);
+
+const { formatNumber: formatCurrency } = useFormatters();
+
+const toggleExpand = id => {
+  expandedId.value = expandedId.value === id ? null : id;
 };
 </script>
 

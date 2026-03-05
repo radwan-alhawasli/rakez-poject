@@ -92,6 +92,7 @@
 
     <!-- جدول البيانات -->
     <div v-else class="table-container">
+      <div class="table-responsive">
       <table class="custom-table">
         <thead>
           <tr>
@@ -129,6 +130,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
 
     <!-- مودال تفاصيل العقد -->
@@ -152,239 +154,180 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import ContractModal from '../components/ContractModal.vue';
-import Pagination from '../components/Pagination.vue';
-import contractService from '../services/contractService';
-import authService from '../services/authService';
-import logger from '../utils/logger';
-import { toast } from '../composables/useToast';
+import ContractModal from '@/components/ContractModal.vue';
+import Pagination from '@/components/Pagination.vue';
+import contractService from '@/services/contractService';
+import authService from '@/services/authService';
+import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
 
-const mapStatusForApi = filter => {
-  if (filter === 'pending') return 'pending';
-  if (filter === 'approved') return 'approved';
-  if (filter === 'archive') return 'rejected';
-  return '';
+const activeFilter = ref('all');
+const searchQuery = ref('');
+const isLoading = ref(false);
+const error = ref(null);
+const contracts = ref([]);
+const totalFromApi = ref(0);
+const showModal = ref(false);
+const selectedContract = ref(null);
+const currentPage = ref(1);
+const perPage = ref(25);
+
+const user = ref(authService.getCurrentUser());
+const userRole = computed(() => {
+  const type = user.value?.type;
+  if (type === 1 || type === 'admin' || user.value?.role === 'admin') return 1;
+  if (type == 3 || type === 'project_management') return 3;
+  return type ?? 0;
+});
+
+const isAdminWithPagination = computed(() => userRole.value == 1);
+
+const fetchContracts = async () => {
+  isLoading.value = true;
+  error.value = null;
+  try {
+    if (userRole.value == 1) {
+      const params = {
+        page: currentPage.value,
+        per_page: perPage.value,
+      };
+      const status = mapStatusForApi(activeFilter.value);
+      if (status) params.status = status;
+      const { items, total } = await contractService.getAllContracts(params);
+      contracts.value = items.map(mapContract);
+      totalFromApi.value = total;
+    } else if (userRole.value == 4) {
+      const data = await contractService.getEditorContracts();
+      contracts.value = (Array.isArray(data) ? data : []).map(mapContract);
+      totalFromApi.value = contracts.value.length;
+    } else {
+      const data = await contractService.getContracts();
+      contracts.value = (Array.isArray(data) ? data : []).map(mapContract);
+      totalFromApi.value = contracts.value.length;
+    }
+  } catch (err) {
+    logger.error('Error fetching contracts:', err);
+    error.value = 'فشل تحميل العقود. يرجى التأكد من الصلاحيات.';
+    contracts.value = [];
+    totalFromApi.value = 0;
+  } finally {
+    isLoading.value = false;
+  }
 };
 
-const mapContract = c => {
-  let statusRaw = c.status ? c.status.toLowerCase() : 'pending';
-  let status = 'Pending';
-  if (statusRaw === 'approved') status = 'Approved';
-  else if (statusRaw === 'rejected' || statusRaw === 'refused') status = 'Refused';
-  return {
-    ...c,
-    id: c.id,
-    type: c.type || (c.project_name ? 'Exclusive' : 'Full Contract'),
-    number: c.developer_number || c.id,
-    developer: c.project_name || c.name || 'غير محدد',
-    createdDate: c.created_at?.split('T')[0] || '-',
-    status,
-    marketer: c.marketer || c.created_by_name || 'System',
-  };
+const filteredContracts = computed(() => {
+  let filtered = contracts.value;
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(
+      c => c.number?.toString().includes(q) || c.developer?.toLowerCase().includes(q)
+    );
+  }
+  return filtered;
+});
+
+const paginatedContracts = computed(() => {
+  if (isAdminWithPagination.value) return filteredContracts.value;
+  const start = (currentPage.value - 1) * perPage.value;
+  const end = start + perPage.value;
+  return filteredContracts.value.slice(start, end);
+});
+
+const handlePageChange = page => {
+  currentPage.value = page;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (isAdminWithPagination.value) fetchContracts();
 };
 
-export default {
-  name: 'ContractsView',
-  components: { ContractModal, Pagination },
-  setup() {
-    const activeFilter = ref('all');
-    const searchQuery = ref('');
-    const isLoading = ref(false);
-    const error = ref(null);
-    const contracts = ref([]);
-    const totalFromApi = ref(0);
-    const showModal = ref(false);
-    const selectedContract = ref(null);
-    const currentPage = ref(1);
-    const perPage = ref(25);
-
-    const user = ref(authService.getCurrentUser());
-    const userRole = computed(() => {
-      const type = user.value?.type;
-      if (type === 1 || type === 'admin' || user.value?.role === 'admin') return 1;
-      if (type == 3 || type === 'project_management') return 3;
-      return type ?? 0;
-    });
-
-    const isAdminWithPagination = computed(() => userRole.value == 1);
-
-    const fetchContracts = async () => {
-      isLoading.value = true;
-      error.value = null;
-      try {
-        if (userRole.value == 1) {
-          const params = {
-            page: currentPage.value,
-            per_page: perPage.value,
-          };
-          const status = mapStatusForApi(activeFilter.value);
-          if (status) params.status = status;
-          const { items, total } = await contractService.getAllContracts(params);
-          contracts.value = items.map(mapContract);
-          totalFromApi.value = total;
-        } else if (userRole.value == 4) {
-          const data = await contractService.getEditorContracts();
-          contracts.value = (Array.isArray(data) ? data : []).map(mapContract);
-          totalFromApi.value = contracts.value.length;
-        } else {
-          const data = await contractService.getContracts();
-          contracts.value = (Array.isArray(data) ? data : []).map(mapContract);
-          totalFromApi.value = contracts.value.length;
-        }
-      } catch (err) {
-        logger.error('Error fetching contracts:', err);
-        error.value = 'فشل تحميل العقود. يرجى التأكد من الصلاحيات.';
-        contracts.value = [];
-        totalFromApi.value = 0;
-      } finally {
-        isLoading.value = false;
-      }
-    };
-
-    const filteredContracts = computed(() => {
-      let filtered = contracts.value;
-      if (searchQuery.value) {
-        const q = searchQuery.value.toLowerCase();
-        filtered = filtered.filter(
-          c => c.number?.toString().includes(q) || c.developer?.toLowerCase().includes(q)
-        );
-      }
-      return filtered;
-    });
-
-    const paginatedContracts = computed(() => {
-      if (isAdminWithPagination.value) return filteredContracts.value;
-      const start = (currentPage.value - 1) * perPage.value;
-      const end = start + perPage.value;
-      return filteredContracts.value.slice(start, end);
-    });
-
-    const handlePageChange = page => {
-      currentPage.value = page;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      if (isAdminWithPagination.value) fetchContracts();
-    };
-
-    const handlePerPageChange = newPerPage => {
-      perPage.value = newPerPage;
-      currentPage.value = 1;
-      if (isAdminWithPagination.value) fetchContracts();
-    };
-
-    const totalCount = computed(() =>
-      isAdminWithPagination.value ? totalFromApi.value : filteredContracts.value.length
-    );
-    const pendingCount = computed(() => contracts.value.filter(c => c.status === 'Pending').length);
-    const approvedCount = computed(
-      () => contracts.value.filter(c => c.status === 'Approved').length
-    );
-    const archiveCount = computed(() => contracts.value.filter(c => c.status === 'Refused').length);
-    const marketerCount = computed(
-      () => contracts.value.filter(c => c.type === 'Full Contract' || !c.type).length
-    );
-    const exclusiveCount = computed(
-      () => contracts.value.filter(c => c.type === 'Exclusive').length
-    );
-    const myRequestsCount = computed(
-      () => contracts.value.filter(c => c.marketer === user.value?.name).length
-    );
-
-    const viewContract = async c => {
-      try {
-        // جلب تفاصيل العقد الكاملة من API
-        let fullDetails;
-        if (userRole.value == 4) {
-          fullDetails = await contractService.getEditorContractById(c.id);
-        } else {
-          fullDetails = await contractService.getContractById(c.id);
-        }
-
-        selectedContract.value = {
-          ...c,
-          ...fullDetails,
-        };
-        showModal.value = true;
-      } catch (error) {
-        logger.error('Error fetching contract details:', error);
-        // في حالة الخطأ، استخدم البيانات الأساسية
-        selectedContract.value = c;
-        showModal.value = true;
-      }
-    };
-    const closeModal = () => {
-      showModal.value = false;
-      selectedContract.value = null;
-    };
-
-    const handleApprove = async c => {
-      try {
-        if (userRole.value == 3) {
-          await contractService.updateContractStatusProjectManager(c.id, 'approved');
-        } else {
-          await contractService.approveContract(c.id);
-        }
-        fetchContracts();
-        closeModal();
-      } catch (err) {
-        logger.error('Error approving contract:', err);
-        toast.error('حدث خطأ أثناء اعتماد العقد');
-      }
-    };
-
-    const handleReject = async c => {
-      try {
-        if (userRole.value == 3) {
-          await contractService.updateContractStatusProjectManager(c.id, 'rejected');
-        } else {
-          await contractService.rejectContract(c.id);
-        }
-        fetchContracts();
-        closeModal();
-      } catch (err) {
-        logger.error('Error rejecting contract:', err);
-        toast.error('حدث خطأ أثناء رفض العقد');
-      }
-    };
-
-    watch(activeFilter, () => {
-      currentPage.value = 1;
-      if (isAdminWithPagination.value) fetchContracts();
-    });
-
-    onMounted(fetchContracts);
-
-    return {
-      activeFilter,
-      searchQuery,
-      isLoading,
-      error,
-      contracts,
-      filteredContracts,
-      paginatedContracts,
-      totalCount,
-      pendingCount,
-      approvedCount,
-      archiveCount,
-      marketerCount,
-      exclusiveCount,
-      myRequestsCount,
-      showModal,
-      selectedContract,
-      viewContract,
-      closeModal,
-      handleApprove,
-      handleReject,
-      fetchContracts,
-      userRole,
-      currentPage,
-      perPage,
-      handlePageChange,
-      handlePerPageChange,
-    };
-  },
+const handlePerPageChange = newPerPage => {
+  perPage.value = newPerPage;
+  currentPage.value = 1;
+  if (isAdminWithPagination.value) fetchContracts();
 };
+
+const totalCount = computed(() =>
+  isAdminWithPagination.value ? totalFromApi.value : filteredContracts.value.length
+);
+const pendingCount = computed(() => contracts.value.filter(c => c.status === 'Pending').length);
+const approvedCount = computed(
+  () => contracts.value.filter(c => c.status === 'Approved').length
+);
+const archiveCount = computed(() => contracts.value.filter(c => c.status === 'Refused').length);
+const marketerCount = computed(
+  () => contracts.value.filter(c => c.type === 'Full Contract' || !c.type).length
+);
+const exclusiveCount = computed(
+  () => contracts.value.filter(c => c.type === 'Exclusive').length
+);
+const myRequestsCount = computed(
+  () => contracts.value.filter(c => c.marketer === user.value?.name).length
+);
+
+const viewContract = async c => {
+  try {
+    // جلب تفاصيل العقد الكاملة من API
+    let fullDetails;
+    if (userRole.value == 4) {
+      fullDetails = await contractService.getEditorContractById(c.id);
+    } else {
+      fullDetails = await contractService.getContractById(c.id);
+    }
+
+    selectedContract.value = {
+      ...c,
+      ...fullDetails,
+    };
+    showModal.value = true;
+  } catch (error) {
+    logger.error('Error fetching contract details:', error);
+    // في حالة الخطأ، استخدم البيانات الأساسية
+    selectedContract.value = c;
+    showModal.value = true;
+  }
+};
+const closeModal = () => {
+  showModal.value = false;
+  selectedContract.value = null;
+};
+
+const handleApprove = async c => {
+  try {
+    if (userRole.value == 3) {
+      await contractService.updateContractStatusProjectManager(c.id, 'approved');
+    } else {
+      await contractService.approveContract(c.id);
+    }
+    fetchContracts();
+    closeModal();
+  } catch (err) {
+    logger.error('Error approving contract:', err);
+    toast.error('حدث خطأ أثناء اعتماد العقد');
+  }
+};
+
+const handleReject = async c => {
+  try {
+    if (userRole.value == 3) {
+      await contractService.updateContractStatusProjectManager(c.id, 'rejected');
+    } else {
+      await contractService.rejectContract(c.id);
+    }
+    fetchContracts();
+    closeModal();
+  } catch (err) {
+    logger.error('Error rejecting contract:', err);
+    toast.error('حدث خطأ أثناء رفض العقد');
+  }
+};
+
+watch(activeFilter, () => {
+  currentPage.value = 1;
+  if (isAdminWithPagination.value) fetchContracts();
+});
+
+onMounted(fetchContracts);
 </script>
 
 <style scoped>

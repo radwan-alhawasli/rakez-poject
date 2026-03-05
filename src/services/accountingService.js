@@ -1,7 +1,7 @@
-import apiClient from '../api/apiClient';
-import logger from '../utils/logger';
-import { handleServiceError } from '../utils/serviceErrorHandler';
-import { extractPaginatedData } from '../utils/paginationUtils';
+import apiClient from '@/api/apiClient';
+import logger from '@/utils/logger';
+import { handleServiceError } from '@/utils/serviceErrorHandler';
+import { extractPaginatedData } from '@/utils/paginationUtils';
 
 /**
  * Accounting Department Service

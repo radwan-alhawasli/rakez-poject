@@ -461,6 +461,7 @@
         <!-- Distribution table -->
         <div class="distribution-table-section">
           <h3 class="section-title">توزيع العمولة الصافية</h3>
+          <div class="table-responsive">
           <table class="distribution-table">
             <thead>
               <tr>
@@ -498,6 +499,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       </template>
     </div>
@@ -506,10 +508,10 @@
 
 <script>
 import { ref, reactive, computed, watch, onMounted } from 'vue';
-import accountingService from '../../services/accountingService';
-import logger from '../../utils/logger';
-import { toast } from '../../composables/useToast';
-import { useFormatters } from '../../composables/useFormatters';
+import accountingService from '@/services/accountingService';
+import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
+import { useFormatters } from '@/composables/useFormatters';
 
 const COMMISSION_TYPE_LABELS = {
   lead_generation: 'عمولة الجلب',

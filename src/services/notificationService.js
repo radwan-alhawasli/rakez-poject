@@ -1,8 +1,8 @@
 import { ref } from 'vue';
-import apiClient from '../api/apiClient';
+import apiClient from '@/api/apiClient';
 import authService from './authService';
-import { createPusher } from '../plugins/pusher';
-import logger from '../utils/logger';
+import { createPusher } from '@/plugins/pusher';
+import logger from '@/utils/logger';
 
 const notifications = ref([]);
 const unreadCount = ref(0);

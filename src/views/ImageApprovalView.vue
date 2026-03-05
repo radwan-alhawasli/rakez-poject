@@ -105,24 +105,25 @@
       </div>
     </div>
 
-    <!-- Rejection Modal -->
-    <div v-if="showRejectModal" class="modal-overlay">
-      <div class="modal-content">
-        <h3>رفض الصور</h3>
-        <p>يرجى ذكر سبب الرفض ليتمكن المطور من التعديل:</p>
+    <!-- Rejection Modal (Dialog) -->
+    <Dialog :open="showRejectModal" @update:open="showRejectModal = $event">
+      <DialogContent class="image-reject-dialog max-w-md rounded-2xl p-6" dir="rtl">
+        <DialogHeader>
+          <DialogTitle>رفض الصور</DialogTitle>
+        </DialogHeader>
+        <p class="mb-3 text-sm text-muted-foreground">يرجى ذكر سبب الرفض ليتمكن المطور من التعديل:</p>
         <textarea
           v-model="rejectReasonInput"
-          class="form-input"
+          class="form-input mb-4 w-full rounded-lg border border-[var(--color-medium-gray)] px-3 py-2"
           rows="3"
           placeholder="سبب الرفض..."
-          style="width: 100%; margin-bottom: 15px"
         ></textarea>
-        <div class="modal-actions">
-          <button class="btn-text" @click="closeRejectModal">إلغاء</button>
-          <button class="btn-danger-solid" @click="confirmReject">تأكيد الرفض</button>
-        </div>
-      </div>
-    </div>
+        <DialogFooter class="flex-col gap-2 sm:flex-row sm:justify-end">
+          <button type="button" class="btn-text" @click="closeRejectModal">إلغاء</button>
+          <button type="button" class="btn-danger-solid" @click="confirmReject">تأكيد الرفض</button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
     <ConfirmModal
       v-if="showConfirmModal"
@@ -138,13 +139,28 @@
 
 <script>
 import { ref, onMounted } from 'vue';
-import ConfirmModal from '../components/ConfirmModal.vue';
-import contractService from '../services/contractService';
-import logger from '../utils/logger';
-import { toast } from '../composables/useToast';
+import ConfirmModal from '@/components/ConfirmModal.vue';
+import contractService from '@/services/contractService';
+import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default {
   name: 'ImageApprovalView',
+  components: {
+    ConfirmModal,
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+  },
   setup() {
     const pendingImages = ref([]);
     const isLoading = ref(true);
@@ -292,7 +308,6 @@ export default {
       confirmReject,
     };
   },
-  components: { ConfirmModal },
 };
 </script>
 

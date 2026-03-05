@@ -1,7 +1,7 @@
-import apiClient from '../api/apiClient';
-import logger from '../utils/logger';
-import { handleServiceError } from '../utils/serviceErrorHandler';
-import { extractPaginatedData } from '../utils/paginationUtils';
+import apiClient from '@/api/apiClient';
+import logger from '@/utils/logger';
+import { handleServiceError } from '@/utils/serviceErrorHandler';
+import { extractPaginatedData } from '@/utils/paginationUtils';
 
 /**
  * Credit Department Service
@@ -541,7 +541,6 @@ const creditService = {
    * @param {number|string|Object} bookingIdOrData - Booking ID, or object with booking_id
    * @param {Object} [_optionalData] - Optional; kept for backward compatibility, not used
    */
-  // eslint-disable-next-line no-unused-vars -- second arg kept for backward-compat call signature
   async createTitleTransfer(bookingIdOrData, _optionalData = {}) {
     const bookingId =
       typeof bookingIdOrData === 'object' && bookingIdOrData !== null

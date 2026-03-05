@@ -5,8 +5,8 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import notificationService from '../services/notificationService';
-import logger from '../utils/logger';
+import notificationService from '@/services/notificationService';
+import logger from '@/utils/logger';
 
 export const useNotificationStore = defineStore('notification', () => {
   // State

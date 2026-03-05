@@ -36,7 +36,8 @@
         <button class="add-btn small" @click="openCreateModal">إنشاء فريق جديد</button>
       </div>
 
-      <table v-else class="data-table">
+      <div v-else class="table-responsive">
+      <table class="data-table">
         <thead>
           <tr>
             <th>الفريق</th>
@@ -97,6 +98,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
 
     <!-- Create/Edit Modal -->
@@ -183,11 +185,11 @@
 
 <script>
 import { ref, reactive, onMounted } from 'vue';
-import ConfirmModal from '../components/ConfirmModal.vue';
-import teamService from '../services/teamService';
-import logger from '../utils/logger';
-import { toast } from '../composables/useToast';
-import { useFormatters } from '../composables/useFormatters';
+import ConfirmModal from '@/components/ConfirmModal.vue';
+import teamService from '@/services/teamService';
+import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
+import { useFormatters } from '@/composables/useFormatters';
 
 export default {
   name: 'TeamManagementView',

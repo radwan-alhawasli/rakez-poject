@@ -232,9 +232,9 @@
 
 <script>
 import { ref, reactive, onMounted } from 'vue';
-import hrService from '../services/hrService';
-import logger from '../utils/logger';
-import { toast } from '../composables/useToast';
+import hrService from '@/services/hrService';
+import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
 
 export default {
   name: 'ReportsTab',

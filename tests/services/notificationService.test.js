@@ -43,18 +43,18 @@ describe('notificationService', () => {
     expect(urls).toContain('/admin/notifications');
   });
 
-  it('markAsRead posts to /notifications/:id/read', async () => {
+  it('markAsRead patches /notifications/:id/read for non-accounting user', async () => {
     notificationService.state.value = [{ id: 10, read: false }];
-    mock.onPost('/notifications/10/read').reply(200, { data: { ok: true } });
+    mock.onPatch('/notifications/10/read').reply(200, { data: { ok: true } });
     await notificationService.markAsRead(10);
-    expect(mock.history.post[0].url).toBe('/notifications/10/read');
+    expect(mock.history.patch[0].url).toBe('/notifications/10/read');
   });
 
-  it('markAllAsRead posts to /notifications/read-all', async () => {
+  it('markAllAsRead patches /notifications/mark-all-read for non-accounting user', async () => {
     notificationService.state.value = [{ id: 1, read: false }];
-    mock.onPost('/notifications/read-all').reply(200, { data: { ok: true } });
+    mock.onPatch('/notifications/mark-all-read').reply(200, { data: { ok: true } });
     await notificationService.markAllAsRead();
-    expect(mock.history.post[0].url).toBe('/notifications/read-all');
+    expect(mock.history.patch[0].url).toBe('/notifications/mark-all-read');
   });
 
   it('supports generic notifications endpoints', async () => {

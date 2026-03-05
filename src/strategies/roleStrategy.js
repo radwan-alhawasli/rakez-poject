@@ -3,7 +3,7 @@
  * Implements different behaviors based on user roles
  */
 
-import { ROLE_MAP } from '../constants/roles';
+import { ROLE_MAP } from '@/constants/roles';
 
 /**
  * Base strategy interface

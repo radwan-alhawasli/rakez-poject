@@ -1,28 +1,10 @@
 <template>
-  <div
-    class="modal-overlay"
-    @click.self="$emit('close')"
-    @keydown.esc="$emit('close')"
-    tabindex="-1"
+  <AppModal
+    :open="true"
+    :title="isEditMode ? 'تعديل الفريق' : 'إضافة فريق جديد'"
+    @update:open="(v) => { if (v === false) $emit('close') }"
   >
-    <div class="modal-container">
-      <div class="modal-header">
-        <h2 class="modal-title">{{ isEditMode ? 'تعديل الفريق' : 'إضافة فريق جديد' }}</h2>
-        <button class="close-btn" @click="$emit('close')">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M18 6L6 18M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-
-      <form @submit.prevent="handleSubmit" class="modal-body">
+    <form @submit.prevent="handleSubmit" class="modal-body">
         <!-- Team Name -->
         <div class="form-group">
           <label class="form-label">اسم الفريق</label>
@@ -30,9 +12,11 @@
             v-model="formData.name"
             type="text"
             class="form-input"
+            :class="{ 'input-error': getFieldError('name') }"
             placeholder="مثال: فريق المبيعات الرياض"
             required
           />
+          <span v-if="getFieldError('name')" class="field-error">{{ getFieldError('name') }}</span>
         </div>
 
         <!-- Team Color -->
@@ -81,24 +65,28 @@
           ></textarea>
         </div>
 
-        <!-- Buttons -->
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" @click="$emit('close')">إلغاء</button>
-          <button type="submit" class="btn-primary" :disabled="isLoading">
-            <span v-if="!isLoading">{{ isEditMode ? 'حفظ التعديلات' : 'إضافة الفريق' }}</span>
-            <span v-else>جاري الحفظ...</span>
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+    </form>
+    <template #footer>
+      <div class="modal-footer flex gap-3 justify-end flex-wrap">
+        <button type="button" class="btn-secondary" @click="$emit('close')">إلغاء</button>
+        <button type="button" class="btn-primary" :disabled="isLoading" @click="handleSubmit">
+          <span v-if="!isLoading">{{ isEditMode ? 'حفظ التعديلات' : 'إضافة الفريق' }}</span>
+          <span v-else>جاري الحفظ...</span>
+        </button>
+      </div>
+    </template>
+  </AppModal>
 </template>
 
 <script>
-import { ref, reactive, watch, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, watch, onMounted, onUnmounted } from 'vue'
+import AppModal from '@/components/AppModal.vue'
+import { teamSchema } from '@/validation/schemas'
+import { useValidation } from '@/composables/useValidation'
 
 export default {
   name: 'TeamModal',
+  components: { AppModal },
   props: {
     team: {
       type: Object,
@@ -116,6 +104,7 @@ export default {
   emits: ['close', 'submit'],
   setup(props, { emit }) {
     const isEditMode = ref(!!props.team);
+    const { validate, getFieldError, clearErrors } = useValidation(teamSchema.pick({ name: true }));
 
     const formData = reactive({
       name: '',
@@ -159,12 +148,15 @@ export default {
     });
 
     const handleSubmit = () => {
+      clearErrors();
+      if (!validate({ name: formData.name })) return;
       emit('submit', { ...formData });
     };
 
     return {
       isEditMode,
       formData,
+      getFieldError,
       handleSubmit,
     };
   },
@@ -172,75 +164,6 @@ export default {
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  backdrop-filter: blur(4px);
-}
-
-.modal-container {
-  background: white;
-  border-radius: 20px;
-  max-width: 600px;
-  width: 90%;
-  max-height: 90vh;
-  overflow: hidden;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-  animation: modalSlideIn 0.3s ease-out;
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 25px 30px;
-  border-bottom: 1px solid var(--color-light-gray);
-}
-
-.modal-title {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--color-navy);
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-dark-gray);
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  transition: all 0.2s;
-}
-
-.close-btn:hover {
-  background: var(--color-light-gray);
-  color: var(--color-navy);
-}
-
 .modal-body {
   padding: 30px;
   max-height: calc(90vh - 180px);
@@ -359,29 +282,12 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .modal-container {
-    width: 95%;
-  }
-  .modal-header {
-    padding: 20px;
-  }
   .modal-body {
     padding: 24px 20px;
   }
 }
 
 @media (max-width: 576px) {
-  .modal-container {
-    width: 100%;
-    margin: 0 8px;
-    border-radius: 16px;
-  }
-  .modal-header {
-    padding: 16px;
-  }
-  .modal-title {
-    font-size: 18px;
-  }
   .modal-body {
     padding: 20px 16px;
   }
@@ -398,16 +304,6 @@ export default {
 }
 
 @media (max-width: 320px) {
-  .modal-container {
-    border-radius: 12px;
-    margin: 0 4px;
-  }
-  .modal-header {
-    padding: 14px 12px;
-  }
-  .modal-title {
-    font-size: 16px;
-  }
   .modal-body {
     padding: 16px 12px;
   }
@@ -416,5 +312,14 @@ export default {
     padding: 10px 12px;
     font-size: 13px;
   }
+}
+
+.field-error {
+  color: var(--color-error, #ef4444);
+  font-size: clamp(11px, 0.3vw + 8px, 13px);
+  margin-top: 2px;
+}
+.input-error {
+  border-color: var(--color-error, #ef4444) !important;
 }
 </style>

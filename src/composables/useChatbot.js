@@ -8,11 +8,11 @@
  */
 import { ref, nextTick, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import * as aiAssistantV2 from '../services/aiAssistantV2';
-import aiService from '../services/aiService';
-import { sanitizeMarkdown } from '../utils/safeHtml';
-import { backendRouteToVuePath } from '../utils/routeMapper';
-import logger from '../utils/logger';
+import * as aiAssistantV2 from '@/services/aiAssistantV2';
+import aiService from '@/services/aiService';
+import { sanitizeMarkdown } from '@/utils/safeHtml';
+import { backendRouteToVuePath } from '@/utils/routeMapper';
+import logger from '@/utils/logger';
 
 const quickPrompts = ['كيف يمكنني مساعدتك؟', 'ما هي الخدمات المتاحة؟', 'أريد الاستفسار عن مشروع'];
 

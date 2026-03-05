@@ -186,171 +186,151 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
-import contractService from '../services/contractService';
-import exclusiveProjectService from '../services/exclusiveProjectService';
-import notificationService from '../services/notificationService';
-import logger from '../utils/logger';
-import { toast } from '../composables/useToast';
-import { normalizeDeveloper } from '../utils/developerMapper';
-import { UNIT_TYPES } from '../constants/lookups';
+import contractService from '@/services/contractService';
+import exclusiveProjectService from '@/services/exclusiveProjectService';
+import notificationService from '@/services/notificationService';
+import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
+import { normalizeDeveloper } from '@/utils/developerMapper';
+import { UNIT_TYPES } from '@/constants/lookups';
 
-export default {
-  name: 'ExclusiveProjectView',
-  setup() {
-    const isLoading = ref(false);
-    const developers = ref([]);
+const isLoading = ref(false);
+const developers = ref([]);
 
-    let nextUnitRowId = 1;
-    const form = reactive({
-      developer_id: '',
-      developer_name: '',
-      developer_cr_number: '',
-      project_name: '',
-      city: '',
-      neighborhood: '',
-      unit_rows: [{ id: nextUnitRowId++, unit_type: '', units_count: 0, avg_unit_price: 0 }],
-    });
+let nextUnitRowId = 1;
+const form = reactive({
+  developer_id: '',
+  developer_name: '',
+  developer_cr_number: '',
+  project_name: '',
+  city: '',
+  neighborhood: '',
+  unit_rows: [{ id: nextUnitRowId++, unit_type: '', units_count: 0, avg_unit_price: 0 }],
+});
 
-    const unitTypeOptions = UNIT_TYPES;
+const unitTypeOptions = UNIT_TYPES;
 
-    const isNewDeveloper = computed(() => !form.developer_id);
+const isNewDeveloper = computed(() => !form.developer_id);
 
-    const selectedDeveloperDisplay = computed(() => {
-      if (!form.developer_id) return '';
-      const dev = developers.value.find(d => String(d.id) === String(form.developer_id));
-      if (!dev) return '';
-      return dev.commercialRecord ? `${dev.name} (${dev.commercialRecord})` : dev.name;
-    });
+const selectedDeveloperDisplay = computed(() => {
+  if (!form.developer_id) return '';
+  const dev = developers.value.find(d => String(d.id) === String(form.developer_id));
+  if (!dev) return '';
+  return dev.commercialRecord ? `${dev.name} (${dev.commercialRecord})` : dev.name;
+});
 
-    const rowSubtotal = row => {
-      const count = Number(row.units_count) || 0;
-      const avg = Number(row.avg_unit_price) || 0;
-      const val = count * avg;
-      return val > 0 ? val.toLocaleString('ar-SA') : '0';
+const rowSubtotal = row => {
+  const count = Number(row.units_count) || 0;
+  const avg = Number(row.avg_unit_price) || 0;
+  const val = count * avg;
+  return val > 0 ? val.toLocaleString('ar-SA') : '0';
+};
+
+const totalUnitsValue = computed(() => {
+  return form.unit_rows.reduce((sum, row) => {
+    const count = Number(row.units_count) || 0;
+    const avg = Number(row.avg_unit_price) || 0;
+    return sum + count * avg;
+  }, 0);
+});
+
+const totalUnitsValueFormatted = computed(() => totalUnitsValue.value.toLocaleString('ar-SA'));
+
+const addUnitRow = () => {
+  form.unit_rows.push({
+    id: nextUnitRowId++,
+    unit_type: '',
+    units_count: 0,
+    avg_unit_price: 0,
+  });
+};
+
+const removeUnitRow = index => {
+  if (form.unit_rows.length <= 1) return;
+  form.unit_rows.splice(index, 1);
+};
+
+const loadDevelopers = async () => {
+  try {
+    const { data } = await contractService.getDevelopersList({ per_page: 100, page: 1 });
+    const list = Array.isArray(data) ? data : [];
+    developers.value = list.map(d => normalizeDeveloper(d));
+  } catch (error) {
+    logger.error('Error loading developers:', error);
+    developers.value = [];
+  }
+};
+
+const onDeveloperSelect = () => {
+  if (form.developer_id) {
+    const dev = developers.value.find(d => String(d.id) === String(form.developer_id));
+    if (dev) {
+      form.developer_name = dev.name;
+      form.developer_cr_number = dev.commercialRecord || '';
+    }
+  } else {
+    form.developer_name = '';
+    form.developer_cr_number = '';
+  }
+};
+
+onMounted(() => {
+  loadDevelopers();
+});
+
+const resetForm = () => {
+  form.developer_id = '';
+  form.developer_name = '';
+  form.developer_cr_number = '';
+  form.project_name = '';
+  form.city = '';
+  form.neighborhood = '';
+  form.unit_rows = [{ id: nextUnitRowId++, unit_type: '', units_count: 0, avg_unit_price: 0 }];
+};
+
+const handleSubmit = async () => {
+  isLoading.value = true;
+  try {
+    const units = form.unit_rows
+      .filter(r => r.unit_type || (Number(r.units_count) || 0) > 0)
+      .map(r => ({
+        unit_type: r.unit_type || undefined,
+        units_count: Number(r.units_count) || 0,
+        avg_unit_price: Number(r.avg_unit_price) || 0,
+      }));
+
+    const payload = {
+      project_name: form.project_name,
+      city: form.city,
+      neighborhood: form.neighborhood,
+      units,
+      units_count: units.reduce((s, u) => s + (u.units_count || 0), 0),
+      total_units_value: totalUnitsValue.value,
     };
+    if (form.developer_id) {
+      payload.developer_id = form.developer_id;
+    } else {
+      payload.developer_name = form.developer_name;
+      payload.developer_cr_number = form.developer_cr_number;
+    }
 
-    const totalUnitsValue = computed(() => {
-      return form.unit_rows.reduce((sum, row) => {
-        const count = Number(row.units_count) || 0;
-        const avg = Number(row.avg_unit_price) || 0;
-        return sum + count * avg;
-      }, 0);
-    });
+    await exclusiveProjectService.createExclusiveProject(payload);
 
-    const totalUnitsValueFormatted = computed(() => totalUnitsValue.value.toLocaleString('ar-SA'));
-
-    const addUnitRow = () => {
-      form.unit_rows.push({
-        id: nextUnitRowId++,
-        unit_type: '',
-        units_count: 0,
-        avg_unit_price: 0,
-      });
-    };
-
-    const removeUnitRow = index => {
-      if (form.unit_rows.length <= 1) return;
-      form.unit_rows.splice(index, 1);
-    };
-
-    const loadDevelopers = async () => {
-      try {
-        const { data } = await contractService.getDevelopersList({ per_page: 100, page: 1 });
-        const list = Array.isArray(data) ? data : [];
-        developers.value = list.map(d => normalizeDeveloper(d));
-      } catch (error) {
-        logger.error('Error loading developers:', error);
-        developers.value = [];
-      }
-    };
-
-    const onDeveloperSelect = () => {
-      if (form.developer_id) {
-        const dev = developers.value.find(d => String(d.id) === String(form.developer_id));
-        if (dev) {
-          form.developer_name = dev.name;
-          form.developer_cr_number = dev.commercialRecord || '';
-        }
-      } else {
-        form.developer_name = '';
-        form.developer_cr_number = '';
-      }
-    };
-
-    onMounted(() => {
-      loadDevelopers();
-    });
-
-    const resetForm = () => {
-      form.developer_id = '';
-      form.developer_name = '';
-      form.developer_cr_number = '';
-      form.project_name = '';
-      form.city = '';
-      form.neighborhood = '';
-      form.unit_rows = [{ id: nextUnitRowId++, unit_type: '', units_count: 0, avg_unit_price: 0 }];
-    };
-
-    const handleSubmit = async () => {
-      isLoading.value = true;
-      try {
-        const units = form.unit_rows
-          .filter(r => r.unit_type || (Number(r.units_count) || 0) > 0)
-          .map(r => ({
-            unit_type: r.unit_type || undefined,
-            units_count: Number(r.units_count) || 0,
-            avg_unit_price: Number(r.avg_unit_price) || 0,
-          }));
-
-        const payload = {
-          project_name: form.project_name,
-          city: form.city,
-          neighborhood: form.neighborhood,
-          units,
-          units_count: units.reduce((s, u) => s + (u.units_count || 0), 0),
-          total_units_value: totalUnitsValue.value,
-        };
-        if (form.developer_id) {
-          payload.developer_id = form.developer_id;
-        } else {
-          payload.developer_name = form.developer_name;
-          payload.developer_cr_number = form.developer_cr_number;
-        }
-
-        await exclusiveProjectService.createExclusiveProject(payload);
-
-        notificationService.addNotification(
-          'تم إرسال طلب اعتماد المشروع الحصري بنجاح وهو قيد المراجعة.',
-          'success'
-        );
-        toast.success('تم إرسال الطلب بنجاح!');
-        resetForm();
-      } catch (error) {
-        logger.error('Exclusive project request failed', error);
-        const msg = error.response?.data?.message || error.message;
-        toast.error('حدث خطأ أثناء إرسال الطلب: ' + msg);
-      } finally {
-        isLoading.value = false;
-      }
-    };
-
-    return {
-      form,
-      developers,
-      unitTypeOptions,
-      isNewDeveloper,
-      selectedDeveloperDisplay,
-      isLoading,
-      totalUnitsValueFormatted,
-      onDeveloperSelect,
-      rowSubtotal,
-      addUnitRow,
-      removeUnitRow,
-      handleSubmit,
-    };
-  },
+    notificationService.addNotification(
+      'تم إرسال طلب اعتماد المشروع الحصري بنجاح وهو قيد المراجعة.',
+      'success'
+    );
+    toast.success('تم إرسال الطلب بنجاح!');
+    resetForm();
+  } catch (error) {
+    logger.error('Exclusive project request failed', error);
+    const msg = error.response?.data?.message || error.message;
+    toast.error('حدث خطأ أثناء إرسال الطلب: ' + msg);
+  } finally {
+    isLoading.value = false;
+  }
 };
 </script>
 

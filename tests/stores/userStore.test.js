@@ -9,11 +9,11 @@ import userService from '../../src/services/userService';
 
 vi.mock('../../src/services/userService', () => ({
   default: {
-    getUsers: vi.fn(),
-    getUserById: vi.fn(),
-    createUser: vi.fn(),
-    updateUser: vi.fn(),
-    deleteUser: vi.fn(),
+    getEmployees: vi.fn(),
+    getEmployee: vi.fn(),
+    addEmployee: vi.fn(),
+    updateEmployee: vi.fn(),
+    deleteEmployee: vi.fn(),
   },
 }));
 
@@ -41,12 +41,12 @@ describe('userStore', () => {
 
   it('fetchUsers should set users on success', async () => {
     const mockUsers = [{ id: 1, name: 'U1' }];
-    vi.mocked(userService.getUsers).mockResolvedValue({ data: mockUsers });
+    vi.mocked(userService.getEmployees).mockResolvedValue({ data: mockUsers });
 
     const store = useUserStore();
     await store.fetchUsers();
 
-    expect(userService.getUsers).toHaveBeenCalled();
+    expect(userService.getEmployees).toHaveBeenCalled();
     expect(store.users).toEqual(mockUsers);
     expect(store.userCount).toBe(1);
   });

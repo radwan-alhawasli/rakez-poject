@@ -27,13 +27,13 @@ import {
   ROLE_ACCOUNTING,
   ROLE_HR,
   ROLE_MARKETING,
-} from '../constants/roles';
+} from '@/constants/roles';
 import {
   BOOTSTRAP_ROLE_MAP,
   ROLE_TO_BOOTSTRAP_KEY,
   SALES_BASE_PERMISSIONS,
   SALES_LEADER_EXTRA_PERMISSIONS,
-} from '../constants/permissions';
+} from '@/constants/permissions';
 
 const isTruthyLeaderFlag = value => value === true || value === 1 || value === '1';
 
@@ -143,7 +143,7 @@ export function getUserPermissions(user) {
   return Array.isArray(perms) ? perms : [];
 }
 
-if (process.env.NODE_ENV !== 'production') {
+if (!import.meta.env.PROD) {
   const definedSales = new Set(BOOTSTRAP_ROLE_MAP.sales || []);
   const definedSalesLeader = new Set(BOOTSTRAP_ROLE_MAP.sales_leader || []);
   const expectedSales = new Set(SALES_BASE_PERMISSIONS);
@@ -154,9 +154,8 @@ if (process.env.NODE_ENV !== 'production') {
 
   const salesMismatch = [...expectedSales].some(p => !definedSales.has(p));
   const leaderMismatch = [...expectedSalesLeader].some(p => !definedSalesLeader.has(p));
-  if (salesMismatch || leaderMismatch) {
+  if ((salesMismatch || leaderMismatch) && !import.meta.env.PROD) {
     // Dev-only drift warning against backend snippet baseline for sales roles
-    // eslint-disable-next-line no-console
     console.warn(
       '[RBAC] Sales bootstrap permission map drift detected. Review src/constants/permissions.js'
     );

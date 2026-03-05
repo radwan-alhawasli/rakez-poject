@@ -244,7 +244,7 @@
 
 <script>
 import { computed } from 'vue';
-import { useFormatters } from '../../composables/useFormatters';
+import { useFormatters } from '@/composables/useFormatters';
 
 const TRACKER_LABELS = [
   'رفع الطلب للبنك',

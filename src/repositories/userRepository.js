@@ -3,8 +3,8 @@
  * Data access layer for users
  */
 
-import apiClient from '../api/apiClient';
-import logger from '../utils/logger';
+import apiClient from '@/api/apiClient';
+import logger from '@/utils/logger';
 
 class UserRepository {
   /**

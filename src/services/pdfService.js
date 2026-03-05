@@ -1,4 +1,4 @@
-import logger from '../utils/logger';
+import logger from '@/utils/logger';
 
 let _pdfDepsPromise = null;
 async function getPdfDeps() {
@@ -50,7 +50,7 @@ function formatDate(dateString) {
       return `${parts[2]}-${parts[1]}-${parts[0]}`;
     }
     return dateString;
-  } catch (e) {
+  } catch (_err) {
     return dateString;
   }
 }
@@ -239,6 +239,89 @@ export const downloadFilledContract = async contractData => {
     return pdfBytes;
   } catch (error) {
     logger.error('PDF Generation Error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generate a simple unit details PDF for download (project tracker).
+ * @param {Object} unit - Unit object (unit_number, floor, area, bedrooms, price, facade, status, etc.)
+ * @param {{ projectName?: string }} options - Optional project name for header
+ * @returns {Promise<Uint8Array>} PDF bytes
+ */
+export const generateUnitDetailsPdf = async (unit, options = {}) => {
+  try {
+    const { PDFDocument, rgb, fontkit } = await getPdfDeps();
+    const pdfDoc = await PDFDocument.create();
+    pdfDoc.registerFontkit(fontkit);
+
+    const fontBytes = await fetch(
+      'https://cdn.jsdelivr.net/npm/@fontsource/amiri@5.0.0/files/amiri-arabic-400-normal.woff'
+    ).then(res => res.arrayBuffer());
+    const arabicFont = await pdfDoc.embedFont(fontBytes);
+
+    const page = pdfDoc.addPage([595, 842]); // A4
+    const { width: _width, height } = page.getSize();
+    const margin = 50;
+    const lineHeight = 22;
+    let y = height - margin;
+
+    const drawLine = (label, value, size = 12) => {
+      if (y < margin + lineHeight) return;
+      const text = value != null && value !== '' ? `${label}: ${value}` : `${label}: —`;
+      page.drawText(reshapeArabic(text), {
+        x: margin,
+        y,
+        size,
+        font: arabicFont,
+        color: rgb(0.1, 0.1, 0.1),
+      });
+      y -= lineHeight;
+    };
+
+    const title = options.projectName
+      ? `تفاصيل الوحدة — ${options.projectName}`
+      : 'تفاصيل الوحدة';
+    page.drawText(reshapeArabic(title), {
+      x: margin,
+      y,
+      size: 16,
+      font: arabicFont,
+      color: rgb(0.1, 0.2, 0.4),
+    });
+    y -= lineHeight * 1.5;
+
+    const unitId = unit?.unit_number ?? unit?.id ?? '—';
+    drawLine('رقم الوحدة', `#${unitId}`, 14);
+    y -= 4;
+
+    const statusMap = {
+      available: 'متاحة',
+      reserved: 'محجوزة',
+      sold: 'مباعة',
+      pending: 'قيد التفاوض',
+    };
+    const statusLabel = statusMap[unit?.status] || unit?.status || '—';
+    drawLine('الحالة', statusLabel);
+
+    drawLine('الدور', unit?.floor != null && !Number.isNaN(Number(unit.floor)) ? String(unit.floor) : null);
+    drawLine('المساحة', unit?.area != null ? `${unit.area} م²` : null);
+    drawLine('المساحة الخاصة', unit?.private_area != null ? `${unit.private_area} م²` : unit?.balcony_area != null ? `${unit.balcony_area} م²` : null);
+    drawLine('إجمالي المساحة', unit?.total_area != null ? `${unit.total_area} م²` : null);
+    drawLine('الغرف', unit?.bedrooms != null ? String(unit.bedrooms) : unit?.rooms != null ? String(unit.rooms) : null);
+    drawLine('الواجهة', unit?.facade || unit?.view || null);
+
+    const priceVal = unit?.price ?? unit?.total_price;
+    const priceStr =
+      priceVal != null && !Number.isNaN(Number(priceVal))
+        ? `${Number(priceVal).toLocaleString('ar-SA')} ر.س`
+        : null;
+    drawLine('السعر', priceStr);
+
+    const pdfBytes = await pdfDoc.save();
+    return pdfBytes;
+  } catch (error) {
+    logger.error('Unit details PDF generation error', error);
     throw error;
   }
 };

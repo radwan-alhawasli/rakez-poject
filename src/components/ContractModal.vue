@@ -1,40 +1,24 @@
 <template>
-  <div class="modal-overlay" @click.self="closeModal" @keydown.esc="closeModal" tabindex="-1">
-    <div class="modal-container">
-      <!-- رأس المودال -->
-      <div class="modal-header">
-        <div class="header-content">
-          <div class="header-title-row">
-            <h2 class="modal-title">تفاصيل العقد/الطلب</h2>
-            <span :class="['status-badge-header', normalizedStatus]">
-              {{
-                normalizedStatus === 'approved'
-                  ? 'موافق عليه'
-                  : normalizedStatus === 'rejected'
-                  ? 'مرفوض'
-                  : 'معلق'
-              }}
-            </span>
-          </div>
-          <p class="modal-subtitle">مراجعة كاملة لبيانات السجل قبل الموافقة أو الرفض.</p>
-        </div>
-        <button class="close-btn" @click="closeModal">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
+  <AppModal
+    :open="true"
+    subtitle="مراجعة كاملة لبيانات السجل قبل الموافقة أو الرفض."
+    @update:open="(v) => { if (v === false) closeModal() }"
+  >
+    <template #title>
+      <div class="header-title-row flex items-center gap-2 flex-wrap">
+        <span class="font-extrabold text-[var(--color-navy)]">تفاصيل العقد/الطلب</span>
+        <span :class="['status-badge-header', normalizedStatus]">
+          {{
+            normalizedStatus === 'approved'
+              ? 'موافق عليه'
+              : normalizedStatus === 'rejected'
+              ? 'مرفوض'
+              : 'معلق'
+          }}
+        </span>
       </div>
-
-      <!-- محتوى المودال -->
-      <div class="modal-content">
+    </template>
+    <div class="modal-content">
         <!-- بيانات المطور -->
         <section class="details-section">
           <div class="section-header">
@@ -91,19 +75,21 @@
           ...
         </div> 
         -->
-        <div class="modal-footer-action">
-          <button @click="closeModal" class="btn-close-large">إغلاق</button>
-          <div
-            v-if="normalizedStatus === 'pending' && hasPermission('contracts.approve')"
-            class="action-buttons"
-          >
-            <button @click="rejectContract" class="btn-reject">رفض العقد</button>
-            <button @click="approveContract" class="btn-approve">الموافقة على العقد</button>
-          </div>
+    </div>
+    <template #footer>
+      <div class="modal-footer-action flex gap-3 justify-end flex-wrap">
+        <button @click="closeModal" class="btn-close-large">إغلاق</button>
+        <div
+          v-if="normalizedStatus === 'pending' && hasPermission('contracts.approve')"
+          class="action-buttons flex gap-2"
+        >
+          <button @click="rejectContract" class="btn-reject">رفض العقد</button>
+          <button @click="approveContract" class="btn-approve">الموافقة على العقد</button>
         </div>
       </div>
-    </div>
-    <ConfirmModal
+    </template>
+  </AppModal>
+  <ConfirmModal
       v-if="showConfirmModal"
       :title="confirmModalConfig.title"
       :message="confirmModalConfig.message"
@@ -111,18 +97,18 @@
       :confirm-text="confirmModalConfig.confirmText"
       @confirm="onConfirmModalConfirm"
       @close="showConfirmModal = false"
-    />
-  </div>
+  />
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import ConfirmModal from './ConfirmModal.vue';
-import { usePermissions } from '../composables/usePermissions';
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import AppModal from '@/components/AppModal.vue'
+import ConfirmModal from './ConfirmModal.vue'
+import { usePermissions } from '@/composables/usePermissions'
 
 export default {
   name: 'ContractModal',
-  components: { ConfirmModal },
+  components: { AppModal, ConfirmModal },
   props: {
     contract: {
       type: Object,
@@ -259,76 +245,11 @@ export default {
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  padding: 20px;
-  backdrop-filter: blur(2px);
-  animation: fadeIn 0.3s ease;
-}
-
-.modal-overlay:focus {
-  outline: none;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-container {
-  background: white;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 900px;
-  /* max-height: 90vh; */
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
-  direction: rtl;
-  border-top: 4px solid var(--color-gold); /* Gold Top Border */
-}
-
-/* Classic Typography Helpers */
-.modal-header {
-  background: var(--color-white);
-  padding: 24px 32px;
-  /* border-bottom: 1px solid #eef2f6; */
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.header-content {
-  flex: 1;
-}
-
 .header-title-row {
   display: flex;
   align-items: center;
   gap: 15px;
   margin-bottom: 8px;
-}
-
-.modal-title {
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--color-navy);
-  margin: 0;
 }
 
 .status-badge-header {
@@ -351,32 +272,6 @@ export default {
   background: #fee2e2;
   color: #b91c1c;
   border: 1px solid #fecdd3;
-}
-
-.modal-subtitle {
-  font-size: 14px;
-  color: var(--color-dark-gray);
-  margin: 0;
-  font-weight: normal;
-}
-
-.close-btn {
-  background: transparent;
-  border: none;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--color-dark-gray);
-  transition: color 0.2s;
-  font-size: 24px;
-}
-
-.close-btn:hover {
-  color: var(--color-charcoal);
 }
 
 .modal-content {
@@ -546,21 +441,10 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .modal-overlay {
-    padding: 12px;
-  }
-  .modal-container {
-    width: 95%;
-    max-width: 95vw;
-  }
   .modal-content {
-    max-width: 95vw;
     max-height: 90vh;
     overflow-y: auto;
     padding: 16px 20px 20px;
-  }
-  .modal-header {
-    padding: 20px;
   }
   .modal-footer-action {
     flex-direction: column;
@@ -579,21 +463,6 @@ export default {
 }
 
 @media (max-width: 575px) {
-  .modal-overlay {
-    padding: 8px;
-  }
-  .modal-container {
-    width: 100%;
-    max-width: 100vw;
-    max-height: 100vh;
-    border-radius: 16px;
-  }
-  .modal-header {
-    padding: 16px;
-  }
-  .modal-title {
-    font-size: 18px;
-  }
   .modal-content {
     padding: 16px;
   }

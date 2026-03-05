@@ -91,7 +91,8 @@
               </div>
               <div class="field-group">
                 <label>تاريخ ميلادي</label>
-                <input type="date" v-model="form.gregorian_date" class="form-input" />
+                <input type="date" v-model="form.gregorian_date" class="form-input" :class="{ 'input-error': getFieldError('gregorian_date') }" />
+                <span v-if="getFieldError('gregorian_date')" class="field-error">{{ getFieldError('gregorian_date') }}</span>
               </div>
             </div>
 
@@ -102,8 +103,10 @@
                   type="number"
                   v-model="form.agreement_duration_days"
                   class="form-input"
+                  :class="{ 'input-error': getFieldError('agreement_duration_days') }"
                   placeholder="مثال: 3"
                 />
+                <span v-if="getFieldError('agreement_duration_days')" class="field-error">{{ getFieldError('agreement_duration_days') }}</span>
               </div>
             </div>
           </div>
@@ -132,8 +135,10 @@
                   type="number"
                   v-model="form.commission_percent"
                   class="form-input"
+                  :class="{ 'input-error': getFieldError('commission_percent') }"
                   placeholder="0"
                 />
+                <span v-if="getFieldError('commission_percent')" class="field-error">{{ getFieldError('commission_percent') }}</span>
               </div>
             </div>
 
@@ -183,7 +188,8 @@
               </div>
               <div class="field-group">
                 <label>اسم الطرف الثاني</label>
-                <input type="text" v-model="form.second_party_name" class="form-input" />
+                <input type="text" v-model="form.second_party_name" class="form-input" :class="{ 'input-error': getFieldError('second_party_name') }" />
+                <span v-if="getFieldError('second_party_name')" class="field-error">{{ getFieldError('second_party_name') }}</span>
               </div>
             </div>
 
@@ -199,7 +205,8 @@
               </div>
               <div class="field-group">
                 <label>هوية رقم</label>
-                <input type="text" v-model="form.second_party_id" class="form-input" />
+                <input type="text" v-model="form.second_party_id" class="form-input" :class="{ 'input-error': getFieldError('second_party_id') }" />
+                <span v-if="getFieldError('second_party_id')" class="field-error">{{ getFieldError('second_party_id') }}</span>
               </div>
               <div class="field-group">
                 <label>يمثلها بالتوقيع على هذا العقد</label>
@@ -244,7 +251,8 @@
               </div>
               <div class="field-group">
                 <label>اسم المشروع</label>
-                <input type="text" v-model="form.project_name" class="form-input" />
+                <input type="text" v-model="form.project_name" class="form-input" :class="{ 'input-error': getFieldError('project_name') }" />
+                <span v-if="getFieldError('project_name')" class="field-error">{{ getFieldError('project_name') }}</span>
               </div>
             </div>
 
@@ -259,7 +267,8 @@
               </div>
               <div class="field-group">
                 <label>المدينة</label>
-                <input type="text" v-model="form.city" class="form-input" />
+                <input type="text" v-model="form.city" class="form-input" :class="{ 'input-error': getFieldError('city') }" />
+                <span v-if="getFieldError('city')" class="field-error">{{ getFieldError('city') }}</span>
               </div>
             </div>
 
@@ -313,39 +322,38 @@
       </form>
     </div>
 
-    <!-- Success Modal -->
-    <div v-if="showDownloadModal" class="modal-overlay">
-      <div class="modal-content">
-        <div class="success-icon">
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#10b981"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+    <!-- Success Modal (Dialog) -->
+    <Dialog :open="showDownloadModal" @update:open="showDownloadModal = $event">
+      <DialogContent class="contract-success-dialog max-w-md rounded-2xl p-6" dir="rtl">
+        <DialogHeader>
+          <div class="success-icon mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#10b981"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <DialogTitle class="text-center">تم حفظ العقد بنجاح</DialogTitle>
+        </DialogHeader>
+        <p class="mb-6 text-center text-[var(--color-dark-gray)]">يمكنك الآن تحميل نسخة PDF من العقد.</p>
+        <DialogFooter class="flex-col gap-2 sm:flex-row sm:justify-center">
+          <button
+            type="button"
+            @click="downloadContract"
+            class="download-btn inline-flex items-center justify-center gap-2 rounded-xl border-0 px-6 py-3 font-semibold text-white shadow-md transition-all disabled:cursor-not-allowed disabled:opacity-70"
+            :disabled="isDownloading"
           >
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
-        </div>
-        <h3>تم حفظ العقد بنجاح</h3>
-        <p>يمكنك الآن تحميل نسخة PDF من العقد.</p>
-
-        <div class="modal-actions">
-          <button @click="downloadContract" class="download-btn" :disabled="isDownloading">
-            <span v-if="isDownloading" class="spinner-small"></span>
+            <span v-if="isDownloading" class="spinner-small h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
             <span v-else>
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -353,23 +361,39 @@
             </span>
             تحميل العقد (PDF)
           </button>
-          <button @click="closeModal" class="close-btn">إغلاق</button>
-        </div>
-      </div>
-    </div>
+          <button type="button" @click="closeModal" class="close-btn rounded-xl border-2 border-[var(--color-medium-gray)] bg-[var(--color-light-gray)] px-6 py-3 font-semibold text-[var(--color-charcoal)]">إغلاق</button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
 <script>
 import { ref, reactive, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import contractService from '../services/contractService';
-import { downloadFilledContract } from '../services/pdfService';
-import logger from '../utils/logger';
-import { toast } from '../composables/useToast';
+import contractService from '@/services/contractService';
+import { downloadFilledContract } from '@/services/pdfService';
+import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
+import { contractInfoSchema } from '@/validation/schemas';
+import { useValidation } from '@/composables/useValidation';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default {
   name: 'ContractFormView',
+  components: {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+  },
   setup() {
     const router = useRouter();
     const route = useRoute();
@@ -377,6 +401,7 @@ export default {
     const isDownloading = ref(false);
     const showDownloadModal = ref(false);
     const requestId = route.params.id;
+    const { validate, getFieldError, clearErrors } = useValidation(contractInfoSchema);
 
     const form = reactive({
       // First Party - Readonly usually
@@ -522,6 +547,18 @@ export default {
     onMounted(fetchContractDetails);
 
     const saveChanges = async () => {
+      clearErrors();
+      const dataToValidate = {
+        second_party_name: form.second_party_name,
+        second_party_id: form.second_party_id,
+        gregorian_date: form.gregorian_date,
+        agreement_duration_days: String(form.agreement_duration_days || ''),
+        commission_percent: form.commission_percent,
+        project_name: form.project_name,
+        city: form.city,
+      };
+      if (!validate(dataToValidate)) return;
+
       isSaving.value = true;
       try {
         logger.debug('Updating contract:', requestId, form);
@@ -597,6 +634,7 @@ export default {
       isSaving,
       isDownloading,
       showDownloadModal,
+      getFieldError,
       saveChanges,
       downloadContract,
       closeModal,
@@ -961,44 +999,7 @@ export default {
   }
 }
 
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.2s ease-out;
-}
-
-.modal-content {
-  background: white;
-  padding: 40px;
-  border-radius: 20px;
-  width: 90%;
-  max-width: 450px;
-  text-align: center;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+/* Success dialog (Dialog component) */
 .success-icon {
   width: 80px;
   height: 80px;
@@ -1008,24 +1009,6 @@ export default {
   align-items: center;
   justify-content: center;
   margin: 0 auto 20px auto;
-}
-
-.modal-content h3 {
-  font-size: 24px;
-  color: var(--color-navy);
-  margin-bottom: 10px;
-}
-
-.modal-content p {
-  color: var(--color-dark-gray);
-  margin-bottom: 30px;
-  font-size: 16px;
-}
-
-.modal-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 
 .download-btn {
@@ -1084,20 +1067,13 @@ export default {
 
 /* Modal responsive mobile */
 @media (max-width: 576px) {
-  .modal-content {
+  .contract-success-dialog {
     width: 95%;
     padding: 24px 16px;
     border-radius: 14px;
   }
-  .modal-content h3 {
-    font-size: 18px;
-  }
-  .modal-content p {
-    font-size: 14px;
-    margin-bottom: 20px;
-  }
   .download-btn,
-  .modal-content .close-btn {
+  .contract-success-dialog .close-btn {
     min-height: 44px;
     font-size: 14px;
     border-radius: 8px;
@@ -1109,14 +1085,11 @@ export default {
 }
 
 @media (max-width: 320px) {
-  .modal-content {
+  .contract-success-dialog {
     padding: 16px 12px;
   }
-  .modal-content h3 {
-    font-size: 16px;
-  }
   .download-btn,
-  .modal-content .close-btn {
+  .contract-success-dialog .close-btn {
     font-size: 13px;
   }
 }
@@ -1161,12 +1134,9 @@ export default {
   .text-area {
     min-height: 120px;
   }
-  .modal-content {
+  .contract-success-dialog {
     max-width: 520px;
     padding: 48px;
-  }
-  .modal-content h3 {
-    font-size: 28px;
   }
 }
 
@@ -1188,5 +1158,14 @@ export default {
   .field-group label {
     font-size: 16px;
   }
+}
+
+.field-error {
+  color: var(--color-error, #ef4444);
+  font-size: clamp(11px, 0.3vw + 8px, 13px);
+  margin-top: 2px;
+}
+.input-error {
+  border-color: var(--color-error, #ef4444) !important;
 }
 </style>

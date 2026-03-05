@@ -63,7 +63,8 @@
     <!-- الجدول -->
     <div class="knowledge-table-wrap">
       <div v-if="loading" class="knowledge-loading">جاري التحميل...</div>
-      <table v-else class="knowledge-table">
+      <div v-else class="table-responsive">
+      <table class="knowledge-table">
         <thead>
           <tr>
             <th>العنوان</th>
@@ -132,6 +133,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
 
     <!-- ترقيم الصفحات -->
@@ -256,227 +258,179 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted } from 'vue';
-import aiService from '../services/aiService';
-import Pagination from '../components/Pagination.vue';
-import ConfirmModal from '../components/ConfirmModal.vue';
-import logger from '../utils/logger';
+import aiService from '@/services/aiService';
+import Pagination from '@/components/Pagination.vue';
+import ConfirmModal from '@/components/ConfirmModal.vue';
+import logger from '@/utils/logger';
 
-export default {
-  name: 'KnowledgeManagementView',
-  components: { Pagination, ConfirmModal },
-  setup() {
-    const entries = ref([]);
-    const totalItems = ref(0);
-    const currentPage = ref(1);
-    const perPage = ref(15);
-    const loading = ref(false);
-    const saving = ref(false);
-    const deleting = ref(false);
+const entries = ref([]);
+const totalItems = ref(0);
+const currentPage = ref(1);
+const perPage = ref(15);
+const loading = ref(false);
+const saving = ref(false);
+const deleting = ref(false);
 
-    const filters = ref({
-      search: '',
-      module: '',
-      language: '',
-      is_active: '',
-    });
+const filters = ref({
+  search: '',
+  module: '',
+  language: '',
+  is_active: '',
+});
 
-    const showFormModal = ref(false);
-    const editingEntry = ref(null);
-    const form = ref(emptyForm());
+const showFormModal = ref(false);
+const editingEntry = ref(null);
+const form = ref(emptyForm());
 
-    const tagsString = ref('');
-    const rolesString = ref('');
-    const permissionsString = ref('');
+const tagsString = ref('');
+const rolesString = ref('');
+const permissionsString = ref('');
 
-    const showDeleteConfirm = ref(false);
-    const deletingEntry = ref(null);
+const showDeleteConfirm = ref(false);
+const deletingEntry = ref(null);
 
-    let searchTimeout = null;
+let searchTimeout = null;
 
-    /** إرجاع نموذج فارغ */
-    function emptyForm() {
-      return {
-        module: '',
-        page_key: '',
-        title: '',
-        content_md: '',
-        language: 'ar',
-        is_active: true,
-        priority: 100,
-      };
-    }
+/** إرجاع نموذج فارغ */
+function emptyForm() {
+  return {
+    module: '',
+    page_key: '',
+    title: '',
+    content_md: '',
+    language: 'ar',
+    is_active: true,
+    priority: 100,
+  };
+}
 
-    /** تقسيم نص مفصول بفاصلة إلى مصفوفة */
-    function splitCsv(str) {
-      return str
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
-    }
+function splitCsv(str) {
+  return str
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+}
 
-    /** تحميل مقالات قاعدة المعرفة */
-    async function loadEntries() {
-      loading.value = true;
-      try {
-        const params = {
-          page: currentPage.value,
-          per_page: perPage.value,
-        };
-        if (filters.value.search) params.search = filters.value.search;
-        if (filters.value.module) params.module = filters.value.module;
-        if (filters.value.language) params.language = filters.value.language;
-        if (filters.value.is_active) params.is_active = filters.value.is_active;
-
-        const result = await aiService.getKnowledge(params);
-        entries.value = result?.items || [];
-        totalItems.value = result?.total || 0;
-      } catch (err) {
-        logger.error('فشل تحميل مقالات قاعدة المعرفة:', err);
-      } finally {
-        loading.value = false;
-      }
-    }
-
-    /** تحميل مؤجل عند البحث */
-    function debouncedLoad() {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => {
-        currentPage.value = 1;
-        loadEntries();
-      }, 400);
-    }
-
-    /** تغيير الصفحة */
-    function onPageChange(page) {
-      currentPage.value = page;
-      loadEntries();
-    }
-
-    /** تغيير عدد العناصر بالصفحة */
-    function onPerPageChange(pp) {
-      perPage.value = pp;
-      currentPage.value = 1;
-      loadEntries();
-    }
-
-    /** فتح نافذة إنشاء مقال جديد */
-    function openCreateModal() {
-      editingEntry.value = null;
-      form.value = emptyForm();
-      tagsString.value = '';
-      rolesString.value = '';
-      permissionsString.value = '';
-      showFormModal.value = true;
-    }
-
-    /** فتح نافذة تعديل مقال */
-    function openEditModal(entry) {
-      editingEntry.value = entry;
-      form.value = {
-        module: entry.module || '',
-        page_key: entry.page_key || '',
-        title: entry.title || '',
-        content_md: entry.content_md || '',
-        language: entry.language || 'ar',
-        is_active: entry.is_active !== false,
-        priority: entry.priority ?? 100,
-      };
-      tagsString.value = Array.isArray(entry.tags) ? entry.tags.join(', ') : '';
-      rolesString.value = Array.isArray(entry.roles) ? entry.roles.join(', ') : '';
-      permissionsString.value = Array.isArray(entry.permissions)
-        ? entry.permissions.join(', ')
-        : '';
-      showFormModal.value = true;
-    }
-
-    /** إغلاق نافذة النموذج */
-    function closeFormModal() {
-      showFormModal.value = false;
-      editingEntry.value = null;
-    }
-
-    /** حفظ المقال (إنشاء أو تحديث) */
-    async function saveEntry() {
-      saving.value = true;
-      try {
-        const data = { ...form.value };
-        const tags = splitCsv(tagsString.value);
-        const roles = splitCsv(rolesString.value);
-        const permissions = splitCsv(permissionsString.value);
-        if (tags.length) data.tags = tags;
-        if (roles.length) data.roles = roles;
-        if (permissions.length) data.permissions = permissions;
-
-        if (editingEntry.value) {
-          await aiService.updateKnowledge(editingEntry.value.id, data);
-        } else {
-          await aiService.createKnowledge(data);
-        }
-        closeFormModal();
-        await loadEntries();
-      } catch (err) {
-        logger.error('فشل حفظ مقال قاعدة المعرفة:', err);
-      } finally {
-        saving.value = false;
-      }
-    }
-
-    /** تأكيد حذف مقال */
-    function confirmDelete(entry) {
-      deletingEntry.value = entry;
-      showDeleteConfirm.value = true;
-    }
-
-    /** تنفيذ الحذف */
-    async function doDelete() {
-      if (!deletingEntry.value) return;
-      deleting.value = true;
-      try {
-        await aiService.deleteKnowledge(deletingEntry.value.id);
-        showDeleteConfirm.value = false;
-        deletingEntry.value = null;
-        await loadEntries();
-      } catch (err) {
-        logger.error('فشل حذف مقال قاعدة المعرفة:', err);
-      } finally {
-        deleting.value = false;
-      }
-    }
-
-    onMounted(loadEntries);
-
-    return {
-      entries,
-      totalItems,
-      currentPage,
-      perPage,
-      loading,
-      saving,
-      deleting,
-      filters,
-      showFormModal,
-      editingEntry,
-      form,
-      tagsString,
-      rolesString,
-      permissionsString,
-      showDeleteConfirm,
-      deletingEntry,
-      loadEntries,
-      debouncedLoad,
-      onPageChange,
-      onPerPageChange,
-      openCreateModal,
-      openEditModal,
-      closeFormModal,
-      saveEntry,
-      confirmDelete,
-      doDelete,
+async function loadEntries() {
+  loading.value = true;
+  try {
+    const params = {
+      page: currentPage.value,
+      per_page: perPage.value,
     };
-  },
-};
+    if (filters.value.search) params.search = filters.value.search;
+    if (filters.value.module) params.module = filters.value.module;
+    if (filters.value.language) params.language = filters.value.language;
+    if (filters.value.is_active) params.is_active = filters.value.is_active;
+
+    const result = await aiService.getKnowledge(params);
+    entries.value = result?.items || [];
+    totalItems.value = result?.total || 0;
+  } catch (err) {
+    logger.error('Failed to load knowledge entries:', err);
+  } finally {
+    loading.value = false;
+  }
+}
+
+function debouncedLoad() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1;
+    loadEntries();
+  }, 400);
+}
+
+function onPageChange(page) {
+  currentPage.value = page;
+  loadEntries();
+}
+
+function onPerPageChange(pp) {
+  perPage.value = pp;
+  currentPage.value = 1;
+  loadEntries();
+}
+
+function openCreateModal() {
+  editingEntry.value = null;
+  form.value = emptyForm();
+  tagsString.value = '';
+  rolesString.value = '';
+  permissionsString.value = '';
+  showFormModal.value = true;
+}
+
+function openEditModal(entry) {
+  editingEntry.value = entry;
+  form.value = {
+    module: entry.module || '',
+    page_key: entry.page_key || '',
+    title: entry.title || '',
+    content_md: entry.content_md || '',
+    language: entry.language || 'ar',
+    is_active: entry.is_active !== false,
+    priority: entry.priority ?? 100,
+  };
+  tagsString.value = Array.isArray(entry.tags) ? entry.tags.join(', ') : '';
+  rolesString.value = Array.isArray(entry.roles) ? entry.roles.join(', ') : '';
+  permissionsString.value = Array.isArray(entry.permissions) ? entry.permissions.join(', ') : '';
+  showFormModal.value = true;
+}
+
+function closeFormModal() {
+  showFormModal.value = false;
+  editingEntry.value = null;
+}
+
+async function saveEntry() {
+  saving.value = true;
+  try {
+    const data = { ...form.value };
+    const tags = splitCsv(tagsString.value);
+    const roles = splitCsv(rolesString.value);
+    const permissions = splitCsv(permissionsString.value);
+    if (tags.length) data.tags = tags;
+    if (roles.length) data.roles = roles;
+    if (permissions.length) data.permissions = permissions;
+
+    if (editingEntry.value) {
+      await aiService.updateKnowledge(editingEntry.value.id, data);
+    } else {
+      await aiService.createKnowledge(data);
+    }
+    closeFormModal();
+    await loadEntries();
+  } catch (err) {
+    logger.error('Failed to save knowledge entry:', err);
+  } finally {
+    saving.value = false;
+  }
+}
+
+function confirmDelete(entry) {
+  deletingEntry.value = entry;
+  showDeleteConfirm.value = true;
+}
+
+async function doDelete() {
+  if (!deletingEntry.value) return;
+  deleting.value = true;
+  try {
+    await aiService.deleteKnowledge(deletingEntry.value.id);
+    showDeleteConfirm.value = false;
+    deletingEntry.value = null;
+    await loadEntries();
+  } catch (err) {
+    logger.error('Failed to delete knowledge entry:', err);
+  } finally {
+    deleting.value = false;
+  }
+}
+
+onMounted(loadEntries);
 </script>
 
 <style scoped>

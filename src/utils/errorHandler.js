@@ -4,8 +4,9 @@
  */
 
 import logger from './logger';
-import appConfig from '../config/appConfig';
-import { toast } from '../composables/useToast';
+import appConfig from '@/config/appConfig';
+import { toast } from '@/composables/useToast';
+import { reportError } from './errorReporter';
 
 /**
  * Error types
@@ -210,6 +211,9 @@ function logError(error, type, severity, context = {}) {
     type,
     severity,
     message: error?.message || 'Unknown error',
+    originalMessage: error?.message,
+    originalError: error,
+    statusCode: error?.response?.status || error?.status,
     stack: error?.stack,
     ...context,
   };
@@ -225,8 +229,7 @@ function logError(error, type, severity, context = {}) {
 
   // In production, send to error reporting service
   if (appConfig.isProduction && appConfig.enableErrorReporting) {
-    // TODO: Integrate with error reporting service (e.g., Sentry)
-    // reportErrorToService(errorInfo)
+    reportError(errorInfo);
   }
 }
 

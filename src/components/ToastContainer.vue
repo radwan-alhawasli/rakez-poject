@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { useToast } from '../composables/useToast';
+import { useToast } from '@/composables/useToast';
 
 export default {
   name: 'ToastContainer',

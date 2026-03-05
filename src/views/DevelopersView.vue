@@ -91,9 +91,9 @@
 <script>
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import contractService from '../services/contractService';
-import logger from '../utils/logger';
-import { normalizeDeveloper } from '../utils/developerMapper';
+import contractService from '@/services/contractService';
+import logger from '@/utils/logger';
+import { normalizeDeveloper } from '@/utils/developerMapper';
 
 const PER_PAGE = 15;
 const SEARCH_DEBOUNCE_MS = 400;

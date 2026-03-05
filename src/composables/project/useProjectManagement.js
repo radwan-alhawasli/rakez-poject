@@ -1,0 +1,549 @@
+import { ref, computed, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import contractService from '@/services/contractService';
+import authService from '@/services/authService';
+import notificationService from '@/services/notificationService';
+import teamService from '@/services/teamService';
+import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
+import { useFormatters } from '@/composables/useFormatters';
+
+export function useProjectManagement() {
+  const router = useRouter();
+  const { formatCurrencyAr: formatCurrency } = useFormatters();
+
+  const userRole = computed(() => {
+    const u = authService.getCurrentUser();
+    return u ? u.type : 0;
+  });
+  const isEditor = computed(() => userRole.value == 4);
+  const isManager = computed(() => {
+    const u = authService.getCurrentUser();
+    return (u && u.type == 1) || (u && u.type == 3 && u.is_manager);
+  });
+
+  const activeTab = ref(isEditor.value ? 'all_projects' : 'not_ready');
+  const searchQuery = ref('');
+  const teamFilter = ref('');
+  const isLoading = ref(false);
+  const projects = ref([]);
+  const activeMenuId = ref(null);
+
+  // Details modal
+  const showDetailsModal = ref(false);
+  const selectedProject = ref(null);
+
+  // Workspace modal
+  const showWorkspaceModal = ref(false);
+  const workspaceForm = reactive({
+    type: 'story',
+    url: '',
+  });
+
+  // Assign team modal
+  const showAssignTeamModal = ref(false);
+  const projectForAssignTeam = ref(null);
+  const assignTeamAssigned = ref([]);
+  const assignTeamAvailable = ref([]);
+  const assignTeamSelectedId = ref('');
+  const assignTeamLoading = ref(false);
+  const assignTeamActionLoading = ref(false);
+
+  // Media modal
+  const showMediaModalState = ref(false);
+  const mediaForm = reactive({
+    image_url: '',
+    video_url: '',
+    description: '',
+    isExisting: false,
+  });
+  const isMediaSaving = ref(false);
+
+  const fetchProjects = async () => {
+    isLoading.value = true;
+    try {
+      const data = isEditor.value
+        ? await contractService.getEditorContracts()
+        : await contractService.getContracts();
+      logger.debug('Fetched Projects:', data);
+      logger.debug('User Role:', userRole.value, 'Is Editor:', isEditor.value);
+
+      const unitList = p => p.units || [];
+      projects.value = (Array.isArray(data) ? data : []).map(p => {
+        const units = unitList(p);
+        const totalUnits = units.length;
+        const soldCount = units.filter(
+          u =>
+            String(u.status || '').toLowerCase() === 'sold' ||
+            String(u.status || '')
+              .toLowerCase()
+              .includes('sold')
+        ).length;
+        const daysLeftVal = (() => {
+          const d = new Date(p.contract_end_date || p.end_date || p.agreement_end_date || 0);
+          if (Number.isNaN(d.getTime())) return null;
+          return Math.ceil((d.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+        })();
+        const isExclusive = p.type === 'Exclusive' || p.is_exclusive;
+        const unitType = p.unit_type || (units[0] && units[0].unit_type) || 'Apartment';
+        const descLine = isExclusive
+          ? `طلب مشروع حصري. ${p.total_units || totalUnits || 100} وحدة من نوع ${unitType}.`
+          : (p.description || p.details || '').split('\n')[0] ||
+            (totalUnits ? `${totalUnits} وحدة` : '');
+        const isReadyForMarketing = p.status === 'Approved' && totalUnits > 0;
+        const setupProgressVal = isReadyForMarketing
+          ? 100
+          : p.setup_progress != null
+            ? Number(p.setup_progress)
+            : 0;
+
+        const unitPrices = units.map(u => Number(u.price) || 0).filter(Boolean);
+        const priceMin = p.price_min ?? p.min_price ?? (unitPrices.length ? Math.min(...unitPrices) : null);
+        const priceMax = p.price_max ?? p.max_price ?? (unitPrices.length ? Math.max(...unitPrices) : null);
+        const avgPrice = units.length ? units.reduce((a, b) => a + (Number(b.price) || 0), 0) / units.length : (p.average_unit_price ?? p.avg_unit_price);
+        let priceRangeText = '—';
+        if (priceMin != null && priceMax != null && priceMin !== priceMax) {
+          priceRangeText = `${Number(priceMax).toLocaleString('ar-SA')} - ${Number(priceMin).toLocaleString('ar-SA')}`;
+        } else if (priceMin != null || priceMax != null) {
+          const single = priceMax ?? priceMin;
+          priceRangeText = `${Number(single).toLocaleString('ar-SA')} - ${Number(single).toLocaleString('ar-SA')}`;
+        } else if (avgPrice != null && Number(avgPrice) > 0) {
+          priceRangeText = `${Number(avgPrice).toLocaleString('ar-SA')} - ${Number(avgPrice).toLocaleString('ar-SA')}`;
+        }
+        const unitAreas = units.map(u => Number(u.area) || Number(u.area_m2) || 0).filter(Boolean);
+        const areaMin = p.area_min_m2 ?? p.area_min ?? (unitAreas.length ? Math.min(...unitAreas) : null);
+        const areaMax = p.area_max_m2 ?? p.area_max ?? (unitAreas.length ? Math.max(...unitAreas) : null);
+        const areaRange =
+          areaMin != null && areaMax != null ? `${areaMin} - ${areaMax} م²` : areaMax != null ? `${areaMax} م²` : areaMin != null ? `${areaMin} م²` : '—';
+        const bedroomsMin = p.bedrooms_min ?? (units[0] && units[0].bedrooms);
+        const bedroomsMax = p.bedrooms_max ?? (units[0] && units[0].bedrooms);
+        const bedroomsRange =
+          bedroomsMin != null && bedroomsMax != null ? `${bedroomsMin} - ${bedroomsMax}` : bedroomsMax != null ? `${bedroomsMax}` : bedroomsMin != null ? `${bedroomsMin}` : '—';
+        const rakezStatusLabel = p.status === 'Approved' ? 'متاح' : (p.status === 'Rejected' || p.status === 'Refused' ? 'مؤرشف' : (p.statusLabel || p.status || '—'));
+        const propertyTypeLabel = (p.unit_type_label_ar && String(p.unit_type_label_ar).trim()) || unitType || (totalUnits ? 'وحدات' : 'مشروع');
+
+        return {
+          id: p.id,
+          name: p.project_name || p.name || `مشروع #${p.id}`,
+          location:
+            `${(p.district || '').trim()}${p.district && p.city ? ', ' : ''}${(
+              p.city || ''
+            ).trim()}`.replace(/^,\s*|,\s*$/g, '') || '—',
+          image: p.project_image_url,
+          hasImage: !!(p.project_image_url && p.project_image_url.trim()),
+          statusLabel: p.status === 'Approved' ? 'Active' : p.status,
+          statusClass: p.status === 'Approved' ? 'active' : 'pending',
+          units,
+          advertiser_number: p.advertiser_number,
+          assignee: p.marketer,
+          status: p.status,
+          description: p.description || p.details || '',
+          descriptionLine: descLine,
+          setupProgress: setupProgressVal,
+          soldUnitsCount: soldCount,
+          soldUnitsPercent: totalUnits ? Math.round((soldCount / totalUnits) * 100) : 0,
+          avgPrice: units.length
+            ? units.reduce((a, b) => a + (Number(b.price) || 0), 0) / units.length
+            : 0,
+          commission_percentage: Number(p.commission_percentage || 0),
+          availableUnits: units.filter(
+            u => String(u.status || '').toLowerCase() === 'available' || !u.status
+          ).length,
+          pendingUnits: units.filter(
+            u =>
+              String(u.status || '')
+                .toLowerCase()
+                .includes('pending') ||
+              String(u.status || '')
+                .toLowerCase()
+                .includes('reserved')
+          ).length,
+          availableUnitsValue: units
+            .filter(u => String(u.status || '').toLowerCase() === 'available' || !u.status)
+            .reduce((acc, u) => acc + (Number(u.price) || 0), 0),
+          endDate: p.contract_end_date || p.end_date || p.agreement_end_date || null,
+          daysLeft: daysLeftVal,
+          timelinePillLabel:
+            daysLeftVal === null
+              ? '—'
+              : daysLeftVal < 0
+              ? 'انتهت المهلة'
+              : `خلال ${daysLeftVal} أيام`,
+          distance: p.distance || '15',
+          landmark: p.landmark || 'مطار الملك خالد',
+          priceRangeText,
+          areaRange,
+          bedroomsRange,
+          rakezStatusLabel,
+          propertyTypeLabel,
+        };
+      });
+    } catch (err) {
+      logger.error('Error fetching projects:', err);
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const filteredProjects = computed(() => {
+    let filtered = projects.value;
+
+    if (activeTab.value === 'all_projects') {
+      filtered = filtered.filter(p => p.status !== 'Rejected' && p.status !== 'Refused');
+    } else if (activeTab.value === 'ready') {
+      filtered = filtered.filter(p => p.status === 'Approved' && p.units && p.units.length > 0);
+    } else if (activeTab.value === 'not_ready') {
+      filtered = filtered.filter(
+        p => p.status !== 'Approved' || !p.units || p.units.length === 0
+      );
+    } else if (activeTab.value === 'archive') {
+      filtered = filtered.filter(p => p.status === 'Refused' || p.status === 'Rejected');
+    }
+
+    if (searchQuery.value) {
+      const q = searchQuery.value.toLowerCase();
+      filtered = filtered.filter(
+        p => p.name.toLowerCase().includes(q) || p.location.toLowerCase().includes(q)
+      );
+    }
+
+    return filtered;
+  });
+
+  const notReadyCount = computed(
+    () =>
+      projects.value.filter(p => p.status !== 'Approved' || !p.units || p.units.length === 0)
+        .length
+  );
+  const readyCount = computed(
+    () =>
+      projects.value.filter(p => p.status === 'Approved' && p.units && p.units.length > 0).length
+  );
+  const archiveCount = computed(
+    () => projects.value.filter(p => p.status === 'Refused' || p.status === 'Rejected').length
+  );
+  const allProjectsCount = computed(
+    () => projects.value.filter(p => p.status !== 'Rejected' && p.status !== 'Refused').length
+  );
+
+  const viewTracker = project => {
+    router.push({ name: 'ProjectTracker', params: { id: project.id } });
+  };
+
+  const toggleMenu = id => {
+    activeMenuId.value = activeMenuId.value === id ? null : id;
+  };
+
+  const onEditProject = project => {
+    activeMenuId.value = null;
+    router.push({ name: 'ProjectTracker', params: { id: project.id } });
+  };
+
+  const onArchiveProject = async () => {
+    activeMenuId.value = null;
+    try {
+      toast.info('أرشفة المشروع: سيتم ربطها بالـ API عند التوفر.');
+    } catch (e) {
+      toast.error('فشل أرشفة المشروع');
+    }
+  };
+
+  const onMarkComplete = () => {
+    activeMenuId.value = null;
+    toast.info('تحديد كمكتمل: سيتم ربطها بالـ API عند التوفر.');
+  };
+
+  const onDownloadContract = async project => {
+    activeMenuId.value = null;
+    try {
+      if (typeof contractService.downloadContract === 'function') {
+        await contractService.downloadContract(project.id);
+        toast.success('تم تحميل العقد');
+      } else {
+        toast.info('تحميل العقد: سيتم ربطها بالـ API عند التوفر.');
+      }
+    } catch (e) {
+      toast.error('فشل تحميل العقد');
+    }
+  };
+
+  const onAssignTeam = project => {
+    activeMenuId.value = null;
+    projectForAssignTeam.value = project;
+    assignTeamSelectedId.value = '';
+    showAssignTeamModal.value = true;
+    loadAssignTeamData();
+  };
+
+  const loadAssignTeamData = async () => {
+    const project = projectForAssignTeam.value;
+    if (!project) return;
+    assignTeamLoading.value = true;
+    try {
+      const [assignedData, allTeams] = await Promise.all([
+        teamService.getContractTeams(project.id),
+        teamService.getTeams(),
+      ]);
+      const assigned = Array.isArray(assignedData) ? assignedData : assignedData?.data || [];
+      assignTeamAssigned.value = assigned;
+      const assignedIds = new Set(assigned.map(t => t.id));
+      assignTeamAvailable.value = allTeams.filter(t => !assignedIds.has(t.id));
+    } catch (error) {
+      logger.error('Error loading teams for assign modal:', error);
+      toast.error('فشل تحميل قائمة الفرق');
+    } finally {
+      assignTeamLoading.value = false;
+    }
+  };
+
+  const assignTeamSubmit = async () => {
+    const project = projectForAssignTeam.value;
+    if (!project || !assignTeamSelectedId.value) return;
+    assignTeamActionLoading.value = true;
+    try {
+      await teamService.addTeamsToContract(project.id, [assignTeamSelectedId.value]);
+      toast.success('تم تعيين الفريق بنجاح');
+      assignTeamSelectedId.value = '';
+      await loadAssignTeamData();
+      await fetchProjects();
+    } catch (error) {
+      logger.error('Error assigning team:', error);
+      toast.error('حدث خطأ أثناء تعيين الفريق');
+    } finally {
+      assignTeamActionLoading.value = false;
+    }
+  };
+
+  const assignTeamRemove = async team => {
+    const project = projectForAssignTeam.value;
+    if (!project) return;
+    assignTeamActionLoading.value = true;
+    try {
+      await teamService.removeTeamsFromContract(project.id, [team.id]);
+      toast.success('تم إزالة الفريق بنجاح');
+      await loadAssignTeamData();
+      await fetchProjects();
+    } catch (error) {
+      logger.error('Error removing team:', error);
+      toast.error('حدث خطأ أثناء إزالة الفريق');
+    } finally {
+      assignTeamActionLoading.value = false;
+    }
+  };
+
+  const closeAssignTeamModal = () => {
+    showAssignTeamModal.value = false;
+    projectForAssignTeam.value = null;
+    assignTeamAssigned.value = [];
+    assignTeamAvailable.value = [];
+    assignTeamSelectedId.value = '';
+  };
+
+  const openProjectDetails = async project => {
+    selectedProject.value = project;
+    showDetailsModal.value = true;
+    activeMenuId.value = null;
+
+    try {
+      let details = null;
+      if (isEditor.value) {
+        details = await contractService.getEditorContractById(project.id);
+      } else {
+        details = await contractService.getContractById(project.id);
+      }
+
+      if (details) {
+        logger.debug('Fetched Details:', details);
+        selectedProject.value = {
+          ...selectedProject.value,
+          ...details,
+          advertiser_number: details.advertiser_number || details.advertiser_section_url || null,
+          avgPrice: details.average_unit_price || details.avg_price || null,
+          description: details.description || details.project_description || null,
+          units: details.units || [],
+        };
+      }
+    } catch (e) {
+      logger.error('Failed to fetch detailed project info', e);
+    }
+  };
+
+  const closeDetailsModal = () => (showDetailsModal.value = false);
+
+  const openWorkspace = project => {
+    selectedProject.value = project;
+    workspaceForm.url = '';
+    showWorkspaceModal.value = true;
+    activeMenuId.value = null;
+  };
+
+  const closeWorkspaceModal = () => (showWorkspaceModal.value = false);
+
+  const submitWorkspaceLink = async () => {
+    if (!workspaceForm.url) {
+      toast.warning('الرجاء إدخال الرابط');
+      return;
+    }
+    logger.debug(
+      `Submitting workspace link for project ${selectedProject.value.id}:`,
+      workspaceForm
+    );
+    toast.success('تم إضافة الرابط بنجاح وإشعار الإدارة ومدير المشاريع.');
+    closeWorkspaceModal();
+  };
+
+  const openMediaModal = async project => {
+    selectedProject.value = project;
+    try {
+      const photoData = await contractService.getPhotography(project.id);
+      if (photoData && photoData.data) {
+        mediaForm.image_url = photoData.data.image_url || '';
+        mediaForm.video_url = photoData.data.video_url || '';
+        mediaForm.description = photoData.data.description || '';
+        mediaForm.isExisting = true;
+      } else {
+        mediaForm.image_url = '';
+        mediaForm.video_url = '';
+        mediaForm.description = '';
+        mediaForm.isExisting = false;
+      }
+    } catch (e) {
+      logger.error(e);
+      mediaForm.image_url = '';
+      mediaForm.video_url = '';
+      mediaForm.description = '';
+      mediaForm.isExisting = false;
+    }
+    showMediaModalState.value = true;
+    activeMenuId.value = null;
+  };
+
+  const closeMediaModalState = () => (showMediaModalState.value = false);
+
+  const submitMediaForm = async () => {
+    if (!selectedProject.value) return;
+    isMediaSaving.value = true;
+    try {
+      const payload = {
+        image_url: mediaForm.image_url,
+        video_url: mediaForm.video_url,
+        description: mediaForm.description,
+        status: 'pending',
+      };
+
+      if (mediaForm.isExisting) {
+        await contractService.updatePhotography(selectedProject.value.id, payload);
+        notificationService.addNotification(
+          'تم تحديث الصور من قسم التحرير وإرسالها للموافقة',
+          'success'
+        );
+      } else {
+        await contractService.storePhotography(selectedProject.value.id, payload);
+        notificationService.addNotification(
+          'تم رفع الصور من قسم التحرير وإرسالها للموافقة',
+          'success'
+        );
+        mediaForm.isExisting = true;
+      }
+      closeMediaModalState();
+    } catch (error) {
+      logger.error('Save failed:', error);
+      const msg = error.response?.data?.message || error.message;
+      if (msg && msg.includes('يجب أن يكون العقد لديه معلومات')) {
+        toast.warning(
+          'تنبيه: لا يمكن إضافة صور لهذا المشروع لأنه يفتقر إلى بيانات العقد الأساسية. يرجى إكمال بيانات المشروع أولاً (الطرف الثاني، المعلومات المالية) في صفحة التتبع.'
+        );
+      } else {
+        toast.error('فشل الحفظ: ' + msg);
+      }
+    } finally {
+      isMediaSaving.value = false;
+    }
+  };
+
+  const goToUnits = project => {
+    router.push({ name: 'ProjectTracker', params: { id: project.id }, query: { tab: 'units' } });
+  };
+
+  const getStatusClass = status => {
+    switch (status) {
+      case 'available':
+        return 'ok';
+      case 'pending':
+        return 'pending';
+      case 'notfound':
+        return 'missing';
+      default:
+        return '';
+    }
+  };
+
+  const timelineClass = daysLeft => {
+    if (daysLeft === null) return '';
+    if (daysLeft < 30) return 'timeline-red';
+    if (daysLeft < 90) return 'timeline-orange';
+    return 'timeline-green';
+  };
+
+  const timelineLabel = daysLeft => {
+    if (daysLeft === null) return 'المدة غير متاحة';
+    if (daysLeft < 0) return 'العقد منتهي';
+    if (daysLeft < 30) return `أحمر: ${daysLeft} يوم`;
+    if (daysLeft < 90) return `برتقالي: ${daysLeft} يوم`;
+    return `أخضر: ${daysLeft} يوم`;
+  };
+
+  onMounted(fetchProjects);
+
+  return {
+    activeTab,
+    searchQuery,
+    teamFilter,
+    isLoading,
+    filteredProjects,
+    notReadyCount,
+    readyCount,
+    archiveCount,
+    allProjectsCount,
+    isEditor,
+    isManager,
+    activeMenuId,
+    toggleMenu,
+    viewTracker,
+    onEditProject,
+    onArchiveProject,
+    onMarkComplete,
+    onDownloadContract,
+    onAssignTeam,
+    showAssignTeamModal,
+    projectForAssignTeam,
+    assignTeamAssigned,
+    assignTeamAvailable,
+    assignTeamSelectedId,
+    assignTeamLoading,
+    assignTeamActionLoading,
+    assignTeamSubmit,
+    assignTeamRemove,
+    closeAssignTeamModal,
+    showDetailsModal,
+    selectedProject,
+    openProjectDetails,
+    closeDetailsModal,
+    showWorkspaceModal,
+    workspaceForm,
+    openWorkspace,
+    closeWorkspaceModal,
+    submitWorkspaceLink,
+    formatCurrency,
+    showMediaModalState,
+    mediaForm,
+    isMediaSaving,
+    openMediaModal,
+    closeMediaModalState,
+    submitMediaForm,
+    getStatusClass,
+    goToUnits,
+    timelineClass,
+    timelineLabel,
+  };
+}

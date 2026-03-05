@@ -62,7 +62,7 @@
           />
         </div>
 
-        <div class="table-wrapper">
+        <div class="table-wrapper table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -171,7 +171,7 @@
 
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useFormatters } from '../../composables/useFormatters';
+import { useFormatters } from '@/composables/useFormatters';
 
 export default {
   name: 'CombinedClaimFileModal',

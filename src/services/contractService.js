@@ -1,7 +1,7 @@
-import apiClient from '../api/apiClient';
-import logger from '../utils/logger';
-import { handleServiceError } from '../utils/serviceErrorHandler';
-import { extractPaginatedData } from '../utils/paginationUtils';
+import apiClient from '@/api/apiClient';
+import logger from '@/utils/logger';
+import { handleServiceError } from '@/utils/serviceErrorHandler';
+import { extractPaginatedData } from '@/utils/paginationUtils';
 
 /**
  * خدمة العقود - API Integration
@@ -60,6 +60,32 @@ const contractService = {
    */
   async updateContractStatus(contractId, status) {
     return this.updateContractStatusAdmin(contractId, status);
+  },
+
+  /**
+   * أرشفة عقد
+   * PATCH /contracts/:id/archive
+   */
+  async archiveContract(contractId) {
+    try {
+      const response = await apiClient.patch(`/contracts/${contractId}/archive`);
+      return response.data;
+    } catch (error) {
+      return handleServiceError(error, 'Archive contract', 'patch');
+    }
+  },
+
+  /**
+   * تحديد عقد كمكتمل
+   * PATCH /contracts/:id/complete
+   */
+  async markContractComplete(contractId) {
+    try {
+      const response = await apiClient.patch(`/contracts/${contractId}/complete`);
+      return response.data;
+    } catch (error) {
+      return handleServiceError(error, 'Mark contract complete', 'patch');
+    }
   },
 
   async approveContract(contractId) {

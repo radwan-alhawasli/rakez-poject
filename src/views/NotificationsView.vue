@@ -112,46 +112,34 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { computed, onMounted } from 'vue';
-import notificationService from '../services/notificationService';
+import notificationService from '@/services/notificationService';
 
-export default {
-  name: 'NotificationsView',
-  setup() {
-    const notifications = computed(() => notificationService.state.value);
+const notifications = computed(() => notificationService.state.value);
 
-    const markAsRead = async id => {
-      await notificationService.markAsRead(id);
-    };
-
-    const markAllRead = async () => {
-      await notificationService.markAllAsRead();
-    };
-
-    const formatTime = timeStr => {
-      if (!timeStr) return '';
-      const date = new Date(timeStr);
-      return new Intl.DateTimeFormat('ar-SA', {
-        hour: '2-digit',
-        minute: '2-digit',
-        day: 'numeric',
-        month: 'long',
-      }).format(date);
-    };
-
-    onMounted(() => {
-      notificationService.init();
-    });
-
-    return {
-      notifications,
-      markAsRead,
-      markAllRead,
-      formatTime,
-    };
-  },
+const markAsRead = async id => {
+  await notificationService.markAsRead(id);
 };
+
+const markAllRead = async () => {
+  await notificationService.markAllAsRead();
+};
+
+const formatTime = timeStr => {
+  if (!timeStr) return '';
+  const date = new Date(timeStr);
+  return new Intl.DateTimeFormat('ar-SA', {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: 'numeric',
+    month: 'long',
+  }).format(date);
+};
+
+onMounted(() => {
+  notificationService.init();
+});
 </script>
 
 <style scoped>

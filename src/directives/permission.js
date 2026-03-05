@@ -4,8 +4,8 @@
  * With array: requires ANY of the permissions
  */
 
-import { hasPermission, hasAnyPermission } from '../utils/rbac';
-import authService from '../services/authService';
+import { hasPermission, hasAnyPermission } from '@/utils/rbac';
+import authService from '@/services/authService';
 
 export default {
   mounted(el, binding) {

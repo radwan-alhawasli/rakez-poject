@@ -29,7 +29,7 @@ describe('contractService', () => {
   describe('getAllContracts', () => {
     it('returns paginated shape', async () => {
       mock
-        .onGet('/admin/contracts/adminIndex')
+        .onGet('/contracts/admin-index')
         .reply(200, { data: [{ id: 1 }], meta: { total: 1 } });
       const result = await contractService.getAllContracts();
       expect(Array.isArray(result.items)).toBe(true);
@@ -38,7 +38,7 @@ describe('contractService', () => {
 
     it('returns empty on error', async () => {
       mock
-        .onGet('/admin/contracts/adminIndex')
+        .onGet('/contracts/admin-index')
         .reply(500, createErrorResponse('Server error', 500));
       const result = await contractService.getAllContracts();
       expect(result).toEqual({ items: [], total: 0 });

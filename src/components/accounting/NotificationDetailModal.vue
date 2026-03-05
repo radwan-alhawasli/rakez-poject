@@ -1,16 +1,10 @@
 <template>
-  <div
-    class="modal-overlay"
-    @click.self="$emit('close')"
-    @keydown.esc="$emit('close')"
-    tabindex="-1"
+  <AppModal
+    :open="true"
+    title="تفاصيل الإشعار"
+    @update:open="(v) => { if (v === false) $emit('close') }"
   >
-    <div class="modal-container">
-      <div class="modal-header">
-        <h2 class="modal-title">تفاصيل الإشعار</h2>
-        <button class="close-btn" @click="$emit('close')">×</button>
-      </div>
-      <div v-if="notification" class="modal-body">
+    <div v-if="notification" class="modal-body">
         <div class="detail-section">
           <div class="detail-row">
             <span class="detail-label">العنوان:</span>
@@ -49,25 +43,28 @@
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button
-            v-if="!notification.read"
-            type="button"
-            class="btn-primary"
-            @click="$emit('mark-read')"
-            :disabled="isLoading"
-          >
-            تعيين كمقروء
-          </button>
-          <button type="button" class="btn-secondary" @click="$emit('close')">إغلاق</button>
-        </div>
-      </div>
     </div>
-  </div>
+    <template #footer>
+      <div v-if="notification" class="modal-footer flex gap-3 justify-end flex-wrap">
+        <button
+          v-if="!notification.read"
+          type="button"
+          class="btn-primary"
+          @click="$emit('mark-read')"
+          :disabled="isLoading"
+        >
+          تعيين كمقروء
+        </button>
+        <button type="button" class="btn-secondary" @click="$emit('close')">إغلاق</button>
+      </div>
+    </template>
+  </AppModal>
 </template>
 
 <script>
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed } from 'vue'
+import AppModal from '@/components/AppModal.vue'
+import { useFormatters } from '@/composables/useFormatters'
 
 const NOTIFICATION_TYPE_LABELS = {
   unit_reserved: 'تم حجز وحدة',
@@ -80,31 +77,19 @@ const NOTIFICATION_TYPE_LABELS = {
 
 export default {
   name: 'NotificationDetailModal',
+  components: { AppModal },
   props: {
     notification: { type: Object, default: null },
     isLoading: { type: Boolean, default: false },
   },
   emits: ['close', 'mark-read'],
-  setup(props, { emit }) {
+  setup(props, { emit: _emit }) {
     const typeLabel = computed(() => {
       const t = props.notification?.type;
       return NOTIFICATION_TYPE_LABELS[t] || t || 'عام';
     });
 
-    const formatDate = dateStr => {
-      if (!dateStr) return '—';
-      try {
-        return new Date(dateStr).toLocaleDateString('ar-SA', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-      } catch {
-        return dateStr;
-      }
-    };
+    const { formatDateLong: formatDate } = useFormatters();
 
     const formatDataKey = key => {
       const map = {
@@ -123,20 +108,6 @@ export default {
       return String(val);
     };
 
-    const handleEscape = e => {
-      if (e.key === 'Escape') emit('close');
-    };
-
-    onMounted(() => {
-      document.body.style.overflow = 'hidden';
-      document.addEventListener('keydown', handleEscape);
-    });
-
-    onUnmounted(() => {
-      document.body.style.overflow = '';
-      document.removeEventListener('keydown', handleEscape);
-    });
-
     return {
       typeLabel,
       formatDate,
@@ -148,57 +119,6 @@ export default {
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-}
-
-.modal-container {
-  background: white;
-  width: 90%;
-  max-width: 500px;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--color-medium-gray);
-}
-
-.modal-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-navy);
-  margin: 0;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: var(--color-dark-gray);
-  cursor: pointer;
-}
-
-.close-btn:hover {
-  color: var(--color-error);
-}
-
 .detail-section {
   display: flex;
   flex-direction: column;

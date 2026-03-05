@@ -493,7 +493,7 @@ describe('accountingService', () => {
     it('should confirm down payment (Legacy)', async () => {
       const reservationId = 100;
       mock
-        .onPost(`/accounting/confirm/${reservationId}`)
+        .onPost(`/accounting/confirmations/${reservationId}/confirm`)
         .reply(200, createSuccessResponse({ confirmed: true }));
 
       const result = await accountingService.confirmDownPayment(reservationId);

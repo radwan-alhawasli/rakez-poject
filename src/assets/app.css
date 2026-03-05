@@ -1,0 +1,6 @@
+/* Global app styles – imported once in main.js to avoid SFC style pipeline issues */
+@import './luxury-theme.css';
+@import './global-luxury-styles.css';
+@import './responsive-breakpoints.css';
+@import './responsive-enhancements.css';
+@import './tailwind.css';

@@ -4,15 +4,10 @@
   </div>
 </template>
 
-<script>
-import UserManagement from '../components/UserManagement.vue';
+<script setup>
+import UserManagement from '@/components/UserManagement.vue';
 
-export default {
-  name: 'UsersView',
-  components: {
-    UserManagement,
-  },
-};
+
 </script>
 
 <style scoped>

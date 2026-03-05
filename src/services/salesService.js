@@ -1,6 +1,6 @@
-import apiClient from '../api/apiClient';
-import { handleServiceError } from '../utils/serviceErrorHandler';
-import { extractPaginatedData } from '../utils/paginationUtils';
+import apiClient from '@/api/apiClient';
+import { handleServiceError } from '@/utils/serviceErrorHandler';
+import { extractPaginatedData } from '@/utils/paginationUtils';
 
 /**
  * Sales Module API — Base URL: /api/sales (Auth: Bearer token, Content-Type: application/json)
@@ -403,6 +403,28 @@ const salesService = {
       responseType: 'blob',
     });
     return response?.data instanceof Blob ? response.data : response;
+  },
+
+  /**
+   * Download unit details PDF
+   * GET /sales/units/:unitId/pdf
+   * @param {number|string} unitId - Unit ID (contract_unit_id / id from contract_units)
+   * @returns {Promise<{ blob: Blob, filename?: string }>} PDF blob and optional filename from Content-Disposition
+   * @throws On 404/403/503 with API message in error response
+   */
+  async downloadUnitPdf(unitId) {
+    const response = await apiClient.get(`/sales/units/${unitId}/pdf`, {
+      responseType: 'blob',
+      headers: { Accept: 'application/pdf' },
+    });
+    const blob = response?.data instanceof Blob ? response.data : response;
+    let filename;
+    const contentDisposition = response?.headers?.['content-disposition'];
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename="?([^";]+)"?/);
+      if (match) filename = match[1].trim();
+    }
+    return { blob, filename };
   },
 
   // Targets
@@ -935,6 +957,41 @@ const salesService = {
         };
       });
       return { members, server_date: today, server_time: null, day_name_ar: null };
+    }
+  },
+
+  // ── Unit Search ─────────────────────────────────────────────────────────
+
+  /**
+   * Search units across all projects
+   * GET /sales/units/search
+   * @param {Object} params - city, district, min_area, max_area, min_bedrooms, max_bedrooms, status, min_price, max_price, unit_type, floor, project_id, q, sort_by, sort_dir, page, per_page
+   * @returns {Promise<{ items: Array, total: number, meta: Object, filters_available?: Object }>}
+   */
+  async searchUnits(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/units/search', { params });
+      const body = response?.data ?? response;
+      const items = body?.data ?? [];
+      const meta = body?.meta ?? {};
+      const filters_available = body?.filters_available ?? null;
+      return { items: Array.isArray(items) ? items : [], total: meta.total ?? 0, meta, filters_available };
+    } catch (error) {
+      return handleServiceError(error, 'Search units', 'get') || { items: [], total: 0, meta: {}, filters_available: null };
+    }
+  },
+
+  /**
+   * Get available filter values for unit search
+   * GET /sales/units/filters
+   * @returns {Promise<Object>} { cities, districts, unit_types, bedrooms_range, area_range, price_range, statuses }
+   */
+  async getUnitSearchFilters() {
+    try {
+      const response = await apiClient.get('/sales/units/filters');
+      return response?.data?.data ?? response?.data ?? {};
+    } catch (error) {
+      return handleServiceError(error, 'Unit search filters', 'get') || {};
     }
   },
 

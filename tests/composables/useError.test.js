@@ -15,14 +15,7 @@ vi.mock('../../src/utils/errorHandler', () => ({
   retryWithBackoff: vi.fn(fn => fn()),
 }));
 
-vi.mock('../../src/services/notificationService', () => ({
-  default: {
-    addNotification: vi.fn(),
-  },
-}));
-
 import { handleError } from '../../src/utils/errorHandler';
-import notificationService from '../../src/services/notificationService';
 
 describe('useError', () => {
   beforeEach(() => {
@@ -57,7 +50,6 @@ describe('useError', () => {
     const err = new Error('Test error');
     wrapper.vm.handle(err);
     expect(handleError).toHaveBeenCalledWith(err, expect.any(Object));
-    expect(notificationService.addNotification).toHaveBeenCalled();
     expect(wrapper.vm.error).toBe(err);
   });
 

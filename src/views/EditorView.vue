@@ -26,7 +26,7 @@
             <p class="section-subtitle">قائمة العقود المتاحة للمحرر.</p>
           </div>
         </div>
-        <div class="metrics-table-container">
+        <div class="metrics-table-container table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -81,7 +81,7 @@
         <div v-else-if="isLoadingSecondParty" class="empty-state">
           <p>جاري التحميل...</p>
         </div>
-        <div v-else-if="secondPartyData && Object.keys(secondPartyData).length > 0" class="metrics-table-container">
+        <div v-else-if="secondPartyData && Object.keys(secondPartyData).length > 0" class="metrics-table-container table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -116,7 +116,7 @@
         <div v-else-if="isLoadingUnits" class="empty-state">
           <p>جاري التحميل...</p>
         </div>
-        <div v-else class="metrics-table-container">
+        <div v-else class="metrics-table-container table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -149,7 +149,7 @@
             <p class="section-subtitle">قائمة المطورين وتفاصيلهم.</p>
           </div>
         </div>
-        <div class="metrics-table-container">
+        <div class="metrics-table-container table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -192,7 +192,7 @@
         <div v-else-if="isLoadingMontage" class="empty-state">
           <p>جاري التحميل...</p>
         </div>
-        <div v-else-if="montageData && Object.keys(montageData).length > 0" class="metrics-table-container">
+        <div v-else-if="montageData && Object.keys(montageData).length > 0" class="metrics-table-container table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -227,7 +227,7 @@
         <div v-else-if="isLoadingPhotography" class="empty-state">
           <p>جاري التحميل...</p>
         </div>
-        <div v-else-if="photographyData && Object.keys(photographyData).length > 0" class="metrics-table-container">
+        <div v-else-if="photographyData && Object.keys(photographyData).length > 0" class="metrics-table-container table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -262,7 +262,7 @@
         <div v-else-if="isLoadingBoards" class="empty-state">
           <p>جاري التحميل...</p>
         </div>
-        <div v-else-if="boardsData && Object.keys(boardsData).length > 0" class="metrics-table-container">
+        <div v-else-if="boardsData && Object.keys(boardsData).length > 0" class="metrics-table-container table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -307,7 +307,7 @@
         <div class="editor-modal-body">
           <div v-if="isLoadingContractDetail" class="editor-modal-loading">جاري تحميل تفاصيل العقد...</div>
           <template v-else-if="selectedContract && contractDetailRows.length > 0">
-            <div class="metrics-table-container">
+            <div class="metrics-table-container table-responsive">
               <table class="metrics-table">
                 <thead>
                   <tr>
@@ -366,7 +366,7 @@
           <button type="button" class="editor-modal-close" @click="closeDeveloperModal" aria-label="إغلاق">&times;</button>
         </div>
         <div class="editor-modal-body">
-          <div v-if="selectedDeveloper && developerDetailRows.length > 0" class="metrics-table-container">
+          <div v-if="selectedDeveloper && developerDetailRows.length > 0" class="metrics-table-container table-responsive">
             <table class="metrics-table">
               <thead>
                 <tr>
@@ -421,8 +421,8 @@
 <script>
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import editorService from '../services/editorService';
-import logger from '../utils/logger';
+import editorService from '@/services/editorService';
+import logger from '@/utils/logger';
 
 const EDITOR_TABS = [
   { id: 'contracts', name: 'EditorContracts', label: 'عقود' },

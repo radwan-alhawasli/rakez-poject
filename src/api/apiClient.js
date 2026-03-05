@@ -10,11 +10,11 @@
  */
 
 import axios from 'axios';
-import appConfig from '../config/appConfig';
-import logger from '../utils/logger';
-import secureStorage from '../utils/secureStorage';
-import { setupTokenRefreshInterceptor, initTokenRefresh } from '../utils/tokenRefresh';
-import { setupCsrfInterceptor, initCsrf } from '../utils/csrf';
+import appConfig from '@/config/appConfig';
+import logger from '@/utils/logger';
+import secureStorage from '@/utils/secureStorage';
+import { setupTokenRefreshInterceptor, initTokenRefresh } from '@/utils/tokenRefresh';
+import { setupCsrfInterceptor, initCsrf } from '@/utils/csrf';
 
 const apiBaseUrl = appConfig.apiBaseUrl;
 const apiTimeout = appConfig.apiTimeout ?? 30000;
@@ -87,7 +87,7 @@ apiClient.interceptors.response.use(
       // Only log if it's not from a refresh attempt (to avoid noise)
       if (!url.includes('/auth/refresh') && !is401FromRefreshAttempt) {
         // Only log once per session to reduce noise
-        if (process.env.NODE_ENV !== 'production') {
+        if (!import.meta.env.PROD) {
           logger.debug('Unauthorized access - potential token expiration');
         }
       }
@@ -107,7 +107,7 @@ apiClient.interceptors.response.use(
     // Don't log expected 404s, 401s from refresh attempts, refresh endpoint unavailable, or sensitive data in production
     if (!isExpected404 && !is401FromRefreshAttempt && !isRefreshEndpointUnavailable) {
       // Only log error details in development
-      if (process.env.NODE_ENV !== 'production') {
+      if (!import.meta.env.PROD) {
         // For 403 errors, provide more context
         if (status === 403) {
           const userMessage =

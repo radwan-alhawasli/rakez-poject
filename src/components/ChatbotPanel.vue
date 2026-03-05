@@ -232,7 +232,7 @@
 
 <script>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import { useChatbot } from '../composables/useChatbot';
+import { useChatbot } from '@/composables/useChatbot';
 
 export default {
   name: 'ChatbotPanel',

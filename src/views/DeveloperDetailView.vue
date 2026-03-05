@@ -90,9 +90,9 @@
 <script>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import contractService from '../services/contractService';
-import { normalizeDeveloper } from '../utils/developerMapper';
-import logger from '../utils/logger';
+import contractService from '@/services/contractService';
+import { normalizeDeveloper } from '@/utils/developerMapper';
+import logger from '@/utils/logger';
 
 export default {
   name: 'DeveloperDetailView',

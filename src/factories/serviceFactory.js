@@ -3,23 +3,23 @@
  * Creates and manages service instances with dependency injection
  */
 
-import contractService from '../services/contractService';
-import userService from '../services/userService';
-import salesService from '../services/salesService';
-import marketingService from '../services/marketingService';
-import hrService from '../services/hrService';
-import authService from '../services/authService';
-import notificationService from '../services/notificationService';
-import teamService from '../services/teamService';
-import aiService from '../services/aiService';
-import pdfService from '../services/pdfService';
-import creditService from '../services/creditService';
-import accountingService from '../services/accountingService';
-import editorService from '../services/editorService';
-import commissionService from '../services/commissionService';
-import exclusiveProjectService from '../services/exclusiveProjectService';
-import boardsDepartmentService from '../services/boardsDepartmentService';
-import photographyDepartmentService from '../services/photographyDepartmentService';
+import contractService from '@/services/contractService';
+import userService from '@/services/userService';
+import salesService from '@/services/salesService';
+import marketingService from '@/services/marketingService';
+import hrService from '@/services/hrService';
+import authService from '@/services/authService';
+import notificationService from '@/services/notificationService';
+import teamService from '@/services/teamService';
+import aiService from '@/services/aiService';
+import pdfService from '@/services/pdfService';
+import creditService from '@/services/creditService';
+import accountingService from '@/services/accountingService';
+import editorService from '@/services/editorService';
+import commissionService from '@/services/commissionService';
+import exclusiveProjectService from '@/services/exclusiveProjectService';
+import boardsDepartmentService from '@/services/boardsDepartmentService';
+import photographyDepartmentService from '@/services/photographyDepartmentService';
 
 /**
  * Service registry

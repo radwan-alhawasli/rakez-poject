@@ -59,7 +59,7 @@
 
 <script>
 import { reactive, computed, onMounted, onUnmounted } from 'vue';
-import { toast } from '../../composables/useToast';
+import { toast } from '@/composables/useToast';
 
 export default {
   name: 'TitleTransferDateModal',

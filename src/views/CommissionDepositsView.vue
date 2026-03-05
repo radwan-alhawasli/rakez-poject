@@ -48,6 +48,7 @@
           </div>
         </div>
         <div class="metrics-table-container">
+          <div class="table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -80,6 +81,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
         <Pagination
           v-if="totalItems > 0"
@@ -99,6 +101,7 @@
           </div>
         </div>
         <div class="metrics-table-container">
+          <div class="table-responsive">
           <table class="metrics-table">
             <thead>
               <tr>
@@ -129,6 +132,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
         <Pagination
           v-if="depositsTotalItems > 0"
@@ -143,140 +147,112 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, reactive, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import commissionService from '../services/commissionService';
-import authService from '../services/authService';
-import Pagination from '../components/Pagination.vue';
-import logger from '../utils/logger';
-import { useFormatters } from '../composables/useFormatters';
+import commissionService from '@/services/commissionService';
+import authService from '@/services/authService';
+import Pagination from '@/components/Pagination.vue';
+import logger from '@/utils/logger';
+import { useFormatters } from '@/composables/useFormatters';
 
-export default {
-  name: 'CommissionDepositsView',
-  components: { Pagination },
-  setup() {
-    const route = useRoute();
-    const user = ref(authService.getCurrentUser());
-    const userName = computed(() => user.value?.name || 'قسم العمولات');
-    const isLoading = ref(false);
-    const activeTab = computed(() => {
-      const name = route.name;
-      if (name === 'CommissionsDashboard') return 'dashboard';
-      if (name === 'CommissionsList') return 'commissions';
-      if (name === 'DepositsTracking') return 'deposits';
-      return 'dashboard';
+const route = useRoute();
+const user = ref(authService.getCurrentUser());
+const userName = computed(() => user.value?.name || 'قسم العمولات');
+const isLoading = ref(false);
+const activeTab = computed(() => {
+  const name = route.name;
+  if (name === 'CommissionsDashboard') return 'dashboard';
+  if (name === 'CommissionsList') return 'commissions';
+  if (name === 'DepositsTracking') return 'deposits';
+  return 'dashboard';
+});
+
+const dashboardMetrics = reactive({
+  totalCommissions: 0,
+  totalDeposits: 0,
+});
+
+const commissions = ref([]);
+const deposits = ref([]);
+const currentPage = ref(1);
+const perPage = ref(25);
+const totalItems = ref(0);
+const depositsPage = ref(1);
+const depositsPerPage = ref(25);
+const depositsTotalItems = ref(0);
+
+const loadCommissions = async () => {
+  isLoading.value = true;
+  try {
+    const data = await commissionService.getCommissions({
+      page: currentPage.value,
+      per_page: perPage.value,
     });
-
-    const dashboardMetrics = reactive({
-      totalCommissions: 0,
-      totalDeposits: 0,
-    });
-
-    const commissions = ref([]);
-    const deposits = ref([]);
-    const currentPage = ref(1);
-    const perPage = ref(25);
-    const totalItems = ref(0);
-    const depositsPage = ref(1);
-    const depositsPerPage = ref(25);
-    const depositsTotalItems = ref(0);
-
-    const loadCommissions = async () => {
-      isLoading.value = true;
-      try {
-        const data = await commissionService.getCommissions({
-          page: currentPage.value,
-          per_page: perPage.value,
-        });
-        commissions.value = Array.isArray(data) ? data : data?.items || [];
-        totalItems.value = data?.total ?? commissions.value.length;
-      } catch (error) {
-        logger.error('Error loading commissions:', error);
-        commissions.value = [];
-        totalItems.value = 0;
-      } finally {
-        isLoading.value = false;
-      }
-    };
-
-    const loadDeposits = async () => {
-      isLoading.value = true;
-      try {
-        const data = await commissionService.getDeposits({
-          page: depositsPage.value,
-          per_page: depositsPerPage.value,
-        });
-        deposits.value = Array.isArray(data) ? data : data?.items || [];
-        depositsTotalItems.value = data?.total ?? deposits.value.length;
-      } catch (error) {
-        logger.error('Error loading deposits:', error);
-        deposits.value = [];
-        depositsTotalItems.value = 0;
-      } finally {
-        isLoading.value = false;
-      }
-    };
-
-    const handlePageChange = page => {
-      currentPage.value = page;
-      loadCommissions();
-    };
-
-    const handlePerPageChange = val => {
-      perPage.value = val;
-      currentPage.value = 1;
-      loadCommissions();
-    };
-
-    const handleDepositsPageChange = page => {
-      depositsPage.value = page;
-      loadDeposits();
-    };
-
-    const handleDepositsPerPageChange = val => {
-      depositsPerPage.value = val;
-      depositsPage.value = 1;
-      loadDeposits();
-    };
-
-    const viewCommissionDetail = () => {};
-    const viewDepositDetail = () => {};
-
-    const { formatCurrency } = useFormatters();
-
-    watch(
-      activeTab,
-      newTab => {
-        if (newTab === 'commissions') loadCommissions();
-        if (newTab === 'deposits') loadDeposits();
-      },
-      { immediate: true }
-    );
-
-    return {
-      activeTab,
-      userName,
-      isLoading,
-      dashboardMetrics,
-      commissions,
-      deposits,
-      currentPage,
-      perPage,
-      totalItems,
-      depositsPage,
-      depositsPerPage,
-      depositsTotalItems,
-      handlePageChange,
-      handlePerPageChange,
-      handleDepositsPageChange,
-      handleDepositsPerPageChange,
-      viewCommissionDetail,
-      viewDepositDetail,
-      formatCurrency,
-    };
-  },
+    commissions.value = Array.isArray(data) ? data : data?.items || [];
+    totalItems.value = data?.total ?? commissions.value.length;
+  } catch (error) {
+    logger.error('Error loading commissions:', error);
+    commissions.value = [];
+    totalItems.value = 0;
+  } finally {
+    isLoading.value = false;
+  }
 };
+
+const loadDeposits = async () => {
+  isLoading.value = true;
+  try {
+    const data = await commissionService.getDeposits({
+      page: depositsPage.value,
+      per_page: depositsPerPage.value,
+    });
+    deposits.value = Array.isArray(data) ? data : data?.items || [];
+    depositsTotalItems.value = data?.total ?? deposits.value.length;
+  } catch (error) {
+    logger.error('Error loading deposits:', error);
+    deposits.value = [];
+    depositsTotalItems.value = 0;
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handlePageChange = page => {
+  currentPage.value = page;
+  loadCommissions();
+};
+
+const handlePerPageChange = val => {
+  perPage.value = val;
+  currentPage.value = 1;
+  loadCommissions();
+};
+
+const handleDepositsPageChange = page => {
+  depositsPage.value = page;
+  loadDeposits();
+};
+
+const handleDepositsPerPageChange = val => {
+  depositsPerPage.value = val;
+  depositsPage.value = 1;
+  loadDeposits();
+};
+
+const viewCommissionDetail = () => {};
+const viewDepositDetail = () => {};
+
+const { formatCurrency } = useFormatters();
+
+watch(
+  activeTab,
+  newTab => {
+    if (newTab === 'commissions') loadCommissions();
+    if (newTab === 'deposits') loadDeposits();
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped>
