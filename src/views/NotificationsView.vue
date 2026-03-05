@@ -21,7 +21,13 @@
       </button>
     </div>
 
-    <div class="notifications-grid">
+    <!-- Loading State -->
+    <div v-if="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>جاري تحميل الإشعارات...</p>
+    </div>
+
+    <div v-else class="notifications-grid">
       <transition-group name="list" tag="div" class="list-wrapper">
         <div
           v-for="notif in notifications"
@@ -113,9 +119,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import notificationService from '@/services/notificationService';
 
+const isLoading = ref(true);
 const notifications = computed(() => notificationService.state.value);
 
 const markAsRead = async id => {
@@ -137,8 +144,12 @@ const formatTime = timeStr => {
   }).format(date);
 };
 
-onMounted(() => {
-  notificationService.init();
+onMounted(async () => {
+  try {
+    await notificationService.init();
+  } finally {
+    isLoading.value = false;
+  }
 });
 </script>
 
@@ -148,6 +159,28 @@ onMounted(() => {
   margin: 0 auto;
   padding: 20px;
   animation: fadeIn 0.6s ease-out;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-dark-gray);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  border: 3px solid var(--color-light-gray);
+  border-top-color: var(--color-gold);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .glass-header {

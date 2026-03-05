@@ -3,6 +3,7 @@ import accountingService from '@/services/accountingService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
+import { getStatusClass } from '@/utils/statusHelpers';
 
 export function useAccountingSalaries() {
   const isLoading = ref(false);
@@ -71,12 +72,6 @@ export function useAccountingSalaries() {
 
   const { formatCurrency } = useFormatters();
 
-  const getStatusClass = (status) => {
-    if (!status) return 'good';
-    const s = status.toLowerCase();
-    if (s.includes('completed') || s.includes('approved') || s.includes('paid') || s.includes('مكتمل') || s.includes('موافق') || s.includes('مقبوض')) return 'excellent';
-    return 'good';
-  };
 
   return {
     isLoading,

@@ -70,7 +70,7 @@
     </div>
 
     <div v-else class="leads-table-container table-responsive">
-      <table class="luxury-table">
+      <table class="luxury-table table-mobile-stacked">
         <thead>
           <tr>
             <th>الموظف</th>
@@ -83,12 +83,12 @@
         </thead>
         <tbody>
           <tr v-for="plan in employeePlans" :key="plan.id" class="hover-row">
-            <td>{{ plan.user?.name || plan.user_name || 'User #' + (plan.user_id ?? '—') }}</td>
-            <td class="number">{{ formatCurrency(plan.marketing_value || 0) }}</td>
-            <td class="number">{{ formatCurrency(plan.commission_value || 0) }}</td>
-            <td>{{ formatDistribution(plan.platform_distribution) }}</td>
-            <td>{{ formatDistribution(plan.campaign_distribution) }}</td>
-            <td>{{ formatDate(plan.created_at) }}</td>
+            <td data-label="الموظف">{{ plan.user?.name || plan.user_name || 'User #' + (plan.user_id ?? '—') }}</td>
+            <td data-label="قيمة التسويق" class="number">{{ formatCurrency(plan.marketing_value || 0) }}</td>
+            <td data-label="قيمة العمولة" class="number">{{ formatCurrency(plan.commission_value || 0) }}</td>
+            <td data-label="توزيع المنصات">{{ formatDistribution(plan.platform_distribution) }}</td>
+            <td data-label="توزيع الحملات">{{ formatDistribution(plan.campaign_distribution) }}</td>
+            <td data-label="التاريخ">{{ formatDate(plan.created_at) }}</td>
           </tr>
         </tbody>
       </table>

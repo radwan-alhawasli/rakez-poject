@@ -1,4 +1,4 @@
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import aiService from '@/services/aiService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
@@ -6,6 +6,7 @@ import { toast } from '@/composables/useToast';
 export function useMarketingAiAssistant() {
   const aiQuery = ref('');
   const isAiTyping = ref(false);
+  const isStreaming = ref(false);
   const chatMessages = ref([]);
   const conversations = ref([]);
   const isLoadingConversations = ref(false);
@@ -15,6 +16,7 @@ export function useMarketingAiAssistant() {
   const isLoadingAiSections = ref(false);
   const aiSelectedSectionKey = ref('general');
   const aiContext = reactive({});
+  let abortController = null;
 
   const currentAiSection = computed(() => {
     const key = aiSelectedSectionKey.value;
@@ -62,42 +64,95 @@ export function useMarketingAiAssistant() {
     sendAiMessage();
   };
 
+  const scrollToBottom = () => {
+    nextTick(() => {
+      if (chatScrollRef.value) chatScrollRef.value.scrollTop = chatScrollRef.value.scrollHeight;
+    });
+  };
+
+  const stopStreaming = () => {
+    if (abortController) {
+      abortController.abort();
+      abortController = null;
+    }
+    isStreaming.value = false;
+    isAiTyping.value = false;
+  };
+
   const sendAiMessage = async () => {
     if (!aiQuery.value.trim() || isAiTyping.value) return;
     const text = aiQuery.value;
     chatMessages.value.push({ role: 'user', content: text });
     aiQuery.value = '';
     isAiTyping.value = true;
+    scrollToBottom();
+
+    const context = {};
+    const allowed = currentAiSection.value?.allowed_context_params || [];
+    (allowed || []).forEach(k => {
+      const v = aiContext[k];
+      if (v !== undefined && v !== null && String(v).trim() !== '') context[k] = v;
+    });
+    const payload = {
+      message: text,
+      session_id: currentSessionId.value,
+      section: aiSelectedSectionKey.value || 'general',
+      ...(Object.keys(context).length ? { context } : {}),
+    };
+
+    const assistantMsg = { role: 'assistant', content: '', streaming: true };
+    chatMessages.value.push(assistantMsg);
+    const msgIndex = chatMessages.value.length - 1;
+
+    abortController = new AbortController();
+    isStreaming.value = true;
+
     try {
-      const context = {};
-      const allowed = currentAiSection.value?.allowed_context_params || [];
-      (allowed || []).forEach(k => {
-        const v = aiContext[k];
-        if (v !== undefined && v !== null && String(v).trim() !== '') context[k] = v;
-      });
-      const payload = {
-        message: text,
-        session_id: currentSessionId.value,
-        section: aiSelectedSectionKey.value || 'general',
-        ...(Object.keys(context).length ? { context } : {}),
+      const { session_id } = await aiService.chatStream(
+        payload,
+        (chunk) => {
+          chatMessages.value[msgIndex] = {
+            ...chatMessages.value[msgIndex],
+            content: chatMessages.value[msgIndex].content + chunk,
+          };
+          scrollToBottom();
+        },
+        abortController.signal,
+      );
+
+      chatMessages.value[msgIndex] = {
+        ...chatMessages.value[msgIndex],
+        streaming: false,
       };
-      const response = await aiService.chat(payload);
-      chatMessages.value.push({
-        role: 'assistant',
-        content: response.reply || response.answer || response.message || response.text || 'عذراً، لم أتمكن من فهم طلبك.',
-      });
-      if (response.session_id && !currentSessionId.value) {
-        currentSessionId.value = response.session_id;
+
+      if (!chatMessages.value[msgIndex].content) {
+        chatMessages.value[msgIndex].content = 'عذراً، لم أتمكن من فهم طلبك.';
+      }
+
+      if (session_id && !currentSessionId.value) {
+        currentSessionId.value = session_id;
         loadAiDashboard();
       }
     } catch (error) {
-      logger.error('Error sending AI message:', error);
-      chatMessages.value.push({ role: 'assistant', content: 'عذراً، حدث خطأ أثناء الاتصال بالمساعد الذكي.' });
+      if (error.name === 'AbortError') {
+        chatMessages.value[msgIndex] = {
+          ...chatMessages.value[msgIndex],
+          streaming: false,
+          content: chatMessages.value[msgIndex].content || 'تم إيقاف الاستجابة.',
+        };
+      } else {
+        logger.error('Error sending AI message:', error);
+        chatMessages.value[msgIndex] = {
+          role: 'assistant',
+          content: 'عذراً، حدث خطأ أثناء الاتصال بالمساعد الذكي.',
+          streaming: false,
+        };
+      }
     } finally {
       isAiTyping.value = false;
-      setTimeout(() => {
-        if (chatScrollRef.value) chatScrollRef.value.scrollTop = chatScrollRef.value.scrollHeight;
-      }, 100);
+      isStreaming.value = false;
+      abortController = null;
+      scrollToBottom();
     }
   };
 
@@ -117,9 +172,14 @@ export function useMarketingAiAssistant() {
     loadAiDashboard();
   });
 
+  onUnmounted(() => {
+    stopStreaming();
+  });
+
   return {
     aiQuery,
     isAiTyping,
+    isStreaming,
     chatMessages,
     conversations,
     isLoadingConversations,
@@ -135,5 +195,6 @@ export function useMarketingAiAssistant() {
     sendAiMessage,
     sendPrompt,
     deleteChat,
+    stopStreaming,
   };
 }

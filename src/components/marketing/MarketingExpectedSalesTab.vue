@@ -54,7 +54,7 @@
     </div>
 
     <div v-else class="leads-table-container table-responsive">
-      <table class="luxury-table">
+      <table class="luxury-table table-mobile-stacked">
         <thead>
           <tr>
             <th>المشروع</th>
@@ -69,14 +69,14 @@
         </thead>
         <tbody>
           <tr v-for="row in expectedSalesItems" :key="row.id" class="hover-row">
-            <td>{{ row.project_name || row.project?.name || '—' }}</td>
-            <td class="number">{{ row.direct_communications ?? 0 }}</td>
-            <td class="number">{{ row.hand_raises ?? 0 }}</td>
-            <td class="number">{{ row.conversion_rate ?? 0 }}%</td>
-            <td class="number">{{ row.expected_bookings ?? 0 }}</td>
-            <td class="number">{{ formatCurrency(row.expected_booking_value ?? 0) }}</td>
-            <td class="number">{{ formatCurrency(row.campaign_budget ?? 0) }}</td>
-            <td>{{ formatDate(row.created_at) }}</td>
+            <td data-label="المشروع">{{ row.project_name || row.project?.name || '—' }}</td>
+            <td data-label="التواصل المباشر" class="number">{{ row.direct_communications ?? 0 }}</td>
+            <td data-label="Hand Raises" class="number">{{ row.hand_raises ?? 0 }}</td>
+            <td data-label="نسبة التحويل" class="number">{{ row.conversion_rate ?? 0 }}%</td>
+            <td data-label="الحجوزات المتوقعة" class="number">{{ row.expected_bookings ?? 0 }}</td>
+            <td data-label="قيمة الحجز" class="number">{{ formatCurrency(row.expected_booking_value ?? 0) }}</td>
+            <td data-label="ميزانية الحملة" class="number">{{ formatCurrency(row.campaign_budget ?? 0) }}</td>
+            <td data-label="التاريخ">{{ formatDate(row.created_at) }}</td>
           </tr>
         </tbody>
       </table>

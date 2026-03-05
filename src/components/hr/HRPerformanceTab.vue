@@ -11,7 +11,7 @@
         <p class="metrics-empty-desc">لم يتم تحميل بيانات أداء الأفرقة بعد أو لا توجد فرق.</p>
       </div>
       <div v-else class="table-responsive">
-        <table class="metrics-table">
+        <table class="metrics-table table-mobile-stacked">
           <thead>
             <tr>
               <th>الفريق</th>
@@ -23,7 +23,7 @@
           </thead>
           <tbody>
             <tr v-for="team in performanceData.teams" :key="team.name">
-              <td>{{ team.name }}</td>
+              <td data-label="الفريق">{{ team.name }}</td>
               <td>
                 <div class="table-progress">
                   <span>{{ team.achievement }}%</span>
@@ -32,8 +32,8 @@
                   </div>
                 </div>
               </td>
-              <td>{{ team.productivity }}%</td>
-              <td>{{ team.quality }}%</td>
+              <td data-label="الإنتاجية">{{ team.productivity }}%</td>
+              <td data-label="جودة العمل">{{ team.quality }}%</td>
               <td>
                 <span class="status-tag" :class="team.status">{{ team.statusLabel }}</span>
               </td>

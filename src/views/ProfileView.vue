@@ -1,5 +1,12 @@
 <template>
   <div class="profile-page">
+    <!-- Loading State -->
+    <div v-if="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>جاري التحميل...</p>
+    </div>
+
+    <template v-else>
     <!-- Page Header -->
     <div class="page-header">
       <div class="avatar-large">
@@ -52,21 +59,21 @@
           إعدادات الحساب
         </h2>
         <div class="settings-list">
-          <button class="settings-btn">
+          <button class="settings-btn" @click="handleComingSoon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
             تغيير كلمة المرور
           </button>
-          <button class="settings-btn">
+          <button class="settings-btn" @click="handleComingSoon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
             إعدادات الإشعارات
           </button>
-          <button class="settings-btn">
+          <button class="settings-btn" @click="handleComingSoon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"></circle>
               <path d="M2 12h20"></path>
@@ -89,19 +96,19 @@
         </h2>
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-value">24</div>
+            <div class="stat-value">{{ userStats.reservations }}</div>
             <div class="stat-label">الحجوزات</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value">12</div>
+            <div class="stat-value">{{ userStats.sold }}</div>
             <div class="stat-label">المباعة</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value">5</div>
+            <div class="stat-value">{{ userStats.pending }}</div>
             <div class="stat-label">قيد الانتظار</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value">3</div>
+            <div class="stat-value">{{ userStats.cancelled }}</div>
             <div class="stat-label">ملغاة</div>
           </div>
         </div>
@@ -117,16 +124,19 @@
         تسجيل الخروج
       </button>
     </div>
+    </template>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import authService from '@/services/authService';
 import { getRoleLabel } from '@/constants/roles';
+import { toast } from '@/composables/useToast';
 
 const router = useRouter();
+const isLoading = ref(true);
 
 const user = computed(
   () =>
@@ -150,16 +160,56 @@ const jobRoleLabel = computed(() => {
   );
 });
 
+const userStats = computed(() => {
+  const u = user.value;
+  return {
+    reservations: u?.reservations_count ?? u?.bookings_count ?? 0,
+    sold: u?.sold_count ?? u?.sold_units_count ?? 0,
+    pending: u?.pending_count ?? u?.pending_bookings_count ?? 0,
+    cancelled: u?.cancelled_count ?? u?.cancelled_bookings_count ?? 0,
+  };
+});
+
+const handleComingSoon = () => {
+  toast.info('هذه الميزة قيد التطوير');
+};
+
 const handleLogout = async () => {
   await authService.logout();
   router.push('/login');
 };
+
+onMounted(() => {
+  isLoading.value = false;
+});
 </script>
 
 <style scoped>
 .profile-page {
   max-width: 800px;
   margin: 0 auto;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-dark-gray, #64748b);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  border: 3px solid #e2e8f0;
+  border-top-color: #b1a28f;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Page Header */

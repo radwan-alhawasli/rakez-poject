@@ -11,6 +11,11 @@ export function useCreditBookings() {
   const isLoading = ref(false);
   const searchQuery = ref('');
 
+  const showScheduleDateModal = ref(false);
+  const scheduleDateInput = ref('');
+  const pendingScheduleTransferId = ref(null);
+  const pendingScheduleBookingId = ref(null);
+
   const currentPage = ref(1);
   const perPage = ref(25);
   const totalItems = ref(0);
@@ -509,17 +514,35 @@ export function useCreditBookings() {
         transferId = res?.id ?? res?.data?.id;
       }
       if (transferId) {
-        const date = prompt('أدخل تاريخ الإفراغ (YYYY-MM-DD):');
-        if (date) {
-          await creditService.scheduleTitleTransfer(transferId, { scheduled_date: date });
-          toast.success('تم تحديد موعد الإفراغ');
-          const tracker = await creditService.getFinancingTracker(bookingId);
-          selectedFinancingTracker.value = tracker;
-        }
+        pendingScheduleTransferId.value = transferId;
+        pendingScheduleBookingId.value = bookingId;
+        scheduleDateInput.value = '';
+        showScheduleDateModal.value = true;
       }
     } catch (e) {
       logger.error('Schedule title transfer error:', e);
       toast.error('حدث خطأ أثناء تحديد الموعد');
+    }
+  };
+
+  const confirmScheduleDate = async () => {
+    const date = scheduleDateInput.value;
+    if (!date) {
+      toast.warning('الرجاء إدخال التاريخ');
+      return;
+    }
+    try {
+      await creditService.scheduleTitleTransfer(pendingScheduleTransferId.value, { scheduled_date: date });
+      toast.success('تم تحديد موعد الإفراغ');
+      const tracker = await creditService.getFinancingTracker(pendingScheduleBookingId.value);
+      selectedFinancingTracker.value = tracker;
+    } catch (e) {
+      logger.error('Confirm schedule date error:', e);
+      toast.error('حدث خطأ أثناء تحديد الموعد');
+    } finally {
+      showScheduleDateModal.value = false;
+      pendingScheduleTransferId.value = null;
+      pendingScheduleBookingId.value = null;
     }
   };
 
@@ -730,6 +753,9 @@ export function useCreditBookings() {
     onBookingDelete,
     onBookingEdit,
     onBookingSchedule,
+    showScheduleDateModal,
+    scheduleDateInput,
+    confirmScheduleDate,
     onBookingCancel,
     onBookingNextStage,
     onBookingRejectFinancing,

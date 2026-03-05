@@ -196,8 +196,12 @@ const contractService = {
    * GET /contracts/show/:id
    */
   async getContractById(id) {
-    const response = await apiClient.get(`/contracts/show/${id}`);
-    return response.data.data || response.data;
+    try {
+      const response = await apiClient.get(`/contracts/show/${id}`);
+      return response.data.data || response.data;
+    } catch (error) {
+      return handleServiceError(error, 'Fetch contract by id', 'get', null);
+    }
   },
 
   /**

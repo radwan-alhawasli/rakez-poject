@@ -64,7 +64,7 @@
     <div class="knowledge-table-wrap">
       <div v-if="loading" class="knowledge-loading">جاري التحميل...</div>
       <div v-else class="table-responsive">
-      <table class="knowledge-table">
+      <table class="knowledge-table table-mobile-stacked">
         <thead>
           <tr>
             <th>العنوان</th>
@@ -78,24 +78,24 @@
         </thead>
         <tbody>
           <tr v-if="entries.length === 0">
-            <td colspan="7" class="knowledge-empty">لا توجد مقالات</td>
+            <td data-label="" colspan="7" class="knowledge-empty">لا توجد مقالات</td>
           </tr>
           <tr v-for="entry in entries" :key="entry.id">
-            <td class="knowledge-cell-title">{{ entry.title }}</td>
-            <td>{{ entry.module || '—' }}</td>
-            <td>{{ entry.page_key || '—' }}</td>
-            <td>
+            <td data-label="العنوان" class="knowledge-cell-title">{{ entry.title }}</td>
+            <td data-label="القسم">{{ entry.module || '—' }}</td>
+            <td data-label="الصفحة">{{ entry.page_key || '—' }}</td>
+            <td data-label="اللغة">
               <span class="knowledge-lang-badge">{{
                 entry.language === 'ar' ? 'عربي' : 'English'
               }}</span>
             </td>
-            <td>{{ entry.priority ?? 100 }}</td>
-            <td>
+            <td data-label="الأولوية">{{ entry.priority ?? 100 }}</td>
+            <td data-label="الحالة">
               <span :class="['knowledge-status', entry.is_active ? 'active' : 'inactive']">
                 {{ entry.is_active ? 'نشط' : 'غير نشط' }}
               </span>
             </td>
-            <td class="knowledge-actions-cell">
+            <td data-label="الإجراءات" class="knowledge-actions-cell">
               <button type="button" class="btn-icon" title="تعديل" @click="openEditModal(entry)">
                 <svg
                   width="16"

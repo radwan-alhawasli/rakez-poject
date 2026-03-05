@@ -18,7 +18,7 @@
       </div>
 
       <div class="table-responsive">
-      <table class="custom-table">
+      <table class="custom-table table-mobile-stacked">
         <thead>
           <tr>
             <th>اسم المشروع</th>
@@ -29,24 +29,24 @@
         </thead>
         <tbody>
           <tr v-if="isLoading">
-            <td colspan="4" class="text-center padding-30">
+            <td data-label="" colspan="4" class="text-center padding-30">
               <span class="spinner-gold"></span>
               <p class="loading-text">جاري تحميل الطلبات...</p>
             </td>
           </tr>
           <tr v-else-if="requests.length === 0">
-            <td colspan="4" class="text-center padding-30">
+            <td data-label="" colspan="4" class="text-center padding-30">
               <p class="no-data-text">لا يوجد طلبات حالياً.</p>
             </td>
           </tr>
           <tr v-else v-for="request in requests" :key="request.id">
-            <td>
+            <td data-label="اسم المشروع">
               <span class="project-name">{{ request.project_name }}</span>
             </td>
-            <td>
+            <td data-label="تاريخ الطلب">
               <span class="date-text">{{ request.date }}</span>
             </td>
-            <td>
+            <td data-label="الحالة">
               <div class="status-badge" :class="request.status.toLowerCase()">
                 {{
                   request.status.toLowerCase() === 'approved'
@@ -57,7 +57,7 @@
                 }}
               </div>
             </td>
-            <td class="text-center">
+            <td data-label="الإجراء" class="text-center">
               <button
                 class="complete-btn"
                 @click="completeContract(request.id)"

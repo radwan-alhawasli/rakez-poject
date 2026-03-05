@@ -10,8 +10,7 @@
         <p class="tracker-desc">يمكنك هنا رفع وتحديث صور وفيديوهات المشروع.</p>
 
         <div
-          class="status-bar"
-          style="margin-top: 15px; display: flex; gap: 10px; align-items: center"
+          class="status-bar mt-4 flex gap-2.5 items-center"
         >
           <span
             class="status-badge"
@@ -32,8 +31,7 @@
 
           <div
             v-if="photographyForm.updated_at"
-            class="update-info-badge"
-            style="color: #6b7280; font-size: 13px"
+            class="update-info-badge text-gray-500 text-[13px]"
           >
             <svg
               viewBox="0 0 24 24"
@@ -42,7 +40,7 @@
               stroke-width="2"
               width="16"
               height="16"
-              style="vertical-align: middle; margin-left: 4px"
+              class="align-middle ml-1"
             >
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -56,65 +54,32 @@
         <!-- Rejection Reason Warning -->
         <div
           v-if="photographyForm.status === 'rejected' && photographyForm.rejection_reason"
-          class="alert-box error"
-          style="
-            margin-top: 15px;
-            background: #fee2e2;
-            padding: 10px;
-            border-radius: var(--radius-sm);
-            color: #991b1b;
-          "
+          class="alert-box error mt-4 bg-red-100 p-2.5 rounded-sm text-red-800"
         >
           <strong>سبب الرفض:</strong> {{ photographyForm.rejection_reason }}
         </div>
       </div>
 
-      <div class="stage-content-area" style="max-width: 800px; margin: 0 auto">
+      <div class="stage-content-area max-w-[800px] mx-auto">
         <!-- Manager Approval Controls -->
         <div
           v-if="isManager && photographyForm.status === 'pending'"
-          class="manager-actions-card"
-          style="
-            background: white;
-            border: 1px solid #e5e7eb;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-          "
+          class="manager-actions-card bg-white border border-gray-200 p-5 rounded-xl mb-5 shadow-md"
         >
-          <h4 style="margin-top: 0; color: #1f2937">طلب موافقة على الصور</h4>
-          <p style="color: #6b7280; font-size: 14px; margin-bottom: 15px">
+          <h4 class="mt-0 text-gray-800">طلب موافقة على الصور</h4>
+          <p class="text-gray-500 text-sm mb-4">
             قام المطور برفع صور جديدة. يرجى المراجعة واتخاذ القرار.
           </p>
-          <div style="display: flex; gap: 10px">
+          <div class="flex gap-2.5">
             <button
               @click="approvePhotography"
-              class="btn-success"
-              style="
-                background: #10b981;
-                color: white;
-                padding: 8px 16px;
-                border-radius: 6px;
-                border: none;
-                cursor: pointer;
-                font-weight: bold;
-              "
+              class="btn-success bg-emerald-500 text-white py-2 px-4 rounded-md border-none cursor-pointer font-bold"
             >
               قبول الصور
             </button>
             <button
               @click="openRejectModal"
-              class="btn-danger"
-              style="
-                background: #ef4444;
-                color: white;
-                padding: 8px 16px;
-                border-radius: 6px;
-                border: none;
-                cursor: pointer;
-                font-weight: bold;
-              "
+              class="btn-danger bg-red-500 text-white py-2 px-4 rounded-md border-none cursor-pointer font-bold"
             >
               رفض
             </button>
@@ -129,9 +94,9 @@
               (photographyForm.status === 'approved' && !isManager) ||
               (photographyForm.status === 'pending' && !isEditingPending)
             "
-            style="border: none; padding: 0"
+            class="border-none p-0"
           >
-            <div class="form-grid" style="grid-template-columns: 1fr; gap: 20px">
+            <div class="form-grid grid-cols-1! gap-5!">
               <div class="form-group">
                 <label>رابط الصورة (Image URL)</label>
                 <div class="input-wrapper">
@@ -159,64 +124,46 @@
                 <label>وصف المحتوى (Description)</label>
                 <textarea
                   v-model="photographyForm.description"
-                  class="form-input"
+                  class="form-input min-h-[100px]"
                   rows="4"
                   placeholder="وصف للصور والمحتوى..."
-                  style="min-height: 100px"
                 ></textarea>
               </div>
             </div>
           </fieldset>
 
           <div
-            class="form-actions"
-            style="
-              margin-top: 20px;
-              text-align: left;
-              padding: 15px;
-              background: #f9fafb;
-              border-radius: var(--radius-sm);
-            "
+            class="form-actions mt-5 text-left p-4 bg-gray-50 rounded-sm"
           >
             <div v-if="photographyForm.status !== 'approved'">
               <button
                 v-if="photographyForm.status === 'pending' && !isEditingPending"
                 type="button"
-                class="update-btn secondary"
+                class="update-btn secondary bg-slate-500! text-white!"
                 @click="isEditingPending = true"
-                style="background: #64748b; color: white"
               >
                 تعديل الطلب (Edit Request)
               </button>
               <button
                 v-else
                 type="submit"
-                class="update-btn"
+                class="update-btn bg-[#b1a28f]! text-white!"
                 :disabled="isPhotoSaving"
-                style="background: #b1a28f; color: white"
               >
                 {{ isPhotoSaving ? 'جاري الحفظ...' : 'حفظ وإرسال للموافقة (Submit)' }}
               </button>
               <button
                 v-if="isEditingPending"
                 type="button"
-                class="btn-text"
+                class="btn-text mr-2.5"
                 @click="cancelPhotoEdit"
-                style="margin-right: 10px"
               >
                 إلغاء
               </button>
             </div>
             <p
               v-if="photographyForm.status === 'approved'"
-              style="
-                color: #10b981;
-                font-weight: bold;
-                margin: 0;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-              "
+              class="text-emerald-500 font-bold m-0 flex items-center gap-1.5"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -234,23 +181,15 @@
           <p>يرجى ذكر سبب الرفض ليتمكن المطور من التعديل:</p>
           <textarea
             v-model="rejectReasonInput"
-            class="form-input"
+            class="form-input w-full mb-4"
             rows="3"
             placeholder="سبب الرفض..."
-            style="width: 100%; margin-bottom: 15px"
           ></textarea>
           <div class="modal-actions">
             <button class="btn-text" @click="showRejectModal = false">إلغاء</button>
             <button
-              class="btn-danger"
+              class="btn-danger bg-red-500 text-white py-2 px-4 rounded-md border-none"
               @click="rejectPhotography"
-              style="
-                background: #ef4444;
-                color: white;
-                padding: 8px 16px;
-                border-radius: 6px;
-                border: none;
-              "
             >
               تأكيد الرفض
             </button>

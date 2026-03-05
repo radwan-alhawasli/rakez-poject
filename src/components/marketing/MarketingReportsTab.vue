@@ -77,7 +77,7 @@
       </div>
 
       <div class="leads-table-container table-responsive">
-        <table class="luxury-table">
+        <table class="luxury-table table-mobile-stacked">
           <thead>
             <tr>
               <th>القسم</th>
@@ -87,9 +87,9 @@
           </thead>
           <tbody>
             <tr v-for="(row, idx) in reportRows" :key="idx" class="hover-row">
-              <td>{{ row.section }}</td>
-              <td>{{ row.name }}</td>
-              <td>{{ row.summary }}</td>
+              <td data-label="القسم">{{ row.section }}</td>
+              <td data-label="البند">{{ row.name }}</td>
+              <td data-label="القيمة">{{ row.summary }}</td>
             </tr>
           </tbody>
         </table>

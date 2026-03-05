@@ -13,6 +13,12 @@
       <p>جاري تحميل الفرق...</p>
     </div>
 
+    <!-- Error State -->
+    <div v-else-if="error" class="error-state">
+      <p>{{ error }}</p>
+      <button @click="fetchEmployees">إعادة المحاولة</button>
+    </div>
+
     <!-- Teams Grid -->
     <div v-else class="teams-container">
       <div v-for="(members, teamName) in groupedTeams" :key="teamName" class="team-section">
@@ -166,20 +172,21 @@ export default {
   },
   setup() {
     const isLoading = ref(true);
+    const error = ref(null);
     const employees = ref([]);
     const showModal = ref(false);
     const selectedMember = ref(null);
 
     const fetchEmployees = async () => {
       isLoading.value = true;
+      error.value = null;
       try {
         const data = await userService.getEmployees();
         const normalizedEmployees = Array.isArray(data) ? data : data?.items || [];
-        // Relaxed filter: Show all employees to ensure sales teams (and others) are visible.
-        // The grouping logic will handle categorizing them.
         employees.value = normalizedEmployees;
-      } catch (error) {
-        logger.error('Failed to fetch employees:', error);
+      } catch (err) {
+        logger.error('Failed to fetch employees:', err);
+        error.value = 'حدث خطأ في تحميل بيانات الفرق';
       } finally {
         isLoading.value = false;
       }
@@ -228,12 +235,14 @@ export default {
 
     return {
       isLoading,
+      error,
       groupedTeams,
       getRoleName,
       showModal,
       selectedMember,
       openMemberDetails,
       closeModal,
+      fetchEmployees,
     };
   },
 };
@@ -473,6 +482,28 @@ export default {
   text-align: center;
   padding: 50px;
   color: var(--color-dark-gray);
+}
+
+.error-state {
+  text-align: center;
+  padding: 50px;
+  color: var(--color-dark-gray);
+}
+
+.error-state button {
+  margin-top: 15px;
+  padding: 10px 24px;
+  background: var(--color-navy);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.error-state button:hover {
+  opacity: 0.9;
 }
 .spinner {
   width: 40px;

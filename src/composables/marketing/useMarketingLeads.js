@@ -1,6 +1,5 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import marketingService from '@/services/marketingService';
-import notificationService from '@/services/notificationService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { LEAD_SOURCES } from '@/constants/lookups';
@@ -84,7 +83,7 @@ export function useMarketingLeads() {
         source: leadForm.source,
         project_id: leadForm.project_id || null,
       });
-      notificationService.addNotification(`تم إضافة العميل المحتمل "${leadForm.name}" بنجاح`, 'success');
+      toast.success(`تم إضافة العميل المحتمل "${leadForm.name}" بنجاح`);
       showAddLeadModal.value = false;
       loadLeads();
     } catch (error) {

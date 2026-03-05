@@ -32,7 +32,7 @@
     </div>
 
     <div v-else class="leads-table-container table-responsive">
-      <table class="luxury-table">
+      <table class="luxury-table table-mobile-stacked">
         <thead>
           <tr>
             <th>الاسم</th>
@@ -44,25 +44,21 @@
         </thead>
         <tbody>
           <tr v-for="lead in filteredLeads" :key="lead.id" class="hover-row" @click="openLeadDetail(lead)" style="cursor: pointer">
-            <td><span class="lead-name">{{ lead.name || lead.client_name || '—' }}</span></td>
-            <td><span class="lead-contact">{{ lead.contact_info || lead.phone || lead.email || '—' }}</span></td>
-            <td>
+            <td data-label="الاسم"><span class="lead-name">{{ lead.name || lead.client_name || '—' }}</span></td>
+            <td data-label="معلومات الاتصال"><span class="lead-contact">{{ lead.contact_info || lead.phone || lead.email || '—' }}</span></td>
+            <td data-label="المصدر">
               <span class="lead-source-badge" :class="getSourceClass(lead.source)">{{ lead.source || '—' }}</span>
             </td>
-            <td>{{ lead.project_name || lead.project?.name || '—' }}</td>
-            <td><span class="lead-date">{{ formatDate(lead.created_at) }}</span></td>
+            <td data-label="المشروع">{{ lead.project_name || lead.project?.name || '—' }}</td>
+            <td data-label="التاريخ"><span class="lead-date">{{ formatDate(lead.created_at) }}</span></td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <!-- Add Lead Modal -->
-    <div v-if="showAddLeadModal" class="modal-overlay" @click.self="showAddLeadModal = false">
-      <div class="modal-content luxury-modal animate-scale-in">
-        <div class="modal-header">
-          <h3 class="modal-title">إضافة عميل محتمل جديد</h3>
-          <button class="modal-close" @click="showAddLeadModal = false">×</button>
-        </div>
+    <AppModal v-if="showAddLeadModal" :open="true" title="إضافة عميل محتمل جديد" @update:open="(v) => { if (v === false) showAddLeadModal = false }">
+      <template #default>
         <div class="modal-body">
           <div class="form-group">
             <label>الاسم <span class="required">*</span></label>
@@ -87,6 +83,8 @@
             </select>
           </div>
         </div>
+      </template>
+      <template #footer>
         <div class="modal-footer">
           <button class="btn-secondary" @click="showAddLeadModal = false">إلغاء</button>
           <button class="btn-primary" @click="saveLead" :disabled="isSubmitting">
@@ -95,12 +93,13 @@
             حفظ
           </button>
         </div>
-      </div>
-    </div>
+      </template>
+    </AppModal>
   </div>
 </template>
 
 <script setup>
+import AppModal from '@/components/AppModal.vue';
 import { useMarketingLeads } from '@/composables/marketing/useMarketingLeads';
 
 const {
@@ -119,3 +118,17 @@ const {
   formatDate,
 } = useMarketingLeads();
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  .section-header-compact { padding: 16px; }
+  .section-title { font-size: 18px; }
+  .section-subtitle { font-size: 13px; }
+  .leads-table-container { overflow-x: auto; }
+}
+@media (max-width: 576px) {
+  .section-header-compact { padding: 12px; }
+  .table-responsive { margin: 0 -12px; }
+  .form-input { max-width: 100% !important; }
+}
+</style>

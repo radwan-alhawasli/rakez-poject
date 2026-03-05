@@ -11,7 +11,7 @@
     </div>
     <div class="metrics-table-container">
       <div class="table-responsive">
-      <table class="metrics-table">
+      <table class="metrics-table table-mobile-stacked">
         <thead>
           <tr>
             <th>رقم الطلب</th>
@@ -24,16 +24,16 @@
         </thead>
         <tbody>
           <tr v-for="financing in financingList" :key="financing.id">
-            <td>{{ financing.id }}</td>
-            <td>{{ financing.customer_name || 'غير محدد' }}</td>
-            <td>{{ formatCurrency(financing.amount) }}</td>
-            <td>{{ financing.bank_name || 'غير محدد' }}</td>
-            <td>
+            <td data-label="رقم الطلب">{{ financing.id }}</td>
+            <td data-label="اسم العميل">{{ financing.customer_name || 'غير محدد' }}</td>
+            <td data-label="المبلغ">{{ formatCurrency(financing.amount) }}</td>
+            <td data-label="البنك">{{ financing.bank_name || 'غير محدد' }}</td>
+            <td data-label="الحالة">
               <span class="status-tag" :class="getStatusClass(financing.status)">{{
                 financing.status || 'قيد المعالجة'
               }}</span>
             </td>
-            <td>
+            <td data-label="الإجراءات">
               <button class="btn-action edit" @click="viewFinancingDetail(financing)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -102,3 +102,15 @@ onMounted(() => {
   loadFinancing();
 });
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  .section-header-compact { padding: 16px; }
+  .section-title { font-size: 18px; }
+  .section-subtitle { font-size: 13px; }
+}
+@media (max-width: 576px) {
+  .section-header-compact { padding: 12px; }
+  .table-responsive { margin: 0 -12px; }
+}
+</style>

@@ -95,18 +95,21 @@
           </div>
           <div
             v-for="(msg, idx) in chatMessages"
-            v-memo="[msg.role, msg.content]"
+            v-memo="[msg.role, msg.content, msg.streaming]"
             :key="idx"
-            :class="['chat-bubble', msg.role]"
+            :class="['chat-bubble', msg.role, { streaming: msg.streaming }]"
           >
             <div class="bubble-content">
               <div class="bubble-sender">
                 {{ msg.role === 'user' ? 'أنت' : 'المساعد الذكي' }}
               </div>
-              <div class="bubble-text">{{ msg.content }}</div>
+              <div class="bubble-text">
+                <span>{{ msg.content }}</span>
+                <span v-if="msg.streaming" class="streaming-cursor"></span>
+              </div>
             </div>
           </div>
-          <div v-if="isAiTyping" class="chat-bubble assistant">
+          <div v-if="isAiTyping && !isStreaming" class="chat-bubble assistant">
             <div class="bubble-content">
               <div class="typing-indicator"><span></span><span></span><span></span></div>
             </div>
@@ -154,10 +157,21 @@
             <textarea
               v-model="aiQuery"
               placeholder="اكتب سؤالك هنا..."
-              @keydown.enter.prevent="sendAiMessage"
+              @keydown.enter.exact.prevent="sendAiMessage"
               rows="1"
             ></textarea>
             <button
+              v-if="isStreaming"
+              @click="stopStreaming"
+              class="btn-stop-ai"
+              title="إيقاف الاستجابة"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+              </svg>
+            </button>
+            <button
+              v-else
               @click="sendAiMessage"
               :disabled="!aiQuery.trim() || isAiTyping"
               class="btn-send-ai"
@@ -180,6 +194,7 @@ import { useMarketingAiAssistant } from '@/composables/marketing/useMarketingAiA
 const {
   aiQuery,
   isAiTyping,
+  isStreaming,
   chatMessages,
   conversations,
   isLoadingConversations,
@@ -195,5 +210,6 @@ const {
   sendAiMessage,
   sendPrompt,
   deleteChat,
+  stopStreaming,
 } = useMarketingAiAssistant();
 </script>

@@ -54,53 +54,249 @@
 
 /* Mobile-First Table Design */
 @media (max-width: 767px) {
-  /* Stack Table on Mobile */
+  /* ======== RTL ACCORDION TABLE ON MOBILE ========
+     Fully RTL-aware accordion cards for Arabic UI.
+     - Collapsed: summary header with chevron on the left (RTL)
+     - Expanded: label on the right, value on the left
+     ================================================ */
+
+  /* --- Table reset: block layout, kill min-width --- */
   .table-mobile-stacked {
-    border: 0;
+    border: 0 !important;
+    min-width: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    border-collapse: separate !important;
   }
-  
+
   .table-mobile-stacked thead {
-    display: none;
+    display: none !important;
   }
-  
-  .table-mobile-stacked tbody,
-  .table-mobile-stacked tr,
-  .table-mobile-stacked td {
-    display: block;
-    width: 100%;
+
+  .table-mobile-stacked tbody {
+    display: block !important;
+    width: 100% !important;
   }
-  
+
+  /* --- Row = accordion card --- */
   .table-mobile-stacked tr {
-    margin-bottom: 20px;
+    display: block !important;
+    width: 100% !important;
+    margin-bottom: 12px;
     background: white;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(177, 162, 143, 0.12);
-  }
-  
-  .table-mobile-stacked td {
-    text-align: right;
-    padding: 10px 0;
-    border: none;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(177, 162, 143, 0.18);
+    overflow: hidden;
+    cursor: pointer;
     position: relative;
-    padding-right: 50%;
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
   }
-  
-  .table-mobile-stacked td::before {
-    content: attr(data-label);
-    position: absolute;
-    right: 0;
-    width: 45%;
-    padding-left: 10px;
+
+  .table-mobile-stacked tr:active {
+    transform: scale(0.995);
+  }
+
+  .table-mobile-stacked tr.expanded {
+    box-shadow: 0 6px 20px rgba(177, 162, 143, 0.15);
+    border-color: var(--color-gold, #b1a28f);
+  }
+
+  html.dark .table-mobile-stacked tr {
+    background: #1e293b;
+    border-color: #334155;
+  }
+  html.dark .table-mobile-stacked tr.expanded {
+    border-color: var(--color-gold, #b1a28f);
+  }
+
+  /* --- First td = always-visible summary (RTL) --- */
+  .table-mobile-stacked td:first-child {
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    width: 100% !important;
+    padding: 14px 16px 14px 44px !important;
+    border: none !important;
+    border-bottom: 1px solid transparent !important;
+    position: relative;
+    min-height: 52px;
+    align-items: center;
+    gap: 10px;
     font-weight: 700;
-    color: #64748b;
-    font-size: 12px;
-    text-transform: uppercase;
+    font-size: 14px;
+    color: var(--color-navy, #1e3a5f);
+    background: transparent;
+    transition: border-color 0.2s ease;
+    text-align: right !important;
+    direction: rtl;
   }
-  
-  .table-mobile-stacked td:last-child {
-    border-bottom: 0;
+
+  html.dark .table-mobile-stacked td:first-child {
+    color: #e2e8f0;
+  }
+
+  /* Summary label tag (RTL: appears on the right before the value) */
+  .table-mobile-stacked td:first-child::before {
+    content: attr(data-label);
+    position: static;
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--color-gold, #b1a28f);
+    background: rgba(177, 162, 143, 0.12);
+    padding: 3px 10px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+  }
+
+  /* Chevron on the LEFT side (RTL) pointing down */
+  .table-mobile-stacked td:first-child::after {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    width: 9px;
+    height: 9px;
+    border-right: 2.5px solid var(--color-gold, #b1a28f);
+    border-bottom: 2.5px solid var(--color-gold, #b1a28f);
+    border-left: none;
+    border-top: none;
+    transform: translateY(-60%) rotate(45deg);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .table-mobile-stacked tr.expanded td:first-child::after {
+    transform: translateY(-30%) rotate(-135deg);
+  }
+
+  .table-mobile-stacked tr.expanded td:first-child {
+    border-bottom-color: rgba(177, 162, 143, 0.15) !important;
+  }
+
+  html.dark .table-mobile-stacked tr.expanded td:first-child {
+    border-bottom-color: rgba(51, 65, 85, 0.5) !important;
+  }
+
+  /* --- Expanded fields: RTL two-column layout (label right, value left) --- */
+  .table-mobile-stacked td:not(:first-child) {
+    display: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.15) !important;
+    position: relative;
+    min-height: 42px;
+    align-items: stretch;
+    font-size: 13px;
+    direction: rtl;
+    flex-direction: row !important;
+  }
+
+  html.dark .table-mobile-stacked td:not(:first-child) {
+    border-bottom-color: rgba(51, 65, 85, 0.25) !important;
+  }
+
+  /* Label column (right side in RTL) */
+  .table-mobile-stacked td:not(:first-child)::before {
+    content: attr(data-label);
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    color: var(--color-dark-gray, #64748b);
+    font-size: 12px;
+    padding: 10px 16px;
+    background: rgba(177, 162, 143, 0.04);
+    min-width: 110px;
+    max-width: 40%;
+    flex-shrink: 0;
+    text-align: right;
+    border-left: 1px solid rgba(226, 232, 240, 0.2);
+    line-height: 1.5;
+  }
+
+  html.dark .table-mobile-stacked td:not(:first-child)::before {
+    background: rgba(51, 65, 85, 0.2);
+    color: #94a3b8;
+    border-left-color: rgba(51, 65, 85, 0.3);
+  }
+
+  /* --- EXPANDED: show all fields --- */
+  .table-mobile-stacked tr.expanded td:not(:first-child) {
+    display: flex !important;
+    animation: accordionExpand 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Value part fills remaining space */
+  .table-mobile-stacked tr.expanded td:not(:first-child) > *,
+  .table-mobile-stacked tr.expanded td:not(:first-child) {
+    flex: 1;
+  }
+
+  .table-mobile-stacked tr.expanded td:last-child {
+    border-bottom: 0 !important;
+  }
+
+  @keyframes accordionExpand {
+    from { opacity: 0; max-height: 0; }
+    to   { opacity: 1; max-height: 80px; }
+  }
+
+  /* --- Empty state: no accordion, centered --- */
+  .table-mobile-stacked td[colspan] {
+    display: block !important;
+    padding: 40px 16px !important;
+    text-align: center !important;
+    font-weight: 400 !important;
+    cursor: default;
+    color: var(--color-dark-gray, #94a3b8);
+    font-size: 14px;
+  }
+  .table-mobile-stacked td[colspan]::before,
+  .table-mobile-stacked td[colspan]::after {
+    display: none !important;
+  }
+  .table-mobile-stacked tr:has(td[colspan]) {
+    cursor: default;
+    box-shadow: none;
+    border-style: dashed;
+  }
+  .table-mobile-stacked tr:has(td[colspan]):active {
+    transform: none;
+  }
+
+  /* --- Overflow fix for parent container --- */
+  .table-responsive:has(.table-mobile-stacked),
+  .data-table-container:has(.table-mobile-stacked),
+  .luxury-table-container:has(.table-mobile-stacked),
+  .metrics-table-container:has(.table-mobile-stacked) {
+    overflow-x: visible !important;
+    overflow: visible !important;
+  }
+
+  /* --- Value text inside expanded td needs proper RTL padding --- */
+  .table-mobile-stacked td:not(:first-child) .user-cell,
+  .table-mobile-stacked td:not(:first-child) .role-badge,
+  .table-mobile-stacked td:not(:first-child) .status-badge,
+  .table-mobile-stacked td:not(:first-child) .status-tag,
+  .table-mobile-stacked td:not(:first-child) .actions,
+  .table-mobile-stacked td:not(:first-child) .btn-action,
+  .table-mobile-stacked td:not(:first-child) button {
+    padding: 8px 12px;
+  }
+
+  /* Actions row: center the buttons */
+  .table-mobile-stacked td[data-label="الإجراءات"],
+  .table-mobile-stacked td[data-label="الإجراء"] {
+    justify-content: center !important;
+    gap: 8px;
+    padding: 10px 16px !important;
+    flex-wrap: wrap;
+  }
+  .table-mobile-stacked td[data-label="الإجراءات"]::before,
+  .table-mobile-stacked td[data-label="الإجراء"]::before {
+    display: none !important;
   }
 }
 

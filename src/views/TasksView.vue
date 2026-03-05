@@ -43,6 +43,12 @@
       <p>جاري التحميل...</p>
     </div>
 
+    <!-- Error State -->
+    <div v-else-if="error" class="error-state">
+      <p>{{ error }}</p>
+      <button @click="loadCurrentTab(1)">إعادة المحاولة</button>
+    </div>
+
     <!-- Empty State -->
     <div v-else-if="currentTasks.length === 0" class="empty-state">
       <p v-if="activeTab === 'assigned'">لا توجد مهام مطلوبة منك حالياً</p>
@@ -258,6 +264,7 @@ const TASK_SECTIONS_FALLBACK = [
 
 const taskSections = ref([]);
 const isLoading = ref(false);
+const error = ref(null);
 const filterStatus = ref('');
 const itemsPerPage = ref(10);
 
@@ -409,6 +416,7 @@ const fetchDropdownData = async () => {
 const loadAssignedTasks = async (page = 1) => {
   try {
     isLoading.value = true;
+    error.value = null;
     assignedPage.value = page;
 
     const params = {
@@ -423,8 +431,9 @@ const loadAssignedTasks = async (page = 1) => {
     assignedTotalPages.value = Math.ceil(assignedTotal.value / itemsPerPage.value) || 1;
 
     extractDropdownDataFromTasks();
-  } catch (error) {
-    logger.error('Failed to load assigned tasks', error);
+  } catch (err) {
+    logger.error('Failed to load assigned tasks', err);
+    error.value = 'حدث خطأ في تحميل المهام';
   } finally {
     isLoading.value = false;
   }
@@ -433,6 +442,7 @@ const loadAssignedTasks = async (page = 1) => {
 const loadRequestedTasks = async (page = 1) => {
   try {
     isLoading.value = true;
+    error.value = null;
     requestedPage.value = page;
 
     const params = {
@@ -447,8 +457,9 @@ const loadRequestedTasks = async (page = 1) => {
     requestedTotalPages.value = Math.ceil(requestedTotal.value / itemsPerPage.value) || 1;
 
     extractDropdownDataFromTasks();
-  } catch (error) {
-    logger.error('Failed to load requested tasks', error);
+  } catch (err) {
+    logger.error('Failed to load requested tasks', err);
+    error.value = 'حدث خطأ في تحميل المهام';
   } finally {
     isLoading.value = false;
   }
@@ -979,12 +990,34 @@ select.form-input {
   cursor: not-allowed;
 }
 
-/* Loading / Empty */
+/* Loading / Empty / Error */
 .loading-state,
 .empty-state {
   text-align: center;
   padding: 40px;
   color: var(--text-muted, #666);
+}
+
+.error-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted, #666);
+}
+
+.error-state button {
+  margin-top: 15px;
+  padding: 8px 16px;
+  background-color: var(--primary-color, #007bff);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.error-state button:hover {
+  opacity: 0.9;
 }
 
 .spinner {

@@ -125,7 +125,7 @@
         <span>عرض {{ ((meta.current_page - 1) * meta.per_page) + 1 }} - {{ Math.min(meta.current_page * meta.per_page, totalUnits) }} من {{ totalUnits.toLocaleString('ar-SA') }} وحدة</span>
       </div>
       <div class="table-responsive">
-        <table class="units-table">
+        <table class="units-table table-mobile-stacked">
           <thead>
             <tr>
               <th>#</th>
@@ -152,17 +152,17 @@
           </thead>
           <tbody>
             <tr v-for="(unit, idx) in units" :key="unit.id" class="unit-row">
-              <td class="row-number-cell">{{ ((meta.current_page - 1) * meta.per_page) + idx + 1 }}</td>
-              <td class="unit-number-cell">{{ unit.unit_number || '—' }}</td>
-              <td class="project-name-cell">{{ unit.project?.name || '—' }}</td>
-              <td>{{ unit.project?.city || '—' }}</td>
-              <td>{{ unit.project?.district || '—' }}</td>
-              <td>{{ unit.unit_type || '—' }}</td>
-              <td class="number-cell">{{ unit.area ? Number(unit.area).toLocaleString('ar-SA') : '—' }}</td>
-              <td class="number-cell">{{ unit.bedrooms ?? '—' }}</td>
-              <td class="number-cell price-cell">{{ unit.price ? formatCurrency(unit.price) : '—' }}</td>
-              <td class="number-cell">{{ unit.floor ?? '—' }}</td>
-              <td>
+              <td data-label="#" class="row-number-cell">{{ ((meta.current_page - 1) * meta.per_page) + idx + 1 }}</td>
+              <td data-label="رقم الوحدة" class="unit-number-cell">{{ unit.unit_number || '—' }}</td>
+              <td data-label="المشروع" class="project-name-cell">{{ unit.project?.name || '—' }}</td>
+              <td data-label="المدينة">{{ unit.project?.city || '—' }}</td>
+              <td data-label="الحي">{{ unit.project?.district || '—' }}</td>
+              <td data-label="النوع">{{ unit.unit_type || '—' }}</td>
+              <td data-label="المساحة (م²)" class="number-cell">{{ unit.area ? Number(unit.area).toLocaleString('ar-SA') : '—' }}</td>
+              <td data-label="الغرف" class="number-cell">{{ unit.bedrooms ?? '—' }}</td>
+              <td data-label="السعر" class="number-cell price-cell">{{ unit.price ? formatCurrency(unit.price) : '—' }}</td>
+              <td data-label="الطابق" class="number-cell">{{ unit.floor ?? '—' }}</td>
+              <td data-label="الحالة">
                 <span :class="['unit-status-badge', statusClass(unit.status)]">
                   {{ statusLabel(unit.status) }}
                 </span>

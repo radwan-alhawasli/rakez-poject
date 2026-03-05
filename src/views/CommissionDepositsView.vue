@@ -49,7 +49,7 @@
         </div>
         <div class="metrics-table-container">
           <div class="table-responsive">
-          <table class="metrics-table">
+          <table class="metrics-table table-mobile-stacked">
             <thead>
               <tr>
                 <th>رقم العمولة</th>
@@ -60,8 +60,8 @@
             </thead>
             <tbody>
               <tr v-for="commission in commissions" :key="commission.id">
-                <td>{{ commission.id }}</td>
-                <td>{{ formatCurrency(commission.amount || commission.total_amount) }}</td>
+                <td data-label="رقم العمولة">{{ commission.id }}</td>
+                <td data-label="المبلغ">{{ formatCurrency(commission.amount || commission.total_amount) }}</td>
                 <td>
                   <span class="status-tag good">{{ commission.status || 'قيد المعالجة' }}</span>
                 </td>
@@ -102,7 +102,7 @@
         </div>
         <div class="metrics-table-container">
           <div class="table-responsive">
-          <table class="metrics-table">
+          <table class="metrics-table table-mobile-stacked">
             <thead>
               <tr>
                 <th>رقم الوديعة</th>
@@ -113,8 +113,8 @@
             </thead>
             <tbody>
               <tr v-for="deposit in deposits" :key="deposit.id">
-                <td>{{ deposit.id }}</td>
-                <td>{{ formatCurrency(deposit.amount) }}</td>
+                <td data-label="رقم الوديعة">{{ deposit.id }}</td>
+                <td data-label="المبلغ">{{ formatCurrency(deposit.amount) }}</td>
                 <td>
                   <span class="status-tag good">{{ deposit.status || 'معلق' }}</span>
                 </td>

@@ -4,7 +4,6 @@ import salesService from '@/services/salesService';
 import notificationService from '@/services/notificationService';
 import authService from '@/services/authService';
 import { isSalesLeader } from '@/utils/rbac';
-import html2canvas from 'html2canvas';
 import logger from '@/utils/logger';
 
 export function useSalesSchedules() {
@@ -259,6 +258,7 @@ export function useSalesSchedules() {
 
       if (scheduleDetailRef.value) {
         try {
+          const { default: html2canvas } = await import('html2canvas');
           const canvas = await html2canvas(scheduleDetailRef.value, {
             useCORS: true,
             scale: 1.5,

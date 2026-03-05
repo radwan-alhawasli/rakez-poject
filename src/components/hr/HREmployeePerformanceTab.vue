@@ -12,7 +12,7 @@
         <p class="metrics-empty-desc">لم يتم تحميل بيانات الأداء بعد أو لا يوجد مسوقين لعرضهم.</p>
       </div>
       <div v-else class="table-responsive">
-        <table class="metrics-table">
+        <table class="metrics-table table-mobile-stacked">
           <thead>
             <tr>
               <th>اسم الموظف</th>
@@ -23,13 +23,13 @@
           </thead>
           <tbody>
             <tr v-for="marketer in marketerPerformanceData" :key="marketer.id">
-              <td>
+              <td data-label="اسم الموظف">
                 <div class="emp-user">
                   <div class="user-avatar">{{ (marketer.name || '؟').charAt(0) }}</div>
                   <span>{{ marketer.name || '—' }}</span>
                 </div>
               </td>
-              <td>
+              <td data-label="نسبة تحقيق الأهداف">
                 <div class="table-progress">
                   <span>{{ marketer.goalAchievement ?? 0 }}%</span>
                   <div class="bar">
@@ -37,10 +37,10 @@
                   </div>
                 </div>
               </td>
-              <td>
+              <td data-label="عدد العرابين">
                 <span class="badge-info">{{ marketer.sponsorsCount ?? 0 }}</span>
               </td>
-              <td>
+              <td data-label="عدد التحذيرات">
                 <span class="badge-warning">{{ marketer.warningsCount ?? 0 }}</span>
               </td>
             </tr>

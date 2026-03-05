@@ -92,7 +92,7 @@ export const downloadFilledContract = async contractData => {
 
     // Load Arabic font
     const fontBytes = await fetch(
-      'https://cdn.jsdelivr.net/npm/@fontsource/amiri@5.0.0/files/amiri-arabic-400-normal.woff'
+      '/fonts/amiri-arabic-400-normal.woff'
     ).then(res => res.arrayBuffer());
     const arabicFont = await pdfDoc.embedFont(fontBytes);
 
@@ -256,7 +256,7 @@ export const generateUnitDetailsPdf = async (unit, options = {}) => {
     pdfDoc.registerFontkit(fontkit);
 
     const fontBytes = await fetch(
-      'https://cdn.jsdelivr.net/npm/@fontsource/amiri@5.0.0/files/amiri-arabic-400-normal.woff'
+      '/fonts/amiri-arabic-400-normal.woff'
     ).then(res => res.arrayBuffer());
     const arabicFont = await pdfDoc.embedFont(fontBytes);
 

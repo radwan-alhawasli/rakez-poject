@@ -14,7 +14,7 @@
     </div>
     <div class="metrics-table-container">
       <div class="table-responsive">
-      <table class="metrics-table">
+      <table class="metrics-table table-mobile-stacked">
         <thead>
           <tr>
             <th>رقم الطلب</th>
@@ -26,9 +26,9 @@
         </thead>
         <tbody>
           <tr v-for="transfer in titleTransfers" :key="transfer.id">
-            <td>{{ transfer.id }}</td>
-            <td>{{ transfer.contract_id || 'غير محدد' }}</td>
-            <td>{{ formatDate(transfer.created_at) }}</td>
+            <td data-label="رقم الطلب">{{ transfer.id }}</td>
+            <td data-label="رقم العقد">{{ transfer.contract_id || 'غير محدد' }}</td>
+            <td data-label="تاريخ الطلب">{{ formatDate(transfer.created_at) }}</td>
             <td>
               <span class="status-tag" :class="getStatusClass(transfer.status)">{{
                 transfer.status || 'قيد المعالجة'

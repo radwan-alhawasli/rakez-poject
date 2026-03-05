@@ -54,3 +54,17 @@ const {
   formatDate,
 } = useMarketingTasks();
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  .section-header-compact { padding: 16px; }
+  .section-title { font-size: 18px; }
+  .section-subtitle { font-size: 13px; }
+  .task-card { padding: 14px; }
+}
+@media (max-width: 576px) {
+  .section-header-compact { padding: 12px; }
+  .task-card { padding: 12px; }
+  .task-title { font-size: 14px; }
+}
+</style>

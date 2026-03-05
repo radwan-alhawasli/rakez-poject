@@ -1,4 +1,6 @@
 import apiClient from '@/api/apiClient';
+import appConfig from '@/config/appConfig';
+import secureStorage from '@/utils/secureStorage';
 import logger from '@/utils/logger';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
@@ -38,6 +40,102 @@ const aiService = {
     } catch (error) {
       return handleServiceError(error, 'دردشة', 'post');
     }
+  },
+
+  /**
+   * دردشة مع بث تدريجي (Streaming) مثل ChatGPT
+   * POST /api/ai/chat  (مع stream=true)
+   * يستخدم fetch + ReadableStream لأن Axios لا يدعم البث في المتصفح
+   *
+   * @param {Object} payload - بيانات الدردشة
+   * @param {Function} onChunk - callback يُنادى مع كل جزء نصي جديد
+   * @param {AbortSignal} [signal] - إشارة إلغاء اختياري
+   * @returns {Promise<{fullText: string, session_id: string|null}>}
+   */
+  async chatStream(payload, onChunk, signal) {
+    const url = `${appConfig.apiBaseUrl}/ai/chat`;
+    const token = secureStorage.getToken();
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'text/event-stream',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ ...payload, stream: true }),
+      signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Stream error: ${response.status}`);
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    const isSSE = contentType.includes('text/event-stream');
+    const isJSON = contentType.includes('application/json');
+
+    // Fallback: if server doesn't support streaming, parse as regular JSON
+    if (isJSON || (!isSSE && !response.body)) {
+      const json = await response.json();
+      const data = json.data || json;
+      const text = data.reply || data.answer || data.message || data.text || '';
+      onChunk(text);
+      return { fullText: text, session_id: data.session_id || null };
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let sessionId = null;
+    let buffer = '';
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith(':')) continue;
+
+          if (trimmed.startsWith('data:')) {
+            const raw = trimmed.slice(5).trim();
+            if (raw === '[DONE]') continue;
+
+            try {
+              const parsed = JSON.parse(raw);
+              const chunk =
+                parsed.chunk ||
+                parsed.delta?.content ||
+                parsed.choices?.[0]?.delta?.content ||
+                parsed.text ||
+                parsed.content ||
+                '';
+
+              if (parsed.session_id) sessionId = parsed.session_id;
+
+              if (chunk) {
+                fullText += chunk;
+                onChunk(chunk);
+              }
+            } catch {
+              // Not JSON — treat the raw text as a chunk
+              fullText += raw;
+              onChunk(raw);
+            }
+          }
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
+
+    return { fullText, session_id: sessionId };
   },
 
   /**

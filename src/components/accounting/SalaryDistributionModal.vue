@@ -250,14 +250,6 @@ export default {
 
 /* Tablet responsive */
 @media (max-width: 768px) {
-  .modal-overlay {
-    padding: 12px;
-  }
-  .modal-container {
-    width: 95%;
-    max-width: 95vw;
-    padding: 20px;
-  }
   .breakdown-table {
     font-size: 12px;
   }
@@ -272,20 +264,6 @@ export default {
 
 /* Mobile full-screen */
 @media (max-width: 575px) {
-  .modal-overlay {
-    padding: 8px;
-  }
-  .modal-container {
-    width: 100%;
-    max-width: 100vw;
-    max-height: 100vh;
-    overflow-y: auto;
-    border-radius: 16px;
-    padding: 16px;
-  }
-  .modal-title {
-    font-size: 18px;
-  }
   .breakdown-table {
     display: block;
     overflow-x: auto;

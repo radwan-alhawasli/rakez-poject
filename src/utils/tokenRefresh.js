@@ -68,7 +68,7 @@ async function refreshToken() {
   try {
     // Call refresh endpoint (adjust endpoint as needed)
     const response = await apiClientInstance.post('/auth/refresh', {
-      refresh_token: secureStorage.getToken(), // This might need to be a separate refresh token
+      refresh_token: secureStorage.getRefreshToken(),
     });
 
     const { access_token } = response.data;

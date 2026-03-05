@@ -1,9 +1,11 @@
 import { ref, reactive } from 'vue';
 import hrService from '@/services/hrService';
 import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
 
 export function useHRDashboard() {
   const isLoading = ref(false);
+  const error = ref(null);
 
   const dashboardMetrics = reactive({
     totalEmployees: 0,
@@ -15,6 +17,7 @@ export function useHRDashboard() {
 
   const loadDashboardMetrics = async () => {
     isLoading.value = true;
+    error.value = null;
     try {
       const response = await hrService.getDashboardMetrics();
       const data = response.data;
@@ -26,13 +29,10 @@ export function useHRDashboard() {
         dashboardMetrics.soldUnits = data.units?.sold_units || 0;
         dashboardMetrics.avgEmployeeSales = data.units?.sold_units_per_sales_employee || 0;
       }
-    } catch (error) {
-      logger.error('Error loading dashboard metrics:', error);
-      dashboardMetrics.totalEmployees = 19;
-      dashboardMetrics.totalUnits = 10;
-      dashboardMetrics.salesEmployeesCount = 4;
-      dashboardMetrics.soldUnits = 2;
-      dashboardMetrics.avgEmployeeSales = 0.5;
+    } catch (err) {
+      logger.error('Error loading dashboard metrics:', err);
+      error.value = 'حدث خطأ أثناء تحميل بيانات لوحة التحكم';
+      toast.error('حدث خطأ أثناء تحميل بيانات لوحة التحكم');
     } finally {
       isLoading.value = false;
     }
@@ -40,6 +40,7 @@ export function useHRDashboard() {
 
   return {
     isLoading,
+    error,
     dashboardMetrics,
     loadDashboardMetrics,
   };

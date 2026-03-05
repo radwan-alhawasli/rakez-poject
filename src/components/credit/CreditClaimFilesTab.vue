@@ -20,7 +20,7 @@
     </div>
     <div class="metrics-table-container">
       <div class="table-responsive">
-      <table class="metrics-table">
+      <table class="metrics-table table-mobile-stacked">
         <thead>
           <tr>
             <th>رقم الملف</th>
@@ -34,29 +34,29 @@
         </thead>
         <tbody>
           <tr v-for="claim in claimFiles" :key="claim.id">
-            <td>{{ claim.id }}</td>
-            <td>
+            <td data-label="رقم الملف">{{ claim.id }}</td>
+            <td data-label="النوع">
               <span v-if="claim.is_combined" class="type-badge combined">
                 مجمّع ({{ claim.reservation_count || '—' }})
               </span>
               <span v-else class="type-badge single">فردي</span>
             </td>
-            <td>{{ claim.project_name || 'غير محدد' }}</td>
-            <td>
+            <td data-label="المشروع">{{ claim.project_name || 'غير محدد' }}</td>
+            <td data-label="المبلغ">
               {{
                 formatCurrency(
                   claim.is_combined ? claim.total_claim_amount : claim.claim_amount
                 )
               }}
             </td>
-            <td>
+            <td data-label="الحالة">
               <span class="status-tag" :class="getClaimStatusClass(claim.status)">
                 {{ claim.status_label_ar || claim.status || 'قيد المعالجة' }}
               </span>
             </td>
-            <td>{{ formatDate(claim.created_at) }}</td>
-            <td>
-              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+            <td data-label="التاريخ">{{ formatDate(claim.created_at) }}</td>
+            <td data-label="الإجراءات">
+              <RowActions>
                 <button
                   v-if="claim.has_pdf"
                   class="btn-action edit"
@@ -101,7 +101,13 @@
                   </svg>
                   الموافقة
                 </button>
-              </div>
+                <template #menu>
+                  <DropdownMenuItem v-if="claim.has_pdf" @click="downloadClaimPdf(claim)">PDF</DropdownMenuItem>
+                  <DropdownMenuItem v-if="!claim.has_pdf" @click="generateClaimPdf(claim)">إنشاء PDF</DropdownMenuItem>
+                  <DropdownMenuItem v-if="claim.status === 'pending'" @click="submitClaim(claim)">إرسال</DropdownMenuItem>
+                  <DropdownMenuItem v-if="claim.status === 'submitted'" @click="approveClaim(claim)">الموافقة</DropdownMenuItem>
+                </template>
+              </RowActions>
             </td>
           </tr>
           <tr v-if="claimFiles.length === 0 && !isLoading">
@@ -151,6 +157,8 @@ import { onMounted } from 'vue';
 import Pagination from '@/components/Pagination.vue';
 import ClaimFileForm from '@/components/credit/ClaimFileForm.vue';
 import CombinedClaimFileModal from '@/components/credit/CombinedClaimFileModal.vue';
+import RowActions from '@/components/RowActions.vue';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useCreditClaimFiles } from '@/composables/credit/useCreditClaimFiles';
 
 const {
@@ -187,3 +195,15 @@ onMounted(() => {
   loadClaimFiles();
 });
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  .section-header-compact { padding: 16px; }
+  .section-title { font-size: 18px; }
+  .section-subtitle { font-size: 13px; }
+}
+@media (max-width: 576px) {
+  .section-header-compact { padding: 12px; }
+  .table-responsive { margin: 0 -12px; }
+}
+</style>

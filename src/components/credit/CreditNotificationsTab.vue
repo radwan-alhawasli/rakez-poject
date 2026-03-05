@@ -28,7 +28,7 @@
     </div>
     <div class="metrics-table-container">
       <div class="table-responsive">
-      <table class="metrics-table">
+      <table class="metrics-table table-mobile-stacked">
         <thead>
           <tr>
             <th>التاريخ</th>
@@ -42,21 +42,22 @@
           <tr v-if="creditNotifications.length === 0 && !isLoading">
             <td
               colspan="5"
+              data-label=""
               style="text-align: center; padding: 40px; color: var(--color-dark-gray)"
             >
               لا توجد إشعارات.
             </td>
           </tr>
           <tr v-for="n in creditNotifications" :key="n.id">
-            <td>{{ formatDate(n.created_at || n.date) }}</td>
-            <td>{{ n.type_label || n.type || '—' }}</td>
-            <td>{{ n.title || n.message || '—' }}</td>
-            <td>
+            <td data-label="التاريخ">{{ formatDate(n.created_at || n.date) }}</td>
+            <td data-label="نوع الإشعار">{{ n.type_label || n.type || '—' }}</td>
+            <td data-label="العنوان">{{ n.title || n.message || '—' }}</td>
+            <td data-label="الحالة">
               <span class="status-tag" :class="n.read ? 'excellent' : 'good'">{{
                 n.read ? 'مقروء' : 'جديد'
               }}</span>
             </td>
-            <td>
+            <td data-label="الإجراءات">
               <button
                 v-if="!n.read"
                 type="button"
