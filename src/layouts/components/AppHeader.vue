@@ -35,26 +35,21 @@
       </button>
   
       <div v-if="showNotifications" class="notifications-dropdown">
+        <div class="notifications-panel-bar"></div>
         <div class="notifications-header">
           <h3 class="notifications-title">الإشعارات</h3>
-          <button v-if="unreadCount > 0" @click="$emit('mark-all-read')" class="mark-read-btn">
+          <button v-if="unreadCount > 0" type="button" @click="$emit('mark-all-read')" class="mark-read-btn">
             تعيين الكل كمقروء
           </button>
         </div>
         <div class="notifications-list custom-scrollbar">
           <div v-if="notifications.length === 0" class="no-notifications">
-            <svg
-              width="40"
-              height="40"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              opacity="0.3"
-            >
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
+            <div class="no-notifications-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+            </div>
             <p>لا يوجد إشعارات جديدة</p>
           </div>
           <div
@@ -63,7 +58,7 @@
             :class="['notification-item', { unread: !notification.read }]"
             @click="$emit('mark-as-read', notification.id)"
           >
-            <div class="notification-icon-bg" :class="notification.type">
+            <div class="notification-icon-bg" :class="notification.type || 'info'">
               <svg
                 v-if="notification.type === 'success'"
                 width="16"
@@ -280,137 +275,177 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   position: relative;
 }
 
+/* لوحة الإشعارات — متناسقة مع الهيدر والثيم (نيفي/ذهبي) */
 .top-header .notifications-dropdown {
   position: absolute;
-  top: 50px;
-  left: 0;
-  width: 320px;
-  max-width: none;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--color-medium-gray);
-  z-index: var(--z-modal);
+  top: calc(100% + 10px);
+  right: 0;
+  left: auto;
+  width: 360px;
+  max-width: min(360px, calc(100vw - 32px));
+  background: linear-gradient(180deg, #ffffff 0%, var(--color-off-white, #f8fafc) 100%);
+  border-radius: var(--radius-md, 14px);
+  box-shadow: 0 12px 28px rgba(39, 55, 77, 0.14), 0 4px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(39, 55, 77, 0.1);
+  z-index: 9999;
   overflow: hidden;
-  animation: header-slideDown 0.3s ease-out;
+  animation: notifications-panel-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-@keyframes header-slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes notifications-panel-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* شريط علوي بلون الهيدر */
+.top-header .notifications-panel-bar {
+  height: 4px;
+  background: var(--color-navy, #27374D);
+  width: 100%;
+  flex-shrink: 0;
 }
 
 .top-header .notifications-header {
-  padding: 12px 16px;
-  background: var(--color-light-gray);
-  border-bottom: 1px solid var(--color-medium-gray);
+  padding: 14px 18px;
+  background: rgba(248, 250, 252, 0.95);
+  border-bottom: 1px solid rgba(39, 55, 77, 0.08);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
 .top-header .notifications-title {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
   color: var(--color-navy);
   margin: 0;
+  letter-spacing: -0.02em;
 }
 .top-header .mark-read-btn {
-  font-size: 11px;
+  font-size: 0.75rem;
   color: var(--color-gold);
   background: none;
   border: none;
   cursor: pointer;
   font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
 }
 .top-header .mark-read-btn:hover {
-  text-decoration: underline;
+  background: rgba(181, 169, 154, 0.12);
+  color: var(--color-gold-dark, #9a8d7d);
 }
 
 .top-header .notifications-list {
-  max-height: 400px;
+  max-height: 380px;
   overflow-y: auto;
 }
 
 .top-header .notification-item {
-  padding: 12px 16px;
+  padding: 14px 18px;
   display: flex;
-  gap: 12px;
+  gap: 14px;
   cursor: pointer;
   transition: background 0.2s;
-  border-bottom: 1px solid var(--color-light-gray);
+  border-bottom: 1px solid rgba(39, 55, 77, 0.06);
   position: relative;
+  align-items: flex-start;
 }
 .top-header .notification-item:hover {
-  background: var(--color-off-white);
+  background: rgba(39, 55, 77, 0.04);
 }
 .top-header .notification-item.unread {
-  background: rgba(161, 139, 92, 0.03);
+  background: rgba(181, 169, 154, 0.06);
+}
+.top-header .notification-item:last-child {
+  border-bottom: none;
 }
 
 .top-header .notification-icon-bg {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 .top-header .notification-icon-bg.info {
-  background: rgba(161, 139, 92, 0.1);
+  background: rgba(181, 169, 154, 0.15);
   color: var(--color-gold);
 }
 .top-header .notification-icon-bg.success {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(16, 185, 129, 0.12);
   color: #10b981;
 }
 .top-header .notification-icon-bg.warning {
-  background: rgba(245, 158, 11, 0.1);
-  color: var(--color-warning);
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--color-warning, #f59e0b);
 }
 
 .top-header .notification-content {
   flex: 1;
+  min-width: 0;
 }
 .top-header .notification-text {
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--color-charcoal);
-  line-height: 1.4;
-  margin-bottom: 3px;
+  line-height: 1.45;
+  margin-bottom: 4px;
 }
 .top-header .notification-time {
-  font-size: 10px;
-  color: var(--color-dark-gray);
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
 }
 
 .top-header .unread-dot {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   background: var(--color-gold);
   border-radius: 50%;
   position: absolute;
-  top: 12px;
-  left: 12px;
-  box-shadow: 0 0 8px rgba(177, 162, 143, 0.8);
+  top: 16px;
+  right: 18px;
+  left: auto;
+  box-shadow: 0 0 10px rgba(181, 162, 143, 0.6);
 }
 
 .top-header .no-notifications {
-  padding: 40px 20px;
+  padding: 48px 24px;
   text-align: center;
-  color: var(--color-dark-gray);
+  color: #64748b;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
+}
+.top-header .no-notifications-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(39, 55, 77, 0.06);
+  color: var(--color-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.top-header .no-notifications-icon svg {
+  width: 24px;
+  height: 24px;
 }
 .top-header .no-notifications p {
-  font-size: 14px;
+  font-size: 0.875rem;
   margin: 0;
+  font-weight: 500;
+  color: var(--color-dark-gray);
 }
 
 /* 4K (3840px+) */
 @media (min-width: 3840px) {
   .top-header .notification-btn .bell-icon { width: 28px; height: 28px; }
-  .top-header .notifications-dropdown { width: 420px; }
+  .top-header .notifications-dropdown { width: 400px; }
   .top-header .logo-ar { font-size: 22px; }
   .top-header .logo-en { font-size: 22px; }
 }
@@ -436,7 +471,7 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   .top-header .logo-ar { font-size: 15px; }
   .top-header .logo-en,
   .top-header .logo-sep { display: none; }
-  .top-header .notifications-dropdown { width: 300px; left: auto; right: 0; }
+  .top-header .notifications-dropdown { width: 300px; right: 0; left: auto; }
 }
 
 /* Mobile Landscape (576px - 767px) */
@@ -450,7 +485,7 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   .top-header .logo-ar { font-size: 14px; }
   .top-header .logo-en,
   .top-header .logo-sep { display: none; }
-  .top-header .notifications-dropdown { width: 280px; left: auto; right: 0; }
+  .top-header .notifications-dropdown { width: 280px; right: 0; left: auto; }
   .top-header .notification-item { padding: 12px 16px; }
 }
 
@@ -470,10 +505,10 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   .top-header .notifications-dropdown {
     width: calc(100vw - 24px);
     max-width: 340px;
-    left: 12px;
-    right: auto;
-    top: 65px;
-    border-radius: 14px;
+    right: 0;
+    left: auto;
+    top: calc(100% + 10px);
+    border-radius: var(--radius-md, 14px);
   }
   .top-header .notifications-header { padding: 12px 16px; }
   .top-header .notifications-title { font-size: 15px; }

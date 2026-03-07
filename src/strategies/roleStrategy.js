@@ -82,7 +82,7 @@ class SalesStrategy extends RoleStrategy {
       { path: '/sales/dashboard', name: 'SalesDashboard', label: 'لوحة التحكم' },
       { path: '/sales/projects', name: 'SalesProjects', label: 'المشاريع' },
       { path: '/sales/reservations', name: 'SalesReservations', label: 'الحجوزات' },
-      { path: '/sales/targets', name: 'SalesTargets', label: 'الأهداف' },
+      { path: '/sales/targets', name: 'SalesTargets', label: 'أهداف الفريق' },
       { path: '/sales/attendance', name: 'SalesAttendance', label: 'الحضور' },
       { path: '/sales/team', name: 'SalesTeam', label: 'الفريق' },
       { path: '/sales/tasks', name: 'SalesTasks', label: 'المهام' },

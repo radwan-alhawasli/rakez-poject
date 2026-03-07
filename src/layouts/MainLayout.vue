@@ -269,11 +269,11 @@ export default {
   top: 0;
   left: 0;
   right: 0;
-  z-index: calc(var(--z-sidebar) - 10);
+  z-index: var(--z-header, 500);
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   backdrop-filter: blur(10px);
   animation: fadeInDown 0.5s ease-out;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .top-header::before {
