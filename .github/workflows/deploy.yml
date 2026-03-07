@@ -20,7 +20,9 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.REMOTE_PORT || '22' }}
+          script_stop: true
           script: |
+            set -e
             echo "🔧 Configuring git safe directory..."
             git config --global --add safe.directory /var/www/rakez-poject
             
