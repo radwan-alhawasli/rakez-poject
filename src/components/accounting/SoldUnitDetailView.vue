@@ -474,7 +474,7 @@
             <tbody>
               <tr v-for="(dist, idx) in distributions" :key="dist.id || idx">
                 <td>{{ getTypeLabel(dist.type || dist.commission_type) }}</td>
-                <td>{{ dist.percentage ? dist.percentage.toFixed(2) + '%' : '—' }}</td>
+                <td>{{ dist.percentage != null ? (Number(dist.percentage) || 0).toFixed(2) + '%' : '—' }}</td>
                 <td>{{ formatNumber(dist.amount) }}</td>
                 <td>
                   <button
@@ -493,7 +493,7 @@
               </tr>
               <tr v-if="distributions.length > 0 && totalDistPct < 100" class="total-row">
                 <td>الشركة</td>
-                <td>{{ (100 - totalDistPct).toFixed(2) }}%</td>
+                <td>{{ (100 - (Number(totalDistPct) || 0)).toFixed(2) }}%</td>
                 <td>{{ formatNumber(companyAmount) }}</td>
                 <td>—</td>
               </tr>
