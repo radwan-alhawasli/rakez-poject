@@ -8,11 +8,11 @@
       <div class="stat-card kpi-list-card animate-fade-in-up animate-stagger-1 hover-lift">
         <h3 class="kpi-card-title">مؤشرات الأداء</h3>
         <ul class="kpi-list">
-          <li class="kpi-line kpi-line-1"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">عدد الوحدات المباعة</span></span><span class="kpi-value number">{{ dashboardMetrics.totalUnitsSold || '0' }}</span></li>
-          <li class="kpi-line kpi-line-2"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">إجمالي العربون المستلم</span></span><span class="kpi-value number">{{ formatCurrency(dashboardMetrics.totalDeposits) }}</span></li>
-          <li class="kpi-line kpi-line-3"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">إجمالي العربون المسترد</span></span><span class="kpi-value number">{{ formatCurrency(dashboardMetrics.totalDepositsRefunded) }}</span></li>
-          <li class="kpi-line kpi-line-4"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">إجمالي قيمة المشاريع المستلمة</span></span><span class="kpi-value number">{{ formatCurrency(dashboardMetrics.totalProjectsValue) }}</span></li>
-          <li class="kpi-line kpi-line-5"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">إجمالي قيمة المبيعات</span><span class="kpi-desc">اعتمادًا على سعر البيع النهائي</span></span><span class="kpi-value number">{{ formatCurrency(dashboardMetrics.totalSalesValue) }}</span></li>
+          <li class="kpi-line kpi-line-1"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">عدد الوحدات المباعة</span></span><span class="kpi-value number" :title="formatNumber(dashboardMetrics.totalUnitsSold || 0)">{{ formatCompact(dashboardMetrics.totalUnitsSold || 0) }}</span></li>
+          <li class="kpi-line kpi-line-2"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">إجمالي العربون المستلم</span></span><span class="kpi-value number" :title="formatCurrency(dashboardMetrics.totalDeposits)">{{ formatCurrencyCompact(dashboardMetrics.totalDeposits) }}</span></li>
+          <li class="kpi-line kpi-line-3"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">إجمالي العربون المسترد</span></span><span class="kpi-value number" :title="formatCurrency(dashboardMetrics.totalDepositsRefunded)">{{ formatCurrencyCompact(dashboardMetrics.totalDepositsRefunded) }}</span></li>
+          <li class="kpi-line kpi-line-4"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">إجمالي قيمة المشاريع المستلمة</span></span><span class="kpi-value number" :title="formatCurrency(dashboardMetrics.totalProjectsValue)">{{ formatCurrencyCompact(dashboardMetrics.totalProjectsValue) }}</span></li>
+          <li class="kpi-line kpi-line-5"><span class="kpi-bullet"></span><span class="kpi-label-wrap"><span class="kpi-label">إجمالي قيمة المبيعات</span><span class="kpi-desc">اعتمادًا على سعر البيع النهائي</span></span><span class="kpi-value number" :title="formatCurrency(dashboardMetrics.totalSalesValue)">{{ formatCurrencyCompact(dashboardMetrics.totalSalesValue) }}</span></li>
         </ul>
       </div>
       <div class="stat-card stat-card-pending animate-fade-in-up animate-stagger-2 hover-lift">
@@ -63,8 +63,9 @@
 import { onMounted, computed } from 'vue';
 import { VisXYContainer, VisGroupedBar, VisAxis, VisTooltip } from '@unovis/vue';
 import { useAccountingDashboard } from '@/composables/accounting/useAccountingDashboard';
+import { useFormatters } from '@/composables/useFormatters';
 
-const props = defineProps({
+defineProps({
   userName: { type: String, default: 'قسم المحاسبة' },
 });
 
@@ -75,6 +76,7 @@ const {
   loadDashboardMetrics,
   formatCurrency,
 } = useAccountingDashboard();
+const { formatCompact, formatCurrencyCompact, formatNumber } = useFormatters();
 
 const chartLabels = ['الوحدات المباعة', 'الودائع', 'المسترد', 'قيمة المشاريع', 'قيمة المبيعات', 'العمولات'];
 

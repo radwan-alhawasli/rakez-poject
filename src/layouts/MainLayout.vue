@@ -253,35 +253,36 @@ export default {
   overflow-x: hidden;
 }
 
-/* Header - Enhanced with Luxury Vitality */
+/* Header - Merged with sidebar: full-width gradient flowing into sidebar, sits behind for unified look */
 .top-header {
   height: 60px;
-  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-off-white) 100%);
+  /* Gradient flows from header blue into sidebar dark - creates seamless merge */
+  background: linear-gradient(90deg, #1a2a4a 0%, #2c4a7c 35%, #1e293b 70%, #0f172a 100%);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(177, 162, 143, 0.12);
-  border-bottom: 2px solid var(--color-gold);
+  padding: 0 calc(var(--sidebar-collapsed-width, 80px) + 24px) 0 24px;
+  box-shadow: 0 4px 24px rgba(26, 42, 74, 0.2);
   position: fixed;
   top: 0;
   left: 0;
-  right: 80px;
-  z-index: var(--z-header);
+  right: 0;
+  z-index: calc(var(--z-sidebar) - 10);
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   backdrop-filter: blur(10px);
   animation: fadeInDown 0.5s ease-out;
+  overflow: hidden;
 }
 
 .top-header::before {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, var(--color-gold) 50%, transparent 100%);
-  opacity: 0.5;
+  top: -50%;
+  left: -30%;
+  width: 80%;
+  height: 200%;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.06) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .mobile-toggle {
@@ -394,12 +395,6 @@ export default {
   gap: 30px;
   min-width: 0;
   flex-shrink: 1;
-}
-.update-info {
-  text-align: left;
-  font-size: 11px;
-  color: var(--color-dark-gray);
-  flex-shrink: 0;
 }
 .logo {
   display: flex;
@@ -580,6 +575,9 @@ export default {
   border-left: 1px solid rgba(177, 162, 143, 0.15);
   backdrop-filter: blur(20px);
   animation: slideInFromRight 0.6s ease-out;
+  /* Curved junction with header - arc merge instead of sharp angle */
+  border-top-left-radius: 40px;
+  border-bottom-left-radius: 40px;
 }
 
 :deep(.sidebar)::before {
@@ -1116,7 +1114,7 @@ export default {
 
 /* Header/footer shift on hover (header is before sidebar in DOM so use app-container class) */
 .app-container.sidebar-hovered .top-header {
-  right: 260px;
+  padding-right: calc(var(--sidebar-expanded-width) + 24px);
 }
 .app-container.sidebar-hovered .footer {
   margin-right: 260px;
@@ -1130,9 +1128,8 @@ export default {
   min-width: 0;
 }
 
-/* Adjust header width */
+/* Header extends full width behind sidebar; padding keeps content clear */
 .top-header {
-  right: 80px;
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -1334,10 +1331,6 @@ export default {
     padding: 35px 25px;
   }
 
-  .header-right .update-info {
-    display: none;
-  }
-
   .logo-ar {
     font-size: 16px;
   }
@@ -1399,10 +1392,6 @@ export default {
 
   .main-content {
     padding: 30px 20px;
-  }
-
-  .header-right .update-info {
-    display: none;
   }
 
   .back-btn,
@@ -1518,7 +1507,6 @@ export default {
     padding: 25px 15px;
   }
 
-  .header-right .update-info,
   .header-right .logo-icon-bg {
     display: none;
   }
@@ -1669,7 +1657,6 @@ export default {
     gap: 10px;
   }
 
-  .header-right .update-info,
   .header-right .logo-icon-bg,
   .header-right .logo-sep {
     display: none;
@@ -1987,9 +1974,9 @@ export default {
 
 /* Desktop only (>= 1200px): sidebar rail on-screen; below 1200px sidebar is off-canvas, open on trigger */
 @media (min-width: 1200px) {
-/* Keep header/content/footer clear of the compact rail */
+/* Header extends full width; padding keeps content clear of sidebar */
 .top-header {
-  right: var(--sidebar-collapsed-width) !important;
+  padding-right: calc(var(--sidebar-collapsed-width) + 24px) !important;
 }
 
 .main-wrapper {
@@ -2106,7 +2093,7 @@ export default {
 @media (min-width: 1200px) {
   .app-container.sidebar-open .top-header,
   .app-container.sidebar-hovered .top-header {
-    right: var(--sidebar-expanded-width) !important;
+    padding-right: calc(var(--sidebar-expanded-width) + 24px) !important;
   }
 
   .app-container.sidebar-open .main-wrapper,

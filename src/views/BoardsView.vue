@@ -1,10 +1,10 @@
 <template>
   <div class="boards-view">
     <!-- Header -->
-    <div class="page-header">
+    <div class="welcome-header">
       <div class="header-content">
-        <h1 class="page-title">اللوحات</h1>
-        <p class="page-subtitle">إدارة لوحات المشاريع وإضافة تفاصيل الوحدات.</p>
+        <h1 class="welcome-title">اللوحات</h1>
+        <p class="welcome-subtitle">إدارة لوحات المشاريع وإضافة تفاصيل الوحدات.</p>
       </div>
     </div>
 
@@ -303,20 +303,6 @@ export default {
   }
 }
 
-.page-header {
-  margin-bottom: 30px;
-}
-.page-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--color-navy);
-  margin: 0 0 5px 0;
-}
-.page-subtitle {
-  color: var(--color-dark-gray);
-  font-size: 15px;
-  margin: 0;
-}
 
 .tabs-container {
   display: flex;

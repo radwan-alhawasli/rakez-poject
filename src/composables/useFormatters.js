@@ -1,13 +1,14 @@
 /**
  * Shared formatting utilities used across views and components.
  *
- * Two currency modes:
- *  - formatCurrency  : en-US locale, SAR symbol, no decimals (default)
- *  - formatCurrencyAr: ar-SA locale, SAR symbol, no decimals
- *
  * Import the composable and destructure what you need:
- *   const { formatCurrency, formatDate, formatNumber } = useFormatters();
+ *   const { formatCurrency, formatCompact, formatDate, formatNumber } = useFormatters();
  */
+
+const ARABIC_DIGITS = /[\u0660-\u0669]/g;
+const toWestern = (str) =>
+  String(str).replace(ARABIC_DIGITS, (d) => d.charCodeAt(0) - 0x0660);
+
 export function useFormatters() {
   const currencyFormatterEN = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -23,17 +24,45 @@ export function useFormatters() {
 
   const numberFormatter = new Intl.NumberFormat('en-US');
 
+  const compactFormatter = new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    compactDisplay: 'short',
+    maximumFractionDigits: 1,
+  });
+
+  const compactCurrencyFormatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'SAR',
+    notation: 'compact',
+    compactDisplay: 'short',
+    maximumFractionDigits: 1,
+  });
+
   const formatCurrency = (val) => {
     if (val == null || val === '') return '0 ر.س';
     return currencyFormatterEN.format(Number(val) || 0);
   };
 
   const formatCurrencyAr = (val) => {
-    return currencyFormatterAR.format(Number(val) || 0);
+    return toWestern(currencyFormatterAR.format(Number(val) || 0));
   };
 
   const formatNumber = (val) => {
     return numberFormatter.format(Number(val) || 0);
+  };
+
+  /** Compact number: 1500 → "1.5K", 2300000 → "2.3M" */
+  const formatCompact = (val) => {
+    const n = Number(val) || 0;
+    if (Math.abs(n) < 1000) return numberFormatter.format(n);
+    return compactFormatter.format(n);
+  };
+
+  /** Compact currency: 1500 → "SAR 1.5K" */
+  const formatCurrencyCompact = (val) => {
+    const n = Number(val) || 0;
+    if (Math.abs(n) < 1000) return currencyFormatterEN.format(n);
+    return compactCurrencyFormatter.format(n);
   };
 
   /**
@@ -45,7 +74,7 @@ export function useFormatters() {
     try {
       const d = new Date(dateStr);
       if (Number.isNaN(d.getTime())) return fallback;
-      return d.toLocaleDateString('ar-SA');
+      return toWestern(d.toLocaleDateString('ar-SA'));
     } catch {
       return fallback;
     }
@@ -56,11 +85,13 @@ export function useFormatters() {
     try {
       const d = new Date(dateStr);
       if (Number.isNaN(d.getTime())) return dateStr;
-      return d.toLocaleDateString('ar-SA', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
+      return toWestern(
+        d.toLocaleDateString('ar-SA', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        }),
+      );
     } catch {
       return dateStr;
     }
@@ -75,19 +106,21 @@ export function useFormatters() {
     }
   };
 
-  /** Format date with time (hours + minutes) using ar-EG locale */
+  /** Format date with time (hours + minutes) */
   const formatDateTime = (dateStr, fallback = '—') => {
     if (!dateStr) return fallback;
     try {
       const d = new Date(dateStr);
       if (Number.isNaN(d.getTime())) return fallback;
-      return d.toLocaleDateString('ar-EG', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      return toWestern(
+        d.toLocaleDateString('ar-EG', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+      );
     } catch {
       return fallback;
     }
@@ -97,6 +130,8 @@ export function useFormatters() {
     formatCurrency,
     formatCurrencyAr,
     formatNumber,
+    formatCompact,
+    formatCurrencyCompact,
     formatDate,
     formatDateLong,
     formatDateISO,

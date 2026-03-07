@@ -1,10 +1,8 @@
 <template>
   <div class="dashboard-tab">
-    <div class="page-header">
-      <div class="header-content">
-        <h1 class="page-title">لوحة التحكم</h1>
-        <p class="page-subtitle">نظرة عامة على أدائك ونتائج المبيعات.</p>
-      </div>
+    <div class="welcome-header">
+      <h1 class="welcome-title">أهلاً بعودتك، {{ userName }}!</h1>
+      <p class="welcome-subtitle">نظرة عامة على أدائك ونتائج المبيعات.</p>
     </div>
 
     <LoadingSpinner v-if="isLoadingDashboard" text="جاري تحميل البيانات..." />
@@ -17,7 +15,7 @@
             <CardContent class="stat-card-inner">
               <div class="stat-content">
                 <span class="stat-label">عدد الوحدات المحجوزة</span>
-                <span class="stat-value number">{{ dashboardData.reserved_units ?? '...' }}</span>
+                <span class="stat-value number" :title="formatNumber(dashboardData.reserved_units ?? 0)">{{ formatCompact(dashboardData.reserved_units ?? 0) }}</span>
               </div>
               <div class="stat-icon-bg reserved">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -31,7 +29,7 @@
             <CardContent class="stat-card-inner">
               <div class="stat-content">
                 <span class="stat-label">عدد الوحدات المتاحة</span>
-                <span class="stat-value number">{{ dashboardData.available_units ?? '...' }}</span>
+                <span class="stat-value number" :title="formatNumber(dashboardData.available_units ?? 0)">{{ formatCompact(dashboardData.available_units ?? 0) }}</span>
               </div>
               <div class="stat-icon-bg available">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -45,7 +43,7 @@
             <CardContent class="stat-card-inner">
               <div class="stat-content">
                 <span class="stat-label">عدد المشاريع قيد التسويق</span>
-                <span class="stat-value number">{{ dashboardData.projects_under_marketing ?? '...' }}</span>
+                <span class="stat-value number" :title="formatNumber(dashboardData.projects_under_marketing ?? 0)">{{ formatCompact(dashboardData.projects_under_marketing ?? 0) }}</span>
               </div>
               <div class="stat-icon-bg marketing">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -75,7 +73,7 @@
             <CardContent class="stat-card-inner">
               <div class="stat-content">
                 <span class="stat-label">العرابين</span>
-                <span class="stat-value number">{{ formatCurrency(dashboardData.total_received_deposits ?? 0) }}</span>
+                <span class="stat-value number" :title="formatCurrency(dashboardData.total_received_deposits ?? 0)">{{ formatCurrencyCompact(dashboardData.total_received_deposits ?? 0) }}</span>
               </div>
               <div class="stat-icon-bg deposits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -124,10 +122,17 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useSalesDashboard } from '@/composables/sales/useSalesDashboard';
 import { useSalesRouting } from '@/composables/sales/useSalesRouting';
 import { useSalesProjects } from '@/composables/sales/useSalesProjects';
+import { useFormatters } from '@/composables/useFormatters';
+import authService from '@/services/authService';
+import { computed } from 'vue';
 
 const { dashboardData, isLoadingDashboard, computedConfirmedVsNegotiationRatio: confirmedVsNegotiationRatio, formatCurrency, dashboardProjects, loadDashboard } = useSalesDashboard();
+const { formatCompact, formatCurrencyCompact, formatNumber } = useFormatters();
 const { switchTab } = useSalesRouting();
 const { viewProjectDetails } = useSalesProjects();
+
+const user = authService.getCurrentUser();
+const userName = computed(() => user?.name || 'مستخدم');
 
 loadDashboard();
 </script>
@@ -140,23 +145,6 @@ loadDashboard();
   min-height: 0;
 }
 
-.page-header {
-  margin-bottom: 24px;
-  padding: 0;
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--color-navy);
-  margin: 0 0 5px 0;
-}
-
-.page-subtitle {
-  color: var(--color-dark-gray);
-  font-size: 15px;
-  margin: 0;
-}
 
 .dashboard-kpis {
   margin-top: 8px;

@@ -1,8 +1,10 @@
 <template>
   <div class="editor-view">
-    <div class="page-header">
-      <h1 class="page-title">قسم المحرر</h1>
-      <p class="page-subtitle">إدارة العقود والتصوير والمونتاج واللوحات للمشاريع.</p>
+    <div class="welcome-header">
+      <div class="header-content">
+        <h1 class="welcome-title">قسم المحرر</h1>
+        <p class="welcome-subtitle">إدارة العقود والتصوير والمونتاج واللوحات للمشاريع.</p>
+      </div>
     </div>
 
     <nav class="editor-tabs" aria-label="أقسام المحرر">
@@ -685,20 +687,6 @@ export default {
 <style scoped>
 .editor-view {
   padding: 24px;
-}
-.page-header {
-  margin-bottom: 30px;
-}
-.page-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--color-navy);
-  margin: 0 0 5px 0;
-}
-.page-subtitle {
-  color: var(--color-dark-gray);
-  font-size: 15px;
-  margin: 0;
 }
 
 .editor-tabs {

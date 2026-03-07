@@ -1,10 +1,10 @@
 <template>
   <div class="my-requests">
     <!-- Header -->
-    <div class="section-header">
+    <div class="welcome-header">
       <div class="header-content">
-        <h2 class="section-title">طلباتي الحصرية</h2>
-        <p class="section-subtitle">
+        <h1 class="welcome-title">طلباتي الحصرية</h1>
+        <p class="welcome-subtitle">
           تتبع حالة طلبات المشاريع الحصرية التي قدمتها وأكمل العقود المعتمدة.
         </p>
       </div>
@@ -196,21 +196,6 @@ export default {
   }
 }
 
-.section-header {
-  margin-bottom: 30px;
-}
-
-.section-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--color-navy);
-  margin: 0 0 8px 0;
-}
-
-.section-subtitle {
-  color: var(--color-dark-gray);
-  font-size: 16px;
-}
 
 .data-table-container {
   background: white;
@@ -361,9 +346,6 @@ export default {
 
 /* Responsive: Tablet Landscape */
 @media (max-width: 992px) {
-  .section-title {
-    font-size: 26px;
-  }
   .custom-table th,
   .custom-table td {
     padding: 14px 20px;
@@ -372,12 +354,6 @@ export default {
 
 /* Responsive: Tablet Portrait */
 @media (max-width: 768px) {
-  .section-title {
-    font-size: 22px;
-  }
-  .section-subtitle {
-    font-size: 14px;
-  }
   .table-header-info {
     flex-direction: column;
     gap: 8px;
@@ -401,15 +377,6 @@ export default {
 
 /* Responsive: Mobile */
 @media (max-width: 576px) {
-  .section-header {
-    margin-bottom: 20px;
-  }
-  .section-title {
-    font-size: 20px;
-  }
-  .section-subtitle {
-    font-size: 13px;
-  }
   .table-header-info {
     padding: 12px 16px;
   }
@@ -442,9 +409,6 @@ export default {
 
 /* Responsive: Extra Small Mobile */
 @media (max-width: 320px) {
-  .section-title {
-    font-size: 18px;
-  }
   .custom-table {
     min-width: 420px;
   }
@@ -467,15 +431,6 @@ export default {
 
 /* Responsive: Large Desktop */
 @media (min-width: 1920px) {
-  .section-header {
-    margin-bottom: 40px;
-  }
-  .section-title {
-    font-size: 36px;
-  }
-  .section-subtitle {
-    font-size: 18px;
-  }
   .data-table-container {
     border-radius: 20px;
   }
@@ -503,9 +458,6 @@ export default {
 
 /* Responsive: Ultra-wide */
 @media (min-width: 2560px) {
-  .section-title {
-    font-size: 40px;
-  }
   .custom-table th,
   .custom-table td {
     padding: 24px 48px;

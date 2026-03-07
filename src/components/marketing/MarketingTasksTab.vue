@@ -1,8 +1,10 @@
 <template>
   <div>
-    <div class="section-header-compact">
-      <h2 class="section-title">المهام اليومية</h2>
-      <p class="section-subtitle">متابعة وإدارة المهام التسويقية اليومية</p>
+    <div class="welcome-header">
+      <div class="header-content">
+        <h1 class="welcome-title">المهام اليومية</h1>
+        <p class="welcome-subtitle">متابعة وإدارة المهام التسويقية اليومية</p>
+      </div>
     </div>
 
     <div v-if="isLoadingTasks" class="loading-state">
@@ -57,13 +59,9 @@ const {
 
 <style scoped>
 @media (max-width: 768px) {
-  .section-header-compact { padding: 16px; }
-  .section-title { font-size: 18px; }
-  .section-subtitle { font-size: 13px; }
   .task-card { padding: 14px; }
 }
 @media (max-width: 576px) {
-  .section-header-compact { padding: 12px; }
   .task-card { padding: 12px; }
   .task-title { font-size: 14px; }
 }

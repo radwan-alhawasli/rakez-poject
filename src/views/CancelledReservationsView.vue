@@ -1,9 +1,9 @@
 <template>
   <div class="cancelled-reservations-page">
     <!-- Page Header -->
-    <div class="page-header">
-      <h1 class="page-title">الحجوزات الملغاة</h1>
-      <p class="page-subtitle">عرض جميع الحجوزات التي تم إلغاؤها أو رفضها</p>
+    <div class="welcome-header">
+      <h1 class="welcome-title">الحجوزات الملغاة</h1>
+      <p class="welcome-subtitle">عرض جميع الحجوزات التي تم إلغاؤها أو رفضها</p>
     </div>
 
     <!-- Reservations List -->
@@ -264,27 +264,6 @@ const toggleExpand = id => {
   padding: 0;
 }
 
-/* Page Header */
-.page-header {
-  text-align: center;
-  margin-bottom: 30px;
-  padding: 30px;
-  background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
-  border-radius: 16px;
-  color: white;
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0 0 8px 0;
-}
-
-.page-subtitle {
-  font-size: 14px;
-  opacity: 0.8;
-  margin: 0;
-}
 
 /* Reservations List */
 .reservations-list {

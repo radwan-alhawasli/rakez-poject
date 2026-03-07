@@ -63,11 +63,9 @@ const activeTab = computed(() => {
 </style>
 
 <style>
-/* Welcome Header */
-.marketing-view .welcome-header { margin-bottom: 40px; animation: mktSlideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+/* Welcome Header - use global styles (blue gradient, white text) */
+.marketing-view .welcome-header { animation: mktSlideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 @keyframes mktSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-.marketing-view .welcome-title { font-size: 36px; font-weight: 700; color: #1e3a5f; margin: 0 0 10px 0; background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8f 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.marketing-view .welcome-subtitle { font-size: 16px; color: #64748b; margin: 0; }
 
 /* Stats Grid */
 .marketing-view .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }

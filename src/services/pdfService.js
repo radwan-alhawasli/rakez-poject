@@ -314,7 +314,7 @@ export const generateUnitDetailsPdf = async (unit, options = {}) => {
     const priceVal = unit?.price ?? unit?.total_price;
     const priceStr =
       priceVal != null && !Number.isNaN(Number(priceVal))
-        ? `${Number(priceVal).toLocaleString('ar-SA')} ر.س`
+        ? `${Number(priceVal).toLocaleString('en-US')} ر.س`
         : null;
     drawLine('السعر', priceStr);
 

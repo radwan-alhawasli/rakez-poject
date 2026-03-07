@@ -8,27 +8,6 @@
     </SidebarHeader>
   
     <SidebarContent>
-        <!-- AI Assistant - for all users -->
-        <router-link
-          to="/ai-assistant"
-          class="nav-item"
-          active-class="active"
-          data-tooltip="المساعد الذكي"
-        >
-          <div class="nav-content">
-            <svg
-              class="nav-icon-svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <span class="nav-text">المساعد الذكي</span>
-          </div>
-        </router-link>
-  
         <!-- Admin Sidebar (Matches Image 1) -->
         <template v-if="userRole == 1">
           <router-link
@@ -51,6 +30,27 @@
                 <rect x="3" y="14" width="7" height="7"></rect>
               </svg>
               <span class="nav-text">لوحة التحكم</span>
+            </div>
+          </router-link>
+
+          <!-- AI Assistant -->
+          <router-link
+            to="/ai-assistant"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="المساعد الذكي"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span class="nav-text">المساعد الذكي</span>
             </div>
           </router-link>
   
@@ -410,6 +410,27 @@
               <span class="nav-text">لوحة التحكم</span>
             </div>
           </router-link>
+
+          <!-- AI Assistant -->
+          <router-link
+            to="/ai-assistant"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="المساعد الذكي"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span class="nav-text">المساعد الذكي</span>
+            </div>
+          </router-link>
   
           <!-- 2. الإشعارات -->
           <router-link
@@ -639,40 +660,33 @@
           </router-link>
         </template>
   
-        <!-- Sales Sidebar (Role 5) - Sales & Sales Leader: exact-active so only current page is highlighted -->
+    <!-- Sales Sidebar (Role 5) - Sales & Sales Leader -->
         <template v-else-if="userRole == 5">
-          <!-- 0. الرئيسية (Dashboard) -->
+          <!-- 1. لوحة التحكم -->
           <router-link
             v-if="hasPermission('sales.dashboard.view')"
             to="/sales/dashboard"
             class="nav-item"
             exact-active-class="active"
-            data-tooltip="الرئيسية"
+            data-tooltip="لوحة التحكم"
           >
             <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="7" height="7"></rect>
                 <rect x="14" y="3" width="7" height="7"></rect>
                 <rect x="14" y="14" width="7" height="7"></rect>
                 <rect x="3" y="14" width="7" height="7"></rect>
               </svg>
-              <span class="nav-text">الرئيسية</span>
+              <span class="nav-text">لوحة التحكم</span>
             </div>
           </router-link>
-  
-          <!-- 1. الأهداف -->
+
+          <!-- AI Assistant -->
           <router-link
-            v-if="hasPermission('sales.targets.view')"
-            to="/sales/targets"
+            to="/ai-assistant"
             class="nav-item"
-            exact-active-class="active"
-            data-tooltip="الأهداف"
+            active-class="active"
+            data-tooltip="المساعد الذكي"
           >
             <div class="nav-content">
               <svg
@@ -682,14 +696,12 @@
                 stroke="currentColor"
                 stroke-width="2"
               >
-                <circle cx="12" cy="12" r="10"></circle>
-                <circle cx="12" cy="12" r="6"></circle>
-                <circle cx="12" cy="12" r="2"></circle>
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
               </svg>
-              <span class="nav-text">الأهداف</span>
+              <span class="nav-text">المساعد الذكي</span>
             </div>
           </router-link>
-  
+
           <!-- 2. المشاريع -->
           <router-link
             v-if="hasPermission('sales.projects.view')"
@@ -699,59 +711,41 @@
             data-tooltip="المشاريع"
           >
             <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
               </svg>
               <span class="nav-text">المشاريع</span>
             </div>
           </router-link>
-  
-        <!-- 2.5. بحث الوحدات -->
-        <router-link
-          v-if="hasPermission('sales.projects.view')"
-          to="/sales/unit-search"
-          class="nav-item"
-          exact-active-class="active"
-          data-tooltip="بحث الوحدات"
-        >
-          <div class="nav-content">
-            <svg
-              class="nav-icon-svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <span class="nav-text">بحث الوحدات</span>
-          </div>
-        </router-link>
 
-        <!-- 3. الحجوزات -->
-        <router-link
-          v-if="hasPermission('sales.reservations.view')"
-          to="/sales/reservations"
-          class="nav-item"
-          exact-active-class="active"
-          data-tooltip="الحجوزات"
-        >
+          <!-- 3. بحث الوحدات -->
+          <router-link
+            v-if="hasPermission('sales.projects.view')"
+            to="/sales/unit-search"
+            class="nav-item"
+            exact-active-class="active"
+            data-tooltip="بحث الوحدات"
+          >
             <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <span class="nav-text">بحث الوحدات</span>
+            </div>
+          </router-link>
+
+          <!-- 4. الحجوزات -->
+          <router-link
+            v-if="hasPermission('sales.reservations.view')"
+            to="/sales/reservations"
+            class="nav-item"
+            exact-active-class="active"
+            data-tooltip="الحجوزات"
+          >
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                 <line x1="16" y1="2" x2="16" y2="6"></line>
                 <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -760,31 +754,26 @@
               <span class="nav-text">الحجوزات</span>
             </div>
           </router-link>
-  
-          <!-- 4. دوامي -->
+
+          <!-- 5. الأهداف -->
           <router-link
-            v-if="hasPermission('sales.attendance.view')"
-            to="/sales/attendance"
+            v-if="hasPermission('sales.targets.view')"
+            to="/sales/targets"
             class="nav-item"
             exact-active-class="active"
-            data-tooltip="دوامي"
+            data-tooltip="الأهداف"
           >
             <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
+                <circle cx="12" cy="12" r="6"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
               </svg>
-              <span class="nav-text">دوامي</span>
+              <span class="nav-text">الأهداف</span>
             </div>
           </router-link>
-  
-          <!-- 5. الفريق (Sales Leader only) -->
+
+          <!-- 6. الفريق (Sales Leader only) -->
           <router-link
             v-if="hasPermission('sales.team.manage')"
             to="/sales/team"
@@ -793,13 +782,7 @@
             data-tooltip="الفريق"
           >
             <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -808,8 +791,25 @@
               <span class="nav-text">الفريق</span>
             </div>
           </router-link>
-  
-          <!-- 6. المهام (Sales Leader only) -->
+
+          <!-- 7. دوامي -->
+          <router-link
+            v-if="hasPermission('sales.attendance.view')"
+            to="/sales/attendance"
+            class="nav-item"
+            exact-active-class="active"
+            data-tooltip="دوامي"
+          >
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span class="nav-text">دوامي</span>
+            </div>
+          </router-link>
+
+          <!-- 8. المهام (Sales Leader only) -->
           <router-link
             v-if="hasPermission('sales.tasks.manage')"
             to="/sales/tasks"
@@ -818,21 +818,15 @@
             data-tooltip="المهام"
           >
             <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                 <polyline points="9 11 12 14 22 4"></polyline>
               </svg>
               <span class="nav-text">المهام</span>
             </div>
           </router-link>
-  
-          <!-- توزيع الشفتات (Sales Leader only) -->
+
+          <!-- 9. توزيع الشفتات (Sales Leader only) -->
           <router-link
             v-if="hasPermission('sales.projects.allocate_shifts')"
             to="/sales/assignments"
@@ -841,20 +835,14 @@
             data-tooltip="توزيع الشفتات"
           >
             <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
               </svg>
               <span class="nav-text">توزيع الشفتات</span>
             </div>
           </router-link>
-  
+
           <!-- 10. خطط الدفع (Sales Leader only) -->
           <router-link
             v-if="hasPermission('sales.payment-plan.manage')"
@@ -864,20 +852,14 @@
             data-tooltip="خطط الدفع"
           >
             <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="1" x2="12" y2="23"></line>
                 <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
               </svg>
               <span class="nav-text">خطط الدفع</span>
             </div>
           </router-link>
-  
+
           <!-- 11. إدارة دوام المشاريع (Sales Leader only) -->
           <router-link
             v-if="hasPermission('sales.attendance.manage')"
@@ -887,13 +869,7 @@
             data-tooltip="إدارة دوام المشاريع"
           >
             <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                 <line x1="16" y1="2" x2="16" y2="6"></line>
                 <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -903,13 +879,8 @@
               <span class="nav-text">إدارة دوام المشاريع</span>
             </div>
           </router-link>
-  
-  
-        
-         
-            
-  
-          <!-- 15. الإشعارات -->
+
+          <!-- 12. الإشعارات -->
           <router-link
             v-if="hasPermission('notifications.view')"
             to="/notifications"
@@ -919,13 +890,7 @@
           >
             <div class="nav-content">
               <div class="icon-with-badge">
-                <svg
-                  class="nav-icon-svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                   <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                 </svg>
@@ -934,8 +899,8 @@
               <span class="nav-text">الإشعارات</span>
             </div>
           </router-link>
-  
-          <!-- 12. طلباتي -->
+
+          <!-- 13. طلباتي -->
           <router-link
             v-if="hasPermission('exclusive_projects.request')"
             to="/my-requests"
@@ -944,13 +909,7 @@
             data-tooltip="طلباتي"
           >
             <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
                 <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
@@ -958,29 +917,8 @@
               <span class="nav-text">طلباتي</span>
             </div>
           </router-link>
-  
-          <!-- المهام الخاصة بي -->
-          <router-link
-            to="/tasks"
-            class="nav-item"
-            exact-active-class="active"
-            data-tooltip="المهام الخاصة بي"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M9 11l3 3L22 4"></path>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
-              <span class="nav-text">المهام الخاصة بي</span>
-            </div>
-          </router-link>
-  
+
+          <!-- 14. طلب مشروع حصري -->
           <router-link
             to="/exclusive-request"
             class="nav-item"
@@ -988,13 +926,7 @@
             data-tooltip="طلب مشروع حصري"
           >
             <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <polyline points="14 2 14 8 20 8"></polyline>
                 <line x1="12" y1="18" x2="12" y2="12"></line>
@@ -1003,8 +935,24 @@
               <span class="nav-text">طلب مشروع حصري</span>
             </div>
           </router-link>
-  
-          <!-- 13. الملف الشخصي -->
+
+          <!-- 15. المهام الخاصة بي -->
+          <router-link
+            to="/tasks"
+            class="nav-item"
+            exact-active-class="active"
+            data-tooltip="المهام الخاصة بي"
+          >
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span class="nav-text">المهام الخاصة بي</span>
+            </div>
+          </router-link>
+
+          <!-- 16. الملف الشخصي -->
           <router-link
             to="/profile"
             class="nav-item"
@@ -1012,13 +960,7 @@
             data-tooltip="الملف الشخصي"
           >
             <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
@@ -1051,6 +993,27 @@
                 <rect x="3" y="14" width="7" height="7"></rect>
               </svg>
               <span class="nav-text">لوحة التحكم</span>
+            </div>
+          </router-link>
+
+          <!-- AI Assistant -->
+          <router-link
+            to="/ai-assistant"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="المساعد الذكي"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span class="nav-text">المساعد الذكي</span>
             </div>
           </router-link>
   
@@ -1244,30 +1207,8 @@
               <span class="nav-text">طلب مشروع حصري</span>
             </div>
           </router-link>
-  
-          <!-- المهام الخاصة بي -->
-          <router-link
-            to="/tasks"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="المهام الخاصة بي"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M9 11l3 3L22 4"></path>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
-              <span class="nav-text">المهام الخاصة بي</span>
-            </div>
-          </router-link>
-  
-          <!-- 8. الملف الشخصي -->
+
+          <!-- الملف الشخصي -->
           <router-link
             to="/profile"
             class="nav-item"
@@ -1289,7 +1230,7 @@
             </div>
           </router-link>
         </template>
-  
+
         <!-- Credit Sidebar (Role 6) -->
         <template v-else-if="userRole == 6">
           <router-link
@@ -1312,6 +1253,27 @@
                 <rect x="3" y="14" width="7" height="7"></rect>
               </svg>
               <span class="nav-text">لوحة التحكم</span>
+            </div>
+          </router-link>
+
+          <!-- AI Assistant -->
+          <router-link
+            to="/ai-assistant"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="المساعد الذكي"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span class="nav-text">المساعد الذكي</span>
             </div>
           </router-link>
   
@@ -1470,6 +1432,27 @@
                 <rect x="3" y="14" width="7" height="7"></rect>
               </svg>
               <span class="nav-text">لوحة التحكم</span>
+            </div>
+          </router-link>
+
+          <!-- AI Assistant -->
+          <router-link
+            to="/ai-assistant"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="المساعد الذكي"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span class="nav-text">المساعد الذكي</span>
             </div>
           </router-link>
   
@@ -1717,6 +1700,27 @@
               <span class="nav-text">لوحة التحكم</span>
             </div>
           </router-link>
+
+          <!-- AI Assistant -->
+          <router-link
+            to="/ai-assistant"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="المساعد الذكي"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span class="nav-text">المساعد الذكي</span>
+            </div>
+          </router-link>
   
           <router-link
             to="/notifications"
@@ -1917,8 +1921,6 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router';
-import { usePermissions } from '@/composables/usePermissions';
 import {
   Sidebar,
   SidebarHeader,
@@ -1936,19 +1938,22 @@ defineProps({
 });
 
 defineEmits(['logout']);
-
-const route = useRoute();
 </script>
 
 <style>
 /* Base sidebar-internal styles (not scoped so they reach through sub-components) */
+
+.sidebar {
+  background: linear-gradient(135deg, #1a2a4a 0%, #2c4a7c 50%, #3b6098 100%) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
 
 .sidebar-logo-img {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1.5px solid rgba(177, 162, 143, 0.4);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
   flex-shrink: 0;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
@@ -1966,21 +1971,21 @@ const route = useRoute();
   transform: translateX(0);
 }
 .sidebar:hover .sidebar-logo-img {
-  border-color: var(--color-gold-light);
+  border-color: #ffffff;
   transform: rotate(360deg) scale(1.1);
-  box-shadow: 0 8px 20px rgba(177, 162, 143, 0.4), 0 0 15px rgba(177, 162, 143, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(255, 255, 255, 0.2);
   border-radius: 8px;
 }
 
 .rakez-ar {
-  color: var(--color-gold);
+  color: #ffffff;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 .rakez-en {
   font-size: 14px;
-  opacity: 0.7;
+  opacity: 0.9;
   margin-right: 5px;
-  color: var(--color-light-gray);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .sidebar .nav-item {
@@ -1991,7 +1996,7 @@ const route = useRoute();
   height: 44px;
   margin: 8px auto;
   padding: 0;
-  color: var(--color-dark-gray);
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
   font-size: 14px;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -2029,17 +2034,17 @@ const route = useRoute();
   transform: translateY(-50%);
   width: 3px;
   height: 0;
-  background: linear-gradient(180deg, var(--color-gold) 0%, var(--color-gold-light) 100%);
+  background: #ffffff;
   border-radius: 2px;
   transition: height 0.3s ease;
   opacity: 0;
 }
 
 .sidebar .nav-item:hover {
-  background: linear-gradient(135deg, rgba(177, 162, 143, 0.15) 0%, rgba(177, 162, 143, 0.08) 100%);
-  color: var(--color-light-gray);
-  border-color: rgba(177, 162, 143, 0.3);
-  box-shadow: 0 8px 25px rgba(177, 162, 143, 0.2), 0 0 15px rgba(177, 162, 143, 0.15);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1), 0 0 15px rgba(255, 255, 255, 0.05);
 }
 .sidebar:hover .nav-item:hover {
   transform: translateX(-6px);
@@ -2047,26 +2052,26 @@ const route = useRoute();
 .sidebar .nav-item:hover::before {
   height: 65%;
   opacity: 1;
-  box-shadow: 0 0 10px rgba(177, 162, 143, 0.6);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
 }
 .sidebar:not(:hover) .nav-item:hover::before {
   display: none;
 }
 
 .sidebar .nav-item.active {
-  background: linear-gradient(135deg, rgba(177, 162, 143, 0.25) 0%, rgba(177, 162, 143, 0.1) 100%);
-  color: var(--color-gold-light);
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
   font-weight: 700;
-  border: 1px solid rgba(177, 162, 143, 0.4);
-  box-shadow: 0 0 15px rgba(177, 162, 143, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
   border-radius: 50%;
 }
 .sidebar:hover .nav-item.active {
   transform: translateX(-4px);
-  background: linear-gradient(135deg, rgba(177, 162, 143, 0.3) 0%, rgba(177, 162, 143, 0.1) 100%);
-  box-shadow: 0 0 30px rgba(177, 162, 143, 0.4), 0 0 15px rgba(177, 162, 143, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 8px 25px rgba(177, 162, 143, 0.2);
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.1), 0 0 15px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 8px 25px rgba(0, 0, 0, 0.1);
   animation: sidebar-glow-pulse 2.5s ease-in-out infinite;
   border-radius: 12px;
 }
@@ -2078,7 +2083,7 @@ const route = useRoute();
   transform: translate(-50%, -50%);
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, rgba(177, 162, 143, 0.3) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
   border-radius: 14px;
   opacity: 0;
   animation: sidebar-pulse-glow 2.5s ease-in-out infinite;
@@ -2088,27 +2093,27 @@ const route = useRoute();
   height: 60%;
   opacity: 1;
   width: 3px;
-  background: linear-gradient(180deg, var(--color-gold-light) 0%, var(--color-gold) 100%);
-  box-shadow: 0 0 10px rgba(177, 162, 143, 0.5);
+  background: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
   display: none;
 }
 .sidebar:hover .nav-item.active::before {
   display: block;
   height: 80%;
   width: 4px;
-  background: linear-gradient(180deg, var(--color-gold-light) 0%, var(--color-gold) 50%, var(--color-gold-light) 100%);
-  box-shadow: 0 0 15px rgba(177, 162, 143, 0.8);
+  background: #ffffff;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   animation: sidebar-border-glow 2.5s ease-in-out infinite;
 }
 
 @keyframes sidebar-glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 30px rgba(177, 162, 143, 0.5), 0 0 15px rgba(177, 162, 143, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 8px 25px rgba(177, 162, 143, 0.3);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.1), 0 0 15px rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 8px 25px rgba(0, 0, 0, 0.1);
   }
   50% {
-    box-shadow: 0 0 45px rgba(177, 162, 143, 0.7), 0 0 25px rgba(177, 162, 143, 0.6),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 12px 35px rgba(177, 162, 143, 0.45);
+    box-shadow: 0 0 45px rgba(255, 255, 255, 0.2), 0 0 25px rgba(255, 255, 255, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 12px 35px rgba(0, 0, 0, 0.15);
   }
 }
 @keyframes sidebar-pulse-glow {
@@ -2116,8 +2121,8 @@ const route = useRoute();
   50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.25); }
 }
 @keyframes sidebar-border-glow {
-  0%, 100% { box-shadow: 0 0 15px rgba(177, 162, 143, 0.8), 0 0 8px rgba(177, 162, 143, 0.6); }
-  50% { box-shadow: 0 0 25px rgba(177, 162, 143, 1), 0 0 15px rgba(177, 162, 143, 0.9); }
+  0%, 100% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.6), 0 0 8px rgba(255, 255, 255, 0.4); }
+  50% { box-shadow: 0 0 25px rgba(255, 255, 255, 0.9), 0 0 15px rgba(255, 255, 255, 0.7); }
 }
 
 .sidebar .nav-content {
@@ -2134,24 +2139,24 @@ const route = useRoute();
 .sidebar .nav-icon-svg {
   width: 20px;
   height: 20px;
-  color: var(--color-gold-light);
+  color: rgba(255, 255, 255, 0.8);
   stroke-width: 2;
   flex-shrink: 0;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  filter: drop-shadow(0 0 5px rgba(177, 162, 143, 0.6));
+  filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.2));
 }
 .sidebar:hover .nav-icon-svg {
-  color: var(--color-dark-gray);
+  color: #ffffff;
   filter: none;
 }
 .sidebar .nav-item.active .nav-icon-svg {
-  color: var(--color-gold-light) !important;
-  filter: drop-shadow(0 0 8px rgba(177, 162, 143, 0.8)) !important;
+  color: #ffffff !important;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6)) !important;
   transform: scale(1.1);
 }
 .sidebar .nav-item:hover .nav-icon-svg {
   transform: scale(1.15);
-  color: var(--color-light-gray);
+  color: #ffffff;
 }
 
 .sidebar .nav-text {
@@ -2175,8 +2180,8 @@ const route = useRoute();
   content: attr(data-tooltip);
   position: absolute;
   right: 85px;
-  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
-  color: white;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1a2a4a;
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 12px;
@@ -2204,7 +2209,7 @@ const route = useRoute();
   position: absolute;
   top: -5px;
   right: -5px;
-  background: var(--color-error);
+  background: #ef4444;
   color: white;
   font-size: 9px;
   font-weight: 700;
@@ -2242,18 +2247,18 @@ const route = useRoute();
 .sidebar .user-name {
   font-weight: 600;
   font-size: 13px;
-  color: var(--color-light-gray);
+  color: #ffffff;
   display: block;
   margin-bottom: 1px;
 }
 .sidebar .user-email {
   font-size: 11px;
-  color: var(--color-dark-gray);
+  color: rgba(255, 255, 255, 0.7);
   display: block;
 }
 .sidebar .user-role-badge {
   font-size: 11px;
-  color: var(--color-gold);
+  color: rgba(255, 255, 255, 0.9);
   margin-top: 4px;
   font-weight: 600;
   display: block;
@@ -2263,28 +2268,28 @@ const route = useRoute();
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+  background: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: 700;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   flex-shrink: 0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .sidebar:hover .avatar {
   transform: scale(1.08);
-  border-color: rgba(177, 162, 143, 0.5);
-  box-shadow: 0 8px 20px rgba(177, 162, 143, 0.4), 0 0 15px rgba(177, 162, 143, 0.3);
+  border-color: #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(255, 255, 255, 0.2);
   border-radius: 12px;
 }
 
 .sidebar .logout-btn {
-  background: rgba(239, 68, 68, 0.05);
+  background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.4);
-  color: var(--color-error);
+  color: #fca5a5;
   width: 44px;
   height: 44px;
   padding: 0;
@@ -2308,10 +2313,11 @@ const route = useRoute();
   border-radius: 12px;
 }
 .sidebar .logout-btn:hover {
-  background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.6);
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
   box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3), 0 0 15px rgba(239, 68, 68, 0.2);
   transform: translateY(-2px);
+  color: #ffffff;
 }
 .sidebar .logout-icon {
   font-size: 16px;
@@ -2341,9 +2347,9 @@ const route = useRoute();
   align-items: center;
   padding: 0 16px;
   gap: 10px;
-  border-bottom: 1px solid rgba(177, 162, 143, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   white-space: nowrap;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.05);
 }
 .sidebar .sidebar-nav {
   flex: 1;
@@ -2354,25 +2360,25 @@ const route = useRoute();
   flex-direction: column;
   gap: 6px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(177, 162, 143, 0.5) rgba(177, 162, 143, 0.1);
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
 }
 .sidebar .sidebar-nav::-webkit-scrollbar { width: 6px; }
 .sidebar .sidebar-nav::-webkit-scrollbar-track {
-  background: rgba(177, 162, 143, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 3px;
 }
 .sidebar .sidebar-nav::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 3px;
   transition: all 0.3s ease;
 }
 .sidebar .sidebar-nav::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, var(--color-gold-light) 0%, var(--color-gold) 100%);
-  box-shadow: 0 0 10px rgba(177, 162, 143, 0.5);
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 .sidebar .sidebar-footer {
   padding: 18px 12px;
-  border-top: 1px solid rgba(177, 162, 143, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(0, 0, 0, 0.2);
   overflow: hidden;
   display: flex;

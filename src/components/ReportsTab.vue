@@ -1,8 +1,10 @@
 <template>
   <div class="reports-tab">
-    <div class="section-header-compact">
-      <h2 class="section-title">التقارير والإحصائيات</h2>
-      <p class="section-subtitle">إصدار تقارير دورية للأداء، الموظفين، والعقود.</p>
+    <div class="welcome-header">
+      <div class="header-content">
+        <h1 class="welcome-title">التقارير والإحصائيات</h1>
+        <p class="welcome-subtitle">إصدار تقارير دورية للأداء، الموظفين، والعقود.</p>
+      </div>
     </div>
 
     <div class="reports-grid">

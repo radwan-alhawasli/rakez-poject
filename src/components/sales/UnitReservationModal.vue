@@ -271,7 +271,7 @@ export default {
       const city = project.city || unit.city || ctx.city || '—';
       const area = unit.area || unit.area_m2 != null ? `${unit.area_m2 ?? unit.area} م²` : '—';
       const price = unit.price != null || unit.total_price != null
-        ? `${Number(unit.total_price ?? unit.price ?? 0).toLocaleString('ar-SA')} ر.س`
+        ? `${Number(unit.total_price ?? unit.price ?? 0).toLocaleString('en-US')} ر.س`
         : '—';
       const floorRaw = unit.floor;
       const floor =

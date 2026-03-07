@@ -1,12 +1,12 @@
 <template>
   <div class="unit-search-tab">
-    <div class="page-header">
+    <div class="welcome-header">
       <div class="header-content">
-        <h1 class="page-title">بحث الوحدات</h1>
-        <p class="page-subtitle">ابحث وفلتر الوحدات المتاحة في جميع المشاريع</p>
+        <h1 class="welcome-title">بحث الوحدات</h1>
+        <p class="welcome-subtitle">ابحث وفلتر الوحدات المتاحة في جميع المشاريع</p>
       </div>
       <div class="header-actions">
-        <span v-if="totalUnits" class="results-count">{{ totalUnits.toLocaleString('ar-SA') }} وحدة</span>
+        <span v-if="totalUnits" class="results-count">{{ totalUnits.toLocaleString('en-US') }} وحدة</span>
       </div>
     </div>
 
@@ -122,7 +122,7 @@
     <!-- Results Table -->
     <div v-else-if="units.length > 0" class="results-section">
       <div class="table-info-bar">
-        <span>عرض {{ ((meta.current_page - 1) * meta.per_page) + 1 }} - {{ Math.min(meta.current_page * meta.per_page, totalUnits) }} من {{ totalUnits.toLocaleString('ar-SA') }} وحدة</span>
+        <span>عرض {{ ((meta.current_page - 1) * meta.per_page) + 1 }} - {{ Math.min(meta.current_page * meta.per_page, totalUnits) }} من {{ totalUnits.toLocaleString('en-US') }} وحدة</span>
       </div>
       <div class="table-responsive">
         <table class="units-table table-mobile-stacked">
@@ -158,7 +158,7 @@
               <td data-label="المدينة">{{ unit.project?.city || '—' }}</td>
               <td data-label="الحي">{{ unit.project?.district || '—' }}</td>
               <td data-label="النوع">{{ unit.unit_type || '—' }}</td>
-              <td data-label="المساحة (م²)" class="number-cell">{{ unit.area ? Number(unit.area).toLocaleString('ar-SA') : '—' }}</td>
+              <td data-label="المساحة (م²)" class="number-cell">{{ unit.area ? Number(unit.area).toLocaleString('en-US') : '—' }}</td>
               <td data-label="الغرف" class="number-cell">{{ unit.bedrooms ?? '—' }}</td>
               <td data-label="السعر" class="number-cell price-cell">{{ unit.price ? formatCurrency(unit.price) : '—' }}</td>
               <td data-label="الطابق" class="number-cell">{{ unit.floor ?? '—' }}</td>
@@ -261,29 +261,16 @@ onMounted(() => init());
   to { opacity: 1; transform: translateY(0); }
 }
 
-.page-header {
+.welcome-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 16px;
-  margin-bottom: 24px;
 }
 
 .header-content { flex: 1; min-width: 0; }
 
-.page-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--color-navy);
-  margin: 0 0 5px 0;
-}
-
-.page-subtitle {
-  color: var(--color-dark-gray);
-  font-size: 15px;
-  margin: 0;
-}
 
 .results-count {
   background: var(--color-light-gray);

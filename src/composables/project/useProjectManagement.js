@@ -103,12 +103,12 @@ export function useProjectManagement() {
         const avgPrice = units.length ? units.reduce((a, b) => a + (Number(b.price) || 0), 0) / units.length : (p.average_unit_price ?? p.avg_unit_price);
         let priceRangeText = '—';
         if (priceMin != null && priceMax != null && priceMin !== priceMax) {
-          priceRangeText = `${Number(priceMax).toLocaleString('ar-SA')} - ${Number(priceMin).toLocaleString('ar-SA')}`;
+          priceRangeText = `${Number(priceMax).toLocaleString('en-US')} - ${Number(priceMin).toLocaleString('en-US')}`;
         } else if (priceMin != null || priceMax != null) {
           const single = priceMax ?? priceMin;
-          priceRangeText = `${Number(single).toLocaleString('ar-SA')} - ${Number(single).toLocaleString('ar-SA')}`;
+          priceRangeText = `${Number(single).toLocaleString('en-US')} - ${Number(single).toLocaleString('en-US')}`;
         } else if (avgPrice != null && Number(avgPrice) > 0) {
-          priceRangeText = `${Number(avgPrice).toLocaleString('ar-SA')} - ${Number(avgPrice).toLocaleString('ar-SA')}`;
+          priceRangeText = `${Number(avgPrice).toLocaleString('en-US')} - ${Number(avgPrice).toLocaleString('en-US')}`;
         }
         const unitAreas = units.map(u => Number(u.area) || Number(u.area_m2) || 0).filter(Boolean);
         const areaMin = p.area_min_m2 ?? p.area_min ?? (unitAreas.length ? Math.min(...unitAreas) : null);

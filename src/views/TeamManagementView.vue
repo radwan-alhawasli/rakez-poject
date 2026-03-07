@@ -1,10 +1,10 @@
 <template>
   <div class="team-management-view">
     <!-- Header -->
-    <div class="section-header">
+    <div class="welcome-header team-mgmt-header">
       <div class="header-content">
-        <h2 class="section-title">إدارة الفرق</h2>
-        <p class="section-subtitle">إنشاء وتعديل وإدارة فرق العمل وتعيين الأعضاء والمشاريع.</p>
+        <h1 class="welcome-title">إدارة الفرق</h1>
+        <p class="welcome-subtitle">إنشاء وتعديل وإدارة فرق العمل وتعيين الأعضاء والمشاريع.</p>
       </div>
       <button class="add-btn" @click="openCreateModal">
         <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -349,27 +349,13 @@ export default {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Header - matches UserManagement */
-.section-header {
+/* Header with action button */
+.team-mgmt-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
   flex-wrap: wrap;
   gap: 16px;
-}
-
-.section-title {
-  font-size: clamp(22px, 2vw, 28px);
-  font-weight: 700;
-  color: #1e3a5f;
-  margin: 0 0 5px 0;
-}
-
-.section-subtitle {
-  color: #64748b;
-  font-size: 15px;
-  margin: 0;
 }
 
 .add-btn {
@@ -834,9 +820,9 @@ textarea.form-input {
 }
 
 @media (max-width: 768px) {
-  .section-header {
+  .team-mgmt-header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
   }
   .data-table-container {
     border-radius: 12px;
@@ -853,9 +839,6 @@ textarea.form-input {
 @media (max-width: 576px) {
   .team-management-view {
     padding: 12px 14px;
-  }
-  .section-title {
-    font-size: 20px;
   }
   .add-btn {
     padding: 10px 18px;
@@ -887,12 +870,6 @@ textarea.form-input {
 @media (max-width: 320px) {
   .team-management-view {
     padding: 10px;
-  }
-  .section-title {
-    font-size: 18px;
-  }
-  .section-subtitle {
-    font-size: 13px;
   }
   .add-btn {
     padding: 8px 14px;
@@ -951,9 +928,6 @@ textarea.form-input {
 }
 
 @media (min-width: 2560px) {
-  .section-title {
-    font-size: 32px;
-  }
   .data-table th, .data-table td {
     padding: 28px;
     font-size: 16px;
@@ -968,9 +942,6 @@ textarea.form-input {
 @media (min-width: 3840px) {
   .team-management-view {
     padding: 40px 60px;
-  }
-  .section-title {
-    font-size: 38px;
   }
   .data-table th, .data-table td {
     padding: 32px;

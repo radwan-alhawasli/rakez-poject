@@ -1,9 +1,9 @@
 <template>
   <div class="contracts-view">
     <!-- عنوان الصفحة -->
-    <div class="page-header">
-      <h1 class="page-title">إدارة العقود والطلبات</h1>
-      <p class="page-subtitle">مراجعة واعتماد عقود المشاريع الجديدة والطلبات الحصرية.</p>
+    <div class="welcome-header">
+      <h1 class="welcome-title">إدارة العقود والطلبات</h1>
+      <p class="welcome-subtitle">مراجعة واعتماد عقود المشاريع الجديدة والطلبات الحصرية.</p>
     </div>
 
     <!-- فلتر العرض الحديث -->
@@ -348,23 +348,6 @@ onMounted(fetchContracts);
   }
 }
 
-.page-header {
-  text-align: right;
-  margin-bottom: 30px;
-}
-
-.page-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1e3a5f;
-  margin-bottom: 8px;
-  letter-spacing: -0.5px;
-}
-
-.page-subtitle {
-  color: #64748b;
-  font-size: 16px;
-}
 
 /* Modern Controls */
 .controls-Modern-area {

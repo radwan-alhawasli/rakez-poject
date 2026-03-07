@@ -1,10 +1,12 @@
 <template>
   <div class="marketing-ai-view">
-    <div class="section-header-compact">
-      <h2 class="section-title">المساعد الذكي (AI Assistant)</h2>
-      <p class="section-subtitle">
-        اسأل المساعد الذكي عن المشاريع، التقارير أو البيانات التسويقية.
-      </p>
+    <div class="welcome-header">
+      <div class="header-content">
+        <h1 class="welcome-title">المساعد الذكي (AI Assistant)</h1>
+        <p class="welcome-subtitle">
+          اسأل المساعد الذكي عن المشاريع، التقارير أو البيانات التسويقية.
+        </p>
+      </div>
     </div>
 
     <div class="ai-chat-container">

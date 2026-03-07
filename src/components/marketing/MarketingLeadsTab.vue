@@ -1,12 +1,11 @@
 <template>
   <div>
-    <div class="section-header-compact">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px">
-        <div>
-          <h2 class="section-title">العملاء المحتملون</h2>
-          <p class="section-subtitle">إدارة قائمة العملاء المحتملين ومتابعة حالتهم</p>
-        </div>
-        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+    <div class="welcome-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px">
+      <div class="header-content">
+        <h1 class="welcome-title">العملاء المحتملون</h1>
+        <p class="welcome-subtitle">إدارة قائمة العملاء المحتملين ومتابعة حالتهم</p>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
           <input
             v-model="leadSearchQuery"
             type="text"
@@ -18,7 +17,6 @@
             <span class="plus-icon">+</span> إضافة عميل
           </button>
         </div>
-      </div>
     </div>
 
     <div v-if="isLoadingLeads" class="loading-state">
@@ -121,13 +119,9 @@ const {
 
 <style scoped>
 @media (max-width: 768px) {
-  .section-header-compact { padding: 16px; }
-  .section-title { font-size: 18px; }
-  .section-subtitle { font-size: 13px; }
   .leads-table-container { overflow-x: auto; }
 }
 @media (max-width: 576px) {
-  .section-header-compact { padding: 12px; }
   .table-responsive { margin: 0 -12px; }
   .form-input { max-width: 100% !important; }
 }

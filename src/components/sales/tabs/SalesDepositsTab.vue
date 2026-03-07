@@ -1,9 +1,9 @@
 <template>
   <div class="deposits-tab">
-    <div class="page-header">
+    <div class="welcome-header">
       <div class="header-content">
-        <h1 class="page-title">Ø§Ù„ÙˆØ¯Ø§Ø¦Ø¹</h1>
-        <p class="page-subtitle">Ø¥Ø¯Ø§Ø±Ø© ÙˆØ¯Ø§Ø¦Ø¹ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª ÙˆÙ…ØªØ§Ø¨Ø¹Ø© Ø§Ù„Ù…Ø³ØªØ­Ù‚Ø§Øª</p>
+        <h1 class="welcome-title">الودائع</h1>
+        <p class="welcome-subtitle">إدارة ودائع المبيعات ومتابعة المستحقات</p>
       </div>
     </div>
 
@@ -14,14 +14,14 @@
         :class="{ active: depositsSubTab === 'management' }"
         @click="switchSubTab('management')"
       >
-        Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„ÙˆØ¯Ø§Ø¦Ø¹
+        إدارة الودائع
       </button>
       <button
         class="sub-tab-btn"
         :class="{ active: depositsSubTab === 'follow-up' }"
         @click="switchSubTab('follow-up')"
       >
-        Ù…ØªØ§Ø¨Ø¹Ø© Ø§Ù„ÙˆØ¯Ø§Ø¦Ø¹
+        متابعة الودائع
       </button>
     </div>
 
@@ -29,7 +29,7 @@
     <div v-if="depositsSubTab === 'management'">
       <div v-if="isLoadingDepositsManagement" class="loading-state">
         <div class="spinner"></div>
-        <p>Ø¬Ø§Ø±ÙŠ ØªØ­Ù…ÙŠÙ„ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„ÙˆØ¯Ø§Ø¦Ø¹...</p>
+        <p>جاري تحميل بيانات الودائع...</p>
       </div>
       <div v-else-if="depositsManagement.length === 0" class="empty-state">
         <svg
@@ -43,29 +43,29 @@
           <line x1="12" y1="1" x2="12" y2="23"></line>
           <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
         </svg>
-        <p>Ù„Ø§ ØªÙˆØ¬Ø¯ ÙˆØ¯Ø§Ø¦Ø¹ Ù„Ø¥Ø¯Ø§Ø±ØªÙ‡Ø§ Ø­Ø§Ù„ÙŠØ§Ù‹.</p>
+        <p>لا توجد ودائع لإدارتها حالياً.</p>
       </div>
       <div v-else class="table-container table-responsive">
         <table class="data-table table-mobile-stacked">
           <thead>
             <tr>
               <th>#</th>
-              <th>Ø§Ù„ÙˆØ­Ø¯Ø©</th>
-              <th>Ø§Ù„Ø¹Ù…ÙŠÙ„</th>
-              <th>Ø§Ù„Ù…Ø¨Ù„Øº</th>
-              <th>ØªØ§Ø±ÙŠØ® Ø§Ù„Ø¥ÙŠØ¯Ø§Ø¹</th>
-              <th>ØªØ§Ø±ÙŠØ® Ø§Ù„Ø§Ø³ØªØ­Ù‚Ø§Ù‚</th>
-              <th>Ø§Ù„Ø­Ø§Ù„Ø©</th>
+              <th>الوحدة</th>
+              <th>العميل</th>
+              <th>المبلغ</th>
+              <th>تاريخ الإيداع</th>
+              <th>تاريخ الاستحقاق</th>
+              <th>الحالة</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(dep, idx) in depositsManagement" :key="dep.id || idx">
               <td data-label="#">{{ idx + 1 }}</td>
-              <td data-label="الوحدة">{{ dep.unit_number || dep.unit_id || 'â€”' }}</td>
-              <td data-label="العميل">{{ dep.client_name || 'â€”' }}</td>
+              <td data-label="الوحدة">{{ dep.unit_number || dep.unit_id || '—' }}</td>
+              <td data-label="العميل">{{ dep.client_name || '—' }}</td>
               <td data-label="المبلغ">{{ formatCurrency(dep.amount || 0) }}</td>
               <td data-label="تاريخ الإيداع">{{ formatDate(dep.deposit_date || dep.created_at) }}</td>
-              <td data-label="تاريخ الاستحقاق">{{ dep.due_date ? formatDate(dep.due_date) : 'â€”' }}</td>
+              <td data-label="تاريخ الاستحقاق">{{ dep.due_date ? formatDate(dep.due_date) : '—' }}</td>
               <td>
                 <span
                   :class="[
@@ -79,10 +79,10 @@
                 >
                   {{
                     dep.status === 'paid'
-                      ? 'Ù…Ø¯ÙÙˆØ¹'
+                      ? 'مدفوع'
                       : dep.status === 'overdue'
-                      ? 'Ù…ØªØ£Ø®Ø±'
-                      : 'Ù…Ø¹Ù„Ù‚'
+                      ? 'متأخر'
+                      : 'معلق'
                   }}
                 </span>
               </td>
@@ -96,7 +96,7 @@
     <div v-else-if="depositsSubTab === 'follow-up'">
       <div v-if="isLoadingDepositsFollowUp" class="loading-state">
         <div class="spinner"></div>
-        <p>Ø¬Ø§Ø±ÙŠ ØªØ­Ù…ÙŠÙ„ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…ØªØ§Ø¨Ø¹Ø©...</p>
+        <p>جاري تحميل بيانات المتابعة...</p>
       </div>
       <div v-else-if="depositsFollowUp.length === 0" class="empty-state">
         <svg
@@ -110,28 +110,28 @@
           <circle cx="12" cy="12" r="10"></circle>
           <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
-        <p>Ù„Ø§ ØªÙˆØ¬Ø¯ ÙˆØ¯Ø§Ø¦Ø¹ ØªØ­ØªØ§Ø¬ Ù…ØªØ§Ø¨Ø¹Ø© Ø­Ø§Ù„ÙŠØ§Ù‹.</p>
+        <p>لا توجد ودائع تحتاج متابعة حالياً.</p>
       </div>
       <div v-else class="table-container table-responsive">
         <table class="data-table table-mobile-stacked">
           <thead>
             <tr>
               <th>#</th>
-              <th>Ø§Ù„ÙˆØ­Ø¯Ø©</th>
-              <th>Ø§Ù„Ø¹Ù…ÙŠÙ„</th>
-              <th>Ø§Ù„Ù…Ø¨Ù„Øº Ø§Ù„Ù…Ø³ØªØ­Ù‚</th>
-              <th>ØªØ§Ø±ÙŠØ® Ø§Ù„Ø§Ø³ØªØ­Ù‚Ø§Ù‚</th>
-              <th>Ø£ÙŠØ§Ù… Ø§Ù„ØªØ£Ø®ÙŠØ±</th>
-              <th>Ø§Ù„Ø­Ø§Ù„Ø©</th>
+              <th>الوحدة</th>
+              <th>العميل</th>
+              <th>المبلغ المستحق</th>
+              <th>تاريخ الاستحقاق</th>
+              <th>أيام التأخير</th>
+              <th>الحالة</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(dep, idx) in depositsFollowUp" :key="dep.id || idx">
               <td data-label="#">{{ idx + 1 }}</td>
-              <td data-label="الوحدة">{{ dep.unit_number || dep.unit_id || 'â€”' }}</td>
-              <td data-label="العميل">{{ dep.client_name || 'â€”' }}</td>
+              <td data-label="الوحدة">{{ dep.unit_number || dep.unit_id || '—' }}</td>
+              <td data-label="العميل">{{ dep.client_name || '—' }}</td>
               <td data-label="المبلغ المستحق">{{ formatCurrency(dep.amount || dep.outstanding_amount || 0) }}</td>
-              <td data-label="تاريخ الاستحقاق">{{ dep.due_date ? formatDate(dep.due_date) : 'â€”' }}</td>
+              <td data-label="تاريخ الاستحقاق">{{ dep.due_date ? formatDate(dep.due_date) : '—' }}</td>
               <td>
                 <span
                   :class="[
@@ -139,12 +139,12 @@
                     (dep.overdue_days || 0) > 0 ? 'badge-danger' : 'badge-warning',
                   ]"
                 >
-                  {{ dep.overdue_days || 0 }} ÙŠÙˆÙ…
+                  {{ dep.overdue_days || 0 }} يوم
                 </span>
               </td>
               <td data-label="الحالة">
                 <span class="badge badge-warning">
-                  {{ dep.follow_up_status || 'Ø¨Ø§Ù†ØªØ¸Ø§Ø± Ø§Ù„Ù…ØªØ§Ø¨Ø¹Ø©' }}
+                  {{ dep.follow_up_status || 'بانتظار المتابعة' }}
                 </span>
               </td>
             </tr>
@@ -169,7 +169,7 @@ loadDepositsManagement();
 </script>
 
 <style scoped>
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Sold Units / Deposits / Analytics shared Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ─── Sold Units / Deposits / Analytics shared ────────────────────────────── */
 .sold-units-tab,
 .deposits-tab,
 .analytics-tab {
@@ -195,6 +195,11 @@ loadDepositsManagement();
   color: var(--color-dark-gray);
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s;
+}
+
+.sub-tab-btn.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
 }
 
 .sub-tab-btn.active {

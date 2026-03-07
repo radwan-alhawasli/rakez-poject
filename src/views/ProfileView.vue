@@ -8,12 +8,12 @@
 
     <template v-else>
     <!-- Page Header -->
-    <div class="page-header">
+    <div class="welcome-header">
       <div class="avatar-large">
         <span>{{ userInitial }}</span>
       </div>
-      <h1 class="user-name">{{ user.name }}</h1>
-      <p class="user-role">{{ jobRoleLabel }}</p>
+      <h1 class="welcome-title">{{ user.name }}</h1>
+      <p class="welcome-subtitle">{{ jobRoleLabel }}</p>
     </div>
 
     <!-- Profile Content -->
@@ -212,15 +212,6 @@ onMounted(() => {
   }
 }
 
-/* Page Header */
-.page-header {
-  text-align: center;
-  padding: 40px 30px;
-  background: linear-gradient(135deg, #1e3a5f 0%, #0f1e30 100%);
-  border-radius: 16px;
-  color: white;
-  margin-bottom: 30px;
-}
 
 .avatar-large {
   width: 100px;
@@ -237,21 +228,6 @@ onMounted(() => {
   border: 4px solid rgba(255, 255, 255, 0.2);
 }
 
-.user-name {
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0 0 8px 0;
-}
-
-.user-role {
-  font-size: 14px;
-  opacity: 0.8;
-  margin: 0;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 4px 16px;
-  border-radius: 20px;
-  display: inline-block;
-}
 
 /* Profile Content */
 .profile-content {

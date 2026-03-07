@@ -1,8 +1,10 @@
 <template>
   <div class="tasks-view">
-    <div class="page-header">
-      <h2>إدارة المهام</h2>
-      <button class="btn-primary" @click="showCreateModal = true">إضافة مهمة</button>
+    <div class="welcome-header">
+      <div class="header-flex-container">
+        <h1 class="welcome-title">إدارة المهام</h1>
+        <button class="btn-primary" @click="showCreateModal = true">إضافة مهمة</button>
+      </div>
     </div>
 
     <!-- Tabs -->
@@ -506,7 +508,7 @@ const getSectionLabel = sectionKey => {
 
 const formatDate = dateString => {
   if (!dateString) return '';
-  return new Date(dateString).toLocaleString('ar-EG', {
+  return new Date(dateString).toLocaleString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -602,17 +604,10 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-.page-header {
+.header-flex-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-}
-
-.page-header h2 {
-  font-size: 1.5rem;
-  color: var(--text-color, #333);
-  margin: 0;
 }
 
 /* Tabs */

@@ -1,12 +1,11 @@
 <template>
   <div>
-    <div class="section-header-compact">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px">
-        <div>
-          <h2 class="section-title">المشاريع التسويقية</h2>
-          <p class="section-subtitle">إدارة ومتابعة جميع المشاريع التسويقية</p>
-        </div>
-        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+    <div class="welcome-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px">
+      <div class="header-content">
+        <h1 class="welcome-title">المشاريع التسويقية</h1>
+        <p class="welcome-subtitle">إدارة ومتابعة جميع المشاريع التسويقية</p>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
           <input
             v-model="projectSearchQuery"
             type="text"
@@ -19,7 +18,6 @@
             حساب الميزانية
           </button>
         </div>
-      </div>
     </div>
 
     <div v-if="isLoadingProjects" class="loading-state">
@@ -499,15 +497,11 @@ const {
   .details-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 768px) {
-  .section-header-compact { padding: 16px; }
-  .section-title { font-size: 18px; }
-  .section-subtitle { font-size: 13px; }
   .projects-grid { grid-template-columns: 1fr; }
   .details-grid { grid-template-columns: 1fr; }
   .modal-content { margin: 10px; max-width: 100% !important; }
 }
 @media (max-width: 576px) {
-  .section-header-compact { padding: 12px; }
   .project-card { padding: 14px; }
   .project-name { font-size: 15px; }
   .table-responsive { margin: 0 -12px; }
