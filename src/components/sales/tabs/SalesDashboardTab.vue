@@ -240,8 +240,8 @@ loadDashboard();
   height: 22px;
   position: relative;
   z-index: 1;
-  color: white;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  color: #C4BDB0;
+  filter: drop-shadow(0 0 8px rgba(196, 189, 176, 0.6)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 :deep(.stat-content) {

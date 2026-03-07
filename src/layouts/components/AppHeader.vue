@@ -16,22 +16,6 @@
         <path d="M19 12H5M12 19l-7-7 7-7" />
       </svg>
     </button>
-    <button class="dark-mode-btn" :title="isDark ? 'الوضع الفاتح' : 'الوضع الداكن'" @click="toggleDarkMode">
-      <svg v-if="isDark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-        <circle cx="12" cy="12" r="5" />
-        <line x1="12" y1="1" x2="12" y2="3" />
-        <line x1="12" y1="21" x2="12" y2="23" />
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-        <line x1="1" y1="12" x2="3" y2="12" />
-        <line x1="21" y1="12" x2="23" y2="12" />
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-      </svg>
-      <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-      </svg>
-    </button>
     <div class="notification-wrapper">
       <button class="notification-btn" @click="$emit('toggle-notifications')">
         <svg
@@ -143,9 +127,6 @@
 
 <script setup>
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useDarkMode } from '@/composables/useDarkMode';
-
-const { isDark, toggle: toggleDarkMode } = useDarkMode();
 
 defineProps({
   notifications: { type: Array, default: () => [] },
@@ -178,7 +159,6 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   gap: 20px;
 }
 
-.top-header .dark-mode-btn,
 .top-header .back-btn,
 .top-header .notification-btn {
   background: rgba(255, 255, 255, 0.08);
@@ -195,14 +175,12 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
-.top-header .dark-mode-btn svg,
 .top-header .back-btn svg,
 .top-header .notification-btn svg {
   width: 18px;
   height: 18px;
   stroke-width: 2;
 }
-.top-header .dark-mode-btn::before,
 .top-header .back-btn::before,
 .top-header .notification-btn::before {
   content: '';
@@ -213,7 +191,6 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-.top-header .dark-mode-btn:hover,
 .top-header .back-btn:hover,
 .top-header .notification-btn:hover {
   background: rgba(255, 255, 255, 0.15);
@@ -222,7 +199,6 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
   transform: translateY(-4px) rotate(-3deg);
 }
-.top-header .dark-mode-btn:hover::before,
 .top-header .back-btn:hover::before,
 .top-header .notification-btn:hover::before {
   opacity: 1;
@@ -267,7 +243,7 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #ffffff;
+  color: #C4BDB0;
   min-width: 0;
   overflow: hidden;
 }
@@ -277,27 +253,27 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* Arabic: خط الرقعة (Ruq'ah) */
+/* Arabic: خط الرقعة (Ruq'ah) - لون ذهبي */
 .top-header .logo-ar {
   font-family: 'Aref Ruqaa', serif;
   font-weight: 700;
   font-size: 18px;
-  color: #ffffff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  color: #C4BDB0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   letter-spacing: 0.02em;
 }
-/* English: same size as Arabic, distinctive serif to suit Ruq'ah */
+/* English: same size as Arabic, distinctive serif - لون ذهبي */
 .top-header .logo-en {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 600;
   font-size: 18px;
   opacity: 0.95;
   margin-right: 5px;
-  color: rgba(255, 255, 255, 0.95);
+  color: #C4BDB0;
   letter-spacing: 0.03em;
 }
 .top-header .logo-sep {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(196, 189, 176, 0.9);
 }
 
 .top-header .notification-wrapper {
@@ -455,7 +431,6 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
 /* Tablet Portrait (768px - 991px) */
 @media (min-width: 768px) and (max-width: 991px) {
   .top-header .mobile-toggle { display: block; }
-  .top-header .dark-mode-btn,
   .top-header .back-btn,
   .top-header .notification-btn { width: 40px; height: 40px; border-radius: 10px; }
   .top-header .logo-ar { font-size: 15px; }
@@ -468,10 +443,8 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
 @media (min-width: 576px) and (max-width: 767px) {
   .top-header .mobile-toggle { display: block; padding: 8px; }
   .top-header .header-right .logo-icon-bg { display: none; }
-  .top-header .dark-mode-btn,
   .top-header .back-btn,
   .top-header .notification-btn { width: 38px; height: 38px; border-radius: 10px; }
-  .top-header .dark-mode-btn svg,
   .top-header .back-btn svg,
   .top-header .notification-btn svg { width: 18px; height: 18px; }
   .top-header .logo-ar { font-size: 14px; }
@@ -487,10 +460,8 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   .top-header .header-left { gap: 10px; }
   .top-header .header-right .logo-icon-bg,
   .top-header .header-right .logo-sep { display: none; }
-  .top-header .dark-mode-btn,
   .top-header .back-btn,
   .top-header .notification-btn { width: 36px; height: 36px; border-radius: 8px; }
-  .top-header .dark-mode-btn svg,
   .top-header .back-btn svg,
   .top-header .notification-btn svg { width: 16px; height: 16px; }
   .top-header .notification-badge { min-width: 16px; height: 16px; font-size: 9px; top: -6px; right: -6px; }
@@ -516,7 +487,6 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
 
 /* Extra Small (< 320px) */
 @media (max-width: 319px) {
-  .top-header .dark-mode-btn,
   .top-header .back-btn,
   .top-header .notification-btn { width: 34px; height: 34px; }
   .top-header .logo-ar { font-size: 12px; }

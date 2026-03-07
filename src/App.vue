@@ -10,9 +10,6 @@
 
 <script setup>
 import ToastContainer from './components/ToastContainer.vue';
-import { useDarkMode } from './composables/useDarkMode';
-
-useDarkMode();
 </script>
 
 <style>
