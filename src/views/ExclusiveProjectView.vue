@@ -96,6 +96,27 @@
                 />
               </div>
             </div>
+            <div class="input-row">
+              <div class="field-group">
+                <label>نسبة السعي (%)</label>
+                <input
+                  type="number"
+                  v-model.number="form.commission_percentage"
+                  class="form-input"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  placeholder="0"
+                />
+              </div>
+              <div class="field-group">
+                <label>مصدر السعي</label>
+                <select v-model="form.commission_from" class="form-input">
+                  <option value="owner">من المالك</option>
+                  <option value="buyer">من المشتري</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -207,6 +228,8 @@ const form = reactive({
   project_name: '',
   city: '',
   neighborhood: '',
+  commission_percentage: 0,
+  commission_from: 'owner',
   unit_rows: [{ id: nextUnitRowId++, unit_type: '', units_count: 0, avg_unit_price: 0 }],
 });
 
@@ -287,6 +310,8 @@ const resetForm = () => {
   form.project_name = '';
   form.city = '';
   form.neighborhood = '';
+  form.commission_percentage = 0;
+  form.commission_from = 'owner';
   form.unit_rows = [{ id: nextUnitRowId++, unit_type: '', units_count: 0, avg_unit_price: 0 }];
 };
 
@@ -305,6 +330,8 @@ const handleSubmit = async () => {
       project_name: form.project_name,
       city: form.city,
       neighborhood: form.neighborhood,
+      commission_percentage: Number(form.commission_percentage) || 0,
+      commission_from: form.commission_from || 'owner',
       units,
       units_count: units.reduce((s, u) => s + (u.units_count || 0), 0),
       total_units_value: totalUnitsValue.value,
