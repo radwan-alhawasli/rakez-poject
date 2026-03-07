@@ -28,26 +28,6 @@ jobs:
             
             cd /var/www/rakez-poject
             
-            # Ensure Node.js 20+ (required by Vite 7, @tailwindcss/oxide, etc.)
-            # Install nvm if not present, then use Node 20
-            if [ ! -s "$HOME/.nvm/nvm.sh" ]; then
-              echo "📌 Installing nvm..."
-              export NVM_DIR="$HOME/.nvm" && mkdir -p "$NVM_DIR"
-              curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-            fi
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            echo "📌 Using Node 20..."
-            nvm install 20 --no-progress 2>/dev/null || true
-            nvm use 20
-            NODE_MAJOR=$(node -v | sed 's/v\([0-9]*\).*/\1/')
-            if [ "$NODE_MAJOR" -lt 20 ]; then
-              echo "❌ Node.js 20+ required (current: $(node -v))"
-              exit 1
-            fi
-            echo "✅ Using Node $(node -v)"
-            
-            echo "📥 Pulling latest changes..."
             git fetch origin
             git reset --hard origin/master
             
@@ -56,7 +36,6 @@ jobs:
             npm install
             
             echo "🔨 Building project..."
-            export NODE_OPTIONS="--max-old-space-size=1536"
             npm run build
             
             echo "✅ Deployment complete!"
