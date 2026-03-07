@@ -1,41 +1,56 @@
-name: 🚀 Deploy to Production
+# Build on GitHub (fast, no OOM), then deploy only built files to server
+name: Deploy to Production
 
 on:
   push:
     branches:
       - master
-  workflow_dispatch: # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
-  deploy:
-    name: 🔨 Pull & Build on Server
+  build-and-deploy:
+    name: Build & Deploy
     runs-on: ubuntu-latest
-    
+
     steps:
-      # Deploy via SSH - pull and build on server
-      - name: 🚀 Deploy to server
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Update server repo (git fetch & reset)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.REMOTE_PORT || '22' }}
+          port: ${{ secrets.REMOTE_PORT || 22 }}
           script_stop: true
           script: |
             set -e
-            echo "🔧 Configuring git safe directory..."
-            git config --global --add safe.directory /var/www/rakez-poject
-            
+            mkdir -p /var/www/rakez-poject
             cd /var/www/rakez-poject
-            
+            git config --global --add safe.directory /var/www/rakez-poject
             git fetch origin
             git reset --hard origin/master
-            
-            echo "📦 Installing dependencies (clean install for correct native bindings)..."
-            rm -rf node_modules
-            npm install
-            
-            echo "🔨 Building project..."
-            npm run build
-            
-            echo "✅ Deployment complete!"
+
+      - name: Upload build to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.REMOTE_PORT || 22 }}
+          source: "dist"
+          target: "/var/www/rakez-poject/"
+          overwrite: true
