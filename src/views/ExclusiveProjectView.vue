@@ -1,10 +1,10 @@
 <template>
   <div class="exclusive-request">
     <!-- Header -->
-    <div class="section-header">
+    <div class="welcome-header">
       <div class="header-content">
-        <h2 class="section-title">طلب اعتماد مشروع حصري</h2>
-        <p class="section-subtitle">
+        <h1 class="welcome-title">طلب اعتماد مشروع حصري</h1>
+        <p class="welcome-subtitle">
           أدخل بيانات المشروع الأولية لإرسال طلب اعتماده كفرصة حصرية لفريقك.
         </p>
       </div>
@@ -225,7 +225,7 @@ const rowSubtotal = row => {
   const count = Number(row.units_count) || 0;
   const avg = Number(row.avg_unit_price) || 0;
   const val = count * avg;
-  return val > 0 ? val.toLocaleString('ar-SA') : '0';
+  return val > 0 ? val.toLocaleString('en-US') : '0';
 };
 
 const totalUnitsValue = computed(() => {
@@ -236,7 +236,7 @@ const totalUnitsValue = computed(() => {
   }, 0);
 });
 
-const totalUnitsValueFormatted = computed(() => totalUnitsValue.value.toLocaleString('ar-SA'));
+const totalUnitsValueFormatted = computed(() => totalUnitsValue.value.toLocaleString('en-US'));
 
 const addUnitRow = () => {
   form.unit_rows.push({
@@ -351,21 +351,6 @@ const handleSubmit = async () => {
   }
 }
 
-.section-header {
-  margin-bottom: 30px;
-}
-
-.section-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--color-navy);
-  margin: 0 0 8px 0;
-}
-
-.section-subtitle {
-  color: var(--color-dark-gray);
-  font-size: 16px;
-}
 
 .form-container {
   max-width: 1000px;

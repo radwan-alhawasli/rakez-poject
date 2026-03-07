@@ -1,9 +1,9 @@
 <template>
   <div class="image-approval-view">
-    <div class="page-header">
+    <div class="welcome-header">
       <div class="header-content">
-        <h1 class="page-title">الموافقة على الصور</h1>
-        <p class="page-subtitle">مراجعة واعتماد الصور المرفوعة من قبل مدراء المشاريع.</p>
+        <h1 class="welcome-title">الموافقة على الصور</h1>
+        <p class="welcome-subtitle">مراجعة واعتماد الصور المرفوعة من قبل مدراء المشاريع.</p>
       </div>
     </div>
 
@@ -327,20 +327,6 @@ export default {
   }
 }
 
-.page-header {
-  margin-bottom: 30px;
-}
-.page-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: #1e3a5f;
-  margin: 0 0 5px 0;
-}
-.page-subtitle {
-  color: #64748b;
-  font-size: 15px;
-  margin: 0;
-}
 
 .stats-bar {
   margin-bottom: 25px;

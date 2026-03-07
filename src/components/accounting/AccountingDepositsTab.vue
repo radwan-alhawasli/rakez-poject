@@ -1,7 +1,10 @@
 <template>
   <div class="management-view">
-    <div class="section-header-compact" style="display: flex; justify-content: space-between; align-items: center">
-      <div><h2 class="section-title">إدارة العربون والمتابعة</h2><p class="section-subtitle">إدارة الودائع والتأكيدات والاستردادات والمتابعة.</p></div>
+    <div class="welcome-header">
+      <div class="header-content">
+        <h1 class="welcome-title">إدارة العربون والمتابعة</h1>
+        <p class="welcome-subtitle">إدارة الودائع والتأكيدات والاستردادات والمتابعة.</p>
+      </div>
     </div>
     <MobileFilterSheet>
       <div class="deposits-sub-tabs">

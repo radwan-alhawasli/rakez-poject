@@ -1,10 +1,10 @@
 <template>
   <div class="project-management-view">
     <!-- Header: title + controls row (New Project → كل الفرق → Search) -->
-    <div class="page-header">
+    <div class="welcome-header">
       <div class="header-content">
-        <h1 class="page-title">إدارة المشاريع</h1>
-        <p class="page-subtitle">عرض وإدارة جميع المشاريع النشطة والمكتملة والمؤرشفة.</p>
+        <h1 class="welcome-title">إدارة المشاريع</h1>
+        <p class="welcome-subtitle">عرض وإدارة جميع المشاريع النشطة والمكتملة والمؤرشفة.</p>
       </div>
       <div class="controls-area">
         <router-link to="/exclusive-request" class="btn-new-project">
@@ -230,14 +230,6 @@ const {
   }
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-bottom: 30px;
-}
 
 .btn-new-project {
   background: #b1a28f;
@@ -258,18 +250,6 @@ const {
   color: white;
 }
 
-.page-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: #1e3a5f;
-  margin: 0 0 5px 0;
-}
-
-.page-subtitle {
-  color: #64748b;
-  font-size: 15px;
-  margin: 0;
-}
 
 .controls-area {
   display: flex;

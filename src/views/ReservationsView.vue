@@ -1,8 +1,8 @@
 <template>
   <div class="reservations-page my-reservations">
-    <div class="page-header">
-      <h1 class="page-title">حجوزاتي</h1>
-      <p class="page-subtitle">عرض جميع الوحدات التي قمت بحجزها وتتبع حالتها.</p>
+    <div class="welcome-header">
+      <h1 class="welcome-title">حجوزاتي</h1>
+      <p class="welcome-subtitle">عرض جميع الوحدات التي قمت بحجزها وتتبع حالتها.</p>
     </div>
 
     <div class="filter-tabs">
@@ -546,22 +546,6 @@ onMounted(loadAll);
   direction: rtl;
 }
 
-.page-header {
-  margin-bottom: 24px;
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1e3a5f;
-  margin: 0 0 8px 0;
-}
-
-.page-subtitle {
-  font-size: 15px;
-  color: #64748b;
-  margin: 0;
-}
 
 .filter-tabs {
   display: flex;

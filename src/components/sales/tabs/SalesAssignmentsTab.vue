@@ -1,7 +1,10 @@
 <template>
   <div class="team-tab">
-    <div class="section-header">
-      <h2>توزيع الشفتات والمشاريع</h2>
+    <div class="welcome-header">
+      <div class="header-content">
+        <h1 class="welcome-title">توزيع الشفتات والمشاريع</h1>
+        <p class="welcome-subtitle">عرض توزيعات الشفتات والمشاريع المعينة لأعضاء الفريق</p>
+      </div>
     </div>
 
     <LoadingSpinner v-if="isLoadingAssignments" text="جاري تحميل التوزيعات..." />
@@ -49,22 +52,6 @@ loadAssignments();
   margin: 0 auto;
   padding: 0 4px;
   direction: rtl;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.section-header h2 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--color-navy);
 }
 
 .empty-state {

@@ -113,7 +113,6 @@ const activeTab = computed(() => {
 }
 @media (max-width: 576px) {
   .credit-view .btn-tab-mini { padding: 6px 10px; font-size: 12px; }
-  .credit-view .page-header { flex-direction: column; gap: 12px; align-items: flex-start; }
 }
 @media (max-width: 320px) {
   .credit-view .credit-bookings-six-tabs { gap: 0; }
@@ -132,15 +131,12 @@ const activeTab = computed(() => {
   .credit-view .credit-bookings-six-tabs { gap: 0; }
 }
 @media (min-width: 1920px) {
-  .credit-view .page-header h1 { font-size: 32px; }
   .credit-view .booking-detail-grid,
   .credit-view .financing-detail-grid { gap: 28px; }
 }
 @media (min-width: 2560px) {
-  .credit-view .page-header h1 { font-size: 38px; }
 }
 @media (min-width: 3840px) {
-  .credit-view .page-header h1 { font-size: 48px; }
   .credit-view .btn-tab-mini { padding: 12px 20px; font-size: 18px; }
   .credit-view .type-badge { font-size: 16px; padding: 4px 14px; }
   .credit-view .btn-tab-booking { padding: 16px 28px; font-size: 18px; }

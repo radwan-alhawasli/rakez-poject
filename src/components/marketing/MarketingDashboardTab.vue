@@ -6,7 +6,7 @@
     </div>
     <div v-else>
       <div class="welcome-header">
-        <h1 class="welcome-title">مرحباً، {{ userName }}</h1>
+        <h1 class="welcome-title">أهلاً بعودتك، {{ userName }}!</h1>
         <p class="welcome-subtitle">إليك ملخص أداء التسويق اليوم</p>
       </div>
 
@@ -14,7 +14,7 @@
         <div class="stat-card hover-lift animate-fade-in-up animate-stagger-1">
           <div class="stat-content">
             <span class="stat-label">العملاء المحتملون</span>
-            <span class="stat-value number">{{ formatNumber(dashboardMetrics.total_leads) }}</span>
+            <span class="stat-value number" :title="formatNumber(dashboardMetrics.total_leads)">{{ formatCompact(dashboardMetrics.total_leads) }}</span>
             <span class="stat-desc">إجمالي العملاء المحتملين</span>
           </div>
           <div class="stat-icon-bg projects">
@@ -25,7 +25,7 @@
         <div class="stat-card hover-lift animate-fade-in-up animate-stagger-2">
           <div class="stat-content">
             <span class="stat-label">قيمة الوحدات المتاحة</span>
-            <span class="stat-value number">{{ formatCurrency(dashboardMetrics.available_units_value) }}</span>
+            <span class="stat-value number" :title="formatCurrency(dashboardMetrics.available_units_value)">{{ formatCurrencyCompact(dashboardMetrics.available_units_value) }}</span>
             <span class="stat-desc">{{ formatNumber(dashboardMetrics.available_units_count) }} وحدة متاحة</span>
           </div>
           <div class="stat-icon-bg units">
@@ -47,7 +47,7 @@
         <div class="stat-card hover-lift animate-fade-in-up animate-stagger-4">
           <div class="stat-content">
             <span class="stat-label">تكلفة العربون</span>
-            <span class="stat-value number">{{ formatCurrency(depositCostDisplay) }}</span>
+            <span class="stat-value number" :title="formatCurrency(depositCostDisplay)">{{ formatCurrencyCompact(depositCostDisplay) }}</span>
             <span class="stat-desc">{{ formatNumber(dashboardMetrics.daily_deposits_count) }} عربون يومي</span>
           </div>
           <div class="stat-icon-bg dollar">
@@ -65,19 +65,19 @@
           <div class="stat-card">
             <div class="stat-content">
               <span class="stat-label">الحجوزات المتوقعة</span>
-              <span class="stat-value number">{{ formatNumber(dashboardMetrics.total_expected_bookings) }}</span>
+              <span class="stat-value number" :title="formatNumber(dashboardMetrics.total_expected_bookings)">{{ formatCompact(dashboardMetrics.total_expected_bookings) }}</span>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-content">
               <span class="stat-label">قيمة الحجوزات المتوقعة</span>
-              <span class="stat-value number">{{ formatCurrency(dashboardMetrics.total_expected_booking_value) }}</span>
+              <span class="stat-value number" :title="formatCurrency(dashboardMetrics.total_expected_booking_value)">{{ formatCurrencyCompact(dashboardMetrics.total_expected_booking_value) }}</span>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-content">
               <span class="stat-label">الإنفاق اليومي</span>
-              <span class="stat-value number">{{ formatCurrency(dashboardMetrics.total_daily_spend) }}</span>
+              <span class="stat-value number" :title="formatCurrency(dashboardMetrics.total_daily_spend)">{{ formatCurrencyCompact(dashboardMetrics.total_daily_spend) }}</span>
             </div>
           </div>
         </div>
@@ -88,6 +88,7 @@
 
 <script setup>
 import { useMarketingDashboard } from '@/composables/marketing/useMarketingDashboard';
+import { useFormatters } from '@/composables/useFormatters';
 
 const {
   dashboardMetrics,
@@ -97,6 +98,7 @@ const {
   formatCurrency,
   formatNumber,
 } = useMarketingDashboard();
+const { formatCompact, formatCurrencyCompact } = useFormatters();
 </script>
 
 <style scoped>

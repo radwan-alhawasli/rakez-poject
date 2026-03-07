@@ -25,7 +25,7 @@
       <div class="stat-card animate-fade-in-up animate-stagger-1 hover-lift">
         <div class="stat-content">
           <span class="stat-label">الوحدات المتاحة</span>
-          <span class="stat-value number">{{ availableUnits }}</span>
+          <span class="stat-value number" :title="formatNumber(availableUnits)">{{ formatCompact(availableUnits) }}</span>
           <span class="stat-desc">وحدة سكنية جاهزة للبيع</span>
         </div>
         <div class="stat-icon-bg units">
@@ -44,7 +44,7 @@
       >
         <div class="stat-content">
           <span class="stat-label">مشاريع التسويق (إجمالي المشاريع)</span>
-          <span class="stat-value number">{{ totalProjects }}</span>
+          <span class="stat-value number" :title="formatNumber(totalProjects)">{{ formatCompact(totalProjects) }}</span>
           <span class="stat-desc">مشروع جاهز للتسويق - اضغط للعرض</span>
         </div>
         <div class="stat-icon-bg projects">
@@ -59,7 +59,7 @@
       <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift">
         <div class="stat-content">
           <span class="stat-label">المشاريع الجاهزة</span>
-          <span class="stat-value number">{{ readyProjects }}</span>
+          <span class="stat-value number" :title="formatNumber(readyProjects)">{{ formatCompact(readyProjects) }}</span>
           <span class="stat-desc">مشاريع مكتملة تحتوي على وحدات</span>
         </div>
         <div class="stat-icon-bg ready">
@@ -74,7 +74,7 @@
       <div class="stat-card animate-fade-in-up animate-stagger-4 hover-lift">
         <div class="stat-content">
           <span class="stat-label">المشاريع غير الجاهزة</span>
-          <span class="stat-value number">{{ notReadyProjects }}</span>
+          <span class="stat-value number" :title="formatNumber(notReadyProjects)">{{ formatCompact(notReadyProjects) }}</span>
           <span class="stat-desc">لم يكتمل المتتبع (Tracker)</span>
         </div>
         <div class="stat-icon-bg not-ready">
@@ -108,10 +108,12 @@ import { useRouter } from 'vue-router';
 import authService from '@/services/authService';
 import contractService from '@/services/contractService';
 import logger from '@/utils/logger';
+import { useFormatters } from '@/composables/useFormatters';
 
 const router = useRouter();
 const user = ref(authService.getCurrentUser());
 const userName = computed(() => user.value?.name || 'مستخدم');
+const { formatCompact, formatNumber } = useFormatters();
 
 const isLoading = ref(true);
 const error = ref(null);
@@ -211,22 +213,6 @@ onMounted(() => {
   border-bottom: 1px solid rgba(177, 162, 143, 0.15);
 }
 
-.welcome-title {
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--color-navy);
-  margin: 0 0 10px 0;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-
-.welcome-subtitle {
-  color: var(--color-dark-gray);
-  font-size: 16px;
-  margin: 0;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-}
 
 /* Stats Grid - Luxury Layout */
 .stats-grid {
@@ -398,26 +384,6 @@ onMounted(() => {
   width: 32px;
   height: 32px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-}
-
-.stat-icon-bg.units {
-  background: linear-gradient(135deg, #fbbf24 0%, var(--color-warning) 100%);
-  color: white;
-}
-
-.stat-icon-bg.projects {
-  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
-  color: white;
-}
-
-.stat-icon-bg.ready {
-  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
-  color: white;
-}
-
-.stat-icon-bg.not-ready {
-  background: linear-gradient(135deg, #f87171 0%, var(--color-error) 100%);
-  color: white;
 }
 
 /* Overview Section - Luxury Enhanced */

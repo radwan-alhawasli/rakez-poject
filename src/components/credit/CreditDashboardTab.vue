@@ -11,7 +11,7 @@
       <div class="stat-card animate-fade-in-up animate-stagger-1 hover-lift">
         <div class="stat-content">
           <span class="stat-label">الحجوزات المؤكدة</span>
-          <span class="stat-value number">{{ dashboardMetrics.confirmedBookings || '0' }}</span>
+          <span class="stat-value number" :title="formatNumber(dashboardMetrics.confirmedBookings || 0)">{{ formatCompact(dashboardMetrics.confirmedBookings || 0) }}</span>
           <span class="stat-desc">إجمالي الحجوزات المؤكدة</span>
         </div>
         <div class="stat-icon-bg units">
@@ -26,9 +26,7 @@
       <div class="stat-card animate-fade-in-up animate-stagger-2 hover-lift">
         <div class="stat-content">
           <span class="stat-label">المفاوضات المعلقة</span>
-          <span class="stat-value number">{{
-            dashboardMetrics.pendingNegotiations || '0'
-          }}</span>
+          <span class="stat-value number" :title="formatNumber(dashboardMetrics.pendingNegotiations || 0)">{{ formatCompact(dashboardMetrics.pendingNegotiations || 0) }}</span>
           <span class="stat-desc">عدد الحجوزات قيد التفاوض</span>
         </div>
         <div class="stat-icon-bg projects">
@@ -42,7 +40,7 @@
       <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift">
         <div class="stat-content">
           <span class="stat-label">الحجوزات المنتظرة</span>
-          <span class="stat-value number">{{ dashboardMetrics.waitingBookings || '0' }}</span>
+          <span class="stat-value number" :title="formatNumber(dashboardMetrics.waitingBookings || 0)">{{ formatCompact(dashboardMetrics.waitingBookings || 0) }}</span>
           <span class="stat-desc">عدد الحجوزات المنتظرة للمعالجة</span>
         </div>
         <div class="stat-icon-bg ready">
@@ -57,7 +55,7 @@
       <div class="stat-card animate-fade-in-up animate-stagger-4 hover-lift">
         <div class="stat-content">
           <span class="stat-label">طلبات التمويل النشطة</span>
-          <span class="stat-value number">{{ dashboardMetrics.activeFinancing || '0' }}</span>
+          <span class="stat-value number" :title="formatNumber(dashboardMetrics.activeFinancing || 0)">{{ formatCompact(dashboardMetrics.activeFinancing || 0) }}</span>
           <span class="stat-desc">عدد طلبات التمويل قيد المعالجة</span>
         </div>
         <div class="stat-icon-bg dollar">
@@ -72,7 +70,7 @@
       <div class="stat-card animate-fade-in-up animate-stagger-5 hover-lift">
         <div class="stat-content">
           <span class="stat-label">نقل الملكية قيد التنفيذ</span>
-          <span class="stat-value number">{{ dashboardMetrics.titleTransfers || '0' }}</span>
+          <span class="stat-value number" :title="formatNumber(dashboardMetrics.titleTransfers || 0)">{{ formatCompact(dashboardMetrics.titleTransfers || 0) }}</span>
           <span class="stat-desc">عدد طلبات نقل الملكية قيد المعالجة</span>
         </div>
         <div class="stat-icon-bg units">
@@ -89,7 +87,7 @@
       <div class="stat-card animate-fade-in-up animate-stagger-6 hover-lift">
         <div class="stat-content">
           <span class="stat-label">ملفات المطالبة المعلقة</span>
-          <span class="stat-value number">{{ dashboardMetrics.pendingClaims || '0' }}</span>
+          <span class="stat-value number" :title="formatNumber(dashboardMetrics.pendingClaims || 0)">{{ formatCompact(dashboardMetrics.pendingClaims || 0) }}</span>
           <span class="stat-desc">عدد ملفات المطالبة المعلقة</span>
         </div>
         <div class="stat-icon-bg projects">
@@ -123,8 +121,10 @@
 import { onMounted, computed } from 'vue';
 import { VisXYContainer, VisGroupedBar, VisAxis, VisTooltip } from '@unovis/vue';
 import { useCreditDashboard } from '@/composables/credit/useCreditDashboard';
+import { useFormatters } from '@/composables/useFormatters';
 
 const { userName, dashboardMetrics, loadDashboardMetrics } = useCreditDashboard();
+const { formatCompact, formatNumber } = useFormatters();
 
 const chartLabels = ['مؤكدة', 'معلقة', 'منتظرة', 'تمويل نشط', 'نقل ملكية', 'مطالبات'];
 

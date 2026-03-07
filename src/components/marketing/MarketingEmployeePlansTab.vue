@@ -1,12 +1,11 @@
 <template>
   <div>
-    <div class="section-header-compact">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px">
-        <div>
-          <h2 class="section-title">خطط الموظفين</h2>
-          <p class="section-subtitle">إعداد وتوزيع خطط التسويق على الموظفين</p>
-        </div>
-        <div style="display: flex; gap: 8px">
+    <div class="welcome-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px">
+      <div class="header-content">
+        <h1 class="welcome-title">خطط الموظفين</h1>
+        <p class="welcome-subtitle">إعداد وتوزيع خطط التسويق على الموظفين</p>
+      </div>
+      <div style="display: flex; gap: 8px">
           <button class="btn-secondary" @click="exportEmployeePlansExcel">Excel</button>
           <button class="btn-secondary" @click="exportEmployeePlansPdf">PDF</button>
         </div>

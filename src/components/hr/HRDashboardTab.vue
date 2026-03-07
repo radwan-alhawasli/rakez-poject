@@ -9,7 +9,7 @@
       <div class="stat-card animate-fade-in-up animate-stagger-1 hover-lift">
         <div class="stat-content">
           <span class="stat-label">إجمالي الموظفين</span>
-          <span class="stat-value number">{{ dashboardMetrics.totalEmployees || '0' }}</span>
+          <span class="stat-value number" :title="formatNumber(dashboardMetrics.totalEmployees || 0)">{{ formatCompact(dashboardMetrics.totalEmployees || 0) }}</span>
           <span class="stat-desc">العدد الإجمالي للموظفين في الشركة</span>
         </div>
         <div class="stat-icon-bg units">
@@ -25,7 +25,7 @@
       <div class="stat-card animate-fade-in-up animate-stagger-2 hover-lift">
         <div class="stat-content">
           <span class="stat-label">إجمالي الوحدات</span>
-          <span class="stat-value number">{{ dashboardMetrics.totalUnits || '0' }}</span>
+          <span class="stat-value number" :title="formatNumber(dashboardMetrics.totalUnits || 0)">{{ formatCompact(dashboardMetrics.totalUnits || 0) }}</span>
           <span class="stat-desc">إجمالي الوحدات السكنية المتاحة</span>
         </div>
         <div class="stat-icon-bg projects">
@@ -39,7 +39,7 @@
       <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift">
         <div class="stat-content">
           <span class="stat-label">الوحدات المباعة</span>
-          <span class="stat-value number">{{ dashboardMetrics.soldUnits || '0' }}</span>
+          <span class="stat-value number" :title="formatNumber(dashboardMetrics.soldUnits || 0)">{{ formatCompact(dashboardMetrics.soldUnits || 0) }}</span>
           <span class="stat-desc">عدد الوحدات التي تم بيعها بنجاح</span>
         </div>
         <div class="stat-icon-bg ready">
@@ -52,7 +52,7 @@
       <div class="stat-card animate-fade-in-up animate-stagger-4 hover-lift">
         <div class="stat-content">
           <span class="stat-label">متوسط مبيع الموظف</span>
-          <span class="stat-value number">{{ dashboardMetrics.avgEmployeeSales || '0' }}</span>
+          <span class="stat-value number" :title="formatNumber(dashboardMetrics.avgEmployeeSales || 0)">{{ formatCompact(dashboardMetrics.avgEmployeeSales || 0) }}</span>
           <span class="stat-desc">الوحدات المباعة ÷ عدد موظفي المبيعات ({{ dashboardMetrics.salesEmployeesCount }})</span>
         </div>
         <div class="stat-icon-bg dollar">
@@ -79,12 +79,14 @@
 <script setup>
 import { onMounted } from 'vue';
 import { useHRDashboard } from '@/composables/hr/useHRDashboard';
+import { useFormatters } from '@/composables/useFormatters';
 
 defineProps({
   userName: { type: String, default: 'الموارد البشرية' },
 });
 
 const { dashboardMetrics, loadDashboardMetrics } = useHRDashboard();
+const { formatCompact, formatNumber } = useFormatters();
 
 onMounted(() => {
   loadDashboardMetrics();
@@ -92,29 +94,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.welcome-header {
-  margin-bottom: 40px;
-  text-align: right;
-  padding-bottom: 25px;
-  border-bottom: 1px solid rgba(177, 162, 143, 0.15);
-}
 
-.welcome-title {
-  font-size: 32px;
-  font-weight: 800;
-  color: #1e3a5f;
-  margin: 0 0 10px 0;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-
-.welcome-subtitle {
-  color: #64748b;
-  font-size: 16px;
-  margin: 0;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-}
 
 .stats-grid {
   display: grid;
@@ -268,11 +248,6 @@ onMounted(() => {
   height: 32px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
-
-.stat-icon-bg.dollar { background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%); color: white; }
-.stat-icon-bg.units { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: white; }
-.stat-icon-bg.projects { background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%); color: white; }
-.stat-icon-bg.ready { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); color: white; }
 
 .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) backwards; }
 @keyframes fadeInUp {

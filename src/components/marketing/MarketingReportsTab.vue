@@ -1,19 +1,17 @@
 <template>
   <div>
-    <div class="section-header-compact">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px">
-        <div>
-          <h2 class="section-title">التقارير التسويقية</h2>
-          <p class="section-subtitle">تحليل أداء المشاريع والموظفين والميزانيات</p>
-        </div>
-        <div style="display: flex; gap: 8px">
+    <div class="welcome-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px">
+      <div class="header-content">
+        <h1 class="welcome-title">التقارير التسويقية</h1>
+        <p class="welcome-subtitle">تحليل أداء المشاريع والموظفين والميزانيات</p>
+      </div>
+      <div style="display: flex; gap: 8px">
           <button class="btn-secondary" @click="exportReportsExcel">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-left: 6px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             Excel
           </button>
           <button class="btn-secondary" @click="exportReportsPdf">PDF</button>
         </div>
-      </div>
     </div>
 
     <div class="overview-section" style="margin-bottom: 24px">

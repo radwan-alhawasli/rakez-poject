@@ -1,8 +1,10 @@
 <template>
   <div>
-    <div class="section-header-compact">
-      <h2 class="section-title">المبيعات المتوقعة</h2>
-      <p class="section-subtitle">إدخال وعرض بيانات المبيعات المتوقعة لكل مشروع</p>
+    <div class="welcome-header">
+      <div class="header-content">
+        <h1 class="welcome-title">المبيعات المتوقعة</h1>
+        <p class="welcome-subtitle">إدخال وعرض بيانات المبيعات المتوقعة لكل مشروع</p>
+      </div>
     </div>
 
     <div class="overview-section" style="margin-bottom: 24px">

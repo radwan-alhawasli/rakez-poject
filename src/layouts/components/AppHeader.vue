@@ -131,16 +131,6 @@
     </div>
   </div>
   <div class="header-right">
-    <div class="update-info">
-      <div class="update-row">
-        <span class="update-label">تاريخ التحديث:</span>
-        <span class="update-value">2025-12-13</span>
-      </div>
-      <div class="update-row">
-        <span class="update-label">توقيت التحديث:</span>
-        <span class="update-value">09:08:14 PM</span>
-      </div>
-    </div>
     <div class="logo">
       <span class="logo-ar">راكز العقارية</span>
       <span class="logo-sep">|</span>
@@ -169,11 +159,17 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
 <style>
 .top-header .mobile-toggle {
   display: none;
-  background: none;
-  border: none;
-  color: var(--color-charcoal);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff;
   cursor: pointer;
   padding: 5px;
+  border-radius: 10px;
+}
+.top-header .mobile-toggle:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #ffffff;
 }
 
 .top-header .header-left {
@@ -185,8 +181,8 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
 .top-header .dark-mode-btn,
 .top-header .back-btn,
 .top-header .notification-btn {
-  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-off-white) 100%);
-  border: 1.5px solid var(--color-medium-gray);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
   width: 38px;
   height: 38px;
   border-radius: 10px;
@@ -196,8 +192,8 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
-  color: var(--color-dark-gray);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 .top-header .dark-mode-btn svg,
 .top-header .back-btn svg,
@@ -213,17 +209,17 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   position: absolute;
   inset: 0;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(177, 162, 143, 0.1) 0%, transparent 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, transparent 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 .top-header .dark-mode-btn:hover,
 .top-header .back-btn:hover,
 .top-header .notification-btn:hover {
-  background: linear-gradient(135deg, var(--color-off-white) 0%, var(--color-white) 100%);
-  border-color: var(--color-gold);
-  color: var(--color-gold);
-  box-shadow: 0 8px 20px rgba(177, 162, 143, 0.25);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
   transform: translateY(-4px) rotate(-3deg);
 }
 .top-header .dark-mode-btn:hover::before,
@@ -267,17 +263,11 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   min-width: 0;
   flex-shrink: 1;
 }
-.top-header .update-info {
-  text-align: left;
-  font-size: 11px;
-  color: var(--color-dark-gray);
-  flex-shrink: 0;
-}
 .top-header .logo {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--color-navy);
+  color: #ffffff;
   min-width: 0;
   overflow: hidden;
 }
@@ -287,15 +277,27 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* Arabic: خط الرقعة (Ruq'ah) */
 .top-header .logo-ar {
+  font-family: 'Aref Ruqaa', serif;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 18px;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.02em;
 }
+/* English: same size as Arabic, distinctive serif to suit Ruq'ah */
 .top-header .logo-en {
-  font-size: 12px;
-  opacity: 0.7;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 18px;
+  opacity: 0.95;
   margin-right: 5px;
-  color: var(--color-light-gray);
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0.03em;
+}
+.top-header .logo-sep {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .top-header .notification-wrapper {
@@ -434,7 +436,7 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   .top-header .notification-btn .bell-icon { width: 28px; height: 28px; }
   .top-header .notifications-dropdown { width: 420px; }
   .top-header .logo-ar { font-size: 22px; }
-  .top-header .logo-en { font-size: 16px; }
+  .top-header .logo-en { font-size: 22px; }
 }
 
 /* 2K (2560px - 3839px) */
@@ -445,7 +447,6 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
 /* Tablet & Small Desktop (992px - 1199px) */
 @media (min-width: 992px) and (max-width: 1199px) {
   .top-header .mobile-toggle { display: block; }
-  .top-header .header-right .update-info { display: none; }
   .top-header .logo-ar { font-size: 16px; }
   .top-header .logo-en,
   .top-header .logo-sep { display: none; }
@@ -454,7 +455,6 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
 /* Tablet Portrait (768px - 991px) */
 @media (min-width: 768px) and (max-width: 991px) {
   .top-header .mobile-toggle { display: block; }
-  .top-header .header-right .update-info { display: none; }
   .top-header .dark-mode-btn,
   .top-header .back-btn,
   .top-header .notification-btn { width: 40px; height: 40px; border-radius: 10px; }
@@ -467,7 +467,6 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
 /* Mobile Landscape (576px - 767px) */
 @media (min-width: 576px) and (max-width: 767px) {
   .top-header .mobile-toggle { display: block; padding: 8px; }
-  .top-header .header-right .update-info,
   .top-header .header-right .logo-icon-bg { display: none; }
   .top-header .dark-mode-btn,
   .top-header .back-btn,
@@ -486,7 +485,6 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
 @media (max-width: 575px) {
   .top-header .mobile-toggle { display: block; padding: 6px; }
   .top-header .header-left { gap: 10px; }
-  .top-header .header-right .update-info,
   .top-header .header-right .logo-icon-bg,
   .top-header .header-right .logo-sep { display: none; }
   .top-header .dark-mode-btn,

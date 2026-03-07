@@ -115,7 +115,6 @@ const activeTab = computed(() => {
 @media (max-width: 768px) {
   .accounting-view .tabs-container,
   .accounting-view .accounting-tabs { overflow-x: auto; overflow-y: hidden; white-space: nowrap; -webkit-overflow-scrolling: touch; gap: 0; }
-  .accounting-view .page-header { flex-direction: column; gap: 12px; align-items: flex-start; }
 }
 @media (max-width: 576px) {
   .accounting-view .stat-card-pending .stat-value,

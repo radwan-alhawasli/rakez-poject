@@ -1,12 +1,12 @@
 <template>
   <div class="projects-tab project-management-design">
-    <div class="page-header">
-      <div class="header-content">
-        <h1 class="page-title">المشاريع قيد التسويق</h1>
-        <p class="page-subtitle">عرض المشاريع الجاهزة للتسويق.</p>
-      </div>
-      <div class="controls-area">
-        <div class="search-box">
+    <div class="welcome-header">
+      <div class="header-flex-container">
+        <div class="header-content">
+          <h1 class="welcome-title">المشاريع قيد التسويق</h1>
+          <p class="welcome-subtitle">عرض المشاريع الجاهزة للتسويق.</p>
+        </div>
+        <div class="search-box-luxury">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -96,85 +96,59 @@ loadProjects();
   min-height: 0;
 }
 
-.project-management-design .page-header {
+.header-flex-container {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   flex-wrap: wrap;
   gap: 20px;
-  margin-bottom: 30px;
-  padding: 0;
 }
 
-.project-management-design .header-content {
+.header-content {
   flex: 1;
-  min-width: 0;
-}
-
-.project-management-design .page-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--color-navy);
-  margin: 0 0 5px 0;
-}
-
-.project-management-design .page-subtitle {
-  color: var(--color-dark-gray);
-  font-size: 15px;
-  margin: 0;
-}
-
-.project-management-design .controls-area {
-  margin-bottom: 0;
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
-.search-box {
-  width: 300px;
   min-width: 200px;
-  flex: none;
+}
+
+.search-box-luxury {
   position: relative;
+  width: 320px;
   max-width: 100%;
 }
 
-.search-icon {
+.search-box-luxury input {
+  width: 100%;
+  padding: 12px 45px 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.search-box-luxury input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.search-box-luxury input:focus {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.search-box-luxury .search-icon {
   position: absolute;
-  right: 12px;
+  right: 14px;
   top: 50%;
   transform: translateY(-50%);
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  color: #94a3b8;
+  width: 20px;
+  height: 20px;
+  color: rgba(255, 255, 255, 0.8);
   pointer-events: none;
-}
-
-.search-icon svg {
-  width: 18px;
-  height: 18px;
-  display: block;
-}
-
-.search-box input {
-  width: 100%;
-  padding: 12px 40px 12px 15px;
-  border: 1px solid var(--color-medium-gray);
-  border-radius: 10px;
-  outline: none;
-  font-size: 15px;
-  background: var(--color-white);
-  color: var(--color-charcoal);
-  transition: border-color 0.2s;
-}
-
-.search-box input::placeholder {
-  color: #94a3b8;
-}
-
-.search-box input:focus {
-  border-color: var(--color-gold);
 }
 
 /* شبكة البطاقات */
@@ -417,19 +391,16 @@ loadProjects();
 }
 
 @media (max-width: 768px) {
-  .project-management-design .page-header {
+  .header-flex-container {
     flex-direction: column;
     align-items: stretch;
   }
-  .search-box {
+  .search-box-luxury {
     width: 100%;
   }
   .project-management-design .projects-grid {
     grid-template-columns: 1fr;
     gap: 16px;
-  }
-  .project-management-design .page-title {
-    font-size: 24px;
   }
 }
 

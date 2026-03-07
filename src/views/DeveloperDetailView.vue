@@ -1,6 +1,10 @@
 <template>
   <div class="developer-detail-view">
-    <div class="page-header">
+    <div class="welcome-header">
+      <div class="header-content">
+        <h1 class="welcome-title">تفاصيل المطور</h1>
+        <p class="welcome-subtitle">عرض تفاصيل المطور ومشاريعه</p>
+      </div>
       <button class="back-btn" @click="goBack">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -187,9 +191,6 @@ export default {
   }
 }
 
-.page-header {
-  margin-bottom: 24px;
-}
 .back-btn {
   display: inline-flex;
   align-items: center;

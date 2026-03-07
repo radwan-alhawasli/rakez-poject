@@ -1,9 +1,9 @@
 <template>
   <div class="sold-units-tab">
-    <div class="page-header">
+    <div class="welcome-header">
       <div class="header-content">
-        <h1 class="page-title">Ø§Ù„ÙˆØ­Ø¯Ø§Øª Ø§Ù„Ù…Ø¨Ø§Ø¹Ø©</h1>
-        <p class="page-subtitle">Ø³Ø¬Ù„ Ø§Ù„ÙˆØ­Ø¯Ø§Øª Ø§Ù„Ù…ÙƒØªÙ…Ù„Ø© Ø§Ù„Ø¨ÙŠØ¹ ÙˆÙ…Ù„Ø®ØµØ§Øª Ø§Ù„Ø¹Ù…ÙˆÙ„Ø§Øª</p>
+        <h1 class="welcome-title">الوحدات المباعة</h1>
+        <p class="welcome-subtitle">سجل الوحدات المكتملة البيع وملخصات العمولات</p>
       </div>
       <button class="btn-primary" @click="loadSoldUnits">
         <svg
@@ -17,13 +17,13 @@
           <polyline points="23 4 23 10 17 10"></polyline>
           <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
         </svg>
-        ØªØ­Ø¯ÙŠØ«
+        تحديث
       </button>
     </div>
 
     <div v-if="isLoadingSoldUnits" class="loading-state">
       <div class="spinner"></div>
-      <p>Ø¬Ø§Ø±ÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„ÙˆØ­Ø¯Ø§Øª Ø§Ù„Ù…Ø¨Ø§Ø¹Ø©...</p>
+      <p>جاري تحميل الوحدات المباعة...</p>
     </div>
 
     <div v-else-if="soldUnits.length === 0" class="empty-state">
@@ -38,7 +38,7 @@
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
         <polyline points="9 22 9 12 15 12 15 22"></polyline>
       </svg>
-      <p>Ù„Ø§ ØªÙˆØ¬Ø¯ ÙˆØ­Ø¯Ø§Øª Ù…Ø¨Ø§Ø¹Ø© Ø¨Ø¹Ø¯.</p>
+      <p>لا توجد وحدات مباعة بعد.</p>
     </div>
 
     <div v-else>
@@ -56,41 +56,41 @@
             >
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
-            Ø±Ø¬ÙˆØ¹
+            رجوع
           </button>
-          <h3>Ù…Ù„Ø®Øµ Ø¹Ù…ÙˆÙ„Ø© Ø§Ù„ÙˆØ­Ø¯Ø©: {{ selectedSoldUnit.unit_number || selectedSoldUnit.id }}</h3>
+          <h3>ملخص عمولة الوحدة: {{ selectedSoldUnit.unit_number || selectedSoldUnit.id }}</h3>
         </div>
         <div v-if="isLoadingCommission" class="loading-state">
           <div class="spinner"></div>
-          <p>Ø¬Ø§Ø±ÙŠ ØªØ­Ù…ÙŠÙ„ Ù…Ù„Ø®Øµ Ø§Ù„Ø¹Ù…ÙˆÙ„Ø©...</p>
+          <p>جاري تحميل ملخص العمولة...</p>
         </div>
         <div v-else-if="soldUnitCommission" class="commission-details">
           <div class="detail-grid">
             <div class="detail-card">
-              <span class="detail-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø¹Ù…ÙˆÙ„Ø©</span>
+              <span class="detail-label">إجمالي العمولة</span>
               <span class="detail-value">{{
                 formatCurrency(soldUnitCommission.total_commission || 0)
               }}</span>
             </div>
             <div class="detail-card">
-              <span class="detail-label">Ø§Ù„Ø¹Ù…ÙˆÙ„Ø© Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø©</span>
+              <span class="detail-label">العمولة المدفوعة</span>
               <span class="detail-value success">{{
                 formatCurrency(soldUnitCommission.paid_commission || 0)
               }}</span>
             </div>
             <div class="detail-card">
-              <span class="detail-label">Ø§Ù„Ø¹Ù…ÙˆÙ„Ø© Ø§Ù„Ù…Ø¹Ù„Ù‚Ø©</span>
+              <span class="detail-label">العمولة المعلقة</span>
               <span class="detail-value warning">{{
                 formatCurrency(soldUnitCommission.pending_commission || 0)
               }}</span>
             </div>
             <div class="detail-card">
-              <span class="detail-label">Ø§Ù„Ù…ÙˆØ¸Ù</span>
-              <span class="detail-value">{{ soldUnitCommission.employee_name || 'â€”' }}</span>
+              <span class="detail-label">الموظف</span>
+              <span class="detail-value">{{ soldUnitCommission.employee_name || '—' }}</span>
             </div>
           </div>
         </div>
-        <div v-else class="empty-state"><p>Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª Ø¹Ù…ÙˆÙ„Ø© Ù„Ù‡Ø°Ù‡ Ø§Ù„ÙˆØ­Ø¯Ø©.</p></div>
+        <div v-else class="empty-state"><p>لا توجد بيانات عمولة لهذه الوحدة.</p></div>
       </div>
 
       <!-- Sold units table -->
@@ -99,30 +99,30 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Ø±Ù‚Ù… Ø§Ù„ÙˆØ­Ø¯Ø©</th>
-              <th>Ø§Ù„Ù…Ø´Ø±ÙˆØ¹</th>
-              <th>Ø§Ù„Ø¹Ù…ÙŠÙ„</th>
-              <th>Ø³Ø¹Ø± Ø§Ù„Ø¨ÙŠØ¹</th>
-              <th>ØªØ§Ø±ÙŠØ® Ø§Ù„Ø¨ÙŠØ¹</th>
-              <th>Ø§Ù„Ø­Ø§Ù„Ø©</th>
-              <th>Ø¥Ø¬Ø±Ø§Ø¡Ø§Øª</th>
+              <th>رقم الوحدة</th>
+              <th>المشروع</th>
+              <th>العميل</th>
+              <th>سعر البيع</th>
+              <th>تاريخ البيع</th>
+              <th>الحالة</th>
+              <th>إجراءات</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(unit, idx) in soldUnits" :key="unit.id">
               <td data-label="#">{{ (soldUnitsPage - 1) * soldUnitsPerPage + idx + 1 }}</td>
               <td data-label="رقم الوحدة">{{ unit.unit_number || unit.id }}</td>
-              <td data-label="المشروع">{{ unit.project_name || unit.contract_name || 'â€”' }}</td>
-              <td data-label="العميل">{{ unit.client_name || 'â€”' }}</td>
+              <td data-label="المشروع">{{ unit.project_name || unit.contract_name || '—' }}</td>
+              <td data-label="العميل">{{ unit.client_name || '—' }}</td>
               <td data-label="سعر البيع">{{ formatCurrency(unit.sale_price || unit.price || 0) }}</td>
               <td data-label="تاريخ البيع">{{ formatDate(unit.sold_at || unit.created_at) }}</td>
               <td data-label="الحالة">
-                <span class="badge badge-sold">Ù…Ø¨Ø§Ø¹Ø©</span>
+                <span class="badge badge-sold">مباعة</span>
               </td>
               <td data-label="إجراءات">
                 <button
                   class="btn-icon-sm"
-                  title="Ù…Ù„Ø®Øµ Ø§Ù„Ø¹Ù…ÙˆÙ„Ø©"
+                  title="ملخص العمولة"
                   @click="viewSoldUnitCommission(unit)"
                 >
                   <svg
@@ -171,7 +171,7 @@ loadSoldUnits();
 </script>
 
 <style scoped>
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Sold Units / Deposits / Analytics shared Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ─── Sold Units / Deposits / Analytics shared ────────────────────────────── */
 .sold-units-tab,
 .deposits-tab,
 .analytics-tab {

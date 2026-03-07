@@ -1,9 +1,9 @@
 <template>
   <div class="targets-tab">
-    <div class="page-header">
+    <div class="welcome-header">
       <div class="header-content">
-        <h1 class="page-title">أهدافي البيعية</h1>
-        <p class="page-subtitle">متابعة الأداء والأهداف المحددة للمبيعات.</p>
+        <h1 class="welcome-title">أهدافي البيعية</h1>
+        <p class="welcome-subtitle">متابعة الأداء والأهداف المحددة للمبيعات.</p>
       </div>
       <button v-if="hasPermission('sales.goals.create')" @click="showCreateTargetModal = true" class="btn-add">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -103,28 +103,14 @@ loadTargets();
   direction: rtl;
 }
 
-.page-header {
+.welcome-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
-  margin-bottom: 30px;
-  padding: 0;
 }
 
-.page-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--color-navy);
-  margin: 0 0 5px 0;
-}
-
-.page-subtitle {
-  color: var(--color-dark-gray);
-  font-size: 15px;
-  margin: 0;
-}
 
 .btn-add {
   padding: 10px 20px;

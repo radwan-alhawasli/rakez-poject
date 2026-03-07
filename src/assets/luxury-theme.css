@@ -5,6 +5,8 @@
 
 /* Import Premium Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;600;700;800;900&display=swap');
+/* Logo: Ruq'ah (الرقعة) for Arabic, Cormorant Garamond for English */
+@import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700&display=swap');
 
 /* Root Variables - Luxury Color Palette */
 :root {
@@ -21,6 +23,8 @@
   /* Neutrals */
   --color-white: #ffffff;
   --color-off-white: #fdfbf7;
+  --color-cream-gold: #faf6f0;
+  --color-cream-gold-light: #f8f4ec;
   --color-light-gray: #f8fafc;
   --color-medium-gray: #e2e8f0;
   --color-dark-gray: #64748b;
@@ -848,6 +852,8 @@ html.dark {
   /* Backgrounds → deep dark tones */
   --color-off-white: #0f172a;
   --color-light-gray: #1e293b;
+  --color-cream-gold: #0f172a;
+  --color-cream-gold-light: #1e293b;
   --color-medium-gray: #334155;
 
   /* Text → light for readability */
@@ -882,6 +888,11 @@ html.dark {
 html.dark body {
   background-color: #0f172a;
   color: #e2e8f0;
+}
+
+html.dark .main-content {
+  background-color: #0f172a;
+  background-image: none;
 }
 
 html.dark #app::before {

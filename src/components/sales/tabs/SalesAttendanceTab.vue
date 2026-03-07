@@ -1,7 +1,12 @@
 <template>
   <div class="attendance-tab">
-    <div class="section-header">
-      <h2>{{ hasPermission('sales.attendance.manage') ? 'حضور الفريق' : 'دوامي' }}</h2>
+    <div class="welcome-header">
+      <div class="header-content">
+        <h1 class="welcome-title">{{ hasPermission('sales.attendance.manage') ? 'حضور الفريق' : 'دوامي' }}</h1>
+        <p class="welcome-subtitle">
+          {{ hasPermission('sales.attendance.manage') ? 'إدارة جداول دوام الفريق ومتابعة الحضور' : 'متابعة سجل دوامك وتوقيتات الدخول والخروج' }}
+        </p>
+      </div>
       <button v-if="hasPermission('sales.attendance.manage')" @click="showScheduleModal = true" class="btn-add">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -77,22 +82,6 @@ loadAttendance();
 .attendance-tab {
   width: 100%;
   direction: rtl;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.section-header h2 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--color-navy);
 }
 
 .btn-add {
@@ -174,7 +163,7 @@ loadAttendance();
 }
 
 @media (max-width: 768px) {
-  .section-header {
+  .welcome-header {
     flex-direction: column;
     align-items: stretch;
   }

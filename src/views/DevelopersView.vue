@@ -1,10 +1,10 @@
 <template>
   <div class="developers-view">
     <!-- Header -->
-    <div class="page-header">
+    <div class="welcome-header">
       <div class="header-content">
-        <h1 class="page-title">إدارة المطورين</h1>
-        <p class="page-subtitle">عرض وإدارة المطورين العقاريين ومشاريعهم.</p>
+        <h1 class="welcome-title">إدارة المطورين</h1>
+        <p class="welcome-subtitle">عرض وإدارة المطورين العقاريين ومشاريعهم.</p>
       </div>
     </div>
 
@@ -182,23 +182,6 @@ export default {
   }
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-.page-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--color-navy);
-  margin: 0 0 5px 0;
-}
-.page-subtitle {
-  color: var(--color-dark-gray);
-  font-size: 15px;
-  margin: 0;
-}
 
 .search-container {
   margin-bottom: 30px;

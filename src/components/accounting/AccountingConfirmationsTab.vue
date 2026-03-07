@@ -1,6 +1,11 @@
 <template>
   <div class="management-view">
-    <div class="section-header-compact"><div><h2 class="section-title">التأكيدات</h2><p class="section-subtitle">تأكيدات الدفعات المقدمة (Legacy).</p></div></div>
+    <div class="welcome-header">
+      <div class="header-content">
+        <h1 class="welcome-title">التأكيدات</h1>
+        <p class="welcome-subtitle">تأكيدات الدفعات المقدمة (Legacy).</p>
+      </div>
+    </div>
     <div class="metrics-table-container table-responsive">
       <table class="metrics-table table-mobile-stacked">
         <thead><tr><th>رقم الحجز</th><th>المبلغ</th><th>تاريخ التأكيد</th><th>الإجراءات</th></tr></thead>
@@ -53,13 +58,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@media (max-width: 768px) {
-  .section-header-compact { padding: 16px; }
-  .section-title { font-size: 18px; }
-  .section-subtitle { font-size: 13px; }
-}
 @media (max-width: 576px) {
-  .section-header-compact { padding: 12px; }
   .table-responsive { margin: 0 -12px; }
 }
 </style>

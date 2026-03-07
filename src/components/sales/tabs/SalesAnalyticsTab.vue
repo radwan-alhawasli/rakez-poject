@@ -1,9 +1,9 @@
 <template>
   <div class="analytics-tab">
-    <div class="page-header">
+    <div class="welcome-header">
       <div class="header-content">
-        <h1 class="page-title">التحليلات والتقارير</h1>
-        <p class="page-subtitle">تقارير المبيعات والودائع والعمولات الشهرية</p>
+        <h1 class="welcome-title">التحليلات والتقارير</h1>
+        <p class="welcome-subtitle">تقارير المبيعات والودائع والعمولات الشهرية</p>
       </div>
       <div class="date-filters">
         <input
@@ -214,14 +214,12 @@ const {
   }
 }
 
-.page-header {
+.welcome-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 20px;
-  margin-bottom: 24px;
-  padding: 0;
 }
 
 .header-content {
@@ -229,18 +227,6 @@ const {
   min-width: 0;
 }
 
-.page-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--color-navy);
-  margin: 0 0 5px 0;
-}
-
-.page-subtitle {
-  color: var(--color-dark-gray);
-  font-size: 15px;
-  margin: 0;
-}
 
 .date-filters {
   display: flex;
@@ -412,22 +398,6 @@ const {
   width: 24px;
   height: 24px;
   color: white;
-}
-
-.stat-icon-bg.confirmed {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-}
-
-.stat-icon-bg.deposits {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-
-.stat-icon-bg.reserved {
-  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
-}
-
-.stat-icon-bg.ratio {
-  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
 }
 
 .report-summary {

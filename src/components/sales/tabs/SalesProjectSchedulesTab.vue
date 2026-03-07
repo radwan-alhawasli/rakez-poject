@@ -2,22 +2,22 @@
   <div class="project-schedules-tab">
     <!-- List View (no project selected) -->
     <template v-if="!selectedScheduleProject">
-      <div class="page-header">
+      <div class="welcome-header">
         <div class="header-content">
-          <h1 class="page-title">Ø¥Ø¯Ø§Ø±Ø© Ø¯ÙˆØ§Ù… Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹</h1>
-          <p class="page-subtitle">
-            Ø§Ø¶ØºØ· Ø¹Ù„Ù‰ Ù…Ø´Ø±ÙˆØ¹ Ù„Ø¹Ø±Ø¶ Ø§Ù„Ù…Ø³Ø¤ÙˆÙ„ÙŠÙ† ÙˆØªØ¹ÙŠÙŠÙ† Ø¬Ø¯Ø§ÙˆÙ„ Ø§Ù„Ø¯ÙˆØ§Ù… Ø§Ù„Ø®Ø§ØµØ© Ø¨Ù‡Ù…
+          <h1 class="welcome-title">إدارة دوام المشاريع</h1>
+          <p class="welcome-subtitle">
+            اضغط على مشروع لعرض المسؤولين وتعيين جداول الدوام الخاصة بهم
           </p>
         </div>
       </div>
 
       <div v-if="isLoadingScheduleProjects" class="loading-state">
         <div class="spinner"></div>
-        <p>Ø¬Ø§Ø±ÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹...</p>
+        <p>جاري تحميل المشاريع...</p>
       </div>
 
       <div v-else-if="scheduleProjects.length === 0" class="empty-state">
-        <p>Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ø´Ø§Ø±ÙŠØ¹ Ù…Ø¹ÙŠÙ†Ø© Ù„ÙØ±ÙŠÙ‚Ùƒ Ø­Ø§Ù„ÙŠØ§Ù‹.</p>
+        <p>لا توجد مشاريع معينة لفريقك حالياً.</p>
       </div>
 
       <div v-else class="schedule-projects-grid">
@@ -30,15 +30,15 @@
           <h3 class="project-card-title">
             {{ project.project_name || project.name || project.contract_name }}
           </h3>
-          <p class="project-card-activity">{{ project.activity_type || 'Ø£Ù†Ø´Ø·Ø© Ø§Ù„Ù…Ø´Ø±ÙˆØ¹' }}</p>
-          <p class="project-card-team">ÙØ±ÙŠÙ‚ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª</p>
+          <p class="project-card-activity">{{ project.activity_type || 'أنشطة المشروع' }}</p>
+          <p class="project-card-team">فريق المبيعات</p>
         </div>
       </div>
     </template>
 
     <!-- Detail View (project selected) -->
     <template v-else>
-      <div class="page-header schedule-detail-header">
+      <div class="welcome-header schedule-detail-header">
         <div class="header-content">
           <button class="btn-back" @click="backToList">
             <svg
@@ -51,33 +51,33 @@
             >
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
-            Ø±Ø¬ÙˆØ¹
+            رجوع
           </button>
-          <h1 class="page-title">
-            Ø¥Ø¯Ø§Ø±Ø© Ù…Ø´Ø±ÙˆØ¹ Ø¯ÙˆØ§Ù…:
+          <h1 class="welcome-title">
+            إدارة مشروع دوام:
             {{ selectedScheduleProject.project_name || selectedScheduleProject.name }}
           </h1>
-          <p class="page-subtitle">
-            Ù‚Ù… Ø¨ØªØ¹ÙŠÙŠÙ† Ø¬Ø¯Ø§ÙˆÙ„ Ø§Ù„Ø¯ÙˆØ§Ù… Ù„Ù„Ù…Ø³Ø¤ÙˆÙ„ÙŠÙ† ÙÙŠ Ù‡Ø°Ø§ Ø§Ù„Ù…Ø´Ø±ÙˆØ¹ ÙˆØ¬Ù‡Ø© Ø§ØªØµØ§Ù„ Ø§Ù„Ø·ÙˆØ§Ø±Ø¦
+          <p class="welcome-subtitle">
+            قم بتعيين جداول الدوام للمسؤولين في هذا المشروع وجهة اتصال الطوارئ
           </p>
         </div>
       </div>
 
       <div v-if="isLoadingScheduleDetail" class="loading-state">
         <div class="spinner"></div>
-        <p>Ø¬Ø§Ø±ÙŠ ØªØ­Ù…ÙŠÙ„ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø¬Ø¯Ø§ÙˆÙ„...</p>
+        <p>جاري تحميل بيانات الجداول...</p>
       </div>
 
       <template v-else>
         <div class="schedule-date-bar">
           <div class="schedule-date-display">
-            <span class="update-label">ØªØ§Ø±ÙŠØ® Ø§Ù„ØªØ­Ø¯ÙŠØ«:</span>
+            <span class="update-label">تاريخ التحديث:</span>
             <span class="update-value">{{ scheduleDisplayDate }}</span>
-            <span class="update-label">ØªÙˆÙ‚ÙŠØª Ø§Ù„ØªØ­Ø¯ÙŠØ«:</span>
+            <span class="update-label">توقيت التحديث:</span>
             <span class="update-value">{{ scheduleDisplayTime }}</span>
           </div>
           <div class="schedule-date-picker-wrap">
-            <label for="schedule-view-date">Ø¹Ø±Ø¶ Ø¯ÙˆØ§Ù… ØªØ§Ø±ÙŠØ®:</label>
+            <label for="schedule-view-date">عرض دوام تاريخ:</label>
             <input
               id="schedule-view-date"
               :value="scheduleViewDate"
@@ -94,7 +94,7 @@
         >
           <!-- Right: Team Members Schedules -->
           <div class="schedule-members-section">
-            <h3 class="section-label">Ø¬Ø¯Ø§ÙˆÙ„ Ø§Ù„Ù…Ø³ÙˆÙ‚ÙŠÙ†</h3>
+            <h3 class="section-label">جداول المسوقين</h3>
             <div class="schedule-members-list">
               <div
                 v-for="member in scheduleMembers"
@@ -124,14 +124,14 @@
                 <div class="member-schedule-info">
                   <span class="schedule-day">{{ scheduleDisplayDayName }}</span>
                   <span class="schedule-status" :class="member.is_present ? 'present' : 'absent'">
-                    {{ member.is_present ? 'Ù…ØªÙˆØ§Ø¬Ø¯ Ø§Ù„ÙŠÙˆÙ…' : 'ØºÙŠØ± Ù…ØªÙˆØ§Ø¬Ø¯ Ø§Ù„ÙŠÙˆÙ…' }}
+                    {{ member.is_present ? 'متواجد اليوم' : 'غير متواجد اليوم' }}
                   </span>
                 </div>
                 <div class="member-time-row">
-                  <span class="time-label">Ø§Ù„Ø¯ÙˆØ§Ù…</span>
+                  <span class="time-label">الدوام</span>
                   <div class="time-inputs">
                     <label class="time-field">
-                      <span>Ù…Ù†</span>
+                      <span>من</span>
                       <input
                         type="time"
                         :value="member.start_time || '08:00'"
@@ -140,7 +140,7 @@
                       />
                     </label>
                     <label class="time-field">
-                      <span>Ø¥Ù„Ù‰</span>
+                      <span>إلى</span>
                       <input
                         type="time"
                         :value="member.end_time || '17:00'"
@@ -156,21 +156,21 @@
 
           <!-- Left: Emergency Contact -->
           <div class="emergency-contact-section">
-            <h3 class="section-label">Ø¬Ù‡Ø© Ø§ØªØµØ§Ù„ Ø§Ù„Ø·ÙˆØ§Ø±Ø¦</h3>
+            <h3 class="section-label">جهة اتصال الطوارئ</h3>
             <div class="emergency-form">
               <div class="form-group">
-                <label>Ø§Ù„Ø§Ø³Ù…</label>
+                <label>الاسم</label>
                 <input
                   :value="emergencyContact.name"
                   type="text"
                   class="form-input"
                   :disabled="isSavingSchedules"
-                  placeholder="Ù…Ø«Ø§Ù„: Ø®Ø§Ù„Ø¯ Ø§Ù„Ø£Ø­Ù…Ø¯"
+                  placeholder="مثال: خالد الأحمد"
                   @input="emergencyContact.name = $event.target.value"
                 />
               </div>
               <div class="form-group">
-                <label>Ø±Ù‚Ù… Ø§Ù„Ø¬ÙˆØ§Ù„</label>
+                <label>رقم الجوال</label>
                 <input
                   :value="emergencyContact.phone"
                   type="tel"
@@ -182,18 +182,18 @@
                 />
               </div>
               <div class="form-group">
-                <label>Ø§Ù„Ø¯ÙˆØ±</label>
+                <label>الدور</label>
                 <select
                   :value="emergencyContact.role"
                   class="form-input"
                   :disabled="isSavingSchedules"
                   @change="emergencyContact.role = $event.target.value"
                 >
-                  <option value="Ø£Ø®Ø±Ù‰">Ø£Ø®Ø±Ù‰</option>
-                  <option value="Ù…Ø¯ÙŠØ± Ø§Ù„Ù…Ø´Ø±ÙˆØ¹">Ù…Ø¯ÙŠØ± Ø§Ù„Ù…Ø´Ø±ÙˆØ¹</option>
-                  <option value="Ù…Ø´Ø±Ù Ø§Ù„Ù…ÙˆÙ‚Ø¹">Ù…Ø´Ø±Ù Ø§Ù„Ù…ÙˆÙ‚Ø¹</option>
-                  <option value="Ø­Ø§Ø±Ø³ Ø§Ù„Ø£Ù…Ù†">Ø­Ø§Ø±Ø³ Ø§Ù„Ø£Ù…Ù†</option>
-                  <option value="Ø§Ù„Ù…Ø§Ù„Ùƒ">Ø§Ù„Ù…Ø§Ù„Ùƒ</option>
+                  <option value="أخرى">أخرى</option>
+                  <option value="مدير المشروع">مدير المشروع</option>
+                  <option value="مشرف الموقع">مشرف الموقع</option>
+                  <option value="حارس الأمن">حارس الأمن</option>
+                  <option value="المالك">المالك</option>
                 </select>
               </div>
             </div>
@@ -223,7 +223,7 @@
               <polyline points="17 21 17 13 7 13 7 21"></polyline>
               <polyline points="7 3 7 8 15 8"></polyline>
             </svg>
-            {{ isSavingSchedules ? 'Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø­ÙØ¸ ÙˆØ§Ù„Ø¥Ø±Ø³Ø§Ù„...' : 'Ø­ÙØ¸ ÙˆØ¥Ø±Ø³Ø§Ù„ Ù„Ù„ÙØ±ÙŠÙ‚' }}
+            {{ isSavingSchedules ? 'جاري الحفظ والإرسال...' : 'حفظ وإرسال للفريق' }}
           </button>
         </div>
       </template>
@@ -325,7 +325,7 @@ loadScheduleProjects();
   border-color: #cbd5e1;
 }
 
-/* Schedule date bar Ã¢â‚¬â€ 100% match with date */
+/* Schedule date bar — 100% match with date */
 .schedule-date-bar {
   display: flex;
   flex-wrap: wrap;

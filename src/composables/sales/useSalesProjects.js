@@ -135,13 +135,13 @@ export function useSalesProjects() {
         const avgPrice = p.average_unit_price ?? p.avg_unit_price ?? p.avg_price;
         let priceRangeText = '—';
         if (priceMin != null && priceMax != null && priceMin !== priceMax) {
-          priceRangeText = `${Number(priceMax).toLocaleString('ar-SA')} - ${Number(priceMin).toLocaleString('ar-SA')}`;
+          priceRangeText = `${Number(priceMax).toLocaleString('en-US')} - ${Number(priceMin).toLocaleString('en-US')}`;
         } else if (priceMin != null || priceMax != null) {
           const single = priceMax ?? priceMin;
-          priceRangeText = `${Number(single).toLocaleString('ar-SA')} - ${Number(single).toLocaleString('ar-SA')}`;
+          priceRangeText = `${Number(single).toLocaleString('en-US')} - ${Number(single).toLocaleString('en-US')}`;
         } else if (avgPrice != null && Number(avgPrice) > 0) {
           const n = Number(avgPrice);
-          priceRangeText = `${n.toLocaleString('ar-SA')} - ${n.toLocaleString('ar-SA')}`;
+          priceRangeText = `${n.toLocaleString('en-US')} - ${n.toLocaleString('en-US')}`;
         }
 
         const bedroomsMin = p.bedrooms_min ?? p.min_bedrooms ?? p.rooms_min;

@@ -1,8 +1,10 @@
 <template>
   <div class="performance-view">
-    <div class="section-header-compact">
-      <h2 class="section-title">أداء الأفرقة</h2>
-      <p class="section-subtitle">تحليل الإنتاجية والجودة لكل فريق عمل.</p>
+    <div class="welcome-header">
+      <div class="header-content">
+        <h1 class="welcome-title">أداء الأفرقة</h1>
+        <p class="welcome-subtitle">تحليل الإنتاجية والجودة لكل فريق عمل.</p>
+      </div>
     </div>
     <div class="metrics-table-container">
       <div v-if="!performanceData.teams || performanceData.teams.length === 0" class="metrics-table-empty">
@@ -57,42 +59,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.section-header-compact {
-  margin-bottom: 32px;
-  border-right: 5px solid #b1a28f;
-  padding-right: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(177, 162, 143, 0.12);
-  position: relative;
-}
-
-.section-header-compact::before {
-  content: '';
-  position: absolute;
-  right: -5px;
-  top: 0;
-  width: 5px;
-  height: 60%;
-  background: linear-gradient(180deg, #b1a28f 0%, transparent 100%);
-}
-
-.section-title {
-  font-size: 26px;
-  font-weight: 800;
-  color: #1e3a5f;
-  margin: 0 0 8px 0;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-
-.section-subtitle {
-  color: #64748b;
-  font-size: 15px;
-  margin: 0;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-}
-
 .metrics-table-container {
   background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
   border-radius: 24px;

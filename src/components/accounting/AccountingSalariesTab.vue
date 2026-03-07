@@ -1,7 +1,10 @@
 <template>
   <div class="management-view">
-    <div class="section-header-compact" style="display: flex; justify-content: space-between; align-items: center">
-      <div><h2 class="section-title">الرواتب وتوزيع العمولات</h2><p class="section-subtitle">إدارة رواتب الموظفين والعمولات.</p></div>
+    <div class="welcome-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px">
+      <div class="header-content">
+        <h1 class="welcome-title">الرواتب وتوزيع العمولات</h1>
+        <p class="welcome-subtitle">إدارة رواتب الموظفين والعمولات.</p>
+      </div>
       <div style="display: flex; gap: 10px"><input v-model="salaryMonth" type="month" class="form-input" style="width: 200px" @change="loadSalaries" /></div>
     </div>
     <div class="metrics-table-container table-responsive">
@@ -65,13 +68,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@media (max-width: 768px) {
-  .section-header-compact { padding: 16px; }
-  .section-title { font-size: 18px; }
-  .section-subtitle { font-size: 13px; }
-}
 @media (max-width: 576px) {
-  .section-header-compact { padding: 12px; }
   .table-responsive { margin: 0 -12px; }
 }
 </style>

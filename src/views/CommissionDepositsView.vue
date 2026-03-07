@@ -10,9 +10,7 @@
           <div class="stat-card animate-fade-in-up animate-stagger-1 hover-lift">
             <div class="stat-content">
               <span class="stat-label">إجمالي العمولات</span>
-              <span class="stat-value number">{{
-                formatCurrency(dashboardMetrics.totalCommissions)
-              }}</span>
+              <span class="stat-value number" :title="formatCurrency(dashboardMetrics.totalCommissions)">{{ formatCurrencyCompact(dashboardMetrics.totalCommissions) }}</span>
               <span class="stat-desc">القيمة الإجمالية للعمولات</span>
             </div>
             <div class="stat-icon-bg dollar">
@@ -25,9 +23,7 @@
           <div class="stat-card animate-fade-in-up animate-stagger-2 hover-lift">
             <div class="stat-content">
               <span class="stat-label">إجمالي الودائع</span>
-              <span class="stat-value number">{{
-                formatCurrency(dashboardMetrics.totalDeposits)
-              }}</span>
+              <span class="stat-value number" :title="formatCurrency(dashboardMetrics.totalDeposits)">{{ formatCurrencyCompact(dashboardMetrics.totalDeposits) }}</span>
               <span class="stat-desc">القيمة الإجمالية للودائع</span>
             </div>
             <div class="stat-icon-bg projects">
@@ -243,7 +239,7 @@ const handleDepositsPerPageChange = val => {
 const viewCommissionDetail = () => {};
 const viewDepositDetail = () => {};
 
-const { formatCurrency } = useFormatters();
+const { formatCurrency, formatCurrencyCompact } = useFormatters();
 
 watch(
   activeTab,

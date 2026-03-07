@@ -63,11 +63,9 @@ const activeTab = computed(() => {
 </style>
 
 <style>
-/* Welcome Header */
-.marketing-view .welcome-header { margin-bottom: 40px; animation: mktSlideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+/* Welcome Header - use global styles (blue gradient, white text) */
+.marketing-view .welcome-header { animation: mktSlideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 @keyframes mktSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-.marketing-view .welcome-title { font-size: 36px; font-weight: 700; color: #1e3a5f; margin: 0 0 10px 0; background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8f 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.marketing-view .welcome-subtitle { font-size: 16px; color: #64748b; margin: 0; }
 
 /* Stats Grid */
 .marketing-view .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }
@@ -90,10 +88,7 @@ const activeTab = computed(() => {
 .marketing-view .stat-icon-bg { width: 80px; height: 80px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; overflow: hidden; }
 .marketing-view .stat-icon-bg::before { content: ''; position: absolute; inset: 0; background: inherit; filter: blur(20px); opacity: 0.5; }
 .marketing-view .stat-icon-bg svg { width: 36px; height: 36px; position: relative; z-index: 1; color: white; }
-.marketing-view .stat-icon-bg.projects { background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%); }
-.marketing-view .stat-icon-bg.units { background: linear-gradient(135deg, #2d5a8f 0%, #1e3a5f 100%); }
-.marketing-view .stat-icon-bg.ready { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-.marketing-view .stat-icon-bg.dollar { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.marketing-view .stat-icon-bg { background: linear-gradient(135deg, #1a2a4a 0%, #2c4a7c 50%, #3b6098 100%); color: white; }
 
 /* Overview Section */
 .marketing-view .overview-section { background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%); border-radius: var(--radius-lg); padding: 32px; border: 1px solid rgba(177, 162, 143, 0.15); box-shadow: 0 4px 6px -1px rgba(30, 58, 95, 0.03), 0 10px 20px -5px rgba(30, 58, 95, 0.05); }

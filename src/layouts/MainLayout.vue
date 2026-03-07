@@ -248,40 +248,43 @@ export default {
 
 <style scoped>
 .app-container {
-  background: var(--color-light-gray);
+  background: var(--color-cream-gold, #faf6f0);
   direction: rtl;
   overflow-x: hidden;
+  --top-header-height: 60px;
+  --content-top-gap: 24px;
 }
 
-/* Header - Enhanced with Luxury Vitality */
+/* Header - Merged with sidebar: full-width gradient flowing into sidebar, sits behind for unified look */
 .top-header {
   height: 60px;
-  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-off-white) 100%);
+  /* Gradient flows from header blue into sidebar dark - creates seamless merge */
+  background: linear-gradient(90deg, #1a2a4a 0%, #2c4a7c 35%, #1e293b 70%, #0f172a 100%);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(177, 162, 143, 0.12);
-  border-bottom: 2px solid var(--color-gold);
+  padding: 0 calc(var(--sidebar-collapsed-width, 80px) + 24px) 0 24px;
+  box-shadow: 0 4px 24px rgba(26, 42, 74, 0.2);
   position: fixed;
   top: 0;
   left: 0;
-  right: 80px;
-  z-index: var(--z-header);
+  right: 0;
+  z-index: calc(var(--z-sidebar) - 10);
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   backdrop-filter: blur(10px);
   animation: fadeInDown 0.5s ease-out;
+  overflow: hidden;
 }
 
 .top-header::before {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, var(--color-gold) 50%, transparent 100%);
-  opacity: 0.5;
+  top: -50%;
+  left: -30%;
+  width: 80%;
+  height: 200%;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.06) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .mobile-toggle {
@@ -394,12 +397,6 @@ export default {
   gap: 30px;
   min-width: 0;
   flex-shrink: 1;
-}
-.update-info {
-  text-align: left;
-  font-size: 11px;
-  color: var(--color-dark-gray);
-  flex-shrink: 0;
 }
 .logo {
   display: flex;
@@ -580,6 +577,9 @@ export default {
   border-left: 1px solid rgba(177, 162, 143, 0.15);
   backdrop-filter: blur(20px);
   animation: slideInFromRight 0.6s ease-out;
+  /* Curved junction with header - arc merge instead of sharp angle */
+  border-top-left-radius: 40px;
+  border-bottom-left-radius: 40px;
 }
 
 :deep(.sidebar)::before {
@@ -1116,23 +1116,41 @@ export default {
 
 /* Header/footer shift on hover (header is before sidebar in DOM so use app-container class) */
 .app-container.sidebar-hovered .top-header {
-  right: 260px;
+  padding-right: calc(var(--sidebar-expanded-width) + 24px);
 }
 .app-container.sidebar-hovered .footer {
   margin-right: 260px;
 }
 
-/* Main content: padding and z-index only; flex/overflow from Tailwind (flex-1 min-h-0 overflow-auto) */
+/* Main content: background image + overlay so text is readable */
 .main-content {
-  padding: 40px;
+  padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 40px 40px 40px;
   position: relative;
   z-index: 5;
   min-width: 0;
+  background-color: #e8e6e2;
+  background-image: url("/Morpheus_14_BHE.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+/* Overlay: light layer so content and text are readable over the image */
+.main-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.78) 0%, rgba(250, 248, 245, 0.85) 50%, rgba(255, 255, 255, 0.82) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+.main-content > * {
+  position: relative;
+  z-index: 1;
 }
 
-/* Adjust header width */
+/* Header extends full width behind sidebar; padding keeps content clear */
 .top-header {
-  right: 80px;
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -1178,10 +1196,13 @@ export default {
 
 /* 4K / Ultra-wide (3840px+) */
 @media (min-width: 3840px) {
+  .app-container {
+    --top-header-height: 90px;
+  }
   .main-content {
     max-width: 3200px;
     margin: 0 auto;
-    padding: 60px;
+    padding: calc(var(--top-header-height) + var(--content-top-gap)) 60px 60px 60px;
   }
 
   .top-header {
@@ -1236,10 +1257,13 @@ export default {
 
 /* 2K / QHD (2560px - 3839px) */
 @media (min-width: 2560px) and (max-width: 3839px) {
+  .app-container {
+    --top-header-height: 80px;
+  }
   .main-content {
     max-width: 2400px;
     margin: 0 auto;
-    padding: 52px;
+    padding: calc(var(--top-header-height) + var(--content-top-gap)) 52px 52px 52px;
   }
 
   .top-header {
@@ -1279,7 +1303,7 @@ export default {
   .main-content {
     max-width: 1800px;
     margin: 0 auto;
-    padding: 50px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 50px 50px 50px;
   }
 
   .top-header {
@@ -1290,7 +1314,7 @@ export default {
 /* Large Desktop (1440px - 1919px) */
 @media (min-width: 1440px) and (max-width: 1919px) {
   .main-content {
-    padding: 45px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 45px 45px 45px;
   }
 
   .top-header {
@@ -1301,7 +1325,7 @@ export default {
 /* Standard Desktop (1200px - 1439px) */
 @media (min-width: 1200px) and (max-width: 1439px) {
   .main-content {
-    padding: 40px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 40px 40px 40px;
   }
 
   .top-header {
@@ -1331,11 +1355,7 @@ export default {
   }
 
   .main-content {
-    padding: 35px 25px;
-  }
-
-  .header-right .update-info {
-    display: none;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 25px 35px 25px;
   }
 
   .logo-ar {
@@ -1373,6 +1393,9 @@ export default {
 
 /* Tablet Portrait (768px - 991px) - sidebar off-canvas, open on trigger */
 @media (min-width: 768px) and (max-width: 991px) {
+  .app-container {
+    --top-header-height: 65px;
+  }
   .top-header {
     right: 0 !important;
     padding: 0 20px;
@@ -1398,11 +1421,7 @@ export default {
   }
 
   .main-content {
-    padding: 30px 20px;
-  }
-
-  .header-right .update-info {
-    display: none;
+    padding: calc(var(--top-header-height) + var(--content-top-gap)) 20px 30px 20px;
   }
 
   .back-btn,
@@ -1515,10 +1534,9 @@ export default {
   }
 
   .main-content {
-    padding: 25px 15px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 15px 25px 15px;
   }
 
-  .header-right .update-info,
   .header-right .logo-icon-bg {
     display: none;
   }
@@ -1662,14 +1680,13 @@ export default {
   }
 
   .main-content {
-    padding: 20px 12px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 12px 20px 12px;
   }
 
   .header-left {
     gap: 10px;
   }
 
-  .header-right .update-info,
   .header-right .logo-icon-bg,
   .header-right .logo-sep {
     display: none;
@@ -1859,13 +1876,16 @@ export default {
 
 /* Extra Small Devices (< 320px) */
 @media (max-width: 319px) {
+  .app-container {
+    --top-header-height: 55px;
+  }
   .top-header {
     padding: 0 10px;
     height: 55px;
   }
 
   .main-content {
-    padding: 18px 10px;
+    padding: calc(var(--top-header-height) + var(--content-top-gap)) 10px 18px 10px;
   }
 
   :deep(.sidebar) {
@@ -1987,9 +2007,9 @@ export default {
 
 /* Desktop only (>= 1200px): sidebar rail on-screen; below 1200px sidebar is off-canvas, open on trigger */
 @media (min-width: 1200px) {
-/* Keep header/content/footer clear of the compact rail */
+/* Header extends full width; padding keeps content clear of sidebar */
 .top-header {
-  right: var(--sidebar-collapsed-width) !important;
+  padding-right: calc(var(--sidebar-collapsed-width) + 24px) !important;
 }
 
 .main-wrapper {
@@ -2106,7 +2126,7 @@ export default {
 @media (min-width: 1200px) {
   .app-container.sidebar-open .top-header,
   .app-container.sidebar-hovered .top-header {
-    right: var(--sidebar-expanded-width) !important;
+    padding-right: calc(var(--sidebar-expanded-width) + 24px) !important;
   }
 
   .app-container.sidebar-open .main-wrapper,
