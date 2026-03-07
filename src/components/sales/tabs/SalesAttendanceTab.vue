@@ -25,23 +25,19 @@
         <thead>
           <tr>
             <th v-if="hasPermission('sales.attendance.manage')">الموظف</th>
+            <th>اسم المشروع</th>
             <th>التاريخ</th>
             <th>وقت الدخول</th>
             <th>وقت الخروج</th>
-            <th>الحالة</th>
-            <th>ساعات العمل</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="record in paginatedAttendance" :key="record.id">
             <td v-if="hasPermission('sales.attendance.manage')" data-label="الموظف">{{ record.employee_name }}</td>
+            <td data-label="اسم المشروع">{{ record.project_name || '—' }}</td>
             <td data-label="التاريخ">{{ formatDate(record.date) }}</td>
             <td data-label="وقت الدخول">{{ record.check_in_time || '—' }}</td>
             <td data-label="وقت الخروج">{{ record.check_out_time || '—' }}</td>
-            <td data-label="الحالة">
-              <span class="attendance-status" :class="record.status">{{ getAttendanceStatusText(record.status) }}</span>
-            </td>
-            <td data-label="ساعات العمل">{{ record.hours_worked || '—' }}</td>
           </tr>
         </tbody>
       </table>

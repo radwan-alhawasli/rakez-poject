@@ -38,6 +38,7 @@ export function useSalesAttendance() {
       attendanceRecords.value = raw.map(r => ({
         id: r.id ?? r.schedule_id ?? r.attendance_id,
         employee_name: r.employee_name ?? r.user_name ?? r.marketer_name ?? r.name ?? '—',
+        project_name: r.project_name ?? r.contract_name ?? r.project?.name ?? '—',
         date: r.date ?? r.schedule_date ?? r.attendance_date,
         check_in_time: r.check_in_time ?? r.start_time ?? r.check_in,
         check_out_time: r.check_out_time ?? r.end_time ?? r.check_out,
