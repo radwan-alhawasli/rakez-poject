@@ -243,7 +243,7 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #C4BDB0;
+  color: #B5A99A;
   min-width: 0;
   overflow: hidden;
 }
@@ -258,7 +258,7 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   font-family: 'Aref Ruqaa', serif;
   font-weight: 700;
   font-size: 18px;
-  color: #C4BDB0;
+  color: #B5A99A;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   letter-spacing: 0.02em;
 }
@@ -269,11 +269,11 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   font-size: 18px;
   opacity: 0.95;
   margin-right: 5px;
-  color: #C4BDB0;
+  color: #B5A99A;
   letter-spacing: 0.03em;
 }
 .top-header .logo-sep {
-  color: rgba(196, 189, 176, 0.9);
+  color: rgba(181, 169, 154, 0.9);
 }
 
 .top-header .notification-wrapper {

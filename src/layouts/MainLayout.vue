@@ -259,7 +259,7 @@ export default {
 .top-header {
   height: 60px;
   /* Gradient flows from header blue into sidebar dark - creates seamless merge */
-  background: linear-gradient(90deg, #1a2a4a 0%, #2c4a7c 35%, #1e293b 70%, #0f172a 100%);
+  background: #27374D;
   display: flex;
   align-items: center;
   justify-content: space-between;

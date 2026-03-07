@@ -41,7 +41,7 @@ input[type="number"], input[type="tel"] {
 .welcome-header,
 .page-header,
 .section-header-main {
-  background: linear-gradient(135deg, #1a2a4a 0%, #2c4a7c 50%, #3b6098 100%);
+  background: #27374D;
   border-radius: 16px;
   padding: 32px 40px;
   margin-bottom: 40px;
@@ -72,7 +72,7 @@ input[type="number"], input[type="tel"] {
 .main-title {
   font-size: 28px;
   font-weight: 800;
-  color: #C4BDB0;
+  color: #B5A99A;
   margin: 0 0 8px 0;
   font-family: 'Cairo', sans-serif !important;
   letter-spacing: -0.02em;
@@ -84,7 +84,7 @@ input[type="number"], input[type="tel"] {
 .welcome-subtitle,
 .page-subtitle,
 .main-subtitle {
-  color: rgba(196, 189, 176, 0.95);
+  color: rgba(181, 169, 154, 0.95);
   font-size: 15px;
   margin: 0;
   font-weight: 500;
@@ -153,7 +153,7 @@ input[type="number"], input[type="tel"] {
   right: 0;
   left: 0;
   height: 3px;
-  background: linear-gradient(90deg, #1a2a4a 0%, #2c4a7c 50%, #3b6098 100%);
+  background: #27374D;
   opacity: 0.5;
   border-radius: 24px 24px 0 0;
   transition: opacity var(--transition-slow);
@@ -286,7 +286,7 @@ input[type="number"], input[type="tel"] {
   inset: -2px;
   border-radius: 50%;
   padding: 2px;
-  background: linear-gradient(135deg, rgba(196, 189, 176, 0.6) 0%, rgba(196, 189, 176, 0) 100%);
+  background: linear-gradient(135deg, rgba(181, 169, 154, 0.6) 0%, rgba(181, 169, 154, 0) 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -296,7 +296,7 @@ input[type="number"], input[type="tel"] {
 
 .stat-card:hover .stat-icon-bg {
   transform: scale(1.12) rotate(-8deg);
-  box-shadow: 0 0 24px rgba(196, 189, 176, 0.5), 0 4px 16px rgba(26, 42, 74, 0.25);
+  box-shadow: 0 0 24px rgba(181, 169, 154, 0.5), 0 4px 16px rgba(39, 55, 77, 0.25);
 }
 
 .stat-card:hover .stat-icon-bg::before {
@@ -328,9 +328,9 @@ input[type="number"], input[type="tel"] {
 .stat-icon-bg.revenue svg {
   width: 32px !important;
   height: 32px !important;
-  color: #C4BDB0 !important;
-  stroke: #C4BDB0 !important;
-  filter: drop-shadow(0 0 10px rgba(196, 189, 176, 0.7)) drop-shadow(0 0 6px rgba(196, 189, 176, 0.5)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  color: #B5A99A !important;
+  stroke: #B5A99A !important;
+  filter: drop-shadow(0 0 10px rgba(181, 169, 154, 0.7)) drop-shadow(0 0 6px rgba(181, 169, 154, 0.5)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 /* Icon color: ذهبي مع توهج لكل الأيقونات */
@@ -355,9 +355,9 @@ input[type="number"], input[type="tel"] {
 .stat-icon-bg.confirmed,
 .stat-icon-bg.total-res,
 .stat-icon-bg.revenue {
-  background: linear-gradient(135deg, #1a2a4a 0%, #2c4a7c 50%, #3b6098 100%);
-  color: #C4BDB0 !important;
-  box-shadow: 0 0 16px rgba(196, 189, 176, 0.35), 0 4px 16px rgba(26, 42, 74, 0.25);
+  background: #27374D;
+  color: #B5A99A !important;
+  box-shadow: 0 0 16px rgba(181, 169, 154, 0.35), 0 4px 16px rgba(39, 55, 77, 0.25);
 }
 
 /* Universal Section Styles */
