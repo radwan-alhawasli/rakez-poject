@@ -251,6 +251,8 @@ export default {
   background: var(--color-light-gray);
   direction: rtl;
   overflow-x: hidden;
+  --top-header-height: 60px;
+  --content-top-gap: 24px;
 }
 
 /* Header - Merged with sidebar: full-width gradient flowing into sidebar, sits behind for unified look */
@@ -1120,9 +1122,9 @@ export default {
   margin-right: 260px;
 }
 
-/* Main content: padding and z-index only; flex/overflow from Tailwind (flex-1 min-h-0 overflow-auto) */
+/* Main content: padding-top clears fixed header + gap; no merge with top bar */
 .main-content {
-  padding: 40px;
+  padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 40px 40px 40px;
   position: relative;
   z-index: 5;
   min-width: 0;
@@ -1175,10 +1177,13 @@ export default {
 
 /* 4K / Ultra-wide (3840px+) */
 @media (min-width: 3840px) {
+  .app-container {
+    --top-header-height: 90px;
+  }
   .main-content {
     max-width: 3200px;
     margin: 0 auto;
-    padding: 60px;
+    padding: calc(var(--top-header-height) + var(--content-top-gap)) 60px 60px 60px;
   }
 
   .top-header {
@@ -1233,10 +1238,13 @@ export default {
 
 /* 2K / QHD (2560px - 3839px) */
 @media (min-width: 2560px) and (max-width: 3839px) {
+  .app-container {
+    --top-header-height: 80px;
+  }
   .main-content {
     max-width: 2400px;
     margin: 0 auto;
-    padding: 52px;
+    padding: calc(var(--top-header-height) + var(--content-top-gap)) 52px 52px 52px;
   }
 
   .top-header {
@@ -1276,7 +1284,7 @@ export default {
   .main-content {
     max-width: 1800px;
     margin: 0 auto;
-    padding: 50px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 50px 50px 50px;
   }
 
   .top-header {
@@ -1287,7 +1295,7 @@ export default {
 /* Large Desktop (1440px - 1919px) */
 @media (min-width: 1440px) and (max-width: 1919px) {
   .main-content {
-    padding: 45px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 45px 45px 45px;
   }
 
   .top-header {
@@ -1298,7 +1306,7 @@ export default {
 /* Standard Desktop (1200px - 1439px) */
 @media (min-width: 1200px) and (max-width: 1439px) {
   .main-content {
-    padding: 40px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 40px 40px 40px;
   }
 
   .top-header {
@@ -1328,7 +1336,7 @@ export default {
   }
 
   .main-content {
-    padding: 35px 25px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 25px 35px 25px;
   }
 
   .logo-ar {
@@ -1366,6 +1374,9 @@ export default {
 
 /* Tablet Portrait (768px - 991px) - sidebar off-canvas, open on trigger */
 @media (min-width: 768px) and (max-width: 991px) {
+  .app-container {
+    --top-header-height: 65px;
+  }
   .top-header {
     right: 0 !important;
     padding: 0 20px;
@@ -1391,7 +1402,7 @@ export default {
   }
 
   .main-content {
-    padding: 30px 20px;
+    padding: calc(var(--top-header-height) + var(--content-top-gap)) 20px 30px 20px;
   }
 
   .back-btn,
@@ -1504,7 +1515,7 @@ export default {
   }
 
   .main-content {
-    padding: 25px 15px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 15px 25px 15px;
   }
 
   .header-right .logo-icon-bg {
@@ -1650,7 +1661,7 @@ export default {
   }
 
   .main-content {
-    padding: 20px 12px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 12px 20px 12px;
   }
 
   .header-left {
@@ -1846,13 +1857,16 @@ export default {
 
 /* Extra Small Devices (< 320px) */
 @media (max-width: 319px) {
+  .app-container {
+    --top-header-height: 55px;
+  }
   .top-header {
     padding: 0 10px;
     height: 55px;
   }
 
   .main-content {
-    padding: 18px 10px;
+    padding: calc(var(--top-header-height) + var(--content-top-gap)) 10px 18px 10px;
   }
 
   :deep(.sidebar) {
