@@ -129,7 +129,7 @@ input[type="number"], input[type="tel"] {
   }
 }
 
-/* Universal Stat Card - World-Class Design */
+/* Universal Stat Card - World-Class Design, aligned with header theme */
 .stat-card {
   background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
   border-radius: 24px;
@@ -138,13 +138,25 @@ input[type="number"], input[type="tel"] {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  border: 1px solid rgba(177, 162, 143, 0.12);
+  border: 1px solid rgba(26, 42, 74, 0.1);
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   cursor: default;
-  box-shadow: 0 8px 30px -8px rgba(30, 58, 95, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8px 30px -8px rgba(26, 42, 74, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(10px);
+}
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #1a2a4a 0%, #2c4a7c 50%, #3b6098 100%);
+  opacity: 0.5;
+  border-radius: 24px 24px 0 0;
+  transition: opacity var(--transition-slow);
 }
 
 .stat-card::before {
@@ -154,30 +166,16 @@ input[type="number"], input[type="tel"] {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(177, 162, 143, 0.05) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(26, 42, 74, 0.04) 0%, transparent 70%);
   opacity: 0;
   transition: opacity 0.6s ease;
   pointer-events: none;
 }
 
-.stat-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(circle at top right, rgba(177, 162, 143, 0.06) 0%, transparent 60%);
-  border-radius: 0 24px 0 100%;
-  opacity: 0.5;
-  transition: opacity var(--transition-slow);
-}
-
 .stat-card:hover {
-  border-color: rgba(177, 162, 143, 0.35);
+  border-color: rgba(26, 42, 74, 0.2);
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 50px -12px rgba(177, 162, 143, 0.25), 
-              0 8px 20px rgba(30, 58, 95, 0.12);
+  box-shadow: 0 20px 50px -12px rgba(26, 42, 74, 0.15), 0 8px 20px rgba(30, 58, 95, 0.1);
 }
 
 .stat-card:hover::before {
@@ -185,7 +183,7 @@ input[type="number"], input[type="tel"] {
 }
 
 .stat-card:hover::after {
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .stat-card.clickable {
@@ -310,50 +308,31 @@ input[type="number"], input[type="tel"] {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
-/* Icon Color Gradients */
+/* Icon color: match welcome-header gradient for all dashboard cards */
 .stat-icon-bg.gold,
-.stat-icon-bg.dollar {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-  color: white;
-}
-
+.stat-icon-bg.dollar,
 .stat-icon-bg.blue,
-.stat-icon-bg.units {
-  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
-  color: white;
-}
-
+.stat-icon-bg.units,
 .stat-icon-bg.green,
-.stat-icon-bg.projects {
-  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
-  color: white;
-}
-
+.stat-icon-bg.projects,
 .stat-icon-bg.cyan,
-.stat-icon-bg.ready {
-  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
-  color: white;
-}
-
+.stat-icon-bg.ready,
 .stat-icon-bg.red,
-.stat-icon-bg.not-ready {
-  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+.stat-icon-bg.not-ready,
+.stat-icon-bg.purple,
+.stat-icon-bg.orange,
+.stat-icon-bg.teal,
+.stat-icon-bg.reserved,
+.stat-icon-bg.available,
+.stat-icon-bg.marketing,
+.stat-icon-bg.ratio,
+.stat-icon-bg.deposits,
+.stat-icon-bg.confirmed,
+.stat-icon-bg.total-res,
+.stat-icon-bg.revenue {
+  background: linear-gradient(135deg, #1a2a4a 0%, #2c4a7c 50%, #3b6098 100%);
   color: white;
-}
-
-.stat-icon-bg.purple {
-  background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%);
-  color: white;
-}
-
-.stat-icon-bg.orange {
-  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
-  color: white;
-}
-
-.stat-icon-bg.teal {
-  background: linear-gradient(135deg, #5eead4 0%, #14b8a6 100%);
-  color: white;
+  box-shadow: 0 4px 16px rgba(26, 42, 74, 0.25);
 }
 
 /* Universal Section Styles */

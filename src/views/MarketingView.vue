@@ -88,10 +88,7 @@ const activeTab = computed(() => {
 .marketing-view .stat-icon-bg { width: 80px; height: 80px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; overflow: hidden; }
 .marketing-view .stat-icon-bg::before { content: ''; position: absolute; inset: 0; background: inherit; filter: blur(20px); opacity: 0.5; }
 .marketing-view .stat-icon-bg svg { width: 36px; height: 36px; position: relative; z-index: 1; color: white; }
-.marketing-view .stat-icon-bg.projects { background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%); }
-.marketing-view .stat-icon-bg.units { background: linear-gradient(135deg, #2d5a8f 0%, #1e3a5f 100%); }
-.marketing-view .stat-icon-bg.ready { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-.marketing-view .stat-icon-bg.dollar { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.marketing-view .stat-icon-bg { background: linear-gradient(135deg, #1a2a4a 0%, #2c4a7c 50%, #3b6098 100%); color: white; }
 
 /* Overview Section */
 .marketing-view .overview-section { background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%); border-radius: var(--radius-lg); padding: 32px; border: 1px solid rgba(177, 162, 143, 0.15); box-shadow: 0 4px 6px -1px rgba(30, 58, 95, 0.03), 0 10px 20px -5px rgba(30, 58, 95, 0.05); }

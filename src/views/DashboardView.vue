@@ -386,26 +386,6 @@ onMounted(() => {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
-.stat-icon-bg.units {
-  background: linear-gradient(135deg, #fbbf24 0%, var(--color-warning) 100%);
-  color: white;
-}
-
-.stat-icon-bg.projects {
-  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
-  color: white;
-}
-
-.stat-icon-bg.ready {
-  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
-  color: white;
-}
-
-.stat-icon-bg.not-ready {
-  background: linear-gradient(135deg, #f87171 0%, var(--color-error) 100%);
-  color: white;
-}
-
 /* Overview Section - Luxury Enhanced */
 .overview-section {
   background: linear-gradient(135deg, var(--color-white) 0%, var(--color-off-white) 100%);

@@ -248,7 +248,7 @@ export default {
 
 <style scoped>
 .app-container {
-  background: var(--color-light-gray);
+  background: var(--color-cream-gold, #faf6f0);
   direction: rtl;
   overflow-x: hidden;
   --top-header-height: 60px;
@@ -1122,12 +1122,31 @@ export default {
   margin-right: 260px;
 }
 
-/* Main content: padding-top clears fixed header + gap; no merge with top bar */
+/* Main content: background image + overlay so text is readable */
 .main-content {
   padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 40px 40px 40px;
   position: relative;
   z-index: 5;
   min-width: 0;
+  background-color: #e8e6e2;
+  background-image: url("/Morpheus_14_BHE.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+/* Overlay: light layer so content and text are readable over the image */
+.main-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.78) 0%, rgba(250, 248, 245, 0.85) 50%, rgba(255, 255, 255, 0.82) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+.main-content > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Header extends full width behind sidebar; padding keeps content clear */

@@ -249,11 +249,6 @@ onMounted(() => {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
-.stat-icon-bg.dollar { background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%); color: white; }
-.stat-icon-bg.units { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: white; }
-.stat-icon-bg.projects { background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%); color: white; }
-.stat-icon-bg.ready { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); color: white; }
-
 .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) backwards; }
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }

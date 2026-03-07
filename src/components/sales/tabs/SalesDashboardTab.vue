@@ -244,22 +244,6 @@ loadDashboard();
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
-:deep(.stat-icon-bg.reserved) {
-  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
-}
-:deep(.stat-icon-bg.available) {
-  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
-}
-:deep(.stat-icon-bg.marketing) {
-  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
-}
-:deep(.stat-icon-bg.ratio) {
-  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
-}
-:deep(.stat-icon-bg.deposits) {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-
 :deep(.stat-content) {
   display: flex;
   flex-direction: column;

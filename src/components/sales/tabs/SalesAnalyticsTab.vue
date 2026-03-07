@@ -400,22 +400,6 @@ const {
   color: white;
 }
 
-.stat-icon-bg.confirmed {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-}
-
-.stat-icon-bg.deposits {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-
-.stat-icon-bg.reserved {
-  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
-}
-
-.stat-icon-bg.ratio {
-  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
-}
-
 .report-summary {
   display: flex;
   gap: 16px;

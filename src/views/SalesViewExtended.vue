@@ -74,7 +74,7 @@ export default {
 .sales-view {
   direction: rtl;
   min-height: 100vh;
-  background: var(--color-light-gray);
+  background: transparent;
   padding: 20px 30px;
 }
 
@@ -501,12 +501,10 @@ export default {
   cursor: default;
 }
 
-.sales-view .stat-icon-bg.total-res {
-  background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
-}
-
+.sales-view .stat-icon-bg.total-res,
 .sales-view .stat-icon-bg.revenue {
-  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  background: linear-gradient(135deg, #1a2a4a 0%, #2c4a7c 50%, #3b6098 100%);
+  color: white;
 }
 
 .sales-view .target-units-summary {
