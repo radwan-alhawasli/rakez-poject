@@ -66,6 +66,7 @@
             <th>الحجوزات المتوقعة</th>
             <th>قيمة الحجز</th>
             <th>ميزانية الحملة</th>
+            <th>عربون/حجز</th>
             <th>التاريخ</th>
           </tr>
         </thead>
@@ -78,6 +79,7 @@
             <td data-label="الحجوزات المتوقعة" class="number">{{ row.expected_bookings ?? 0 }}</td>
             <td data-label="قيمة الحجز" class="number">{{ formatCurrency(row.expected_booking_value ?? 0) }}</td>
             <td data-label="ميزانية الحملة" class="number">{{ formatCurrency(row.campaign_budget ?? 0) }}</td>
+            <td data-label="عربون/حجز" class="number">{{ formatCurrency(row.deposit_per_booking ?? 0) }}</td>
             <td data-label="التاريخ">{{ formatDate(row.created_at) }}</td>
           </tr>
         </tbody>

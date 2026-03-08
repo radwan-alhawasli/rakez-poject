@@ -146,9 +146,23 @@ export function useFormatters() {
     }
   };
 
+  const STATUS_LABELS_AR = {
+    pending: 'معلق',
+    approved: 'معتمد',
+    paid: 'مدفوع',
+    rejected: 'مرفوض',
+  };
+
+  const statusLabelAr = (val) => {
+    if (val == null || val === '') return '—';
+    const v = String(val).toLowerCase();
+    return STATUS_LABELS_AR[v] || val;
+  };
+
   return {
     formatCurrency,
     formatCurrencyAr,
+    statusLabelAr,
     formatNumber,
     formatCompact,
     formatCurrencyCompact,

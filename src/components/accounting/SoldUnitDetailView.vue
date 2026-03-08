@@ -465,7 +465,8 @@
           <table class="distribution-table">
             <thead>
               <tr>
-                <th>المستفيد</th>
+                <th>نوع العمولة</th>
+                <th>اسم المستفيد</th>
                 <th>النسبة %</th>
                 <th>المبلغ (ر.س)</th>
                 <th>الإجراءات</th>
@@ -474,11 +475,12 @@
             <tbody>
               <tr v-for="(dist, idx) in distributions" :key="dist.id || idx">
                 <td>{{ getTypeLabel(dist.type || dist.commission_type) }}</td>
+                <td>{{ getBeneficiaryName(dist) }}</td>
                 <td>{{ dist.percentage != null ? (Number(dist.percentage) || 0).toFixed(2) + '%' : '—' }}</td>
                 <td>{{ formatNumber(dist.amount) }}</td>
                 <td>
                   <button
-                    v-if="!dist.confirmed && dist.status !== 'confirmed'"
+                    v-if="canConfirmDistribution(dist)"
                     class="btn-action confirm"
                     @click="handleConfirmPayment(dist)"
                     :disabled="isSaving"
@@ -489,10 +491,11 @@
                 </td>
               </tr>
               <tr v-if="distributions.length === 0">
-                <td colspan="4" class="empty-row">لا توجد توزيعات</td>
+                <td colspan="5" class="empty-row">لا توجد توزيعات</td>
               </tr>
               <tr v-if="distributions.length > 0 && totalDistPct < 100" class="total-row">
                 <td>الشركة</td>
+                <td>—</td>
                 <td>{{ (100 - (Number(totalDistPct) || 0)).toFixed(2) }}%</td>
                 <td>{{ formatNumber(companyAmount) }}</td>
                 <td>—</td>
@@ -598,6 +601,20 @@ export default {
     });
 
     const getTypeLabel = type => COMMISSION_TYPE_LABELS[type] || type || '—';
+
+/** اسم المستفيد من التوزيعة: موظف أو مسوق خارجي */
+const getBeneficiaryName = dist => {
+      const name =
+        dist.employee_name ?? dist.user_name ?? dist.external_name ?? '';
+      return (name && String(name).trim()) ? String(name).trim() : '—';
+    };
+
+/** يظهر زر تأكيد إذا التوزيعة قابلة للتأكيد (لم تُؤكد بعد ولم تُدفع) */
+const canConfirmDistribution = dist =>
+      !dist.confirmed &&
+      dist.status !== 'confirmed' &&
+      dist.status !== 'paid' &&
+      !!dist.id;
 
     const calcAmount = pct => {
       const net = commissionSummary.value?.net_amount || 0;
@@ -815,6 +832,8 @@ export default {
       formatCurrency,
       formatNumber,
       getTypeLabel,
+      getBeneficiaryName,
+      canConfirmDistribution,
       calcAmount,
       addLeadGenRow,
       addPersuasionRow,

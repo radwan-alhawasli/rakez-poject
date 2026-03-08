@@ -51,6 +51,7 @@ export function normalizeDeveloper(d, options = {}) {
 
   const normalized = {
     id: d.id ?? d.second_party_id ?? d.developer_number ?? null,
+    developer_number: d.developer_number != null ? String(d.developer_number) : undefined,
     name,
     email,
     representative,
@@ -65,6 +66,33 @@ export function normalizeDeveloper(d, options = {}) {
   if (d.units_count != null) normalized.unitsCount = d.units_count;
   if (d.teams != null) normalized.teams = d.teams;
   return normalized;
+}
+
+/**
+ * Enrich a normalized developer with data from a contract (second_party_*).
+ * Use when the detail view should display data as stored in the contract.
+ *
+ * @param {NormalizedDeveloper} developer - Existing normalized developer (will not be mutated)
+ * @param {Object} contract - Raw contract from API (may have second_party_*)
+ * @returns {NormalizedDeveloper} New object with contract fields applied (overwrite if contract has value)
+ */
+export function enrichDeveloperFromContract(developer, contract) {
+  if (!developer || !contract || typeof contract !== 'object') return developer;
+  const rep = contract.second_party_signatory ?? contract.signatory ?? '';
+  const cr = contract.second_party_cr_number ?? (contract.developer_number != null ? String(contract.developer_number) : '');
+  const ph = contract.second_party_phone ?? '';
+  const loc = contract.second_party_address ?? contract.address ?? '';
+  const name = contract.second_party_name ?? contract.developer_name ?? '';
+  const email = contract.second_party_email ?? '';
+  return {
+    ...developer,
+    representative: rep || developer.representative || '-',
+    commercialRecord: cr || developer.commercialRecord || '-',
+    phone: ph || developer.phone || '-',
+    location: loc || developer.location || '-',
+    name: name || developer.name,
+    email: email || developer.email,
+  };
 }
 
 /**

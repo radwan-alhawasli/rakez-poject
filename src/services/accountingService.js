@@ -96,6 +96,85 @@ const accountingService = {
     }
   },
 
+  /**
+   * Get claim file candidates: reservations/units eligible for claim files (optional).
+   * GET /accounting/claim-files/candidates?per_page=500
+   * @param {Object} params - { per_page, page }
+   * @returns {Promise<{ items: Array, total: number, forbidden?: boolean }>}
+   */
+  async getClaimFileCandidates(params = {}) {
+    try {
+      const response = await apiClient.get('/accounting/claim-files/candidates', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
+    } catch (error) {
+      const status = error?.response?.status;
+      if (status === 403) {
+        logger.debug(
+          'Claim file candidates - Forbidden:',
+          error?.response?.data?.message || error?.message
+        );
+        return { items: [], total: 0, forbidden: true };
+      }
+      return (
+        handleServiceError(error, 'Error fetching claim file candidates', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
+    }
+  },
+
+  /**
+   * كل الوحدات المباعة للمشروع (مع أو بدون ملف مطالبة).
+   * GET /accounting/claim-files/sold-units?contract_id={id}
+   * API ref 2.1 — كل عنصر: reservation_id, unit_number, claim_amount, has_claim_file, has_pdf, download_path
+   * @param {string|number} contractId - contract_id (مثل projectId)
+   * @returns {Promise<Array>} data array
+   */
+  async getClaimFileSoldUnits(contractId) {
+    try {
+      const response = await apiClient.get('/accounting/claim-files/sold-units', {
+        params: { contract_id: contractId },
+      });
+      const { items } = extractPaginatedData(response, []);
+      return Array.isArray(items) ? items : [];
+    } catch (error) {
+      const status = error?.response?.status;
+      if (status === 403) {
+        logger.debug(
+          'Claim file sold-units - Forbidden:',
+          error?.response?.data?.message || error?.message
+        );
+        return [];
+      }
+      handleServiceError(error, 'Error fetching claim file sold-units', 'get');
+      return [];
+    }
+  },
+
+  /**
+   * تحميل PDF لملف مطالبة حجز — يُنشأ الملف عند الطلب إن لم يكن موجوداً.
+   * GET /accounting/claim-files/download-for-reservation/{reservationId}
+   * يفتح التحميل في نافذة جديدة مع إرسال الـ Bearer.
+   * @param {string|number} reservationId
+   */
+  async openClaimFileDownload(reservationId) {
+    try {
+      const response = await apiClient.get(
+        `/accounting/claim-files/download-for-reservation/${reservationId}`,
+        { responseType: 'blob' }
+      );
+      const blob = response.data;
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (error) {
+      logger.error('Error downloading claim file:', error);
+      throw error;
+    }
+  },
+
   // --- Sold Units & Commissions ---
 
   /**
@@ -179,6 +258,46 @@ const accountingService = {
     } catch (error) {
       logger.error(`Error creating manual commission for reservation ${reservationId}:`, error);
       throw error;
+    }
+  },
+
+  /**
+   * Get released/paid commissions list (عرض للمحاسبة)
+   * GET /accounting/commissions/released
+   * @param {Object} params - from_date (Y-m-d), to_date (Y-m-d), per_page (1-100), page
+   * @returns {Promise<Object>} { items, total } — each item: id, commission_id, employee_id, employee_name, project_name, unit_number, type, type_label, amount, percentage, status, approved_at, paid_at, notification_sent
+   */
+  async getReleasedCommissions(params = {}) {
+    try {
+      const response = await apiClient.get('/accounting/commissions/released', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
+    } catch (error) {
+      return (
+        handleServiceError(error, 'Error fetching released commissions', 'get') || {
+          items: [],
+          total: 0,
+        }
+      );
+    }
+  },
+
+  /**
+   * Get commission distribution types (for dropdowns)
+   * GET /accounting/commission-distribution-types
+   * @returns {Promise<Object>} { types: string[], type_labels: Record<string, string> }
+   */
+  async getCommissionDistributionTypes() {
+    try {
+      const response = await apiClient.get('/accounting/commission-distribution-types');
+      const raw = response.data?.data ?? response.data ?? {};
+      return {
+        types: raw.types ?? [],
+        type_labels: raw.type_labels ?? {},
+      };
+    } catch (error) {
+      logger.error('Error fetching commission distribution types:', error);
+      return { types: [], type_labels: {} };
     }
   },
 

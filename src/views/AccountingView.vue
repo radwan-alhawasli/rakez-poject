@@ -4,10 +4,9 @@
       <AccountingDashboardTab v-if="activeTab === 'dashboard'" :user-name="userName" />
       <AccountingNotificationsTab v-else-if="activeTab === 'notifications'" />
       <AccountingSoldUnitsTab v-else-if="activeTab === 'sold-units'" />
-      <AccountingCommissionsTab v-else-if="activeTab === 'commissions'" />
       <AccountingDepositsTab v-else-if="activeTab === 'deposits'" />
       <AccountingSalariesTab v-else-if="activeTab === 'salaries'" />
-      <AccountingConfirmationsTab v-else-if="activeTab === 'confirmations'" />
+      <CreditClaimFilesTab v-else-if="activeTab === 'claim-files'" />
     </div>
   </div>
 </template>
@@ -19,10 +18,9 @@ import authService from '@/services/authService';
 import AccountingDashboardTab from '@/components/accounting/AccountingDashboardTab.vue';
 import AccountingNotificationsTab from '@/components/accounting/AccountingNotificationsTab.vue';
 import AccountingSoldUnitsTab from '@/components/accounting/AccountingSoldUnitsTab.vue';
-import AccountingCommissionsTab from '@/components/accounting/AccountingCommissionsTab.vue';
 import AccountingDepositsTab from '@/components/accounting/AccountingDepositsTab.vue';
 import AccountingSalariesTab from '@/components/accounting/AccountingSalariesTab.vue';
-import AccountingConfirmationsTab from '@/components/accounting/AccountingConfirmationsTab.vue';
+import CreditClaimFilesTab from '@/components/credit/CreditClaimFilesTab.vue';
 
 const route = useRoute();
 const user = ref(authService.getCurrentUser());
@@ -33,10 +31,9 @@ const activeTab = computed(() => {
   if (name === 'AccountingDashboard') return 'dashboard';
   if (name === 'AccountingNotifications') return 'notifications';
   if (name === 'AccountingSoldUnits') return 'sold-units';
-  if (name === 'AccountingCommissions') return 'commissions';
   if (name === 'AccountingDeposits') return 'deposits';
   if (name === 'AccountingSalaries') return 'salaries';
-  if (name === 'AccountingConfirmations') return 'confirmations';
+  if (name === 'AccountingClaimFiles') return 'claim-files';
   return 'dashboard';
 });
 </script>

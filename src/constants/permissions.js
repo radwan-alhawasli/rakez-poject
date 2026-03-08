@@ -9,6 +9,8 @@ export const PERMISSIONS = {
   NOTIFICATIONS_VIEW: 'notifications.view',
   CONTRACTS_VIEW: 'contracts.view',
   HR_USERS_CREATE: 'hr.users.create',
+  /** View employees list (read-only); used by Marketing for plans/team selection */
+  HR_USERS_VIEW: 'hr.users.view',
   HR_DASHBOARD_VIEW: 'hr.dashboard.view',
   HR_TEAMS_MANAGE: 'hr.teams.manage',
   HR_PERFORMANCE_VIEW: 'hr.performance.view',
@@ -136,6 +138,7 @@ export const PERMISSION_DEFINITIONS = {
   'hr.teams.manage': 'Manage teams (CRUD and member assignment).',
   'hr.employees.manage': 'Full employee management.',
   'hr.users.create': 'Create new users with roles.',
+  'hr.users.view': 'View employees list (for plans and team selection).',
   'hr.performance.view': 'View team and employee performance.',
   'hr.warnings.manage': 'Issue and view employee warnings.',
   'hr.contracts.manage': 'Create and download employee contracts.',
@@ -202,6 +205,8 @@ export const SALES_BASE_PERMISSIONS = [
   'exclusive_projects.contract.complete',
   'exclusive_projects.contract.export',
   'use-ai-assistant',
+  /** View second party data (project tracker / second-party-data/show) */
+  'second_party.view',
 ];
 
 /** صلاحيات إضافية لقائد المبيعات فقط — مع SALES_BASE = كل السيلز + أمور القائد كاملة */
@@ -409,6 +414,7 @@ export const BOOTSTRAP_ROLE_MAP = {
     'marketing.reports.view',
     'marketing.teams.view',
     'marketing.teams.manage',
+    'hr.users.view',
     'notifications.view',
     'exclusive_projects.view',
     'exclusive_projects.request',
@@ -461,6 +467,7 @@ export const BOOTSTRAP_ROLE_MAP = {
     'accounting.salaries.view',
     'accounting.salaries.distribute',
     'accounting.down_payment.confirm',
+    'credit.claim_files.generate',
     'notifications.view',
     'exclusive_projects.view',
     'exclusive_projects.request',

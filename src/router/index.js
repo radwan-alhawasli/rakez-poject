@@ -67,7 +67,13 @@ const routes = [
       {
         path: 'developers/:id',
         name: 'DeveloperDetail',
-        component: () => import('../views/DeveloperDetailView.vue'),
+        component: () => import('@/views/DeveloperDetailView.vue'),
+        meta: { roles: [ROLE_ADMIN, ROLE_PROJECT_MANAGEMENT, ROLE_ACCOUNTING] },
+      },
+      {
+        path: 'developers/:id/project/:projectId',
+        name: 'DeveloperProjectUnits',
+        component: () => import('@/views/DeveloperProjectUnitsView.vue'),
         meta: { roles: [ROLE_ADMIN, ROLE_PROJECT_MANAGEMENT, ROLE_ACCOUNTING] },
       },
       {
@@ -454,12 +460,6 @@ const routes = [
             meta: { permissions: [PERMISSIONS.ACCOUNTING_SOLD_UNITS_VIEW] },
           },
           {
-            path: 'commissions',
-            name: 'AccountingCommissions',
-            component: () => import('../views/AccountingView.vue'),
-            meta: { permissions: [PERMISSIONS.ACCOUNTING_COMMISSIONS_APPROVE] },
-          },
-          {
             path: 'deposits',
             name: 'AccountingDeposits',
             component: () => import('../views/AccountingView.vue'),
@@ -472,10 +472,10 @@ const routes = [
             meta: { permissions: [PERMISSIONS.ACCOUNTING_SALARIES_VIEW] },
           },
           {
-            path: 'confirmations',
-            name: 'AccountingConfirmations',
+            path: 'claim-files',
+            name: 'AccountingClaimFiles',
             component: () => import('../views/AccountingView.vue'),
-            meta: { permissions: [PERMISSIONS.ACCOUNTING_DOWN_PAYMENT_CONFIRM] },
+            meta: { permissions: [PERMISSIONS.CREDIT_CLAIM_FILES_GENERATE] },
           },
         ],
       },

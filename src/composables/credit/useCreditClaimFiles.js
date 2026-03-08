@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import creditService from '@/services/creditService';
+import accountingService from '@/services/accountingService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
@@ -52,7 +53,7 @@ export function useCreditClaimFiles() {
     showCombinedClaimModal.value = true;
     isLoadingCandidates.value = true;
     try {
-      const data = await creditService.getClaimFileCandidates({ per_page: 200 });
+      const data = await accountingService.getClaimFileCandidates({ per_page: 200 });
       claimCandidates.value = data?.items ?? (Array.isArray(data) ? data : []);
     } catch (error) {
       logger.error('Error loading claim file candidates:', error);
