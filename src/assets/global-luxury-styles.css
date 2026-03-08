@@ -322,6 +322,7 @@ input[type="number"], input[type="tel"] {
 .stat-icon-bg.ratio svg,
 .stat-icon-bg.deposits svg,
 .stat-icon-bg.confirmed svg,
+.stat-icon-bg.negotiation svg,
 .stat-icon-bg.total-res svg,
 .stat-icon-bg.revenue svg {
   width: 32px !important;
@@ -351,6 +352,7 @@ input[type="number"], input[type="tel"] {
 .stat-icon-bg.ratio,
 .stat-icon-bg.deposits,
 .stat-icon-bg.confirmed,
+.stat-icon-bg.negotiation,
 .stat-icon-bg.total-res,
 .stat-icon-bg.revenue {
   background: #27374D;
