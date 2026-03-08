@@ -6,10 +6,9 @@
         <p class="welcome-subtitle">إعداد وتوزيع خطط التسويق على الموظفين</p>
       </div>
       <div style="display: flex; gap: 8px">
-          <button class="btn-secondary" @click="exportEmployeePlansExcel">Excel</button>
-          <button class="btn-secondary" @click="exportEmployeePlansPdf">PDF</button>
-          <button class="btn-secondary" @click="exportWeeklyPlanPdf" :disabled="!employeePlansProjectId">خطة أسبوعية PDF</button>
-        </div>
+        <button class="btn-secondary" @click="exportEmployeePlansExcel">Excel</button>
+        <button class="btn-secondary" @click="exportEmployeePlansPdf">PDF</button>
+        <button class="btn-secondary" @click="exportWeeklyPlanPdf" :disabled="!employeePlansProjectId">خطة أسبوعية PDF</button>
       </div>
 
     <div class="overview-section" style="margin-bottom: 24px">

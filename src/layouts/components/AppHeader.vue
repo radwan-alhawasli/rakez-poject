@@ -16,23 +16,7 @@
         <path d="M19 12H5M12 19l-7-7 7-7" />
       </svg>
     </button>
-    <button class="dark-mode-btn" :title="isDark ? 'الوضع الفاتح' : 'الوضع الداكن'" @click="toggleDarkMode">
-      <svg v-if="isDark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-        <circle cx="12" cy="12" r="5" />
-        <line x1="12" y1="1" x2="12" y2="3" />
-        <line x1="12" y1="21" x2="12" y2="23" />
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-        <line x1="1" y1="12" x2="3" y2="12" />
-        <line x1="21" y1="12" x2="23" y2="12" />
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-      </svg>
-      <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-      </svg>
-    </button>
-    <div class="notification-wrapper">
+    <div ref="notificationWrapperRef" class="notification-wrapper">
       <button class="notification-btn" @click="$emit('toggle-notifications')">
         <svg
           class="bell-icon"
@@ -50,84 +34,85 @@
         <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
       </button>
   
-      <div v-if="showNotifications" class="notifications-dropdown">
-        <div class="notifications-header">
-          <h3 class="notifications-title">الإشعارات</h3>
-          <button v-if="unreadCount > 0" @click="$emit('mark-all-read')" class="mark-read-btn">
-            تعيين الكل كمقروء
-          </button>
-        </div>
-        <div class="notifications-list custom-scrollbar">
-          <div v-if="notifications.length === 0" class="no-notifications">
-            <svg
-              width="40"
-              height="40"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              opacity="0.3"
+      <Teleport to="body">
+        <div
+          v-if="showNotifications"
+          class="notifications-dropdown notifications-dropdown-teleport"
+          :style="dropdownPositionStyle"
+        >
+          <div class="notifications-panel-bar"></div>
+          <div class="notifications-header">
+            <h3 class="notifications-title">الإشعارات</h3>
+            <button v-if="unreadCount > 0" type="button" @click="$emit('mark-all-read')" class="mark-read-btn">
+              تعيين الكل كمقروء
+            </button>
+          </div>
+          <div class="notifications-list custom-scrollbar">
+            <div v-if="notifications.length === 0" class="no-notifications">
+              <div class="no-notifications-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+              </div>
+              <p>لا يوجد إشعارات جديدة</p>
+            </div>
+            <div
+              v-for="notification in notifications"
+              :key="notification.id"
+              :class="['notification-item', { unread: !notification.read }]"
+              @click="$emit('mark-as-read', notification.id)"
             >
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <p>لا يوجد إشعارات جديدة</p>
-          </div>
-          <div
-            v-for="notification in notifications"
-            :key="notification.id"
-            :class="['notification-item', { unread: !notification.read }]"
-            @click="$emit('mark-as-read', notification.id)"
-          >
-            <div class="notification-icon-bg" :class="notification.type">
-              <svg
-                v-if="notification.type === 'success'"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-              <svg
-                v-else-if="notification.type === 'warning'"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-                ></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-              </svg>
-              <svg
-                v-else
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
+              <div class="notification-icon-bg" :class="notification.type || 'info'">
+                <svg
+                  v-if="notification.type === 'success'"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <svg
+                  v-else-if="notification.type === 'warning'"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+                  ></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                <svg
+                  v-else
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </div>
+              <div class="notification-content">
+                <div class="notification-text">{{ notification.title }}</div>
+                <div class="notification-time">{{ notification.time }}</div>
+              </div>
+              <div v-if="!notification.read" class="unread-dot"></div>
             </div>
-            <div class="notification-content">
-              <div class="notification-text">{{ notification.title }}</div>
-              <div class="notification-time">{{ notification.time }}</div>
-            </div>
-            <div v-if="!notification.read" class="unread-dot"></div>
           </div>
         </div>
-      </div>
+      </Teleport>
     </div>
   </div>
   <div class="header-right">
@@ -142,18 +127,37 @@
 </template>
 
 <script setup>
+import { ref, watch, nextTick } from 'vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useDarkMode } from '@/composables/useDarkMode';
 
-const { isDark, toggle: toggleDarkMode } = useDarkMode();
-
-defineProps({
+const props = defineProps({
   notifications: { type: Array, default: () => [] },
   showNotifications: { type: Boolean, default: false },
   unreadCount: { type: Number, default: 0 },
 });
 
 defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
+
+const notificationWrapperRef = ref(null);
+const dropdownPositionStyle = ref({ position: 'fixed', top: '70px', right: '24px', zIndex: 9999 });
+
+watch(
+  () => props.showNotifications,
+  async (isOpen) => {
+    if (!isOpen) return;
+    await nextTick();
+    const el = notificationWrapperRef.value;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    dropdownPositionStyle.value = {
+      position: 'fixed',
+      top: `${rect.bottom + 10}px`,
+      right: `${window.innerWidth - rect.right}px`,
+      zIndex: 9999,
+    };
+  },
+  { immediate: true }
+);
 </script>
 
 <style>
@@ -178,7 +182,6 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   gap: 20px;
 }
 
-.top-header .dark-mode-btn,
 .top-header .back-btn,
 .top-header .notification-btn {
   background: rgba(255, 255, 255, 0.08);
@@ -195,14 +198,12 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
-.top-header .dark-mode-btn svg,
 .top-header .back-btn svg,
 .top-header .notification-btn svg {
   width: 18px;
   height: 18px;
   stroke-width: 2;
 }
-.top-header .dark-mode-btn::before,
 .top-header .back-btn::before,
 .top-header .notification-btn::before {
   content: '';
@@ -213,7 +214,6 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-.top-header .dark-mode-btn:hover,
 .top-header .back-btn:hover,
 .top-header .notification-btn:hover {
   background: rgba(255, 255, 255, 0.15);
@@ -222,7 +222,6 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
   transform: translateY(-4px) rotate(-3deg);
 }
-.top-header .dark-mode-btn:hover::before,
 .top-header .back-btn:hover::before,
 .top-header .notification-btn:hover::before {
   opacity: 1;
@@ -267,7 +266,7 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #ffffff;
+  color: #B5A99A;
   min-width: 0;
   overflow: hidden;
 }
@@ -277,164 +276,352 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* Arabic: خط الرقعة (Ruq'ah) */
+/* Arabic: خط الرقعة (Ruq'ah) - لون ذهبي */
 .top-header .logo-ar {
   font-family: 'Aref Ruqaa', serif;
   font-weight: 700;
   font-size: 18px;
-  color: #ffffff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  color: #B5A99A;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   letter-spacing: 0.02em;
 }
-/* English: same size as Arabic, distinctive serif to suit Ruq'ah */
+/* English: same size as Arabic, distinctive serif - لون ذهبي */
 .top-header .logo-en {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 600;
   font-size: 18px;
   opacity: 0.95;
   margin-right: 5px;
-  color: rgba(255, 255, 255, 0.95);
+  color: #B5A99A;
   letter-spacing: 0.03em;
 }
 .top-header .logo-sep {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(181, 169, 154, 0.9);
 }
 
 .top-header .notification-wrapper {
   position: relative;
 }
 
+/* لوحة الإشعارات — متناسقة مع الهيدر والثيم (نيفي/ذهبي) */
 .top-header .notifications-dropdown {
   position: absolute;
-  top: 50px;
-  left: 0;
-  width: 320px;
-  max-width: none;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--color-medium-gray);
-  z-index: var(--z-modal);
+  top: calc(100% + 10px);
+  right: 0;
+  left: auto;
+  width: 360px;
+  max-width: min(360px, calc(100vw - 32px));
+  background: linear-gradient(180deg, #ffffff 0%, var(--color-off-white, #f8fafc) 100%);
+  border-radius: var(--radius-md, 14px);
+  box-shadow: 0 12px 28px rgba(39, 55, 77, 0.14), 0 4px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(39, 55, 77, 0.1);
+  z-index: 9999;
   overflow: hidden;
-  animation: header-slideDown 0.3s ease-out;
-}
-@keyframes header-slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  animation: notifications-panel-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.top-header .notifications-header {
-  padding: 12px 16px;
-  background: var(--color-light-gray);
-  border-bottom: 1px solid var(--color-medium-gray);
+/* نفس التنسيقات عند عرض اللوحة عبر Teleport (خارج الهيدر) */
+.notifications-dropdown-teleport {
+  width: 360px;
+  max-width: min(360px, calc(100vw - 32px));
+  background: linear-gradient(180deg, #ffffff 0%, var(--color-off-white, #f8fafc) 100%);
+  border-radius: var(--radius-md, 14px);
+  box-shadow: 0 12px 28px rgba(39, 55, 77, 0.14), 0 4px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(39, 55, 77, 0.1);
+  overflow: hidden;
+  animation: notifications-panel-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.notifications-dropdown-teleport .notifications-panel-bar {
+  height: 4px;
+  background: var(--color-navy, #27374D);
+  width: 100%;
+}
+.notifications-dropdown-teleport .notifications-header {
+  padding: 14px 18px;
+  background: rgba(248, 250, 252, 0.95);
+  border-bottom: 1px solid rgba(39, 55, 77, 0.08);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
-.top-header .notifications-title {
-  font-size: 14px;
-  font-weight: 700;
+.notifications-dropdown-teleport .notifications-title {
+  font-size: 1rem;
+  font-weight: 800;
   color: var(--color-navy);
   margin: 0;
+  letter-spacing: -0.02em;
 }
-.top-header .mark-read-btn {
-  font-size: 11px;
+.notifications-dropdown-teleport .mark-read-btn {
+  font-size: 0.75rem;
   color: var(--color-gold);
   background: none;
   border: none;
   cursor: pointer;
   font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+.notifications-dropdown-teleport .mark-read-btn:hover {
+  background: rgba(181, 169, 154, 0.12);
+  color: var(--color-gold-dark, #9a8d7d);
+}
+.notifications-dropdown-teleport .notifications-list {
+  max-height: 380px;
+  overflow-y: auto;
+}
+.notifications-dropdown-teleport .notification-item {
+  padding: 14px 18px;
+  display: flex;
+  gap: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-bottom: 1px solid rgba(39, 55, 77, 0.06);
+  position: relative;
+  align-items: flex-start;
+}
+.notifications-dropdown-teleport .notification-item:hover {
+  background: rgba(39, 55, 77, 0.04);
+}
+.notifications-dropdown-teleport .notification-item.unread {
+  background: rgba(181, 169, 154, 0.06);
+}
+.notifications-dropdown-teleport .notification-item:last-child {
+  border-bottom: none;
+}
+.notifications-dropdown-teleport .notification-icon-bg {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.notifications-dropdown-teleport .notification-icon-bg.info {
+  background: rgba(181, 169, 154, 0.15);
+  color: var(--color-gold);
+}
+.notifications-dropdown-teleport .notification-icon-bg.success {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+.notifications-dropdown-teleport .notification-icon-bg.warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--color-warning, #f59e0b);
+}
+.notifications-dropdown-teleport .notification-content {
+  flex: 1;
+  min-width: 0;
+}
+.notifications-dropdown-teleport .notification-text {
+  font-size: 0.8125rem;
+  color: var(--color-charcoal);
+  line-height: 1.45;
+  margin-bottom: 4px;
+}
+.notifications-dropdown-teleport .notification-time {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
+}
+.notifications-dropdown-teleport .unread-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--color-gold);
+  border-radius: 50%;
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  left: auto;
+  box-shadow: 0 0 10px rgba(181, 162, 143, 0.6);
+}
+.notifications-dropdown-teleport .no-notifications {
+  padding: 48px 24px;
+  text-align: center;
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.notifications-dropdown-teleport .no-notifications-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(39, 55, 77, 0.06);
+  color: var(--color-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.notifications-dropdown-teleport .no-notifications-icon svg {
+  width: 24px;
+  height: 24px;
+}
+.notifications-dropdown-teleport .no-notifications p {
+  font-size: 0.875rem;
+  margin: 0;
+  font-weight: 500;
+  color: var(--color-dark-gray);
+}
+@keyframes notifications-panel-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* شريط علوي بلون الهيدر */
+.top-header .notifications-panel-bar {
+  height: 4px;
+  background: var(--color-navy, #27374D);
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.top-header .notifications-header {
+  padding: 14px 18px;
+  background: rgba(248, 250, 252, 0.95);
+  border-bottom: 1px solid rgba(39, 55, 77, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.top-header .notifications-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-navy);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+.top-header .mark-read-btn {
+  font-size: 0.75rem;
+  color: var(--color-gold);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
 }
 .top-header .mark-read-btn:hover {
-  text-decoration: underline;
+  background: rgba(181, 169, 154, 0.12);
+  color: var(--color-gold-dark, #9a8d7d);
 }
 
 .top-header .notifications-list {
-  max-height: 400px;
+  max-height: 380px;
   overflow-y: auto;
 }
 
 .top-header .notification-item {
-  padding: 12px 16px;
+  padding: 14px 18px;
   display: flex;
-  gap: 12px;
+  gap: 14px;
   cursor: pointer;
   transition: background 0.2s;
-  border-bottom: 1px solid var(--color-light-gray);
+  border-bottom: 1px solid rgba(39, 55, 77, 0.06);
   position: relative;
+  align-items: flex-start;
 }
 .top-header .notification-item:hover {
-  background: var(--color-off-white);
+  background: rgba(39, 55, 77, 0.04);
 }
 .top-header .notification-item.unread {
-  background: rgba(161, 139, 92, 0.03);
+  background: rgba(181, 169, 154, 0.06);
+}
+.top-header .notification-item:last-child {
+  border-bottom: none;
 }
 
 .top-header .notification-icon-bg {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 .top-header .notification-icon-bg.info {
-  background: rgba(161, 139, 92, 0.1);
+  background: rgba(181, 169, 154, 0.15);
   color: var(--color-gold);
 }
 .top-header .notification-icon-bg.success {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(16, 185, 129, 0.12);
   color: #10b981;
 }
 .top-header .notification-icon-bg.warning {
-  background: rgba(245, 158, 11, 0.1);
-  color: var(--color-warning);
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--color-warning, #f59e0b);
 }
 
 .top-header .notification-content {
   flex: 1;
+  min-width: 0;
 }
 .top-header .notification-text {
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--color-charcoal);
-  line-height: 1.4;
-  margin-bottom: 3px;
+  line-height: 1.45;
+  margin-bottom: 4px;
 }
 .top-header .notification-time {
-  font-size: 10px;
-  color: var(--color-dark-gray);
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
 }
 
 .top-header .unread-dot {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   background: var(--color-gold);
   border-radius: 50%;
   position: absolute;
-  top: 12px;
-  left: 12px;
-  box-shadow: 0 0 8px rgba(177, 162, 143, 0.8);
+  top: 16px;
+  right: 18px;
+  left: auto;
+  box-shadow: 0 0 10px rgba(181, 162, 143, 0.6);
 }
 
 .top-header .no-notifications {
-  padding: 40px 20px;
+  padding: 48px 24px;
   text-align: center;
-  color: var(--color-dark-gray);
+  color: #64748b;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
+}
+.top-header .no-notifications-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(39, 55, 77, 0.06);
+  color: var(--color-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.top-header .no-notifications-icon svg {
+  width: 24px;
+  height: 24px;
 }
 .top-header .no-notifications p {
-  font-size: 14px;
+  font-size: 0.875rem;
   margin: 0;
+  font-weight: 500;
+  color: var(--color-dark-gray);
 }
 
 /* 4K (3840px+) */
 @media (min-width: 3840px) {
   .top-header .notification-btn .bell-icon { width: 28px; height: 28px; }
-  .top-header .notifications-dropdown { width: 420px; }
+  .top-header .notifications-dropdown { width: 400px; }
   .top-header .logo-ar { font-size: 22px; }
   .top-header .logo-en { font-size: 22px; }
 }
@@ -455,29 +642,26 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
 /* Tablet Portrait (768px - 991px) */
 @media (min-width: 768px) and (max-width: 991px) {
   .top-header .mobile-toggle { display: block; }
-  .top-header .dark-mode-btn,
   .top-header .back-btn,
   .top-header .notification-btn { width: 40px; height: 40px; border-radius: 10px; }
   .top-header .logo-ar { font-size: 15px; }
   .top-header .logo-en,
   .top-header .logo-sep { display: none; }
-  .top-header .notifications-dropdown { width: 300px; left: auto; right: 0; }
+  .top-header .notifications-dropdown { width: 300px; right: 0; left: auto; }
 }
 
 /* Mobile Landscape (576px - 767px) */
 @media (min-width: 576px) and (max-width: 767px) {
   .top-header .mobile-toggle { display: block; padding: 8px; }
   .top-header .header-right .logo-icon-bg { display: none; }
-  .top-header .dark-mode-btn,
   .top-header .back-btn,
   .top-header .notification-btn { width: 38px; height: 38px; border-radius: 10px; }
-  .top-header .dark-mode-btn svg,
   .top-header .back-btn svg,
   .top-header .notification-btn svg { width: 18px; height: 18px; }
   .top-header .logo-ar { font-size: 14px; }
   .top-header .logo-en,
   .top-header .logo-sep { display: none; }
-  .top-header .notifications-dropdown { width: 280px; left: auto; right: 0; }
+  .top-header .notifications-dropdown { width: 280px; right: 0; left: auto; }
   .top-header .notification-item { padding: 12px 16px; }
 }
 
@@ -487,10 +671,8 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   .top-header .header-left { gap: 10px; }
   .top-header .header-right .logo-icon-bg,
   .top-header .header-right .logo-sep { display: none; }
-  .top-header .dark-mode-btn,
   .top-header .back-btn,
   .top-header .notification-btn { width: 36px; height: 36px; border-radius: 8px; }
-  .top-header .dark-mode-btn svg,
   .top-header .back-btn svg,
   .top-header .notification-btn svg { width: 16px; height: 16px; }
   .top-header .notification-badge { min-width: 16px; height: 16px; font-size: 9px; top: -6px; right: -6px; }
@@ -499,10 +681,10 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
   .top-header .notifications-dropdown {
     width: calc(100vw - 24px);
     max-width: 340px;
-    left: 12px;
-    right: auto;
-    top: 65px;
-    border-radius: 14px;
+    right: 0;
+    left: auto;
+    top: calc(100% + 10px);
+    border-radius: var(--radius-md, 14px);
   }
   .top-header .notifications-header { padding: 12px 16px; }
   .top-header .notifications-title { font-size: 15px; }
@@ -516,7 +698,6 @@ defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
 
 /* Extra Small (< 320px) */
 @media (max-width: 319px) {
-  .top-header .dark-mode-btn,
   .top-header .back-btn,
   .top-header .notification-btn { width: 34px; height: 34px; }
   .top-header .logo-ar { font-size: 12px; }

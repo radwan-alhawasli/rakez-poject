@@ -73,7 +73,10 @@
             <CardContent class="stat-card-inner">
               <div class="stat-content">
                 <span class="stat-label">العرابين</span>
-                <span class="stat-value number" :title="formatCurrency(dashboardData.total_received_deposits ?? 0)">{{ formatCurrencyCompact(dashboardData.total_received_deposits ?? 0) }}</span>
+                <div class="stat-value stat-value-currency-block" :title="formatCurrency(dashboardData.total_received_deposits ?? 0)">
+                  <span class="stat-value-main number">{{ depositParts.main }}</span>
+                  <span class="stat-value-currency-label">{{ depositParts.currency }}</span>
+                </div>
               </div>
               <div class="stat-icon-bg deposits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -127,12 +130,14 @@ import authService from '@/services/authService';
 import { computed } from 'vue';
 
 const { dashboardData, isLoadingDashboard, computedConfirmedVsNegotiationRatio: confirmedVsNegotiationRatio, formatCurrency, dashboardProjects, loadDashboard } = useSalesDashboard();
-const { formatCompact, formatCurrencyCompact, formatNumber } = useFormatters();
+const { formatCompact, formatCurrencyCompact, formatCurrencyCompactParts, formatNumber } = useFormatters();
 const { switchTab } = useSalesRouting();
 const { viewProjectDetails } = useSalesProjects();
 
 const user = authService.getCurrentUser();
 const userName = computed(() => user?.name || 'مستخدم');
+
+const depositParts = computed(() => formatCurrencyCompactParts(dashboardData.value?.total_received_deposits ?? 0));
 
 loadDashboard();
 </script>
@@ -171,6 +176,7 @@ loadDashboard();
   gap: clamp(10px, 2vw, 20px);
   margin-top: 16px;
   margin-bottom: 20px;
+  overflow: visible;
 }
 
 .stats-grid-primary {
@@ -197,7 +203,7 @@ loadDashboard();
   transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 2px 12px rgba(30, 58, 95, 0.06);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   min-height: 0;
 }
 
@@ -211,9 +217,10 @@ loadDashboard();
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 14px 16px !important;
+  gap: 14px;
+  padding: 16px 18px !important;
   min-height: 0;
+  min-width: 0;
 }
 
 :deep(.stat-icon-bg) {
@@ -240,8 +247,8 @@ loadDashboard();
   height: 22px;
   position: relative;
   z-index: 1;
-  color: white;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  color: #B5A99A;
+  filter: drop-shadow(0 0 8px rgba(181, 169, 154, 0.6)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 :deep(.stat-content) {
@@ -254,7 +261,7 @@ loadDashboard();
 }
 
 :deep(.stat-label) {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-dark-gray);
   line-height: 1.3;
@@ -265,7 +272,7 @@ loadDashboard();
 }
 
 :deep(.stat-value) {
-  font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+  font-size: clamp(1.55rem, 3.2vw, 2.05rem);
   font-weight: 800;
   color: var(--color-charcoal);
   line-height: 1.2;
@@ -279,6 +286,33 @@ loadDashboard();
 }
 
 :deep(.stat-card:hover .stat-value) {
+  color: var(--color-gold);
+}
+
+/* عرض العملة: الرقم بنفس حجم باقي اللوحات + اسم العملة أصغر أسفل */
+.stat-value-currency-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+.stat-value-currency-block .stat-value-main {
+  font-size: clamp(1.55rem, 3.2vw, 2.05rem);
+  font-weight: 800;
+  color: var(--color-charcoal);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  direction: ltr;
+  unicode-bidi: embed;
+}
+.stat-value-currency-block .stat-value-currency-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+:deep(.stat-card:hover .stat-value-currency-block .stat-value-main) {
   color: var(--color-gold);
 }
 
@@ -418,10 +452,13 @@ loadDashboard();
     height: 20px;
   }
   :deep(.stat-label) {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
   :deep(.stat-value) {
-    font-size: 1.1rem;
+    font-size: 1.4rem;
+  }
+  .stat-value-currency-block .stat-value-main {
+    font-size: 1.4rem;
   }
   .projects-mini-grid {
     grid-template-columns: 1fr;
@@ -457,7 +494,10 @@ loadDashboard();
     height: 18px;
   }
   :deep(.stat-value) {
-    font-size: 1rem;
+    font-size: 1.25rem;
+  }
+  .stat-value-currency-block .stat-value-main {
+    font-size: 1.25rem;
   }
   .mini-project-card {
     padding: 12px;

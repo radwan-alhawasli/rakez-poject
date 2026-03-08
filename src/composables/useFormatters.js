@@ -66,6 +66,26 @@ export function useFormatters() {
   };
 
   /**
+   * للأرقام المالية في البطاقات: الرقم مع منزلة عشرية + حرف الرتبة (K/M/B)، واسم العملة منفصل للعرض أسفل الرقم.
+   * @returns {{ main: string, currency: string }} main مثل "8.0 M" أو "1.5 K"، currency مثل "ر.س"
+   */
+  const formatCurrencyCompactParts = (val) => {
+    const n = Number(val) || 0;
+    const abs = Math.abs(n);
+    let main;
+    if (abs < 1000) {
+      main = n.toFixed(1);
+    } else if (abs < 1e6) {
+      main = (n / 1000).toFixed(1) + ' K';
+    } else if (abs < 1e9) {
+      main = (n / 1e6).toFixed(1) + ' M';
+    } else {
+      main = (n / 1e9).toFixed(1) + ' B';
+    }
+    return { main, currency: 'ر.س' };
+  };
+
+  /**
    * @param {string} dateStr - ISO date string
    * @param {string} [fallback='—'] - Value returned for empty/invalid dates
    */
@@ -146,6 +166,7 @@ export function useFormatters() {
     formatNumber,
     formatCompact,
     formatCurrencyCompact,
+    formatCurrencyCompactParts,
     formatDate,
     formatDateLong,
     formatDateISO,

@@ -7,6 +7,12 @@ import i18n from './i18n';
 import vPermission from './directives/permission';
 import { registerErrorReporter } from './utils/errorReporter';
 
+// الوضع المظلم معطّل — إجبار الوضع الفاتح
+if (typeof document !== 'undefined') {
+  document.documentElement.classList.remove('dark');
+  try { localStorage.removeItem('rakez-dark-mode'); } catch (_) {}
+}
+
 // Helper: treat 401/Unauthenticated as expected (redirect to login), not a runtime error
 function isAuthError(reason) {
   if (!reason) return false;

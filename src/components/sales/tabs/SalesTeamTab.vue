@@ -1,59 +1,76 @@
 <template>
   <div class="team-tab">
-    <div class="team-sections">
-      <!-- Team Members -->
-      <div class="team-section">
-        <div class="team-section-header">
-          <h3>أعضاء الفريق</h3>
-          <label class="sort-toggle">
-            <input type="checkbox" v-model="teamSortByRecommendation" />
-            <span>ترتيب بالتوصية (ذكاء اصطناعي)</span>
-          </label>
-        </div>
+    <div class="team-tabs">
+      <button
+        type="button"
+        class="team-tab-btn"
+        :class="{ active: activeTab === 'members' }"
+        @click="activeTab = 'members'"
+      >
+        أعضاء الفريق
+      </button>
+      <button
+        type="button"
+        class="team-tab-btn"
+        :class="{ active: activeTab === 'projects' }"
+        @click="activeTab = 'projects'"
+      >
+        مشاريع الفريق
+      </button>
+    </div>
 
-        <LoadingSpinner v-if="isLoadingTeam" :text="teamSortByRecommendation && isLoadingTeamRecommendations ? 'جاري تحميل التوصيات...' : ''" />
+    <!-- تبويب أعضاء الفريق -->
+    <div v-show="activeTab === 'members'" class="team-tab-panel">
+      <div class="team-section-header">
+        <h3 class="panel-title">أعضاء الفريق</h3>
+        <label class="sort-toggle">
+          <input type="checkbox" v-model="teamSortByRecommendation" />
+          <span>ترتيب بالتوصية (ذكاء اصطناعي)</span>
+        </label>
+      </div>
 
-        <div v-else class="team-members-grid">
-          <div v-for="member in teamMembersDisplay" :key="member.id" class="member-card">
-            <div class="member-avatar">{{ (member.name || '?').charAt(0) }}</div>
-            <div class="member-info">
-              <h4>{{ member.name }}</h4>
-              <p>{{ member.role || 'عضو فريق' }}</p>
-              <div class="member-stats">
-                <span>{{ member.total_sales || 0 }} مبيعة</span>
-                <span>{{ formatCurrency(member.total_value || 0) }}</span>
-              </div>
-              <div class="member-actions" v-if="hasPermission('sales.team.manage')">
-                <button
-                  type="button"
-                  class="btn-remove-member"
-                  :disabled="memberRemoveLoading === member.id"
-                  @click="confirmRemoveMember(member)"
-                >
-                  إقالة
-                </button>
-              </div>
+      <LoadingSpinner v-if="isLoadingTeam" :text="teamSortByRecommendation && isLoadingTeamRecommendations ? 'جاري تحميل التوصيات...' : ''" />
+
+      <div v-else class="team-members-grid">
+        <div v-for="member in teamMembersDisplay" :key="member.id" class="member-card">
+          <div class="member-avatar">{{ (member.name || '?').charAt(0) }}</div>
+          <div class="member-info">
+            <h4>{{ member.name }}</h4>
+            <p class="member-role">{{ member.role || 'عضو فريق' }}</p>
+            <div class="member-stats">
+              <span class="member-stat"><strong>{{ member.total_sales ?? 0 }}</strong> مبيعة</span>
+              <span class="member-stat">{{ formatCurrency(member.total_value ?? 0) }}</span>
+            </div>
+            <div class="member-actions" v-if="hasPermission('sales.team.manage')">
+              <button
+                type="button"
+                class="btn-remove-member"
+                :disabled="memberRemoveLoading === member.id"
+                @click="confirmRemoveMember(member)"
+              >
+                إقالة
+              </button>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Team Projects -->
-      <div class="team-section">
-        <h3>مشاريع الفريق</h3>
-        <LoadingSpinner v-if="isLoadingTeamProjects" />
-        <div v-else class="team-projects-list">
-          <div v-for="project in teamProjects" :key="project.id" class="team-project-card">
-            <h4>{{ project.project_name }}</h4>
-            <div class="project-stats">
-              <div class="stat">
-                <span class="label">الوحدات المتاحة:</span>
-                <span class="value">{{ project.available_units }}</span>
-              </div>
-              <div class="stat">
-                <span class="label">المبيعات:</span>
-                <span class="value">{{ project.total_sales }}</span>
-              </div>
+    <!-- تبويب مشاريع الفريق -->
+    <div v-show="activeTab === 'projects'" class="team-tab-panel">
+      <h3 class="panel-title">مشاريع الفريق</h3>
+      <LoadingSpinner v-if="isLoadingTeamProjects" />
+      <div v-else class="team-projects-grid">
+        <div v-for="project in teamProjects" :key="project.id" class="team-project-card">
+          <h4>{{ project.project_name }}</h4>
+          <div class="project-stats">
+            <div class="stat">
+              <span class="label">الوحدات المتاحة:</span>
+              <span class="value">{{ project.available_units }}</span>
+            </div>
+            <div class="stat">
+              <span class="label">المبيعات:</span>
+              <span class="value">{{ project.total_sales }}</span>
             </div>
           </div>
         </div>
@@ -77,8 +94,11 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { useSalesTeam } from '@/composables/sales/useSalesTeam';
+
+const activeTab = ref('members');
 
 const {
   teamMembersDisplay, teamProjects, isLoadingTeam,
@@ -94,26 +114,65 @@ loadTeamProjects();
 </script>
 
 <style scoped>
-/* تنسيقات الفريق — من الأب SalesViewExtended */
 .team-tab {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 4px;
   direction: rtl;
 }
 
-.team-sections {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 28px;
+/* شريط التبويبات */
+.team-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  padding: 4px;
+  background: rgba(39, 55, 77, 0.06);
+  border-radius: var(--radius-md, 14px);
+  border: 1px solid rgba(39, 55, 77, 0.08);
+  width: fit-content;
 }
 
-@media (min-width: 900px) {
-  .team-sections {
-    grid-template-columns: 1fr 1fr;
-    gap: 32px;
-  }
+.team-tab-btn {
+  padding: 12px 24px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-navy);
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.team-tab-btn:hover {
+  background: rgba(39, 55, 77, 0.06);
+  color: var(--color-navy);
+}
+
+.team-tab-btn.active {
+  background: var(--color-white);
+  color: var(--color-navy);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.team-tab-panel {
+  animation: panel-fade 0.2s ease-out;
+}
+
+@keyframes panel-fade {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
+
+.panel-title,
+.team-section-header .panel-title {
+  margin: 0 0 20px 0;
+  font-size: clamp(1.1rem, 2.5vw, 1.25rem);
+  color: var(--color-navy);
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(39, 55, 77, 0.12);
 }
 
 .team-section-header {
@@ -125,12 +184,10 @@ loadTeamProjects();
   margin-bottom: 20px;
 }
 
-.team-section-header h3 {
+.team-section-header .panel-title {
   margin: 0;
-  font-size: clamp(18px, 4vw, 20px);
-  color: var(--color-navy);
-  padding-bottom: 10px;
-  border-bottom: 2px solid var(--color-medium-gray);
+  padding-bottom: 0;
+  border-bottom: none;
   flex: 1 1 auto;
   min-width: 0;
 }
@@ -139,7 +196,7 @@ loadTeamProjects();
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: clamp(13px, 2.5vw, 14px);
+  font-size: clamp(0.8125rem, 2vw, 0.875rem);
   color: var(--color-dark-gray);
   cursor: pointer;
   flex-shrink: 0;
@@ -152,93 +209,71 @@ loadTeamProjects();
   cursor: pointer;
 }
 
-.team-section h3 {
-  margin: 0 0 20px 0;
-  font-size: clamp(18px, 4vw, 20px);
-  color: var(--color-navy);
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--color-medium-gray);
-}
-
+/* شبكة الأعضاء — موحدة ومنتظمة */
 .team-members-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
 }
 
-@media (min-width: 520px) {
+@media (min-width: 600px) {
   .team-members-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
-  }
-}
-
-@media (min-width: 768px) {
-  .team-members-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-}
-
-@media (min-width: 1100px) {
-  .team-members-grid {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 22px;
+    gap: 24px;
   }
 }
 
 .member-card {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 18px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 20px;
   background: var(--color-white);
-  border: 1px solid var(--color-medium-gray);
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(39, 55, 77, 0.1);
+  border-radius: var(--radius-md, 14px);
+  box-shadow: 0 2px 12px rgba(39, 55, 77, 0.06);
   transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
   min-width: 0;
 }
 
 .member-card:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-  border-color: rgba(177, 162, 143, 0.35);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(39, 55, 77, 0.1);
+  border-color: rgba(181, 169, 154, 0.35);
+  transform: translateY(-3px);
 }
 
 .member-avatar {
-  width: 52px;
-  height: 52px;
-  min-width: 52px;
-  min-height: 52px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 14px;
   flex-shrink: 0;
 }
 
 .member-info {
-  flex: 1;
+  width: 100%;
   min-width: 0;
 }
 
 .member-info h4 {
-  margin: 0 0 4px 0;
-  font-size: clamp(15px, 3vw, 16px);
+  margin: 0 0 6px 0;
+  font-size: 1rem;
   color: var(--color-navy);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.3;
   word-break: break-word;
 }
 
-.member-info p {
-  margin: 0 0 8px 0;
-  font-size: 13px;
+.member-role {
+  margin: 0 0 12px 0;
+  font-size: 0.8125rem;
   color: var(--color-dark-gray);
   line-height: 1.4;
 }
@@ -246,16 +281,27 @@ loadTeamProjects();
 .member-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 16px;
-  font-size: 12px;
+  justify-content: center;
+  gap: 12px 20px;
+  font-size: 0.8125rem;
   color: #475569;
-  margin-bottom: 4px;
+  margin-bottom: 0;
+}
+
+.member-stat {
+  white-space: nowrap;
+}
+
+.member-stat strong {
+  color: var(--color-navy);
+  font-weight: 700;
 }
 
 .member-actions {
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(39, 55, 77, 0.08);
+  width: 100%;
 }
 
 .btn-remove-member {
@@ -280,33 +326,45 @@ loadTeamProjects();
   cursor: not-allowed;
 }
 
-.team-projects-list {
+.team-projects-grid {
   display: grid;
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
 }
 
 .team-project-card {
-  padding: 16px;
-  background: var(--color-light-gray);
-  border-radius: 12px;
-  border: 1px solid var(--color-medium-gray);
+  padding: 20px;
+  background: var(--color-white);
+  border: 1px solid rgba(39, 55, 77, 0.1);
+  border-radius: var(--radius-md, 14px);
+  box-shadow: 0 2px 12px rgba(39, 55, 77, 0.06);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.team-project-card:hover {
+  box-shadow: 0 6px 20px rgba(39, 55, 77, 0.08);
+  border-color: rgba(181, 169, 154, 0.25);
 }
 
 .team-project-card h4 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
+  margin: 0 0 14px 0;
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--color-navy);
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(39, 55, 77, 0.08);
 }
 
 .project-stats {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .project-stats .stat {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  align-items: center;
+  font-size: 0.875rem;
 }
 
 .project-stats .label {
@@ -315,7 +373,7 @@ loadTeamProjects();
 
 .project-stats .value {
   color: var(--color-navy);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Modal */
