@@ -10,15 +10,15 @@
 
 /* Root Variables - Luxury Color Palette */
 :root {
-  /* Primary Colors */
-  --color-gold: #B1A28F;
-  --color-gold-light: #d4c4a8;
-  --color-gold-dark: #8c7851;
+  /* Primary Colors — بيج/تاوپ بدل الذهبي */
+  --color-gold: #B5A99A;
+  --color-gold-light: #c5baad;
+  --color-gold-dark: #9a8d7d;
   
-  /* Navy Blues */
-  --color-navy: #1e3a5f;
-  --color-navy-light: #2c4a6f;
-  --color-navy-dark: #162c46;
+  /* أزرق صريح بدون تدريج */
+  --color-navy: #27374D;
+  --color-navy-light: #364a62;
+  --color-navy-dark: #1a2636;
   
   /* Neutrals */
   --color-white: #ffffff;
@@ -863,15 +863,14 @@ html.dark {
   /* Surfaces (cards, inputs, dropdowns) */
   --color-white: #1e293b;
 
-  /* Gold accent — slightly brighter for contrast on dark */
-  --color-gold: #c4b5a2;
-  --color-gold-light: #d4c4a8;
-  --color-gold-dark: #a89070;
+  /* نفس اللونين — بيج وأزرق صريح */
+  --color-gold: #B5A99A;
+  --color-gold-light: #c5baad;
+  --color-gold-dark: #9a8d7d;
 
-  /* Navy — lighter for text, still works as bg */
-  --color-navy: #60a5fa;
-  --color-navy-light: #93c5fd;
-  --color-navy-dark: #3b82f6;
+  --color-navy: #27374D;
+  --color-navy-light: #364a62;
+  --color-navy-dark: #1a2636;
 
   /* Shadows — deeper for dark surfaces */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
@@ -1003,8 +1002,34 @@ html.dark .premium-card:hover {
 }
 
 /* ---- Stat cards ---- */
-html.dark .stat-icon-bg {
-  opacity: 0.85;
+html.dark .stat-icon-bg,
+html.dark .stat-icon-bg.gold,
+html.dark .stat-icon-bg.dollar,
+html.dark .stat-icon-bg.blue,
+html.dark .stat-icon-bg.units,
+html.dark .stat-icon-bg.green,
+html.dark .stat-icon-bg.projects,
+html.dark .stat-icon-bg.cyan,
+html.dark .stat-icon-bg.ready,
+html.dark .stat-icon-bg.red,
+html.dark .stat-icon-bg.not-ready,
+html.dark .stat-icon-bg.purple,
+html.dark .stat-icon-bg.orange,
+html.dark .stat-icon-bg.teal,
+html.dark .stat-icon-bg.reserved,
+html.dark .stat-icon-bg.available,
+html.dark .stat-icon-bg.marketing,
+html.dark .stat-icon-bg.ratio,
+html.dark .stat-icon-bg.deposits,
+html.dark .stat-icon-bg.confirmed,
+html.dark .stat-icon-bg.total-res,
+html.dark .stat-icon-bg.revenue {
+  color: #B5A99A;
+  box-shadow: 0 0 16px rgba(181, 169, 154, 0.35), 0 4px 16px rgba(0, 0, 0, 0.3);
+  opacity: 0.95;
+}
+html.dark .stat-card:hover .stat-icon-bg {
+  box-shadow: 0 0 24px rgba(181, 169, 154, 0.5), 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 /* ---- Tab navigation ---- */
@@ -1105,14 +1130,12 @@ html.dark .top-header {
   background: #0f172a;
   border-color: #334155;
 }
-html.dark .top-header .dark-mode-btn,
 html.dark .top-header .back-btn,
 html.dark .top-header .notification-btn {
   background: #1e293b;
   border-color: #334155;
   color: #94a3b8;
 }
-html.dark .top-header .dark-mode-btn:hover,
 html.dark .top-header .back-btn:hover,
 html.dark .top-header .notification-btn:hover {
   background: #334155;
@@ -1120,7 +1143,7 @@ html.dark .top-header .notification-btn:hover {
   color: var(--color-gold);
 }
 html.dark .top-header .logo {
-  color: #e2e8f0;
+  color: #B5A99A;
 }
 html.dark .top-header .update-info {
   color: #64748b;
@@ -1235,13 +1258,13 @@ html.dark .form-group select {
 
 /* ---- Catch-all: page headers ---- */
 html.dark .page-header {
-  color: #e2e8f0;
+  color: #B5A99A;
 }
 html.dark .page-title {
-  color: #e2e8f0;
+  color: #B5A99A;
 }
 html.dark .page-subtitle {
-  color: #94a3b8;
+  color: rgba(181, 169, 154, 0.9);
 }
 
 /* ---- Catch-all: buttons ---- */
@@ -1328,13 +1351,13 @@ html.dark .exclusive-project-view {
 
 /* ---- Welcome headers (Dashboard, etc.) ---- */
 html.dark .welcome-header {
-  color: #e2e8f0;
+  color: #B5A99A;
 }
 html.dark .welcome-title {
-  color: #e2e8f0;
+  color: #B5A99A;
 }
 html.dark .welcome-subtitle {
-  color: #94a3b8;
+  color: rgba(181, 169, 154, 0.9);
 }
 
 /* ---- Sidebar (complement the Tailwind sidebar vars) ---- */

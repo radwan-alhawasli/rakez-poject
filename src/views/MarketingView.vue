@@ -87,8 +87,8 @@ const activeTab = computed(() => {
 .marketing-view .stat-desc { font-size: 13px; color: #94a3b8; }
 .marketing-view .stat-icon-bg { width: 80px; height: 80px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; overflow: hidden; }
 .marketing-view .stat-icon-bg::before { content: ''; position: absolute; inset: 0; background: inherit; filter: blur(20px); opacity: 0.5; }
-.marketing-view .stat-icon-bg svg { width: 36px; height: 36px; position: relative; z-index: 1; color: white; }
-.marketing-view .stat-icon-bg { background: linear-gradient(135deg, #1a2a4a 0%, #2c4a7c 50%, #3b6098 100%); color: white; }
+.marketing-view .stat-icon-bg svg { width: 36px; height: 36px; position: relative; z-index: 1; color: #B5A99A; filter: drop-shadow(0 0 10px rgba(181, 169, 154, 0.6)); }
+.marketing-view .stat-icon-bg { background: #27374D; color: #B5A99A; box-shadow: 0 0 16px rgba(181, 169, 154, 0.35); }
 
 /* Overview Section */
 .marketing-view .overview-section { background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%); border-radius: var(--radius-lg); padding: 32px; border: 1px solid rgba(177, 162, 143, 0.15); box-shadow: 0 4px 6px -1px rgba(30, 58, 95, 0.03), 0 10px 20px -5px rgba(30, 58, 95, 0.05); }

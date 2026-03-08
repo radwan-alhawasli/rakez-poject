@@ -503,7 +503,7 @@ export default {
 
 .sales-view .stat-icon-bg.total-res,
 .sales-view .stat-icon-bg.revenue {
-  background: linear-gradient(135deg, #1a2a4a 0%, #2c4a7c 50%, #3b6098 100%);
+  background: #27374D;
   color: white;
 }
 

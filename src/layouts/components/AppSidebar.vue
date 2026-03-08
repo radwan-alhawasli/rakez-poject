@@ -33,27 +33,6 @@
             </div>
           </router-link>
 
-          <!-- AI Assistant -->
-          <router-link
-            to="/ai-assistant"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="المساعد الذكي"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <span class="nav-text">المساعد الذكي</span>
-            </div>
-          </router-link>
-  
           <router-link
             to="/notifications"
             class="nav-item"
@@ -74,23 +53,7 @@
               <span class="nav-text">الإشعارات</span>
             </div>
           </router-link>
-  
-          <router-link to="/sales/analytics" class="nav-item" active-class="active" data-tooltip="التحليلات">
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                <polyline points="17 6 23 6 23 12"></polyline>
-              </svg>
-              <span class="nav-text">التحليلات</span>
-            </div>
-          </router-link>
-  
+
           <router-link
             to="/project-management"
             class="nav-item"
@@ -109,6 +72,22 @@
                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
               </svg>
               <span class="nav-text">إدارة المشاريع</span>
+            </div>
+          </router-link>
+  
+          <router-link to="/sales/analytics" class="nav-item" active-class="active" data-tooltip="التحليلات">
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+              <span class="nav-text">التحليلات</span>
             </div>
           </router-link>
   
@@ -339,6 +318,28 @@
             </div>
           </router-link>
   
+          <!-- ادارة المهام -->
+          <router-link
+            to="/tasks"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="ادارة المهام"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span class="nav-text">ادارة المهام</span>
+            </div>
+          </router-link>
+
           <router-link
             to="/exclusive-request"
             class="nav-item"
@@ -361,13 +362,12 @@
               <span class="nav-text">طلب مشروع حصري</span>
             </div>
           </router-link>
-  
-          <!-- المهام الخاصة بي -->
+
           <router-link
-            to="/tasks"
+            to="/ai-assistant"
             class="nav-item"
             active-class="active"
-            data-tooltip="المهام الخاصة بي"
+            data-tooltip="المساعد الذكي"
           >
             <div class="nav-content">
               <svg
@@ -377,10 +377,30 @@
                 stroke="currentColor"
                 stroke-width="2"
               >
-                <path d="M9 11l3 3L22 4"></path>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
               </svg>
-              <span class="nav-text">المهام الخاصة بي</span>
+              <span class="nav-text">المساعد الذكي</span>
+            </div>
+          </router-link>
+
+          <router-link
+            to="/profile"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="الملف الشخصي"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span class="nav-text">الملف الشخصي</span>
             </div>
           </router-link>
         </template>
@@ -411,27 +431,6 @@
             </div>
           </router-link>
 
-          <!-- AI Assistant -->
-          <router-link
-            to="/ai-assistant"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="المساعد الذكي"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <span class="nav-text">المساعد الذكي</span>
-            </div>
-          </router-link>
-  
           <!-- 2. الإشعارات -->
           <router-link
             to="/notifications"
@@ -615,12 +614,12 @@
             </div>
           </router-link>
   
-          <!-- المهام الخاصة بي -->
+          <!-- ادارة المهام -->
           <router-link
             to="/tasks"
             class="nav-item"
             active-class="active"
-            data-tooltip="المهام الخاصة بي"
+            data-tooltip="ادارة المهام"
           >
             <div class="nav-content">
               <svg
@@ -633,7 +632,27 @@
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span class="nav-text">المهام الخاصة بي</span>
+              <span class="nav-text">ادارة المهام</span>
+            </div>
+          </router-link>
+
+          <router-link
+            to="/ai-assistant"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="المساعد الذكي"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span class="nav-text">المساعد الذكي</span>
             </div>
           </router-link>
   
@@ -681,28 +700,27 @@
             </div>
           </router-link>
 
-          <!-- AI Assistant -->
+          <!-- 2. الإشعارات -->
           <router-link
-            to="/ai-assistant"
+            v-if="hasPermission('notifications.view')"
+            to="/notifications"
             class="nav-item"
-            active-class="active"
-            data-tooltip="المساعد الذكي"
+            exact-active-class="active"
+            data-tooltip="الإشعارات"
           >
             <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <span class="nav-text">المساعد الذكي</span>
+              <div class="icon-with-badge">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
+              </div>
+              <span class="nav-text">الإشعارات</span>
             </div>
           </router-link>
 
-          <!-- 2. المشاريع -->
+          <!-- 3. المشاريع -->
           <router-link
             v-if="hasPermission('sales.projects.view')"
             to="/sales/projects"
@@ -755,13 +773,13 @@
             </div>
           </router-link>
 
-          <!-- 5. الأهداف -->
+          <!-- 5. أهداف الفريق -->
           <router-link
             v-if="hasPermission('sales.targets.view')"
             to="/sales/targets"
             class="nav-item"
             exact-active-class="active"
-            data-tooltip="الأهداف"
+            data-tooltip="أهداف الفريق"
           >
             <div class="nav-content">
               <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -769,7 +787,7 @@
                 <circle cx="12" cy="12" r="6"></circle>
                 <circle cx="12" cy="12" r="2"></circle>
               </svg>
-              <span class="nav-text">الأهداف</span>
+              <span class="nav-text">أهداف الفريق</span>
             </div>
           </router-link>
 
@@ -809,58 +827,7 @@
             </div>
           </router-link>
 
-          <!-- 8. المهام (Sales Leader only) -->
-          <router-link
-            v-if="hasPermission('sales.tasks.manage')"
-            to="/sales/tasks"
-            class="nav-item"
-            exact-active-class="active"
-            data-tooltip="المهام"
-          >
-            <div class="nav-content">
-              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <polyline points="9 11 12 14 22 4"></polyline>
-              </svg>
-              <span class="nav-text">المهام</span>
-            </div>
-          </router-link>
-
-          <!-- 9. توزيع الشفتات (Sales Leader only) -->
-          <router-link
-            v-if="hasPermission('sales.projects.allocate_shifts')"
-            to="/sales/assignments"
-            class="nav-item"
-            exact-active-class="active"
-            data-tooltip="توزيع الشفتات"
-          >
-            <div class="nav-content">
-              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-              </svg>
-              <span class="nav-text">توزيع الشفتات</span>
-            </div>
-          </router-link>
-
-          <!-- 10. خطط الدفع (Sales Leader only) -->
-          <router-link
-            v-if="hasPermission('sales.payment-plan.manage')"
-            to="/sales/payment-plans"
-            class="nav-item"
-            exact-active-class="active"
-            data-tooltip="خطط الدفع"
-          >
-            <div class="nav-content">
-              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="1" x2="12" y2="23"></line>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-              </svg>
-              <span class="nav-text">خطط الدفع</span>
-            </div>
-          </router-link>
-
-          <!-- 11. إدارة دوام المشاريع (Sales Leader only) -->
+          <!-- 8. إدارة دوام المشاريع (Sales Leader only) -->
           <router-link
             v-if="hasPermission('sales.attendance.manage')"
             to="/sales/project-schedules"
@@ -880,27 +847,7 @@
             </div>
           </router-link>
 
-          <!-- 12. الإشعارات -->
-          <router-link
-            v-if="hasPermission('notifications.view')"
-            to="/notifications"
-            class="nav-item"
-            exact-active-class="active"
-            data-tooltip="الإشعارات"
-          >
-            <div class="nav-content">
-              <div class="icon-with-badge">
-                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                </svg>
-                <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
-              </div>
-              <span class="nav-text">الإشعارات</span>
-            </div>
-          </router-link>
-
-          <!-- 13. طلباتي -->
+          <!-- طلباتي -->
           <router-link
             v-if="hasPermission('exclusive_projects.request')"
             to="/my-requests"
@@ -936,19 +883,33 @@
             </div>
           </router-link>
 
-          <!-- 15. المهام الخاصة بي -->
+          <!-- 15. ادارة المهام -->
           <router-link
             to="/tasks"
             class="nav-item"
             exact-active-class="active"
-            data-tooltip="المهام الخاصة بي"
+            data-tooltip="ادارة المهام"
           >
             <div class="nav-content">
               <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span class="nav-text">المهام الخاصة بي</span>
+              <span class="nav-text">ادارة المهام</span>
+            </div>
+          </router-link>
+
+          <router-link
+            to="/ai-assistant"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="المساعد الذكي"
+          >
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span class="nav-text">المساعد الذكي</span>
             </div>
           </router-link>
 
@@ -996,27 +957,6 @@
             </div>
           </router-link>
 
-          <!-- AI Assistant -->
-          <router-link
-            to="/ai-assistant"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="المساعد الذكي"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <span class="nav-text">المساعد الذكي</span>
-            </div>
-          </router-link>
-  
           <!-- 2. الإشعارات -->
           <router-link
             v-if="hasPermission('notifications.view')"
@@ -1163,12 +1103,12 @@
             </div>
           </router-link>
   
-          <!-- المهام الخاصة بي -->
+          <!-- ادارة المهام -->
           <router-link
             to="/tasks"
             class="nav-item"
             active-class="active"
-            data-tooltip="المهام الخاصة بي"
+            data-tooltip="ادارة المهام"
           >
             <div class="nav-content">
               <svg
@@ -1181,7 +1121,7 @@
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span class="nav-text">المهام الخاصة بي</span>
+              <span class="nav-text">ادارة المهام</span>
             </div>
           </router-link>
   
@@ -1205,6 +1145,26 @@
                 <line x1="9" y1="15" x2="15" y2="15"></line>
               </svg>
               <span class="nav-text">طلب مشروع حصري</span>
+            </div>
+          </router-link>
+
+          <router-link
+            to="/ai-assistant"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="المساعد الذكي"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span class="nav-text">المساعد الذكي</span>
             </div>
           </router-link>
 
@@ -1256,27 +1216,6 @@
             </div>
           </router-link>
 
-          <!-- AI Assistant -->
-          <router-link
-            to="/ai-assistant"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="المساعد الذكي"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <span class="nav-text">المساعد الذكي</span>
-            </div>
-          </router-link>
-  
           <router-link
             to="/credit/notifications"
             class="nav-item"
@@ -1366,12 +1305,12 @@
             </div>
           </router-link>
   
-          <!-- المهام الخاصة بي -->
+          <!-- ادارة المهام -->
           <router-link
             to="/tasks"
             class="nav-item"
             active-class="active"
-            data-tooltip="المهام الخاصة بي"
+            data-tooltip="ادارة المهام"
           >
             <div class="nav-content">
               <svg
@@ -1384,7 +1323,27 @@
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span class="nav-text">المهام الخاصة بي</span>
+              <span class="nav-text">ادارة المهام</span>
+            </div>
+          </router-link>
+
+          <router-link
+            to="/ai-assistant"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="المساعد الذكي"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span class="nav-text">المساعد الذكي</span>
             </div>
           </router-link>
   
@@ -1435,27 +1394,6 @@
             </div>
           </router-link>
 
-          <!-- AI Assistant -->
-          <router-link
-            to="/ai-assistant"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="المساعد الذكي"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <span class="nav-text">المساعد الذكي</span>
-            </div>
-          </router-link>
-  
           <router-link
             to="/accounting/notifications"
             class="nav-item"
@@ -1631,12 +1569,12 @@
             </div>
           </router-link>
   
-          <!-- المهام الخاصة بي -->
+          <!-- ادارة المهام -->
           <router-link
             to="/tasks"
             class="nav-item"
             active-class="active"
-            data-tooltip="المهام الخاصة بي"
+            data-tooltip="ادارة المهام"
           >
             <div class="nav-content">
               <svg
@@ -1649,7 +1587,27 @@
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span class="nav-text">المهام الخاصة بي</span>
+              <span class="nav-text">ادارة المهام</span>
+            </div>
+          </router-link>
+
+          <router-link
+            to="/ai-assistant"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="المساعد الذكي"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span class="nav-text">المساعد الذكي</span>
             </div>
           </router-link>
   
@@ -1701,27 +1659,6 @@
             </div>
           </router-link>
 
-          <!-- AI Assistant -->
-          <router-link
-            to="/ai-assistant"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="المساعد الذكي"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <span class="nav-text">المساعد الذكي</span>
-            </div>
-          </router-link>
-  
           <router-link
             to="/notifications"
             class="nav-item"
@@ -1822,12 +1759,12 @@
             </div>
           </router-link>
   
-          <!-- المهام الخاصة بي -->
+          <!-- ادارة المهام -->
           <router-link
             to="/tasks"
             class="nav-item"
             active-class="active"
-            data-tooltip="المهام الخاصة بي"
+            data-tooltip="ادارة المهام"
           >
             <div class="nav-content">
               <svg
@@ -1840,7 +1777,7 @@
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span class="nav-text">المهام الخاصة بي</span>
+              <span class="nav-text">ادارة المهام</span>
             </div>
           </router-link>
   
@@ -1863,6 +1800,26 @@
                 <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
               </svg>
               <span class="nav-text">أدائي</span>
+            </div>
+          </router-link>
+
+          <router-link
+            to="/ai-assistant"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="المساعد الذكي"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span class="nav-text">المساعد الذكي</span>
             </div>
           </router-link>
   
@@ -1944,8 +1901,8 @@ defineEmits(['logout']);
 /* Base sidebar-internal styles (not scoped so they reach through sub-components) */
 
 .sidebar {
-  background: linear-gradient(135deg, #1a2a4a 0%, #2c4a7c 50%, #3b6098 100%) !important;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  background: #27374D !important;
+  border-left: 1px solid rgba(181, 169, 154, 0.35);
 }
 
 .sidebar-logo-img {
@@ -1953,7 +1910,7 @@ defineEmits(['logout']);
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border: 1.5px solid rgba(181, 169, 154, 0.6);
   flex-shrink: 0;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
@@ -1971,21 +1928,21 @@ defineEmits(['logout']);
   transform: translateX(0);
 }
 .sidebar:hover .sidebar-logo-img {
-  border-color: #ffffff;
+  border-color: #B5A99A;
   transform: rotate(360deg) scale(1.1);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(181, 169, 154, 0.3);
   border-radius: 8px;
 }
 
 .rakez-ar {
-  color: #ffffff;
+  color: #B5A99A;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 .rakez-en {
   font-size: 14px;
   opacity: 0.9;
   margin-right: 5px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #B5A99A;
 }
 
 .sidebar .nav-item {
@@ -1996,7 +1953,7 @@ defineEmits(['logout']);
   height: 44px;
   margin: 8px auto;
   padding: 0;
-  color: rgba(255, 255, 255, 0.7);
+  color: #B5A99A;
   text-decoration: none;
   font-size: 14px;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -2034,17 +1991,17 @@ defineEmits(['logout']);
   transform: translateY(-50%);
   width: 3px;
   height: 0;
-  background: #ffffff;
+  background: rgba(181, 169, 154, 0.5);
   border-radius: 2px;
   transition: height 0.3s ease;
   opacity: 0;
 }
 
 .sidebar .nav-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1), 0 0 15px rgba(255, 255, 255, 0.05);
+  background: rgba(181, 169, 154, 0.15);
+  color: #B5A99A;
+  border-color: rgba(181, 169, 154, 0.4);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1), 0 0 15px rgba(181, 169, 154, 0.2);
 }
 .sidebar:hover .nav-item:hover {
   transform: translateX(-6px);
@@ -2052,26 +2009,26 @@ defineEmits(['logout']);
 .sidebar .nav-item:hover::before {
   height: 65%;
   opacity: 1;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 10px rgba(181, 169, 154, 0.5);
 }
 .sidebar:not(:hover) .nav-item:hover::before {
   display: none;
 }
 
 .sidebar .nav-item.active {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: rgba(181, 169, 154, 0.2);
+  color: #B5A99A;
   font-weight: 700;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(181, 169, 154, 0.45);
+  box-shadow: 0 0 15px rgba(181, 169, 154, 0.2), inset 0 1px 0 rgba(181, 169, 154, 0.2);
   position: relative;
   border-radius: 50%;
 }
 .sidebar:hover .nav-item.active {
   transform: translateX(-4px);
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.1), 0 0 15px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 8px 25px rgba(0, 0, 0, 0.1);
+  background: rgba(181, 169, 154, 0.2);
+  box-shadow: 0 0 30px rgba(181, 169, 154, 0.12), 0 0 15px rgba(181, 169, 154, 0.1),
+    inset 0 1px 0 rgba(181, 169, 154, 0.2), 0 8px 25px rgba(0, 0, 0, 0.1);
   animation: sidebar-glow-pulse 2.5s ease-in-out infinite;
   border-radius: 12px;
 }
@@ -2083,7 +2040,7 @@ defineEmits(['logout']);
   transform: translate(-50%, -50%);
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(181, 169, 154, 0.15) 0%, transparent 70%);
   border-radius: 14px;
   opacity: 0;
   animation: sidebar-pulse-glow 2.5s ease-in-out infinite;
@@ -2093,27 +2050,27 @@ defineEmits(['logout']);
   height: 60%;
   opacity: 1;
   width: 3px;
-  background: #ffffff;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  background: #B5A99A;
+  box-shadow: 0 0 10px rgba(181, 169, 154, 0.5);
   display: none;
 }
 .sidebar:hover .nav-item.active::before {
   display: block;
   height: 80%;
   width: 4px;
-  background: #ffffff;
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+  background: #B5A99A;
+  box-shadow: 0 0 15px rgba(181, 169, 154, 0.6);
   animation: sidebar-border-glow 2.5s ease-in-out infinite;
 }
 
 @keyframes sidebar-glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.1), 0 0 15px rgba(255, 255, 255, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 8px 25px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 30px rgba(181, 169, 154, 0.12), 0 0 15px rgba(181, 169, 154, 0.1),
+      inset 0 1px 0 rgba(181, 169, 154, 0.2), 0 8px 25px rgba(0, 0, 0, 0.1);
   }
   50% {
-    box-shadow: 0 0 45px rgba(255, 255, 255, 0.2), 0 0 25px rgba(255, 255, 255, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 12px 35px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 45px rgba(181, 169, 154, 0.2), 0 0 25px rgba(181, 169, 154, 0.15),
+      inset 0 1px 0 rgba(181, 169, 154, 0.3), 0 12px 35px rgba(0, 0, 0, 0.15);
   }
 }
 @keyframes sidebar-pulse-glow {
@@ -2121,8 +2078,8 @@ defineEmits(['logout']);
   50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.25); }
 }
 @keyframes sidebar-border-glow {
-  0%, 100% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.6), 0 0 8px rgba(255, 255, 255, 0.4); }
-  50% { box-shadow: 0 0 25px rgba(255, 255, 255, 0.9), 0 0 15px rgba(255, 255, 255, 0.7); }
+  0%, 100% { box-shadow: 0 0 15px rgba(181, 169, 154, 0.5), 0 0 8px rgba(181, 169, 154, 0.35); }
+  50% { box-shadow: 0 0 25px rgba(181, 169, 154, 0.75), 0 0 15px rgba(181, 169, 154, 0.5); }
 }
 
 .sidebar .nav-content {
@@ -2139,24 +2096,24 @@ defineEmits(['logout']);
 .sidebar .nav-icon-svg {
   width: 20px;
   height: 20px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #B5A99A;
   stroke-width: 2;
   flex-shrink: 0;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.2));
 }
 .sidebar:hover .nav-icon-svg {
-  color: #ffffff;
+  color: #B5A99A;
   filter: none;
 }
 .sidebar .nav-item.active .nav-icon-svg {
-  color: #ffffff !important;
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6)) !important;
+  color: #B5A99A !important;
+  filter: drop-shadow(0 0 8px rgba(181, 169, 154, 0.5)) !important;
   transform: scale(1.1);
 }
 .sidebar .nav-item:hover .nav-icon-svg {
   transform: scale(1.15);
-  color: #ffffff;
+  color: #B5A99A;
 }
 
 .sidebar .nav-text {
@@ -2181,7 +2138,7 @@ defineEmits(['logout']);
   position: absolute;
   right: 85px;
   background: rgba(255, 255, 255, 0.95);
-  color: #1a2a4a;
+  color: #27374D;
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 12px;
@@ -2247,18 +2204,18 @@ defineEmits(['logout']);
 .sidebar .user-name {
   font-weight: 600;
   font-size: 13px;
-  color: #ffffff;
+  color: #B5A99A;
   display: block;
   margin-bottom: 1px;
 }
 .sidebar .user-email {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(181, 169, 154, 0.9);
   display: block;
 }
 .sidebar .user-role-badge {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.9);
+  color: #B5A99A;
   margin-top: 4px;
   font-weight: 600;
   display: block;
@@ -2268,21 +2225,21 @@ defineEmits(['logout']);
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: #B0A68A;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #ffffff;
   font-weight: 700;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(181, 169, 154, 0.5);
   flex-shrink: 0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .sidebar:hover .avatar {
   transform: scale(1.08);
-  border-color: #ffffff;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(255, 255, 255, 0.2);
+  border-color: #B5A99A;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(181, 169, 154, 0.3);
   border-radius: 12px;
 }
 
