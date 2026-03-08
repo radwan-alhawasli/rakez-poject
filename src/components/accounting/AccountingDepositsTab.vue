@@ -27,7 +27,7 @@
             <td data-label="تاريخ الدفع">{{ formatDate(deposit.payment_date || deposit.created_at) }}</td>
             <td data-label="نسبة السعي">{{ deposit.commission_percentage ? deposit.commission_percentage + '%' : '—' }} {{ deposit.commission_source === 'owner' ? '(من المالك)' : deposit.commission_source === 'buyer' ? '(من المشتري)' : '' }}</td>
             <td data-label="الإجراءات">
-              <button v-if="deposit.status === 'pending'" class="btn-action edit" @click="confirmDeposit(deposit)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>تأكيد استلام العربون</button>
+              <button v-if="deposit.status === 'pending'" class="btn-action edit btn-confirm-deposit" @click="confirmDeposit(deposit)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span class="btn-confirm-deposit-text">تأكيد استلام العربون</span></button>
               <span v-else class="status-tag excellent">مؤكد</span>
             </td>
           </tr>
