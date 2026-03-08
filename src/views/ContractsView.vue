@@ -187,6 +187,44 @@ const userRole = computed(() => {
 
 const isAdminWithPagination = computed(() => userRole.value == 1);
 
+/** Maps UI filter (all|pending|approved|archive) to API status param (pending|approved|rejected). */
+function mapStatusForApi(filter) {
+  if (filter === 'all') return undefined;
+  if (filter === 'pending') return 'pending';
+  if (filter === 'approved') return 'approved';
+  if (filter === 'archive') return 'rejected';
+  return undefined;
+}
+
+/** Maps API contract to view model (number, developer, createdDate, status: Pending|Approved|Refused, type). */
+function mapContract(contract) {
+  if (!contract || typeof contract !== 'object') return contract;
+  const rawStatus = (contract.status ?? '').toString().toLowerCase();
+  let status = 'Pending';
+  if (rawStatus === 'approved' || rawStatus === 'معتمد') status = 'Approved';
+  else if (rawStatus === 'rejected' || rawStatus === 'refused' || rawStatus === 'مرفوض') status = 'Refused';
+  const created = contract.created_at ?? contract.createdAt ?? contract.date;
+  const createdDate =
+    created instanceof Date
+      ? created.toLocaleDateString('ar-SA')
+      : created
+        ? new Date(created).toLocaleDateString('ar-SA', { year: 'numeric', month: '2-digit', day: '2-digit' })
+        : '—';
+  return {
+    ...contract,
+    id: contract.id,
+    number: contract.number ?? contract.project_name ?? contract.id ?? '—',
+    developer: contract.developer_name ?? contract.developer ?? contract.second_party_name ?? '—',
+    createdDate,
+    status,
+    type: contract.contract_type ?? contract.type ?? 'Full Contract',
+    marketer: contract.marketer_name ?? contract.marketer ?? contract.user_name ?? '—',
+    pending: status === 'Pending',
+    rejected: status === 'Refused',
+    approved: status === 'Approved',
+  };
+}
+
 const fetchContracts = async () => {
   isLoading.value = true;
   error.value = null;

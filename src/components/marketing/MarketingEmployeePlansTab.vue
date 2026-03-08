@@ -6,9 +6,9 @@
         <p class="welcome-subtitle">إعداد وتوزيع خطط التسويق على الموظفين</p>
       </div>
       <div style="display: flex; gap: 8px">
-          <button class="btn-secondary" @click="exportEmployeePlansExcel">Excel</button>
-          <button class="btn-secondary" @click="exportEmployeePlansPdf">PDF</button>
-        </div>
+        <button class="btn-secondary" @click="exportEmployeePlansExcel">Excel</button>
+        <button class="btn-secondary" @click="exportEmployeePlansPdf">PDF</button>
+        <button class="btn-secondary" @click="exportWeeklyPlanPdf" :disabled="!employeePlansProjectId">خطة أسبوعية PDF</button>
       </div>
 
     <div class="overview-section" style="margin-bottom: 24px">
@@ -23,9 +23,10 @@
         <div class="form-group">
           <label>الموظف (اختياري)</label>
           <select v-model="employeePlanGenerateForm.user_id" class="form-input">
-            <option value="">-- جميع الموظفين --</option>
+            <option value="">— أنا (المستخدم الحالي) —</option>
             <option v-for="e in marketingEmployees" :key="e.id" :value="e.id">{{ e.name || e.full_name || 'Employee #' + e.id }}</option>
           </select>
+          <p class="form-hint" style="margin: 4px 0 0; font-size: 0.8rem; color: #64748b">يكفي اختيار المشروع. إن لم تختر موظفاً ستُربط الخطة بك.</p>
         </div>
       </div>
 
@@ -37,6 +38,33 @@
         <div class="detail-item">
           <span class="detail-label">قيمة التسويق</span>
           <span class="detail-value number">{{ formatCurrency(employeePlanBudgetSummary.marketing_value) }}</span>
+        </div>
+      </div>
+
+      <div class="distribution-section" style="margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0">
+        <h4 style="margin: 0 0 12px 0; font-size: 0.95rem; color: #1e3a5f">توزيع المنصات % (المجموع = 100)</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 8px">
+          <div class="form-group" v-for="(val, key) in platformDistribution" :key="key">
+            <label style="font-size: 0.85rem">{{ platformLabels[key] || key }}</label>
+            <input type="number" v-model.number="platformDistribution[key]" min="0" max="100" class="form-input" style="padding: 6px 8px; font-size: 0.9rem" />
+          </div>
+        </div>
+        <p v-if="platformDistributionSum !== 100" style="margin: 0; font-size: 0.8rem; color: #b91c1c">المجموع: {{ platformDistributionSum }}% — يجب أن يساوي 100%</p>
+        <p v-else style="margin: 0; font-size: 0.8rem; color: #0d6b2b">المجموع: 100% ✓</p>
+      </div>
+
+      <div class="campaign-distribution-section" style="margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0">
+        <h4 style="margin: 0 0 12px 0; font-size: 0.95rem; color: #1e3a5f">توزيع الحملات لكل منصة % (كل منصة = 100)</h4>
+        <div v-for="(campaigns, platform) in campaignDistributionByPlatform" :key="platform" style="margin-bottom: 12px">
+          <div style="font-weight: 600; margin-bottom: 6px; font-size: 0.9rem">{{ platform }}</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <div v-for="(pct, camp) in campaigns" :key="camp" style="display: flex; align-items: center; gap: 4px">
+              <label style="font-size: 0.8rem; white-space: nowrap">{{ campaignLabels[camp] || camp }}:</label>
+              <input type="number" v-model.number="campaignDistributionByPlatform[platform][camp]" min="0" max="100" style="width: 60px; padding: 4px 6px; font-size: 0.85rem; border: 1px solid #cbd5e1; border-radius: 6px" />
+            </div>
+          </div>
+          <span v-if="campaignDistributionSums[platform] !== 100" style="font-size: 0.75rem; color: #b91c1c">= {{ campaignDistributionSums[platform] }}%</span>
+          <span v-else style="font-size: 0.75rem; color: #0d6b2b">= 100% ✓</span>
         </div>
       </div>
 
@@ -54,6 +82,39 @@
 
       <div v-if="aiSuggestionRationale" style="margin-top: 16px; padding: 14px; background: #fdfbf7; border-radius: 10px; border: 1px solid rgba(177,162,143,0.15); font-size: 14px; color: #1e3a5f">
         <strong>تبرير الاقتراح:</strong> {{ aiSuggestionRationale }}
+      </div>
+
+      <div v-if="employeePlanBudgetSummary.marketing_value > 0 && platformBreakdownTable.rows?.length" class="weekly-plan-section" style="margin-top: 24px; padding: 20px; background: white; border-radius: 16px; border: 1px solid #e2e8f0">
+        <h4 style="margin: 0 0 8px 0; font-size: 1rem; color: #1e3a5f">الحملات الإعلانية على المنصات الإلكترونية</h4>
+        <p style="margin: 0 0 16px 0; font-size: 0.9rem; color: #64748b">خطة اسبوعية مرنة</p>
+        <div class="table-wrapper table-responsive">
+          <table class="luxury-table" style="font-size: 0.9rem">
+            <thead>
+              <tr>
+                <th style="width: 40px">م</th>
+                <th>المنصة الإعلانية</th>
+                <th class="number">النقرات</th>
+                <th class="number">المشاهدات</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in platformBreakdownTable.rows" :key="row.no">
+                <td>{{ row.no }}</td>
+                <td>{{ row.platform }}</td>
+                <td class="number">{{ formatNumber(row.clicks) }}</td>
+                <td class="number">{{ formatNumber(row.views) }}</td>
+              </tr>
+              <tr style="font-weight: 700; background: #f1f5f9">
+                <td>—</td>
+                <td>الإجمالي</td>
+                <td class="number">{{ formatNumber(platformBreakdownTable.totalClicks) }}</td>
+                <td class="number">{{ formatNumber(platformBreakdownTable.totalViews) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin: 16px 0 0 0; font-size: 0.85rem; color: #64748b">• الأرقام مرنة بشكل أسبوعي</p>
+        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b">• سيتم تفعيل حملات - Sales - Leads - Awareness - Traffic</p>
       </div>
     </div>
 
@@ -105,6 +166,10 @@ const {
   marketingEmployees,
   employeePlanGenerateForm,
   employeePlanBudgetSummary,
+  platformDistribution,
+  campaignDistributionByPlatform,
+  platformDistributionSum,
+  campaignDistributionSums,
   isSubmitting,
   isSuggestingAiPlan,
   aiSuggestionRationale,
@@ -117,5 +182,10 @@ const {
   suggestAiPlan,
   exportEmployeePlansExcel,
   exportEmployeePlansPdf,
+  exportWeeklyPlanPdf,
+  platformBreakdownTable,
 } = useMarketingEmployeePlans();
+
+const platformLabels = { instagram: 'انستغرام', snapchat: 'سناب', tiktok: 'تيك توك', x: 'تويتر X', google_youtube: 'جوجل/يوتيوب', other: 'منصات اخرى', aqar: 'عقار' };
+const campaignLabels = { 'Direct Communication': 'التواصل المباشر', 'Hand Raise': 'Hand Raise', Impression: 'المشاهدات', Sales: 'المبيعات' };
 </script>

@@ -95,6 +95,24 @@ describe('paginationUtils', () => {
       expect(result.items).toEqual([{ id: 1 }]);
       expect(result.total).toBe(1);
     });
+
+    it('should extract from Laravel-style { success, message, data: [...], meta } (sold-units)', () => {
+      const items = [
+        { reservation_id: 292, unit_number: 'U-001', claim_amount: 34458.86 },
+        { reservation_id: 63, unit_number: 'U-003', claim_amount: 29198.36 },
+      ];
+      const response = {
+        data: {
+          success: true,
+          message: 'تم جلب المرشحين بنجاح',
+          data: items,
+          meta: { total: 8, per_page: 100, current_page: 1, last_page: 1 },
+        },
+      };
+      const result = extractPaginatedData(response);
+      expect(result.items).toEqual(items);
+      expect(result.total).toBe(8);
+    });
   });
 
   describe('buildPaginationParams', () => {

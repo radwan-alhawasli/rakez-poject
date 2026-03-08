@@ -685,6 +685,14 @@ const creditService = {
       const { items, total } = extractPaginatedData(response, []);
       return { items, total };
     } catch (error) {
+      const status = error?.response?.status;
+      if (status === 403) {
+        logger.debug(
+          'Claim file candidates - Forbidden (accounting/credit permission):',
+          error?.response?.data?.message || error?.message
+        );
+        return { items: [], total: 0, forbidden: true };
+      }
       return (
         handleServiceError(error, 'Error fetching claim file candidates', 'get') || {
           items: [],
