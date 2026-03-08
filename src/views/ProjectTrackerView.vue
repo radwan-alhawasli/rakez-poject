@@ -109,8 +109,9 @@
 
         <ProjectUnitsTab
           v-else-if="activeTab === 'units'"
-          :project-id="project.id"
+          :project-id="project.id ?? project.contract_id ?? route.params.id"
           :project-name="project.name"
+          :project="project"
           :is-sales-user="isSalesUser"
           :is-project-manager="isProjectManager"
           :can-reserve="canReserve"
@@ -213,6 +214,7 @@ const fetchProject = async () => {
         const raw = res.data?.data || res.data || res;
         project.value = {
           ...raw,
+          id: raw.contract_id ?? raw.id ?? id,
           name: raw.project_name || raw.name,
           advertiser_number: raw.advertiser_number || raw.advertiser_section_url || raw.advertiser_num_id || '—',
           developer_name: raw.developer_name || raw.developer || raw.developer_info?.name,

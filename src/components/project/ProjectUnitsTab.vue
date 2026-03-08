@@ -3,7 +3,7 @@
     <div class="units-header-actions">
       <div class="units-header-title">
         <h3>جدول الوحدات</h3>
-        <p class="units-subtitle">{{ (unitCountFromApi != null ? unitCountFromApi : units.length) }} وحدة</p>
+        <p class="units-subtitle">{{ displayUnitCount }} وحدة</p>
       </div>
       <div class="units-filter-tabs">
         <button type="button" class="units-filter-tab" :class="{ active: unitsFilterTab === 'all' }" @click="unitsFilterTab = 'all'">الجميع</button>
@@ -41,6 +41,12 @@
     <div v-if="unitsLoading" class="units-loading">جاري تحميل الوحدات...</div>
     <div v-else-if="units.length === 0" class="empty-state-tab">
       <p>لا توجد وحدات مضافة لهذا المشروع حتى الآن.</p>
+      <p v-if="projectSalesSummary && (projectSalesSummary.total_units > 0 || projectSalesSummary.sold_units > 0 || projectSalesSummary.available_units > 0 || projectSalesSummary.reserved_units > 0)" class="sales-summary-line">
+        إحصائيات المبيعات: <strong>{{ projectSalesSummary.sold_units }}</strong> مباع،
+        <strong>{{ projectSalesSummary.available_units }}</strong> متاح،
+        <strong>{{ projectSalesSummary.reserved_units }}</strong> محجوز
+        <span v-if="projectSalesSummary.total_units > 0"> (الإجمالي {{ projectSalesSummary.total_units }} وحدة<span v-if="projectSalesSummary.sold_units_percent != null"> — {{ projectSalesSummary.sold_units_percent }}% مبيعات</span>)</span>.
+      </p>
     </div>
     <div v-else class="units-cards-grid">
       <div v-for="unit in filteredUnits" :key="unit.id" class="unit-card">
@@ -266,7 +272,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
 import UnitReservationModal from '@/components/sales/UnitReservationModal.vue';
 import { useProjectUnits } from '@/composables/project/useProjectUnits';
@@ -274,6 +280,7 @@ import { useProjectUnits } from '@/composables/project/useProjectUnits';
 const props = defineProps({
   projectId: { type: [String, Number], required: true },
   projectName: { type: String, default: '' },
+  project: { type: Object, default: null },
   isSalesUser: { type: Boolean, default: false },
   isProjectManager: { type: Boolean, default: false },
   canReserve: { type: Boolean, default: false },
@@ -282,6 +289,7 @@ const props = defineProps({
 const {
   units,
   unitCountFromApi,
+  projectSalesSummary,
   unitsLoading,
   unitsFilterTab,
   filteredUnits,
@@ -319,7 +327,14 @@ const {
   openWaitingListModal,
   closeWaitingListModal,
   submitWaitingList,
-} = useProjectUnits(props.projectId, props.projectName);
+} = useProjectUnits(props.projectId, props.projectName, () => props.project);
+
+const displayUnitCount = computed(() => {
+  if (unitCountFromApi.value != null) return unitCountFromApi.value;
+  const summary = projectSalesSummary.value;
+  if (summary && summary.total_units > 0) return summary.total_units;
+  return units.value.length;
+});
 
 onMounted(() => {
   loadUnits();
@@ -528,6 +543,14 @@ onMounted(() => {
   gap: 8px;
   padding-top: 8px;
   border-top: 1px solid #f1f5f9;
+}
+.sales-summary-line {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #475569;
+}
+.sales-summary-line strong {
+  color: #1e3a5f;
 }
 .icon-btn {
   background: none;
