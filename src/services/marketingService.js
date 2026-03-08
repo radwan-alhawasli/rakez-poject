@@ -1,6 +1,7 @@
 import apiClient from '@/api/apiClient';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
+import { ROLE_MAP } from '@/constants/roles';
 import {
   normalizeMarketingDashboard,
   normalizeProjectDetails,
@@ -132,10 +133,39 @@ const marketingService = {
     return this.storeDeveloperPlan(data);
   },
 
+  /**
+   * Get users list for employee-plans (dropdown). Use this instead of GET /hr/users to avoid 403.
+   * API: GET /api/marketing/users. Permission: marketing.plans.create
+   */
+  async getUsers(params = {}) {
+    try {
+      const response = await apiClient.get('/marketing/users', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      const users = (items || []).map(emp => ({
+        ...emp,
+        type:
+          typeof emp.type === 'string' && ROLE_MAP[emp.type] !== undefined
+            ? ROLE_MAP[emp.type]
+            : emp.type,
+      }));
+      return { items: users, total };
+    } catch (error) {
+      return (
+        handleServiceError(error, 'Fetch marketing users', 'get', { items: [], total: 0 }) || {
+          items: [],
+          total: 0,
+        }
+      );
+    }
+  },
+
   async getEmployeePlans(projectId, params = {}) {
     try {
       const requestParams = { ...params };
-      if (projectId) requestParams.project_id = projectId;
+      if (projectId) {
+        requestParams.project_id = projectId;
+        requestParams.marketing_project_id = projectId;
+      }
       const response = await apiClient.get('/marketing/employee-plans', { params: requestParams });
       return normalizePaginated(response);
     } catch (error) {
@@ -430,6 +460,23 @@ const marketingService = {
   },
 
   /**
+   * Export distribution report by project (الحملات الإعلانية على المنصات الإلكترونية).
+   * GET /api/marketing/reports/distribution/project/{projectId}
+   * Permission: marketing.reports.view. Returns PDF blob.
+   */
+  async exportDistributionByProject(projectId) {
+    try {
+      const response = await apiClient.get(
+        `/marketing/reports/distribution/project/${projectId}`,
+        { responseType: 'blob' }
+      );
+      return response?.data ?? response;
+    } catch (error) {
+      return null;
+    }
+  },
+
+  /**
    * Export employee plan. GET /marketing/reports/export/:plan_id?format=pdf|excel|csv.
    */
   async exportEmployeePlan(planId, format = 'pdf') {
@@ -441,6 +488,22 @@ const marketingService = {
       return response?.data ?? response;
     } catch (error) {
       return handleServiceError(error, 'Export employee plan', 'get');
+    }
+  },
+
+  /**
+   * Export all employee plans for a project (backend). GET /marketing/employee-plans/export?marketing_project_id=&format=pdf|csv|excel
+   * Returns blob or null if endpoint not available.
+   */
+  async exportEmployeePlansByProject(projectId, format = 'pdf') {
+    try {
+      const response = await apiClient.get('/marketing/employee-plans/export', {
+        params: { marketing_project_id: projectId, format },
+        responseType: 'blob',
+      });
+      return response?.data ?? response;
+    } catch (error) {
+      return null;
     }
   },
 

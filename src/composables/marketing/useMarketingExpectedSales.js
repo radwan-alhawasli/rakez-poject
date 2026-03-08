@@ -4,6 +4,7 @@ import notificationService from '@/services/notificationService';
 import logger from '@/utils/logger';
 import { useFormatters } from '@/composables/useFormatters';
 import { toast } from '@/composables/useToast';
+import { normalizeExpectedSale } from '@/utils/marketingNormalizers';
 
 export function useMarketingExpectedSales() {
   const { formatNumber } = useFormatters();
@@ -45,7 +46,8 @@ export function useMarketingExpectedSales() {
         project_id: expectedSalesForm.project_id || undefined,
         per_page: 100,
       });
-      expectedSalesRows.value = data?.items ?? [];
+      const raw = data?.items ?? [];
+      expectedSalesRows.value = raw.map(item => normalizeExpectedSale(item));
     } catch (error) {
       logger.error('Error loading expected sales:', error);
       expectedSalesRows.value = [];

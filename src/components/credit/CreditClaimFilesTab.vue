@@ -1,22 +1,12 @@
 <template>
   <div class="management-view">
-    <div
-      class="section-header-compact"
-      style="
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 12px;
-      "
-    >
+    <div class="section-header-compact">
       <div>
         <h2 class="section-title">ملفات المطالبة</h2>
-        <p class="section-subtitle">إدارة ملفات المطالبة بالعمولات (فردية ومجمّعة).</p>
+        <p class="section-subtitle">
+          إدارة ملفات المطالبة بالعمولات (فردية ومجمّعة). إنشاء ملفات جديدة من واجهة المطورين → تفاصيل المطور → اختر المشروع.
+        </p>
       </div>
-      <button class="btn-primary" @click="openCombinedClaimModal">
-        <span class="plus-icon">+</span> إنشاء ملف مطالبة
-      </button>
     </div>
     <div class="metrics-table-container">
       <div class="table-responsive">
@@ -138,17 +128,6 @@
       @close="showClaimModal = false"
       @submit="handleClaimSubmit"
     />
-
-    <CombinedClaimFileModal
-      v-if="showCombinedClaimModal"
-      ref="combinedClaimModalRef"
-      :candidates="claimCandidates"
-      :isLoadingCandidates="isLoadingCandidates"
-      :isSubmitting="isSavingCombinedClaim"
-      @close="showCombinedClaimModal = false"
-      @submit-combined="handleCombinedClaimSubmit"
-      @submit-bulk="handleBulkClaimSubmit"
-    />
   </div>
 </template>
 
@@ -156,7 +135,6 @@
 import { onMounted } from 'vue';
 import Pagination from '@/components/Pagination.vue';
 import ClaimFileForm from '@/components/credit/ClaimFileForm.vue';
-import CombinedClaimFileModal from '@/components/credit/CombinedClaimFileModal.vue';
 import RowActions from '@/components/RowActions.vue';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useCreditClaimFiles } from '@/composables/credit/useCreditClaimFiles';
@@ -168,20 +146,12 @@ const {
   perPage: creditPerPage,
   totalItems: creditTotalItems,
   showClaimModal,
-  showCombinedClaimModal,
-  combinedClaimModalRef,
   selectedClaim,
   isSavingClaim,
-  claimCandidates,
-  isLoadingCandidates,
-  isSavingCombinedClaim,
   formatCurrency,
   formatDate,
   getClaimStatusClass,
   loadClaimFiles,
-  openCombinedClaimModal,
-  handleCombinedClaimSubmit,
-  handleBulkClaimSubmit,
   downloadClaimPdf,
   generateClaimPdf,
   submitClaim,

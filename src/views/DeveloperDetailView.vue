@@ -79,11 +79,18 @@
           <p>لا توجد مشاريع مسجلة لهذا المطور.</p>
         </div>
         <ul v-else class="projects-list">
-          <li v-for="p in projects" :key="p.id || p.contract_id" class="project-item">
+          <li
+            v-for="p in projects"
+            :key="p.id || p.contract_id"
+            class="project-item project-item-clickable"
+            role="button"
+            @click="openProjectUnits(p)"
+          >
             <span class="project-name">{{
               p.project_name || p.name || p.title || 'مشروع بدون اسم'
             }}</span>
-            <span v-if="p.status" class="project-status">{{ p.status }}</span>
+            <span v-if="p.status" class="project-status">{{ statusLabelAr(p.status) }}</span>
+            <span class="project-arrow" aria-hidden="true">←</span>
           </li>
         </ul>
       </section>
@@ -95,7 +102,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import contractService from '@/services/contractService';
-import { normalizeDeveloper } from '@/utils/developerMapper';
+import { normalizeDeveloper, enrichDeveloperFromContract } from '@/utils/developerMapper';
+import { useFormatters } from '@/composables/useFormatters';
 import logger from '@/utils/logger';
 
 export default {
@@ -106,6 +114,7 @@ export default {
     const developer = ref(null);
     const projects = ref([]);
     const isLoadingProjects = ref(false);
+    const { statusLabelAr } = useFormatters();
 
     const projectCount = computed(() => {
       if (developer.value?.projectCount != null) return Number(developer.value.projectCount);
@@ -114,6 +123,17 @@ export default {
 
     const goBack = () => {
       router.push({ name: 'Developers' });
+    };
+
+    const openProjectUnits = (project) => {
+      const devId = route.params.id;
+      const projectId = project.contract_id ?? project.id;
+      if (!projectId) return;
+      router.push({
+        name: 'DeveloperProjectUnits',
+        params: { id: devId, projectId: String(projectId) },
+        state: { developer: developer.value, project },
+      });
     };
 
     const loadDeveloperFromState = () => {
@@ -146,6 +166,7 @@ export default {
         const res = await contractService.getDeveloperContractsByEmail(developer.value.email);
         const raw = res?.data ?? res;
         projects.value = Array.isArray(raw) ? raw : raw && Array.isArray(raw.data) ? raw.data : [];
+        applyContractDataToDeveloper();
       } catch (e) {
         logger.error('Failed to fetch developer projects', e);
         projects.value = [];
@@ -154,14 +175,24 @@ export default {
       }
     };
 
+    /** Fill developer card from first contract (عرض من العقد). */
+    const applyContractDataToDeveloper = () => {
+      if (!developer.value || !projects.value?.length) return;
+      const firstContract = projects.value[0];
+      developer.value = enrichDeveloperFromContract(developer.value, firstContract);
+    };
+
     onMounted(async () => {
       const fromState = loadDeveloperFromState();
       if (!fromState) await loadDeveloperById();
       if (!developer.value) return;
       if (Array.isArray(developer.value.projects) && developer.value.projects.length > 0) {
         projects.value = developer.value.projects;
+        applyContractDataToDeveloper();
       } else if (projects.value.length === 0 && developer.value?.email) {
         await loadProjects();
+      } else if (projects.value.length > 0) {
+        applyContractDataToDeveloper();
       }
     });
 
@@ -171,6 +202,8 @@ export default {
       projectCount,
       isLoadingProjects,
       goBack,
+      openProjectUnits,
+      statusLabelAr,
     };
   },
 };
@@ -341,6 +374,14 @@ export default {
 .project-item:last-child {
   margin-bottom: 0;
 }
+.project-item-clickable {
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.project-item-clickable:hover {
+  background: var(--color-light-gray);
+  border-color: var(--color-navy);
+}
 .project-name {
   font-weight: 600;
   color: var(--color-charcoal);
@@ -348,6 +389,11 @@ export default {
 .project-status {
   font-size: 12px;
   color: var(--color-dark-gray);
+}
+.project-arrow {
+  font-size: 14px;
+  color: var(--color-dark-gray);
+  margin-right: 8px;
 }
 
 /* Responsive: tablet landscape */

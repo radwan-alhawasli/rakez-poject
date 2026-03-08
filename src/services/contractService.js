@@ -471,14 +471,18 @@ const contractService = {
 
   /**
    * Get developer details (Accounting Module API).
-   * GET /developers/:developer_number
-   * Single developer with projects, units_count, teams. Use developer_number from list.
-   * @param {string|number} developerNumber - developer_number (or id) from list
+   * GET /developers/:id — يُستدعى بالـ id الرقمي (يُرجع من قائمة المطورين).
+   * @param {string|number} id - numeric id or developer identifier from list
    * @returns {Promise<Object|null>} data object or null on 404/error
    */
-  async getDeveloperDetail(developerNumber) {
+  async getDeveloperDetail(id) {
     try {
-      const response = await apiClient.get(`/developers/${developerNumber}`);
+      const param = String(id).trim();
+      // إرسال الـ id كما هو (رقم أو نص)؛ إذا كان شبيه برقم هاتف يبدأ بـ + نزيل الـ + للتوافق مع الـ backend
+      const pathParam =
+        param.startsWith('+') && /^\+?\d+$/.test(param) ? param.slice(1) : param;
+      const encoded = encodeURIComponent(pathParam);
+      const response = await apiClient.get(`/developers/${encoded}`);
       const res = response.data;
       return res?.data ?? res ?? null;
     } catch (error) {

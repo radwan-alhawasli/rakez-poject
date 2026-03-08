@@ -109,6 +109,42 @@ describe('accountingService', () => {
     });
   });
 
+  describe('getClaimFileSoldUnits', () => {
+    it('should fetch sold units for project and return array', async () => {
+      const mockUnits = [
+        { reservation_id: 292, unit_number: 'U-001', claim_amount: 34458.86 },
+        { reservation_id: 63, unit_number: 'U-003', claim_amount: 29198.36 },
+      ];
+      mock
+        .onGet('/accounting/claim-files/sold-units', { params: { contract_id: '2' } })
+        .reply(200, {
+          success: true,
+          message: 'تم جلب المرشحين بنجاح',
+          data: mockUnits,
+          meta: { total: 8, per_page: 100, current_page: 1, last_page: 1 },
+        });
+
+      const result = await accountingService.getClaimFileSoldUnits('2');
+
+      expect(mock.history.get.length).toBe(1);
+      expect(mock.history.get[0].params).toEqual({ contract_id: '2' });
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(2);
+      expect(result[0].reservation_id).toBe(292);
+      expect(result[0].unit_number).toBe('U-001');
+    });
+
+    it('should return empty array on 403', async () => {
+      mock
+        .onGet('/accounting/claim-files/sold-units')
+        .reply(403, { success: false, message: 'Forbidden' });
+
+      const result = await accountingService.getClaimFileSoldUnits('2');
+
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('getMarketers', () => {
     it('should fetch marketers as id and name', async () => {
       const mockMarketers = [

@@ -143,9 +143,12 @@ export default {
     };
 
     const goToDeveloperDetail = dev => {
+      // إرسال بالـ id الرقمي فقط (GET /developers/:id) — القائمة يجب أن تُرجع حقل id من الـ API
+      const identifier = dev.id ?? dev.developer_number;
+      if (identifier == null || identifier === '') return;
       router.push({
         name: 'DeveloperDetail',
-        params: { id: String(dev.id) },
+        params: { id: String(identifier) },
         state: { developer: dev },
       });
     };

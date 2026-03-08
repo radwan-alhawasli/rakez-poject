@@ -1,6 +1,5 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import marketingService from '@/services/marketingService';
-import userService from '@/services/userService';
 import notificationService from '@/services/notificationService';
 import logger from '@/utils/logger';
 import { useFormatters } from '@/composables/useFormatters';
@@ -23,20 +22,31 @@ export function useMarketingEmployeePlans() {
   const employeePlanGenerateForm = reactive({ user_id: '' });
 
   const platformDistribution = reactive({
-    tiktok: 20,
-    meta: 30,
+    instagram: 25,
     snapchat: 20,
-    youtube: 10,
-    linkedin: 10,
+    tiktok: 20,
     x: 10,
+    google_youtube: 15,
+    other: 7,
+    aqar: 3,
   });
+  const platformBreakdownOrder = [
+    { key: 'instagram', labelAr: 'منصة انستغرام' },
+    { key: 'snapchat', labelAr: 'منصة سناب' },
+    { key: 'tiktok', labelAr: 'منصة تيك توك' },
+    { key: 'x', labelAr: 'منصة تويتر X' },
+    { key: 'google_youtube', labelAr: 'منصة جوجل (تضمن يوتيوب)' },
+    { key: 'other', labelAr: 'منصات اخرى (بيوت - سكني - حراج ....)' },
+    { key: 'aqar', labelAr: 'منصة عقار' },
+  ];
   const campaignDistributionByPlatform = reactive({
-    TikTok: { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
-    Meta: { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
+    Instagram: { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
     Snapchat: { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
-    YouTube: { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
-    LinkedIn: { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
+    TikTok: { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
     X: { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
+    'Google/YouTube': { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
+    Other: { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
+    Aqar: { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
   });
   const budgetDistributionResult = ref(null);
   const isSuggestingAiPlan = ref(false);
@@ -70,6 +80,30 @@ export function useMarketingEmployeePlans() {
     return sums;
   });
 
+  const selectedProject = computed(() =>
+    projects.value.find(x => String(x.id) === String(employeePlansProjectId.value))
+  );
+
+  const platformBreakdownTable = computed(() => {
+    const marketingValue = Number(employeePlanBudgetSummary.value.marketing_value) || 0;
+    const devPlan = selectedProject.value?.developer_plan ?? selectedProject.value?.developerPlan ?? {};
+    const cpm = Number(devPlan.average_cpm ?? devPlan.average_cpm) || 25;
+    const cpc = Number(devPlan.average_cpc ?? devPlan.average_cpc) || 2.5;
+    const rows = [];
+    let totalViews = 0;
+    let totalClicks = 0;
+    platformBreakdownOrder.forEach(({ key, labelAr }, idx) => {
+      const pct = Number(platformDistribution[key]) || 0;
+      const budget = marketingValue * (pct / 100);
+      const views = cpm > 0 ? Math.round((budget / cpm) * 1000) : 0;
+      const clicks = cpc > 0 ? Math.round(budget / cpc) : 0;
+      totalViews += views;
+      totalClicks += clicks;
+      rows.push({ no: idx + 1, platform: labelAr, views, clicks });
+    });
+    return { rows, totalViews, totalClicks, cpm, cpc };
+  });
+
   const loadProjects = async () => {
     isLoadingProjects.value = true;
     try {
@@ -86,8 +120,8 @@ export function useMarketingEmployeePlans() {
   const loadEmployees = async () => {
     isLoadingEmployees.value = true;
     try {
-      const employees = await userService.getEmployees();
-      const normalizedEmployees = Array.isArray(employees) ? employees : employees?.items || [];
+      const data = await marketingService.getUsers();
+      const normalizedEmployees = Array.isArray(data) ? data : data?.items || [];
       marketingEmployees.value = normalizedEmployees.filter(
         e =>
           String(e.type) === '0' || e.type === 0 || String(e.type).toLowerCase() === 'marketing'
@@ -143,6 +177,7 @@ export function useMarketingEmployeePlans() {
     }
   };
 
+  const apiPlatformKeyMap = { meta: 'instagram', youtube: 'google_youtube', linkedin: 'other' };
   const suggestAiPlan = async () => {
     try {
       isSuggestingAiPlan.value = true;
@@ -152,15 +187,23 @@ export function useMarketingEmployeePlans() {
         const data = response.data;
         if (data.platform_distribution) {
           for (const key in platformDistribution) {
-            const capKey = Object.keys(data.platform_distribution).find(k => k.toLowerCase() === key.toLowerCase());
+            const mapped = apiPlatformKeyMap[key] || key;
+            const capKey = Object.keys(data.platform_distribution).find(
+              k => k.toLowerCase() === key.toLowerCase() || k.toLowerCase() === mapped?.toLowerCase()
+            );
             if (capKey) platformDistribution[key] = data.platform_distribution[capKey];
           }
         }
         if (data.campaign_distribution_by_platform) {
           for (const platform in data.campaign_distribution_by_platform) {
-            if (campaignDistributionByPlatform[platform]) {
+            const ourKey = Object.keys(campaignDistributionByPlatform).find(
+              p => p.toLowerCase() === platform.toLowerCase()
+            );
+            if (ourKey && campaignDistributionByPlatform[ourKey]) {
               for (const camp in data.campaign_distribution_by_platform[platform]) {
-                campaignDistributionByPlatform[platform][camp] = data.campaign_distribution_by_platform[platform][camp];
+                if (campaignDistributionByPlatform[ourKey][camp] !== undefined) {
+                  campaignDistributionByPlatform[ourKey][camp] = data.campaign_distribution_by_platform[platform][camp];
+                }
               }
             }
           }
@@ -191,6 +234,15 @@ export function useMarketingEmployeePlans() {
     return true;
   };
 
+  const toApiPlatformKeys = dist => {
+    const map = { instagram: 'Meta', google_youtube: 'YouTube', other: 'Other', aqar: 'Aqar' };
+    const out = {};
+    for (const [k, v] of Object.entries(dist)) {
+      out[map[k] || (k.charAt(0).toUpperCase() + k.slice(1))] = v;
+    }
+    return out;
+  };
+
   const applyManualEmployeePlan = async () => {
     if (!employeePlansProjectId.value) {
       toast.warning('اختر مشروعاً');
@@ -203,7 +255,7 @@ export function useMarketingEmployeePlans() {
       const payload = {
         marketing_project_id: Number(employeePlansProjectId.value),
         marketing_percent: rawMarketingPercent,
-        platform_distribution: { ...platformDistribution },
+        platform_distribution: toApiPlatformKeys(platformDistribution),
         campaign_distribution_by_platform: JSON.parse(JSON.stringify(campaignDistributionByPlatform)),
       };
       if (employeePlanGenerateForm.user_id) payload.user_id = Number(employeePlanGenerateForm.user_id);
@@ -232,7 +284,18 @@ export function useMarketingEmployeePlans() {
     return new Intl.DateTimeFormat('en-GB').format(date);
   };
 
-  const exportEmployeePlansExcel = () => {
+  const exportEmployeePlansExcel = async () => {
+    const projectId = employeePlansProjectId.value;
+    if (projectId) {
+      const blob = await marketingService.exportEmployeePlansByProject(projectId, 'csv');
+      if (blob && blob.size > 0) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `employee_plans_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        return;
+      }
+    }
     const headers = ['الموظف', 'قيمة التسويق', 'قيمة العمولة', 'توزيع المنصات', 'توزيع الحملات', 'التاريخ'];
     const rows = [headers];
     employeePlans.value.forEach(plan => {
@@ -253,15 +316,54 @@ export function useMarketingEmployeePlans() {
     link.click();
   };
 
+  const loadArabicFontBytes = async () => {
+    const urls = [
+      '/fonts/amiri-arabic-400-normal.woff',
+      'https://cdn.jsdelivr.net/npm/@fontsource/amiri@5.0.0/files/amiri-arabic-400-normal.woff2',
+    ];
+    for (const url of urls) {
+      try {
+        const res = await fetch(url);
+        if (res.ok) return await res.arrayBuffer();
+      } catch (_) {}
+    }
+    throw new Error('Could not load Arabic font');
+  };
+
   const exportEmployeePlansPdf = async () => {
     try {
-      const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib');
+      const projectId = employeePlansProjectId.value;
+      if (projectId) {
+        const blob = await marketingService.exportEmployeePlansByProject(projectId, 'pdf');
+        if (blob && blob.size > 0) {
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = `employee_plans_${new Date().toISOString().split('T')[0]}.pdf`;
+          link.click();
+          return;
+        }
+      }
+      const [pdfLib, fontkitMod] = await Promise.all([
+        import('pdf-lib'),
+        import('@pdf-lib/fontkit').then(m => m?.default ?? m),
+      ]);
+      const { PDFDocument, rgb } = pdfLib;
+      const fontkit = fontkitMod?.default ?? fontkitMod;
       const pdfDoc = await PDFDocument.create();
+      pdfDoc.registerFontkit(fontkit);
+      const fontBytes = await loadArabicFontBytes();
+      const font = await pdfDoc.embedFont(fontBytes);
+      const reshapeArabic = t => (!t ? '' : String(t).split('').reverse().join(''));
       const page = pdfDoc.addPage([595, 842]);
-      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
       let y = 800;
       const draw = (text, size = 12) => {
-        page.drawText(String(text), { x: 40, y, size, font, color: rgb(0.1, 0.2, 0.3) });
+        page.drawText(reshapeArabic(String(text)), {
+          x: 40,
+          y,
+          size,
+          font,
+          color: rgb(0.1, 0.2, 0.3),
+        });
         y -= size + 8;
       };
       draw('Employee Marketing Plans / خطط الموظفين', 16);
@@ -282,6 +384,28 @@ export function useMarketingEmployeePlans() {
     }
   };
 
+  const exportWeeklyPlanPdf = async () => {
+    const projectId = employeePlansProjectId.value;
+    if (!projectId) {
+      toast.warning('اختر مشروعاً');
+      return;
+    }
+    try {
+      const blob = await marketingService.exportDistributionByProject(projectId);
+      if (blob && blob.size > 0) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `خطة_اسبوعية_${new Date().toISOString().split('T')[0]}.pdf`;
+        link.click();
+      } else {
+        toast.error('تعذر تحميل التقرير من الخادم');
+      }
+    } catch (error) {
+      logger.error('Error exporting weekly plan PDF:', error);
+      toast.error('تعذر تصدير خطة اسبوعية PDF');
+    }
+  };
+
   onMounted(() => {
     loadProjects();
     loadEmployees();
@@ -295,6 +419,11 @@ export function useMarketingEmployeePlans() {
     marketingEmployees,
     employeePlanGenerateForm,
     employeePlanBudgetSummary,
+    platformDistribution,
+    campaignDistributionByPlatform,
+    platformDistributionSum,
+    campaignDistributionSums,
+    platformBreakdownTable,
     isSubmitting,
     isSuggestingAiPlan,
     aiSuggestionRationale,
@@ -307,5 +436,6 @@ export function useMarketingEmployeePlans() {
     suggestAiPlan,
     exportEmployeePlansExcel,
     exportEmployeePlansPdf,
+    exportWeeklyPlanPdf,
   };
 }

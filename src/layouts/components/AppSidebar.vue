@@ -1500,27 +1500,7 @@
               <span class="nav-text">الوحدات المباعة</span>
             </div>
           </router-link>
-  
-          <router-link
-            to="/accounting/commissions"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="العمولات"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-              </svg>
-              <span class="nav-text">العمولات</span>
-            </div>
-          </router-link>
-  
+
           <router-link
             to="/accounting/deposits"
             class="nav-item"
@@ -1564,12 +1544,12 @@
               <span class="nav-text">الرواتب وتوزيع العمولات</span>
             </div>
           </router-link>
-  
+
           <router-link
-            to="/accounting/confirmations"
+            to="/accounting/claim-files"
             class="nav-item"
             active-class="active"
-            data-tooltip="التأكيدات"
+            data-tooltip="ملفات المطالبة"
           >
             <div class="nav-content">
               <svg
@@ -1579,12 +1559,16 @@
                 stroke="currentColor"
                 stroke-width="2"
               >
-                <polyline points="20 6 9 17 4 12"></polyline>
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
               </svg>
-              <span class="nav-text">التأكيدات</span>
+              <span class="nav-text">ملفات المطالبة</span>
             </div>
           </router-link>
-  
+
           <router-link
             to="/developers"
             class="nav-item"
