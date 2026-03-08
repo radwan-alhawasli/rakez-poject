@@ -21,7 +21,6 @@
       :notifications="notifications"
       :show-notifications="showNotifications"
       :unread-count="unreadCount"
-      :class="{ 'notifications-open': showNotifications }"
       @toggle-notifications="toggleNotifications"
       @mark-as-read="markAsRead"
       @mark-all-read="markAllAsRead"
@@ -275,10 +274,6 @@ export default {
   backdrop-filter: blur(10px);
   animation: fadeInDown 0.5s ease-out;
   overflow: visible;
-}
-
-.top-header.notifications-open {
-  z-index: 10000;
 }
 
 .top-header::before {
