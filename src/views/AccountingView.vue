@@ -100,6 +100,27 @@ const activeTab = computed(() => {
 .accounting-view .btn-action.edit:hover { background: #a7f3d0; border-color: #10b981; color: #047857; }
 .accounting-view .btn-action.edit:active { transform: scale(0.98); }
 
+/* زر تأكيد استلام العربون — يظل متناسقاً على كل أحجام الشاشات */
+.accounting-view .btn-confirm-deposit {
+  padding: clamp(10px, 1.2vw, 16px) clamp(14px, 1.5vw, 22px);
+  border-radius: clamp(10px, 0.8vw, 14px);
+  white-space: normal;
+  text-align: center;
+  line-height: 1.4;
+  max-width: min(100%, 260px);
+  min-height: 44px;
+  justify-content: center;
+  gap: 8px;
+}
+.accounting-view .btn-confirm-deposit .btn-confirm-deposit-text {
+  display: block;
+}
+.accounting-view .btn-confirm-deposit svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
 @media (max-width: 992px) {
   .accounting-view .stats-grid-three { grid-template-columns: 1fr; }
   .accounting-view .stats-grid-three .stat-card { min-height: auto; }
@@ -152,7 +173,8 @@ const activeTab = computed(() => {
   .accounting-view .page-title { font-size: 48px; }
   .accounting-view .data-table th,
   .accounting-view .data-table td { padding: 32px; font-size: 20px; }
-  .accounting-view .btn-action { width: 46px; height: 46px; }
+  .accounting-view .btn-action:not(.btn-confirm-deposit) { width: 46px; height: 46px; }
+  .accounting-view .btn-confirm-deposit { font-size: clamp(13px, 0.9vw, 16px); padding: clamp(12px, 1.2vw, 18px) clamp(16px, 1.5vw, 24px); }
   .accounting-view .kpi-list-card { padding: 36px 32px; }
   .accounting-view .kpi-label { font-size: 18px; }
   .accounting-view .kpi-value { font-size: 20px; }

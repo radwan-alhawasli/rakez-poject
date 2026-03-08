@@ -50,6 +50,19 @@
   --radius-lg: 20px;
   --radius-xl: 28px;
   --radius-full: 9999px;
+
+  /* Fluid Scale — أبعاد سائلة تتناسب مع الشاشة (نسبة ثابتة بين الأبعاد) */
+  --fluid-padding-x: clamp(10px, 1.2vw, 20px);
+  --fluid-padding-y: clamp(8px, 1vw, 16px);
+  --fluid-padding-btn: clamp(8px, 1vw, 16px) clamp(12px, 1.5vw, 24px);
+  --fluid-radius: clamp(8px, 0.6vw, 14px);
+  --fluid-radius-lg: clamp(12px, 1vw, 20px);
+  --fluid-font: clamp(13px, 0.9vw, 16px);
+  --fluid-font-sm: clamp(11px, 0.75vw, 14px);
+  --fluid-font-lg: clamp(15px, 1.1vw, 20px);
+  --fluid-gap: clamp(6px, 0.8vw, 12px);
+  --fluid-gap-lg: clamp(12px, 1.2vw, 20px);
+  --fluid-icon: clamp(14px, 1.1vw, 20px);
   
   /* Typography Scale - Enhanced for Luxury */
   --font-xs: 12px;
@@ -88,6 +101,14 @@
   --z-modal: 1000;
   --z-popover: 1100;
   --z-tooltip: 9999;
+}
+
+/* صنف مساعد: استخدمه على أي عنصر لضمان تناسق الأبعاد مع الشاشة */
+.fluid-scale {
+  padding: var(--fluid-padding-y) var(--fluid-padding-x);
+  border-radius: var(--fluid-radius);
+  font-size: var(--fluid-font);
+  gap: var(--fluid-gap);
 }
 
 /* Global Typography */
@@ -1022,6 +1043,7 @@ html.dark .stat-icon-bg.marketing,
 html.dark .stat-icon-bg.ratio,
 html.dark .stat-icon-bg.deposits,
 html.dark .stat-icon-bg.confirmed,
+html.dark .stat-icon-bg.negotiation,
 html.dark .stat-icon-bg.total-res,
 html.dark .stat-icon-bg.revenue {
   color: #B5A99A;

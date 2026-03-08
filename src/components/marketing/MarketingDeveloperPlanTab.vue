@@ -13,6 +13,7 @@
           <button class="btn-secondary" @click="exportDeveloperPlanPdf">PDF</button>
         </div>
       </div>
+    </div>
 
     <div class="overview-section" style="margin-bottom: 24px">
       <div class="section-header" style="margin-bottom: 14px">
