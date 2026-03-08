@@ -10,6 +10,7 @@
         <button class="btn-secondary" @click="exportEmployeePlansPdf">PDF</button>
         <button class="btn-secondary" @click="exportWeeklyPlanPdf" :disabled="!employeePlansProjectId">خطة أسبوعية PDF</button>
       </div>
+    </div>
 
     <div class="overview-section" style="margin-bottom: 24px">
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px">
