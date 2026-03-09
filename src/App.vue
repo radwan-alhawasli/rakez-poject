@@ -21,22 +21,11 @@ body {
   color: var(--color-charcoal);
   line-height: 1.65;
   overflow-x: hidden;
-  background-color: var(--color-off-white);
+  background:
+    radial-gradient(circle at top right, rgba(39, 55, 77, 0.08), transparent 24%),
+    linear-gradient(180deg, #fdfbf7 0%, #f8fafc 100%);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  /* Custom Background Application - Luxury Enhanced */
-  background-image: url('./assets/rakez_custom_bg.png');
-  background-size: contain;
-  background-position: center center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-}
-
-@media (max-width: 768px) {
-  body {
-    background-size: cover;
-  }
 }
 
 #app {
