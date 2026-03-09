@@ -8,12 +8,20 @@ import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 import { NATIONALITIES } from '@/constants/lookups';
+import { extractPaginatedData } from '@/utils/paginationUtils';
 
-export function useProjectUnits(projectId, projectName) {
+/**
+ * @param {string|number} projectId
+ * @param {string} projectName
+ * @param {(() => Object | null) | undefined} getInitialProject - للحصول على بيانات المشروع المحمّلة مسبقاً (مثلاً من الصفحة) لموظف المبيعات
+ */
+export function useProjectUnits(projectId, projectName, getInitialProject) {
   const { formatCurrencyAr: formatCurrency } = useFormatters();
 
   const units = ref([]);
   const unitCountFromApi = ref(null);
+  /** عند المستخدم sales: إحصائيات المشروع من getProjectDetails عند فراغ قائمة الوحدات */
+  const projectSalesSummary = ref(null);
   const unitsLoading = ref(false);
   const unitsFilterTab = ref('all');
   const filteredUnits = computed(() => {
@@ -95,22 +103,124 @@ export function useProjectUnits(projectId, projectName) {
     showConfirmModal.value = false;
   };
 
+  const normalizeUnit = (u) => ({
+    ...u,
+    id: u.id ?? u.unit_id ?? u.contract_unit_id,
+    status: (u.status ?? u.unit_status ?? u.computed_availability ?? '').toString().toLowerCase(),
+    area: u.area ?? u.area_m2,
+    unit_number: u.unit_number ?? u.unit_id ?? u.id,
+    price: u.price ?? u.unit_price ?? u.total_price,
+  });
+
   const loadUnits = async () => {
     if (!projectId) return;
     unitsLoading.value = true;
+    projectSalesSummary.value = null;
     try {
       const user = authService.getCurrentUser();
       if (user && user.type == 5) {
-        const res = await salesService.getProjectUnits(projectId);
-        const body = res?.data ?? res;
-        const d = body?.data ?? body?.units ?? body;
-        units.value = Array.isArray(d) ? d : Array.isArray(body) ? body : [];
-        unitCountFromApi.value = null;
+        // استخدام بيانات المشروع المحمّلة مسبقاً من الصفحة (إن وُجدت) لعرض العدد والإحصائيات فوراً
+        const initialProject = typeof getInitialProject === 'function' ? getInitialProject() : null;
+        if (initialProject) {
+          const total = Number(initialProject.total_units ?? 0);
+          const sold = Number(initialProject.sold_units ?? 0);
+          const available = Number(initialProject.available_units ?? 0);
+          const reserved = Number(initialProject.reserved_units ?? 0);
+          if (total > 0 || sold > 0 || available > 0 || reserved > 0) {
+            projectSalesSummary.value = {
+              total_units: total,
+              sold_units: sold,
+              available_units: available,
+              reserved_units: reserved,
+              sold_units_percent: initialProject.sold_units_percent != null ? Number(initialProject.sold_units_percent) : null,
+            };
+            if (unitCountFromApi.value == null && total > 0) unitCountFromApi.value = total;
+          }
+          const fromInitial =
+            initialProject.units ?? initialProject.project_units ?? initialProject.contract_units ?? initialProject.data?.units;
+          const initialUnitsArray = Array.isArray(fromInitial) ? fromInitial : [];
+          if (initialUnitsArray.length > 0) {
+            units.value = initialUnitsArray.map(normalizeUnit);
+            unitCountFromApi.value = units.value.length;
+            unitsLoading.value = false;
+            return;
+          }
+        }
+
+        let raw = null;
+        // 1) جلب تفاصيل المشروع من الـ API — قد تحتوي على مصفوفة وحدات (units / project_units / contract_units)
+        try {
+          const projectRes = await salesService.getProjectDetails(projectId);
+          raw = projectRes?.data?.data ?? projectRes?.data ?? projectRes;
+          const fromDetails =
+            raw?.units ?? raw?.project_units ?? raw?.contract_units ?? raw?.data?.units ?? raw?.data?.project_units;
+          const unitsArray = Array.isArray(fromDetails) ? fromDetails : [];
+          if (unitsArray.length > 0) {
+            units.value = unitsArray.map(normalizeUnit);
+            unitCountFromApi.value = units.value.length;
+            projectSalesSummary.value = raw && (raw.total_units > 0 || raw.sold_units > 0 || raw.available_units >= 0 || raw.reserved_units > 0)
+              ? {
+                  total_units: Number(raw.total_units ?? 0),
+                  sold_units: Number(raw.sold_units ?? 0),
+                  available_units: Number(raw.available_units ?? 0),
+                  reserved_units: Number(raw.reserved_units ?? 0),
+                  sold_units_percent: raw.sold_units_percent != null ? Number(raw.sold_units_percent) : null,
+                }
+              : null;
+            return;
+          }
+        } catch (_) { /* متابعة إلى endpoint الوحدات */ }
+
+        // 2) جلب الوحدات من endpoint الوحدات GET /sales/projects/:id/units
+        const res = await salesService.getProjectUnits(projectId, { per_page: 500 });
+        const { items, total } = extractPaginatedData(
+          { data: res?.data, meta: res?.meta },
+          []
+        );
+        const list = Array.isArray(items) ? items : (res?.data ?? []);
+        units.value = list.length ? list.map(normalizeUnit) : list;
+        unitCountFromApi.value = total > 0 ? total : (units.value.length > 0 ? units.value.length : null);
+
         if (units.value.length === 0) {
           try {
-            const contractUnits = await contractService.getContractUnits(projectId);
-            units.value = Array.isArray(contractUnits) ? contractUnits : [];
+            const fallback = await contractService.getContractUnits(projectId);
+            const arr = Array.isArray(fallback) ? fallback : [];
+            units.value = arr.map(normalizeUnit);
+            if (unitCountFromApi.value == null && units.value.length > 0) unitCountFromApi.value = units.value.length;
           } catch (_) { /* continue */ }
+        }
+
+        // 3) عند فراغ القائمة: استخدام إحصائيات المشروع من الخطوة 1 أو جلبها
+        if (units.value.length === 0 && raw) {
+          if (raw.total_units > 0 || raw.sold_units > 0 || raw.available_units >= 0 || raw.reserved_units > 0) {
+            projectSalesSummary.value = {
+              total_units: Number(raw.total_units ?? 0),
+              sold_units: Number(raw.sold_units ?? 0),
+              available_units: Number(raw.available_units ?? 0),
+              reserved_units: Number(raw.reserved_units ?? 0),
+              sold_units_percent: raw.sold_units_percent != null ? Number(raw.sold_units_percent) : null,
+            };
+            if (unitCountFromApi.value == null && projectSalesSummary.value.total_units > 0) {
+              unitCountFromApi.value = projectSalesSummary.value.total_units;
+            }
+          }
+        } else if (units.value.length === 0) {
+          try {
+            const projectRes = await salesService.getProjectDetails(projectId);
+            const r = projectRes?.data?.data ?? projectRes?.data ?? projectRes;
+            if (r && (r.total_units > 0 || r.sold_units > 0 || r.available_units >= 0 || r.reserved_units > 0)) {
+              projectSalesSummary.value = {
+                total_units: Number(r.total_units ?? 0),
+                sold_units: Number(r.sold_units ?? 0),
+                available_units: Number(r.available_units ?? 0),
+                reserved_units: Number(r.reserved_units ?? 0),
+                sold_units_percent: r.sold_units_percent != null ? Number(r.sold_units_percent) : null,
+              };
+              if (unitCountFromApi.value == null && projectSalesSummary.value.total_units > 0) {
+                unitCountFromApi.value = projectSalesSummary.value.total_units;
+              }
+            }
+          } catch (_) { /* ignore */ }
         }
       } else {
         units.value = await contractService.getContractUnits(projectId);
@@ -369,6 +479,7 @@ export function useProjectUnits(projectId, projectName) {
   return {
     units,
     unitCountFromApi,
+    projectSalesSummary,
     unitsLoading,
     unitsFilterTab,
     filteredUnits,

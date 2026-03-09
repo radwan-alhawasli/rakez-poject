@@ -249,11 +249,12 @@ const salesService = {
     const normalized = arr.map(u => ({
       ...u,
       id: u.id ?? u.unit_id,
-      status: u.status ?? u.unit_status ?? u.computed_availability,
+      status: (u.status ?? u.unit_status ?? u.computed_availability ?? '').toString().toLowerCase(),
       area: u.area ?? u.area_m2,
       unit_number: u.unit_number ?? u.unit_id,
     }));
-    return { ...response, data: normalized };
+    const meta = body?.meta ?? body?.pagination ?? response?.data?.meta ?? response?.data?.pagination;
+    return { ...response, data: normalized, meta };
   },
 
   /**
