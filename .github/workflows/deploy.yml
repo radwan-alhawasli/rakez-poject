@@ -44,6 +44,17 @@ jobs:
             git fetch origin
             git reset --hard origin/master
 
+      - name: Remove old dist on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.REMOTE_PORT || 22 }}
+          script_stop: true
+          script: |
+            rm -rf /var/www/rakez-poject/dist
+
       - name: Upload build to server
         uses: appleboy/scp-action@v0.1.7
         with:
