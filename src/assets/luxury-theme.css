@@ -35,6 +35,14 @@
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #3b82f6;
+
+  /* Acceptance / Rejection status (موافق عليه / معلق) */
+  --status-approved-bg: #f0fdf4;
+  --status-approved-border: #86efac;
+  --status-approved-text: #166534;
+  --status-pending-bg: #fefce8;
+  --status-pending-border: #d4a84b;
+  --status-pending-text: #5c3d1a;
   
   /* Shadows - Luxury Multi-layer */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);

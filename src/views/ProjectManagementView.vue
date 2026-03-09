@@ -1,54 +1,29 @@
 <template>
   <div class="project-management-view">
-    <!-- Header: title + controls row (New Project → كل الفرق → Search) -->
-    <div class="welcome-header">
+    <!-- Header (same pattern as TeamManagementView / other views) -->
+    <div class="welcome-header project-mgmt-header">
       <div class="header-content">
         <h1 class="welcome-title">إدارة المشاريع</h1>
         <p class="welcome-subtitle">عرض وإدارة جميع المشاريع النشطة والمكتملة والمؤرشفة.</p>
       </div>
       <div class="controls-area">
-        <router-link to="/exclusive-request" class="btn-new-project">
-          <svg
-            viewBox="0 0 24 24"
-            width="18"
-            height="18"
-            stroke="currentColor"
-            stroke-width="2"
-            fill="none"
-          >
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          مشروع جديد
-        </router-link>
-        <div class="filter-dropdown">
-          <select v-model="teamFilter">
-            <option value="">كل الفرق</option>
-            <option value="sales">فريق المبيعات</option>
-            <option value="marketing">فريق التسويق</option>
-          </select>
-        </div>
-        <div class="search-box">
-          <svg
-            class="search-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
+        <div class="search-container">
+          <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
             <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <path d="m21 21-4.35-4.35"></path>
           </svg>
           <input
             v-model="searchQuery"
             type="text"
+            class="search-input"
             placeholder="ابحث عن مشروع بالاسم أو الموقع..."
           />
         </div>
       </div>
     </div>
 
+    <!-- Main content -->
+    <div class="view-content">
     <!-- Tabs -->
     <div class="tabs-container">
       <!-- Editor: Single Tab for All Projects -->
@@ -99,6 +74,7 @@
         :key="project.id"
         :project="project"
         :active-menu-id="activeMenuId"
+        :is-project-manager-only="isProjectManagerOnly"
         @toggle-menu="toggleMenu"
         @close-menu="activeMenuId = null"
         @edit-project="onEditProject"
@@ -108,6 +84,7 @@
         @download-contract="onDownloadContract"
         @view-tracker="viewTracker"
       />
+    </div>
     </div>
 
     <!-- Details Modal -->
@@ -171,8 +148,8 @@ import { useProjectManagement } from '@/composables/project/useProjectManagement
 const {
   activeTab,
   searchQuery,
-  teamFilter,
   isLoading,
+  isProjectManagerOnly,
   filteredProjects,
   notReadyCount,
   readyCount,
@@ -217,6 +194,10 @@ const {
 
 <style scoped>
 .project-management-view {
+  direction: rtl;
+  padding: 20px 30px;
+  min-height: 100vh;
+  background: #f8fafc;
   animation: fadeIn 0.4s ease-out;
 }
 @keyframes fadeIn {
@@ -230,27 +211,30 @@ const {
   }
 }
 
-
-.btn-new-project {
-  background: #b1a28f;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-weight: 600;
-  display: inline-flex;
+/* Header (same as other views) */
+.project-mgmt-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  text-decoration: none;
-  transition: background 0.2s;
-  cursor: pointer;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
 }
-.btn-new-project:hover {
-  background: #8c7851;
-  color: white;
+.welcome-header .header-content {
+  flex: 1;
+  min-width: 0;
 }
-
-
+.welcome-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0 0 8px 0;
+}
+.welcome-subtitle {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
+}
 .controls-area {
   display: flex;
   gap: 15px;
@@ -258,44 +242,47 @@ const {
   flex-wrap: wrap;
 }
 
-.search-box {
-  width: 300px;
-  flex: none;
+/* Search (same pattern as TeamManagementView) */
+.search-container {
   position: relative;
+  width: 300px;
   max-width: 100%;
 }
-.search-icon {
+.search-container .search-icon {
   position: absolute;
-  right: 12px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  width: 18px;
+  width: 20px;
+  height: 20px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  padding: 12px 16px 12px 44px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  font-size: 14px;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-input::placeholder {
   color: #94a3b8;
 }
-.search-box input {
-  width: 100%;
-  padding: 12px 40px 12px 15px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.search-box input:focus {
+.search-input:focus {
   border-color: #b1a28f;
+  box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.15);
 }
 
-.filter-dropdown {
-  flex-shrink: 0;
-}
-
-.filter-dropdown select {
-  padding: 12px 30px 12px 15px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
+.view-content {
   background: white;
-  cursor: pointer;
-  outline: none;
-  min-width: 150px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .tabs-container {
@@ -340,8 +327,12 @@ const {
 .loading-state,
 .empty-state {
   text-align: center;
-  padding: 40px;
-  color: #94a3b8;
+  padding: 60px 40px;
+  color: #64748b;
+  font-size: 15px;
+}
+.empty-state p {
+  margin: 0 0 16px 0;
 }
 
 .spinner {
@@ -369,20 +360,25 @@ const {
 
 /* Responsive: Tablet Landscape */
 @media (max-width: 992px) {
-  .page-header {
+  .project-management-view {
+    padding: 16px 20px;
+  }
+  .project-mgmt-header {
     flex-direction: column;
+    align-items: stretch;
     gap: 16px;
   }
   .controls-area {
     width: 100%;
   }
-  .search-box {
-    width: auto;
-    flex: 1;
-    min-width: 200px;
+  .search-container {
+    width: 100%;
   }
-  .page-title {
+  .welcome-title {
     font-size: 24px;
+  }
+  .view-content {
+    padding: 18px;
   }
   .projects-grid {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -402,34 +398,27 @@ const {
 
 /* Responsive: Tablet Portrait */
 @media (max-width: 768px) {
-  .page-title {
+  .project-management-view {
+    padding: 14px 16px;
+  }
+  .welcome-title {
     font-size: 22px;
   }
-  .page-subtitle {
+  .welcome-subtitle {
     font-size: 13px;
   }
   .controls-area {
     flex-direction: column;
     gap: 10px;
   }
-  .btn-new-project {
+  .search-container {
     width: 100%;
-    justify-content: center;
+  }
+  .search-input {
     min-height: 44px;
   }
-  .filter-dropdown {
-    width: 100%;
-  }
-  .filter-dropdown select {
-    width: 100%;
-    min-height: 44px;
-  }
-  .search-box {
-    width: 100%;
-    flex: none;
-  }
-  .search-box input {
-    min-height: 44px;
+  .view-content {
+    padding: 16px;
   }
   .projects-grid {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -447,14 +436,21 @@ const {
 
 /* Responsive: Mobile */
 @media (max-width: 576px) {
-  .page-header {
-    margin-bottom: 20px;
+  .project-management-view {
+    padding: 12px 14px;
   }
-  .page-title {
+  .project-mgmt-header {
+    margin-bottom: 18px;
+  }
+  .welcome-title {
     font-size: 20px;
   }
-  .page-subtitle {
+  .welcome-subtitle {
     font-size: 12px;
+  }
+  .view-content {
+    padding: 14px;
+    border-radius: 12px;
   }
   .projects-grid {
     grid-template-columns: 1fr;
@@ -470,15 +466,11 @@ const {
     padding: 8px 10px;
     min-height: 44px;
   }
-  .btn-new-project {
-    padding: 10px 16px;
-    font-size: 14px;
-  }
 }
 
 /* Responsive: Extra Small Mobile */
 @media (max-width: 320px) {
-  .page-title {
+  .welcome-title {
     font-size: 18px;
   }
   .tab-btn {
@@ -489,11 +481,17 @@ const {
 
 /* Responsive: Large Desktop */
 @media (min-width: 1920px) {
-  .page-title {
+  .project-management-view {
+    padding: 28px 40px;
+  }
+  .welcome-title {
     font-size: 34px;
   }
-  .page-subtitle {
+  .welcome-subtitle {
     font-size: 17px;
+  }
+  .view-content {
+    padding: 32px;
   }
   .projects-grid {
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -504,28 +502,20 @@ const {
     padding: 14px 28px;
   }
   .tabs-container {
-    margin-bottom: 40px;
+    margin-bottom: 32px;
   }
-  .btn-new-project {
-    padding: 14px 28px;
-    font-size: 16px;
+  .search-container {
+    width: 380px;
   }
-  .search-box {
-    width: 400px;
-  }
-  .search-box input {
-    padding: 14px 44px 14px 18px;
-    font-size: 16px;
-  }
-  .filter-dropdown select {
-    padding: 14px 34px 14px 18px;
+  .search-input {
+    padding: 14px 16px 14px 48px;
     font-size: 16px;
   }
 }
 
 /* Responsive: Ultra-wide */
 @media (min-width: 2560px) {
-  .page-title {
+  .welcome-title {
     font-size: 38px;
   }
   .projects-grid {

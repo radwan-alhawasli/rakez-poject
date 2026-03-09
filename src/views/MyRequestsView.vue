@@ -269,14 +269,14 @@ export default {
 }
 
 .status-badge.pending {
-  background: #fef3c7;
-  color: #92400e;
-  border: 1px solid #fde68a;
+  background: #fefce8;
+  color: #5c3d1a;
+  border: 1px solid #d4a84b;
 }
 .status-badge.approved {
-  background: #dcfce7;
+  background: #f0fdf4;
   color: #166534;
-  border: 1px solid #bbf7d0;
+  border: 1px solid #86efac;
 }
 .status-badge.rejected {
   background: #fee2e2;

@@ -98,7 +98,7 @@
           v-if="activeTab === 'photography'"
           :project-id="project.id"
           :project-name="project.name"
-          :is-manager="isManager"
+          :is-manager="isApprovalManager"
         />
 
         <ProjectBoardsTab
@@ -167,6 +167,11 @@ const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', mi
 const isManager = computed(() => {
   const user = authService.getCurrentUser();
   return user?.type == 1 || user?.type == 3 || user?.type == 10;
+});
+/** Only admin or PM manager can approve/reject photography (not PM employee) */
+const isApprovalManager = computed(() => {
+  const user = authService.getCurrentUser();
+  return user?.type == 1 || user?.type == 10 || (user?.type == 3 && !!user?.is_manager);
 });
 const isSalesUser = computed(() => {
   const user = authService.getCurrentUser();

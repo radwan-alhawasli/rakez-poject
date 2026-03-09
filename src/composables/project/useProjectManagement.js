@@ -21,10 +21,13 @@ export function useProjectManagement() {
     const u = authService.getCurrentUser();
     return (u && u.type == 1) || (u && u.type == 3 && u.is_manager);
   });
+  const isProjectManagerOnly = computed(() => {
+    const u = authService.getCurrentUser();
+    return u && u.type == 3 && !u.is_manager;
+  });
 
   const activeTab = ref(isEditor.value ? 'all_projects' : 'not_ready');
   const searchQuery = ref('');
-  const teamFilter = ref('');
   const isLoading = ref(false);
   const projects = ref([]);
   const activeMenuId = ref(null);
@@ -69,7 +72,7 @@ export function useProjectManagement() {
       logger.debug('User Role:', userRole.value, 'Is Editor:', isEditor.value);
 
       const unitList = p => p.units || [];
-      projects.value = (Array.isArray(data) ? data : []).map(p => {
+      const list = (Array.isArray(data) ? data : []).map(p => {
         const units = unitList(p);
         const totalUnits = units.length;
         const soldCount = units.filter(
@@ -90,12 +93,33 @@ export function useProjectManagement() {
           ? `طلب مشروع حصري. ${p.total_units || totalUnits || 100} وحدة من نوع ${unitType}.`
           : (p.description || p.details || '').split('\n')[0] ||
             (totalUnits ? `${totalUnits} وحدة` : '');
-        const isReadyForMarketing = p.status === 'Approved' && totalUnits > 0;
-        const setupProgressVal = isReadyForMarketing
-          ? 100
-          : p.setup_progress != null
-            ? Number(p.setup_progress)
-            : 0;
+        const pp = p.project_progress;
+        const totalSteps = pp?.total_count ?? pp?.steps?.length ?? 7;
+        const completedSteps = pp?.completed_count ?? (Array.isArray(pp?.steps) ? pp.steps.filter(s => s.completed).length : 0);
+        const setupProgressVal =
+          totalSteps > 0
+            ? Math.round((completedSteps / totalSteps) * 100)
+            : p.setup_progress != null
+              ? Number(p.setup_progress)
+              : 0;
+        const contractRemainingLabel =
+          daysLeftVal === null ? '—' : daysLeftVal < 0 ? 'منتهي' : `${daysLeftVal} يوم`;
+        const contractColor =
+          daysLeftVal === null
+            ? 'gray'
+            : daysLeftVal < 0
+              ? 'red'
+              : daysLeftVal <= 7
+                ? 'red'
+                : daysLeftVal <= 30
+                  ? 'yellow'
+                  : 'green';
+        const contractDurationPercent =
+          daysLeftVal === null
+            ? 0
+            : daysLeftVal < 0
+              ? 100
+              : Math.min(100, Math.max(0, Math.round((1 - daysLeftVal / 365) * 100)));
 
         const unitPrices = units.map(u => Number(u.price) || 0).filter(Boolean);
         const priceMin = p.price_min ?? p.min_price ?? (unitPrices.length ? Math.min(...unitPrices) : null);
@@ -124,6 +148,7 @@ export function useProjectManagement() {
 
         return {
           id: p.id,
+          contract_id: p.contract_id ?? p.id,
           name: p.project_name || p.name || `مشروع #${p.id}`,
           location:
             `${(p.district || '').trim()}${p.district && p.city ? ', ' : ''}${(
@@ -163,6 +188,9 @@ export function useProjectManagement() {
             .reduce((acc, u) => acc + (Number(u.price) || 0), 0),
           endDate: p.contract_end_date || p.end_date || p.agreement_end_date || null,
           daysLeft: daysLeftVal,
+          contractRemainingLabel,
+          contractColor,
+          contractDurationPercent,
           timelinePillLabel:
             daysLeftVal === null
               ? '—'
@@ -178,6 +206,34 @@ export function useProjectManagement() {
           propertyTypeLabel,
         };
       });
+
+      // تقدم الإعداد: من GET contracts/show/{{contract_id}} → data.project_progress.steps
+      const getContract = isEditor.value ? contractService.getEditorContractById : contractService.getContractById;
+      const enriched = await Promise.all(
+        list.map(async (proj) => {
+          const contractId = proj.contract_id ?? proj.id;
+          try {
+            const detail = await getContract(contractId);
+            const pp = detail?.project_progress;
+            if (!pp) return { ...proj };
+
+            const steps = Array.isArray(pp.steps) ? pp.steps : [];
+            // Use steps array from API as source for تقدم الإعداد
+            const totalSteps = steps.length > 0 ? steps.length : (pp.total_count ?? 0);
+            const completedSteps =
+              steps.length > 0
+                ? steps.filter(s => s.completed === true).length
+                : (pp.completed_count ?? 0);
+            const setupProgressVal =
+              totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+            return { ...proj, setupProgress: setupProgressVal };
+          } catch (e) {
+            logger.debug('Enrich project progress for contract_id', contractId, e);
+            return proj;
+          }
+        })
+      );
+      projects.value = enriched;
     } catch (err) {
       logger.error('Error fetching projects:', err);
     } finally {
@@ -498,7 +554,6 @@ export function useProjectManagement() {
   return {
     activeTab,
     searchQuery,
-    teamFilter,
     isLoading,
     filteredProjects,
     notReadyCount,
@@ -507,6 +562,7 @@ export function useProjectManagement() {
     allProjectsCount,
     isEditor,
     isManager,
+    isProjectManagerOnly,
     activeMenuId,
     toggleMenu,
     viewTracker,

@@ -77,31 +77,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Documents card (hidden for sales users) -->
-      <div v-if="!isSalesUser" class="documents-card">
-        <h3 class="documents-card-title">المستندات</h3>
-        <div class="input-group">
-          <label>رابط المشروع</label>
-          <div class="input-wrapper">
-            <input
-              type="text"
-              v-model="projectLinkUrl"
-              class="form-input"
-              placeholder="رابط المشروع"
-            />
-            <span class="input-icon">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-              </svg>
-            </span>
-          </div>
-        </div>
-        <button class="update-btn documents-update-btn" @click="updateProjectLink">
-          تحديث الرابط
-        </button>
-      </div>
     </template>
   </div>
 </template>
@@ -122,9 +97,7 @@ const {
   stages,
   activeStageIndex,
   completedStages,
-  projectLinkUrl,
   saveProgress,
-  updateProjectLink,
   loadProgress,
 } = useProjectProgress(props.projectId);
 

@@ -271,22 +271,6 @@
             </div>
           </router-link>
   
-          <router-link to="/cancelled-reservations" class="nav-item" active-class="active" data-tooltip="الحجوزات الملغاة">
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-              </svg>
-              <span class="nav-text">الحجوزات الملغاة</span>
-            </div>
-          </router-link>
-  
           <router-link to="/sales/sold-units" class="nav-item" active-class="active" data-tooltip="الوحدات المباعة">
             <div class="nav-content">
               <svg
@@ -318,12 +302,12 @@
             </div>
           </router-link>
   
-          <!-- ادارة المهام -->
+          <!-- ادارة الفرق -->
           <router-link
-            to="/tasks"
+            to="/team-management"
             class="nav-item"
             active-class="active"
-            data-tooltip="ادارة المهام"
+            data-tooltip="ادارة الفرق"
           >
             <div class="nav-content">
               <svg
@@ -336,7 +320,7 @@
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span class="nav-text">ادارة المهام</span>
+              <span class="nav-text">ادارة الفرق</span>
             </div>
           </router-link>
 
@@ -407,9 +391,9 @@
   
         <!-- Project Manager Sidebar -->
         <template v-else-if="userRole == 3 || userRole == 10">
-          <!-- 1. لوحة التحكم -->
+          <!-- 1. لوحة التحكم (Dashboard) -->
           <router-link
-            to="/project-management"
+            to="/dashboard"
             class="nav-item"
             active-class="active"
             data-tooltip="لوحة التحكم"
@@ -545,28 +529,6 @@
             </div>
           </router-link>
   
-          <!-- 6. الحجوزات الملغاة -->
-          <router-link
-            to="/cancelled-reservations"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="الحجوزات الملغاة"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-              </svg>
-              <span class="nav-text">الحجوزات الملغاة</span>
-            </div>
-          </router-link>
-  
           <!-- 8. طلباتي -->
           <router-link
             v-if="hasPermission('exclusive_projects.request')"
@@ -614,12 +576,12 @@
             </div>
           </router-link>
   
-          <!-- ادارة المهام -->
+          <!-- ادارة الفرق -->
           <router-link
-            to="/tasks"
+            to="/team-management"
             class="nav-item"
             active-class="active"
-            data-tooltip="ادارة المهام"
+            data-tooltip="ادارة الفرق"
           >
             <div class="nav-content">
               <svg
@@ -632,7 +594,7 @@
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span class="nav-text">ادارة المهام</span>
+              <span class="nav-text">ادارة الفرق</span>
             </div>
           </router-link>
 
@@ -883,19 +845,19 @@
             </div>
           </router-link>
 
-          <!-- 15. ادارة المهام -->
+          <!-- 15. ادارة الفرق -->
           <router-link
-            to="/tasks"
+            to="/team-management"
             class="nav-item"
             exact-active-class="active"
-            data-tooltip="ادارة المهام"
+            data-tooltip="ادارة الفرق"
           >
             <div class="nav-content">
               <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span class="nav-text">ادارة المهام</span>
+              <span class="nav-text">ادارة الفرق</span>
             </div>
           </router-link>
 
@@ -1103,12 +1065,12 @@
             </div>
           </router-link>
   
-          <!-- ادارة المهام -->
+          <!-- ادارة الفرق -->
           <router-link
-            to="/tasks"
+            to="/team-management"
             class="nav-item"
             active-class="active"
-            data-tooltip="ادارة المهام"
+            data-tooltip="ادارة الفرق"
           >
             <div class="nav-content">
               <svg
@@ -1121,7 +1083,7 @@
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span class="nav-text">ادارة المهام</span>
+              <span class="nav-text">ادارة الفرق</span>
             </div>
           </router-link>
   
@@ -1305,12 +1267,12 @@
             </div>
           </router-link>
   
-          <!-- ادارة المهام -->
+          <!-- ادارة الفرق -->
           <router-link
-            to="/tasks"
+            to="/team-management"
             class="nav-item"
             active-class="active"
-            data-tooltip="ادارة المهام"
+            data-tooltip="ادارة الفرق"
           >
             <div class="nav-content">
               <svg
@@ -1323,7 +1285,7 @@
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span class="nav-text">ادارة المهام</span>
+              <span class="nav-text">ادارة الفرق</span>
             </div>
           </router-link>
 
@@ -1553,12 +1515,12 @@
             </div>
           </router-link>
   
-          <!-- ادارة المهام -->
+          <!-- ادارة الفرق -->
           <router-link
-            to="/tasks"
+            to="/team-management"
             class="nav-item"
             active-class="active"
-            data-tooltip="ادارة المهام"
+            data-tooltip="ادارة الفرق"
           >
             <div class="nav-content">
               <svg
@@ -1571,7 +1533,7 @@
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span class="nav-text">ادارة المهام</span>
+              <span class="nav-text">ادارة الفرق</span>
             </div>
           </router-link>
 
@@ -1743,12 +1705,12 @@
             </div>
           </router-link>
   
-          <!-- ادارة المهام -->
+          <!-- ادارة الفرق -->
           <router-link
-            to="/tasks"
+            to="/team-management"
             class="nav-item"
             active-class="active"
-            data-tooltip="ادارة المهام"
+            data-tooltip="ادارة الفرق"
           >
             <div class="nav-content">
               <svg
@@ -1761,7 +1723,7 @@
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span class="nav-text">ادارة المهام</span>
+              <span class="nav-text">ادارة الفرق</span>
             </div>
           </router-link>
   

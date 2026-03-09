@@ -32,7 +32,7 @@
           </p>
 
           <button class="cta-btn-premium" @click="saveBoard" :disabled="isBoardSaving">
-            <span v-if="!isBoardSaving">تأكيد وبدء اللوحات</span>
+            <span v-if="!isBoardSaving">تأكيد اضافة لوحات</span>
             <span v-else>جاري الإعداد...</span>
             <svg
               v-if="!isBoardSaving"

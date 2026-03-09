@@ -94,6 +94,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     notes: '',
   });
 
+  const csvUploading = ref(false);
   // Confirm modal state
   const showConfirmModal = ref(false);
   const confirmModalConfig = ref({ title: '', message: '', type: 'warning', confirmText: 'تأكيد', resolve: null });
@@ -375,20 +376,24 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
   };
 
   const handleCsvUpload = async (event) => {
-    const file = event.target.files[0];
+    const file = event.target?.files?.[0];
     if (!file) return;
     const formData = new FormData();
     formData.append('file', file);
+    csvUploading.value = true;
     try {
-      await contractService.uploadContractUnitsCsv(projectId, formData);
-      toast.success('تم رفع ملف CSV بنجاح');
-      loadUnits();
+      const contractId = projectId;
+      await contractService.uploadContractUnitsCsv(contractId, formData);
+      toast.success('تم رفع ملف CSV للوحدات بنجاح');
+      await loadUnits();
     } catch (error) {
       logger.error(error);
       const msg = error.response?.data?.message || error.message || 'خطأ غير معروف';
       toast.error(`فشل رفع الملف: ${msg}`);
+    } finally {
+      csvUploading.value = false;
+      if (event.target) event.target.value = '';
     }
-    event.target.value = '';
   };
 
   // Reservation functions
@@ -499,6 +504,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     waitingListUnit,
     waitingListForm,
     waitingListSaving,
+    csvUploading,
     showConfirmModal,
     confirmModalConfig,
     onConfirmModalConfirm,

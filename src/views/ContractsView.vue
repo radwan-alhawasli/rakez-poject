@@ -540,15 +540,17 @@ onMounted(fetchContracts);
   display: inline-block;
 }
 
+/* موافق عليه: pale mint green bg, light green border, dark green text */
 .status-badge-custom.approved {
-  background: #dcfce7 !important;
+  background: #f0fdf4 !important;
   color: #166534 !important;
-  border: 1px solid #bbf7d0 !important;
+  border: 1px solid #86efac !important;
 }
+/* معلق: light yellowish-cream bg, muted yellow border, dark brown text */
 .status-badge-custom.pending {
-  background: #fef9c3 !important;
-  color: #854d0e !important;
-  border: 1px solid #fde047 !important;
+  background: #fefce8 !important;
+  color: #5c3d1a !important;
+  border: 1px solid #d4a84b !important;
 }
 .status-badge-custom.rejected {
   background: #fee2e2 !important;

@@ -97,6 +97,17 @@
               </div>
             </div>
             <div class="input-row">
+              <div class="field-group full">
+                <label>رابط موقع المشروع</label>
+                <input
+                  type="text"
+                  v-model="form.project_location_url"
+                  class="form-input"
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+            <div class="input-row">
               <div class="field-group">
                 <label>نسبة السعي (%)</label>
                 <input
@@ -226,6 +237,7 @@ const form = reactive({
   developer_name: '',
   developer_cr_number: '',
   project_name: '',
+  project_location_url: '',
   city: '',
   neighborhood: '',
   commission_percentage: 0,
@@ -308,6 +320,7 @@ const resetForm = () => {
   form.developer_name = '';
   form.developer_cr_number = '';
   form.project_name = '';
+  form.project_location_url = '';
   form.city = '';
   form.neighborhood = '';
   form.commission_percentage = 0;
@@ -328,6 +341,7 @@ const handleSubmit = async () => {
 
     const payload = {
       project_name: form.project_name,
+      project_location_url: form.project_location_url || undefined,
       city: form.city,
       neighborhood: form.neighborhood,
       commission_percentage: Number(form.commission_percentage) || 0,

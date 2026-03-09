@@ -118,10 +118,6 @@
           <div class="form-group-info">
             <div class="input-row grid-3">
               <div class="field-group">
-                <label>وكالة رقم</label>
-                <input type="text" v-model="form.agency_number" class="form-input" />
-              </div>
-              <div class="field-group">
                 <label>السعي من</label>
                 <select v-model="form.commission_from" class="form-input">
                   <option value="">اختر الطرف</option>
@@ -156,10 +152,6 @@
                   placeholder="0.00"
                 />
               </div>
-              <div class="field-group">
-                <label>تاريخ الوكالة</label>
-                <input type="date" v-model="form.agency_date" class="form-input" />
-              </div>
             </div>
           </div>
         </div>
@@ -174,6 +166,17 @@
                 <select class="form-input">
                   <option>...اختر مطوراً لملء البيانات تلقائياً</option>
                 </select>
+              </div>
+            </div>
+
+            <div class="input-row grid-3">
+              <div class="field-group">
+                <label>وكالة رقم</label>
+                <input type="text" v-model="form.agency_number" class="form-input" />
+              </div>
+              <div class="field-group">
+                <label>تاريخ الوكالة</label>
+                <input type="date" v-model="form.agency_date" class="form-input" />
               </div>
             </div>
 
@@ -285,7 +288,7 @@
 
             <div class="input-row">
               <div class="field-group full">
-                <label>رابط صورة المشروع</label>
+                <label>رابط موقع المشروع</label>
                 <input
                   type="text"
                   value="https://placeholder.co/800x600/1e293b/b1a28f?text=%D8%A7%D9%84%D9%84%D8%B1%D8%AC%D8%B3"

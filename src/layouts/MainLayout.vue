@@ -1122,12 +1122,16 @@ export default {
   margin-right: 260px;
 }
 
-/* Main content: background image + overlay so text is readable */
+/* Main content: background image full page + overlay so text is readable */
 .main-content {
   padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 40px 40px 40px;
   position: relative;
   z-index: 5;
   min-width: 0;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
   background-color: #e8e6e2;
   background-image: url("/Morpheus_14_BHE.jpg");
   background-size: cover;

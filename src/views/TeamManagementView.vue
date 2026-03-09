@@ -75,6 +75,14 @@
             </td>
             <td data-label="الإجراءات">
               <div class="actions">
+                <button class="action-btn add-members" @click="openAddMembersModal(team)" title="اضافة اعضاء للتيم">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                    <line x1="23" y1="11" x2="17" y2="11"></line>
+                  </svg>
+                </button>
                 <button class="action-btn view" @click="viewTeamDetails(team)" title="عرض التفاصيل">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -146,14 +154,15 @@
               <h4>الأعضاء ({{ detailMembers.length }})</h4>
               <div v-if="detailMembers.length === 0" class="empty-inline">لا يوجد أعضاء</div>
               <div v-else class="members-grid">
-                <div v-for="member in detailMembers" :key="member.id" class="member-chip">
-                  <div class="member-chip-avatar" :style="{ background: chipColor(member.id) }">
-                    {{ (member.name || member.full_name || '?').charAt(0) }}
+                <div v-for="member in detailMembers" :key="member.user_id ?? member.id" class="member-chip">
+                  <div class="member-chip-avatar" :style="{ background: chipColor(member.user_id ?? member.id) }">
+                    {{ (member.name || member.full_name || member.user?.name || '?').charAt(0) }}
                   </div>
                   <div class="member-chip-info">
-                    <span class="chip-name">{{ member.name || member.full_name }}</span>
+                    <span class="chip-name">{{ member.name || member.full_name || member.user?.name }}</span>
                     <span class="chip-role">{{ member.role || member.job_title || 'عضو' }}</span>
                   </div>
+                  <button type="button" class="btn-delete-member" @click="confirmRemoveMember(member)" title="حذف مسوق">حذف مسوق</button>
                 </div>
               </div>
             </div>
@@ -166,6 +175,28 @@
                 </div>
               </div>
             </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Members Modal -->
+    <div v-if="showAddMembersModal" class="modal-overlay" @click.self="showAddMembersModal = false">
+      <div class="modal-content add-members-modal">
+        <div class="modal-header">
+          <h3>اضافة اعضاء للتيم: {{ addMembersTeam?.name }}</h3>
+          <button class="close-btn" @click="showAddMembersModal = false">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div v-if="addMembersLoading" class="loading-state"><div class="spinner"></div><p>جاري التحميل...</p></div>
+          <template v-else>
+            <div v-if="availableMarketers.length === 0" class="empty-inline">لا يوجد موظفون متاحون للإضافة (الجميع معينون بالفعل أو لا توجد بيانات).</div>
+            <ul v-else class="add-members-list">
+              <li v-for="emp in availableMarketers" :key="emp.id" class="add-member-row">
+                <span class="add-member-name">{{ emp.name || emp.full_name || emp.email }}</span>
+                <button type="button" class="btn-add-one" @click="addMemberToTeam(emp.id)">إضافة</button>
+              </li>
+            </ul>
           </template>
         </div>
       </div>
@@ -187,6 +218,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
 import teamService from '@/services/teamService';
+import hrService from '@/services/hrService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
@@ -213,6 +245,11 @@ export default {
 
     const showConfirmModal = ref(false);
     const confirmModalConfig = ref({ title: '', message: '', type: 'warning', confirmText: 'تأكيد', resolve: null });
+
+    const showAddMembersModal = ref(false);
+    const addMembersTeam = ref(null);
+    const availableMarketers = ref([]);
+    const addMembersLoading = ref(false);
 
     const fetchTeams = async (search = '') => {
       isLoading.value = true;
@@ -275,10 +312,11 @@ export default {
       isLoadingDetail.value = true;
       try {
         const [members, contracts] = await Promise.allSettled([
-          teamService.getTeamMembers(team.id),
+          hrService.getHRTeamMembers(team.id),
           teamService.getTeamContracts(team.id),
         ]);
-        detailMembers.value = members.status === 'fulfilled' ? (Array.isArray(members.value) ? members.value : []) : [];
+        const raw = members.status === 'fulfilled' ? (Array.isArray(members.value) ? members.value : []) : [];
+        detailMembers.value = raw;
         const cRaw = contracts.status === 'fulfilled' ? contracts.value : [];
         detailContracts.value = Array.isArray(cRaw) ? cRaw : cRaw?.items ?? [];
       } catch (error) {
@@ -286,6 +324,70 @@ export default {
       } finally {
         isLoadingDetail.value = false;
       }
+    };
+
+    const openAddMembersModal = async team => {
+      addMembersTeam.value = team;
+      showAddMembersModal.value = true;
+      availableMarketers.value = [];
+      addMembersLoading.value = true;
+      try {
+        const [employeesRes, currentRes] = await Promise.allSettled([
+          hrService.getEmployees({ per_page: 200 }),
+          hrService.getHRTeamMembers(team.id),
+        ]);
+        const employees = employeesRes.status === 'fulfilled' ? (employeesRes.value?.items ?? employeesRes.value?.data ?? (Array.isArray(employeesRes.value) ? employeesRes.value : []) ?? []) : [];
+        const list = Array.isArray(employees) ? employees : [];
+        const current = currentRes.status === 'fulfilled' ? (Array.isArray(currentRes.value) ? currentRes.value : []) : [];
+        const currentIds = new Set(current.map(m => m.user_id ?? m.id).filter(Boolean));
+        availableMarketers.value = list.filter(e => !currentIds.has(e.id));
+      } catch (err) {
+        logger.error('Error loading employees for add members:', err);
+        toast.error('فشل تحميل قائمة الموظفين');
+      } finally {
+        addMembersLoading.value = false;
+      }
+    };
+
+    const addMemberToTeam = async userId => {
+      const team = addMembersTeam.value;
+      if (!team || !userId) return;
+      try {
+        await hrService.assignTeamMember(team.id, { user_id: userId });
+        toast.success('تم إضافة العضو إلى الفريق');
+        availableMarketers.value = availableMarketers.value.filter(e => e.id !== userId);
+        if (showDetailModal.value && detailTeam.value?.id === team.id) {
+          const members = await hrService.getHRTeamMembers(team.id);
+          detailMembers.value = Array.isArray(members) ? members : [];
+        }
+      } catch (err) {
+        logger.error('Error assigning member:', err);
+        toast.error('فشل إضافة العضو: ' + (err.response?.data?.message || err.message));
+      }
+    };
+
+    const confirmRemoveMember = member => {
+      const team = detailTeam.value;
+      if (!team) return;
+      const userId = member.user_id ?? member.id;
+      const name = member.name || member.full_name || member.user?.name || 'هذا العضو';
+      confirmModalConfig.value = {
+        title: 'حذف مسوق',
+        message: `هل أنت متأكد من إزالة "${name}" من الفريق؟`,
+        type: 'danger',
+        confirmText: 'حذف',
+        resolve: async () => {
+          try {
+            await hrService.removeTeamMember(team.id, userId);
+            toast.success('تم إزالة العضو من الفريق');
+            detailMembers.value = detailMembers.value.filter(m => (m.user_id ?? m.id) !== userId);
+          } catch (err) {
+            logger.error('Error removing member:', err);
+            toast.error('فشل إزالة العضو: ' + (err.response?.data?.message || err.message));
+          }
+        },
+      };
+      showConfirmModal.value = true;
     };
 
     const confirmDelete = team => {
@@ -329,6 +431,8 @@ export default {
       openCreateModal, openEditModal, closeModal, saveTeam,
       showDetailModal, detailTeam, detailMembers, detailContracts, isLoadingDetail,
       viewTeamDetails, confirmDelete, showConfirmModal, confirmModalConfig, onConfirmModalConfirm,
+      showAddMembersModal, addMembersTeam, availableMarketers, addMembersLoading,
+      openAddMembersModal, addMemberToTeam, confirmRemoveMember,
       formatDate, chipColor,
     };
   },
@@ -574,6 +678,12 @@ export default {
   box-shadow: 0 4px 10px rgba(239, 68, 68, 0.1);
 }
 
+.action-btn.add-members:hover {
+  border-color: #22c55e;
+  color: #22c55e;
+  background: #f0fdf4;
+}
+
 /* Modals */
 .modal-overlay {
   position: fixed;
@@ -601,6 +711,44 @@ export default {
   max-width: 640px;
   max-height: 85vh;
   overflow-y: auto;
+}
+
+.add-members-modal {
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.add-members-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.add-member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+  gap: 12px;
+}
+.add-member-name {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 500;
+}
+.btn-add-one {
+  padding: 8px 16px;
+  font-size: 13px;
+  background: #b1a28f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.btn-add-one:hover {
+  background: #8c7851;
 }
 
 .modal-header {
@@ -738,6 +886,25 @@ textarea.form-input {
   background: #f8fafc;
   border-radius: 10px;
   border: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+.member-chip-info {
+  flex: 1;
+  min-width: 0;
+}
+.btn-delete-member {
+  margin-right: auto;
+  padding: 6px 12px;
+  font-size: 12px;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-delete-member:hover {
+  background: #fee2e2;
 }
 
 .member-chip-avatar {

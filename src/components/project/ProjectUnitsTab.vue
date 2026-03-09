@@ -11,29 +11,37 @@
         <button type="button" class="units-filter-tab" :class="{ active: unitsFilterTab === 'sold' }" @click="unitsFilterTab = 'sold'">مباع</button>
         <button type="button" class="units-filter-tab" :class="{ active: unitsFilterTab === 'reserved' }" @click="unitsFilterTab = 'reserved'">محجوز</button>
       </div>
-      <div v-if="!isSalesUser && !isProjectManager" class="units-btns">
-        <button class="btn-units-primary" @click="showAddUnitModal = true">
-          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          إضافة وحدة يدوياً
-        </button>
-        <button class="btn-units-outline" @click="downloadContractForProject">
-          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          تحميل العقد
-        </button>
-        <button class="btn-units-outline" @click="$refs.csvInput && $refs.csvInput.click()">
-          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+      <div class="units-btns">
+        <template v-if="!isSalesUser && !isProjectManager">
+          <button class="btn-units-primary" @click="showAddUnitModal = true">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            إضافة وحدة يدوياً
+          </button>
+          <button class="btn-units-outline" @click="downloadContractForProject">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            تحميل العقد
+          </button>
+        </template>
+        <button
+          v-if="!isSalesUser"
+          class="btn-units-outline"
+          :disabled="csvUploading"
+          @click="$refs.csvInput && $refs.csvInput.click()"
+        >
+          <span v-if="csvUploading" class="btn-spinner"></span>
+          <svg v-else viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="17 8 12 3 7 8"></polyline>
             <line x1="12" y1="3" x2="12" y2="15"></line>
           </svg>
-          للوحدات CSV رفع v2
+          {{ csvUploading ? 'جاري الرفع...' : 'رفع CSV للوحدات' }}
         </button>
       </div>
     </div>
@@ -309,6 +317,7 @@ const {
   waitingListUnit,
   waitingListForm,
   waitingListSaving,
+  csvUploading,
   showConfirmModal,
   confirmModalConfig,
   onConfirmModalConfirm,
@@ -422,6 +431,22 @@ onMounted(() => {
 .btn-units-outline:hover {
   background: #f8fafc;
   border-color: #b1a28f;
+}
+.btn-units-outline:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.btn-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #b1a28f;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 .units-cards-grid {
   display: grid;
