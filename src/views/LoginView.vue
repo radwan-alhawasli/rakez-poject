@@ -208,6 +208,12 @@ onBeforeUnmount(() => {
 
 /* Touch-target safety net on mobile */
 @media (max-width: 576px) {
+  .login-view-shell {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .login-view-content {
     transition-duration: 0.45s;
   }

@@ -206,6 +206,9 @@ export default {
     const handleLogout = async () => {
       await authService.logout();
       notificationService.disconnect();
+      if (typeof document !== 'undefined') {
+        document.body.classList.remove('sidebar-drawer-open');
+      }
       router.replace({ path: '/login', query: { from: 'logout', t: String(Date.now()) } });
     };
 
@@ -221,6 +224,9 @@ export default {
       notificationService.disconnect();
       if (typeof window !== 'undefined') {
         window.removeEventListener('resize', updateMobile);
+      }
+      if (typeof document !== 'undefined') {
+        document.body.classList.remove('sidebar-drawer-open');
       }
     });
 

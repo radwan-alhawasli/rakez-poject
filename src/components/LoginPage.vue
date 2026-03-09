@@ -608,6 +608,12 @@ export default {
 }
 
 @media (max-width: 768px) {
+  .login-wrapper {
+    align-items: flex-start;
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
   .login-ambient {
     filter: blur(24px);
     opacity: 0.46;
@@ -643,6 +649,7 @@ export default {
 
   .login-shell {
     border-radius: 24px;
+    min-height: max-content;
   }
 
   .brand-panel {
