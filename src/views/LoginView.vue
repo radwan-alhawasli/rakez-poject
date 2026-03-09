@@ -14,16 +14,18 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import LoginPage from '@/components/LoginPage.vue';
 import LoginIntroSplash from '@/components/LoginIntroSplash.vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { getDashboardPathForUser } from '@/utils/rbac';
 import authService from '@/services/authService';
 
+const route = useRoute();
 const router = useRouter();
 const SESSION_INTRO_KEY = 'rakez-login-intro-seen';
 const pageReady = ref(false);
+let revealTimer = null;
 
 const shouldShowIntro = () => {
   if (typeof window === 'undefined') return false;
@@ -43,24 +45,41 @@ const shouldShowIntro = () => {
 
 const showIntro = ref(shouldShowIntro());
 
-const revealLogin = () => {
+const clearRevealTimer = () => {
+  if (revealTimer !== null && typeof window !== 'undefined') {
+    window.clearTimeout(revealTimer);
+    revealTimer = null;
+  }
+};
+
+const revealLogin = (delay = 70) => {
   if (typeof window === 'undefined') {
     pageReady.value = true;
     return;
   }
 
-  window.requestAnimationFrame(() => {
-    window.requestAnimationFrame(() => {
-      pageReady.value = true;
-    });
-  });
+  clearRevealTimer();
+  pageReady.value = false;
+  revealTimer = window.setTimeout(() => {
+    pageReady.value = true;
+    revealTimer = null;
+  }, delay);
 };
 
 onMounted(() => {
   if (!showIntro.value) {
-    revealLogin();
+    revealLogin(route.query.from === 'logout' ? 120 : 70);
   }
 });
+
+watch(
+  () => route.fullPath,
+  () => {
+    if (!showIntro.value) {
+      revealLogin(route.query.from === 'logout' ? 120 : 70);
+    }
+  }
+);
 
 const onLoginSuccess = userData => {
   router.push(getDashboardPathForUser(userData) || '/dashboard');
@@ -68,9 +87,12 @@ const onLoginSuccess = userData => {
 
 const handleIntroDone = () => {
   showIntro.value = false;
-  pageReady.value = false;
-  revealLogin();
+  revealLogin(90);
 };
+
+onBeforeUnmount(() => {
+  clearRevealTimer();
+});
 </script>
 
 <style scoped>
@@ -102,8 +124,8 @@ const handleIntroDone = () => {
 
 .page-pending.intro-complete .login-view-content {
   opacity: 0;
-  transform: translateY(26px) scale(0.985);
-  filter: blur(6px);
+  transform: translateY(34px) scale(0.982);
+  filter: blur(7px);
 }
 
 .login-view-shell :deep(.login-wrapper),
@@ -170,7 +192,7 @@ const handleIntroDone = () => {
 .page-pending.intro-complete :deep(.logo-area),
 .page-pending.intro-complete :deep(.login-form) {
   opacity: 0;
-  transform: translateY(22px) scale(0.985);
+  transform: translateY(30px) scale(0.982);
   filter: blur(4px);
 }
 
@@ -196,7 +218,7 @@ const handleIntroDone = () => {
   }
 
   .page-pending.intro-complete .login-view-content {
-    transform: translateY(14px);
+    transform: translateY(22px);
     filter: blur(2px);
   }
 

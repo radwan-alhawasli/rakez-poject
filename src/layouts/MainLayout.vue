@@ -206,7 +206,7 @@ export default {
     const handleLogout = async () => {
       await authService.logout();
       notificationService.disconnect();
-      router.push('/login');
+      router.replace({ path: '/login', query: { from: 'logout', t: String(Date.now()) } });
     };
 
     onMounted(() => {

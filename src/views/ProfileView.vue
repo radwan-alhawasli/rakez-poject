@@ -176,7 +176,7 @@ const handleComingSoon = () => {
 
 const handleLogout = async () => {
   await authService.logout();
-  router.push('/login');
+  router.replace({ path: '/login', query: { from: 'logout', t: String(Date.now()) } });
 };
 
 onMounted(() => {
