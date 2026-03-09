@@ -45,6 +45,19 @@ const shouldShowIntro = () => {
 
 const showIntro = ref(shouldShowIntro());
 
+const resetPageScrollLocks = () => {
+  if (typeof document === 'undefined') return;
+
+  document.body.classList.remove('sidebar-drawer-open');
+  document.body.style.overflow = '';
+  document.body.style.overflowY = '';
+  document.body.style.touchAction = '';
+
+  document.documentElement.style.overflow = '';
+  document.documentElement.style.overflowY = '';
+  document.documentElement.style.touchAction = '';
+};
+
 const clearRevealTimer = () => {
   if (revealTimer !== null && typeof window !== 'undefined') {
     window.clearTimeout(revealTimer);
@@ -67,6 +80,7 @@ const revealLogin = (delay = 70) => {
 };
 
 onMounted(() => {
+  resetPageScrollLocks();
   if (!showIntro.value) {
     revealLogin(route.query.from === 'logout' ? 120 : 70);
   }
@@ -75,6 +89,7 @@ onMounted(() => {
 watch(
   () => route.fullPath,
   () => {
+    resetPageScrollLocks();
     if (!showIntro.value) {
       revealLogin(route.query.from === 'logout' ? 120 : 70);
     }
@@ -100,7 +115,9 @@ onBeforeUnmount(() => {
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .login-view-content {
