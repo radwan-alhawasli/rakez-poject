@@ -18,8 +18,6 @@
         </div>
         <div class="brand-copy">
           <span class="brand-en">RAKEZ REAL ESTATE</span>
-          <h1 class="brand-ar">مرحباً بكم إلى موقع راكز</h1>
-          <p class="brand-desc">نتمنى لكم تجربة مميزة.</p>
         </div>
         <div class="brand-footer">
           <span class="brand-footer-line"></span>
@@ -335,23 +333,6 @@ export default {
   letter-spacing: 0.22em;
 }
 
-.brand-ar {
-  margin: 0;
-  color: #f8f6f1;
-  font-family: 'Cairo', 'Tajawal', sans-serif;
-  font-size: clamp(32px, 2.6vw, 48px);
-  font-weight: 800;
-  line-height: 1.3;
-}
-
-.brand-desc {
-  margin: 0;
-  max-width: 460px;
-  color: rgba(248, 250, 252, 0.74);
-  font-size: clamp(15px, 0.6vw + 10px, 18px);
-  line-height: 1.85;
-}
-
 .brand-footer {
   display: flex;
   flex-direction: column;
@@ -645,14 +626,6 @@ export default {
     letter-spacing: 0.16em;
   }
 
-  .brand-ar {
-    font-size: 31px;
-  }
-
-  .brand-desc {
-    font-size: 14px;
-  }
-
   .logo-kicker {
     font-size: 13px;
     letter-spacing: 0.14em;
@@ -695,9 +668,6 @@ html.dark .form-label {
 }
 html.dark .logo-tag {
   color: #94a3b8;
-}
-html.dark .brand-desc {
-  color: rgba(226, 232, 240, 0.72);
 }
 html.dark .login-form .form-input {
   background: linear-gradient(180deg, #0f172a, #111c2d);

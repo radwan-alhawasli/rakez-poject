@@ -14,8 +14,6 @@
       <div class="intro-copy-shell" :class="{ visible: phase !== 'idle' }">
         <div class="intro-copy">
           <span class="intro-kicker">RAKEZ REAL ESTATE</span>
-          <h1 class="intro-title">مرحباً بكم إلى موقع راكز</h1>
-          <p class="intro-subtitle">نتمنى لكم تجربة مميزة.</p>
         </div>
       </div>
 
@@ -267,26 +265,6 @@ onBeforeUnmount(() => {
   margin-bottom: 18px;
 }
 
-.intro-title {
-  margin: 0;
-  color: #f8f6f1;
-  font-family: 'Cairo', 'Tajawal', sans-serif;
-  font-size: clamp(31px, 3.2vw, 60px);
-  font-weight: 800;
-  line-height: 1.28;
-  letter-spacing: 0;
-  text-shadow: 0 12px 34px rgba(0, 0, 0, 0.4);
-}
-
-.intro-subtitle {
-  margin: 16px auto 0;
-  max-width: 560px;
-  color: rgba(248, 250, 252, 0.72);
-  font-family: 'Tajawal', 'Cairo', sans-serif;
-  font-size: clamp(13px, 0.45vw + 10px, 18px);
-  font-weight: 500;
-  line-height: 1.85;
-}
 
 .intro-logo-stage {
   position: relative;
@@ -416,17 +394,6 @@ onBeforeUnmount(() => {
     margin-bottom: 12px;
   }
 
-  .intro-subtitle {
-    max-width: 92%;
-    font-size: 14px;
-    line-height: 1.75;
-  }
-
-  .intro-subtitle {
-    font-size: 13px;
-    max-width: 300px;
-  }
-
   .intro-logo-stage {
     width: min(72vw, 280px);
     margin-top: 22px;
@@ -452,10 +419,6 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 480px) {
-  .intro-title {
-    font-size: clamp(27px, 9.2vw, 36px);
-  }
-
   .intro-kicker {
     font-size: 13px;
   }
