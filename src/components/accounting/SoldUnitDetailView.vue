@@ -450,7 +450,12 @@
           </div>
           <div class="summary-card">
             <span class="card-label">رسوم البنك / الكاش</span>
-            <span class="card-value">{{ formatNumber(commissionSummary.bank_fees) }}</span>
+            <input
+              v-model.number="commissionForm.bank_fees"
+              type="number"
+              class="summary-input"
+              min="0"
+            />
           </div>
           <div class="summary-card net">
             <span class="card-label">الصافي النهائي للتوزيع</span>
@@ -636,6 +641,7 @@ const canConfirmDistribution = dist =>
       if (!commissionId.value) return;
       try {
         commissionSummary.value = await accountingService.getCommissionSummary(commissionId.value);
+        commissionForm.bank_fees = Number(commissionSummary.value?.bank_fees ?? 0);
         distributions.value = commissionSummary.value?.distributions || [];
         if (!hasPopulatedFromApi.value && distributions.value.length > 0) {
           leadGenRows.length = 0;
@@ -1226,6 +1232,24 @@ const canConfirmDistribution = dist =>
   color: var(--color-navy);
 }
 
+.summary-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-medium-gray);
+  border-radius: 10px;
+  background: var(--color-white);
+  color: var(--color-navy);
+  font-size: 18px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.summary-input:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(177, 162, 143, 0.12);
+}
+
 .distribution-table-section {
   margin-bottom: 24px;
 }
@@ -1377,6 +1401,10 @@ const canConfirmDistribution = dist =>
   }
   .card-value {
     font-size: 16px;
+  }
+  .summary-input {
+    font-size: 16px;
+    padding: 8px 10px;
   }
   .back-btn {
     padding: 8px 12px;

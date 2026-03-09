@@ -471,12 +471,6 @@ const routes = [
             component: () => import('../views/AccountingView.vue'),
             meta: { permissions: [PERMISSIONS.ACCOUNTING_SALARIES_VIEW] },
           },
-          {
-            path: 'claim-files',
-            name: 'AccountingClaimFiles',
-            component: () => import('../views/AccountingView.vue'),
-            meta: { permissions: [PERMISSIONS.CREDIT_CLAIM_FILES_GENERATE] },
-          },
         ],
       },
       {
