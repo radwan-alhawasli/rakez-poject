@@ -53,14 +53,25 @@
 
           <div class="form-group">
             <label for="password" class="form-label">كلمة المرور</label>
-            <Input
-              id="password"
-              v-model="password"
-              type="password"
-              placeholder="••••••••"
-              required
-              :class="{ 'input-error': getFieldError('password') }"
-            />
+            <div class="password-field">
+              <Input
+                id="password"
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                placeholder="••••••••"
+                required
+                :class="['password-input', { 'input-error': getFieldError('password') }]"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                :aria-label="showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'"
+                @click="showPassword = !showPassword"
+              >
+                <EyeOff v-if="showPassword" :size="18" />
+                <Eye v-else :size="18" />
+              </button>
+            </div>
             <span v-if="getFieldError('password')" class="field-error">{{ getFieldError('password') }}</span>
           </div>
 
@@ -84,6 +95,7 @@
 </template>
 
 <script>
+import { Eye, EyeOff } from 'lucide-vue-next';
 import { ref } from 'vue';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
@@ -95,11 +107,12 @@ import rakezLogo from '@/assets/rakez-logo-brown-trans.webp';
 
 export default {
   name: 'LoginPage',
-  components: { Button, Input },
+  components: { Button, Input, Eye, EyeOff },
   emits: ['login-success'],
   setup(props, { emit }) {
     const email = ref('');
     const password = ref('');
+    const showPassword = ref(false);
     const isLoading = ref(false);
     const error = ref('');
 
@@ -129,6 +142,7 @@ export default {
     return {
       email,
       password,
+      showPassword,
       isLoading,
       error,
       rakezLogo,
@@ -418,6 +432,50 @@ export default {
   font-weight: 700;
   font-family: 'Tajawal', 'Cairo', sans-serif;
 }
+.password-field {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 14px;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: rgba(39, 55, 77, 0.68);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: var(--color-navy);
+  background: rgba(39, 55, 77, 0.06);
+}
+
+.password-toggle:focus-visible {
+  outline: none;
+  color: var(--color-navy);
+  background: rgba(181, 169, 154, 0.18);
+  box-shadow: 0 0 0 3px rgba(181, 169, 154, 0.18);
+}
+
+.password-toggle:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+::deep(.login-form .password-input) {
+  padding-inline-end: 56px;
+}
 
 :deep(.login-form .form-input) {
   width: 100%;
@@ -637,6 +695,14 @@ html.dark .login-form .form-input {
   border-color: #334155;
   color: #e2e8f0;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+html.dark .password-toggle {
+  color: rgba(226, 232, 240, 0.82);
+  background: transparent;
+}
+html.dark .password-toggle:hover {
+  color: #f8fafc;
+  background: rgba(148, 163, 184, 0.12);
 }
 html.dark .login-form .form-input::placeholder {
   color: #64748b;
