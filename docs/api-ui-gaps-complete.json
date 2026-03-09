@@ -118,7 +118,7 @@
         "claim-files"
       ],
       "components": [
-        "BookingDetailModal",
+        "CreditBookingDetailPanel",
         "NegotiationUpdateModal",
         "ProcessWaitingModal",
         "FinancingDetailModal",
@@ -192,7 +192,7 @@
     "missingTestFiles": 2,
     "missingScenarios": 244,
     "recommendations": [
-      "Create authService.test.js",
+      "Keep authService.test.js aligned with auth/session behavior",
       "Add comprehensive error handling tests",
       "Add edge case tests for all services"
     ]
@@ -205,7 +205,7 @@
     ],
     "mediumPriority": [
       "Improve gap analysis path matching algorithm",
-      "Add missing test files (authService.test.js)",
+      "Keep authService.test.js current",
       "Add comprehensive error handling tests"
     ],
     "lowPriority": [

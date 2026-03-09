@@ -75,12 +75,6 @@
             <span v-if="getFieldError('password')" class="field-error">{{ getFieldError('password') }}</span>
           </div>
 
-          <div class="form-options">
-            <div class="forgot-wrapper">
-              <a href="#" class="forgot-link">هل نسيت المرور؟</a>
-            </div>
-          </div>
-
           <Button type="submit" class="login-btn" :disabled="isLoading" :loading="isLoading">
             تسجيل الدخول
           </Button>
@@ -508,25 +502,6 @@ export default {
   color: var(--color-medium-gray);
 }
 
-.form-options {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  font-size: 14px;
-}
-
-.forgot-link {
-  color: var(--color-dark-gray);
-  text-decoration: none;
-  transition: color 0.2s, transform 0.2s ease;
-  display: inline-block;
-}
-
-.forgot-link:hover {
-  color: var(--color-gold);
-  transform: translateX(-2px);
-}
-
 .login-btn {
   margin-top: 10px;
   background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
@@ -721,8 +696,7 @@ html.dark .form-label {
 html.dark .logo-tag {
   color: #94a3b8;
 }
-html.dark .brand-desc,
-html.dark .brand-footer-text {
+html.dark .brand-desc {
   color: rgba(226, 232, 240, 0.72);
 }
 html.dark .login-form .form-input {

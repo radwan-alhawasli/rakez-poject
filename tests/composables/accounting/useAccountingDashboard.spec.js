@@ -5,6 +5,8 @@ import { defineComponent, h } from 'vue';
 vi.mock('@/services/accountingService', () => ({
   default: {
     getDashboard: vi.fn(),
+    getPendingDeposits: vi.fn(),
+    getDepositsFollowUp: vi.fn(),
   },
 }));
 
@@ -43,6 +45,8 @@ function mountComposable() {
 describe('useAccountingDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    accountingService.getPendingDeposits.mockResolvedValue({ total: 0 });
+    accountingService.getDepositsFollowUp.mockResolvedValue({ total: 0 });
   });
 
   it('should have initial state with isLoading=false and dashboardMetrics zeroes', () => {

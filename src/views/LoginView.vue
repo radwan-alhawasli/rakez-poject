@@ -1,7 +1,7 @@
 <template>
   <div
     class="login-view-shell"
-    :class="{ 'intro-running': showIntro, 'intro-complete': !showIntro, 'page-ready': pageReady, 'page-pending': !pageReady }"
+    :class="{ 'intro-running': showIntro, 'intro-complete': !showIntro, 'page-pending': !pageReady }"
   >
     <div class="login-view-content">
       <LoginPage @login-success="onLoginSuccess" />

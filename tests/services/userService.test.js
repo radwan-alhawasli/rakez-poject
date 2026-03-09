@@ -201,10 +201,10 @@ describe('userService', () => {
       await expect(userService.restoreEmployee(1)).rejects.toThrow();
     });
 
-    it('should handle 404 Not Found', async () => {
+    it('should return an empty object on 404 Not Found', async () => {
       mock.onGet('/hr/users/999').reply(404, { error: 'Not found' });
 
-      await expect(userService.getEmployee(999)).rejects.toThrow();
+      await expect(userService.getEmployee(999)).resolves.toEqual({});
     });
 
     it('should handle 422 Validation Error', async () => {

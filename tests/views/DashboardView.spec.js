@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { createPinia } from 'pinia';
 import DashboardView from '../../src/views/DashboardView.vue';
@@ -24,6 +24,13 @@ vi.mock('../../src/services/contractService', () => ({
 
 vi.mock('../../src/utils/logger', () => ({
   default: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
+}));
+
+vi.mock('../../src/composables/useFormatters', () => ({
+  useFormatters: vi.fn(() => ({
+    formatCompact: value => String(value ?? 0),
+    formatNumber: value => String(value ?? 0),
+  })),
 }));
 
 describe('DashboardView', () => {
@@ -49,6 +56,7 @@ describe('DashboardView', () => {
 
   it('renders stats grid with stat cards', async () => {
     const wrapper = await createWrapper();
+    await flushPromises();
     await wrapper.vm.$nextTick();
     const statValues = wrapper.findAll('.stat-value');
     expect(statValues.length).toBeGreaterThan(0);
@@ -56,6 +64,7 @@ describe('DashboardView', () => {
 
   it('renders welcome header with user name', async () => {
     const wrapper = await createWrapper();
+    await flushPromises();
     await wrapper.vm.$nextTick();
     expect(wrapper.find('.welcome-title').exists()).toBe(true);
     expect(wrapper.find('.welcome-title').text()).toContain('أهلاً بعودتك');

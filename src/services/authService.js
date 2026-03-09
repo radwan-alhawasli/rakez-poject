@@ -106,65 +106,6 @@ const authService = {
   },
 
   /**
-   * Fetch authenticated user from API (GET /user)
-   * Updates stored user if successful.
-   * @returns {Promise<AuthUser|null>}
-   */
-  async getAuthenticatedUser() {
-    try {
-      const response = await apiClient.get('/user');
-      const user = response.data?.data ?? response.data;
-      if (user) {
-        const userData = { ...user };
-        if (typeof userData.type === 'string' && ROLE_MAP[userData.type] !== undefined) {
-          userData.type = ROLE_MAP[userData.type];
-        }
-        if (user?.permissions) {
-          userData.permissions = Array.isArray(user.permissions) ? user.permissions : [];
-        }
-        if ('is_leader' in user || 'isLeader' in user)
-          userData.is_leader = user.is_leader ?? user.isLeader;
-        if ('is_manager' in user || 'isManager' in user)
-          userData.is_manager = user.is_manager ?? user.isManager;
-        secureStorage.setUserInfo(userData);
-        return userData;
-      }
-      return null;
-    } catch (error) {
-      handleServiceError(error, 'Get user', 'get', null);
-      return secureStorage.getUserInfo();
-    }
-  },
-
-  /**
-   * Google Auth (POST /auth/google)
-   * @param {string} token - Google ID token
-   * @returns {Promise<AuthUser>}
-   */
-  async loginWithGoogle(token) {
-    try {
-      const response = await apiClient.post('/auth/google', { token });
-      const data = response.data?.data ?? response.data;
-      const apiToken = data?.token ?? data?.access_token ?? response.data?.token;
-      const user = data?.user ?? response.data?.user;
-      if (apiToken) {
-        secureStorage.setToken(apiToken);
-        if (user) {
-          const userData = { ...user };
-          if (typeof userData.type === 'string' && ROLE_MAP[userData.type] !== undefined) {
-            userData.type = ROLE_MAP[userData.type];
-          }
-          secureStorage.setUserInfo(userData);
-          return userData;
-        }
-      }
-      throw new Error('No token received');
-    } catch (error) {
-      return handleServiceError(error, 'Google auth', 'post', null);
-    }
-  },
-
-  /**
    * Check if user is authenticated
    * @returns {boolean}
    */

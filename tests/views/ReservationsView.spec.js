@@ -12,9 +12,14 @@ vi.mock('../../src/services/salesService', () => ({
   default: {
     getReservations: vi.fn().mockResolvedValue([]),
     getWaitingList: vi.fn().mockResolvedValue([]),
-    getNegotiations: vi.fn().mockResolvedValue([]),
     cancelReservation: vi.fn().mockResolvedValue({}),
     confirmReservation: vi.fn().mockResolvedValue({}),
+    getPendingNegotiations: vi.fn().mockResolvedValue([]),
+    downloadVoucher: vi.fn().mockResolvedValue(new Blob()),
+    convertToReservation: vi.fn().mockResolvedValue({}),
+    cancelWaitingListEntry: vi.fn().mockResolvedValue({}),
+    approveNegotiation: vi.fn().mockResolvedValue({}),
+    rejectNegotiation: vi.fn().mockResolvedValue({}),
   },
 }));
 
@@ -38,7 +43,8 @@ vi.mock('../../src/composables/useToast', () => ({
 vi.mock('../../src/composables/useFormatters', () => ({
   useFormatters: vi.fn(() => ({
     formatCurrency: (val) => (val != null ? String(val) : '—'),
-    formatDate: (val) => (val ? String(val) : 'غير محدد'),
+    formatDateISO: (val) => (val ? String(val) : 'غير محدد'),
+    formatNumber: (val) => (val != null ? String(val) : '0'),
   })),
 }));
 
@@ -77,7 +83,7 @@ describe('ReservationsView', () => {
 
   it('renders page header with title', async () => {
     const wrapper = await createWrapper();
-    expect(wrapper.find('.page-title').text()).toContain('حجوزاتي');
+    expect(wrapper.find('.welcome-title').text()).toContain('حجوزاتي');
   });
 
   it('renders filter tab buttons', async () => {

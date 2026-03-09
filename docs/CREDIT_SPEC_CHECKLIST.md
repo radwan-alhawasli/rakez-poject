@@ -35,7 +35,7 @@
 - **3.1.3 التفاصيل المالية:** قيمة العربون، تاريخ دفع العربون، نسبة السعي (من المالك أو المشتري)، طريقة دفع العربون (كاش / تحويل بنكي أو دفع إلكتروني + تأكيد المحاسبة)  
 - **3.1.4 تفاصيل التسويق:** اسم الفريق، اسم المسوق  
 
-**Implementation:** `BookingDetailModal` updated with sections 3.1.1–3.1.4 and fields bound to `booking.*` (e.g. `project_name`, `unit_number`, `customer_name`, `deposit_amount`, `payment_method`, `team_name`, `marketer_name`). Backend should return these from `getConfirmedBookingById` or list payload.
+**Implementation:** `CreditBookingDetailPanel` now covers sections 3.1.1–3.1.4 and binds fields from `booking.*` (e.g. `project_name`, `unit_number`, `customer_name`, `deposit_amount`, `payment_method`, `team_name`, `marketer_name`). Backend should return these from `getConfirmedBookingById` or the bookings list payload.
 
 ---
 

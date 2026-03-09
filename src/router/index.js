@@ -381,11 +381,6 @@ const routes = [
         ],
       },
       {
-        path: 'teams',
-        name: 'AllTeams',
-        component: () => import('../views/TeamsView.vue'),
-      },
-      {
         path: 'credit',
         component: () => import('../views/CreditView.vue'),
         meta: { roles: [ROLE_CREDIT], permissions: [PERMISSIONS.CREDIT_DASHBOARD_VIEW] },

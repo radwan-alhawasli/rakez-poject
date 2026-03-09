@@ -1,5 +1,5 @@
 <template>
-  <div class="login-intro-splash" :class="[`phase-${phase}`, { compact: isCompactDevice }]">
+  <div class="login-intro-splash" :class="{ 'phase-fade': phase === 'fade', compact: isCompactDevice }">
     <div class="intro-backdrop"></div>
     <div class="intro-noise"></div>
     <div class="intro-grid"></div>
@@ -15,8 +15,7 @@
         <div class="intro-copy">
           <span class="intro-kicker">RAKEZ REAL ESTATE</span>
           <h1 class="intro-title">مرحباً بكم إلى موقع راكز</h1>
-          <p class="intro-subtitle intro-subtitle-desktop">نتمنى لكم تجربة مميزة.</p>
-          <p class="intro-subtitle intro-subtitle-mobile">نتمنى لكم تجربة مميزة.</p>
+          <p class="intro-subtitle">نتمنى لكم تجربة مميزة.</p>
         </div>
       </div>
 
@@ -287,10 +286,6 @@ onBeforeUnmount(() => {
   line-height: 1.85;
 }
 
-.intro-subtitle-mobile {
-  display: none;
-}
-
 .intro-logo-stage {
   position: relative;
   width: min(42vw, 420px);
@@ -425,12 +420,7 @@ onBeforeUnmount(() => {
     line-height: 1.75;
   }
 
-  .intro-subtitle-desktop {
-    display: none;
-  }
-
-  .intro-subtitle-mobile {
-    display: block;
+  .intro-subtitle {
     font-size: 13px;
     max-width: 300px;
   }

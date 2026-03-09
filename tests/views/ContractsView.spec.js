@@ -64,7 +64,7 @@ describe('ContractsView', () => {
 
   it('renders page header with title', async () => {
     const wrapper = await createWrapper();
-    expect(wrapper.find('.page-title').text()).toContain('إدارة العقود');
+    expect(wrapper.find('.welcome-title').text()).toContain('إدارة العقود');
   });
 
   it('renders filter tabs', async () => {

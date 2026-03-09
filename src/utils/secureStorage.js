@@ -17,17 +17,6 @@ const SESSION_TIMEOUT_DURATION = 30 * 60 * 1000;
 const SESSION_WARNING_TIME = 5 * 60 * 1000;
 
 /**
- * Check if httpOnly cookies are supported (requires backend)
- * For now, we use localStorage with additional security
- */
-// eslint-disable-next-line no-unused-vars
-function supportsHttpOnlyCookies() {
-  // This would require backend support
-  // For now, return false and use secure localStorage
-  return false;
-}
-
-/**
  * Get current timestamp
  * @returns {number} Current timestamp in milliseconds
  */
@@ -169,6 +158,7 @@ const secureStorage = {
   clearSession() {
     this.removeToken();
     this.removeUserInfo();
+    localStorage.removeItem('refreshToken');
   },
 
   /**
@@ -176,15 +166,6 @@ const secureStorage = {
    */
   updateLastActivity() {
     localStorage.setItem(LAST_ACTIVITY_KEY, String(getCurrentTime()));
-  },
-
-  /**
-   * Get last activity timestamp
-   * @returns {number} Last activity timestamp
-   */
-  getLastActivity() {
-    const lastActivity = localStorage.getItem(LAST_ACTIVITY_KEY);
-    return lastActivity ? parseInt(lastActivity, 10) : getCurrentTime();
   },
 
   /**
@@ -246,13 +227,6 @@ const secureStorage = {
    */
   getRefreshToken() {
     return getWithExpiration('refreshToken');
-  },
-
-  /**
-   * Remove refresh token
-   */
-  removeRefreshToken() {
-    localStorage.removeItem('refreshToken');
   },
 };
 

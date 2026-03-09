@@ -1,6 +1,6 @@
 /**
  * حالة الدردشة المشتركة ومنطق المساعد الذكي.
- * يُستخدم بواسطة ChatbotPanel و ChatbotModal و AiAssistantView.
+ * يُستخدم بواسطة ChatbotPanel و AiAssistantView.
  *
  * استراتيجية التراجع:
  *  1. تجربة V2 (POST /ai/v2/chat)

@@ -3,18 +3,19 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { createPinia } from 'pinia';
 import TasksView from '../../src/views/TasksView.vue';
 
 vi.mock('../../src/services/taskService', () => ({
   default: {
-    getAssignedTasks: vi.fn().mockResolvedValue({ items: [], total: 0, total_pages: 1 }),
+    getMyTasks: vi.fn().mockResolvedValue({ items: [], total: 0, total_pages: 1 }),
     getRequestedTasks: vi.fn().mockResolvedValue({ items: [], total: 0, total_pages: 1 }),
     createTask: vi.fn().mockResolvedValue({}),
     updateTaskStatus: vi.fn().mockResolvedValue({}),
     getSectionUsers: vi.fn().mockResolvedValue([]),
+    getTaskSections: vi.fn().mockResolvedValue([]),
   },
 }));
 
@@ -22,6 +23,7 @@ vi.mock('../../src/services/notificationService', () => ({
   default: {
     state: { value: [] },
     init: vi.fn(),
+    addNotification: vi.fn(),
   },
 }));
 
@@ -33,7 +35,7 @@ vi.mock('../../src/services/teamService', () => ({
 
 vi.mock('../../src/services/userService', () => ({
   default: {
-    getUsers: vi.fn().mockResolvedValue([]),
+    getEmployees: vi.fn().mockResolvedValue({ items: [] }),
   },
 }));
 
@@ -81,11 +83,12 @@ describe('TasksView', () => {
 
   it('renders page header with title', async () => {
     const wrapper = await createWrapper();
-    expect(wrapper.find('.page-header h2').text()).toContain('إدارة المهام');
+    expect(wrapper.find('.welcome-title').text()).toContain('إدارة المهام');
   });
 
   it('has the assigned tab active by default', async () => {
     const wrapper = await createWrapper();
+    await flushPromises();
     const activeTab = wrapper.find('.tab-btn.active');
     expect(activeTab.exists()).toBe(true);
     expect(activeTab.text()).toContain('مهام مطلوبة مني');

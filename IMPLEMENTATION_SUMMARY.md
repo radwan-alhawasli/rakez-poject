@@ -94,11 +94,9 @@ This document summarizes all the security, architecture, and best practices impr
 ### 3. Architecture Improvements
 
 #### State Management
-- ✅ **Pinia Stores**
-  - `authStore.js` - Authentication state
-  - `userStore.js` - User management
-  - `contractStore.js` - Contract management
-  - `notificationStore.js` - Notifications
+- ✅ **Pinia Setup**
+  - Pinia plugin initialized in `src/main.js`
+  - Active stores in the current codebase include `marketingStore.js`, `hrStore.js`, `creditStore.js`, and `accountingStore.js`
 
 - ✅ **Pinia Integration** (`src/main.js`)
   - Pinia plugin setup
@@ -149,10 +147,10 @@ src/
 ├── api/
 │   └── apiClient.js (enhanced)
 ├── stores/ (NEW)
-│   ├── authStore.js
-│   ├── userStore.js
-│   ├── contractStore.js
-│   └── notificationStore.js
+│   ├── accountingStore.js
+│   ├── creditStore.js
+│   ├── hrStore.js
+│   └── marketingStore.js
 ├── repositories/ (NEW)
 │   ├── contractRepository.js
 │   └── userRepository.js
