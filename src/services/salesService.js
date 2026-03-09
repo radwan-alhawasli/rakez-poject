@@ -86,6 +86,7 @@ const SALES_API_ENDPOINT_REGISTRY = {
     source: 'preferred_249',
   },
   getMyTargets: { method: 'GET', endpoint: '/sales/targets/my', source: 'preferred_249' },
+  getTargetsByProject: { method: 'GET', endpoint: '/sales/targets/by-project/{contract_id}', source: 'preferred_249' },
   createTarget: { method: 'POST', endpoint: '/sales/targets', source: 'preferred_249' },
   updateTarget: {
     method: 'PATCH',
@@ -430,9 +431,13 @@ const salesService = {
 
   // Targets
   /**
-   * Get my sales targets
-   * GET /sales/targets/my (api.php: Route::get('targets/my', [SalesTargetController::class, 'my']))
-   * @returns {Promise<Array>} List of user's sales targets
+   * Get targets for team goals page (cards list).
+   * GET /sales/targets/my — Permission: sales.targets.view
+   * Role behavior: Sales Leader → all team goals (targets assigned to any team member);
+   * Sales staff (non-leader) → only targets where marketer_id = current user.
+   * Each item: marketer_id / marketer_name = assignee (user type `sales` in the system — sales team member).
+   * @param {Object} params - Optional: from, to, status (new|in_progress|completed), per_page
+   * @returns {Promise<Array>} List of targets (SalesTargetItem: units[], marketer_id, marketer_name, contract_id, etc.)
    */
   async getMyTargets(params = {}) {
     const response = await apiClient.get('/sales/targets/my', { params });
@@ -443,6 +448,22 @@ const salesService = {
     if (data && Array.isArray(data.data)) return data.data;
     if (data && Array.isArray(data.targets)) return data.targets;
     return Array.isArray(items) ? items : [];
+  },
+
+  /**
+   * Get targets by project (units assigned to team + assignee per target).
+   * GET /sales/targets/by-project/{contractId}
+   * Permission: sales.targets.view. Used when opening the "assigned units" modal from team goals.
+   * Each item: marketer_id / marketer_name = assignee (user type `sales` — sales team member).
+   * @param {number|string} contractId - Contract/Project ID
+   * @returns {Promise<Array>} List of targets for this project (SalesTargetItem: units[], marketer_id, marketer_name, etc.)
+   */
+  async getTargetsByProject(contractId) {
+    const response = await apiClient.get(`/sales/targets/by-project/${contractId}`);
+    const data = response?.data ?? response;
+    if (data && Array.isArray(data.data)) return data.data;
+    if (Array.isArray(data)) return data;
+    return [];
   },
 
   /**
@@ -457,9 +478,9 @@ const salesService = {
   },
 
   /**
-   * Create target for team member (leader only)
-   * POST /sales/targets
-   * @param {Object} data - marketer_id, contract_id, contract_unit_id, target_type (reservation|negotiation|closing), start_date, end_date, leader_notes
+   * Create target (leader only). Assignee must be a user of type `sales` (from team/members).
+   * POST /sales/targets — Permission: sales.team.manage
+   * @param {Object} data - marketer_id (user type sales, from GET /sales/team/members), contract_id, contract_unit_id, target_type (reservation|negotiation|closing), start_date, end_date, leader_notes
    * @returns {Promise<Object>} Created target
    */
   createTarget(data) {
@@ -555,9 +576,10 @@ const salesService = {
   },
 
   /**
-   * Get team members
-   * GET /api/sales/team/members
-   * @param {Object} params - with_ratings (default: true) — when true, includes leader_rating and confirmed_reservations_count
+   * Get sales team members (leader only).
+   * GET /api/sales/team/members — Permission: sales.team.manage (403 for non-leaders).
+   * Used on Team Goals page and in "Add new goal" form for assignee dropdown (marketer_id / name).
+   * @param {Object} params - with_ratings (default: true); use false for lighter response in create-goal dropdown
    * @returns {Promise<Array>} List of team members with id, name, email, team, rating (leader_rating), confirmed_bookings, etc.
    */
   async getTeamMembers(params = {}) {

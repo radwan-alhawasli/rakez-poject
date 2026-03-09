@@ -779,7 +779,7 @@
             to="/sales/targets"
             class="nav-item"
             exact-active-class="active"
-            data-tooltip="أهداف الفريق"
+            :data-tooltip="hasPermission('sales.team.manage') ? 'أهداف الفريق' : 'أهدافي'"
           >
             <div class="nav-content">
               <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -787,7 +787,7 @@
                 <circle cx="12" cy="12" r="6"></circle>
                 <circle cx="12" cy="12" r="2"></circle>
               </svg>
-              <span class="nav-text">أهداف الفريق</span>
+              <span class="nav-text">{{ hasPermission('sales.team.manage') ? 'أهداف الفريق' : 'أهدافي' }}</span>
             </div>
           </router-link>
 

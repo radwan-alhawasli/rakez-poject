@@ -150,7 +150,7 @@ export function useSalesTargets() {
   );
 
   const openCreateTargetModal = async (teamMembers, teamProjects, loadTeamMembers, loadTeamProjects) => {
-    if (teamMembers.value.length === 0) await loadTeamMembers();
+    if (teamMembers.value.length === 0) await loadTeamMembers({ with_ratings: false });
     if (teamProjects.value.length === 0) await loadTeamProjects();
     targetFormUnits.value = [];
     targetFormUnitsError.value = '';
@@ -159,7 +159,7 @@ export function useSalesTargets() {
   };
 
   const createTarget = async () => {
-    if (!hasPermission('sales.goals.create')) {
+    if (!hasPermission('sales.team.manage')) {
       notificationService.addNotification('غير مصرح لك بإنشاء أهداف', 'warning');
       return;
     }
