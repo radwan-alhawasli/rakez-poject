@@ -17,9 +17,7 @@
 
 import {
   ROLE_MAP,
-  ROLES,
   ROLE_ADMIN,
-  ROLE_PROJECT_ACQUISITION,
   ROLE_PROJECT_MANAGEMENT,
   ROLE_EDITOR,
   ROLE_SALES,
@@ -238,89 +236,3 @@ export function getDashboardPathForUser(user) {
   if (normalizedRole === ROLE_PROJECT_MANAGEMENT) return '/project-management';
   return '/dashboard';
 }
-
-/**
- * Get user's role label
- * @param {Object} user - User object
- * @returns {string} Role label
- */
-export function getUserRoleLabel(user) {
-  if (!user || user.type === undefined || user.type === null) return 'غير محدد';
-  const normalizedType = normalizeRole(user.type);
-  return ROLES[normalizedType]?.label || 'غير محدد';
-}
-
-/**
- * Check if user can perform an action
- * @param {Object} user - User object
- * @param {string} action - Action to check (e.g., 'create', 'edit', 'delete')
- * @param {string} resource - Resource type (e.g., 'contract', 'user')
- * @returns {boolean} True if user can perform the action
- */
-export function canPerformAction(user, action, resource) {
-  if (!user) return false;
-
-  // Admins can do everything
-  if (isAdmin(user)) return true;
-
-  // Define action permissions by role
-  const permissions = {
-    [ROLE_MARKETING]: {
-      contract: ['view', 'create'],
-      project: ['view', 'edit'],
-      lead: ['create', 'edit', 'view'],
-    },
-    [ROLE_ADMIN]: {},
-    [ROLE_PROJECT_ACQUISITION]: {
-      contract: ['view', 'create', 'edit'],
-      project: ['view'],
-    },
-    [ROLE_PROJECT_MANAGEMENT]: {
-      contract: ['view', 'edit'],
-      project: ['view', 'edit', 'approve'],
-      unit: ['view', 'edit'],
-    },
-    [ROLE_EDITOR]: {
-      contract: ['view', 'edit'],
-      project: ['view'],
-    },
-    [ROLE_SALES]: {
-      contract: ['view'],
-      reservation: ['create', 'view', 'edit'],
-      target: ['view', 'edit'],
-    },
-    [ROLE_CREDIT]: {
-      contract: ['view'],
-      credit: ['view', 'approve'],
-    },
-    [ROLE_ACCOUNTING]: {
-      contract: ['view'],
-      payment: ['view', 'edit'],
-    },
-    [ROLE_HR]: {
-      user: ['view', 'create', 'edit', 'delete'],
-      team: ['view', 'create', 'edit'],
-      report: ['view'],
-    },
-  };
-
-  const rolePermissions = permissions[normalizeRole(user.type)] || {};
-  const resourcePermissions = rolePermissions[resource] || [];
-
-  return resourcePermissions.includes(action);
-}
-
-export default {
-  normalizeRole,
-  hasRole,
-  isAdmin,
-  isManager,
-  getEffectiveRoleKey,
-  getUserPermissions,
-  hasPermission,
-  hasAnyPermission,
-  canAccessRoute,
-  getDashboardPathForUser,
-  getUserRoleLabel,
-  canPerformAction,
-};

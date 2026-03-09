@@ -110,7 +110,7 @@ async function fetchCsrfToken() {
  * Get CSRF token (cached or fetch new)
  * @returns {Promise<string|null>} CSRF token
  */
-export async function getCsrfToken() {
+async function getCsrfToken() {
   if (csrfToken) {
     return csrfToken;
   }
@@ -130,7 +130,7 @@ export async function getCsrfToken() {
 /**
  * Clear CSRF token (e.g., on logout)
  */
-export function clearCsrfToken() {
+function clearCsrfToken() {
   csrfToken = null;
   tokenFetchPromise = null;
   // Reset endpoint availability flag to allow retry after logout
@@ -191,10 +191,3 @@ export function setupCsrfInterceptor(client = null) {
     }
   );
 }
-
-export default {
-  getCsrfToken,
-  clearCsrfToken,
-  setupCsrfInterceptor,
-  initCsrf,
-};

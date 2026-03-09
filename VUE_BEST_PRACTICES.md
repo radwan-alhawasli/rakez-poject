@@ -99,9 +99,9 @@ const largeData = shallowRef({ /* large object */ })
 
 ```
 components/
-  UserCard/
-    UserCard.vue
-    UserCard.test.js
+  ProjectCard/
+    ProjectCard.vue
+    ProjectCard.test.js
     index.js
 ```
 
@@ -163,17 +163,13 @@ const handleSubmit = () => {
 
 ```vue
 <script setup>
-import { useAuthStore } from '@/stores/authStore'
-import { useContractStore } from '@/stores/contractStore'
+import { storeToRefs } from 'pinia'
+import { useMarketingStore } from '@/stores/marketingStore'
 
-const authStore = useAuthStore()
-const contractStore = useContractStore()
+const marketingStore = useMarketingStore()
+const { dashboard, isLoading } = storeToRefs(marketingStore)
 
-// Use store state
-const user = computed(() => authStore.currentUser)
-
-// Use store actions
-await contractStore.fetchContracts()
+await marketingStore.fetchDashboard()
 </script>
 ```
 
@@ -182,9 +178,10 @@ await contractStore.fetchContracts()
 ### Use Route Guards
 
 ```javascript
+import authService from '@/services/authService'
+
 router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore()
-  if (!to.meta.public && !authStore.isLoggedIn) {
+  if (!to.meta.public && !authService.isAuthenticated()) {
     next('/login')
   } else {
     next()
@@ -240,16 +237,16 @@ const handleSubmit = () => {
 
 ```javascript
 import { mount } from '@vue/test-utils'
-import UserCard from '@/components/UserCard.vue'
+import ProjectCard from '@/components/project/ProjectCard.vue'
 
-describe('UserCard', () => {
+describe('ProjectCard', () => {
   it('renders user name', () => {
-    const wrapper = mount(UserCard, {
+    const wrapper = mount(ProjectCard, {
       props: {
-        user: { name: 'John Doe' }
+        project: { id: 1, name: 'Palm Residence' }
       }
     })
-    expect(wrapper.text()).toContain('John Doe')
+    expect(wrapper.text()).toContain('Palm Residence')
   })
 })
 ```

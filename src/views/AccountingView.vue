@@ -6,7 +6,6 @@
       <AccountingSoldUnitsTab v-else-if="activeTab === 'sold-units'" />
       <AccountingDepositsTab v-else-if="activeTab === 'deposits'" />
       <AccountingSalariesTab v-else-if="activeTab === 'salaries'" />
-      <CreditClaimFilesTab v-else-if="activeTab === 'claim-files'" />
     </div>
   </div>
 </template>
@@ -20,7 +19,6 @@ import AccountingNotificationsTab from '@/components/accounting/AccountingNotifi
 import AccountingSoldUnitsTab from '@/components/accounting/AccountingSoldUnitsTab.vue';
 import AccountingDepositsTab from '@/components/accounting/AccountingDepositsTab.vue';
 import AccountingSalariesTab from '@/components/accounting/AccountingSalariesTab.vue';
-import CreditClaimFilesTab from '@/components/credit/CreditClaimFilesTab.vue';
 
 const route = useRoute();
 const user = ref(authService.getCurrentUser());
@@ -33,7 +31,6 @@ const activeTab = computed(() => {
   if (name === 'AccountingSoldUnits') return 'sold-units';
   if (name === 'AccountingDeposits') return 'deposits';
   if (name === 'AccountingSalaries') return 'salaries';
-  if (name === 'AccountingClaimFiles') return 'claim-files';
   return 'dashboard';
 });
 </script>
@@ -49,8 +46,8 @@ const activeTab = computed(() => {
 .accounting-view .sub-tab-btn.active { background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%); border-color: #b1a28f; color: white; }
 .accounting-view .deposit-note { font-size: 12px; color: #94a3b8; display: block; margin-top: 4px; }
 
-.accounting-view .stats-grid-three { grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: stretch; }
-.accounting-view .stats-grid-three .stat-card { min-height: 280px; display: flex; }
+.accounting-view .stats-grid-three { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; align-items: stretch; }
+.accounting-view .stats-grid-three .stat-card { min-height: 180px; display: flex; }
 
 .accounting-view .kpi-list-card { flex-direction: column; align-items: stretch; padding: 28px 26px; border-right: 4px solid #b1a28f; }
 .accounting-view .kpi-card-title { font-size: 20px; font-weight: 800; color: #1e3a5f; margin: 0 0 22px 0; padding-bottom: 14px; border-bottom: 1px solid rgba(177, 162, 143, 0.2); letter-spacing: -0.01em; }
@@ -122,7 +119,7 @@ const activeTab = computed(() => {
 }
 
 @media (max-width: 992px) {
-  .accounting-view .stats-grid-three { grid-template-columns: 1fr; }
+  .accounting-view .stats-grid-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .accounting-view .stats-grid-three .stat-card { min-height: auto; }
   .accounting-view .dashboard-date-range { flex-direction: column; align-items: stretch; gap: 10px; }
   .accounting-view .dashboard-date-range .form-input { width: 100% !important; max-width: 100%; }
@@ -131,8 +128,12 @@ const activeTab = computed(() => {
   .accounting-view .notification-type-filter { max-width: 100%; flex: 1; }
 }
 @media (max-width: 768px) {
+  .accounting-view .stats-grid-three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .accounting-view .tabs-container,
   .accounting-view .accounting-tabs { overflow-x: auto; overflow-y: hidden; white-space: nowrap; -webkit-overflow-scrolling: touch; gap: 0; }
+}
+@media (max-width: 576px) {
+  .accounting-view .stats-grid-three { grid-template-columns: 1fr; }
 }
 @media (max-width: 576px) {
   .accounting-view .stat-card-pending .stat-value,
@@ -156,7 +157,7 @@ const activeTab = computed(() => {
   .accounting-view .kpi-value { font-size: 13px; }
 }
 @media (min-width: 1200px) {
-  .accounting-view .stats-grid-three { grid-template-columns: repeat(3, 1fr); }
+  .accounting-view .stats-grid-three { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .accounting-view .dashboard-date-range .form-input { max-width: 200px; }
 }
 @media (min-width: 1920px) {

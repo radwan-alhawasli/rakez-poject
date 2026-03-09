@@ -13,14 +13,6 @@ let hasLoggedRefresh404 = false; // Track if we've already logged the 404 warnin
 let refreshEndpointAvailable = true; // Assume available until we get a 404
 
 /**
- * Check if refresh endpoint is available
- * @returns {boolean} True if endpoint is available
- */
-export function isRefreshEndpointAvailable() {
-  return refreshEndpointAvailable;
-}
-
-/**
  * Initialize token refresh utility with apiClient instance
  * @param {Object} client - Axios instance
  */
@@ -184,44 +176,3 @@ export function setupTokenRefreshInterceptor(client = null) {
   );
 }
 
-/**
- * Check if token needs refresh (within 5 minutes of expiration)
- * @returns {boolean} True if token should be refreshed
- */
-export function shouldRefreshToken() {
-  const timeUntilExpiration = secureStorage.getTimeUntilExpiration();
-  const fiveMinutes = 5 * 60 * 1000;
-  return timeUntilExpiration > 0 && timeUntilExpiration < fiveMinutes;
-}
-
-/**
- * Proactively refresh token if needed
- * @returns {Promise<string|null>} New token or null if not needed
- */
-export async function refreshTokenIfNeeded() {
-  // Don't attempt if endpoint is not available
-  if (!refreshEndpointAvailable) {
-    return null;
-  }
-
-  if (shouldRefreshToken() && !isRefreshing) {
-    try {
-      return await refreshToken();
-    } catch (error) {
-      // Don't log 404 errors - already handled in refreshToken()
-      if (error.response?.status !== 404) {
-        logger.error('Proactive token refresh failed:', error);
-      }
-      return null;
-    }
-  }
-  return null;
-}
-
-export default {
-  setupTokenRefreshInterceptor,
-  shouldRefreshToken,
-  refreshTokenIfNeeded,
-  refreshToken,
-  initTokenRefresh,
-};

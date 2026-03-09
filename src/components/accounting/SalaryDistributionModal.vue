@@ -1,10 +1,11 @@
 <template>
   <AppModal
     :open="true"
+    size="wide"
     title="إدارة توزيع الراتب"
     @update:open="(v) => { if (v === false) $emit('close') }"
   >
-    <form @submit.prevent="handleSubmit" class="modal-body" v-if="salary">
+    <form @submit.prevent="handleSubmit" class="modal-body salary-distribution-modal-body" v-if="salary">
         <div v-if="isLoadingDetail" class="loading-detail">جاري تحميل تفاصيل الراتب والعمولات...</div>
         <template v-else>
         <div class="salary-detail-section">
@@ -445,81 +446,97 @@ export default {
   text-align: center;
   color: var(--color-dark-gray);
   font-weight: 500;
+  background: rgba(248, 250, 252, 0.8);
+  border: 1px solid var(--color-medium-gray);
+  border-radius: 16px;
 }
 
 .salary-detail-section,
 .sales-commission-section {
-  background: var(--color-light-gray);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(177, 162, 143, 0.12);
+  box-shadow: 0 8px 24px rgba(30, 58, 95, 0.06);
 }
 
 .detail-title {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 800;
   color: var(--color-navy);
-  margin-bottom: 12px;
+  margin-bottom: 18px;
+  letter-spacing: -0.02em;
 }
 
 .detail-grid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .detail-grid-full {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 10px 24px;
+  gap: 14px 28px;
 }
 
-@media (min-width: 600px) {
+@media (min-width: 900px) {
   .detail-grid-full {
     grid-template-columns: 1fr 1fr;
   }
 }
 
 .detail-row {
-  font-size: 14px;
+  font-size: 16px;
+  line-height: 1.8;
+  padding: 10px 14px;
+  background: rgba(248, 250, 252, 0.7);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 14px;
 }
 
 .detail-label {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-dark-gray);
   margin-left: 8px;
 }
 
 .breakdown-subtitle {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--color-navy);
-  margin: 16px 0 8px;
+  margin: 22px 0 12px;
 }
 
 .breakdown-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .breakdown-table th,
 .breakdown-table td {
-  padding: 8px 12px;
+  padding: 14px 16px;
   border: 1px solid var(--color-medium-gray);
   text-align: right;
+  vertical-align: middle;
 }
 
 .breakdown-table th {
-  background: var(--color-light-gray);
-  font-weight: 600;
+  background: #f8fafc;
+  font-weight: 700;
+  color: var(--color-navy);
 }
 
 .no-commissions-msg {
   margin: 12px 0 0;
-  padding: 12px;
+  padding: 16px;
   background: rgba(148, 163, 184, 0.15);
-  border-radius: 8px;
+  border-radius: 12px;
   color: var(--color-dark-gray);
   font-size: 14px;
 }
@@ -537,12 +554,12 @@ export default {
 }
 
 .breakdown-total-row td {
-  padding: 10px 12px;
+  padding: 14px 16px;
 }
 
 .breakdown-hint {
   margin: 10px 0 0;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-dark-gray);
   font-weight: 600;
 }
@@ -556,28 +573,39 @@ export default {
 }
 
 .breakdown-detail-row .detail-unit-cell {
-  padding-right: 24px;
+  padding-right: 28px;
   font-size: 13px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .form-label {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--color-charcoal);
   margin-bottom: 8px;
 }
 
 .form-input {
   width: 100%;
-  padding: 12px 15px;
+  padding: 14px 16px;
   border: 2px solid var(--color-medium-gray);
-  border-radius: 12px;
+  border-radius: 14px;
   font-size: 15px;
+}
+
+.salary-distribution-modal-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  border-radius: 16px;
 }
 
 .modal-footer {
@@ -609,6 +637,35 @@ export default {
   cursor: pointer;
 }
 
+@media (min-width: 1024px) {
+  .salary-distribution-modal-body {
+    gap: 4px;
+  }
+
+  .detail-title {
+    font-size: 28px;
+  }
+
+  .detail-grid-full {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail-row {
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .sales-commission-section {
+    padding: 28px;
+  }
+
+  .salary-detail-section {
+    padding: 28px;
+  }
+}
+
 /* Tablet responsive */
 @media (max-width: 768px) {
   .breakdown-table {
@@ -620,6 +677,26 @@ export default {
   .modal-footer button {
     width: 100%;
     min-height: 44px;
+  }
+
+  .salary-detail-section,
+  .sales-commission-section {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .detail-title {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  .detail-row {
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+
+  .breakdown-subtitle {
+    font-size: 15px;
   }
 }
 
@@ -633,6 +710,10 @@ export default {
   .btn-secondary {
     min-height: 44px;
     width: 100%;
+  }
+
+  .salary-distribution-modal-body {
+    gap: 0;
   }
 }
 </style>

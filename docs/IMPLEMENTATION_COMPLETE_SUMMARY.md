@@ -23,7 +23,7 @@ Successfully implemented Credit and Accounting department UI views matching HRVi
   - Sold Projects
   - Claim Files
 - **6 Components** created:
-  - BookingDetailModal
+  - CreditBookingDetailPanel
   - NegotiationUpdateModal
   - ProcessWaitingModal
   - FinancingDetailModal
@@ -90,7 +90,7 @@ Successfully implemented Credit and Accounting department UI views matching HRVi
 **Status:** Pending (can be done incrementally)
 
 **Priority Actions:**
-1. Create `tests/services/authService.test.js` for authentication endpoints
+1. Keep `tests/services/authService.test.js` aligned with authentication endpoints
 2. Add error handling tests (400, 401, 403, 422, 500) to existing test files
 3. Add edge case tests (empty arrays, null values, invalid IDs)
 
@@ -101,7 +101,7 @@ Successfully implemented Credit and Accounting department UI views matching HRVi
 ### Created (18 files)
 - `src/views/CreditView.vue`
 - `src/views/AccountingView.vue`
-- `src/components/credit/BookingDetailModal.vue`
+- `src/components/credit/CreditBookingDetailPanel.vue`
 - `src/components/credit/NegotiationUpdateModal.vue`
 - `src/components/credit/ProcessWaitingModal.vue`
 - `src/components/credit/FinancingDetailModal.vue`
@@ -147,7 +147,7 @@ Successfully implemented Credit and Accounting department UI views matching HRVi
    - Gather user feedback
 
 2. **Test Coverage** (Incremental)
-   - Create authService.test.js
+   - Keep `authService.test.js` updated
    - Add error handling tests
    - Add edge case tests
 

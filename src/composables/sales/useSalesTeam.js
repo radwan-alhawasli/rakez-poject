@@ -41,10 +41,10 @@ export function useSalesTeam() {
     return withScore;
   });
 
-  const loadTeamMembers = async () => {
+  const loadTeamMembers = async (params = {}) => {
     isLoadingTeam.value = true;
     try {
-      teamMembers.value = await salesService.getTeamMembers();
+      teamMembers.value = await salesService.getTeamMembers(params);
     } catch (error) {
       logger.error('Error loading team members:', error);
     } finally {

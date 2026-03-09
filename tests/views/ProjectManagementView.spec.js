@@ -132,8 +132,8 @@ describe('ProjectManagementView', () => {
 
   it('renders page header with title', async () => {
     const wrapper = await createWrapper();
-    expect(wrapper.find('.page-title').exists()).toBe(true);
-    expect(wrapper.find('.page-title').text()).toContain('إدارة المشاريع');
+    expect(wrapper.find('.welcome-title').exists()).toBe(true);
+    expect(wrapper.find('.welcome-title').text()).toContain('إدارة المشاريع');
   });
 
   it('renders tabs container', async () => {

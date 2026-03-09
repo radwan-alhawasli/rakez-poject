@@ -381,11 +381,6 @@ const routes = [
         ],
       },
       {
-        path: 'teams',
-        name: 'AllTeams',
-        component: () => import('../views/TeamsView.vue'),
-      },
-      {
         path: 'credit',
         component: () => import('../views/CreditView.vue'),
         meta: { roles: [ROLE_CREDIT], permissions: [PERMISSIONS.CREDIT_DASHBOARD_VIEW] },
@@ -470,12 +465,6 @@ const routes = [
             name: 'AccountingSalaries',
             component: () => import('../views/AccountingView.vue'),
             meta: { permissions: [PERMISSIONS.ACCOUNTING_SALARIES_VIEW] },
-          },
-          {
-            path: 'claim-files',
-            name: 'AccountingClaimFiles',
-            component: () => import('../views/AccountingView.vue'),
-            meta: { permissions: [PERMISSIONS.CREDIT_CLAIM_FILES_GENERATE] },
           },
         ],
       },

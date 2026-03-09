@@ -24,6 +24,10 @@ vi.mock('../../src/constants/roles', () => ({
   getRoleLabel: vi.fn((type) => (type === 3 ? 'موظف المبيعات' : 'غير محدد')),
 }));
 
+vi.mock('../../src/composables/useToast', () => ({
+  toast: { info: vi.fn(), success: vi.fn(), error: vi.fn(), warning: vi.fn() },
+}));
+
 describe('ProfileView', () => {
   const createWrapper = async () => {
     const router = createRouter({
@@ -56,7 +60,7 @@ describe('ProfileView', () => {
   it('displays user name in header', async () => {
     const wrapper = await createWrapper();
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('.user-name').exists()).toBe(true);
-    expect(wrapper.find('.user-name').text()).toContain('مستخدم تجريبي');
+    expect(wrapper.find('.welcome-title').exists()).toBe(true);
+    expect(wrapper.find('.welcome-title').text()).toContain('مستخدم تجريبي');
   });
 });

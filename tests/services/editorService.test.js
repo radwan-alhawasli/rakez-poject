@@ -69,10 +69,10 @@ describe('editorService', () => {
       expect(result.id).toBe(contractId);
     });
 
-    it('should handle 404 error', async () => {
+    it('should return an empty object on 404 error', async () => {
       mock.onGet('/editor/contracts/show/999').reply(404, createErrorResponse('Not found', 404));
 
-      await expect(editorService.getContractById(999)).rejects.toThrow();
+      await expect(editorService.getContractById(999)).resolves.toEqual({});
     });
   });
 
@@ -169,10 +169,10 @@ describe('editorService', () => {
       await expect(editorService.updateMontage(1, {})).rejects.toThrow();
     });
 
-    it('should handle 404 Not Found', async () => {
+    it('should return an empty object on 404 Not Found', async () => {
       mock.onGet('/editor/contracts/show/999').reply(404, createErrorResponse('Not found', 404));
 
-      await expect(editorService.getContractById(999)).rejects.toThrow();
+      await expect(editorService.getContractById(999)).resolves.toEqual({});
     });
 
     it('should handle 500 Server Error', async () => {

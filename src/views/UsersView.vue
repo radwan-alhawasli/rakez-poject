@@ -84,7 +84,6 @@ import UserManagement from '@/components/UserManagement.vue';
   .users-view :deep(h2) {
     font-size: 16px;
   }
-  .users-view :deep(body),
   .users-view :deep(p),
   .users-view :deep(span),
   .users-view :deep(td),

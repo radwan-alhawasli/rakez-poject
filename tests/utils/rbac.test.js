@@ -15,8 +15,6 @@ import {
   hasAnyPermission,
   canAccessRoute,
   getDashboardPathForUser,
-  getUserRoleLabel,
-  canPerformAction,
 } from '../../src/utils/rbac';
 
 describe('rbac', () => {
@@ -247,39 +245,4 @@ describe('rbac', () => {
     });
   });
 
-  describe('getUserRoleLabel', () => {
-    it('should return label for known role', () => {
-      const label = getUserRoleLabel({ type: 1 });
-      expect(typeof label).toBe('string');
-      expect(label.length).toBeGreaterThan(0);
-    });
-
-    it('should return label for marketing role type 0', () => {
-      const label = getUserRoleLabel({ type: 0 });
-      expect(label).toContain('Marketing');
-    });
-
-    it('should return غير محدد for null user or no type', () => {
-      expect(getUserRoleLabel(null)).toBe('غير محدد');
-      expect(getUserRoleLabel({})).toBe('غير محدد');
-    });
-  });
-
-  describe('canPerformAction', () => {
-    it('should return true for admin', () => {
-      expect(canPerformAction({ type: 1 }, 'delete', 'contract')).toBe(true);
-    });
-
-    it('should return false for null user', () => {
-      expect(canPerformAction(null, 'view', 'contract')).toBe(false);
-    });
-
-    it('should return true when role has action on resource', () => {
-      expect(canPerformAction({ type: 5 }, 'view', 'reservation')).toBe(true);
-    });
-
-    it('should return false when role lacks action', () => {
-      expect(canPerformAction({ type: 5 }, 'delete', 'contract')).toBe(false);
-    });
-  });
 });

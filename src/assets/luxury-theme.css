@@ -229,41 +229,6 @@ h6 { font-size: var(--font-base); }
   color: var(--color-white);
 }
 
-/* Luxury Cards */
-.card-luxury {
-  background: var(--color-white);
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  border: 1px solid rgba(177, 162, 143, 0.12);
-  box-shadow: var(--shadow-md);
-  transition: all var(--transition-base);
-  position: relative;
-  overflow: hidden;
-}
-
-.card-luxury::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, rgba(177, 162, 143, 0.03) 0%, transparent 50%);
-  opacity: 0;
-  transition: opacity var(--transition-base);
-  pointer-events: none;
-}
-
-.card-luxury:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-lg);
-  border-color: rgba(177, 162, 143, 0.25);
-}
-
-.card-luxury:hover::before {
-  opacity: 1;
-}
-
 /* Premium Input Fields */
 .input-luxury {
   width: 100%;

@@ -206,7 +206,10 @@ export default {
     const handleLogout = async () => {
       await authService.logout();
       notificationService.disconnect();
-      router.push('/login');
+      if (typeof document !== 'undefined') {
+        document.body.classList.remove('sidebar-drawer-open');
+      }
+      router.replace({ path: '/login', query: { from: 'logout', t: String(Date.now()) } });
     };
 
     onMounted(() => {
@@ -221,6 +224,9 @@ export default {
       notificationService.disconnect();
       if (typeof window !== 'undefined') {
         window.removeEventListener('resize', updateMobile);
+      }
+      if (typeof document !== 'undefined') {
+        document.body.classList.remove('sidebar-drawer-open');
       }
     });
 
@@ -1158,18 +1164,6 @@ export default {
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Watermark */
-.logo-container {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.05;
-  text-align: center;
-  width: 100%;
-}
 .logo-text-main {
   font-size: 100px;
   font-weight: 900;
@@ -1526,12 +1520,6 @@ export default {
     margin-right: 0 !important;
   }
 
-  /* Overlay handled by .sidebar-overlay (clickable) below sidebar z-index */
-  .main-wrapper.sidebar-open::after {
-    content: none;
-    display: none;
-  }
-
   .mobile-toggle {
     display: block;
     padding: 8px;
@@ -1670,12 +1658,6 @@ export default {
   .main-wrapper,
   .footer {
     margin-right: 0 !important;
-  }
-
-  /* Overlay handled by .sidebar-overlay (clickable) */
-  .main-wrapper.sidebar-open::after {
-    content: none;
-    display: none;
   }
 
   .mobile-toggle {
@@ -1938,30 +1920,6 @@ export default {
 }
 
 /* Notification Badge Styles */
-.icon-with-badge {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.notif-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: var(--color-gold);
-  color: white;
-  font-size: 10px;
-  font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 10px;
-  border: 2px solid var(--color-charcoal);
-  min-width: 18px;
-  text-align: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  animation: pulse 2s infinite;
-}
-
 @keyframes pulse {
   0% {
     transform: scale(1);
@@ -2118,12 +2076,6 @@ export default {
     width: var(--sidebar-collapsed-width) !important;
   }
 }
-}
-
-/* When opened on mobile/tablet, don't block the page with overlay */
-.main-wrapper.sidebar-open::after {
-  display: none !important;
-  content: none !important;
 }
 
 /* Push layout on pointer devices (hover/open) - large desktop only */

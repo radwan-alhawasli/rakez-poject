@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import accountingService from '@/services/accountingService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
@@ -12,6 +12,7 @@ export function useAccountingDeposits() {
   const currentPage = ref(1);
   const perPage = ref(25);
   const totalItems = ref(0);
+  const projectFilter = ref('');
 
   const showDepositModal = ref(false);
   const selectedDeposit = ref(null);
@@ -42,8 +43,11 @@ export function useAccountingDeposits() {
         page: currentPage.value,
         per_page: perPage.value,
       });
-      deposits.value = data?.items ?? (Array.isArray(data) ? data : []);
-      totalItems.value = data?.total ?? deposits.value.length;
+      const followUpItems = data?.items ?? (Array.isArray(data) ? data : []);
+      deposits.value = followUpItems.filter(
+        deposit => deposit.commission_source === 'owner' && deposit.unit_emptied !== false
+      );
+      totalItems.value = deposits.value.length;
     } catch (error) {
       logger.error('Error loading deposits follow-up:', error);
       deposits.value = [];
@@ -129,15 +133,26 @@ export function useAccountingDeposits() {
 
   const { formatCurrency, formatDate: _fmtDate } = useFormatters();
   const formatDate = (dateStr) => (!dateStr ? 'غير محدد' : _fmtDate(dateStr));
+  const normalizedProjectFilter = computed(() => projectFilter.value.trim().toLowerCase());
+  const filteredDeposits = computed(() => {
+    if (!normalizedProjectFilter.value) return deposits.value;
+    return deposits.value.filter((deposit) =>
+      String(deposit.project_name || '')
+        .toLowerCase()
+        .includes(normalizedProjectFilter.value)
+    );
+  });
 
   return {
     isLoading,
     deposits,
+    filteredDeposits,
     depositsSubTab,
     isGeneratingClaimFile,
     currentPage,
     perPage,
     totalItems,
+    projectFilter,
     showDepositModal,
     selectedDeposit,
     isSavingDeposit,

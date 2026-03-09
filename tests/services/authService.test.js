@@ -64,15 +64,12 @@ describe('authService', () => {
       expect(secureStorage.setRefreshToken).toHaveBeenCalledWith('rt');
     });
 
-    it('should create mock user when API returns token but no user', async () => {
+    it('should reject when API returns token but no user', async () => {
       mockPost.mockResolvedValue({ data: { data: { token: 't1' } } });
 
-      const result = await authService.login('nouser@test.com', 'p');
-
-      expect(secureStorage.setUserInfo).toHaveBeenCalledWith(
-        expect.objectContaining({ name: 'Admin', email: 'nouser@test.com', type: 1 })
+      await expect(authService.login('nouser@test.com', 'p')).rejects.toThrow(
+        'Authentication failed: no user data returned'
       );
-      expect(result).toMatchObject({ name: 'Admin', email: 'nouser@test.com', type: 1 });
     });
 
     it('should normalize string role type using ROLE_MAP', async () => {

@@ -63,7 +63,17 @@ describe('AccountingView', () => {
     return mount(AccountingView, {
       global: {
         plugins: [router, pinia],
-        stubs: { teleport: true },
+        stubs: {
+          teleport: true,
+          AccountingDashboardTab: {
+            props: ['userName'],
+            template: '<div class="accounting-dashboard-stub">أهلاً بعودتك {{ userName }}</div>',
+          },
+          AccountingNotificationsTab: true,
+          AccountingSoldUnitsTab: true,
+          AccountingDepositsTab: true,
+          AccountingSalariesTab: true,
+        },
       },
     });
   };
@@ -77,6 +87,6 @@ describe('AccountingView', () => {
     const wrapper = await createWrapper();
     await wrapper.vm.$nextTick();
     expect(wrapper.find('.accounting-view').exists()).toBe(true);
-    expect(wrapper.text()).toContain('أهلاً بعودتك');
+    expect(wrapper.find('.accounting-dashboard-stub').text()).toContain('أهلاً بعودتك');
   });
 });

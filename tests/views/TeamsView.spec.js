@@ -68,7 +68,7 @@ describe('TeamsView', () => {
 
   it('renders page header with title', async () => {
     const wrapper = await createWrapper();
-    expect(wrapper.find('.page-title').text()).toContain('الأفرقة');
+    expect(wrapper.find('.welcome-title').text()).toContain('الأفرقة');
   });
 
   it('shows loading state or teams container', async () => {
