@@ -1,5 +1,8 @@
 <template>
-  <div class="login-view-shell" :class="{ 'intro-running': showIntro, 'intro-complete': !showIntro }">
+  <div
+    class="login-view-shell"
+    :class="{ 'intro-running': showIntro, 'intro-complete': !showIntro, 'page-ready': pageReady, 'page-pending': !pageReady }"
+  >
     <div class="login-view-content">
       <LoginPage @login-success="onLoginSuccess" />
     </div>
@@ -11,7 +14,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import LoginPage from '@/components/LoginPage.vue';
 import LoginIntroSplash from '@/components/LoginIntroSplash.vue';
 import { useRouter } from 'vue-router';
@@ -20,6 +23,7 @@ import authService from '@/services/authService';
 
 const router = useRouter();
 const SESSION_INTRO_KEY = 'rakez-login-intro-seen';
+const pageReady = ref(false);
 
 const shouldShowIntro = () => {
   if (typeof window === 'undefined') return false;
@@ -39,12 +43,33 @@ const shouldShowIntro = () => {
 
 const showIntro = ref(shouldShowIntro());
 
+const revealLogin = () => {
+  if (typeof window === 'undefined') {
+    pageReady.value = true;
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      pageReady.value = true;
+    });
+  });
+};
+
+onMounted(() => {
+  if (!showIntro.value) {
+    revealLogin();
+  }
+});
+
 const onLoginSuccess = userData => {
   router.push(getDashboardPathForUser(userData) || '/dashboard');
 };
 
 const handleIntroDone = () => {
   showIntro.value = false;
+  pageReady.value = false;
+  revealLogin();
 };
 </script>
 
@@ -73,6 +98,12 @@ const handleIntroDone = () => {
   opacity: 1;
   transform: scale(1);
   filter: blur(0);
+}
+
+.page-pending.intro-complete .login-view-content {
+  opacity: 0;
+  transform: translateY(26px) scale(0.985);
+  filter: blur(6px);
 }
 
 .login-view-shell :deep(.login-wrapper),
@@ -132,6 +163,17 @@ const handleIntroDone = () => {
   filter: none;
 }
 
+.page-pending.intro-complete :deep(.login-shell),
+.page-pending.intro-complete :deep(.brand-panel),
+.page-pending.intro-complete :deep(.login-container),
+.page-pending.intro-complete :deep(.brand-logo-stage),
+.page-pending.intro-complete :deep(.logo-area),
+.page-pending.intro-complete :deep(.login-form) {
+  opacity: 0;
+  transform: translateY(22px) scale(0.985);
+  filter: blur(4px);
+}
+
 .intro-overlay-enter-active,
 .intro-overlay-leave-active {
   transition: opacity 0.8s ease;
@@ -144,9 +186,18 @@ const handleIntroDone = () => {
 
 /* Touch-target safety net on mobile */
 @media (max-width: 576px) {
+  .login-view-content {
+    transition-duration: 0.45s;
+  }
+
   .intro-running .login-view-content {
     transform: scale(1.01) translateY(6px);
-    filter: blur(3px);
+    filter: blur(2px);
+  }
+
+  .page-pending.intro-complete .login-view-content {
+    transform: translateY(14px);
+    filter: blur(2px);
   }
 
   :deep(input),

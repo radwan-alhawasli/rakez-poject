@@ -1,5 +1,5 @@
 <template>
-  <div class="login-intro-splash" :class="[`phase-${phase}`]">
+  <div class="login-intro-splash" :class="[`phase-${phase}`, { compact: isCompactDevice }]">
     <div class="intro-backdrop"></div>
     <div class="intro-noise"></div>
     <div class="intro-grid"></div>
@@ -43,16 +43,21 @@ const prefersReducedMotion =
   typeof window.matchMedia === 'function' &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+const isCompactDevice =
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  (window.matchMedia('(max-width: 768px)').matches || window.matchMedia('(pointer: coarse)').matches);
+
 const schedule = (callback, delay) => {
   const timer = window.setTimeout(callback, delay);
   timers.push(timer);
 };
 
 onMounted(() => {
-  const welcomeDelay = prefersReducedMotion ? 80 : 220;
-  const logoDelay = prefersReducedMotion ? 700 : 2200;
-  const fadeDelay = prefersReducedMotion ? 1800 : 5600;
-  const doneDelay = prefersReducedMotion ? 2100 : 6500;
+  const welcomeDelay = prefersReducedMotion ? 80 : isCompactDevice ? 120 : 220;
+  const logoDelay = prefersReducedMotion ? 700 : isCompactDevice ? 1200 : 2200;
+  const fadeDelay = prefersReducedMotion ? 1800 : isCompactDevice ? 3200 : 5600;
+  const doneDelay = prefersReducedMotion ? 2100 : isCompactDevice ? 3800 : 6500;
 
   schedule(() => {
     phase.value = 'welcome';
@@ -88,6 +93,10 @@ onBeforeUnmount(() => {
     linear-gradient(145deg, #02050b 0%, #08111d 38%, #0d1522 72%, #02050b 100%);
   opacity: 1;
   transition: opacity 0.9s ease, visibility 0.9s ease;
+}
+
+.login-intro-splash.compact {
+  background: linear-gradient(160deg, #02050b 0%, #08111d 54%, #0d1522 100%);
 }
 
 .login-intro-splash.phase-fade {
@@ -375,6 +384,12 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 768px) {
+  .intro-noise,
+  .intro-stars,
+  .intro-line {
+    display: none;
+  }
+
   .intro-content {
     padding: 24px;
   }
@@ -389,6 +404,8 @@ onBeforeUnmount(() => {
     margin-bottom: 10px;
     padding: 22px 18px;
     border-radius: 24px;
+    backdrop-filter: none;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
   }
 
   .intro-copy-shell::before {
@@ -421,6 +438,24 @@ onBeforeUnmount(() => {
   .intro-logo-stage {
     width: min(72vw, 280px);
     margin-top: 22px;
+  }
+
+  .intro-logo-ring {
+    box-shadow:
+      0 0 0 12px rgba(181, 169, 154, 0.035),
+      0 0 42px rgba(181, 169, 154, 0.08),
+      inset 0 0 24px rgba(39, 55, 77, 0.18);
+  }
+
+  .intro-glow-core {
+    width: min(62vw, 420px);
+    height: min(62vw, 420px);
+    filter: blur(16px);
+  }
+
+  .intro-orb {
+    filter: blur(24px);
+    opacity: 0.38;
   }
 }
 

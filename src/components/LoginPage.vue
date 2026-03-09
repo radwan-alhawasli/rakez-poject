@@ -607,6 +607,34 @@ export default {
   }
 }
 
+@media (max-width: 768px) {
+  .login-ambient {
+    filter: blur(24px);
+    opacity: 0.46;
+  }
+
+  .login-grid-overlay {
+    opacity: 0.04;
+    background-size: 180px 180px;
+  }
+
+  .login-shell {
+    backdrop-filter: none;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+  }
+
+  .brand-panel::after {
+    display: none;
+  }
+
+  .brand-logo-ring {
+    box-shadow:
+      0 0 0 12px rgba(181, 169, 154, 0.03),
+      0 0 42px rgba(181, 169, 154, 0.08),
+      inset 0 0 22px rgba(39, 55, 77, 0.16);
+  }
+}
+
 @media (max-width: 576px) {
   .login-wrapper {
     padding: max(14px, env(safe-area-inset-top, 0)) max(12px, env(safe-area-inset-right, 0))
@@ -695,6 +723,9 @@ html.dark .login-form .form-input {
   border-color: #334155;
   color: #e2e8f0;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+html.dark .login-grid-overlay {
+  opacity: 0.03;
 }
 html.dark .password-toggle {
   color: rgba(226, 232, 240, 0.82);
