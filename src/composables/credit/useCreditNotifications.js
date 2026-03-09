@@ -10,6 +10,10 @@ export function useCreditNotifications() {
   const perPage = ref(25);
   const totalItems = ref(0);
 
+  const showNotificationModal = ref(false);
+  const selectedNotification = ref(null);
+  const isSavingNotification = ref(false);
+
   const { formatDate: _fmtDate } = useFormatters();
   const formatDate = dateStr => (!dateStr ? 'غير محدد' : _fmtDate(dateStr));
 
@@ -60,17 +64,46 @@ export function useCreditNotifications() {
     loadCreditNotifications();
   };
 
+  const viewNotificationDetail = notification => {
+    selectedNotification.value = notification;
+    showNotificationModal.value = true;
+  };
+
+  const handleNotificationModalMarkRead = async () => {
+    if (!selectedNotification.value?.id) return;
+    isSavingNotification.value = true;
+    try {
+      await creditService.markNotificationRead(selectedNotification.value.id);
+      selectedNotification.value = { ...selectedNotification.value, read: true };
+      const n = creditNotifications.value.find(x => x.id === selectedNotification.value.id);
+      if (n) n.read = true;
+    } catch (e) {
+      logger.error('Error marking notification read:', e);
+    } finally {
+      isSavingNotification.value = false;
+    }
+  };
+
+  const getNotificationTypeLabel = type =>
+    (type && typeof type === 'string' ? type : 'عام');
+
   return {
     isLoading,
     creditNotifications,
     currentPage,
     perPage,
     totalItems,
+    showNotificationModal,
+    selectedNotification,
+    isSavingNotification,
     formatDate,
     loadCreditNotifications,
     markCreditNotificationRead,
     markAllCreditNotificationsRead,
     handlePageChange,
     handlePerPageChange,
+    viewNotificationDetail,
+    handleNotificationModalMarkRead,
+    getNotificationTypeLabel,
   };
 }

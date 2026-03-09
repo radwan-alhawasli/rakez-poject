@@ -53,10 +53,12 @@ const schedule = (callback, delay) => {
 };
 
 onMounted(() => {
-  const welcomeDelay = prefersReducedMotion ? 80 : isCompactDevice ? 120 : 220;
-  const logoDelay = prefersReducedMotion ? 700 : isCompactDevice ? 1200 : 2200;
-  const fadeDelay = prefersReducedMotion ? 1800 : isCompactDevice ? 3200 : 5600;
-  const doneDelay = prefersReducedMotion ? 2100 : isCompactDevice ? 3800 : 6500;
+  // إجمالي زمن الشارة: 5 ثوانٍ
+  const totalDuration = prefersReducedMotion ? 3000 : 5000;
+  const welcomeDelay = prefersReducedMotion ? 50 : isCompactDevice ? 80 : 120;
+  const logoDelay = prefersReducedMotion ? 450 : isCompactDevice ? 900 : 1500;
+  const fadeDelay = totalDuration - 1000; // بدء الاختفاء قبل ثانية من النهاية
+  const doneDelay = totalDuration;
 
   schedule(() => {
     phase.value = 'welcome';
@@ -91,7 +93,7 @@ onBeforeUnmount(() => {
     radial-gradient(circle at top, rgba(54, 74, 98, 0.2) 0%, rgba(15, 23, 42, 0) 35%),
     linear-gradient(145deg, #02050b 0%, #08111d 38%, #0d1522 72%, #02050b 100%);
   opacity: 1;
-  transition: opacity 0.9s ease, visibility 0.9s ease;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
 }
 
 .login-intro-splash.compact {
@@ -231,8 +233,8 @@ onBeforeUnmount(() => {
   opacity: 0;
   transform: translateY(22px) scale(0.98);
   transition:
-    opacity 1s ease,
-    transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.55s ease,
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .intro-copy-shell::before {
@@ -296,8 +298,8 @@ onBeforeUnmount(() => {
   opacity: 0;
   transform: translateY(22px) scale(0.82);
   transition:
-    opacity 0.95s ease,
-    transform 1s cubic-bezier(0.2, 1, 0.3, 1);
+    opacity 0.5s ease,
+    transform 0.55s cubic-bezier(0.2, 1, 0.3, 1);
 }
 
 .intro-logo-stage.visible {

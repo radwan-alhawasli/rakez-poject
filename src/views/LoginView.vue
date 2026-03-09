@@ -65,7 +65,7 @@ const clearRevealTimer = () => {
   }
 };
 
-const revealLogin = (delay = 70) => {
+const revealLogin = (delay = 40) => {
   if (typeof window === 'undefined') {
     pageReady.value = true;
     return;
@@ -82,7 +82,7 @@ const revealLogin = (delay = 70) => {
 onMounted(() => {
   resetPageScrollLocks();
   if (!showIntro.value) {
-    revealLogin(route.query.from === 'logout' ? 120 : 70);
+    revealLogin(route.query.from === 'logout' ? 70 : 40);
   }
 });
 
@@ -91,7 +91,7 @@ watch(
   () => {
     resetPageScrollLocks();
     if (!showIntro.value) {
-      revealLogin(route.query.from === 'logout' ? 120 : 70);
+      revealLogin(route.query.from === 'logout' ? 70 : 40);
     }
   }
 );
@@ -102,7 +102,7 @@ const onLoginSuccess = userData => {
 
 const handleIntroDone = () => {
   showIntro.value = false;
-  revealLogin(90);
+  revealLogin(20);
 };
 
 onBeforeUnmount(() => {
@@ -122,9 +122,9 @@ onBeforeUnmount(() => {
 
 .login-view-content {
   transition:
-    opacity 1.05s ease,
-    transform 1.1s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 1.05s ease;
+    opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.38s ease;
 }
 
 .intro-running .login-view-content {
@@ -153,10 +153,10 @@ onBeforeUnmount(() => {
 .login-view-shell :deep(.logo-area),
 .login-view-shell :deep(.login-form) {
   transition:
-    opacity 1.05s ease,
-    transform 1.15s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 1.05s ease,
-    box-shadow 1.05s ease;
+    opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.38s ease,
+    box-shadow 0.38s ease;
 }
 
 .intro-running :deep(.login-wrapper) {
@@ -215,7 +215,7 @@ onBeforeUnmount(() => {
 
 .intro-overlay-enter-active,
 .intro-overlay-leave-active {
-  transition: opacity 0.8s ease;
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .intro-overlay-enter-from,
@@ -232,7 +232,7 @@ onBeforeUnmount(() => {
   }
 
   .login-view-content {
-    transition-duration: 0.45s;
+    transition-duration: 0.3s;
   }
 
   .intro-running .login-view-content {
