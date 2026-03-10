@@ -367,8 +367,12 @@ const handleSubmit = async () => {
     resetForm();
   } catch (error) {
     logger.error('Exclusive project request failed', error);
-    const msg = error.response?.data?.message || error.message;
-    toast.error('حدث خطأ أثناء إرسال الطلب: ' + msg);
+    const msg =
+      error?.data?.message ||
+      error?.response?.data?.message ||
+      error?.message ||
+      'حدث خطأ أثناء إرسال الطلب';
+    toast.error(msg);
   } finally {
     isLoading.value = false;
   }
