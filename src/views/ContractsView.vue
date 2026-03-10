@@ -331,9 +331,10 @@ const closeModal = () => {
   selectedContract.value = null;
 };
 
-const handleApprove = async c => {
+const handleApprove = async (c, notes = '') => {
   try {
-    await contractService.approveContract(c.id);
+    await contractService.approveContract(c.id, notes);
+    toast.success('تم اعتماد العقد');
     fetchContracts();
     closeModal();
   } catch (err) {
@@ -342,9 +343,10 @@ const handleApprove = async c => {
   }
 };
 
-const handleReject = async c => {
+const handleReject = async (c, notes = '') => {
   try {
-    await contractService.rejectContract(c.id);
+    await contractService.rejectContract(c.id, notes);
+    toast.success('تم رفض العقد');
     fetchContracts();
     closeModal();
   } catch (err) {

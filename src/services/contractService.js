@@ -104,12 +104,12 @@ const contractService = {
     }
   },
 
-  async approveContract(contractId) {
-    return this.updateContractStatus(contractId, 'approved');
+  async approveContract(contractId, notes = '') {
+    return this.updateContractStatusAdmin(contractId, 'approved', notes);
   },
 
-  async rejectContract(contractId) {
-    return this.updateContractStatus(contractId, 'rejected');
+  async rejectContract(contractId, notes = '') {
+    return this.updateContractStatusAdmin(contractId, 'rejected', notes);
   },
 
   /**
@@ -126,13 +126,14 @@ const contractService = {
   },
 
   /**
-   * تحديث حالة العقد (للمسؤول)
-   * PATCH /admin/contracts/adminUpdateStatus/:id
+   * تحديث حالة العقد (للمسؤول) — مطابق لـ API: PATCH /admin/contracts/adminUpdateStatus/:id
+   * Body: { status: 'approved' | 'rejected', notes?: string }
    */
-  async updateContractStatusAdmin(contractId, status) {
+  async updateContractStatusAdmin(contractId, status, notes = '') {
     try {
       const response = await apiClient.patch(`/admin/contracts/adminUpdateStatus/${contractId}`, {
         status,
+        notes: notes != null ? String(notes) : '',
       });
       return response.data;
     } catch (error) {

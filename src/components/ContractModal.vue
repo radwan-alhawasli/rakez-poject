@@ -77,14 +77,28 @@
         -->
     </div>
     <template #footer>
-      <div class="modal-footer-action flex gap-3 justify-end flex-wrap">
-        <button @click="closeModal" class="btn-close-large">إغلاق</button>
+      <div class="modal-footer-action flex flex-col gap-3">
         <div
           v-if="normalizedStatus === 'pending' && hasPermission('contracts.approve')"
-          class="action-buttons flex gap-2"
+          class="contract-notes-wrap w-full"
         >
-          <button @click="rejectContract" class="btn-reject">رفض العقد</button>
-          <button @click="approveContract" class="btn-approve">الموافقة على العقد</button>
+          <label class="contract-notes-label">ملاحظات (اختياري)</label>
+          <textarea
+            v-model="contractNotes"
+            class="contract-notes-input"
+            rows="2"
+            placeholder="مثال: تمت المراجعة والموافقة"
+          />
+        </div>
+        <div class="flex gap-3 justify-end flex-wrap w-full">
+          <button @click="closeModal" class="btn-close-large">إغلاق</button>
+          <div
+            v-if="normalizedStatus === 'pending' && hasPermission('contracts.approve')"
+            class="action-buttons flex gap-2"
+          >
+            <button @click="rejectContract" class="btn-reject">رفض العقد</button>
+            <button @click="approveContract" class="btn-approve">الموافقة على العقد</button>
+          </div>
         </div>
       </div>
     </template>
@@ -137,6 +151,7 @@ export default {
       document.removeEventListener('keydown', handleEscape);
     });
 
+    const contractNotes = ref('');
     const showConfirmModal = ref(false);
     const confirmModalConfig = ref({
       title: '',
@@ -202,7 +217,8 @@ export default {
         type: 'info',
         confirmText: 'موافقة',
         resolve: () => {
-          emit('approve', props.contract);
+          emit('approve', props.contract, contractNotes.value);
+          contractNotes.value = '';
           closeModal();
         },
       };
@@ -216,7 +232,8 @@ export default {
         type: 'danger',
         confirmText: 'رفض',
         resolve: () => {
-          emit('reject', props.contract);
+          emit('reject', props.contract, contractNotes.value);
+          contractNotes.value = '';
           closeModal();
         },
       };
@@ -231,6 +248,7 @@ export default {
 
     return {
       contractDetails,
+      contractNotes,
       closeModal,
       approveContract,
       rejectContract,
@@ -406,6 +424,31 @@ export default {
   background: #fef2f2;
   border-color: #fecaca;
   transform: translateY(-2px);
+}
+
+.contract-notes-wrap {
+  text-align: right;
+}
+.contract-notes-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-dark-gray);
+  margin-bottom: 6px;
+}
+.contract-notes-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--color-medium-gray);
+  border-radius: 10px;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 56px;
+  background: var(--color-off-white);
+}
+.contract-notes-input:focus {
+  outline: none;
+  border-color: var(--color-gold);
 }
 
 .btn-close-large {
