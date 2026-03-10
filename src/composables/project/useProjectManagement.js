@@ -1,4 +1,4 @@
-import { ref, computed, reactive, onMounted } from 'vue';
+import { ref, computed, reactive, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import contractService from '@/services/contractService';
 import authService from '@/services/authService';
@@ -31,6 +31,9 @@ export function useProjectManagement() {
   const isLoading = ref(false);
   const projects = ref([]);
   const activeMenuId = ref(null);
+  const currentPage = ref(1);
+  const perPage = ref(15);
+  const totalProjects = ref(0);
 
   // Details modal
   const showDetailsModal = ref(false);
@@ -65,14 +68,36 @@ export function useProjectManagement() {
   const fetchProjects = async () => {
     isLoading.value = true;
     try {
-      const data = isEditor.value
-        ? await contractService.getEditorContracts()
-        : await contractService.getContracts();
-      logger.debug('Fetched Projects:', data);
-      logger.debug('User Role:', userRole.value, 'Is Editor:', isEditor.value);
+      let list = [];
+      if (isEditor.value) {
+        list = await contractService.getEditorContracts();
+        totalProjects.value = Array.isArray(list) ? list.length : 0;
+      } else {
+        const query = (searchQuery.value || '').trim();
+        // When searching, fetch from all pages (large per_page) then filter client-side
+        const isSearchMode = query.length > 0;
+        const { items, total } = await contractService.getContracts({
+          page: isSearchMode ? 1 : currentPage.value,
+          per_page: isSearchMode ? 500 : perPage.value,
+        });
+        let rawList = Array.isArray(items) ? items : [];
+        if (isSearchMode && query) {
+          const q = query.toLowerCase();
+          rawList = rawList.filter(
+            p =>
+              (p.name || p.project_name || '').toLowerCase().includes(q) ||
+              (p.location || '').toLowerCase().includes(q) ||
+              (p.city || '').toLowerCase().includes(q) ||
+              (p.district || '').toLowerCase().includes(q)
+          );
+        }
+        list = rawList;
+        totalProjects.value = isSearchMode ? list.length : total;
+      }
+      logger.debug('Fetched Projects:', list?.length, 'total:', totalProjects.value);
 
       const unitList = p => p.units || [];
-      const list = (Array.isArray(data) ? data : []).map(p => {
+      const mapped = list.map(p => {
         const units = unitList(p);
         const totalUnits = units.length;
         const soldCount = units.filter(
@@ -149,13 +174,13 @@ export function useProjectManagement() {
         return {
           id: p.id,
           contract_id: p.contract_id ?? p.id,
-          name: p.project_name || p.name || `مشروع #${p.id}`,
+          name: p.project_name ?? p.name ?? `مشروع #${p.id}`,
           location:
             `${(p.district || '').trim()}${p.district && p.city ? ', ' : ''}${(
               p.city || ''
             ).trim()}`.replace(/^,\s*|,\s*$/g, '') || '—',
-          image: p.project_image_url,
-          hasImage: !!(p.project_image_url && p.project_image_url.trim()),
+          image: p.project_image_url ?? p.image,
+          hasImage: !!((p.project_image_url ?? p.image) && String(p.project_image_url ?? p.image).trim()),
           statusLabel: p.status === 'Approved' ? 'Active' : p.status,
           statusClass: p.status === 'Approved' ? 'active' : 'pending',
           units,
@@ -210,7 +235,7 @@ export function useProjectManagement() {
       // تقدم الإعداد: من GET contracts/show/{{contract_id}} → data.project_progress.steps
       const getContract = isEditor.value ? contractService.getEditorContractById : contractService.getContractById;
       const enriched = await Promise.all(
-        list.map(async (proj) => {
+        mapped.map(async (proj) => {
           const contractId = proj.contract_id ?? proj.id;
           try {
             const detail = await getContract(contractId);
@@ -549,6 +574,31 @@ export function useProjectManagement() {
     return `أخضر: ${daysLeft} يوم`;
   };
 
+  const handlePageChange = page => {
+    currentPage.value = page;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    fetchProjects();
+  };
+
+  const handlePerPageChange = newPerPage => {
+    perPage.value = newPerPage;
+    currentPage.value = 1;
+    fetchProjects();
+  };
+
+  // When user types in search, refetch so results come from all pages (search mode)
+  let searchDebounce = null;
+  watch(searchQuery, () => {
+    if (searchDebounce) clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+      if (!isEditor.value) {
+        if ((searchQuery.value || '').trim()) currentPage.value = 1;
+        fetchProjects();
+      }
+      searchDebounce = null;
+    }, 350);
+  });
+
   onMounted(fetchProjects);
 
   return {
@@ -556,6 +606,11 @@ export function useProjectManagement() {
     searchQuery,
     isLoading,
     filteredProjects,
+    currentPage,
+    perPage,
+    totalProjects,
+    handlePageChange,
+    handlePerPageChange,
     notReadyCount,
     readyCount,
     archiveCount,

@@ -180,7 +180,8 @@ export default {
       isLoading.value = true;
       try {
         // 1. Get All Contracts
-        const contracts = await contractService.getContracts();
+        const { items } = await contractService.getContracts({ page: 1, per_page: 500 });
+        const contracts = items ?? [];
 
         // 2. Filter & Parallel Fetch Photography Data
         // We need to check each project for "pending" photography status.

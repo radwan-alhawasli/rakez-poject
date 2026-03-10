@@ -3,6 +3,22 @@ import logger from '@/utils/logger';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
 
+/** Normalize a contract from GET /contracts/index or /contracts/show to the same details shape we use everywhere. */
+function normalizeContractItem(p) {
+  if (!p || typeof p !== 'object') return p;
+  return {
+    ...p,
+    id: p.id ?? p.contract_id,
+    contract_id: p.contract_id ?? p.id,
+    name: p.project_name ?? p.name ?? (p.id != null ? `مشروع #${p.id}` : ''),
+    project_name: p.project_name ?? p.name,
+    notes: p.notes ?? null,
+    project_progress: p.project_progress ?? null,
+    image: p.project_image_url ?? p.image ?? null,
+    project_image_url: p.project_image_url ?? p.image,
+  };
+}
+
 /**
  * خدمة العقود - API Integration
  */
@@ -54,7 +70,7 @@ const contractService = {
   },
 
   /**
-   * تحديث حالة العقد (قبول/رفض)
+   * تحديث حالة العقد (قبول/رفض) — يحفظ في API
    * PATCH /admin/contracts/adminUpdateStatus/:id
    * Payload: { status: 'approved' | 'rejected' }
    */
@@ -127,30 +143,30 @@ const contractService = {
   // --- Marketer / User Endpoints ---
 
   /**
-   * جلب قائمة العقود
-   * GET /contracts/index
-   * @param {Object} filters - Optional filters like { status: 'completed', has_photography: 1 }
+   * جلب قائمة العقود بنفس تفاصيل GET /contracts/show (notes, project_progress, project_name, ...)
+   * GET /contracts/index — يدعم التصفح بالصفحات (page, per_page)
+   * @param {Object} filters - Optional: page (1-based), per_page (default 15), status, etc.
+   * @returns {Promise<{ items: Array, total: number }>} items normalized, total from API
    */
   async getContracts(filters = {}) {
     try {
-      const response = await apiClient.get('/contracts/index', { params: filters });
-      const res = response.data;
-      let contracts = [];
-      if (Array.isArray(res)) {
-        contracts = res;
-      } else if (res && res.data && Array.isArray(res.data)) {
-        contracts = res.data;
-      } else if (res && res.data && res.data.data && Array.isArray(res.data.data)) {
-        contracts = res.data.data;
-      } else {
-        contracts = res.data || [];
-      }
-      return Array.isArray(contracts) ? contracts : [];
+      const params = {
+        page: filters.page ?? 1,
+        per_page: filters.per_page ?? 15,
+        ...filters,
+      };
+      const response = await apiClient.get('/contracts/index', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      const list = Array.isArray(items) ? items : [];
+      return {
+        items: list.map(p => normalizeContractItem(p)),
+        total: typeof total === 'number' ? total : parseInt(total, 10) || list.length,
+      };
     } catch (error) {
       const status = error?.response?.status || error?.status;
       if (status === 401) throw error;
       logger.error('Fetch contracts:', error);
-      return [];
+      return { items: [], total: 0 };
     }
   },
 
@@ -207,7 +223,7 @@ const contractService = {
   /**
    * إنشاء طلب مشروع جديد (حصري)
    * POST /contracts/store
-   * Payload: project_name, developer_name, developer_number, etc.
+   * Payload: { project_name, developer_name, developer_number, city, district, notes }
    */
   async createContract(payload) {
     try {
@@ -235,7 +251,7 @@ const contractService = {
   /**
    * استكمال بيانات العقد (الطرف الثاني، التواريخ..)
    * POST /contracts/store/info/:id
-   * وهذا Endpoint يستخدم عند "استكمال العقد"
+   * Payload (مثال): address, total_area, building_count, latitude, longitude — أو بيانات الطرف الثاني كاملة
    */
   async storeContractInfo(id, payload) {
     try {
@@ -370,7 +386,7 @@ const contractService = {
 
   /**
    * جلب بيانات قسم التصوير
-   * GET /photography-department/show/:id
+   * GET /photography-department/show/:contract_id
    */
   async getPhotography(id) {
     try {

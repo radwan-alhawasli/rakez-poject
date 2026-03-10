@@ -199,7 +199,8 @@ export default {
       isLoading.value = true;
       error.value = null;
       try {
-        const data = await contractService.getContracts();
+        const { items } = await contractService.getContracts({ page: 1, per_page: 500 });
+        const data = items ?? [];
         allProjects.value = (Array.isArray(data) ? data : []).map(p => {
           const savedBoard = localStorage.getItem(`board_${p.id}`);
           return {

@@ -458,6 +458,30 @@
               <span class="nav-text">إدارة المشاريع</span>
             </div>
           </router-link>
+
+          <!-- 3.1 الموافقة على الصور (للمدير فقط — مشاريع بانتظار القبول/الرفض) -->
+          <router-link
+            v-if="userRole == 10"
+            to="/image-approval"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="الموافقة على الصور"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              <span class="nav-text">الموافقة على الصور</span>
+            </div>
+          </router-link>
   
           <!-- 4. إدارة الفرق (New) -->
           <router-link
