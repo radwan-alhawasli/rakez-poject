@@ -98,12 +98,34 @@
             </div>
             <div class="input-row">
               <div class="field-group full">
-                <label>رابط موقع المشروع</label>
+                <label>رابط موقع المشروع / صورة المشروع</label>
                 <input
                   type="text"
                   v-model="form.project_location_url"
                   class="form-input"
                   placeholder="https://..."
+                />
+              </div>
+            </div>
+            <div class="input-row">
+              <div class="field-group full">
+                <label>متطلبات المطور / المشروع</label>
+                <input
+                  type="text"
+                  v-model="form.developer_requiment"
+                  class="form-input"
+                  placeholder="متطلبات المشروع الخاصة"
+                />
+              </div>
+            </div>
+            <div class="input-row">
+              <div class="field-group full">
+                <label>ملاحظات</label>
+                <input
+                  type="text"
+                  v-model="form.note"
+                  class="form-input"
+                  placeholder="ملاحظات إضافية"
                 />
               </div>
             </div>
@@ -221,7 +243,6 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
 import contractService from '@/services/contractService';
-import exclusiveProjectService from '@/services/exclusiveProjectService';
 import notificationService from '@/services/notificationService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
@@ -238,6 +259,8 @@ const form = reactive({
   developer_cr_number: '',
   project_name: '',
   project_location_url: '',
+  developer_requiment: '',
+  note: '',
   city: '',
   neighborhood: '',
   commission_percentage: 0,
@@ -327,6 +350,8 @@ const resetForm = () => {
   form.developer_cr_number = '';
   form.project_name = '';
   form.project_location_url = '';
+  form.developer_requiment = '';
+  form.note = '';
   form.city = '';
   form.neighborhood = '';
   form.commission_percentage = 0;
@@ -345,44 +370,42 @@ const handleSubmit = async () => {
   }
   isLoading.value = true;
   try {
-    const unitsCount = form.unit_rows.reduce(
-      (s, r) => s + (Number(r.units_count) || 0),
-      0
-    );
-    const locationParts = [form.city, form.neighborhood].filter(Boolean);
-    const location = locationParts.length
-      ? locationParts.join('، ')
-      : (form.project_location_url || '');
-
-    // مطابقة حقول الواجهة مع API: name, developer_id, location, total_units, commission_rate, exclusive_until
-    const payload = {
-      name: form.project_name?.trim() || '',
-      location: location.trim() || undefined,
-      total_units: unitsCount,
-      commission_rate: Number(form.commission_percentage) || 0,
-    };
-    if (form.developer_id) {
-      payload.developer_id = Number(form.developer_id);
-    } else {
-      if (form.developer_name?.trim()) payload.developer_name = form.developer_name.trim();
-      if (form.developer_cr_number?.trim()) payload.developer_cr_number = form.developer_cr_number.trim();
-    }
-    if (form.project_location_url?.trim()) {
-      payload.project_location_url = form.project_location_url.trim();
-    }
-    if (form.commission_from) payload.commission_from = form.commission_from;
+    // بنية مطابقة لـ POST /contracts/store مع الإبقاء على نسبة السعي ومصدر السعي
+    const developerName =
+      form.developer_name?.trim() ||
+      (form.developer_id && developers.value.find(d => String(d.id) === String(form.developer_id))?.name) ||
+      '';
+    const developerNumber =
+      form.developer_cr_number?.trim() ||
+      (form.developer_id && developers.value.find(d => String(d.id) === String(form.developer_id))?.commercialRecord) ||
+      '';
 
     const units = form.unit_rows
       .filter(r => r.unit_type || (Number(r.units_count) || 0) > 0)
-      .map(r => ({
-        unit_type: r.unit_type || undefined,
-        units_count: Number(r.units_count) || 0,
-        avg_unit_price: Number(r.avg_unit_price) || 0,
-      }));
-    if (units.length) payload.units = units;
-    if (totalUnitsValue.value > 0) payload.total_units_value = totalUnitsValue.value;
+      .map(r => {
+        const label = unitTypeOptions.find(opt => opt.value === r.unit_type)?.label || r.unit_type || '';
+        return {
+          type: label,
+          count: Number(r.units_count) || 0,
+          price: Number(r.avg_unit_price) || 0,
+        };
+      });
 
-    await exclusiveProjectService.createExclusiveProject(payload);
+    const payload = {
+      project_name: form.project_name?.trim() || '',
+      developer_name: developerName,
+      developer_number: developerNumber,
+      city: form.city?.trim() || '',
+      district: form.neighborhood?.trim() || '',
+      developer_requiment: form.developer_requiment?.trim() || undefined,
+      project_image_url: form.project_location_url?.trim() || undefined,
+      note: form.note?.trim() || undefined,
+      units,
+      commission_percentage: Number(form.commission_percentage) || 0,
+      commission_from: form.commission_from || 'owner',
+    };
+
+    await contractService.createContract(payload);
 
     notificationService.addNotification(
       'تم إرسال طلب اعتماد المشروع الحصري بنجاح وهو قيد المراجعة.',
