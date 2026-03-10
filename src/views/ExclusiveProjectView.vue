@@ -329,8 +329,43 @@ const resetForm = () => {
 };
 
 const handleSubmit = async () => {
+  if (!form.project_name?.trim()) {
+    toast.error('يرجى إدخال اسم المشروع');
+    return;
+  }
+  if (!form.developer_id && !form.developer_name?.trim()) {
+    toast.error('يرجى اختيار مطور أو إدخال اسم المطور');
+    return;
+  }
   isLoading.value = true;
   try {
+    const unitsCount = form.unit_rows.reduce(
+      (s, r) => s + (Number(r.units_count) || 0),
+      0
+    );
+    const locationParts = [form.city, form.neighborhood].filter(Boolean);
+    const location = locationParts.length
+      ? locationParts.join('، ')
+      : (form.project_location_url || '');
+
+    // مطابقة حقول الواجهة مع API: name, developer_id, location, total_units, commission_rate, exclusive_until
+    const payload = {
+      name: form.project_name?.trim() || '',
+      location: location.trim() || undefined,
+      total_units: unitsCount,
+      commission_rate: Number(form.commission_percentage) || 0,
+    };
+    if (form.developer_id) {
+      payload.developer_id = Number(form.developer_id);
+    } else {
+      if (form.developer_name?.trim()) payload.developer_name = form.developer_name.trim();
+      if (form.developer_cr_number?.trim()) payload.developer_cr_number = form.developer_cr_number.trim();
+    }
+    if (form.project_location_url?.trim()) {
+      payload.project_location_url = form.project_location_url.trim();
+    }
+    if (form.commission_from) payload.commission_from = form.commission_from;
+
     const units = form.unit_rows
       .filter(r => r.unit_type || (Number(r.units_count) || 0) > 0)
       .map(r => ({
@@ -338,24 +373,8 @@ const handleSubmit = async () => {
         units_count: Number(r.units_count) || 0,
         avg_unit_price: Number(r.avg_unit_price) || 0,
       }));
-
-    const payload = {
-      project_name: form.project_name,
-      project_location_url: form.project_location_url || undefined,
-      city: form.city,
-      neighborhood: form.neighborhood,
-      commission_percentage: Number(form.commission_percentage) || 0,
-      commission_from: form.commission_from || 'owner',
-      units,
-      units_count: units.reduce((s, u) => s + (u.units_count || 0), 0),
-      total_units_value: totalUnitsValue.value,
-    };
-    if (form.developer_id) {
-      payload.developer_id = form.developer_id;
-    } else {
-      payload.developer_name = form.developer_name;
-      payload.developer_cr_number = form.developer_cr_number;
-    }
+    if (units.length) payload.units = units;
+    if (totalUnitsValue.value > 0) payload.total_units_value = totalUnitsValue.value;
 
     await exclusiveProjectService.createExclusiveProject(payload);
 
@@ -367,11 +386,13 @@ const handleSubmit = async () => {
     resetForm();
   } catch (error) {
     logger.error('Exclusive project request failed', error);
-    const msg =
-      error?.data?.message ||
-      error?.response?.data?.message ||
-      error?.message ||
-      'حدث خطأ أثناء إرسال الطلب';
+    const res = error?.response?.data || error?.data || {};
+    let msg = res.message || error?.message || 'حدث خطأ أثناء إرسال الطلب';
+    if (res.errors && typeof res.errors === 'object') {
+      const firstKey = Object.keys(res.errors)[0];
+      const firstMsg = firstKey ? (Array.isArray(res.errors[firstKey]) ? res.errors[firstKey][0] : res.errors[firstKey]) : null;
+      if (firstMsg) msg = firstMsg;
+    }
     toast.error(msg);
   } finally {
     isLoading.value = false;
