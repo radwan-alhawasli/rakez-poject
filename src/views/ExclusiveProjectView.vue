@@ -39,7 +39,7 @@
                 </div>
               </div>
             </div>
-            <div class="input-row" v-if="isNewDeveloper">
+            <div class="input-row">
               <div class="field-group">
                 <label>المطور / الوكيل</label>
                 <input
@@ -57,12 +57,6 @@
                   class="form-input"
                   placeholder="رقم السجل التجاري"
                 />
-              </div>
-            </div>
-            <div class="input-row selected-developer-summary" v-else-if="selectedDeveloperDisplay">
-              <div class="field-group full">
-                <span class="selected-label">المطور المختار:</span>
-                <span class="selected-value">{{ selectedDeveloperDisplay }}</span>
               </div>
             </div>
           </div>
@@ -269,15 +263,6 @@ const form = reactive({
 });
 
 const unitTypeOptions = UNIT_TYPES;
-
-const isNewDeveloper = computed(() => !form.developer_id);
-
-const selectedDeveloperDisplay = computed(() => {
-  if (!form.developer_id) return '';
-  const dev = developers.value.find(d => String(d.id) === String(form.developer_id));
-  if (!dev) return '';
-  return dev.commercialRecord ? `${dev.name} (${dev.commercialRecord})` : dev.name;
-});
 
 const rowSubtotal = row => {
   const count = Number(row.units_count) || 0;
@@ -511,26 +496,6 @@ const handleSubmit = async () => {
   color: var(--color-dark-gray);
   margin: 0 0 8px 0;
   line-height: 1.4;
-}
-
-.selected-developer-summary {
-  padding: 12px 16px;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 8px;
-  margin-top: -8px;
-}
-
-.selected-developer-summary .selected-label {
-  font-size: 13px;
-  color: var(--color-dark-gray);
-  margin-left: 8px;
-}
-
-.selected-developer-summary .selected-value {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-navy);
 }
 
 .select-wrapper {
