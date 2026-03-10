@@ -247,7 +247,7 @@ const notificationService = {
 
   /**
    * Mark notification as read
-   * API collection: PATCH /notifications/:id/read (user); accounting may use POST
+   * API: POST /notifications/:id/read (user); POST /accounting/notifications/:id/read (accounting)
    * @param {number|string} id - Notification ID
    * @returns {Promise<void>}
    */
@@ -262,11 +262,7 @@ const notificationService = {
       ? `/accounting/notifications/${id}/read`
       : `/notifications/${id}/read`;
     try {
-      if (isAccounting) {
-        await apiClient.post(endpoint);
-      } else {
-        await apiClient.patch(endpoint);
-      }
+      await apiClient.post(endpoint);
       const n = notifications.value.find(x => x.id === id);
       if (n) {
         n.read = true;
@@ -286,7 +282,7 @@ const notificationService = {
 
   /**
    * Mark all notifications as read
-   * API collection: PATCH /notifications/mark-all-read (user); accounting uses POST read-all
+   * API: POST /notifications/read-all (user); POST /accounting/notifications/read-all (accounting)
    * @returns {Promise<void>}
    */
   async markAllAsRead() {
@@ -300,7 +296,7 @@ const notificationService = {
       if (isAccounting) {
         await apiClient.post('/accounting/notifications/read-all');
       } else {
-        await apiClient.patch('/notifications/mark-all-read');
+        await apiClient.post('/notifications/read-all');
       }
       notifications.value.forEach(n => {
         n.read = true;

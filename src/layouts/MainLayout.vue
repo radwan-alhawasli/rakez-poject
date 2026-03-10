@@ -213,6 +213,9 @@ export default {
     };
 
     onMounted(() => {
+      if (authService.isAuthenticated()) {
+        authService.fetchCurrentUser();
+      }
       notificationService.init();
       updateMobile();
       if (typeof window !== 'undefined') {

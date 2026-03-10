@@ -106,6 +106,41 @@ const authService = {
   },
 
   /**
+   * Fetch current user from API (GET /user) and update storage.
+   * Use after login or on app load to sync permissions and profile.
+   * @returns {Promise<AuthUser|null>} Updated user or null on failure
+   */
+  async fetchCurrentUser() {
+    if (!secureStorage.getToken()) return null;
+    try {
+      const response = await apiClient.get('/user');
+      const user = response.data?.data ?? response.data?.user ?? response.data;
+      if (!user) return this.getCurrentUser();
+
+      const userData = { ...user };
+      if (typeof userData.type === 'string' && ROLE_MAP[userData.type] !== undefined) {
+        userData.type = ROLE_MAP[userData.type];
+      }
+      if (user?.permissions && Array.isArray(user.permissions)) {
+        userData.permissions = user.permissions;
+      }
+      if ('is_leader' in user || 'isLeader' in user)
+        userData.is_leader = user.is_leader ?? user.isLeader;
+      if ('is_manager' in user || 'isManager' in user)
+        userData.is_manager = user.is_manager ?? user.isManager;
+
+      secureStorage.setUserInfo(userData);
+      return userData;
+    } catch (error) {
+      if (error?.status === 401) {
+        this.clearSession();
+      }
+      handleServiceError(error, 'Fetch current user', 'get', null);
+      return this.getCurrentUser();
+    }
+  },
+
+  /**
    * Check if user is authenticated
    * @returns {boolean}
    */
