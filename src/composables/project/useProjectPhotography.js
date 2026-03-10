@@ -119,7 +119,7 @@ export function useProjectPhotography(projectId) {
       return;
     }
     try {
-      await contractService.updatePhotography(projectId, {
+      await contractService.approvePhotography(projectId, {
         status: 'rejected',
         rejection_reason: rejectReasonInput.value,
       });

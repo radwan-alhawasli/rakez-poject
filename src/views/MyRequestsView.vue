@@ -109,7 +109,8 @@ export default {
     const fetchRequests = async () => {
       isLoading.value = true;
       try {
-        const data = await contractService.getContracts();
+        const { items } = await contractService.getContracts({ page: 1, per_page: 500 });
+        const data = items ?? [];
 
         // 1. Filter out rejected contracts initially if needed, or keep all
         // The user only sees their requests.

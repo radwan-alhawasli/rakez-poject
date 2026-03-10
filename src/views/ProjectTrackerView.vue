@@ -23,9 +23,7 @@
               <span class="last-update-time">{{ currentTime }}</span>
             </div>
             <h1 class="project-title-large">{{ project.name }}</h1>
-            <p class="project-subtitle-large">
-              القرب من {{ project.distance || '10' }} دقائق جامعة الإمام محمد بن سعود الإسلامية
-            </p>
+            <p v-if="project.notes" class="project-subtitle-large">{{ project.notes }}</p>
           </div>
         </div>
       </div>
@@ -47,9 +45,6 @@
           :disabled="!isTrackerCompleted && !isManager && !isSalesUser"
         >
           الوحدات
-          <span v-if="!isTrackerCompleted && !isSalesUser" class="tab-hint">{{
-            isManager ? '(مفتوح للمدير)' : '(مغلق)'
-          }}</span>
         </button>
         <button
           v-if="isManager"
@@ -236,14 +231,29 @@ const fetchProject = async () => {
     }
 
     if (!data || !data.project_name) {
-      const apiCall = isEditor
-        ? contractService.getEditorContracts()
-        : contractService.getContracts();
-      const all = await apiCall;
-      const found = all.find(p => p.id == id);
-      if (found) project.value = found;
+      let list = [];
+      if (isEditor) {
+        list = await contractService.getEditorContracts();
+      } else {
+        const res = await contractService.getContracts({ page: 1, per_page: 100 });
+        list = res.items || [];
+      }
+      const found = list.find(p => (p.id ?? p.contract_id) == id);
+      if (found) {
+        project.value = found;
+        if (found.project_progress) {
+          projectProgress.value = found.project_progress;
+          isTrackerCompleted.value = checkTrackerCompletion(found.project_progress);
+        }
+      }
     } else {
-      project.value = data;
+      // Normalize from GET /contracts/show/:id (notes, project_progress, project_name)
+      project.value = {
+        ...data,
+        name: data.project_name || data.name,
+        image: data.project_image_url || data.image,
+        notes: data.notes ?? null,
+      };
     }
 
     if (!project.value) {

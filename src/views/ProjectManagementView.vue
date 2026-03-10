@@ -85,6 +85,16 @@
         @view-tracker="viewTracker"
       />
     </div>
+
+    <!-- Pagination (صفحات التصفح) -->
+    <Pagination
+      v-if="totalProjects > 0"
+      :current-page="currentPage"
+      :total-items="totalProjects"
+      :per-page="perPage"
+      @page-change="handlePageChange"
+      @per-page-change="handlePerPageChange"
+    />
     </div>
 
     <!-- Details Modal -->
@@ -143,6 +153,7 @@ import ProjectDetailsModal from '@/components/project/ProjectDetailsModal.vue';
 import ProjectWorkspaceModal from '@/components/project/ProjectWorkspaceModal.vue';
 import ProjectAssignTeamModal from '@/components/project/ProjectAssignTeamModal.vue';
 import ProjectMediaModal from '@/components/project/ProjectMediaModal.vue';
+import Pagination from '@/components/Pagination.vue';
 import { useProjectManagement } from '@/composables/project/useProjectManagement';
 
 const {
@@ -157,6 +168,11 @@ const {
   allProjectsCount,
   isEditor,
   activeMenuId,
+  currentPage,
+  perPage,
+  totalProjects,
+  handlePageChange,
+  handlePerPageChange,
   toggleMenu,
   viewTracker,
   onEditProject,

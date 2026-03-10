@@ -135,11 +135,13 @@ const fetchData = async () => {
     const isUserEditor = user.value && user.value.type === 4;
 
     if (isUserAdmin) {
-      apps = await contractService.getAllContracts();
+      const adminRes = await contractService.getAllContracts({ page: 1, per_page: 500 });
+      apps = adminRes.items ?? [];
     } else if (isUserEditor) {
       apps = await contractService.getEditorContracts();
     } else {
-      apps = await contractService.getContracts();
+      const res = await contractService.getContracts({ page: 1, per_page: 500 });
+      apps = res.items ?? [];
     }
 
     const projects = Array.isArray(apps) ? apps : [];

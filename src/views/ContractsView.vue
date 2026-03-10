@@ -244,9 +244,14 @@ const fetchContracts = async () => {
       contracts.value = (Array.isArray(data) ? data : []).map(mapContract);
       totalFromApi.value = contracts.value.length;
     } else {
-      const data = await contractService.getContracts();
-      contracts.value = (Array.isArray(data) ? data : []).map(mapContract);
-      totalFromApi.value = contracts.value.length;
+      const status = mapStatusForApi(activeFilter.value);
+      const { items, total } = await contractService.getContracts({
+        page: currentPage.value,
+        per_page: perPage.value,
+        ...(status && { status }),
+      });
+      contracts.value = (Array.isArray(items) ? items : []).map(mapContract);
+      totalFromApi.value = total;
     }
   } catch (err) {
     logger.error('Error fetching contracts:', err);
@@ -269,28 +274,21 @@ const filteredContracts = computed(() => {
   return filtered;
 });
 
-const paginatedContracts = computed(() => {
-  if (isAdminWithPagination.value) return filteredContracts.value;
-  const start = (currentPage.value - 1) * perPage.value;
-  const end = start + perPage.value;
-  return filteredContracts.value.slice(start, end);
-});
+const paginatedContracts = computed(() => filteredContracts.value);
 
 const handlePageChange = page => {
   currentPage.value = page;
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (isAdminWithPagination.value) fetchContracts();
+  fetchContracts();
 };
 
 const handlePerPageChange = newPerPage => {
   perPage.value = newPerPage;
   currentPage.value = 1;
-  if (isAdminWithPagination.value) fetchContracts();
+  fetchContracts();
 };
 
-const totalCount = computed(() =>
-  isAdminWithPagination.value ? totalFromApi.value : filteredContracts.value.length
-);
+const totalCount = computed(() => totalFromApi.value);
 const pendingCount = computed(() => contracts.value.filter(c => c.status === 'Pending').length);
 const approvedCount = computed(
   () => contracts.value.filter(c => c.status === 'Approved').length
@@ -335,11 +333,7 @@ const closeModal = () => {
 
 const handleApprove = async c => {
   try {
-    if (userRole.value == 3) {
-      await contractService.updateContractStatusProjectManager(c.id, 'approved');
-    } else {
-      await contractService.approveContract(c.id);
-    }
+    await contractService.approveContract(c.id);
     fetchContracts();
     closeModal();
   } catch (err) {
@@ -350,11 +344,7 @@ const handleApprove = async c => {
 
 const handleReject = async c => {
   try {
-    if (userRole.value == 3) {
-      await contractService.updateContractStatusProjectManager(c.id, 'rejected');
-    } else {
-      await contractService.rejectContract(c.id);
-    }
+    await contractService.rejectContract(c.id);
     fetchContracts();
     closeModal();
   } catch (err) {
