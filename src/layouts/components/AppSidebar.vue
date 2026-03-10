@@ -301,28 +301,6 @@
               <span class="nav-text">الحسابات</span>
             </div>
           </router-link>
-  
-          <!-- ادارة الفرق -->
-          <router-link
-            to="/team-management"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="ادارة الفرق"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M9 11l3 3L22 4"></path>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
-              <span class="nav-text">ادارة الفرق</span>
-            </div>
-          </router-link>
 
           <router-link
             to="/exclusive-request"
@@ -599,28 +577,6 @@
               <span class="nav-text">طلب مشروع حصري</span>
             </div>
           </router-link>
-  
-          <!-- ادارة الفرق -->
-          <router-link
-            to="/team-management"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="ادارة الفرق"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M9 11l3 3L22 4"></path>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
-              <span class="nav-text">ادارة الفرق</span>
-            </div>
-          </router-link>
 
           <router-link
             to="/ai-assistant"
@@ -869,22 +825,6 @@
             </div>
           </router-link>
 
-          <!-- 15. ادارة الفرق -->
-          <router-link
-            to="/team-management"
-            class="nav-item"
-            exact-active-class="active"
-            data-tooltip="ادارة الفرق"
-          >
-            <div class="nav-content">
-              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 11l3 3L22 4"></path>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
-              <span class="nav-text">ادارة الفرق</span>
-            </div>
-          </router-link>
-
           <router-link
             to="/ai-assistant"
             class="nav-item"
@@ -1088,29 +1028,7 @@
               <span class="nav-text">طلباتي</span>
             </div>
           </router-link>
-  
-          <!-- ادارة الفرق -->
-          <router-link
-            to="/team-management"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="ادارة الفرق"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M9 11l3 3L22 4"></path>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
-              <span class="nav-text">ادارة الفرق</span>
-            </div>
-          </router-link>
-  
+
           <router-link
             to="/exclusive-request"
             class="nav-item"
@@ -1288,28 +1206,6 @@
                 <line x1="9" y1="15" x2="15" y2="15"></line>
               </svg>
               <span class="nav-text">طلب مشروع حصري</span>
-            </div>
-          </router-link>
-  
-          <!-- ادارة الفرق -->
-          <router-link
-            to="/team-management"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="ادارة الفرق"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M9 11l3 3L22 4"></path>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
-              <span class="nav-text">ادارة الفرق</span>
             </div>
           </router-link>
 
@@ -1514,28 +1410,6 @@
               <span class="nav-text">طلب مشروع حصري</span>
             </div>
           </router-link>
-  
-          <!-- ادارة الفرق -->
-          <router-link
-            to="/team-management"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="ادارة الفرق"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M9 11l3 3L22 4"></path>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
-              <span class="nav-text">ادارة الفرق</span>
-            </div>
-          </router-link>
 
           <router-link
             to="/ai-assistant"
@@ -1704,29 +1578,7 @@
               <span class="nav-text">خطط الموظفين</span>
             </div>
           </router-link>
-  
-          <!-- ادارة الفرق -->
-          <router-link
-            to="/team-management"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="ادارة الفرق"
-          >
-            <div class="nav-content">
-              <svg
-                class="nav-icon-svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M9 11l3 3L22 4"></path>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
-              <span class="nav-text">ادارة الفرق</span>
-            </div>
-          </router-link>
-  
+
           <router-link
             v-if="hasPermission('marketing.reports.view')"
             to="/marketing/reports"
