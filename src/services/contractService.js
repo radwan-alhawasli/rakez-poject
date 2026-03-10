@@ -131,10 +131,16 @@ const contractService = {
    */
   async updateContractStatusAdmin(contractId, status, notes = '') {
     try {
-      const response = await apiClient.patch(`/admin/contracts/adminUpdateStatus/${contractId}`, {
-        status,
-        notes: notes != null ? String(notes) : '',
-      });
+      const id = contractId != null ? String(contractId).trim() : '';
+      if (!id) {
+        const err = new Error('معرف العقد مطلوب');
+        err.response = { status: 400, data: { message: 'معرف العقد مطلوب' } };
+        throw err;
+      }
+      const body = { status };
+      const notesStr = notes != null ? String(notes).trim() : '';
+      if (notesStr) body.notes = notesStr;
+      const response = await apiClient.patch(`/admin/contracts/adminUpdateStatus/${id}`, body);
       return response.data;
     } catch (error) {
       return handleServiceError(error, 'Update contract status (Admin)', 'patch');

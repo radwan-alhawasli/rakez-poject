@@ -212,8 +212,8 @@ function mapContract(contract) {
         : '—';
   return {
     ...contract,
-    id: contract.id,
-    number: contract.number ?? contract.project_name ?? contract.id ?? '—',
+    id: contract.id ?? contract.contract_id,
+    number: contract.number ?? contract.project_name ?? contract.id ?? contract.contract_id ?? '—',
     developer: contract.developer_name ?? contract.developer ?? contract.second_party_name ?? '—',
     createdDate,
     status,
@@ -332,26 +332,40 @@ const closeModal = () => {
 };
 
 const handleApprove = async (c, notes = '') => {
+  const contractId = c.id ?? c.contract_id;
+  if (!contractId) {
+    toast.error('معرف العقد غير متوفر');
+    return;
+  }
   try {
-    await contractService.approveContract(c.id, notes);
+    await contractService.approveContract(contractId, notes);
     toast.success('تم اعتماد العقد');
     fetchContracts();
     closeModal();
   } catch (err) {
     logger.error('Error approving contract:', err);
-    toast.error('حدث خطأ أثناء اعتماد العقد');
+    const res = err?.response?.data || err?.data || {};
+    const msg = res.message || (res.errors && typeof res.errors === 'object' ? Object.values(res.errors).flat()[0] : null) || err?.message || 'حدث خطأ أثناء اعتماد العقد';
+    toast.error(msg);
   }
 };
 
 const handleReject = async (c, notes = '') => {
+  const contractId = c.id ?? c.contract_id;
+  if (!contractId) {
+    toast.error('معرف العقد غير متوفر');
+    return;
+  }
   try {
-    await contractService.rejectContract(c.id, notes);
+    await contractService.rejectContract(contractId, notes);
     toast.success('تم رفض العقد');
     fetchContracts();
     closeModal();
   } catch (err) {
     logger.error('Error rejecting contract:', err);
-    toast.error('حدث خطأ أثناء رفض العقد');
+    const res = err?.response?.data || err?.data || {};
+    const msg = res.message || (res.errors && typeof res.errors === 'object' ? Object.values(res.errors).flat()[0] : null) || err?.message || 'حدث خطأ أثناء رفض العقد';
+    toast.error(msg);
   }
 };
 
