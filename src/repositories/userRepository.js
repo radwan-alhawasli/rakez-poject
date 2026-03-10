@@ -1,6 +1,10 @@
 /**
  * User Repository
- * Data access layer for users
+ * Data access layer for users.
+ * Uses API paths: GET/POST/PUT/DELETE /users (not documented in v2_rakez_api_summary.json;
+ * the doc uses /hr/users and /admin/employees). This repository is not imported anywhere
+ * in the app; UserManagement uses hrService (/hr/users or /hr/list_employees) and
+ * adminEmployeeService (/admin/employees). Kept for future use or if backend exposes /users.
  */
 
 import apiClient from '@/api/apiClient';
