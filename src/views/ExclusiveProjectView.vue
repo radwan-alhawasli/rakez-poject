@@ -289,8 +289,14 @@ const removeUnitRow = index => {
 
 const loadDevelopers = async () => {
   try {
+    // نفس مصدر "عرض المطورين" في قسم المحاسبة: GET /developers
     const { data } = await contractService.getDevelopersList({ per_page: 100, page: 1 });
-    const list = Array.isArray(data) ? data : [];
+    let list = Array.isArray(data) ? data : [];
+    if (list.length === 0) {
+      // احتياطي: قائمة الطرف الثاني (قد تكون متاحة لبعض الأدوار إذا كان /developers محجوباً)
+      const fallback = await contractService.getDevelopers();
+      list = Array.isArray(fallback) ? fallback : [];
+    }
     developers.value = list.map(d => normalizeDeveloper(d));
   } catch (error) {
     logger.error('Error loading developers:', error);

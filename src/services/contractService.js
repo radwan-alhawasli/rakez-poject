@@ -467,7 +467,7 @@ const contractService = {
   },
 
   /**
-   * List developers (Accounting Module API) – paginated, with projects_count, projects, units_count, teams.
+   * List developers (Accounting Module API) – نفس المصدر المستخدم في "عرض المطورين" بقسم المحاسبة.
    * GET /developers?search=&per_page=15&page=1
    * Accessible by accounting, project_management, admin.
    * @param {Object} params - { search, per_page, page }
@@ -477,7 +477,13 @@ const contractService = {
     try {
       const response = await apiClient.get('/developers', { params });
       const res = response.data;
-      const data = Array.isArray(res?.data) ? res.data : res?.data?.data ?? [];
+      let data =
+        (Array.isArray(res?.data) && res.data) ||
+        (Array.isArray(res?.data?.data) && res.data.data) ||
+        (Array.isArray(res?.developers) && res.developers) ||
+        (Array.isArray(res?.items) && res.items) ||
+        (Array.isArray(res?.results) && res.results) ||
+        [];
       const meta = res?.meta ?? res?.data?.meta ?? {};
       return { data, meta };
     } catch (error) {
