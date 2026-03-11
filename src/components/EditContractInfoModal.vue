@@ -205,7 +205,7 @@
           <div class="input-row">
             <div class="field-group full">
               <label>رابط موقع المشروع</label>
-              <input type="text" :value="form.project_site_url" class="form-input readonly" readonly />
+              <input v-model="form.project_site_url" type="url" class="form-input" placeholder="https://..." />
             </div>
           </div>
           <button type="button" class="add-project-btn" disabled>
@@ -329,7 +329,7 @@ function mapApiToForm(data) {
   form.total_units_value = data.total_units_value ?? 0;
   form.city = data.city ?? '';
   form.notes = data.notes ?? '';
-  form.project_site_url = data.project_site_url ?? data.project_link ?? '';
+  form.project_site_url = data.project_site_url ?? data.project_link ?? data.location_url ?? '';
 }
 
 async function fetchDetails() {
@@ -377,6 +377,7 @@ async function submit() {
       agency_date: toApiDate(form.agency_date) || form.agency_date,
       avg_property_value: String(form.avg_property_value || ''),
       release_date: toApiDate(form.release_date) || form.release_date,
+      project_site_url: form.project_site_url || undefined,
     };
     await contractService.updateContractInfo(props.contractId, payload);
     toast.success('تم حفظ تعديلات استكمال العقد بنجاح');
