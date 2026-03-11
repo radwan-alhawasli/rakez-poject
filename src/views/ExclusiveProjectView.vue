@@ -230,6 +230,16 @@
           </button>
         </div>
       </form>
+
+      <!-- رسالة تأكيد إرسال الطلب -->
+      <div v-if="showSuccessConfirm" class="success-confirm-box">
+        <div class="success-confirm-content">
+          <span class="success-confirm-icon">✓</span>
+          <h3 class="success-confirm-title">تم إرسال الطلب بنجاح</h3>
+          <p class="success-confirm-text">تم إرسال طلب اعتماد المشروع الحصري وهو قيد المراجعة الآن.</p>
+          <button type="button" class="success-confirm-btn" @click="showSuccessConfirm = false">حسناً</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -247,6 +257,7 @@ import secureStorage from '@/utils/secureStorage';
 
 const isLoading = ref(false);
 const developers = ref([]);
+const showSuccessConfirm = ref(false);
 
 let nextUnitRowId = 1;
 const form = reactive({
@@ -402,8 +413,10 @@ const handleSubmit = async () => {
       'تم إرسال طلب اعتماد المشروع الحصري بنجاح وهو قيد المراجعة.',
       'success'
     );
-    toast.success('تم إرسال الطلب بنجاح!');
+    toast.success('تم إرسال الطلب بنجاح! الطلب قيد المراجعة.');
     resetForm();
+    // إظهار رسالة تأكيد واضحة على الصفحة
+    showSuccessConfirm.value = true;
   } catch (error) {
     const status = error?.response?.status ?? error?.status;
     logger.error(`Exclusive project request failed [HTTP ${status}]`, error);
@@ -500,6 +513,56 @@ const handleSubmit = async () => {
   color: var(--color-dark-gray);
   margin: 0 0 8px 0;
   line-height: 1.4;
+}
+
+.success-confirm-box {
+  margin-top: 28px;
+  padding: 24px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #86efac;
+  border-radius: 16px;
+  animation: fadeIn 0.4s ease-out;
+}
+.success-confirm-content {
+  text-align: center;
+}
+.success-confirm-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+.success-confirm-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #166534;
+  margin: 0 0 8px 0;
+}
+.success-confirm-text {
+  font-size: 15px;
+  color: #15803d;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+.success-confirm-btn {
+  padding: 12px 28px;
+  border-radius: 12px;
+  border: none;
+  background: #22c55e;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 15px;
+}
+.success-confirm-btn:hover {
+  background: #16a34a;
 }
 
 .select-wrapper {

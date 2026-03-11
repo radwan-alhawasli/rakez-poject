@@ -1,6 +1,6 @@
 <template>
   <div class="users-view">
-    <UserManagement />
+    <UserManagement :use-admin-api="true" />
   </div>
 </template>
 

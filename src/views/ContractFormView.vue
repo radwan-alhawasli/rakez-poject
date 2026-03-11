@@ -599,8 +599,7 @@ export default {
 
         await contractService.storeContractInfo(requestId, payload);
 
-        // alert('تم حفظ تعديلات العقد بنجاح!')
-        // router.push('/my-requests')
+        toast.success('تم حفظ تعديلات العقد بنجاح');
         showDownloadModal.value = true;
       } catch (error) {
         logger.error('Save failed', error);
