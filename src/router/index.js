@@ -112,9 +112,16 @@ const routes = [
       },
 
       {
+        path: 'contract-form',
+        name: 'ContractFormNew',
+        component: () => import('../views/ContractFormView.vue'),
+        meta: { permissions: [PERMISSIONS.CONTRACTS_VIEW] },
+      },
+      {
         path: 'contract-form/:id',
         name: 'ContractForm',
         component: () => import('../views/ContractFormView.vue'),
+        meta: { permissions: [PERMISSIONS.CONTRACTS_VIEW] },
       },
       {
         path: 'project-tracker/:id',

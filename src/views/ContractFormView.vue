@@ -403,7 +403,7 @@ export default {
     const isSaving = ref(false);
     const isDownloading = ref(false);
     const showDownloadModal = ref(false);
-    const requestId = route.params.id;
+    const requestId = route.params.id || null;
     const { validate, getFieldError, clearErrors } = useValidation(contractInfoSchema);
 
     const form = reactive({
@@ -447,6 +447,7 @@ export default {
     });
 
     const fetchContractDetails = async () => {
+      if (!requestId) return;
       try {
         const data = await contractService.getContractById(requestId);
         if (data) {
@@ -564,43 +565,62 @@ export default {
 
       isSaving.value = true;
       try {
-        logger.debug('Updating contract:', requestId, form);
+        if (requestId) {
+          logger.debug('Updating contract:', requestId, form);
 
-        const payload = {
-          // Second Party
-          second_party_name: form.second_party_name,
-          second_party_id_number: form.second_party_id,
-          second_party_phone: form.second_party_phone,
-          second_party_email: form.second_party_email,
-          second_party_address: form.second_party_address,
-          second_party_cr_number: form.second_party_cr_number,
-          second_party_signatory: form.second_party_signatory,
-          second_party_role: form.second_party_role,
+          const payload = {
+            second_party_name: form.second_party_name,
+            second_party_id_number: form.second_party_id,
+            second_party_phone: form.second_party_phone,
+            second_party_email: form.second_party_email,
+            second_party_address: form.second_party_address,
+            second_party_cr_number: form.second_party_cr_number,
+            second_party_signatory: form.second_party_signatory,
+            second_party_role: form.second_party_role,
 
-          // Dates
-          // Dates - Format to DD-MM-YYYY if needed, or send as is if input matches
-          // Input type="date" gives YYYY-MM-DD. Postman shows DD-M-YYYY.
-          // We will format to DD-MM-YYYY to be safe.
-          gregorian_date: form.gregorian_date
-            ? form.gregorian_date.split('-').reverse().join('-')
-            : '',
-          hijri_date: form.hijri_date, // Usually text input, user enters correctly or we assume so
+            gregorian_date: form.gregorian_date
+              ? form.gregorian_date.split('-').reverse().join('-')
+              : '',
+            hijri_date: form.hijri_date,
 
-          // Details
-          contract_city: form.contract_city,
-          agreement_duration_days: form.agreement_duration_days.toString(),
-          commission_percent: form.commission_percent.toString(),
-          commission_from: form.commission_from,
-          agency_number: form.agency_number,
-          agency_date: form.agency_date ? form.agency_date.split('-').reverse().join('-') : '',
-          avg_property_value: form.avg_property_value.toString(),
-          release_date: form.release_date ? form.release_date.split('-').reverse().join('-') : '',
-        };
+            contract_city: form.contract_city,
+            agreement_duration_days: form.agreement_duration_days.toString(),
+            commission_percent: form.commission_percent.toString(),
+            commission_from: form.commission_from,
+            agency_number: form.agency_number,
+            agency_date: form.agency_date ? form.agency_date.split('-').reverse().join('-') : '',
+            avg_property_value: form.avg_property_value.toString(),
+            release_date: form.release_date ? form.release_date.split('-').reverse().join('-') : '',
+          };
 
-        await contractService.storeContractInfo(requestId, payload);
+          await contractService.storeContractInfo(requestId, payload);
 
-        toast.success('تم حفظ تعديلات العقد بنجاح');
-        showDownloadModal.value = true;
+          toast.success('تم حفظ تعديلات العقد بنجاح');
+          showDownloadModal.value = true;
+        } else {
+          // إنشاء عقد جديد (إحضار مشاريع)
+          const createPayload = {
+            project_name: form.project_name,
+            developer_name: form.second_party_name,
+            developer_number: form.second_party_cr_number,
+            city: form.city,
+            district: form.district,
+            note: form.notes,
+            commission_percentage: form.commission_percent,
+            commission_from: form.commission_from,
+            units: form.units_count
+              ? [{ type: form.unit_type || 'شقة', count: form.units_count, price: form.average_unit_price || 0 }]
+              : [],
+          };
+          const result = await contractService.createContract(createPayload);
+          toast.success('تم إنشاء العقد بنجاح');
+          const newId = result?.data?.id ?? result?.id;
+          if (newId) {
+            router.push(`/contract-form/${newId}`);
+          } else {
+            showDownloadModal.value = true;
+          }
+        }
       } catch (error) {
         logger.error('Save failed', error);
         toast.error('حدث خطأ أثناء الحفظ');
@@ -616,7 +636,7 @@ export default {
         const blob = new Blob([pdfBytes], { type: 'application/pdf' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `contract-${requestId}.pdf`;
+        link.download = `contract-${requestId || 'new'}.pdf`;
         link.click();
       } catch (error) {
         logger.error('Download failed', error);

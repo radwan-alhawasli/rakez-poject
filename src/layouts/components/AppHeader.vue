@@ -37,6 +37,7 @@
       <Teleport to="body">
         <div
           v-if="showNotifications"
+          ref="dropdownRef"
           class="notifications-dropdown notifications-dropdown-teleport"
           :style="dropdownPositionStyle"
         >
@@ -127,7 +128,7 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue';
+import { ref, watch, nextTick, onBeforeUnmount } from 'vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
 const props = defineProps({
@@ -136,28 +137,46 @@ const props = defineProps({
   unreadCount: { type: Number, default: 0 },
 });
 
-defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
+const emit = defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
 
 const notificationWrapperRef = ref(null);
+const dropdownRef = ref(null);
 const dropdownPositionStyle = ref({ position: 'fixed', top: '70px', right: '24px', zIndex: 9999 });
+
+function handleClickOutside(e) {
+  const wrapper = notificationWrapperRef.value;
+  const dropdown = dropdownRef.value;
+  if (!wrapper || !dropdown) return;
+  if (wrapper.contains(e.target) || dropdown.contains(e.target)) return;
+  emit('toggle-notifications');
+}
 
 watch(
   () => props.showNotifications,
   async (isOpen) => {
-    if (!isOpen) return;
-    await nextTick();
-    const el = notificationWrapperRef.value;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    dropdownPositionStyle.value = {
-      position: 'fixed',
-      top: `${rect.bottom + 10}px`,
-      right: `${window.innerWidth - rect.right}px`,
-      zIndex: 9999,
-    };
+    if (isOpen) {
+      await nextTick();
+      const el = notificationWrapperRef.value;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        dropdownPositionStyle.value = {
+          position: 'fixed',
+          top: `${rect.bottom + 10}px`,
+          right: `${window.innerWidth - rect.right}px`,
+          zIndex: 9999,
+        };
+      }
+      setTimeout(() => document.addEventListener('click', handleClickOutside), 0);
+    } else {
+      document.removeEventListener('click', handleClickOutside);
+    }
   },
   { immediate: true }
 );
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <style>
