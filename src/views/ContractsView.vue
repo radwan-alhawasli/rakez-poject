@@ -340,35 +340,6 @@ const closeModal = () => {
   selectedContract.value = null;
 };
 
-<<<<<<< HEAD
-const handleApprove = async (c, notes = '') => {
-  try {
-    await contractService.approveContract(c.id, notes);
-    toast.success('تم اعتماد العقد');
-    fetchContracts();
-    closeModal();
-  } catch (err) {
-    logger.error('Error approving contract:', err);
-    const msg = getApiErrorMessage(err);
-    toast.error(msg);
-    // تحديث القائمة لتعكس الحالة الفعلية من الخادم (قد تكون العقدة معتمدة/مرفوضة مسبقاً)
-    fetchContracts();
-  }
-};
-
-const handleReject = async (c, notes = '') => {
-  try {
-    await contractService.rejectContract(c.id, notes);
-    toast.success('تم رفض العقد');
-    fetchContracts();
-    closeModal();
-  } catch (err) {
-    logger.error('Error rejecting contract:', err);
-    const msg = getApiErrorMessage(err);
-    toast.error(msg);
-    fetchContracts();
-  }
-=======
 /** يُستدعى بعد نجاح الموافقة من ContractModal (الـ API يُستدعى داخل المودال) */
 const handleApprove = () => {
   closeModal();
@@ -379,7 +350,6 @@ const handleApprove = () => {
 const handleReject = () => {
   closeModal();
   fetchContracts();
->>>>>>> 90793689227d716979473ad162da8eba53c8559a
 };
 
 watch(activeFilter, () => {
