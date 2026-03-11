@@ -390,7 +390,8 @@ const contractService = {
 
   /**
    * رفع ملف CSV للوحدات
-   * POST /contracts/units/upload-csv/:id
+   * POST {{base_url}}/contracts/units/upload-csv/:contract_id
+   * Body: multipart/form-data with field "csv_file" (the CSV file). Do not set Content-Type so axios sends boundary.
    */
   async uploadContractUnitsCsv(id, formData) {
     try {

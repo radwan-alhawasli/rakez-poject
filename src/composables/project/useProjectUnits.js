@@ -371,7 +371,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     const file = event.target?.files?.[0];
     if (!file) return;
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('csv_file', file);
     csvUploading.value = true;
     try {
       const contractId = projectId;

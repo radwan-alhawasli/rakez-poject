@@ -49,6 +49,10 @@ apiClient.interceptors.request.use(
       // Update last activity on each request
       secureStorage.updateLastActivity();
     }
+    // When sending FormData, do not set Content-Type so the browser sends multipart/form-data with boundary
+    if (config.data && typeof FormData !== 'undefined' && config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
     return config;
   },
   error => Promise.reject(error)
