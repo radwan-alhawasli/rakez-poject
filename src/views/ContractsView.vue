@@ -128,7 +128,10 @@
                 {{ contract.status }}
               </span>
             </td>
-            <td data-label="الإجراء"><button class="view-link" @click="viewContract(contract)">عرض</button></td>
+            <td data-label="الإجراء">
+              <button class="view-link" @click="viewContract(contract)">عرض</button>
+              <button type="button" class="edit-link" @click="openEditModal(contract)">تعديل</button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -142,6 +145,15 @@
       @close="closeModal"
       @approve="handleApprove"
       @reject="handleReject"
+    />
+
+    <!-- مودال تعديل معلومات المشروع الحصري -->
+    <EditExclusiveProjectModal
+      v-if="showEditModal"
+      :contract-id="editingContractId"
+      :initial-data="editingContractData"
+      @close="closeEditModal"
+      @saved="onExclusiveProjectSaved"
     />
 
     <!-- Pagination -->
@@ -159,6 +171,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import ContractModal from '@/components/ContractModal.vue';
+import EditExclusiveProjectModal from '@/components/EditExclusiveProjectModal.vue';
 import Pagination from '@/components/Pagination.vue';
 import MobileFilterSheet from '@/components/MobileFilterSheet.vue';
 import contractService from '@/services/contractService';
@@ -175,6 +188,9 @@ const contracts = ref([]);
 const totalFromApi = ref(0);
 const showModal = ref(false);
 const selectedContract = ref(null);
+const showEditModal = ref(false);
+const editingContractId = ref(null);
+const editingContractData = ref(null);
 const currentPage = ref(1);
 const perPage = ref(25);
 
@@ -367,6 +383,24 @@ const handleReject = async (c, notes = '') => {
     fetchContracts();
   }
 };
+
+function openEditModal(contract) {
+  if (!contract?.id) return;
+  editingContractId.value = contract.id;
+  editingContractData.value = contract;
+  showEditModal.value = true;
+}
+
+function closeEditModal() {
+  showEditModal.value = false;
+  editingContractId.value = null;
+  editingContractData.value = null;
+}
+
+function onExclusiveProjectSaved() {
+  closeEditModal();
+  fetchContracts();
+}
 
 watch(activeFilter, () => {
   currentPage.value = 1;
@@ -573,6 +607,19 @@ onMounted(fetchContracts);
 }
 
 .view-link:hover {
+  text-decoration: underline;
+}
+
+.edit-link {
+  background: none;
+  border: none;
+  color: var(--color-primary, #b1a28f);
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 12px;
+}
+.edit-link:hover {
   text-decoration: underline;
 }
 
