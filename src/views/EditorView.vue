@@ -258,6 +258,8 @@ export default {
 
     const activeTab = computed(() => {
       const name = route.name;
+      if (name === 'EditorContractDetail') return 'contracts';
+      if (name === 'EditorDeveloperDetail') return 'developers';
       const t = EDITOR_TABS.find(tab => tab.name === name);
       return t ? t.id : 'contracts';
     });

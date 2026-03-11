@@ -3,7 +3,7 @@ import apiClient from '@/api/apiClient';
 import authService from './authService';
 import { createPusher } from '@/plugins/pusher';
 import logger from '@/utils/logger';
-import { ROLE_ADMIN, ROLE_ACCOUNTING } from '@/constants/roles';
+import { ROLE_ADMIN, ROLE_ACCOUNTING, ROLE_CREDIT } from '@/constants/roles';
 
 const notifications = ref([]);
 const unreadCount = ref(0);
@@ -247,7 +247,7 @@ const notificationService = {
 
   /**
    * Mark notification as read
-   * API: POST /notifications/:id/read (user); POST /accounting/notifications/:id/read (accounting)
+   * API: PATCH /notifications/:id/read (shared); POST /accounting/notifications/:id/read (accounting); POST /credit/notifications/:id/read (credit)
    * @param {number|string} id - Notification ID
    * @returns {Promise<void>}
    */
@@ -258,11 +258,21 @@ const notificationService = {
       (user.type === ROLE_ACCOUNTING ||
         String(user.type) === String(ROLE_ACCOUNTING) ||
         String(user.role || '').toLowerCase() === 'accounting');
-    const endpoint = isAccounting
-      ? `/accounting/notifications/${id}/read`
-      : `/notifications/${id}/read`;
+    const isCredit =
+      user &&
+      (user.type === ROLE_CREDIT ||
+        String(user.type) === String(ROLE_CREDIT) ||
+        String(user.role || '').toLowerCase() === 'credit');
+    let promise;
+    if (isAccounting) {
+      promise = apiClient.post(`/accounting/notifications/${id}/read`);
+    } else if (isCredit) {
+      promise = apiClient.post(`/credit/notifications/${id}/read`);
+    } else {
+      promise = apiClient.patch(`/notifications/${id}/read`);
+    }
     try {
-      await apiClient.post(endpoint);
+      await promise;
       const n = notifications.value.find(x => x.id === id);
       if (n) {
         n.read = true;
@@ -282,7 +292,7 @@ const notificationService = {
 
   /**
    * Mark all notifications as read
-   * API: POST /notifications/read-all (user); POST /accounting/notifications/read-all (accounting)
+   * API: PATCH /notifications/mark-all-read (shared); POST /accounting/notifications/read-all (accounting); POST /credit/notifications/read-all (credit)
    * @returns {Promise<void>}
    */
   async markAllAsRead() {
@@ -292,11 +302,18 @@ const notificationService = {
       (user.type === ROLE_ACCOUNTING ||
         String(user.type) === String(ROLE_ACCOUNTING) ||
         String(user.role || '').toLowerCase() === 'accounting');
+    const isCredit =
+      user &&
+      (user.type === ROLE_CREDIT ||
+        String(user.type) === String(ROLE_CREDIT) ||
+        String(user.role || '').toLowerCase() === 'credit');
     try {
       if (isAccounting) {
         await apiClient.post('/accounting/notifications/read-all');
+      } else if (isCredit) {
+        await apiClient.post('/credit/notifications/read-all');
       } else {
-        await apiClient.post('/notifications/read-all');
+        await apiClient.patch('/notifications/mark-all-read');
       }
       notifications.value.forEach(n => {
         n.read = true;
@@ -355,13 +372,13 @@ const notificationService = {
 
   /**
    * Mark notification as read (alternative endpoint)
-   * POST /notifications/read
+   * PATCH /notifications/:id/read (per API collection)
    * @param {number|string} id - Notification ID
    * @returns {Promise<Object>} Response
    */
   async markNotificationAsRead(id) {
     try {
-      const response = await apiClient.post(`/notifications/${id}/read`);
+      const response = await apiClient.patch(`/notifications/${id}/read`);
       return response.data?.data || response.data || {};
     } catch (error) {
       logger.error(`Error marking notification ${id} as read:`, error);
@@ -371,12 +388,12 @@ const notificationService = {
 
   /**
    * Mark all notifications as read (alternative endpoint)
-   * POST /notifications/read-all
+   * PATCH /notifications/mark-all-read (per API collection)
    * @returns {Promise<Object>} Response
    */
   async markAllNotificationsAsRead() {
     try {
-      const response = await apiClient.post('/notifications/read-all');
+      const response = await apiClient.patch('/notifications/mark-all-read');
       return response.data?.data || response.data || {};
     } catch (error) {
       logger.error('Error marking all notifications as read:', error);

@@ -371,11 +371,11 @@ export const createTeam = async teamData => {
 
 /**
  * Update an existing team
- * POST /project_management/teams/update/:id
+ * PUT /project_management/teams/update/:id
  */
 export const updateTeam = async (teamId, teamData) => {
   try {
-    const response = await apiClient.post(`/project_management/teams/update/${teamId}`, teamData);
+    const response = await apiClient.put(`/project_management/teams/update/${teamId}`, teamData);
     return response.data;
   } catch (error) {
     logger.error(`Error updating team ${teamId}:`, error);

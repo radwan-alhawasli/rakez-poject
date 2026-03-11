@@ -94,15 +94,8 @@ export const createTeam = async teamData => {
  */
 export const updateTeam = async (id, teamData) => {
   try {
-    // Try PUT first (as per Postman), fallback to POST if needed
-    try {
-      const response = await apiClient.put(`/project_management/teams/update/${id}`, teamData);
-      return response.data;
-    } catch (_putErr) {
-      // Fallback to POST if PUT fails
-      const response = await apiClient.post(`/project_management/teams/update/${id}`, teamData);
-      return response.data;
-    }
+    const response = await apiClient.put(`/project_management/teams/update/${id}`, teamData);
+    return response.data;
   } catch (error) {
     return handleServiceError(error, `Update team ${id}`, 'put');
   }
