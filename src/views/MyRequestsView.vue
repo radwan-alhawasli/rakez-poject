@@ -51,13 +51,21 @@
                 {{ statusLabel(request.status) }}
               </div>
             </td>
-            <td data-label="الإجراء" class="text-center">
+            <td data-label="الإجراء" class="text-center actions-cell">
               <button
+                v-if="request.status !== 'completed'"
                 class="complete-btn"
                 @click="completeContract(request.id)"
                 :disabled="!canCompleteContract(request.status)"
               >
                 استكمال العقد
+              </button>
+              <button
+                v-if="request.status === 'completed'"
+                class="edit-btn"
+                @click="openEditModal(request)"
+              >
+                تعديل
               </button>
             </td>
           </tr>
@@ -65,21 +73,33 @@
       </table>
       </div>
     </div>
+
+    <!-- مودال تعديل بيانات استكمال العقد -->
+    <EditContractInfoModal
+      v-if="showEditModal"
+      :contract-id="editingContractId"
+      @close="closeEditModal"
+      @saved="onEditSaved"
+    />
   </div>
 </template>
 
 <script>
 import { ref, onMounted, onActivated } from 'vue';
+import EditContractInfoModal from '@/components/EditContractInfoModal.vue';
 import { useRouter } from 'vue-router';
 import contractService from '@/services/contractService';
 import logger from '@/utils/logger';
 
 export default {
   name: 'MyRequestsView',
+  components: { EditContractInfoModal },
   setup() {
     const router = useRouter();
     const requests = ref([]);
     const isLoading = ref(true);
+    const showEditModal = ref(false);
+    const editingContractId = ref(null);
 
     // Check if contract is completed (has been filled with data)
     const isContractCompleted = item => {
@@ -125,9 +145,9 @@ export default {
               try {
                 const fullDetails = await contractService.getContractById(item.id);
                 if (isContractCompleted(fullDetails)) {
-                  return null; // Filter out completed
+                  return { ...item, status: 'completed' }; // Show in list with "تعديل"
                 }
-                return { ...item, status: item.status }; // Keep API status
+                return { ...item, status: item.status };
               } catch (e) {
                 logger.error(`Failed to fetch details for ${item.id}`, e);
                 return item;
@@ -138,7 +158,6 @@ export default {
           })
         );
 
-        // Filter out nulls (completed contracts)
         const validRequests = processedRequests.filter(r => r !== null);
 
         // Map API fields if they differ
@@ -187,13 +206,34 @@ export default {
       return s === 'approved';
     };
 
+    function openEditModal(request) {
+      if (!request?.id) return;
+      editingContractId.value = request.id;
+      showEditModal.value = true;
+    }
+
+    function closeEditModal() {
+      showEditModal.value = false;
+      editingContractId.value = null;
+    }
+
+    function onEditSaved() {
+      closeEditModal();
+      fetchRequests();
+    }
+
     return {
       requests,
       isLoading,
+      showEditModal,
+      editingContractId,
       completeContract,
       statusLabel,
       statusClass,
       canCompleteContract,
+      openEditModal,
+      closeEditModal,
+      onEditSaved,
     };
   },
 };
@@ -309,12 +349,27 @@ export default {
   border: 1px solid #93c5fd;
 }
 
-.complete-btn {
-  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
-  color: white;
+.actions-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.complete-btn,
+.edit-btn {
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.complete-btn {
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+  color: white;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -333,6 +388,16 @@ export default {
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+}
+
+.edit-btn {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+  color: white;
+  transition: all 0.3s ease;
+}
+.edit-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
 }
 
 .text-center {
