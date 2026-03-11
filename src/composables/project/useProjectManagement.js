@@ -362,10 +362,15 @@ export function useProjectManagement() {
     assignTeamLoading.value = true;
     try {
       const [assignedData, allTeams] = await Promise.all([
-        teamService.getContractTeams(project.id),
+        teamService.getProjectTeams(project.id),
         teamService.getTeams(),
       ]);
-      const assigned = Array.isArray(assignedData) ? assignedData : assignedData?.data || [];
+      const raw = Array.isArray(assignedData) ? assignedData : assignedData?.data || [];
+      const assigned = raw.map(t => ({
+        id: t.team_id ?? t.id,
+        project_team_id: t.id,
+        name: t.team?.name ?? t.name ?? '',
+      }));
       assignTeamAssigned.value = assigned;
       const assignedIds = new Set(assigned.map(t => t.id));
       assignTeamAvailable.value = allTeams.filter(t => !assignedIds.has(t.id));
@@ -382,7 +387,7 @@ export function useProjectManagement() {
     if (!project || !assignTeamSelectedId.value) return;
     assignTeamActionLoading.value = true;
     try {
-      await teamService.addTeamsToContract(project.id, [assignTeamSelectedId.value]);
+      await teamService.addProjectTeams(project.id, [Number(assignTeamSelectedId.value)]);
       toast.success('تم تعيين الفريق بنجاح');
       assignTeamSelectedId.value = '';
       await loadAssignTeamData();
@@ -398,9 +403,11 @@ export function useProjectManagement() {
   const assignTeamRemove = async team => {
     const project = projectForAssignTeam.value;
     if (!project) return;
+    const projectTeamId = team.project_team_id ?? team.id;
+    if (!projectTeamId) return;
     assignTeamActionLoading.value = true;
     try {
-      await teamService.removeTeamsFromContract(project.id, [team.id]);
+      await teamService.removeProjectTeam(projectTeamId);
       toast.success('تم إزالة الفريق بنجاح');
       await loadAssignTeamData();
       await fetchProjects();

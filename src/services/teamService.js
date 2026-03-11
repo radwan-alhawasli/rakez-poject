@@ -217,6 +217,58 @@ export const getContractTeams = async contractId => {
   }
 };
 
+// --- Project Teams API (assign project to team) ---
+
+/**
+ * Get teams assigned to a project
+ * GET {{server}}/project_teams/teams/:projectId
+ * @param {number|string} projectId - Project (contract) ID
+ * @returns {Promise<Array>} List of assigned teams (items may include project_team_id for remove)
+ */
+export const getProjectTeams = async projectId => {
+  try {
+    const response = await apiClient.get(`/project_teams/teams/${projectId}`);
+    const data = response.data?.data ?? response.data;
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    return handleServiceError(error, `Fetch project teams ${projectId}`, 'get', []);
+  }
+};
+
+/**
+ * Assign teams to a project
+ * POST {{server}}/project_teams/teams/add/:projectId
+ * Body: { team_ids: [1] }
+ * @param {number|string} projectId - Project ID
+ * @param {Array<number|string>} teamIds - Team IDs to assign
+ * @returns {Promise<Object>}
+ */
+export const addProjectTeams = async (projectId, teamIds) => {
+  try {
+    const response = await apiClient.post(`/project_teams/teams/add/${projectId}`, {
+      team_ids: teamIds,
+    });
+    return response.data;
+  } catch (error) {
+    return handleServiceError(error, `Add teams to project ${projectId}`, 'post');
+  }
+};
+
+/**
+ * Remove a team assignment from a project
+ * DELETE {{server}}/project_teams/teams/remove/:projectTeamId
+ * @param {number|string} projectTeamId - Project-team assignment ID (from getProjectTeams item.id or project_team_id)
+ * @returns {Promise<Object>}
+ */
+export const removeProjectTeam = async projectTeamId => {
+  try {
+    const response = await apiClient.delete(`/project_teams/teams/remove/${projectTeamId}`);
+    return response.data;
+  } catch (error) {
+    return handleServiceError(error, `Remove project team ${projectTeamId}`, 'delete');
+  }
+};
+
 /**
  * Get team contracts (api.php: GET project_management/teams/contracts/{teamId})
  * @param {number|string} teamId - Team ID

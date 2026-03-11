@@ -377,7 +377,7 @@ const contractService = {
 
   /**
    * تحديث وحدة
-   * PUT /contracts/units/update/:unitId
+   * PUT {{base_url}}/contracts/units/update/:unit_id
    */
   async updateContractUnit(unitId, payload) {
     try {
@@ -613,7 +613,7 @@ const contractService = {
 
   /**
    * Delete unit
-   * DELETE /contracts/units/delete
+   * DELETE {{base_url}}/contracts/units/delete/:unit_id
    * @param {number|string} unitId - Unit ID
    * @returns {Promise<Object>} Response
    */
