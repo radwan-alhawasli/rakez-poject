@@ -79,6 +79,8 @@
         @close-menu="activeMenuId = null"
         @edit-project="onEditProject"
         @assign-team="onAssignTeam"
+        @view-teams="onAssignTeam"
+        @remove-team="onAssignTeam"
         @archive-project="onArchiveProject"
         @mark-complete="onMarkComplete"
         @download-contract="onDownloadContract"
