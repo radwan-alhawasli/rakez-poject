@@ -87,6 +87,7 @@
           :project-id="project.id"
           :is-sales-user="isSalesUser"
           :project-progress="projectProgress"
+          @tracker-completed="onTrackerCompleted"
         />
 
         <ProjectPhotographyTab
@@ -195,6 +196,11 @@ const selectUnitsTab = () => {
 const checkTrackerCompletion = (progress) => {
   if (!progress?.steps || !Array.isArray(progress.steps)) return false;
   return progress.steps.every(s => s.completed);
+};
+
+const onTrackerCompleted = () => {
+  isTrackerCompleted.value = true;
+  fetchProject();
 };
 
 const fetchProject = async () => {

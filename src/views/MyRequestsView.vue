@@ -47,21 +47,15 @@
               <span class="date-text">{{ request.date }}</span>
             </td>
             <td data-label="الحالة">
-              <div class="status-badge" :class="request.status.toLowerCase()">
-                {{
-                  request.status.toLowerCase() === 'approved'
-                    ? 'موافق عليه'
-                    : request.status.toLowerCase() === 'rejected'
-                    ? 'مرفوض'
-                    : 'معلق'
-                }}
+              <div class="status-badge" :class="statusClass(request.status)">
+                {{ statusLabel(request.status) }}
               </div>
             </td>
             <td data-label="الإجراء" class="text-center">
               <button
                 class="complete-btn"
                 @click="completeContract(request.id)"
-                :disabled="request.status.toLowerCase() !== 'approved'"
+                :disabled="!canCompleteContract(request.status)"
               >
                 استكمال العقد
               </button>
@@ -133,13 +127,13 @@ export default {
                 if (isContractCompleted(fullDetails)) {
                   return null; // Filter out completed
                 }
-                return { ...item, status: 'Approved' }; // Keep non-completed
+                return { ...item, status: item.status }; // Keep API status
               } catch (e) {
                 logger.error(`Failed to fetch details for ${item.id}`, e);
-                return item; // Keep if check fails, better safe than hidden
+                return item;
               }
             }
-
+            // Preserve API status: pending, completed, rejected, etc.
             return item;
           })
         );
@@ -171,10 +165,35 @@ export default {
       router.push(`/contract-form/${id}`);
     };
 
+    /** Display label from API status (GET /contracts/index → status). */
+    const statusLabel = (status) => {
+      const s = (status || '').toString().toLowerCase();
+      if (s === 'approved') return 'موافق عليه';
+      if (s === 'rejected' || s === 'refused') return 'مرفوض';
+      if (s === 'completed') return 'مكتمل';
+      return 'معلق';
+    };
+
+    /** CSS class for status badge (pending, approved, rejected, completed). */
+    const statusClass = (status) => {
+      const s = (status || '').toString().toLowerCase();
+      if (s === 'approved' || s === 'completed' || s === 'rejected' || s === 'refused') return s;
+      return 'pending';
+    };
+
+    /** Only approved (and not completed) contracts can use "استكمال العقد". */
+    const canCompleteContract = (status) => {
+      const s = (status || '').toString().toLowerCase();
+      return s === 'approved';
+    };
+
     return {
       requests,
       isLoading,
       completeContract,
+      statusLabel,
+      statusClass,
+      canCompleteContract,
     };
   },
 };
@@ -283,6 +302,11 @@ export default {
   background: #fee2e2;
   color: #b91c1c;
   border: 1px solid #fecdd3;
+}
+.status-badge.completed {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
 }
 
 .complete-btn {

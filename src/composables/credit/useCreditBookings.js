@@ -3,6 +3,7 @@ import { useRoute, useRouter } from 'vue-router';
 import creditService from '@/services/creditService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
+import { getApiErrorMessage } from '@/utils/errorHandler';
 import { useFormatters } from '@/composables/useFormatters';
 
 export function useCreditBookings() {
@@ -440,14 +441,6 @@ export function useCreditBookings() {
   const clearSelectedBooking = () => {
     selectedBooking.value = null;
     selectedFinancingTracker.value = null;
-  };
-
-  // ── Utility ──
-
-  const getApiErrorMessage = (error, fallback) => {
-    const msg = error?.response?.data?.message;
-    if (msg && typeof msg === 'string') return msg;
-    return fallback;
   };
 
   // ── Booking actions ──

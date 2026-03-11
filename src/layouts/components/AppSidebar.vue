@@ -1451,6 +1451,126 @@
           </router-link>
         </template>
   
+        <!-- Editor (Montage / قسم المونتاج) Sidebar (Role 4) -->
+        <template v-else-if="userRole == 4">
+          <router-link
+            to="/editor/dashboard"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="لوحة التحكم"
+          >
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span class="nav-text">لوحة التحكم</span>
+            </div>
+          </router-link>
+
+          <router-link to="/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
+            <div class="nav-content">
+              <div class="icon-with-badge">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
+              </div>
+              <span class="nav-text">الإشعارات</span>
+            </div>
+          </router-link>
+
+          <router-link
+            to="/editor/projects/not-montaged"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="مشاريع غير مونتاج"
+          >
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <span class="nav-text">غير مونتاج</span>
+            </div>
+          </router-link>
+
+          <router-link
+            to="/editor/projects/after-montage"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="بعد المونتاج"
+          >
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 11 12 14 22 4"></polyline>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span class="nav-text">بعد المونتاج</span>
+            </div>
+          </router-link>
+
+          <router-link to="/chat" class="nav-item" active-class="active" data-tooltip="الدردشة">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span class="nav-text">الدردشة</span>
+            </div>
+          </router-link>
+
+          <router-link to="/ai-assistant" class="nav-item" active-class="active" data-tooltip="الذكاء الاصطناعي">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"></path>
+              </svg>
+              <span class="nav-text">الذكاء الاصطناعي</span>
+            </div>
+          </router-link>
+
+          <router-link to="/editor/teams" class="nav-item" active-class="active" data-tooltip="الفرق">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span class="nav-text">الفرق</span>
+            </div>
+          </router-link>
+
+          <router-link
+            v-if="user?.is_manager === true || user?.is_manager === 1"
+            to="/editor/ratings"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="تقييمات الموظفين"
+          >
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              <span class="nav-text">التقييمات</span>
+            </div>
+          </router-link>
+
+          <router-link to="/profile" class="nav-item" active-class="active" data-tooltip="الملف الشخصي">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span class="nav-text">الملف الشخصي</span>
+            </div>
+          </router-link>
+        </template>
+  
         <!-- Marketer Sidebar (Matches Image 2) -->
         <template v-else>
           <router-link

@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import creditService from '@/services/creditService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
+import { getApiErrorMessage } from '@/utils/errorHandler';
 import { useFormatters } from '@/composables/useFormatters';
 import { getStatusClass } from '@/utils/statusHelpers';
 
@@ -17,13 +18,6 @@ export function useCreditFinancing() {
   const isSavingFinancing = ref(false);
 
   const { formatCurrency } = useFormatters();
-
-
-  const getApiErrorMessage = (error, fallback) => {
-    const msg = error?.response?.data?.message;
-    if (msg && typeof msg === 'string') return msg;
-    return fallback;
-  };
 
   const loadFinancing = async () => {
     isLoading.value = true;

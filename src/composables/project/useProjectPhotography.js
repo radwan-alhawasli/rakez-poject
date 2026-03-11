@@ -2,6 +2,7 @@ import { ref, reactive } from 'vue';
 import contractService from '@/services/contractService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
+import { getApiErrorMessage } from '@/utils/errorHandler';
 
 export function useProjectPhotography(projectId) {
   const isLoading = ref(false);
@@ -78,8 +79,7 @@ export function useProjectPhotography(projectId) {
       isEditingPending.value = false;
     } catch (error) {
       logger.error('Photography save error:', error);
-      const msg = error.response?.data?.message || error.message || 'خطأ غير معروف';
-      toast.error(`حدث خطأ أثناء حفظ البيانات: ${msg}`);
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء حفظ بيانات التصوير'));
       isEditingPending.value = false;
     } finally {
       isPhotoSaving.value = false;
@@ -101,7 +101,7 @@ export function useProjectPhotography(projectId) {
           toast.success('تم قبول الصور بنجاح');
         } catch (error) {
           logger.error('Approval error:', error);
-          toast.error('حدث خطأ أثناء القبول: ' + (error.response?.data?.message || error.message));
+          toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء قبول الصور'));
         }
       },
     };
@@ -129,7 +129,7 @@ export function useProjectPhotography(projectId) {
       toast.success('تم رفض الصور');
     } catch (error) {
       logger.error(error);
-      toast.error('حدث خطأ أثناء الرفض');
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء رفض الصور'));
     }
   };
 

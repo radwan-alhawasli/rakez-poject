@@ -232,7 +232,7 @@ export function getDashboardPathForUser(user) {
   if (normalizedRole === ROLE_SALES) return '/sales/dashboard';
   if (normalizedRole === ROLE_CREDIT) return '/credit/dashboard';
   if (normalizedRole === ROLE_ACCOUNTING) return '/accounting/dashboard';
-  if (normalizedRole === ROLE_EDITOR) return '/editor/contracts';
+  if (normalizedRole === ROLE_EDITOR) return '/editor/dashboard';
   if (normalizedRole === ROLE_PROJECT_MANAGEMENT) return '/project-management';
   return '/dashboard';
 }

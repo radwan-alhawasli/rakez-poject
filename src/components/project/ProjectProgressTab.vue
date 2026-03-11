@@ -92,6 +92,8 @@ const props = defineProps({
   projectProgress: { type: Object, default: null },
 });
 
+const emit = defineEmits(['tracker-completed']);
+
 const {
   isLoading,
   stages,
@@ -99,7 +101,9 @@ const {
   completedStages,
   saveProgress,
   loadProgress,
-} = useProjectProgress(props.projectId);
+} = useProjectProgress(props.projectId, {
+  onTrackerFullyCompleted: () => emit('tracker-completed'),
+});
 
 onMounted(() => {
   loadProgress(props.projectProgress);

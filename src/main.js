@@ -6,6 +6,8 @@ import router from './router';
 import i18n from './i18n';
 import vPermission from './directives/permission';
 import { registerErrorReporter } from './utils/errorReporter';
+import { getApiErrorMessage } from './utils/errorHandler';
+import { toast } from './composables/useToast';
 
 // الوضع المظلم معطّل — إجبار الوضع الفاتح
 if (typeof document !== 'undefined') {
@@ -23,14 +25,21 @@ function isAuthError(reason) {
   );
 }
 
-// Suppress "Uncaught" overlay when 401 redirects to login (session expired / unauthenticated).
-// Use capture so this runs before dev overlay listeners.
+// Global unhandled rejection: suppress auth redirect overlay; show user-friendly message for others
 window.addEventListener(
   'unhandledrejection',
   event => {
-    if (isAuthError(event?.reason)) {
+    const reason = event?.reason;
+    if (isAuthError(reason)) {
       event.preventDefault();
       event.stopImmediatePropagation();
+      return;
+    }
+    const msg = getApiErrorMessage(reason);
+    if (msg && typeof window !== 'undefined') {
+      try {
+        toast.error(msg);
+      } catch (_) {}
     }
   },
   true

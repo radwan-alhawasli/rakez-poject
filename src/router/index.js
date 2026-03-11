@@ -496,7 +496,32 @@ const routes = [
         component: () => import('../layouts/EditorLayout.vue'),
         meta: { roles: [ROLE_EDITOR] },
         children: [
-          { path: '', name: 'Editor', redirect: { name: 'EditorContracts' } },
+          { path: '', name: 'Editor', redirect: { name: 'EditorDashboard' } },
+          {
+            path: 'dashboard',
+            name: 'EditorDashboard',
+            component: () => import('../views/editor/EditorDashboardView.vue'),
+          },
+          {
+            path: 'projects/not-montaged',
+            name: 'EditorProjectsNotMontaged',
+            component: () => import('../views/editor/EditorProjectsNotMontagedView.vue'),
+          },
+          {
+            path: 'projects/after-montage',
+            name: 'EditorProjectsAfterMontage',
+            component: () => import('../views/editor/EditorProjectsAfterMontageView.vue'),
+          },
+          {
+            path: 'teams',
+            name: 'EditorTeams',
+            component: () => import('../views/editor/EditorTeamsView.vue'),
+          },
+          {
+            path: 'ratings',
+            name: 'EditorRatings',
+            component: () => import('../views/editor/EditorRatingsView.vue'),
+          },
           {
             path: 'contracts',
             name: 'EditorContracts',
@@ -506,46 +531,6 @@ const routes = [
             path: 'contracts/:id',
             name: 'EditorContractDetail',
             component: () => import('../views/EditorDetailView.vue'),
-          },
-          {
-            path: 'second-party',
-            name: 'EditorSecondParty',
-            component: () => import('../views/EditorView.vue'),
-          },
-          {
-            path: 'units',
-            name: 'EditorUnits',
-            component: () => import('../views/EditorView.vue'),
-          },
-          {
-            path: 'developers',
-            name: 'EditorDevelopers',
-            component: () => import('../views/EditorView.vue'),
-          },
-          {
-            path: 'developers/:developerNumber',
-            name: 'EditorDeveloperDetail',
-            component: () => import('../views/EditorDetailView.vue'),
-          },
-          {
-            path: 'montage',
-            name: 'EditorMontage',
-            component: () => import('../views/EditorView.vue'),
-          },
-          {
-            path: 'photography',
-            name: 'EditorPhotography',
-            component: () => import('../views/EditorView.vue'),
-          },
-          {
-            path: 'boards',
-            name: 'EditorBoards',
-            component: () => import('../views/EditorView.vue'),
-          },
-          {
-            path: 'media',
-            name: 'EditorMedia',
-            component: () => import('../views/EditorView.vue'),
           },
         ],
       },

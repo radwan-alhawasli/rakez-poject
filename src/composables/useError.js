@@ -4,7 +4,8 @@
  */
 
 import { ref } from 'vue';
-import { handleError, retryWithBackoff } from '@/utils/errorHandler';
+import { handleError, retryWithBackoff, getApiErrorMessage } from '@/utils/errorHandler';
+import { toast } from '@/composables/useToast';
 
 /**
  * Error handling composable
@@ -84,6 +85,16 @@ export function useError(options = {}) {
     };
   };
 
+  /**
+   * Show API error as toast (use in catch blocks: catch (err) { showApiError(err); })
+   * @param {Error} err - Caught error
+   * @param {string} [fallback] - Optional fallback message
+   */
+  const showApiError = (err, fallback) => {
+    const msg = getApiErrorMessage(err, fallback);
+    if (msg) toast.error(msg);
+  };
+
   return {
     error,
     isLoading,
@@ -92,7 +103,10 @@ export function useError(options = {}) {
     clearError,
     execute,
     wrap,
+    getApiErrorMessage,
+    showApiError,
   };
 }
 
+export { getApiErrorMessage };
 export default useError;

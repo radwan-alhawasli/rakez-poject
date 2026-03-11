@@ -6,6 +6,7 @@ import notificationService from '@/services/notificationService';
 import { generateUnitDetailsPdf } from '@/services/pdfService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
+import { getApiErrorMessage } from '@/utils/errorHandler';
 import { useFormatters } from '@/composables/useFormatters';
 import { NATIONALITIES } from '@/constants/lookups';
 import { extractPaginatedData } from '@/utils/paginationUtils';
@@ -41,7 +42,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     unit_number: '',
     unit_type: '',
     count: 1,
-    status: 'pending',
+    status: 'available',
     price: 0,
     total_price: 0,
     area: 0,
@@ -231,6 +232,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
       logger.error('Error loading units:', error);
       units.value = [];
       unitCountFromApi.value = null;
+      toast.error(getApiErrorMessage(error, 'فشل تحميل الوحدات'));
     } finally {
       unitsLoading.value = false;
     }
@@ -240,7 +242,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     unitForm.unit_number = '';
     unitForm.unit_type = '';
     unitForm.count = 1;
-    unitForm.status = 'pending';
+    unitForm.status = 'available';
     unitForm.price = 0;
     unitForm.total_price = 0;
     unitForm.area = 0;
@@ -274,16 +276,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
       window.URL.revokeObjectURL(url);
       notificationService.addNotification('تم تحميل ملف PDF بنجاح', 'success');
     } catch (e) {
-      let message = 'تحميل PDF غير متوفر لهذه الوحدة حالياً';
-      if (e?.response?.data instanceof Blob) {
-        try {
-          const text = await e.response.data.text();
-          const data = JSON.parse(text);
-          if (data?.message) message = data.message;
-        } catch (_) { /* ignore */ }
-      } else if (e?.response?.data?.message) {
-        message = e.response.data.message;
-      }
+      const message = getApiErrorMessage(e, 'تحميل PDF غير متوفر لهذه الوحدة حالياً');
       logger.error('Unit PDF download failed', e);
       notificationService.addNotification(message, 'error');
       try {
@@ -322,8 +315,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
       loadUnits();
     } catch (error) {
       logger.error(error);
-      const msg = error.response?.data?.message || error.message || 'خطأ غير معروف';
-      toast.error(`حدث خطأ أثناء حفظ الوحدة: ${msg}`);
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء حفظ الوحدة'));
     }
   };
 
@@ -353,7 +345,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
           loadUnits();
         } catch (e) {
           logger.error(e);
-          toast.error('فشل حذف الوحدة');
+          toast.error(getApiErrorMessage(e, 'فشل حذف الوحدة'));
         }
       },
     };
@@ -371,7 +363,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
       }
     } catch (e) {
       logger.error(e);
-      toast.error('فشل تحميل العقد');
+      toast.error(getApiErrorMessage(e, 'فشل تحميل العقد'));
     }
   };
 
@@ -388,8 +380,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
       await loadUnits();
     } catch (error) {
       logger.error(error);
-      const msg = error.response?.data?.message || error.message || 'خطأ غير معروف';
-      toast.error(`فشل رفع الملف: ${msg}`);
+      toast.error(getApiErrorMessage(error, 'فشل رفع ملف CSV للوحدات'));
     } finally {
       csvUploading.value = false;
       if (event.target) event.target.value = '';
@@ -436,7 +427,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
       loadUnits();
     } catch (e) {
       logger.error(e);
-      notificationService.addNotification('فشل الحجز', 'error');
+      notificationService.addNotification(getApiErrorMessage(e, 'فشل الحجز'), 'error');
     } finally {
       isSubmitting.value = false;
     }
@@ -475,7 +466,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
       closeWaitingListModal();
     } catch (e) {
       logger.error('Waiting list add error:', e);
-      notificationService.addNotification(e.response?.data?.message || 'فشل إضافة قائمة الانتظار', 'error');
+      notificationService.addNotification(getApiErrorMessage(e, 'فشل إضافة قائمة الانتظار'), 'error');
     } finally {
       waitingListSaving.value = false;
     }

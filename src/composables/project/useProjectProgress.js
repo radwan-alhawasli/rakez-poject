@@ -2,8 +2,14 @@ import { ref, reactive, computed } from 'vue';
 import contractService from '@/services/contractService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
+import { getApiErrorMessage } from '@/utils/errorHandler';
 
-export function useProjectProgress(projectId) {
+/**
+ * @param {string|number} projectId - Contract/project ID
+ * @param {{ onTrackerFullyCompleted?: (id: string|number) => void }} [options] - Called when all stages are completed and backend status is updated
+ */
+export function useProjectProgress(projectId, options = {}) {
+  const { onTrackerFullyCompleted } = options;
   const isLoading = ref(false);
   const projectLinkUrl = ref('');
 
@@ -92,15 +98,22 @@ export function useProjectProgress(projectId) {
       }
       currentStage.status = 'completed';
       currentStage.completedAt = new Date().toLocaleDateString('ar-SA');
-      if (activeStageIndex.value < stages.length - 1) {
-        activeStageIndex.value++;
-      } else {
+      const allCompleted = stages.every(s => s.status === 'completed');
+      if (allCompleted) {
+        try {
+          await contractService.updateContractStatusProjectManager(projectId, 'approved');
+        } catch (err) {
+          logger.warn('Tracker completed but contract status update failed:', err);
+          toast.error(getApiErrorMessage(err, 'تم حفظ المتتبع لكن تحديث حالة العقد فشل. جرّب تحديث الصفحة.'));
+        }
+        onTrackerFullyCompleted?.(projectId);
         toast.success('تهانينا! تم إكمال المتتبع، يمكنك الآن إدارة الوحدات.');
+      } else if (activeStageIndex.value < stages.length - 1) {
+        activeStageIndex.value++;
       }
     } catch (error) {
       logger.error('Failed to save progress:', error);
-      const errorMsg = error.response?.data?.message || error.message;
-      toast.error(`حدث خطأ أثناء حفظ البيانات: ${errorMsg}`);
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء حفظ البيانات'));
     }
   };
 
@@ -116,7 +129,7 @@ export function useProjectProgress(projectId) {
       toast.success('تم تحديث رابط المشروع');
     } catch (error) {
       logger.error('Failed to update project link:', error);
-      toast.error('فشل تحديث الرابط');
+      toast.error(getApiErrorMessage(error, 'فشل تحديث الرابط'));
     }
   };
 

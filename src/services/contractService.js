@@ -222,13 +222,14 @@ const contractService = {
   },
 
   /**
-   * إنشاء طلب مشروع جديد (حصري)
-   * POST /contracts/store
-   * Payload: { project_name, developer_name, developer_number, city, district, notes }
+   * إنشاء عقد / مشروع حصري
+   * Endpoint: POST {{base_url}}/contracts/store (apiClient baseURL from appConfig)
+   * Payload: project_name, developer_name, developer_number, city, district,
+   *          developer_requiment?, project_image_url?, note?, units[], commission_percentage?, commission_from?
    */
   async createContract(payload) {
     try {
-      logger.debug('Creating contract payload:', payload);
+      logger.debug('Creating contract (POST /contracts/store):', payload);
       const response = await apiClient.post('/contracts/store', payload);
       return response.data;
     } catch (error) {
@@ -347,12 +348,21 @@ const contractService = {
   },
 
   /**
-   * إضافة وحدة واحدة
-   * POST /contracts/units/store/:id
+   * إضافة وحدة يدوياً
+   * POST {{base_url}}/contracts/units/store/:contract_id
+   * Body: { unit_type, unit_number, price, area, description?, status? }
    */
-  async addContractUnit(id, payload) {
+  async addContractUnit(contractId, payload) {
     try {
-      const response = await apiClient.post(`/contracts/units/store/${id}`, payload);
+      const body = {
+        unit_type: payload.unit_type ?? '',
+        unit_number: payload.unit_number ?? '',
+        price: Number(payload.price) || 0,
+        area: payload.area != null ? Number(payload.area) : undefined,
+        description: payload.description != null ? String(payload.description) : undefined,
+        status: payload.status ?? 'available',
+      };
+      const response = await apiClient.post(`/contracts/units/store/${contractId}`, body);
       return response.data;
     } catch (error) {
       return handleServiceError(error, 'Add contract unit', 'post');
@@ -402,11 +412,17 @@ const contractService = {
 
   /**
    * حفظ بيانات قسم التصوير
-   * POST /photography-department/store/:id
+   * POST {{base_url}}/photography-department/store/:contract_id
+   * Body: { image_url, video_url, description }
    */
   async storePhotography(id, payload) {
     try {
-      const response = await apiClient.post(`/photography-department/store/${id}`, payload);
+      const body = {
+        image_url: payload?.image_url != null ? String(payload.image_url) : '',
+        video_url: payload?.video_url != null ? String(payload.video_url) : '',
+        description: payload?.description != null ? String(payload.description) : '',
+      };
+      const response = await apiClient.post(`/photography-department/store/${id}`, body);
       return response.data;
     } catch (error) {
       return handleServiceError(error, 'Store photography data', 'post');
@@ -415,11 +431,17 @@ const contractService = {
 
   /**
    * تحديث بيانات قسم التصوير
-   * PUT /photography-department/update/:id
+   * PUT {{base_url}}/photography-department/update/:contract_id
+   * Body: { image_url, video_url, description }
    */
   async updatePhotography(id, payload) {
     try {
-      const response = await apiClient.put(`/photography-department/update/${id}`, payload);
+      const body = {
+        image_url: payload?.image_url != null ? String(payload.image_url) : '',
+        video_url: payload?.video_url != null ? String(payload.video_url) : '',
+        description: payload?.description != null ? String(payload.description) : '',
+      };
+      const response = await apiClient.put(`/photography-department/update/${id}`, body);
       return response.data;
     } catch (error) {
       return handleServiceError(error, 'Update photography data', 'put');
@@ -427,18 +449,16 @@ const contractService = {
   },
 
   /**
-   * اعتماد صور المشروع
-   * POST /photography-department/approve/:id
-   * Payload: { status: 'approved' | 'rejected', rejection_reason: string (optional) }
+   * اعتماد صور المشروع (للمدير is_manager)
+   * PATCH {{base_url}}/photography-department/approve/:contract_id
+   * Payload: { status: 'approved' | 'rejected', rejection_reason?: string }
    */
   async approvePhotography(id, payload = {}) {
     try {
-      // User specified {{server}}/photography-department/approve/1
-      // likely expects a POST or GET. POST is safer for actions.
-      const response = await apiClient.post(`/photography-department/approve/${id}`, payload);
+      const response = await apiClient.patch(`/photography-department/approve/${id}`, payload);
       return response.data;
     } catch (error) {
-      return handleServiceError(error, 'Approve photography', 'post');
+      return handleServiceError(error, 'Approve photography', 'patch');
     }
   },
 

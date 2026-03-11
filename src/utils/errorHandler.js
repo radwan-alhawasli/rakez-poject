@@ -71,31 +71,69 @@ const errorMessages = {
 };
 
 /**
+ * Extract first validation error from Laravel-style errors object
+ * @param {Object} errors - { field: ["msg"] } or { field: "msg" }
+ * @returns {string|null}
+ */
+function getFirstValidationMessage(errors) {
+  if (!errors || typeof errors !== 'object') return null;
+  const key = Object.keys(errors)[0];
+  if (!key) return null;
+  const val = errors[key];
+  if (Array.isArray(val) && val.length) return val[0];
+  if (typeof val === 'string') return val;
+  return null;
+}
+
+/**
+ * Get user-facing message from any API/service error (used across the app in catch blocks).
+ * Prefers: API message, then validation errors, then status-based defaults.
+ * @param {Error|{ message?: string, response?: { data?: { message?: string, errors?: object } }, data?: { message?: string, errors?: object }, status?: number }} error
+ * @param {string} [fallback] - Optional fallback when no specific message is found
+ * @returns {string}
+ */
+export function getApiErrorMessage(error, fallback) {
+  if (!error) return fallback || errorMessages[ErrorTypes.UNKNOWN].default;
+  const data = error?.response?.data ?? error?.data ?? {};
+  const msg =
+    error?.userMessage ||
+    error?.message ||
+    data?.message ||
+    getFirstValidationMessage(data?.errors);
+  if (msg && typeof msg === 'string' && msg.trim()) return msg.trim();
+  const status = error?.response?.status ?? error?.status;
+  if (status === 401) return errorMessages[ErrorTypes.AUTHENTICATION].expired;
+  if (status === 403) return errorMessages[ErrorTypes.AUTHORIZATION].default;
+  if (status === 404) return errorMessages[ErrorTypes.CLIENT].notFound;
+  if (status === 422) return errorMessages[ErrorTypes.VALIDATION].default;
+  if (status >= 500) return errorMessages[ErrorTypes.SERVER].default;
+  return fallback || errorMessages[ErrorTypes.UNKNOWN].default;
+}
+
+/**
  * Get user-friendly error message
  * @param {Error} error - Error object
  * @param {string} type - Error type
  * @returns {string} User-friendly message
  */
 function getUserMessage(error, type = ErrorTypes.UNKNOWN) {
-  // Check if error has a user-friendly message
-  if (error?.userMessage) {
-    return error.userMessage;
-  }
+  // Prefer explicit user message
+  if (error?.userMessage) return error.userMessage;
 
-  // Check API error message
-  if (error?.response?.data?.message) {
-    return error.response.data.message;
-  }
-
-  // Check error message
-  if (error?.message) {
-    // Map common error messages
-    if (error.message.includes('timeout')) {
-      return errorMessages[ErrorTypes.NETWORK].timeout;
-    }
-    if (error.message.includes('Network Error') || error.message.includes('Failed to fetch')) {
+  // API message (apiClient sets error.message and error.data)
+  const apiMsg =
+    error?.message ||
+    error?.response?.data?.message ||
+    error?.data?.message ||
+    getFirstValidationMessage(error?.response?.data?.errors) ||
+    getFirstValidationMessage(error?.data?.errors);
+  if (apiMsg && typeof apiMsg === 'string' && apiMsg.trim()) {
+    // Map known network patterns
+    if (apiMsg.includes('timeout')) return errorMessages[ErrorTypes.NETWORK].timeout;
+    if (apiMsg.includes('Network Error') || apiMsg.includes('Failed to fetch')) {
       return errorMessages[ErrorTypes.NETWORK].offline;
     }
+    return apiMsg.trim();
   }
 
   // Check status code
@@ -357,4 +395,5 @@ export default {
   retryWithBackoff,
   getUserMessage,
   getErrorType,
+  getApiErrorMessage,
 };

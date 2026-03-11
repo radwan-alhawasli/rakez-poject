@@ -1,0 +1,10 @@
+# معالجة الأخطاء في التطبيق
+
+- استخدم **معالج الأخطاء المركزي** عند التعامل مع أخطاء الـ API أو الخدمات:
+  - استيراد: `import { getApiErrorMessage } from '@/utils/errorHandler';`
+  - في كتلة `catch`: `toast.error(getApiErrorMessage(error, 'رسالة احتياطية بالعربية'));`
+- الدالة `getApiErrorMessage(error, fallback?)` تستخرج رسالة المستخدم من:
+  - `error.message` أو `error.response.data.message` أو `error.data.message`
+  - أول رسالة من `error.data.errors` (صيغة Laravel)
+  - ثم رسائل افتراضية حسب رمز الحالة (401, 403, 404, 422, 5xx)
+- للتعامل الكامل (تسجيل + إشعار): استخدم `handleError(error, { showNotification: true })` من `@/utils/errorHandler` أو الـ composable `useError()` مع `handle()` أو `showApiError()`.

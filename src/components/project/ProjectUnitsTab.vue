@@ -12,23 +12,29 @@
         <button type="button" class="units-filter-tab" :class="{ active: unitsFilterTab === 'reserved' }" @click="unitsFilterTab = 'reserved'">محجوز</button>
       </div>
       <div class="units-btns">
-        <template v-if="!isSalesUser && !isProjectManager">
-          <button class="btn-units-primary" @click="showAddUnitModal = true">
-            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            إضافة وحدة يدوياً
-          </button>
-          <button class="btn-units-outline" @click="downloadContractForProject">
-            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            تحميل العقد
-          </button>
-        </template>
+        <button
+          v-if="!isSalesUser"
+          class="btn-units-primary"
+          @click="showAddUnitModal = true"
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          إضافة وحدة يدوياً
+        </button>
+        <button
+          v-if="!isSalesUser && !isProjectManager"
+          class="btn-units-outline"
+          @click="downloadContractForProject"
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          تحميل العقد
+        </button>
         <button
           v-if="!isSalesUser"
           class="btn-units-outline"
@@ -203,12 +209,21 @@
               <input type="number" v-model="unitForm.total_price" required />
             </div>
             <div class="form-group">
-              <label>المساحة</label>
-              <input type="number" v-model="unitForm.area" required />
+              <label>المساحة (م²)</label>
+              <input type="number" step="any" v-model="unitForm.area" required placeholder="مثال: 120.5" />
             </div>
             <div class="form-group">
+              <label>الحالة</label>
+              <select v-model="unitForm.status" class="form-input">
+                <option value="available">متاح</option>
+                <option value="reserved">محجوز</option>
+                <option value="sold">مباع</option>
+                <option value="pending">قيد الانتظار</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
               <label>الوصف</label>
-              <textarea v-model="unitForm.description"></textarea>
+              <textarea v-model="unitForm.description" rows="3" placeholder="مثال: شقة واسعة مع شرفة وإطلالة"></textarea>
             </div>
           </div>
           <div class="modal-actions">
@@ -698,6 +713,12 @@ onMounted(() => {
   padding: 8px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
+}
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+.form-group input[type="number"] {
+  min-width: 0;
 }
 .form-group textarea {
   grid-column: span 2;

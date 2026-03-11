@@ -165,6 +165,7 @@ import contractService from '@/services/contractService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
+import { getApiErrorMessage } from '@/utils/errorHandler';
 
 const activeFilter = ref('all');
 const searchQuery = ref('');
@@ -196,13 +197,18 @@ function mapStatusForApi(filter) {
   return undefined;
 }
 
+/** Normalize raw status from API to display value (Pending|Approved|Refused). Backend may use status, approval_status, etc. */
+function normalizeStatusFromApi(contract) {
+  const raw = (contract?.status ?? contract?.approval_status ?? contract?.contract_status ?? '').toString().toLowerCase();
+  if (raw === 'approved' || raw === 'معتمد') return 'Approved';
+  if (raw === 'rejected' || raw === 'refused' || raw === 'مرفوض') return 'Refused';
+  return 'Pending';
+}
+
 /** Maps API contract to view model (number, developer, createdDate, status: Pending|Approved|Refused, type). */
 function mapContract(contract) {
   if (!contract || typeof contract !== 'object') return contract;
-  const rawStatus = (contract.status ?? '').toString().toLowerCase();
-  let status = 'Pending';
-  if (rawStatus === 'approved' || rawStatus === 'معتمد') status = 'Approved';
-  else if (rawStatus === 'rejected' || rawStatus === 'refused' || rawStatus === 'مرفوض') status = 'Refused';
+  const status = normalizeStatusFromApi(contract);
   const created = contract.created_at ?? contract.createdAt ?? contract.date;
   const createdDate =
     created instanceof Date
@@ -306,7 +312,7 @@ const myRequestsCount = computed(
 
 const viewContract = async c => {
   try {
-    // جلب تفاصيل العقد الكاملة من API
+    // جلب تفاصيل العقد الكاملة من API (الحالة الفعلية من الخادم)
     let fullDetails;
     if (userRole.value == 4) {
       fullDetails = await contractService.getEditorContractById(c.id);
@@ -314,14 +320,17 @@ const viewContract = async c => {
       fullDetails = await contractService.getContractById(c.id);
     }
 
-    selectedContract.value = {
-      ...c,
-      ...fullDetails,
-    };
+    const merged = { ...c, ...fullDetails };
+    // توحيد الحالة من الاستجابة حتى لا نعرض "معلق" بينما الخادم يعتبرها معتمدة/مرفوضة
+    merged.status = normalizeStatusFromApi(merged);
+    merged.pending = merged.status === 'Pending';
+    merged.approved = merged.status === 'Approved';
+    merged.rejected = merged.status === 'Refused';
+    selectedContract.value = merged;
     showModal.value = true;
   } catch (error) {
     logger.error('Error fetching contract details:', error);
-    // في حالة الخطأ، استخدم البيانات الأساسية
+    toast.error(getApiErrorMessage(error, 'فشل تحميل تفاصيل العقد'));
     selectedContract.value = c;
     showModal.value = true;
   }
@@ -339,7 +348,10 @@ const handleApprove = async (c, notes = '') => {
     closeModal();
   } catch (err) {
     logger.error('Error approving contract:', err);
-    toast.error('حدث خطأ أثناء اعتماد العقد');
+    const msg = getApiErrorMessage(err);
+    toast.error(msg);
+    // تحديث القائمة لتعكس الحالة الفعلية من الخادم (قد تكون العقدة معتمدة/مرفوضة مسبقاً)
+    fetchContracts();
   }
 };
 
@@ -351,7 +363,9 @@ const handleReject = async (c, notes = '') => {
     closeModal();
   } catch (err) {
     logger.error('Error rejecting contract:', err);
-    toast.error('حدث خطأ أثناء رفض العقد');
+    const msg = getApiErrorMessage(err);
+    toast.error(msg);
+    fetchContracts();
   }
 };
 

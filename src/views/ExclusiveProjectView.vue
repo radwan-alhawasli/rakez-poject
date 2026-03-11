@@ -240,8 +240,10 @@ import contractService from '@/services/contractService';
 import notificationService from '@/services/notificationService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
+import { getApiErrorMessage } from '@/utils/errorHandler';
 import { normalizeDeveloper } from '@/utils/developerMapper';
 import { UNIT_TYPES } from '@/constants/lookups';
+import secureStorage from '@/utils/secureStorage';
 
 const isLoading = ref(false);
 const developers = ref([]);
@@ -345,6 +347,10 @@ const resetForm = () => {
 };
 
 const handleSubmit = async () => {
+  if (!secureStorage.getToken()) {
+    toast.error('يرجى تسجيل الدخول أولاً لإنشاء مشروع حصري.');
+    return;
+  }
   if (!form.project_name?.trim()) {
     toast.error('يرجى إدخال اسم المشروع');
     return;
@@ -355,7 +361,7 @@ const handleSubmit = async () => {
   }
   isLoading.value = true;
   try {
-    // بنية مطابقة لـ POST /contracts/store مع الإبقاء على نسبة السعي ومصدر السعي
+    // POST {{base_url}}/contracts/store — بنية مطابقة للـ API مع نسبة السعي ومصدر السعي
     const developerName =
       form.developer_name?.trim() ||
       (form.developer_id && developers.value.find(d => String(d.id) === String(form.developer_id))?.name) ||
@@ -399,15 +405,13 @@ const handleSubmit = async () => {
     toast.success('تم إرسال الطلب بنجاح!');
     resetForm();
   } catch (error) {
-    logger.error('Exclusive project request failed', error);
-    const res = error?.response?.data || error?.data || {};
-    let msg = res.message || error?.message || 'حدث خطأ أثناء إرسال الطلب';
-    if (res.errors && typeof res.errors === 'object') {
-      const firstKey = Object.keys(res.errors)[0];
-      const firstMsg = firstKey ? (Array.isArray(res.errors[firstKey]) ? res.errors[firstKey][0] : res.errors[firstKey]) : null;
-      if (firstMsg) msg = firstMsg;
-    }
-    toast.error(msg);
+    const status = error?.response?.status ?? error?.status;
+    logger.error(`Exclusive project request failed [HTTP ${status}]`, error);
+    const fallback =
+      status === 403
+        ? 'الخادم رفض الطلب: لا توجد صلاحية لإنشاء عقد. يرجى التأكد من أن حسابك يسمح بإنشاء مشروع حصري (إعدادات الصلاحيات في النظام).'
+        : 'حدث خطأ أثناء إرسال الطلب';
+    toast.error(getApiErrorMessage(error, fallback));
   } finally {
     isLoading.value = false;
   }
