@@ -3,30 +3,24 @@
     class="project-card rakez-card"
     :class="{ 'card-no-image': !project.hasImage }"
   >
-    <div class="card-image" :class="{ 'card-image-placeholder': !project.hasImage }">
-      <template v-if="project.hasImage">
-        <img
-          :src="project.image"
-          alt=""
-          @error="$event.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23e2e8f0%22%2F%3E%3C%2Fsvg%3E'"
-        />
-      </template>
-      <template v-else>
-        <div class="placeholder-block">
-          <span class="placeholder-name">{{ project.name }}</span>
+    <div class="card-image-wrapper">
+      <!-- شريط علوي ثابت: حالة + موقع + قائمة — بدون تداخل مع الصورة -->
+      <div class="card-image-top-bar">
+        <span class="status-badge status-available">{{ project.rakezStatusLabel }}</span>
+        <span class="location-tag">{{ project.location }}</span>
+        <div class="menu-container" @click.stop="$emit('toggle-menu', project.id)">
+          <button class="menu-btn" type="button" aria-label="القائمة">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+              <circle cx="12" cy="12" r="1"></circle>
+              <circle cx="12" cy="5" r="1"></circle>
+              <circle cx="12" cy="19" r="1"></circle>
+            </svg>
+          </button>
         </div>
-      </template>
-      <div class="status-badge status-available">{{ project.rakezStatusLabel }}</div>
-      <div class="location-tag">{{ project.location }}</div>
-      <div class="menu-container" @click.stop="$emit('toggle-menu', project.id)">
-        <button class="menu-btn" type="button" aria-label="القائمة">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
-            <circle cx="12" cy="12" r="1"></circle>
-            <circle cx="12" cy="5" r="1"></circle>
-            <circle cx="12" cy="19" r="1"></circle>
-          </svg>
-        </button>
-        <div v-if="activeMenuId === project.id" class="dropdown-menu">
+      </div>
+      <!-- صف القائمة داخل البطاقة — يظهر عند فتح القائمة دون تداخل -->
+      <div v-if="activeMenuId === project.id" class="card-dropdown-row">
+        <div class="dropdown-menu dropdown-menu-inline" dir="rtl">
           <div class="menu-item" @click.stop="$emit('edit-project', project)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> تعديل المشروع</div>
           <div class="menu-item" @click.stop="$emit('assign-team', project)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> تعيين فريق</div>
           <div class="menu-item" @click.stop="$emit('view-teams', project)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> عرض الفرق المسؤوله</div>
@@ -37,6 +31,22 @@
         </div>
       </div>
       <div v-if="activeMenuId === project.id" class="menu-backdrop" @click.stop="$emit('close-menu')"></div>
+      <!-- منطقة عرض الصورة من الرابط المدخل — بدون تداخل -->
+      <div class="card-image" :class="{ 'card-image-placeholder': !project.hasImage }">
+        <template v-if="imageUrl">
+          <img
+            :src="imageUrl"
+            alt=""
+            loading="lazy"
+            @error="onImageError"
+          />
+        </template>
+        <template v-else>
+          <div class="placeholder-block">
+            <span class="placeholder-name">{{ project.name }}</span>
+          </div>
+        </template>
+      </div>
     </div>
 
     <div class="card-title-block">
@@ -94,11 +104,21 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue';
+
+const props = defineProps({
   project: { type: Object, required: true },
   activeMenuId: { type: [Number, String, null], default: null },
   isProjectManagerOnly: { type: Boolean, default: false },
 });
+
+const imageUrl = computed(() => {
+  const url = props.project?.image ?? props.project?.project_image_url ?? props.project?.image_url ?? '';
+  return typeof url === 'string' && url.trim() ? url.trim() : '';
+});
+function onImageError(e) {
+  e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22240%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22400%22%20height%3D%22240%22%20fill%3D%22%23e2e8f0%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%2394a3b8%22%20font-size%3D%2214%22%3E%D9%84%D8%A7%20%D8%AA%D9%88%D8%AC%D8%AF%20%D8%B5%D9%88%D8%B1%D8%A9%3C%2Ftext%3E%3C%2Fsvg%3E';
+}
 
 defineEmits([
   'toggle-menu',
@@ -126,65 +146,114 @@ defineEmits([
   }
 }
 
-.project-card {
-  background: white;
-  border: 1px solid #e2e8f0;
+/* تصميم البطاقة مطابق لهوية الشركة ولوحة مشاريع المبيعات (Sales) */
+.project-card.rakez-card {
+  background: var(--color-white, #fff);
+  border: 1px solid var(--color-medium-gray, #e5e7eb);
   border-radius: 16px;
-  overflow: visible; /* Changed to visible for dropdown */
+  overflow: visible;
   transition: transform 0.2s, box-shadow 0.2s;
   display: flex;
   flex-direction: column;
   position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
-.project-card:hover {
+.project-card.rakez-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
 }
 
+/* غلاف الصورة: شريط علوي ثابت + منطقة صورة كبيرة بدون تداخل */
+.card-image-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px 16px 0 0;
+  overflow: visible;
+  background: #f1f5f9;
+}
+
+/* شريط علوي: حالة | موقع | قائمة — صف واحد بدون تداخل */
+.card-image-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(30, 58, 95, 0.92);
+  flex-shrink: 0;
+}
+.card-image-top-bar .status-badge {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #6b7c3c;
+  color: #fff;
+}
+.card-image-top-bar .status-badge.pending {
+  background: #eab308;
+  color: #422006;
+}
+.card-image-top-bar .location-tag {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+.card-image-top-bar .menu-container {
+  position: relative;
+  flex-shrink: 0;
+  z-index: 100;
+}
+.card-image-top-bar {
+  position: relative;
+  z-index: 50;
+}
+
+/* منطقة عرض الصورة من الرابط المدخل — كبيرة وواضحة */
 .card-image {
-  height: 180px;
+  min-height: 300px;
+  flex: 1;
   position: relative;
   background: #f1f5f9;
-  border-radius: 16px 16px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0 0 16px 16px;
 }
 .card-image img {
   width: 100%;
   height: 100%;
+  min-height: 300px;
   object-fit: cover;
-  border-radius: 16px 16px 0 0;
+  display: block;
 }
-.status-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  backdrop-filter: blur(4px);
+.card-image-placeholder {
+  min-height: 140px;
 }
-.status-badge.active {
-  background: #a3c9a0;
-  color: #166534;
-}
-.status-badge.pending {
-  background: #fef9c3;
-  color: #854d0e;
-}
-
-/* Menu */
-.menu-container {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 10;
+.card-image-placeholder .placeholder-block {
+  width: 100%;
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 .menu-btn {
   width: 32px;
   height: 32px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 8px;
   border: none;
   cursor: pointer;
@@ -192,21 +261,51 @@ defineEmits([
   align-items: center;
   justify-content: center;
   color: #64748b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.menu-btn:hover {
+  background: #fff;
+  color: #1e3a5f;
 }
 .dropdown-menu {
   position: absolute;
-  top: 40px;
-  left: 0;
-  background: white;
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
+  background: #fff;
   border-radius: 8px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
   border: 1px solid #e2e8f0;
   min-width: 220px;
   width: max-content;
   max-width: 320px;
-  z-index: 100;
+  z-index: 1100;
   overflow: visible;
   animation: fadeIn 0.2s;
+}
+
+/* حاوية القائمة فقط — بدون مربع، تظهر القائمة فقط */
+.card-dropdown-row {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 12px 0 0;
+  background: transparent;
+  z-index: 600;
+}
+.dropdown-menu-inline {
+  position: relative;
+  top: 0;
+  right: 0;
+  left: auto;
+  min-width: 220px;
+  max-width: 320px;
+  max-height: 240px;
+  overflow-y: auto;
+  width: max-content;
 }
 .menu-item {
   padding: 10px 16px;
@@ -232,34 +331,50 @@ defineEmits([
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 5;
+  z-index: 500;
   cursor: default;
 }
 
+/* عنوان البطاقة — شريط أزرق داكن (هوية الشركة) */
+.card-title-block {
+  background: #1e3a5f;
+  color: #fff;
+  padding: 14px 16px;
+  margin: 0;
+}
+.card-title-main {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+  word-break: break-word;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.card-title-type {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
 .card-content {
-  padding: 16px;
+  padding: 14px 16px;
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
 }
-.project-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0;
-}
-.project-location {
-  color: #64748b;
-  font-size: 13px;
-  margin: 0;
-}
+.project-name,
+.project-location,
 .project-description-line {
-  font-size: 12px;
+  font-size: 13px;
   color: #64748b;
   margin: 0;
 }
-
 .assignee {
   display: flex;
   align-items: center;
@@ -268,7 +383,8 @@ defineEmits([
   color: #64748b;
 }
 
-.progress-row {
+/* أشرطة التقدم — نفس المبيعات */
+.progress-row.rakez-progress {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -276,30 +392,31 @@ defineEmits([
 }
 .progress-label {
   font-size: 12px;
-  color: #64748b;
+  color: #6b7280;
 }
 .progress-value {
   font-size: 12px;
   font-weight: 600;
-  color: #1e293b;
+  color: #111827;
   margin-right: auto;
 }
 .progress-bar {
-  height: 6px;
-  background: #e2e8f0;
-  border-radius: 3px;
   flex: 1 1 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
   overflow: hidden;
 }
 .progress-fill {
   height: 100%;
-  background: #b1a28f;
-  border-radius: 3px;
+  border-radius: 4px;
+  transition: width 0.2s;
 }
 .contract-fill-gray {
-  background: #94a3b8;
+  background: #9ca3af;
 }
-.contract-fill-green {
+.contract-fill-green,
+.progress-fill-green {
   background: #22c55e;
 }
 .contract-fill-yellow {
@@ -307,7 +424,40 @@ defineEmits([
 }
 .contract-fill-red {
   background: #ef4444;
-  transition: width 0.2s;
+}
+
+/* السعر والمواصفات */
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+.price-label {
+  color: #6b7280;
+  font-weight: 500;
+}
+.price-value {
+  color: #111827;
+  font-weight: 700;
+}
+.specs-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: #374151;
+}
+.spec-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.spec-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  vertical-align: middle;
 }
 
 .status-pill {
@@ -324,166 +474,33 @@ defineEmits([
   color: #92400e;
 }
 
-.btn-view-details {
+/* زر شاهد التفاصيل — ذهبي (هوية الشركة) */
+.btn-view-details.rakez-btn {
   margin-top: 8px;
   width: 100%;
-  padding: 12px;
+  padding: 12px 16px;
   background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
-  color: white;
+  color: #fff;
   border: none;
   border-radius: 10px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-}
-.btn-view-details:hover {
-  background: linear-gradient(135deg, var(--color-gold-dark) 0%, var(--color-gold) 100%);
-  filter: brightness(1.05);
-}
-
-/* تصميم البطاقات مطابق لقسم المبيعات (Sales) */
-.sales-style-cards.projects-grid .rakez-card .card-image {
-  height: 220px;
-  position: relative;
-}
-.sales-style-cards .rakez-card .status-badge.status-available {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  right: auto;
-  background: #6b7c3c;
-  color: #fff;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
-}
-.sales-style-cards .rakez-card .location-tag {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  left: auto;
-  background: rgba(55, 65, 81, 0.9);
-  color: #fff;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  max-width: 60%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.sales-style-cards .rakez-card .card-title-block {
-  background: #1e3a5f;
-  color: #fff;
-  padding: 14px 16px;
-  margin: 0;
-}
-.sales-style-cards .rakez-card .card-title-main {
-  font-size: 17px;
-  font-weight: 700;
-  color: #fff;
-  margin: 0 0 4px 0;
-  line-height: 1.3;
-}
-.sales-style-cards .rakez-card .card-title-type {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0;
-}
-.sales-style-cards .rakez-card .card-content {
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.sales-style-cards .rakez-card .rakez-progress {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-.sales-style-cards .rakez-card .rakez-progress .progress-bar {
-  flex: 1 1 100%;
-  height: 8px;
-  background: #e5e7eb;
-  border-radius: 4px;
-}
-.sales-style-cards .rakez-card .progress-fill-green {
-  background: #22c55e;
-  border-radius: 4px;
-  height: 100%;
-  transition: width 0.2s;
-}
-.sales-style-cards .rakez-card .price-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-}
-.sales-style-cards .rakez-card .price-label {
-  color: #6b7280;
-  font-weight: 500;
-}
-.sales-style-cards .rakez-card .price-value {
-  color: #111827;
-  font-weight: 700;
-}
-.sales-style-cards .rakez-card .specs-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 13px;
-  color: #374151;
-}
-.sales-style-cards .rakez-card .spec-icon {
-  width: 18px;
-  height: 18px;
-  vertical-align: middle;
-  margin-left: 4px;
-}
-.sales-style-cards .rakez-card .btn-view-details.rakez-btn {
-  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
-  color: #fff;
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 16px;
   font-weight: 600;
   font-size: 15px;
-  border: none;
-  border-radius: 10px;
   cursor: pointer;
-  width: 100%;
-}
-.sales-style-cards .rakez-card .btn-view-details.rakez-btn:hover {
-  background: linear-gradient(135deg, var(--color-gold-dark) 0%, var(--color-gold) 100%);
-  filter: brightness(1.05);
-}
-.sales-style-cards .rakez-card .btn-arrow {
-  width: 18px;
-  height: 18px;
-}
-.sales-style-cards .rakez-card .card-image .menu-container {
-  left: auto;
-  right: 12px;
-}
-
-.card-image-placeholder {
-  height: 80px;
-}
-.card-image-placeholder .placeholder-block {
-  width: 100%;
-  height: 100%;
-  background: #f1f5f9;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  gap: 8px;
+  transition: filter 0.2s;
 }
+.btn-view-details.rakez-btn:hover {
+  background: linear-gradient(135deg, var(--color-gold-dark) 0%, var(--color-gold) 100%);
+  filter: brightness(1.05);
+}
+.btn-arrow {
+  width: 18px;
+  height: 18px;
+}
+
 .placeholder-name {
   font-size: 14px;
   font-weight: 600;
@@ -501,8 +518,12 @@ defineEmits([
 
 /* Responsive */
 @media (max-width: 768px) {
-  .card-image {
-    height: 150px;
+  .card-image,
+  .card-image img {
+    min-height: 240px;
+  }
+  .card-image-placeholder .placeholder-block {
+    min-height: 120px;
   }
   .card-content {
     padding: 14px;
@@ -518,8 +539,12 @@ defineEmits([
 }
 
 @media (max-width: 576px) {
-  .card-image {
-    height: 140px;
+  .card-image,
+  .card-image img {
+    min-height: 220px;
+  }
+  .card-image-placeholder .placeholder-block {
+    min-height: 100px;
   }
   .card-content {
     padding: 12px;
@@ -536,8 +561,12 @@ defineEmits([
 }
 
 @media (max-width: 320px) {
-  .card-image {
-    height: 120px;
+  .card-image,
+  .card-image img {
+    min-height: 200px;
+  }
+  .card-image-placeholder .placeholder-block {
+    min-height: 90px;
   }
   .card-content {
     padding: 10px;
@@ -560,8 +589,9 @@ defineEmits([
 }
 
 @media (min-width: 1920px) {
-  .card-image {
-    height: 220px;
+  .card-image,
+  .card-image img {
+    min-height: 340px;
   }
   .card-content {
     padding: 24px;
