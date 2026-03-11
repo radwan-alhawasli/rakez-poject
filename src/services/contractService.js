@@ -280,6 +280,20 @@ const contractService = {
   },
 
   /**
+   * تحديث بيانات استكمال العقد (نفس حقول الاستكمال)
+   * PUT /contracts/update/info/:id
+   */
+  async updateContractInfo(id, payload) {
+    try {
+      logger.debug(`Updating contract info for ${id}:`, payload);
+      const response = await apiClient.put(`/contracts/update/info/${id}`, payload);
+      return response.data;
+    } catch (error) {
+      return handleServiceError(error, 'Update contract info', 'put');
+    }
+  },
+
+  /**
    * حفظ بيانات الطرف الثاني (المتتبع)
    * POST /second-party-data/store/:id
    */
