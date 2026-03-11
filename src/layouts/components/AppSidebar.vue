@@ -239,7 +239,7 @@
             </div>
           </router-link>
   
-          <router-link to="/contracts" class="nav-item" active-class="active" data-tooltip="إحضار المشاريع">
+          <router-link to="/contract-form" class="nav-item" active-class="active" data-tooltip="إحضار المشاريع">
             <div class="nav-content">
               <svg
                 class="nav-icon-svg"
