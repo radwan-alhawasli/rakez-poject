@@ -55,7 +55,8 @@
         >
           {{ cancelText }}
         </AlertDialogCancel>
-        <AlertDialogAction
+        <!-- زر عادي (بدون AlertDialogAction) لتفادي إغلاق Radix للحوار قبل استدعاء @confirm والـ API في الأب -->
+        <button
           type="button"
           class="btn-confirm min-w-[120px] rounded-xl px-8 py-3.5 text-[15px] font-bold text-white shadow-md"
           :class="confirmButtonClass"
@@ -64,7 +65,7 @@
         >
           <span v-if="isLoading" class="btn-spinner" aria-hidden="true"></span>
           <template v-else>{{ confirmText }}</template>
-        </AlertDialogAction>
+        </button>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
@@ -74,7 +75,6 @@
 import { computed, ref } from 'vue'
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -87,7 +87,6 @@ export default {
   name: 'ConfirmModal',
   components: {
     AlertDialog,
-    AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,

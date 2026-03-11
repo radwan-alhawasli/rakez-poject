@@ -4,7 +4,12 @@
       <div class="rakez-logo"></div>
     </div>
     <router-view />
-    <ToastContainer />
+    <!-- نقل الرسائل إلى body لظهورها فوق أي modal (مثل لوحة إضافة الموظف) -->
+    <Teleport to="body">
+      <div class="toast-teleport">
+        <ToastContainer />
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -45,6 +50,17 @@ body {
   background: rgba(253, 251, 247, 0.82);
   backdrop-filter: blur(1px);
   z-index: -1;
+  pointer-events: none;
+}
+
+/* حاوية Toast تُعرض في body بترتيب فوق الـ modals (z-index الـ modal 1000–1001) */
+.toast-teleport {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10002;
+}
+.toast-teleport > * {
   pointer-events: none;
 }
 </style>

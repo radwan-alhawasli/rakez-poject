@@ -29,6 +29,8 @@
                 <input
                   v-model="form.name"
                   type="text"
+                  name="employee-name"
+                  autocomplete="name"
                   class="input"
                   :class="{ 'input-error': getFieldError('name') }"
                   placeholder="مثال: علي أحمد الأحمد"
@@ -78,7 +80,9 @@
                 <label class="label">رقم الجوال *</label>
                 <input
                   v-model="form.phone"
-                  type="text"
+                  type="tel"
+                  name="employee-phone"
+                  autocomplete="tel"
                   class="input"
                   :class="{ 'input-error': getFieldError('phone') }"
                   placeholder="05xxxxxxxx"
@@ -88,7 +92,7 @@
               </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" v-if="!useAdminApi">
               <label class="label">الجنسية</label>
               <select v-model="form.nationality" class="input select">
                 <option value="">اختر الجنسية</option>
@@ -126,7 +130,7 @@
               البيانات الوظيفية
             </h3>
 
-            <div class="form-row">
+            <div class="form-row" v-if="!useAdminApi">
               <div class="form-group">
                 <label class="label">المسمى الوظيفي</label>
                 <input
@@ -154,6 +158,14 @@
                 <span v-if="getFieldError('role')" class="field-error">{{ getFieldError('role') }}</span>
               </div>
             </div>
+            <div class="form-group" v-else>
+              <label class="label">القسم / الإدارة *</label>
+              <select v-model="form.type" class="input select" :class="{ 'input-error': getFieldError('role') }" required>
+                <option value="" disabled>اختر القسم</option>
+                <option v-for="opt in EMPLOYEE_TYPE_OPTIONS" :key="String(opt.value)" :value="opt.value">{{ opt.label }}</option>
+              </select>
+              <span v-if="getFieldError('role')" class="field-error">{{ getFieldError('role') }}</span>
+            </div>
 
             <div class="form-row">
               <div class="form-group">
@@ -180,7 +192,7 @@
                 <label class="label">تاريخ مباشرة العمل *</label>
                 <input v-model="form.date_of_works" type="date" class="input" required />
               </div>
-              <div class="form-group">
+              <div class="form-group" v-if="!useAdminApi">
                 <label class="label">فترة التجربة (بالأيام)</label>
                 <input
                   v-model.number="form.trial_period_days"
@@ -191,7 +203,7 @@
               </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" v-if="!useAdminApi">
               <label class="label">ميزات أخرى</label>
               <textarea
                 v-model="form.additional_benefits"
@@ -201,14 +213,15 @@
               ></textarea>
             </div>
 
-            <!-- Team & Manager Status -->
+            <!-- Team: من API عرض أسماء الفرق -->
             <div class="form-row">
-              <div v-if="form.type === 5 || form.type === 0" class="form-group">
+              <div class="form-group">
                 <label class="label">الفريق</label>
                 <select v-model="form.team" class="input select">
                   <option value="">لا يوجد فريق</option>
                   <option v-for="t in teamsList" :key="t.id" :value="t.id">{{ t.name }}</option>
                 </select>
+                <small v-if="teamsList.length === 0" class="hint">جاري تحميل الفرق...</small>
               </div>
               <div class="form-group d-flex-center">
                 <label class="checkbox-label mt-20">
@@ -245,6 +258,8 @@
                 <input
                   v-model="form.email"
                   type="email"
+                  name="employee-email"
+                  autocomplete="email"
                   class="input"
                   :class="{ 'input-error': getFieldError('email') }"
                   placeholder="user@example.com"
@@ -254,7 +269,14 @@
               </div>
               <div class="form-group">
                 <label class="label">رقم حساب البنك (IBAN)</label>
-                <input v-model="form.iban" type="text" class="input" placeholder="SA..." />
+                <input
+                  v-model="form.iban"
+                  type="text"
+                  name="employee-iban"
+                  autocomplete="off"
+                  class="input"
+                  placeholder="SA..."
+                />
               </div>
             </div>
 
@@ -265,6 +287,8 @@
               <input
                 v-model="form.password"
                 type="password"
+                :name="isEdit ? 'employee-password-edit' : 'employee-password-new'"
+                :autocomplete="isEdit ? 'current-password' : 'new-password'"
                 class="input"
                 :class="{ 'input-error': getFieldError('password') }"
                 placeholder="••••••"
@@ -274,10 +298,10 @@
             </div>
           </div>
 
-          <div class="divider"></div>
+          <div class="divider" v-if="!useAdminApi"></div>
 
-          <!-- المستندات والموافقات (Documents & Approvals) -->
-          <div class="form-section">
+          <!-- المستندات والموافقات (Documents & Approvals) - غير مستخدم في واجهة الأدمن -->
+          <div class="form-section" v-if="!useAdminApi">
             <h3 class="section-title">
               <svg
                 class="section-icon"
@@ -353,10 +377,10 @@
             </div>
           </div>
 
-          <div class="divider"></div>
+          <div class="divider" v-if="!useAdminApi"></div>
 
           <!-- العقود (Contracts) -->
-          <div class="form-section" v-if="!isEdit">
+          <div class="form-section" v-if="!useAdminApi && !isEdit">
             <h3 class="section-title">
               <svg
                 class="section-icon"
@@ -412,8 +436,9 @@
 import { ref, watch, onMounted } from 'vue'
 import AppModal from '@/components/AppModal.vue'
 import { ROLE_MAP } from '@/constants/roles'
-import { NATIONALITIES, MARITAL_STATUSES } from '@/constants/lookups'
+import { NATIONALITIES, MARITAL_STATUSES, EMPLOYEE_TYPE_OPTIONS } from '@/constants/lookups'
 import hrService from '@/services/hrService'
+import teamService from '@/services/teamService'
 import logger from '@/utils/logger'
 import { createUserSchema, editUserSchema } from '@/validation/schemas'
 import { useValidation } from '@/composables/useValidation'
@@ -427,6 +452,11 @@ export default {
       default: null,
     },
     isLoading: {
+      type: Boolean,
+      default: false,
+    },
+    /** When true, form matches POST /admin/employees/add_employee: only API fields, teams from project_management/teams/index */
+    useAdminApi: {
       type: Boolean,
       default: false,
     },
@@ -448,11 +478,20 @@ export default {
 
     onMounted(async () => {
       try {
-        const { items } = await hrService.getTeams({ per_page: 100 });
-        teamsList.value = (items || []).map(t => ({
-          id: t.id ?? t.team_id,
-          name: t.name || t.team_name || `فريق ${t.id ?? t.team_id}`,
-        }));
+        if (props.useAdminApi) {
+          const list = await teamService.getTeams({ per_page: 100 });
+          teamsList.value = (Array.isArray(list) ? list : []).map(t => ({
+            id: t.id ?? t.team_id,
+            name: t.name || t.team_name || `فريق ${t.id ?? t.team_id}`,
+          }));
+        } else {
+          const res = await hrService.getTeams({ per_page: 100 });
+          const items = res?.items ?? [];
+          teamsList.value = items.map(t => ({
+            id: t.id ?? t.team_id,
+            name: t.name || t.team_name || `فريق ${t.id ?? t.team_id}`,
+          }));
+        }
       } catch (e) {
         logger.error('AddUserModal: failed to load teams', e);
       }
@@ -615,7 +654,13 @@ export default {
         submissionData.type = 3;
         submissionData.is_manager = false;
       } else {
-        submissionData.type = parseInt(form.value.type);
+        submissionData.type = parseInt(form.value.type, 10);
+      }
+      // فريق: إرسال رقم من قائمة الفرق من الـ API
+      if (form.value.team !== '' && form.value.team != null) {
+        submissionData.team = Number(form.value.team);
+      } else if (props.useAdminApi) {
+        delete submissionData.team;
       }
 
       // Format dates for API (DD-MM-YYYY) as shown in Postman image
@@ -652,9 +697,11 @@ export default {
       isEdit,
       dateType,
       teamsList,
+      useAdminApi: props.useAdminApi,
       getFieldError,
       NATIONALITIES,
       MARITAL_STATUSES,
+      EMPLOYEE_TYPE_OPTIONS,
       cvFileInput,
       signatureFileInput,
       handleCVUpload,

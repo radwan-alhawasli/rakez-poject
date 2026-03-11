@@ -331,42 +331,16 @@ const closeModal = () => {
   selectedContract.value = null;
 };
 
-const handleApprove = async (c, notes = '') => {
-  const contractId = c.id ?? c.contract_id;
-  if (!contractId) {
-    toast.error('معرف العقد غير متوفر');
-    return;
-  }
-  try {
-    await contractService.approveContract(contractId, notes);
-    toast.success('تم اعتماد العقد');
-    fetchContracts();
-    closeModal();
-  } catch (err) {
-    logger.error('Error approving contract:', err);
-    const res = err?.response?.data || err?.data || {};
-    const msg = res.message || (res.errors && typeof res.errors === 'object' ? Object.values(res.errors).flat()[0] : null) || err?.message || 'حدث خطأ أثناء اعتماد العقد';
-    toast.error(msg);
-  }
+/** يُستدعى بعد نجاح الموافقة من ContractModal (الـ API يُستدعى داخل المودال) */
+const handleApprove = () => {
+  closeModal();
+  fetchContracts();
 };
 
-const handleReject = async (c, notes = '') => {
-  const contractId = c.id ?? c.contract_id;
-  if (!contractId) {
-    toast.error('معرف العقد غير متوفر');
-    return;
-  }
-  try {
-    await contractService.rejectContract(contractId, notes);
-    toast.success('تم رفض العقد');
-    fetchContracts();
-    closeModal();
-  } catch (err) {
-    logger.error('Error rejecting contract:', err);
-    const res = err?.response?.data || err?.data || {};
-    const msg = res.message || (res.errors && typeof res.errors === 'object' ? Object.values(res.errors).flat()[0] : null) || err?.message || 'حدث خطأ أثناء رفض العقد';
-    toast.error(msg);
-  }
+/** يُستدعى بعد نجاح الرفض من ContractModal (الـ API يُستدعى داخل المودال) */
+const handleReject = () => {
+  closeModal();
+  fetchContracts();
 };
 
 watch(activeFilter, () => {

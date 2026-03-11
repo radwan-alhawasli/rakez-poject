@@ -302,6 +302,304 @@
             </div>
           </router-link>
 
+          <!-- الموافقة على الصور (قسم المونتاج) -->
+          <router-link to="/image-approval" class="nav-item" active-class="active" data-tooltip="الموافقة على الصور">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              <span class="nav-text">الموافقة على الصور</span>
+            </div>
+          </router-link>
+
+          <!-- قسم المبيعات -->
+          <router-link to="/sales/dashboard" class="nav-item" active-class="active" data-tooltip="لوحة المبيعات">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span class="nav-text">لوحة المبيعات</span>
+            </div>
+          </router-link>
+          <router-link to="/sales/projects" class="nav-item" active-class="active" data-tooltip="مشاريع المبيعات">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+              <span class="nav-text">مشاريع المبيعات</span>
+            </div>
+          </router-link>
+          <router-link to="/sales/unit-search" class="nav-item" active-class="active" data-tooltip="بحث الوحدات">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <span class="nav-text">بحث الوحدات</span>
+            </div>
+          </router-link>
+          <router-link to="/sales/reservations" class="nav-item" active-class="active" data-tooltip="حجوزات المبيعات">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span class="nav-text">حجوزات المبيعات</span>
+            </div>
+          </router-link>
+          <router-link to="/sales/targets" class="nav-item" active-class="active" data-tooltip="أهداف المبيعات">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="6"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+              </svg>
+              <span class="nav-text">أهداف المبيعات</span>
+            </div>
+          </router-link>
+          <router-link to="/sales/team" class="nav-item" active-class="active" data-tooltip="فريق المبيعات">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span class="nav-text">فريق المبيعات</span>
+            </div>
+          </router-link>
+          <router-link to="/sales/attendance" class="nav-item" active-class="active" data-tooltip="الحضور">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span class="nav-text">الحضور</span>
+            </div>
+          </router-link>
+          <router-link to="/sales/project-schedules" class="nav-item" active-class="active" data-tooltip="دوام المشاريع">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span class="nav-text">دوام المشاريع</span>
+            </div>
+          </router-link>
+
+          <!-- قسم الموارد البشرية -->
+          <router-link to="/hr/dashboard" class="nav-item" active-class="active" data-tooltip="لوحة الموارد البشرية">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span class="nav-text">لوحة الموارد البشرية</span>
+            </div>
+          </router-link>
+          <router-link to="/hr/teams" class="nav-item" active-class="active" data-tooltip="فرق الموارد البشرية">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span class="nav-text">فرق الموارد البشرية</span>
+            </div>
+          </router-link>
+          <router-link to="/hr/employee-performance" class="nav-item" active-class="active" data-tooltip="أداء المسوقين">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+              </svg>
+              <span class="nav-text">أداء المسوقين</span>
+            </div>
+          </router-link>
+          <router-link to="/hr/users" class="nav-item" active-class="active" data-tooltip="مستخدمي الموارد البشرية">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span class="nav-text">مستخدمو الموارد البشرية</span>
+            </div>
+          </router-link>
+          <router-link to="/hr/reports" class="nav-item" active-class="active" data-tooltip="تقارير الموارد البشرية">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              <span class="nav-text">تقارير الموارد البشرية</span>
+            </div>
+          </router-link>
+
+          <!-- قسم الائتمان -->
+          <router-link to="/credit/dashboard" class="nav-item" active-class="active" data-tooltip="لوحة الائتمان">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span class="nav-text">لوحة الائتمان</span>
+            </div>
+          </router-link>
+          <router-link to="/credit/notifications" class="nav-item" active-class="active" data-tooltip="إشعارات الائتمان">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+              <span class="nav-text">إشعارات الائتمان</span>
+            </div>
+          </router-link>
+          <router-link to="/credit/bookings" class="nav-item" active-class="active" data-tooltip="إدارة الحجوزات (الائتمان)">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span class="nav-text">إدارة الحجوزات (الائتمان)</span>
+            </div>
+          </router-link>
+          <router-link to="/credit/claim-files" class="nav-item" active-class="active" data-tooltip="ملفات المطالبة">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              <span class="nav-text">ملفات المطالبة والإفراغات</span>
+            </div>
+          </router-link>
+
+          <!-- قسم المحاسبة (باقي الصفحات) -->
+          <router-link to="/accounting/notifications" class="nav-item" active-class="active" data-tooltip="إشعارات المحاسبة">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+              <span class="nav-text">إشعارات المحاسبة</span>
+            </div>
+          </router-link>
+          <router-link to="/accounting/sold-units" class="nav-item" active-class="active" data-tooltip="وحدات المحاسبة المباعة">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+              <span class="nav-text">وحدات المحاسبة المباعة</span>
+            </div>
+          </router-link>
+          <router-link to="/accounting/deposits" class="nav-item" active-class="active" data-tooltip="العربون والمتابعة">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span class="nav-text">العربون والمتابعة</span>
+            </div>
+          </router-link>
+          <router-link to="/accounting/salaries" class="nav-item" active-class="active" data-tooltip="الرواتب والعمولات">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span class="nav-text">الرواتب وتوزيع العمولات</span>
+            </div>
+          </router-link>
+
+          <!-- قسم التسويق -->
+          <router-link to="/marketing/dashboard" class="nav-item" active-class="active" data-tooltip="لوحة التسويق">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span class="nav-text">لوحة التسويق</span>
+            </div>
+          </router-link>
+          <router-link to="/marketing/projects" class="nav-item" active-class="active" data-tooltip="مشاريع التسويق">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 21h18"></path>
+                <path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4"></path>
+                <line x1="5" y1="21" x2="5" y2="10"></line>
+                <line x1="9" y1="21" x2="9" y2="10"></line>
+                <line x1="13" y1="21" x2="13" y2="10"></line>
+                <line x1="17" y1="21" x2="17" y2="10"></line>
+              </svg>
+              <span class="nav-text">مشاريع التسويق</span>
+            </div>
+          </router-link>
+          <router-link to="/marketing/developer-plan" class="nav-item" active-class="active" data-tooltip="خطة المطور">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span class="nav-text">خطة المطور</span>
+            </div>
+          </router-link>
+          <router-link to="/marketing/employee-plans" class="nav-item" active-class="active" data-tooltip="خطط الموظفين">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span class="nav-text">خطط الموظفين</span>
+            </div>
+          </router-link>
+          <router-link to="/marketing/reports" class="nav-item" active-class="active" data-tooltip="تقارير التسويق">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+              </svg>
+              <span class="nav-text">تقارير التسويق</span>
+            </div>
+          </router-link>
+
+          <!-- طلباتي -->
+          <router-link to="/my-requests" class="nav-item" active-class="active" data-tooltip="طلباتي">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span class="nav-text">طلباتي</span>
+            </div>
+          </router-link>
+
           <router-link
             to="/exclusive-request"
             class="nav-item"

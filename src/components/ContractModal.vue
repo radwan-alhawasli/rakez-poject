@@ -66,6 +66,14 @@
               <span class="detail-label">المسوقون (جلب):</span>
               <span class="detail-value">{{ contractDetails.marketer }}</span>
             </div>
+            <div class="detail-row">
+              <span class="detail-label">نسبة السعي:</span>
+              <span class="detail-value">{{ contractDetails.commissionPercent || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">السعي من:</span>
+              <span class="detail-value">{{ contractDetails.commissionFrom || '—' }}</span>
+            </div>
           </div>
         </section>
 
@@ -91,38 +99,57 @@
           />
         </div>
         <div class="flex gap-3 justify-end flex-wrap w-full">
-          <button @click="closeModal" class="btn-close-large">إغلاق</button>
+          <!-- شريط تأكيد من واجهة الموقع (بدون نافذة المتصفح) -->
           <div
-            v-if="normalizedStatus === 'pending' && hasPermission('contracts.approve')"
-            class="action-buttons flex gap-2"
+            v-if="pendingConfirm"
+            class="confirm-inline w-full rounded-xl border-2 p-4"
+            :class="pendingConfirm === 'reject' ? 'confirm-inline-danger' : 'confirm-inline-info'"
           >
-            <button @click="rejectContract" class="btn-reject">رفض العقد</button>
-            <button @click="approveContract" class="btn-approve">الموافقة على العقد</button>
+            <p class="confirm-inline-text">{{ pendingConfirm === 'approve' ? 'هل أنت متأكد من الموافقة على العقد؟' : 'هل أنت متأكد من رفض العقد؟' }}</p>
+            <div class="confirm-inline-actions flex gap-2 justify-end flex-wrap">
+              <button type="button" class="btn-close-large" :disabled="isActionLoading" @click="pendingConfirm = null">
+                إلغاء
+              </button>
+              <button
+                type="button"
+                :class="pendingConfirm === 'approve' ? 'btn-approve' : 'btn-reject'"
+                :disabled="isActionLoading"
+                @click="confirmApproveOrReject"
+              >
+                {{ isActionLoading ? 'جاري التنفيذ...' : (pendingConfirm === 'approve' ? 'موافقة' : 'رفض') }}
+              </button>
+            </div>
           </div>
+          <template v-else>
+            <button @click="closeModal" class="btn-close-large" :disabled="isActionLoading">إغلاق</button>
+            <div
+              v-if="normalizedStatus === 'pending' && hasPermission('contracts.approve')"
+              class="action-buttons flex gap-2"
+            >
+              <button type="button" class="btn-reject" :disabled="isActionLoading" @click="rejectContract">
+                رفض العقد
+              </button>
+              <button type="button" class="btn-approve" :disabled="isActionLoading" @click="approveContract">
+                الموافقة على العقد
+              </button>
+            </div>
+          </template>
         </div>
       </div>
     </template>
   </AppModal>
-  <ConfirmModal
-      v-if="showConfirmModal"
-      :title="confirmModalConfig.title"
-      :message="confirmModalConfig.message"
-      :type="confirmModalConfig.type"
-      :confirm-text="confirmModalConfig.confirmText"
-      @confirm="onConfirmModalConfirm"
-      @close="showConfirmModal = false"
-  />
 </template>
 
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import AppModal from '@/components/AppModal.vue'
-import ConfirmModal from './ConfirmModal.vue'
 import { usePermissions } from '@/composables/usePermissions'
+import contractService from '@/services/contractService'
+import { toast } from '@/composables/useToast'
 
 export default {
   name: 'ContractModal',
-  components: { AppModal, ConfirmModal },
+  components: { AppModal },
   props: {
     contract: {
       type: Object,
@@ -132,6 +159,9 @@ export default {
   emits: ['close', 'approve', 'reject'],
   setup(props, { emit }) {
     const { hasPermission } = usePermissions();
+    const isActionLoading = ref(false);
+    /** تأكيد من واجهة الموقع: 'approve' | 'reject' | null */
+    const pendingConfirm = ref(null);
 
     // Handle Escape key
     const handleEscape = e => {
@@ -152,14 +182,6 @@ export default {
     });
 
     const contractNotes = ref('');
-    const showConfirmModal = ref(false);
-    const confirmModalConfig = ref({
-      title: '',
-      message: '',
-      type: 'warning',
-      confirmText: 'تأكيد',
-      resolve: null,
-    });
 
     // بيانات تفاصيل العقد المحددة - ربط صحيح مع API
     const contractDetails = computed(() => {
@@ -184,6 +206,22 @@ export default {
         unitCount = c.units_count || c.unit_count || 0;
       }
 
+      // نسبة السعي والسعي من (من الـ API إن وُجدتا)
+      const commissionPercentRaw = c.commission_percent ?? c.commission_percentage;
+      const commissionPercent =
+        commissionPercentRaw !== undefined && commissionPercentRaw !== null && String(commissionPercentRaw).trim() !== ''
+          ? `${Number(commissionPercentRaw)}%`
+          : '';
+      const commissionFromRaw = (c.commission_from ?? '').toString().trim().toLowerCase();
+      const commissionFrom =
+        commissionFromRaw === 'owner'
+          ? 'من المالك'
+          : commissionFromRaw === 'partner' || commissionFromRaw === 'buyer'
+            ? 'من المشتري'
+            : commissionFromRaw
+              ? String(c.commission_from ?? '')
+              : '';
+
       return {
         // بيانات المطور - الاسم هو اسم المطور (developer_name)
         name: c.developer_name || c.developer || 'غير محدد',
@@ -195,6 +233,10 @@ export default {
 
         // تفاصيل التسويق - المسوقون هو اسم المستخدم الذي قدم الطلب (created_by_name)
         marketer: c.created_by_name || c.marketer || c.marketer_name || 'غير محدد',
+
+        // نسبة السعي والسعي من (فارغ إن لم يرجعه الـ API)
+        commissionPercent,
+        commissionFrom,
       };
     });
 
@@ -210,40 +252,47 @@ export default {
       emit('close');
     };
 
-    const approveContract = () => {
-      confirmModalConfig.value = {
-        title: 'الموافقة على العقد',
-        message: `هل أنت متأكد من الموافقة على العقد ${props.contract.number}؟`,
-        type: 'info',
-        confirmText: 'موافقة',
-        resolve: () => {
-          emit('approve', props.contract, contractNotes.value);
-          contractNotes.value = '';
-          closeModal();
-        },
-      };
-      showConfirmModal.value = true;
-    };
+    /** فتح شريط التأكيد (من واجهة الموقع) */
+    const approveContract = () => { pendingConfirm.value = 'approve'; };
+    const rejectContract = () => { pendingConfirm.value = 'reject'; };
 
-    const rejectContract = () => {
-      confirmModalConfig.value = {
-        title: 'رفض العقد',
-        message: `هل أنت متأكد من رفض العقد ${props.contract.number}؟`,
-        type: 'danger',
-        confirmText: 'رفض',
-        resolve: () => {
-          emit('reject', props.contract, contractNotes.value);
-          contractNotes.value = '';
-          closeModal();
-        },
-      };
-      showConfirmModal.value = true;
-    };
-
-    const onConfirmModalConfirm = async () => {
-      const fn = confirmModalConfig.value.resolve;
-      if (fn) await fn();
-      showConfirmModal.value = false;
+    /** تنفيذ الموافقة أو الرفض بعد التأكيد من الشريط */
+    const confirmApproveOrReject = async () => {
+      const action = pendingConfirm.value;
+      if (!action) return;
+      const contractId = props.contract?.id ?? props.contract?.contract_id;
+      if (!contractId) {
+        toast.error('معرف العقد غير متوفر');
+        pendingConfirm.value = null;
+        return;
+      }
+      const isApprove = action === 'approve';
+      isActionLoading.value = true;
+      try {
+        const notes = contractNotes.value?.trim() || '';
+        if (isApprove) {
+          await contractService.approveContract(contractId, notes);
+          toast.success('تم اعتماد العقد');
+          emit('approve');
+        } else {
+          await contractService.rejectContract(contractId, notes);
+          toast.success('تم رفض العقد');
+          emit('reject');
+        }
+        contractNotes.value = '';
+        pendingConfirm.value = null;
+        closeModal();
+      } catch (err) {
+        const res = err?.response?.data || err?.data || {};
+        const errMsg =
+          res.message ||
+          (res.errors && typeof res.errors === 'object' ? Object.values(res.errors).flat()[0] : null) ||
+          err?.message ||
+          (isApprove ? 'حدث خطأ أثناء اعتماد العقد' : 'حدث خطأ أثناء رفض العقد');
+        toast.error(errMsg);
+      } finally {
+        isActionLoading.value = false;
+      }
     };
 
     return {
@@ -252,11 +301,11 @@ export default {
       closeModal,
       approveContract,
       rejectContract,
+      confirmApproveOrReject,
       normalizedStatus,
       hasPermission,
-      showConfirmModal,
-      confirmModalConfig,
-      onConfirmModalConfirm,
+      isActionLoading,
+      pendingConfirm,
     };
   },
 };
@@ -382,6 +431,30 @@ export default {
   justify-content: space-between;
   align-items: center;
   gap: 20px;
+}
+
+/* شريط التأكيد من واجهة الموقع (بدون نافذة المتصفح) */
+.confirm-inline {
+  background: var(--color-off-white, #f8fafc);
+  margin-bottom: 8px;
+}
+.confirm-inline-info {
+  border-color: var(--color-gold);
+  background: linear-gradient(135deg, rgba(177, 162, 143, 0.08) 0%, rgba(201, 169, 97, 0.05) 100%);
+}
+.confirm-inline-danger {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+.confirm-inline-text {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-navy);
+  text-align: right;
+}
+.confirm-inline-actions {
+  margin-top: 12px;
 }
 
 .action-buttons {

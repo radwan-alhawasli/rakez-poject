@@ -133,6 +133,7 @@
       v-if="showModal"
       :editUser="selectedUser"
       :isLoading="isSaving"
+      :useAdminApi="useAdminApi"
       @close="closeModal"
       @submit="handleSaveUser"
     />
@@ -200,6 +201,7 @@
 import { ref, onMounted } from 'vue';
 import LoadingSpinner from './LoadingSpinner.vue';
 import hrService from '@/services/hrService';
+import adminEmployeeService from '@/services/adminEmployeeService';
 import AddUserModal from './AddUserModal.vue';
 import ConfirmModal from './ConfirmModal.vue';
 import Pagination from './Pagination.vue';
@@ -223,8 +225,13 @@ export default {
     Select,
   },
   props: {
-    /** When true, use HR API (GET/POST/PUT /hr/users) instead of admin employees API */
+    /** When true, use HR API (GET/POST/PUT /hr/users) */
     useHrApi: {
+      type: Boolean,
+      default: false,
+    },
+    /** When true, use Admin employees API (GET/POST/PUT/DELETE /admin/employees/*) for list, add, edit, delete */
+    useAdminApi: {
       type: Boolean,
       default: false,
     },
@@ -246,6 +253,8 @@ export default {
     /** Normalize user so disabled is set from API (is_active or disabled) for consistent display */
     const normalizeUserForDisplay = u => ({
       ...u,
+      // توحيد المعرّف: قد يرجع الـ API (مثل list_employees) employee_id بدل id
+      id: u.id ?? u.employee_id,
       disabled:
         u.disabled !== undefined && u.disabled !== null
           ? !!u.disabled
@@ -272,15 +281,24 @@ export default {
     const fetchUsers = async () => {
       loading.value = true;
       try {
-        const data = props.useHrApi
-          ? await hrService.listUsers({
-              page: currentPage.value,
-              per_page: perPage.value,
-            })
-          : await hrService.getEmployees({
-              page: currentPage.value,
-              per_page: perPage.value,
-            });
+        let data;
+        if (props.useAdminApi) {
+          const res = await adminEmployeeService.listEmployees({
+            page: currentPage.value,
+            per_page: perPage.value,
+          });
+          data = { items: res?.items ?? [], total: res?.total ?? 0 };
+        } else if (props.useHrApi) {
+          data = await hrService.listUsers({
+            page: currentPage.value,
+            per_page: perPage.value,
+          });
+        } else {
+          data = await hrService.getEmployees({
+            page: currentPage.value,
+            per_page: perPage.value,
+          });
+        }
         const raw =
           data?.items ?? (Array.isArray(data) ? data : data?.data || data?.employees || []);
         users.value = raw.map(normalizeUserForDisplay);
@@ -323,9 +341,14 @@ export default {
     const editUser = async user => {
       loading.value = true;
       try {
-        const details = props.useHrApi
-          ? await hrService.showUser(user.id)
-          : await hrService.getEmployeeById(user.id);
+        let details;
+        if (props.useAdminApi) {
+          details = await adminEmployeeService.showEmployee(user.id);
+        } else if (props.useHrApi) {
+          details = await hrService.showUser(user.id);
+        } else {
+          details = await hrService.getEmployeeById(user.id);
+        }
         selectedUser.value = details?.data ?? details;
         showModal.value = true;
       } catch (error) {
@@ -350,7 +373,14 @@ export default {
 
       try {
         let savedUserId = userData.id;
-        if (props.useHrApi) {
+        if (props.useAdminApi) {
+          if (userData.id) {
+            await adminEmployeeService.updateEmployee(userData.id, userData);
+          } else {
+            const result = await adminEmployeeService.addEmployee(userData);
+            savedUserId = result?.id ?? result?.data?.id ?? savedUserId;
+          }
+        } else if (props.useHrApi) {
           if (userData.id) {
             await hrService.updateUser(userData.id, userData);
           } else {
@@ -366,7 +396,7 @@ export default {
           }
         }
 
-        if (savedUserId && (cvFile || sigFile)) {
+        if (savedUserId && (cvFile || sigFile) && !props.useAdminApi) {
           try {
             const formData = new FormData();
             if (cvFile) formData.append('files[]', cvFile);
@@ -378,6 +408,14 @@ export default {
           }
         }
 
+        const isCreate = !userData.id;
+        if (props.useAdminApi) {
+          toast.success(isCreate ? 'تم إضافة الموظف بنجاح' : 'تم تحديث بيانات الموظف بنجاح');
+        } else if (props.useHrApi) {
+          toast.success(isCreate ? 'تم إنشاء المستخدم بنجاح' : 'تم تحديث بيانات المستخدم بنجاح');
+        } else {
+          toast.success(isCreate ? 'تم إضافة الموظف بنجاح' : 'تم تحديث بيانات الموظف بنجاح');
+        }
         await fetchUsers();
         closeModal();
       } catch (error) {
@@ -437,7 +475,12 @@ export default {
           showConfirmModal.value = false;
           toast.success(`تم ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name} بنجاح`);
 
-          if (props.useHrApi) {
+          if (props.useAdminApi) {
+            await adminEmployeeService.updateEmployee(user.id, {
+              disabled: newStatus ? 1 : 0,
+              is_active: newStatus ? 0 : 1,
+            });
+          } else if (props.useHrApi) {
             await hrService.toggleUserStatus(user.id, {
               is_active: newStatus ? 0 : 1,
             });
@@ -458,10 +501,17 @@ export default {
           confirmData.value = null;
         } else if (confirmAction.value === 'delete') {
           const { user } = confirmData.value;
-          if (props.useHrApi) {
-            await hrService.deleteUser(user.id);
+          const userId = user.id ?? user.employee_id;
+          if (!userId) {
+            toast.error('تعذر تحديد معرّف الموظف للحذف');
+            return;
+          }
+          if (props.useAdminApi) {
+            await adminEmployeeService.deleteEmployee(userId);
+          } else if (props.useHrApi) {
+            await hrService.deleteUser(userId);
           } else {
-            await hrService.deleteEmployee(user.id);
+            await hrService.deleteEmployee(userId);
           }
           await fetchUsers();
           toast.success('تم حذف المستخدم بنجاح');
@@ -605,6 +655,7 @@ export default {
     });
 
     return {
+      useAdminApi: props.useAdminApi,
       users,
       totalItems,
       loading,
