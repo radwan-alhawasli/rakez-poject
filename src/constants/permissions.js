@@ -514,5 +514,5 @@ export const ROLE_TO_BOOTSTRAP_KEY = {
   6: 'credit',
   7: 'accounting',
   8: 'hr',
-  9: 'hr',
+  9: 'inventory',
 };

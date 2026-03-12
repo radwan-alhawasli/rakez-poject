@@ -25,6 +25,7 @@ import {
   ROLE_ACCOUNTING,
   ROLE_HR,
   ROLE_MARKETING,
+  ROLE_INVENTORY,
 } from '@/constants/roles';
 import {
   BOOTSTRAP_ROLE_MAP,
@@ -234,5 +235,6 @@ export function getDashboardPathForUser(user) {
   if (normalizedRole === ROLE_ACCOUNTING) return '/accounting/dashboard';
   if (normalizedRole === ROLE_EDITOR) return '/editor/dashboard';
   if (normalizedRole === ROLE_PROJECT_MANAGEMENT) return '/project-management';
+  if (normalizedRole === ROLE_INVENTORY) return '/inventory';
   return '/dashboard';
 }

@@ -1748,6 +1748,73 @@
             </div>
           </router-link>
         </template>
+
+        <!-- Inventory Sidebar (Role 9) -->
+        <template v-else-if="userRole == 9">
+          <router-link
+            to="/inventory"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="المخزون"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+              <span class="nav-text">المخزون</span>
+            </div>
+          </router-link>
+
+          <router-link
+            to="/notifications"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="الإشعارات"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+              <span class="nav-text">الإشعارات</span>
+            </div>
+          </router-link>
+
+          <router-link
+            to="/profile"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="الملف الشخصي"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span class="nav-text">الملف الشخصي</span>
+            </div>
+          </router-link>
+        </template>
   
         <!-- Editor (Montage / قسم المونتاج) Sidebar (Role 4) -->
         <template v-else-if="userRole == 4">
@@ -1782,10 +1849,10 @@
           </router-link>
 
           <router-link
-            to="/editor/projects/not-montaged"
+            to="/editor/projects"
             class="nav-item"
             active-class="active"
-            data-tooltip="مشاريع غير مونتاج"
+            data-tooltip="المشاريع (قبل / بعد المونتاج)"
           >
             <div class="nav-content">
               <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1794,22 +1861,7 @@
                 <line x1="16" y1="13" x2="8" y2="13"></line>
                 <line x1="16" y1="17" x2="8" y2="17"></line>
               </svg>
-              <span class="nav-text">غير مونتاج</span>
-            </div>
-          </router-link>
-
-          <router-link
-            to="/editor/projects/after-montage"
-            class="nav-item"
-            active-class="active"
-            data-tooltip="بعد المونتاج"
-          >
-            <div class="nav-content">
-              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="9 11 12 14 22 4"></polyline>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
-              <span class="nav-text">بعد المونتاج</span>
+              <span class="nav-text">المشاريع</span>
             </div>
           </router-link>
 

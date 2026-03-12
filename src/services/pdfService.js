@@ -1,5 +1,7 @@
 import logger from '@/utils/logger';
-import ArabicReshaper from 'arabic-reshaper';
+// CJS package: use namespace import so Vite/Rollup can resolve it
+import * as ArabicReshaperModule from 'arabic-reshaper';
+const ArabicReshaper = ArabicReshaperModule?.default ?? ArabicReshaperModule;
 
 let _pdfDepsPromise = null;
 
