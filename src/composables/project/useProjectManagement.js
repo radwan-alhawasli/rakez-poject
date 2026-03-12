@@ -95,6 +95,13 @@ export function useProjectManagement() {
         totalProjects.value = isSearchMode ? list.length : total;
       }
       logger.debug('Fetched Projects:', list?.length, 'total:', totalProjects.value);
+      // تشخيص: لمعرفة لماذا لا تظهر الصور، تحقق من أن الـ API يرجّع حقل الصورة (مثلاً project_image_url أو image)
+      if (list?.length > 0) {
+        const first = list[0];
+        const imageKeys = ['project_image_url', 'image', 'image_url', 'main_image', 'cover_image', 'photo', 'project_image'];
+        const found = imageKeys.filter(k => first[k] != null && String(first[k]).trim());
+        logger.debug('صورة المشروع الأول من الـ API:', found.length ? found.map(k => ({ [k]: first[k] })) : 'لا يوجد حقل صورة في الاستجابة. الحقول المرجعة:', Object.keys(first).filter(k => /image|photo|picture|url|cover|main/i.test(k)));
+      }
 
       const unitList = p => p.units || [];
       const mapped = list.map(p => {
@@ -171,6 +178,9 @@ export function useProjectManagement() {
         const rakezStatusLabel = p.status === 'Approved' ? 'متاح' : (p.status === 'Rejected' || p.status === 'Refused' ? 'مؤرشف' : (p.statusLabel || p.status || '—'));
         const propertyTypeLabel = (p.unit_type_label_ar && String(p.unit_type_label_ar).trim()) || unitType || (totalUnits ? 'وحدات' : 'مشروع');
 
+        const imageUrl =
+          p.project_image_url ?? p.image ?? p.image_url ?? p.main_image ?? p.cover_image ?? p.photo ?? (typeof p.project_image === 'string' ? p.project_image : null);
+        const imageStr = typeof imageUrl === 'string' && imageUrl.trim() ? imageUrl.trim() : '';
         return {
           id: p.id,
           contract_id: p.contract_id ?? p.id,
@@ -179,8 +189,8 @@ export function useProjectManagement() {
             `${(p.district || '').trim()}${p.district && p.city ? ', ' : ''}${(
               p.city || ''
             ).trim()}`.replace(/^,\s*|,\s*$/g, '') || '—',
-          image: p.project_image_url ?? p.image,
-          hasImage: !!((p.project_image_url ?? p.image) && String(p.project_image_url ?? p.image).trim()),
+          image: imageStr || null,
+          hasImage: !!imageStr,
           statusLabel: p.status === 'Approved' ? 'Active' : p.status,
           statusClass: p.status === 'Approved' ? 'active' : 'pending',
           units,
@@ -240,10 +250,19 @@ export function useProjectManagement() {
           try {
             const detail = await getContract(contractId);
             const pp = detail?.project_progress;
-            if (!pp) return { ...proj };
+            const detailImage =
+              detail?.project_image_url ?? detail?.image ?? detail?.image_url ?? detail?.main_image ?? '';
+            const detailImageStr =
+              typeof detailImage === 'string' && detailImage.trim() ? detailImage.trim() : '';
+            const hasImageFromDetail = !!detailImageStr;
+
+            if (!pp) {
+              return hasImageFromDetail && !proj.hasImage
+                ? { ...proj, image: detailImageStr, hasImage: true }
+                : { ...proj };
+            }
 
             const steps = Array.isArray(pp.steps) ? pp.steps : [];
-            // Use steps array from API as source for تقدم الإعداد
             const totalSteps = steps.length > 0 ? steps.length : (pp.total_count ?? 0);
             const completedSteps =
               steps.length > 0
@@ -251,7 +270,11 @@ export function useProjectManagement() {
                 : (pp.completed_count ?? 0);
             const setupProgressVal =
               totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
-            return { ...proj, setupProgress: setupProgressVal };
+            return {
+              ...proj,
+              setupProgress: setupProgressVal,
+              ...(hasImageFromDetail && !proj.hasImage ? { image: detailImageStr, hasImage: true } : {}),
+            };
           } catch (e) {
             logger.debug('Enrich project progress for contract_id', contractId, e);
             return proj;

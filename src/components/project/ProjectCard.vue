@@ -113,7 +113,14 @@ const props = defineProps({
 });
 
 const imageUrl = computed(() => {
-  const url = props.project?.image ?? props.project?.project_image_url ?? props.project?.image_url ?? '';
+  const url =
+    props.project?.image ??
+    props.project?.project_image_url ??
+    props.project?.image_url ??
+    props.project?.main_image ??
+    props.project?.cover_image ??
+    props.project?.photo ??
+    (typeof props.project?.project_image === 'string' ? props.project.project_image : '');
   return typeof url === 'string' && url.trim() ? url.trim() : '';
 });
 function onImageError(e) {

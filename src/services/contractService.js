@@ -3,9 +3,24 @@ import logger from '@/utils/logger';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
 
+/** استخراج رابط الصورة من أي حقل متوقع من الـ API */
+function getContractImageUrl(p) {
+  if (!p || typeof p !== 'object') return null;
+  const url =
+    p.project_image_url ??
+    p.image ??
+    p.image_url ??
+    p.main_image ??
+    p.cover_image ??
+    p.photo ??
+    (typeof p.project_image === 'string' ? p.project_image : null);
+  return typeof url === 'string' && url.trim() ? url.trim() : null;
+}
+
 /** Normalize a contract from GET /contracts/index or /contracts/show to the same details shape we use everywhere. */
 function normalizeContractItem(p) {
   if (!p || typeof p !== 'object') return p;
+  const imageUrl = getContractImageUrl(p);
   return {
     ...p,
     id: p.id ?? p.contract_id,
@@ -14,8 +29,8 @@ function normalizeContractItem(p) {
     project_name: p.project_name ?? p.name,
     notes: p.notes ?? null,
     project_progress: p.project_progress ?? null,
-    image: p.project_image_url ?? p.image ?? null,
-    project_image_url: p.project_image_url ?? p.image,
+    image: imageUrl ?? null,
+    project_image_url: imageUrl,
   };
 }
 
@@ -232,6 +247,10 @@ const contractService = {
    * Endpoint: POST {{base_url}}/contracts/store (apiClient baseURL from appConfig)
    * Payload: project_name, developer_name, developer_number, city, district,
    *          developer_requiment?, project_image_url?, note?, units[], commission_percentage?, commission_from?
+   *
+   * ملاحظة: لكي تظهر صورة المشروع في بطاقات إدارة المشاريع، يجب أن يرجع الـ API عند جلب
+   * القائمة (GET /contracts/index) أو التفاصيل (GET /contracts/show/:id) حقل project_image_url
+   * (أو image) في كل عقد.
    */
   async createContract(payload) {
     try {
