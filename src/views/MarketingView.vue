@@ -54,7 +54,18 @@ const activeTab = computed(() => {
 .tab-content {
   padding: 30px;
   overflow-y: auto;
+  overflow-x: hidden;
   max-height: calc(100dvh - 160px);
+  min-height: 0;
+  padding-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .tab-content { padding: 16px; padding-bottom: 2rem; }
+}
+
+@media (max-width: 390px) {
+  .tab-content { padding: 12px; padding-bottom: 1.5rem; }
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 8px; }

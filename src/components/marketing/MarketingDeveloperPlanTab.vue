@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="marketing-developer-plan-tab">
     <div class="welcome-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px">
       <div class="header-content">
         <h1 class="welcome-title">خطة المطور</h1>
@@ -119,12 +119,12 @@
         </div>
       </div>
 
-      <!-- 3ب) عند اختيار إدخال يدوي: جدول الإدخال + جدول النتيجة -->
+      <!-- 3ب) عند اختيار إدخال يدوي: جدول إدخال واحد (النتيجة = نفس القيم المدخلة) -->
       <div v-if="inputMode === 'manual'" class="dev-plan-platform-section dev-plan-manual-section">
         <h4 class="platform-section-title">النقرات والمشاهدات المتوقعة لكل منصة (يدوياً)</h4>
         <p class="section-desc">أدخل المشاهدات والنقرات المتوقعة لكل منصة مباشرة. في هذا الوضع لا تُستخدم حقول CPM و CPC.</p>
-        <div class="platform-tables-wrap">
-          <div class="platform-table">
+        <div class="platform-tables-wrap platform-tables-wrap--single">
+          <div class="platform-table platform-table--full">
             <div class="platform-table-header">
               <span class="col-platform">المنصة الإعلانية</span>
               <span class="col-value">المشاهدات</span>
@@ -134,18 +134,6 @@
               <span class="col-platform">{{ plat.labelAr }}</span>
               <input type="number" v-model="developerPlanForm.platform_views[plat.key]" class="form-input col-input" placeholder="0" min="0" />
               <input type="number" v-model="developerPlanForm.platform_clicks[plat.key]" class="form-input col-input" placeholder="0" min="0" />
-            </div>
-          </div>
-          <div class="platform-table result-table">
-            <div class="platform-table-header">
-              <span class="col-platform">المنصة</span>
-              <span class="col-value">المشاهدات</span>
-              <span class="col-value">النقرات</span>
-            </div>
-            <div v-for="r in platformResults" :key="r.key" class="platform-table-row">
-              <span class="col-platform">{{ r.labelAr }}</span>
-              <span class="col-value">{{ formatNumber(r.views) }}</span>
-              <span class="col-value">{{ formatNumber(r.clicks) }}</span>
             </div>
           </div>
         </div>
@@ -266,4 +254,52 @@ const showCommissionZeroAlert = computed(() => {
 .formula-budget-item.action-item { align-self: center; }
 .formula-alert { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; margin-bottom: 14px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 10px; color: #92400e; font-size: 0.9rem; }
 .formula-alert-icon { flex-shrink: 0; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; background: #f59e0b; color: #fff; border-radius: 50%; font-weight: 700; }
+
+/* Single-table layout (manual mode) */
+.platform-tables-wrap--single { max-width: 100%; }
+.platform-table--full { min-width: 0; max-width: 100%; width: 100%; }
+
+/* Responsive: prevent overflow, stack tables, touch targets */
+.marketing-developer-plan-tab { min-width: 0; overflow-x: hidden; }
+.platform-tables-wrap { max-width: 100%; }
+.platform-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.mode-tab,
+.dev-plan-actions .btn-primary,
+.dev-plan-actions .btn-secondary { min-height: 44px; min-width: 44px; padding: 10px 18px; }
+.dev-plan-actions .btn-secondary { display: inline-flex; align-items: center; justify-content: center; }
+
+@media (max-width: 1024px) {
+  .platform-tables-wrap { flex-direction: column; align-items: stretch; }
+  .platform-table { min-width: 0; max-width: 100%; width: 100%; }
+}
+
+@media (max-width: 768px) {
+  .marketing-developer-plan-tab .welcome-header { flex-direction: column; align-items: flex-start; }
+  .dev-plan-row.dev-plan-main-fields { grid-template-columns: 1fr; }
+  .formula-budget-grid { grid-template-columns: 1fr; }
+  .platform-table-header,
+  .platform-table-row { grid-template-columns: minmax(120px, 1fr) 80px 80px; }
+  .platform-table-row .col-input,
+  .platform-table-row .col-value { padding: 12px 8px; font-size: 0.875rem; }
+}
+
+@media (max-width: 428px) {
+  .platform-table-header,
+  .platform-table-row { grid-template-columns: minmax(100px, 1fr) 70px 70px; }
+  .platform-section-title { font-size: 1rem; }
+  .section-desc { font-size: 0.875rem; }
+}
+
+@media (max-width: 390px) {
+  .platform-table-header,
+  .platform-table-row { grid-template-columns: minmax(90px, 1fr) 64px 64px; }
+  .mode-tabs { flex-direction: column; }
+  .mode-tab { width: 100%; }
+}
+
+@media (max-width: 360px) {
+  .platform-table-row .col-platform { padding: 8px 10px; font-size: 0.8rem; }
+  .platform-table-row .col-value,
+  .platform-table-row .col-input { padding: 8px 6px; font-size: 0.8rem; }
+}
 </style>
