@@ -13,7 +13,7 @@
             class="form-input"
             style="max-width: 260px"
           />
-          <button v-if="hasPermission('marketing.budget.calculate')" class="btn-primary" @click="openCalculateBudgetModal">
+          <button v-if="hasPermission('marketing.budgets.manage')" class="btn-primary" @click="openCalculateBudgetModal">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-left: 8px"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><line x1="8" y1="10" x2="8" y2="10"></line><line x1="12" y1="10" x2="12" y2="10"></line><line x1="16" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="8" y2="14"></line><line x1="12" y1="14" x2="12" y2="14"></line><line x1="8" y1="18" x2="8" y2="18"></line><line x1="12" y1="18" x2="12" y2="18"></line></svg>
             حساب الميزانية
           </button>
@@ -338,12 +338,19 @@
                   <p class="section-desc">تعرض الحقول المتاحة من developer_plan.</p>
                 </div>
                 <div v-if="!selectedProjectDetails.developer_plan" style="color: #64748b">لا توجد خطة مطور.</div>
-                <div v-else class="details-grid" style="margin-top: 10px">
-                  <div class="detail-item"><span class="detail-label">قيمة التسويق</span><span class="detail-value number">{{ formatCurrency(selectedProjectDetails.developer_plan.marketing_value || 0) }}</span></div>
-                  <div class="detail-item"><span class="detail-label">Average CPM</span><span class="detail-value number">{{ selectedProjectDetails.developer_plan.average_cpm ?? '—' }}</span></div>
-                  <div class="detail-item"><span class="detail-label">Average CPC</span><span class="detail-value number">{{ selectedProjectDetails.developer_plan.average_cpc ?? '—' }}</span></div>
-                  <div class="detail-item"><span class="detail-label">Expected Impressions</span><span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_impressions || 0) }}</span></div>
-                  <div class="detail-item"><span class="detail-label">Expected Clicks</span><span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_clicks || 0) }}</span></div>
+                <div v-else style="margin-top: 10px">
+                  <div class="details-grid">
+                    <div class="detail-item"><span class="detail-label">قيمة التسويق</span><span class="detail-value number">{{ formatCurrency(selectedProjectDetails.developer_plan.marketing_value || 0) }}</span></div>
+                    <div class="detail-item"><span class="detail-label">CPM / CPC</span><span class="detail-value number">{{ devPlanCpmCpcSummary(selectedProjectDetails.developer_plan) }}</span></div>
+                    <div class="detail-item"><span class="detail-label">Expected Impressions</span><span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_impressions || 0) }}</span></div>
+                    <div class="detail-item"><span class="detail-label">Expected Clicks</span><span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_clicks || 0) }}</span></div>
+                  </div>
+                  <div v-if="hasDevPlanPerPlatform(selectedProjectDetails.developer_plan)" class="details-grid" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color, #e2e8f0)">
+                    <div class="detail-item" style="grid-column: 1 / -1"><span class="detail-label">CPM و CPC حسب المنصة</span></div>
+                    <template v-for="(label, key) in platformLabelsAr" :key="key">
+                      <div class="detail-item" v-if="devPlanPlatformValue(selectedProjectDetails.developer_plan, key)"><span class="detail-label">{{ label }}</span><span class="detail-value">{{ devPlanPlatformValue(selectedProjectDetails.developer_plan, key) }}</span></div>
+                    </template>
+                  </div>
                 </div>
               </div>
 
@@ -443,6 +450,44 @@
 <script setup>
 import ConfirmModal from '@/components/ConfirmModal.vue';
 import { useMarketingProjects } from '@/composables/marketing/useMarketingProjects';
+
+const platformLabelsAr = {
+  instagram: 'منصة انستغرام',
+  snapchat: 'منصة سناب',
+  tiktok: 'منصة تيك توك',
+  x: 'منصة تويتر X',
+  google_youtube: 'منصة جوجل (يوتيوب)',
+  other: 'منصات اخرى',
+  aqar: 'منصة عقار',
+};
+
+function devPlanCpmCpcSummary(devPlan) {
+  if (!devPlan) return '—';
+  const pcpm = devPlan.platform_cpm ?? devPlan.platformCpm;
+  const pcpc = devPlan.platform_cpc ?? devPlan.platformCpc;
+  if (pcpm && Object.keys(pcpm).length) return 'حسب المنصة';
+  const avgCpm = devPlan.average_cpm ?? devPlan.averageCpm;
+  const avgCpc = devPlan.average_cpc ?? devPlan.averageCpc;
+  if (avgCpm != null || avgCpc != null) return `${avgCpm ?? '—'} / ${avgCpc ?? '—'}`;
+  return '—';
+}
+
+function hasDevPlanPerPlatform(devPlan) {
+  if (!devPlan) return false;
+  const pcpm = devPlan.platform_cpm ?? devPlan.platformCpm ?? {};
+  const pcpc = devPlan.platform_cpc ?? devPlan.platformCpc ?? {};
+  return Object.keys(pcpm).length > 0 || Object.keys(pcpc).length > 0;
+}
+
+function devPlanPlatformValue(devPlan, key) {
+  if (!devPlan) return '';
+  const pcpm = devPlan.platform_cpm ?? devPlan.platformCpm ?? {};
+  const pcpc = devPlan.platform_cpc ?? devPlan.platformCpc ?? {};
+  const cpm = pcpm[key];
+  const cpc = pcpc[key];
+  if (cpm == null && cpc == null) return '';
+  return `CPM: ${cpm ?? '—'} | CPC: ${cpc ?? '—'}`;
+}
 
 const {
   projects,

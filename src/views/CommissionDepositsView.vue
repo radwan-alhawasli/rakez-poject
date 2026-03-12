@@ -65,6 +65,9 @@
                   <button class="btn-action edit" @click="viewCommissionDetail(commission)">
                     عرض
                   </button>
+                  <button class="btn-action edit" @click="downloadCommissionPdf(commission)" title="تحميل PDF">
+                    PDF
+                  </button>
                 </td>
               </tr>
               <tr v-if="commissions.length === 0 && !isLoading">
@@ -116,6 +119,9 @@
                 </td>
                 <td>
                   <button class="btn-action edit" @click="viewDepositDetail(deposit)">عرض</button>
+                  <button class="btn-action edit" @click="downloadDepositPdf(deposit)" title="تحميل PDF">
+                    PDF
+                  </button>
                 </td>
               </tr>
               <tr v-if="deposits.length === 0 && !isLoading">
@@ -151,8 +157,10 @@ import authService from '@/services/authService';
 import Pagination from '@/components/Pagination.vue';
 import logger from '@/utils/logger';
 import { useFormatters } from '@/composables/useFormatters';
+import { useToast } from '@/composables/useToast';
 
 const route = useRoute();
+const toast = useToast();
 const user = ref(authService.getCurrentUser());
 const userName = computed(() => user.value?.name || 'قسم العمولات');
 const isLoading = ref(false);
@@ -237,6 +245,64 @@ const handleDepositsPerPageChange = val => {
 };
 
 const viewCommissionDetail = () => {};
+
+const downloadCommissionPdf = async commission => {
+  try {
+    const id = commission.id;
+    const { generateCommissionClaimPdf } = await import('@/services/pdfService');
+    let full;
+    let distributions = [];
+    try {
+      const { getCommissionClaimPdfData } = await import('@/services/pdfApi');
+      const data = await getCommissionClaimPdfData(id);
+      if (data?.commission != null) {
+        full = data.commission;
+        distributions = data.distributions ?? [];
+      }
+    } catch (_) {}
+    if (full == null) {
+      full = await commissionService.getCommissionById(id);
+      distributions = await commissionService.getDistributions(id);
+    }
+    const pdfBytes = await generateCommissionClaimPdf(full, distributions);
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `commission_claim_${id}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    logger.error('Error generating commission PDF:', e);
+    toast.error('تعذر إنشاء PDF');
+  }
+};
+
+const downloadDepositPdf = async deposit => {
+  try {
+    const id = deposit.id;
+    const { generateDepositClaimPdf } = await import('@/services/pdfService');
+    let full;
+    try {
+      const { getDepositClaimPdfData } = await import('@/services/pdfApi');
+      const data = await getDepositClaimPdfData(id);
+      if (data != null) full = data;
+    } catch (_) {}
+    if (full == null) full = await commissionService.getDepositById(id);
+    const pdfBytes = await generateDepositClaimPdf(full);
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `deposit_claim_${id}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    logger.error('Error generating deposit PDF:', e);
+    toast.error('تعذر إنشاء PDF');
+  }
+};
+
 const viewDepositDetail = () => {};
 
 const { formatCurrency, formatCurrencyCompact } = useFormatters();

@@ -254,7 +254,10 @@ import { getApiErrorMessage } from '@/utils/errorHandler';
 import { normalizeDeveloper } from '@/utils/developerMapper';
 import { UNIT_TYPES } from '@/constants/lookups';
 import secureStorage from '@/utils/secureStorage';
+import { usePermissions } from '@/composables/usePermissions';
+import { PERMISSIONS } from '@/constants/permissions';
 
+const { hasPermission } = usePermissions();
 const isLoading = ref(false);
 const developers = ref([]);
 const showSuccessConfirm = ref(false);
@@ -320,7 +323,14 @@ const loadDevelopers = async () => {
     }
     developers.value = list.map(d => normalizeDeveloper(d));
   } catch (error) {
-    logger.error('Error loading developers:', error);
+    const status = error?.response?.status;
+    if (status === 403) {
+      toast.info(
+        'اختيار المطور من القائمة غير متاح لصلاحياتك. يمكنك إدخال بيانات المطور يدوياً.'
+      );
+    } else {
+      logger.error('Error loading developers:', error);
+    }
     developers.value = [];
   }
 };
@@ -339,7 +349,9 @@ const onDeveloperSelect = () => {
 };
 
 onMounted(() => {
-  loadDevelopers();
+  if (hasPermission(PERMISSIONS.DEVELOPERS_LIST_VIEW)) {
+    loadDevelopers();
+  }
 });
 
 const resetForm = () => {

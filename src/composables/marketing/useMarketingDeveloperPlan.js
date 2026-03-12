@@ -1,4 +1,4 @@
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import marketingService from '@/services/marketingService';
 import notificationService from '@/services/notificationService';
@@ -6,6 +6,21 @@ import logger from '@/utils/logger';
 import { useFormatters } from '@/composables/useFormatters';
 import { usePermissions } from '@/composables/usePermissions';
 import { toast } from '@/composables/useToast';
+
+/** Same 7 platforms as weekly plan / employee plans */
+export const DEVELOPER_PLAN_PLATFORMS = [
+  { key: 'instagram', labelAr: 'منصة انستغرام' },
+  { key: 'snapchat', labelAr: 'منصة سناب' },
+  { key: 'tiktok', labelAr: 'منصة تيك توك' },
+  { key: 'x', labelAr: 'منصة تويتر X' },
+  { key: 'google_youtube', labelAr: 'منصة جوجل (تضمن يوتيوب)' },
+  { key: 'other', labelAr: 'منصات اخرى (بيوت - سكني - حراج ....)' },
+  { key: 'aqar', labelAr: 'منصة عقار' },
+];
+
+function emptyPlatformNumbers() {
+  return DEVELOPER_PLAN_PLATFORMS.reduce((acc, { key }) => ({ ...acc, [key]: '' }), {});
+}
 
 export function useMarketingDeveloperPlan() {
   const route = useRoute();
@@ -16,25 +31,112 @@ export function useMarketingDeveloperPlan() {
   const projects = ref([]);
   const isLoadingProjects = ref(false);
   const isLoadingDeveloperPlan = ref(false);
+  const isCalculatingBudget = ref(false);
   const isSubmitting = ref(false);
   const developerPlanSummary = ref(null);
+  /** 'cpm_cpc' = حساب من CPM و CPC لكل منصة | 'manual' = إدخال النقرات والمشاهدات يدوياً (لا CPM/CPC) */
+  const inputMode = ref('cpm_cpc');
   const developerPlanForm = reactive({
     project_id: '',
     contract_id: '',
     marketing_value: '',
-    average_cpm: '',
-    average_cpc: '',
+    /** نسبة التسويق (يدخلها موظف الماركتينج) 6%–10% */
+    marketing_percent: '',
+    platform_cpm: emptyPlatformNumbers(),
+    platform_cpc: emptyPlatformNumbers(),
+    platform_views: emptyPlatformNumbers(),
+    platform_clicks: emptyPlatformNumbers(),
+  });
+
+  const selectedProject = computed(() =>
+    projects.value.find(x => String(x.id) === String(developerPlanForm.project_id))
+  );
+
+  /** نسبة السعي في العقد، متوسط سعر الوحدات (من API data.contract إن وُجد، وإلا من المشروع) */
+  const contractRates = computed(() => {
+    const apiContract = developerPlanSummary.value?.contract;
+    if (apiContract) {
+      const commissionPct = Number(apiContract.commission_percent ?? apiContract.commission_percentage) || 0;
+      const avgPrice = Number(apiContract.average_unit_price ?? apiContract.unit_price) || 0;
+      return { commissionPct, avgPrice };
+    }
+    const p = selectedProject.value;
+    const commissionPct = Number(p?.commission_percentage ?? p?.commission_percent) || 0;
+    const avgPrice = Number(p?.average_unit_price ?? p?.avg_unit_price) || 0;
+    return { commissionPct, avgPrice };
+  });
+
+  /** العمولة الإجمالية = نسبة السعي في العقد × متوسط سعر الوحدات (مقرّبة لرقمين عشريين) */
+  const commissionValue = computed(() => {
+    const { commissionPct, avgPrice } = contractRates.value;
+    const raw = (commissionPct / 100) * avgPrice;
+    const total = Number.isFinite(raw) ? Math.round(raw * 100) / 100 : 0;
+    return { total };
+  });
+
+  /** نسبة التسويق 6%–10% (إدخال موظف الماركتينج). ميزانية الحملة = العمولة × نسبة التسويق. مقرّبة لرقمين عشريين. */
+  const campaignBudgetFromFormula = computed(() => {
+    const pct = Number(developerPlanForm.marketing_percent) || 0;
+    if (pct < 6 || pct > 10) return null;
+    const totalCommission = commissionValue.value.total;
+    const raw = (totalCommission * pct) / 100;
+    return Number.isFinite(raw) ? Math.round(raw * 100) / 100 : null;
+  });
+
+  /** تحديث فوري: عند تغيّر ميزانية الحملة المحسوبة أو نسبة التسويق نحدّث قيمة التسويق في الوقت الحقيقي */
+  watch(
+    campaignBudgetFromFormula,
+    (val) => {
+      if (val != null && developerPlanForm.contract_id) {
+        const str = String(val);
+        if (developerPlanForm.marketing_value !== str) {
+          developerPlanForm.marketing_value = str;
+        }
+      }
+    },
+    { immediate: true }
+  );
+
+  const effectiveCpm = computed(() => {
+    const vals = Object.values(developerPlanForm.platform_cpm).map(v => Number(v)).filter(n => n > 0);
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+  });
+  const effectiveCpc = computed(() => {
+    const vals = Object.values(developerPlanForm.platform_cpc).map(v => Number(v)).filter(n => n > 0);
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
   });
 
   const devPlanOutputs = computed(() => {
     const marketingValue = Number(developerPlanForm.marketing_value) || 0;
-    const cpm = Number(developerPlanForm.average_cpm) || 0;
-    const cpc = Number(developerPlanForm.average_cpc) || 0;
-    const expectedImpressions = cpm > 0 ? Math.round((marketingValue / cpm) * 1000) : 0;
-    const expectedClicks = cpc > 0 ? Math.round(marketingValue / cpc) : 0;
     const s = developerPlanSummary.value || {};
     const durationLabel = String(s.marketing_duration ?? s.durationLabel ?? 'حسب مدة العقد');
-    return { totalBudget: marketingValue, expectedImpressions, expectedClicks, durationLabel };
+    if (inputMode.value === 'manual') {
+      const totalViews = DEVELOPER_PLAN_PLATFORMS.reduce((sum, { key }) => sum + (Number(developerPlanForm.platform_views[key]) || 0), 0);
+      const totalClicks = DEVELOPER_PLAN_PLATFORMS.reduce((sum, { key }) => sum + (Number(developerPlanForm.platform_clicks[key]) || 0), 0);
+      return { totalBudget: marketingValue, expectedImpressions: totalViews, expectedClicks: totalClicks, durationLabel, effectiveCpm: 0, effectiveCpc: 0, isManual: true };
+    }
+    const cpm = effectiveCpm.value;
+    const cpc = effectiveCpc.value;
+    const expectedImpressions = cpm > 0 ? Math.round((marketingValue / cpm) * 1000) : 0;
+    const expectedClicks = cpc > 0 ? Math.round(marketingValue / cpc) : 0;
+    return { totalBudget: marketingValue, expectedImpressions, expectedClicks, durationLabel, effectiveCpm: cpm, effectiveCpc: cpc, isManual: false };
+  });
+
+  /** النتيجة لكل منصة: مشاهدات ونقرات (محسوبة من CPM/CPC أو من الإدخال اليدوي) */
+  const platformResults = computed(() => {
+    const marketingValue = Number(developerPlanForm.marketing_value) || 0;
+    return DEVELOPER_PLAN_PLATFORMS.map(({ key, labelAr }) => {
+      if (inputMode.value === 'manual') {
+        const views = Number(developerPlanForm.platform_views[key]) || 0;
+        const clicks = Number(developerPlanForm.platform_clicks[key]) || 0;
+        return { key, labelAr, views, clicks };
+      }
+      const cpm = Number(developerPlanForm.platform_cpm[key]) || 0;
+      const cpc = Number(developerPlanForm.platform_cpc[key]) || 0;
+      const views = cpm > 0 ? Math.round((marketingValue / cpm) * 1000) : 0;
+      const clicks = cpc > 0 ? Math.round(marketingValue / cpc) : 0;
+      return { key, labelAr, views, clicks };
+    });
   });
 
   const loadProjects = async () => {
@@ -54,6 +156,11 @@ export function useMarketingDeveloperPlan() {
     if (!developerPlanForm.project_id) {
       developerPlanForm.contract_id = '';
       developerPlanForm.marketing_value = '';
+      developerPlanForm.marketing_percent = '';
+      developerPlanForm.platform_cpm = emptyPlatformNumbers();
+      developerPlanForm.platform_cpc = emptyPlatformNumbers();
+      developerPlanForm.platform_views = emptyPlatformNumbers();
+      developerPlanForm.platform_clicks = emptyPlatformNumbers();
       return;
     }
     const p = projects.value.find(x => String(x.id) === String(developerPlanForm.project_id));
@@ -62,26 +169,103 @@ export function useMarketingDeveloperPlan() {
         p.marketing_project?.contract_id ?? p.contract_id ?? p.contractId ?? p.id ?? ''
       );
       developerPlanForm.marketing_value = String(p.marketing_value ?? p.marketingValue ?? '');
+      if (developerPlanForm.marketing_percent === '') developerPlanForm.marketing_percent = '10';
     }
     loadDeveloperPlan();
   };
 
+  const applyCampaignBudget = async () => {
+    const pct = Number(developerPlanForm.marketing_percent) || 0;
+    if (pct < 6 || pct > 10) {
+      toast.warning('أدخل نسبة التسويق بين 6% و 10%');
+      return;
+    }
+    const contractId = developerPlanForm.contract_id || developerPlanForm.project_id;
+    if (!contractId) {
+      toast.warning('اختر مشروعاً أولاً');
+      return;
+    }
+    isCalculatingBudget.value = true;
+    try {
+      const unitPrice = contractRates.value.avgPrice || null;
+      const result = await marketingService.calculateDeveloperPlanBudget(contractId, pct, unitPrice);
+      const val = result?.marketing_value ?? result?.data?.marketing_value;
+      if (val != null) {
+        developerPlanForm.marketing_value = String(Number(val));
+        notificationService.addNotification('تم تطبيق ميزانية الحملة من الخادم', 'success');
+      } else {
+        const budget = campaignBudgetFromFormula.value;
+        if (budget != null) developerPlanForm.marketing_value = String(Math.round(budget * 100) / 100);
+      }
+    } catch (error) {
+      logger.error('Error calculating campaign budget', error);
+      const budget = campaignBudgetFromFormula.value;
+      if (budget != null) developerPlanForm.marketing_value = String(Math.round(budget * 100) / 100);
+      toast.error('تم استخدام الحساب المحلي لميزانية الحملة');
+    } finally {
+      isCalculatingBudget.value = false;
+    }
+  };
+
   const loadDeveloperPlan = async () => {
-    const id = developerPlanForm.contract_id || developerPlanForm.project_id;
-    if (!id) {
+    const contractId = developerPlanForm.contract_id || developerPlanForm.project_id;
+    if (!contractId) {
       toast.warning('اختر مشروعاً أو أدخل رقم العقد');
       return;
     }
     isLoadingDeveloperPlan.value = true;
     try {
-      const plan = await marketingService.getDeveloperPlan(id);
-      developerPlanSummary.value = plan || null;
-      const raw = plan?.raw_plan || plan?.rawPlan || null;
+      const plan = await marketingService.getDeveloperPlan(contractId);
+      const contractFromApi = plan?.contract ?? plan?.data?.contract;
+      const p = projects.value.find(x => String(x.id) === String(developerPlanForm.project_id));
+      let contract = contractFromApi || (p ? {
+        commission_percent: p.commission_percentage ?? p.commission_percent,
+        average_unit_price: p.average_unit_price ?? p.avg_unit_price,
+      } : null);
+      const hasRates = contract && (
+        (Number(contract.commission_percent ?? contract.commission_percentage) || 0) > 0 ||
+        (Number(contract.average_unit_price ?? contract.unit_price) || 0) > 0
+      );
+      if ((!contract || !hasRates) && contractId) {
+        try {
+          const projectDetail = await marketingService.getProjectByContractId(contractId);
+          const cp = Number(projectDetail?.commission_percentage ?? projectDetail?.commission_percent) || 0;
+          const ap = Number(projectDetail?.average_unit_price ?? projectDetail?.avg_unit_price) || 0;
+          contract = {
+            ...(contract || {}),
+            commission_percent: cp || (contract?.commission_percent ?? contract?.commission_percentage ?? 0),
+            average_unit_price: ap || (contract?.average_unit_price ?? contract?.unit_price ?? 0),
+          };
+        } catch (_) {
+          if (!contract) contract = null;
+        }
+      }
+      const merged = { ...(plan || {}), contract };
+      developerPlanSummary.value = merged.contract ? merged : (plan || null);
+      if (merged.contract && !developerPlanForm.marketing_percent) developerPlanForm.marketing_percent = '10';
+      const raw = plan?.raw_plan ?? plan?.rawPlan ?? plan ?? null;
       if (raw) {
         developerPlanForm.contract_id = String(raw.contract_id ?? developerPlanForm.contract_id ?? '');
         developerPlanForm.marketing_value = String(raw.marketing_value ?? developerPlanForm.marketing_value ?? '');
-        developerPlanForm.average_cpm = String(raw.average_cpm ?? developerPlanForm.average_cpm ?? '');
-        developerPlanForm.average_cpc = String(raw.average_cpc ?? developerPlanForm.average_cpc ?? '');
+        if (raw.marketing_percent != null && raw.marketing_percent !== '') developerPlanForm.marketing_percent = String(raw.marketing_percent);
+        const pcpm = raw.platform_cpm ?? raw.platformCpm ?? {};
+        const pcpc = raw.platform_cpc ?? raw.platformCpc ?? {};
+        /* CPM و CPC يدخلها المستخدم فقط — نعبئ من الخطة المحفوظة فقط إن وُجدت قيم صريحة لكل منصة، ولا نستنتج من average_cpm/average_cpc */
+        DEVELOPER_PLAN_PLATFORMS.forEach(({ key }) => {
+          if (pcpm[key] != null && pcpm[key] !== '') developerPlanForm.platform_cpm[key] = String(pcpm[key]);
+          if (pcpc[key] != null && pcpc[key] !== '') developerPlanForm.platform_cpc[key] = String(pcpc[key]);
+        });
+        const pviews = raw.platform_views ?? raw.platformViews ?? {};
+        const pclicks = raw.platform_clicks ?? raw.platformClicks ?? {};
+        if (Object.keys(pviews).length > 0 || Object.keys(pclicks).length > 0) {
+          inputMode.value = 'manual';
+          DEVELOPER_PLAN_PLATFORMS.forEach(({ key }) => {
+            if (pviews[key] != null && pviews[key] !== '') developerPlanForm.platform_views[key] = String(pviews[key]);
+            if (pclicks[key] != null && pclicks[key] !== '') developerPlanForm.platform_clicks[key] = String(pclicks[key]);
+          });
+        } else {
+          inputMode.value = 'cpm_cpc';
+        }
       }
       notificationService.addNotification('تم جلب خطة المطور بنجاح', 'success');
     } catch (error) {
@@ -93,18 +277,46 @@ export function useMarketingDeveloperPlan() {
   };
 
   const saveDeveloperPlan = async () => {
-    if (!developerPlanForm.contract_id || !developerPlanForm.marketing_value || !developerPlanForm.average_cpm || !developerPlanForm.average_cpc) {
-      toast.warning('الرجاء إدخال جميع الحقول المطلوبة');
+    if (!developerPlanForm.contract_id || !developerPlanForm.marketing_value) {
+      toast.warning('الرجاء إدخال المشروع وقيمة التسويق');
       return;
     }
     try {
       isSubmitting.value = true;
-      await marketingService.storeDeveloperPlan({
+      const payload = {
         contract_id: Number(developerPlanForm.contract_id),
         marketing_value: Number(developerPlanForm.marketing_value),
-        average_cpm: Number(developerPlanForm.average_cpm),
-        average_cpc: Number(developerPlanForm.average_cpc),
-      });
+        input_mode: inputMode.value,
+      };
+      if (developerPlanForm.marketing_percent !== '' && Number(developerPlanForm.marketing_percent) >= 6 && Number(developerPlanForm.marketing_percent) <= 10) {
+        payload.marketing_percent = Number(developerPlanForm.marketing_percent);
+      }
+      if (inputMode.value === 'manual') {
+        const platform_views = {};
+        const platform_clicks = {};
+        DEVELOPER_PLAN_PLATFORMS.forEach(({ key }) => {
+          const v = Number(developerPlanForm.platform_views[key]);
+          const c = Number(developerPlanForm.platform_clicks[key]);
+          if (v > 0) platform_views[key] = v;
+          if (c > 0) platform_clicks[key] = c;
+        });
+        if (Object.keys(platform_views).length) payload.platform_views = platform_views;
+        if (Object.keys(platform_clicks).length) payload.platform_clicks = platform_clicks;
+      } else {
+        const platform_cpm = {};
+        const platform_cpc = {};
+        DEVELOPER_PLAN_PLATFORMS.forEach(({ key }) => {
+          const cpm = Number(developerPlanForm.platform_cpm[key]);
+          const cpc = Number(developerPlanForm.platform_cpc[key]);
+          if (cpm > 0) platform_cpm[key] = cpm;
+          if (cpc > 0) platform_cpc[key] = cpc;
+        });
+        if (Object.keys(platform_cpm).length) payload.platform_cpm = platform_cpm;
+        if (Object.keys(platform_cpc).length) payload.platform_cpc = platform_cpc;
+        if (effectiveCpm.value > 0) payload.average_cpm = effectiveCpm.value;
+        if (effectiveCpc.value > 0) payload.average_cpc = effectiveCpc.value;
+      }
+      await marketingService.storeDeveloperPlan(payload);
       notificationService.addNotification('تم حفظ خطة المطور بنجاح', 'success');
     } catch (error) {
       logger.error('Error saving developer plan:', error);
@@ -133,42 +345,47 @@ export function useMarketingDeveloperPlan() {
 
   const exportDeveloperPlanPdf = async () => {
     try {
-      const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib');
-      const o = devPlanOutputs.value;
-      const pdfDoc = await PDFDocument.create();
-      const page = pdfDoc.addPage([595, 842]);
-      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      let y = 800;
-      const draw = (text, size = 12) => {
-        page.drawText(String(text), { x: 40, y, size, font, color: rgb(0.1, 0.2, 0.3) });
-        y -= size + 10;
-      };
-      draw('Developer Marketing Plan / خطة المطور', 16);
-      draw(`Date: ${new Date().toISOString().slice(0, 10)}`);
-      draw(`Total Budget (SAR): ${o.totalBudget ?? 0}`);
-      draw(`Expected Impressions: ${o.expectedImpressions ?? 0}`);
-      draw(`Expected Clicks: ${o.expectedClicks ?? 0}`);
-      draw(`Marketing Duration: ${o.durationLabel ?? '—'}`);
-      const pdfBytes = await pdfDoc.save();
+      const results = platformResults.value || [];
+      const rows = results.map((r, i) => ({
+        id: String(i + 1).padStart(2, '0'),
+        platform: r.labelAr ?? r.platform ?? '',
+        clicks: Number(r.clicks) ?? 0,
+        impressions: Number(r.views) ?? r.impressions ?? 0,
+      }));
+      const { exportDeveloperPlanTemplateToPdf } = await import('@/utils/exportTemplateToPdf');
+      const pdfBytes = await exportDeveloperPlanTemplateToPdf({
+        logoSrc: '',
+        rows,
+        footer: {
+          phone: '920015711',
+          website: 'rakezalaqaria.com',
+          addressAr: 'المملكة العربية السعودية - الرياض، حي الملقا، طريق أنس بن مالك 3110',
+          addressEn: 'Kingdom of Saudi Arabia - Riyadh 3110 Anas Bin Malik street, Al Malqa Dist.',
+          cr: '1010653001',
+          companyAr: 'شركة راكز العقارية',
+          companyEn: 'RAKEZ REAL ESTATE CO.',
+        },
+      });
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = `developer_plan_${new Date().toISOString().split('T')[0]}.pdf`;
       link.click();
+      URL.revokeObjectURL(link.href);
     } catch (error) {
       logger.error('Error exporting developer plan PDF:', error);
       toast.error('تعذر تصدير PDF');
     }
   };
 
-  onMounted(() => {
-    loadProjects();
+  onMounted(async () => {
+    await loadProjects();
     const q = route.query;
     if (q.projectId) developerPlanForm.project_id = String(q.projectId);
     if (q.contractId) developerPlanForm.contract_id = String(q.contractId);
     if (q.marketingValue) developerPlanForm.marketing_value = String(q.marketingValue);
     if (developerPlanForm.contract_id || developerPlanForm.project_id) {
-      loadDeveloperPlan();
+      await loadDeveloperPlan();
     }
   });
 
@@ -176,7 +393,18 @@ export function useMarketingDeveloperPlan() {
     developerPlanForm,
     developerPlanSummary,
     devPlanOutputs,
+    platformResults,
+    selectedProject,
+    contractRates,
+    commissionValue,
+    campaignBudgetFromFormula,
+    applyCampaignBudget,
+    effectiveCpm,
+    effectiveCpc,
+    platformList: DEVELOPER_PLAN_PLATFORMS,
+    inputMode,
     isLoadingDeveloperPlan,
+    isCalculatingBudget,
     isSubmitting,
     projects,
     formatCurrency,
