@@ -58,13 +58,11 @@ describe('teamService', () => {
     it('should update a team', async () => {
       const teamId = 1;
       const teamData = { name: 'Updated Team' };
-      mock
-        .onPost(`/project_management/teams/update/${teamId}`)
-        .reply(200, { data: { id: teamId } });
+      mock.onPut(`/project_management/teams/update/${teamId}`).reply(200, { data: { id: teamId } });
 
       const result = await teamService.updateTeam(teamId, teamData);
 
-      expect(mock.history.post.length).toBe(1);
+      expect(mock.history.put.length).toBe(1);
       expect(result).toBeDefined();
     });
   });
@@ -132,7 +130,7 @@ describe('teamService', () => {
     });
 
     it('should handle 404 Not Found for updateTeam', async () => {
-      mock.onPost('/project_management/teams/update/999').reply(404, { error: 'Not found' });
+      mock.onPut('/project_management/teams/update/999').reply(404, { error: 'Not found' });
 
       await expect(teamService.updateTeam(999, {})).rejects.toThrow();
     });

@@ -4,7 +4,7 @@ import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 
-export function useHRTeams(isHR) {
+export function useHRTeams(_isHR) {
   const { formatCurrency } = useFormatters();
 
   const teamSearchQuery = ref('');

@@ -402,11 +402,15 @@ export function useMarketingDeveloperPlan() {
   const exportDeveloperPlanPdf = async () => {
     try {
       const results = platformResults.value || [];
+      const toSafeNumber = value => {
+        const num = Number(value);
+        return Number.isFinite(num) ? num : 0;
+      };
       const rows = results.map((r, i) => ({
         id: String(i + 1).padStart(2, '0'),
         platform: r.labelAr ?? r.platform ?? '',
-        clicks: Number(r.clicks) ?? 0,
-        impressions: Number(r.views) ?? r.impressions ?? 0,
+        clicks: toSafeNumber(r.clicks),
+        impressions: toSafeNumber(r.views ?? r.impressions),
       }));
       const { exportDeveloperPlanTemplateToPdf } = await import('@/utils/exportTemplateToPdf');
       const pdfBytes = await exportDeveloperPlanTemplateToPdf({

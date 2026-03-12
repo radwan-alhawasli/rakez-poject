@@ -324,7 +324,7 @@ export function useProjectManagement() {
     activeMenuId.value = null;
     try {
       toast.info('أرشفة المشروع: سيتم ربطها بالـ API عند التوفر.');
-    } catch (e) {
+    } catch (_e) {
       toast.error('فشل أرشفة المشروع');
     }
   };
@@ -343,7 +343,7 @@ export function useProjectManagement() {
       } else {
         toast.info('تحميل العقد: سيتم ربطها بالـ API عند التوفر.');
       }
-    } catch (e) {
+    } catch (_e) {
       toast.error('فشل تحميل العقد');
     }
   };

@@ -53,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useEditorMockData } from '@/composables/editor/useEditorMockData';
 
 const { dashboardAvailable, dashboardReady, dashboardNotReady } = useEditorMockData();

@@ -173,7 +173,7 @@ export default {
         hr: 8,
         marketer: 0,
         sales: 5,
-        accounting: 6,
+        accounting: 7,
         marketing: 0,
       };
 

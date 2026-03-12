@@ -39,6 +39,7 @@ import { downloadFilledContract } from '../../src/services/pdfService';
 beforeEach(() => {
   global.fetch = vi.fn(() =>
     Promise.resolve({
+      ok: true,
       arrayBuffer: () => Promise.resolve(mockArrayBuffer),
     })
   );

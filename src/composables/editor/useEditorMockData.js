@@ -17,12 +17,16 @@ try {
     const parsed = JSON.parse(saved);
     if (Array.isArray(parsed)) montageProjectsRaw.value = parsed;
   }
-} catch (_) {}
+} catch (_) {
+  // Ignore malformed/blocked session storage reads.
+}
 
 function persistMontageProjects() {
   try {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(montageProjectsRaw.value));
-  } catch (_) {}
+  } catch (_) {
+    // Ignore storage write failures in private mode/quota limits.
+  }
 }
 
 // Mock: dashboard buckets (Available, Ready, Not Ready)
@@ -109,12 +113,16 @@ const employeeRatingsRaw = ref({}); // { [employeeId]: number 1-5 }
 try {
   const savedRatings = sessionStorage.getItem(STORAGE_KEY + '_ratings');
   if (savedRatings) employeeRatingsRaw.value = JSON.parse(savedRatings);
-} catch (_) {}
+} catch (_) {
+  // Ignore malformed/blocked session storage reads.
+}
 
 function persistRatings() {
   try {
     sessionStorage.setItem(STORAGE_KEY + '_ratings', JSON.stringify(employeeRatingsRaw.value));
-  } catch (_) {}
+  } catch (_) {
+    // Ignore storage write failures in private mode/quota limits.
+  }
 }
 
 export function useEditorMockData() {

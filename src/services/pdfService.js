@@ -36,7 +36,9 @@ export async function loadArabicFontBytes() {
     try {
       const res = await fetch(url);
       if (res.ok) return await res.arrayBuffer();
-    } catch (_) {}
+    } catch (_) {
+      // Try next URL when a font host is unavailable.
+    }
   }
   throw new Error('Could not load Arabic font for PDF');
 }
@@ -432,7 +434,7 @@ export const generateUnitDetailsPdf = async (unit, options = {}) => {
     const fontBytes = await loadArabicFontBytes();
     const font = await pdfDoc.embedFont(fontBytes);
 
-    const { PAGE_WIDTH, PAGE_HEIGHT, DOC_MARGIN, TITLE_SIZE, BODY_SIZE, FOOTER_SIZE, STANDARD_FOOTER } = PDF_LAYOUT;
+    const { PAGE_WIDTH, PAGE_HEIGHT, DOC_MARGIN, TITLE_SIZE, FOOTER_SIZE, STANDARD_FOOTER } = PDF_LAYOUT;
     const page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
     const { height } = page.getSize();
     const lineHeight = 22;

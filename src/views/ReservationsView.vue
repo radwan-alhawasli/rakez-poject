@@ -404,13 +404,17 @@ const downloadVoucher = async reservation => {
         unit = data.unit ?? {};
         employee = data.employee ?? {};
       }
-    } catch (_) {}
+    } catch (_) {
+      // Fallback to existing reservation endpoints when helper endpoint is unavailable.
+    }
     if (reservationData == null) {
       let detail = reservation;
       try {
         const full = await salesService.getReservation(id);
         if (full && typeof full === 'object') detail = full;
-      } catch (_) {}
+      } catch (_) {
+        // Keep current reservation payload when detail fetch fails.
+      }
       reservationData = detail;
       project = detail.project ?? {
         name: detail.project_name ?? detail.projectName,

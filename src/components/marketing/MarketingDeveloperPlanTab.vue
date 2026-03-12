@@ -171,8 +171,6 @@ import { useMarketingDeveloperPlan } from '@/composables/marketing/useMarketingD
 
 const {
   developerPlanForm,
-  developerPlanSummary,
-  devPlanOutputs,
   platformList,
   platformResults,
   contractRates,

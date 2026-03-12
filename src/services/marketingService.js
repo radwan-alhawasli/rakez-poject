@@ -489,7 +489,7 @@ const marketingService = {
         { responseType: 'blob' }
       );
       return response?.data ?? response;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   },
@@ -520,7 +520,7 @@ const marketingService = {
         responseType: 'blob',
       });
       return response?.data ?? response;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   },
