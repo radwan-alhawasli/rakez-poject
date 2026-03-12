@@ -128,16 +128,45 @@ export function useMarketingReports() {
 
   const exportReportsPdf = async () => {
     try {
-      const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib');
+      try {
+        const { getMarketingReportsPdfData } = await import('@/services/pdfApi');
+        const { buildDocumentPdf } = await import('@/services/pdfService');
+        const data = await getMarketingReportsPdfData({
+          project_id: reportFilters.project_id || undefined,
+          user_id: reportFilters.user_id || undefined,
+          start_date: reportFilters.start_date || undefined,
+          end_date: reportFilters.end_date || undefined,
+        });
+        if (data?.title != null && Array.isArray(data?.sections)) {
+          const pdfBytes = await buildDocumentPdf({
+            title: data.title,
+            subtitle: data.subtitle ?? `Date: ${new Date().toISOString().slice(0, 10)}`,
+            sections: data.sections,
+            footer: data.footer,
+          });
+          const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = `marketing_reports_${new Date().toISOString().split('T')[0]}.pdf`;
+          link.click();
+          URL.revokeObjectURL(link.href);
+          return;
+        }
+      } catch (_) { /* fallback to local PDF */ }
+
+      const { getPdfDeps, loadArabicFontBytes, reshapeArabic } = await import('@/services/pdfService');
+      const { PDFDocument, rgb, fontkit } = await getPdfDeps();
       const pdfDoc = await PDFDocument.create();
+      pdfDoc.registerFontkit(fontkit);
+      const fontBytes = await loadArabicFontBytes();
+      const font = await pdfDoc.embedFont(fontBytes);
       const page = pdfDoc.addPage([595, 842]);
-      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
       let y = 800;
       const draw = (text, size = 12) => {
-        page.drawText(String(text), { x: 40, y, size, font, color: rgb(0.1, 0.2, 0.3) });
+        page.drawText(reshapeArabic(String(text)), { x: 40, y, size, font, color: rgb(0.1, 0.2, 0.3) });
         y -= size + 10;
       };
-      draw('Marketing Reports', 16);
+      draw('تقارير التسويق / Marketing Reports', 16);
       draw(`Date: ${new Date().toISOString().slice(0, 10)}`);
       reportRows.value.slice(0, 40).forEach(row => draw(`${row.section} / ${row.name}: ${row.summary}`));
       const pdfBytes = await pdfDoc.save();

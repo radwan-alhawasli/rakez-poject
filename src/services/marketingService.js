@@ -105,9 +105,27 @@ const marketingService = {
   async getDeveloperPlan(contractId) {
     try {
       const response = await apiClient.get(`/marketing/developer-plans/${contractId}`);
-      return unwrap(response, {});
+      const data = unwrap(response, {});
+      const contract = data?.contract ?? data?.data?.contract ?? null;
+      return { ...data, contract };
     } catch (error) {
       return handleServiceError(error, 'Fetch developer plan', 'get', {});
+    }
+  },
+
+  /**
+   * حساب ميزانية الحملة: عمولة = نسبة السعي × متوسط السعر، ميزانية الحملة = عمولة × نسبة التسويق (6%-10%).
+   * POST /api/marketing/developer-plans/calculate-budget
+   * Permission: marketing.plans.create
+   */
+  async calculateDeveloperPlanBudget(contractId, marketingPercent, unitPrice = null) {
+    try {
+      const payload = { contract_id: Number(contractId), marketing_percent: Number(marketingPercent) };
+      if (unitPrice != null && unitPrice !== '') payload.unit_price = Number(unitPrice);
+      const response = await apiClient.post('/marketing/developer-plans/calculate-budget', payload);
+      return unwrap(response, {});
+    } catch (error) {
+      return handleServiceError(error, 'Calculate developer plan budget', 'post', {});
     }
   },
 

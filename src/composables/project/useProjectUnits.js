@@ -267,6 +267,25 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     const unitId = unit.id ?? unit.contract_unit_id ?? unit.unit_id;
 
     try {
+      try {
+        const { getUnitPdfData } = await import('@/services/pdfApi');
+        const data = await getUnitPdfData(unitId);
+        if (data?.unit != null) {
+          const pdfBytes = await generateUnitDetailsPdf(data.unit, {
+            projectName: (data.projectName ?? data.project_name ?? projectName) || '',
+          });
+          const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `unit_${data.unit?.unit_number ?? data.unit?.id ?? unitId ?? 'details'}.pdf`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+          notificationService.addNotification('تم تحميل ملف PDF بنجاح', 'success');
+          return;
+        }
+      } catch (_) { /* prefer backend blob or local fallback */ }
+
       const { blob, filename } = await salesService.downloadUnitPdf(unitId);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');

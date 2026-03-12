@@ -1,6 +1,6 @@
 <template>
-  <div class="project-management-view">
-    <!-- Header (same pattern as TeamManagementView / other views) -->
+  <div class="project-management-view project-management-design">
+    <!-- Header — نفس نمط لوحة مشاريع المبيعات -->
     <div class="welcome-header project-mgmt-header">
       <div class="header-content">
         <h1 class="welcome-title">إدارة المشاريع</h1>
@@ -68,7 +68,7 @@
       <p>لا توجد مشاريع مطابقة للعرض.</p>
     </div>
 
-    <div v-else class="projects-grid sales-style-cards">
+    <div v-else class="projects-grid">
       <ProjectCard
         v-for="project in filteredProjects"
         :key="project.id"
@@ -242,15 +242,11 @@ const {
   flex: 1;
   min-width: 0;
 }
+/* ألوان الهيدر من global-luxury-styles (ثابتة): العنوان #B5A99A، الوصف rgba(181,169,154,0.95) */
 .welcome-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1e3a5f;
   margin: 0 0 8px 0;
 }
 .welcome-subtitle {
-  font-size: 15px;
-  color: #64748b;
   margin: 0;
 }
 .controls-area {

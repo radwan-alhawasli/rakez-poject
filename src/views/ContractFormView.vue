@@ -290,10 +290,10 @@
               <div class="field-group full">
                 <label>رابط موقع المشروع</label>
                 <input
-                  type="text"
-                  value="https://placeholder.co/800x600/1e293b/b1a28f?text=%D8%A7%D9%84%D9%84%D8%B1%D8%AC%D8%B3"
-                  class="form-input readonly"
-                  readonly
+                  type="url"
+                  v-model="form.project_site_url"
+                  class="form-input"
+                  placeholder="https://..."
                 />
               </div>
             </div>
@@ -444,6 +444,7 @@ export default {
       total_units_value: 0,
       average_unit_price: 0,
       notes: '',
+      project_site_url: '',
     });
 
     const fetchContractDetails = async () => {
@@ -487,6 +488,7 @@ export default {
           form.total_units_value = data.total_units_value || form.total_units_value || 0;
           form.average_unit_price = data.average_unit_price || form.average_unit_price || 0;
           form.notes = data.notes || form.notes;
+          form.project_site_url = data.project_site_url || data.project_link || data.location_url || form.project_site_url;
 
           // Second Party Info - Pre-fill from Developer info if it's an exclusive project or info exists
           form.second_party_name =
@@ -591,6 +593,7 @@ export default {
             agency_date: form.agency_date ? form.agency_date.split('-').reverse().join('-') : '',
             avg_property_value: form.avg_property_value.toString(),
             release_date: form.release_date ? form.release_date.split('-').reverse().join('-') : '',
+            project_site_url: form.project_site_url || undefined,
           };
 
           await contractService.storeContractInfo(requestId, payload);
@@ -632,7 +635,15 @@ export default {
     const downloadContract = async () => {
       isDownloading.value = true;
       try {
-        const pdfBytes = await downloadFilledContract(form);
+        let contractData = form;
+        if (requestId) {
+          try {
+            const { getContractFillData } = await import('@/services/pdfApi');
+            const data = await getContractFillData(requestId);
+            if (data != null && typeof data === 'object') contractData = data;
+          } catch (_) {}
+        }
+        const pdfBytes = await downloadFilledContract(contractData);
         const blob = new Blob([pdfBytes], { type: 'application/pdf' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);

@@ -11,7 +11,7 @@
       <p>جاري تحميل البيانات...</p>
     </div>
     <form id="edit-exclusive-form-id" v-else class="edit-exclusive-form" @submit.prevent="submit">
-      <!-- معلومات أساسية -->
+      <!-- معلومات المشروع والمطور (نفس حقول طلب مشروع حصري فقط) -->
       <section class="form-section">
         <h4 class="section-label">معلومات المشروع والمطور</h4>
         <div class="form-grid">
@@ -35,6 +35,10 @@
             <label>الحي</label>
             <input v-model="form.district" type="text" class="form-input" placeholder="مثال: الحمراء" />
           </div>
+          <div class="field-group">
+            <label>المساحة (إجمالي القيمة)</label>
+            <input v-model.number="form.total_units_value" type="number" class="form-input" placeholder="0" />
+          </div>
           <div class="field-group full">
             <label>متطلبات المطور (اختياري)</label>
             <textarea
@@ -45,8 +49,16 @@
             />
           </div>
           <div class="field-group full">
+            <label>الوصف</label>
+            <textarea v-model="form.notes" class="form-input" rows="2" placeholder="أدخل ملاحظاتك هنا..." />
+          </div>
+          <div class="field-group full">
             <label>رابط صورة المشروع (اختياري)</label>
             <input v-model="form.project_image_url" type="url" class="form-input" placeholder="https://example.com/image.jpg" />
+          </div>
+          <div class="field-group full">
+            <label>رابط موقع المشروع (اختياري)</label>
+            <input v-model="form.project_site_url" type="url" class="form-input" placeholder="https://..." />
           </div>
         </div>
       </section>
@@ -126,8 +138,11 @@ const form = reactive({
   developer_number: '',
   city: '',
   district: '',
+  total_units_value: 0,
   developer_requiment: '',
+  notes: '',
   project_image_url: '',
+  project_site_url: '',
   units: [{ type: 'شقة', count: 0, price: 0 }],
 });
 
@@ -138,8 +153,11 @@ function mapApiToForm(data) {
   form.developer_number = data.developer_number ?? data.second_party_cr_number ?? '';
   form.city = data.city ?? '';
   form.district = data.district ?? '';
+  form.total_units_value = data.total_units_value != null ? Number(data.total_units_value) : 0;
   form.developer_requiment = data.developer_requiment ?? data.developer_requirement ?? '';
+  form.notes = data.notes ?? '';
   form.project_image_url = data.project_image_url ?? data.image ?? '';
+  form.project_site_url = data.project_site_url ?? data.project_link ?? '';
   if (data.units && Array.isArray(data.units) && data.units.length > 0) {
     form.units = data.units.map(u => ({
       type: u.type ?? 'شقة',
@@ -185,6 +203,8 @@ async function submit() {
       district: form.district,
       developer_requiment: form.developer_requiment || undefined,
       project_image_url: form.project_image_url || undefined,
+      project_site_url: form.project_site_url || undefined,
+      note: form.notes || undefined,
       units: form.units.map(u => ({
         type: u.type || 'شقة',
         count: Number(u.count) || 0,
