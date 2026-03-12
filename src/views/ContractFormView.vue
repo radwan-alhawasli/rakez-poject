@@ -641,7 +641,9 @@ export default {
             const { getContractFillData } = await import('@/services/pdfApi');
             const data = await getContractFillData(requestId);
             if (data != null && typeof data === 'object') contractData = data;
-          } catch (_) {}
+          } catch (_) {
+            // Fallback to the current form payload when helper endpoint is unavailable.
+          }
         }
         const pdfBytes = await downloadFilledContract(contractData);
         const blob = new Blob([pdfBytes], { type: 'application/pdf' });

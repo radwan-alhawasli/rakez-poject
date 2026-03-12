@@ -464,7 +464,6 @@ const platformLabelsAr = {
 function devPlanCpmCpcSummary(devPlan) {
   if (!devPlan) return '—';
   const pcpm = devPlan.platform_cpm ?? devPlan.platformCpm;
-  const pcpc = devPlan.platform_cpc ?? devPlan.platformCpc;
   if (pcpm && Object.keys(pcpm).length) return 'حسب المنصة';
   const avgCpm = devPlan.average_cpm ?? devPlan.averageCpm;
   const avgCpc = devPlan.average_cpc ?? devPlan.averageCpc;
@@ -509,14 +508,12 @@ const {
   confirmModalConfig,
   budgetForm,
   budgetResult,
-  isSubmitting,
   viewProjectDetails,
   assignTeamToProject,
   removeTeamFromProject,
   onConfirmModalConfirm,
   goToUnits,
   goToPhotography,
-  managePlan,
   viewProjectPlan,
   closePlanUnavailableModal,
   goToManagePlanFromModal,

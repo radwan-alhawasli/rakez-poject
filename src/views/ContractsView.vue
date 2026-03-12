@@ -316,15 +316,6 @@ const approvedCount = computed(
   () => contracts.value.filter(c => c.status === 'Approved').length
 );
 const archiveCount = computed(() => contracts.value.filter(c => c.status === 'Refused').length);
-const marketerCount = computed(
-  () => contracts.value.filter(c => c.type === 'Full Contract' || !c.type).length
-);
-const exclusiveCount = computed(
-  () => contracts.value.filter(c => c.type === 'Exclusive').length
-);
-const myRequestsCount = computed(
-  () => contracts.value.filter(c => c.marketer === user.value?.name).length
-);
 
 const viewContract = async c => {
   try {

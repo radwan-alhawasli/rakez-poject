@@ -44,7 +44,7 @@ import { useSalesTasks } from '@/composables/sales/useSalesTasks';
 const {
   marketingTasks, isLoadingTasks, showCreateTaskModal,
   hasPermission, getTaskStatusText,
-  loadTasks, openCreateTaskModal, updateTask,
+  loadTasks, updateTask,
 } = useSalesTasks();
 
 loadTasks();

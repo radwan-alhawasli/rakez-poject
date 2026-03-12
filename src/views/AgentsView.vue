@@ -210,7 +210,7 @@ export default {
       loading.value = true;
       try {
         agents.value = await agentService.getAgents();
-      } catch (e) {
+      } catch (_e) {
         toast.error('فشل تحميل قائمة الوكلاء');
         agents.value = [];
       } finally {
@@ -245,7 +245,7 @@ export default {
         }
         closeModal();
         await fetchAgents();
-      } catch (e) {
+      } catch (_e) {
         toast.error('فشل حفظ الوكيل');
       } finally {
         isSaving.value = false;
@@ -267,7 +267,7 @@ export default {
         } else {
           toast.error('فشل حذف الوكيل');
         }
-      } catch (e) {
+      } catch (_e) {
         toast.error('فشل حذف الوكيل');
       }
       showConfirmModal.value = false;

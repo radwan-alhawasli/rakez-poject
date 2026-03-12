@@ -86,7 +86,7 @@ describe('aiService', () => {
   describe('getConversations', () => {
     it('should fetch conversation history', async () => {
       const mockConversations = [{ id: 1, session_id: '123', created_at: '2026-01-01' }];
-      mock.onGet('/ai/v2/conversations').reply(200, { data: mockConversations });
+      mock.onGet('/ai/conversations').reply(200, { data: mockConversations });
 
       const result = await aiService.getConversations();
 
@@ -100,7 +100,7 @@ describe('aiService', () => {
   describe('deleteConversation', () => {
     it('should delete a conversation', async () => {
       const sessionId = '123';
-      mock.onDelete(`/ai/v2/conversations/${sessionId}`).reply(200, { data: { deleted: true } });
+      mock.onDelete(`/ai/conversations/${sessionId}`).reply(200, { data: { deleted: true } });
 
       const result = await aiService.deleteConversation(sessionId);
 
@@ -139,14 +139,14 @@ describe('aiService', () => {
     });
 
     it('should handle 403 Forbidden for getConversations', async () => {
-      mock.onGet('/ai/v2/conversations').reply(403, { error: 'Forbidden' });
+      mock.onGet('/ai/conversations').reply(403, { error: 'Forbidden' });
 
       const result = await aiService.getConversations();
       expect(result).toBeDefined();
     });
 
     it('should handle 404 Not Found for deleteConversation', async () => {
-      mock.onDelete('/ai/v2/conversations/invalid').reply(404, { error: 'Not found' });
+      mock.onDelete('/ai/conversations/invalid').reply(404, { error: 'Not found' });
 
       await expect(aiService.deleteConversation('invalid')).rejects.toThrow();
     });
@@ -188,7 +188,7 @@ describe('aiService', () => {
     });
 
     it('should handle empty array response for getConversations', async () => {
-      mock.onGet('/ai/v2/conversations').reply(200, { data: [] });
+      mock.onGet('/ai/conversations').reply(200, { data: [] });
 
       const result = await aiService.getConversations();
       expect(result).toHaveProperty('items');
@@ -216,7 +216,7 @@ describe('aiService', () => {
     });
   });
 
-  // Knowledge Management (Postman: /ai/assistant/knowledge)
+  // Knowledge Management
   describe('Knowledge Management', () => {
     it('assistantChat posts to /ai/assistant/chat', async () => {
       mock.onPost('/ai/assistant/chat').reply(200, { data: { answer: 'مرحبا' } });
@@ -227,33 +227,31 @@ describe('aiService', () => {
       expect(result.answer).toBe('مرحبا');
     });
 
-    it('getKnowledge fetches from /ai/assistant/knowledge', async () => {
-      mock
-        .onGet('/ai/assistant/knowledge')
-        .reply(200, { data: [{ id: 1, title: 'K1' }], meta: { total: 1 } });
+    it('getKnowledge fetches from /ai/knowledge', async () => {
+      mock.onGet('/ai/knowledge').reply(200, { data: [{ id: 1, title: 'K1' }], meta: { total: 1 } });
       const result = await aiService.getKnowledge({ module: 'sales' });
-      expect(mock.history.get[0].url).toContain('/ai/assistant/knowledge');
+      expect(mock.history.get[0].url).toContain('/ai/knowledge');
       expect(result).toHaveProperty('items');
     });
 
-    it('createKnowledge posts to /ai/assistant/knowledge', async () => {
-      mock.onPost('/ai/assistant/knowledge').reply(201, { data: { id: 1 } });
+    it('createKnowledge posts to /ai/knowledge', async () => {
+      mock.onPost('/ai/knowledge').reply(201, { data: { id: 1 } });
       const result = await aiService.createKnowledge({ module: 'sales', title: 'test' });
-      expect(mock.history.post[0].url).toBe('/ai/assistant/knowledge');
+      expect(mock.history.post[0].url).toBe('/ai/knowledge');
       expect(result.id).toBe(1);
     });
 
-    it('updateKnowledge puts to /ai/assistant/knowledge/:id', async () => {
-      mock.onPut('/ai/assistant/knowledge/5').reply(200, { data: { id: 5, updated: true } });
+    it('updateKnowledge puts to /ai/knowledge/:id', async () => {
+      mock.onPut('/ai/knowledge/5').reply(200, { data: { id: 5, updated: true } });
       const result = await aiService.updateKnowledge(5, { title: 'updated' });
-      expect(mock.history.put[0].url).toBe('/ai/assistant/knowledge/5');
+      expect(mock.history.put[0].url).toBe('/ai/knowledge/5');
       expect(result.updated).toBe(true);
     });
 
-    it('deleteKnowledge deletes /ai/assistant/knowledge/:id', async () => {
-      mock.onDelete('/ai/assistant/knowledge/5').reply(200, { data: { deleted: true } });
+    it('deleteKnowledge deletes /ai/knowledge/:id', async () => {
+      mock.onDelete('/ai/knowledge/5').reply(200, { data: { deleted: true } });
       const result = await aiService.deleteKnowledge(5);
-      expect(mock.history.delete[0].url).toBe('/ai/assistant/knowledge/5');
+      expect(mock.history.delete[0].url).toBe('/ai/knowledge/5');
       expect(result.deleted).toBe(true);
     });
   });

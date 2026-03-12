@@ -232,7 +232,7 @@ const fetchProject = async () => {
       } else {
         data = await contractService.getContractById(id);
       }
-    } catch (e) {
+    } catch (_e) {
       logger.debug('Main fetch failed, utilizing fallback');
     }
 

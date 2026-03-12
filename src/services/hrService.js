@@ -223,7 +223,7 @@ export const generateMarketerReport = async (marketerId, month, year, format = '
         link.remove();
         window.URL.revokeObjectURL(url);
         return blob;
-      } catch (err) {
+      } catch (_err) {
         const response = await apiClient.get('/hr/reports/marketer-performance', {
           params: { marketer_id: marketerId, month, year, format: 'pdf' },
           responseType: 'blob',
@@ -308,7 +308,7 @@ export const generateExpiringContractsReport = async (days = 30, format = 'pdf')
         link.remove();
         window.URL.revokeObjectURL(url);
         return blob;
-      } catch (err) {
+      } catch (_err) {
         const response = await apiClient.get('/hr/reports/expiring-contracts', {
           params: { days, format: 'pdf' },
           responseType: 'blob',

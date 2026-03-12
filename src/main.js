@@ -12,7 +12,11 @@ import { toast } from './composables/useToast';
 // الوضع المظلم معطّل — إجبار الوضع الفاتح
 if (typeof document !== 'undefined') {
   document.documentElement.classList.remove('dark');
-  try { localStorage.removeItem('rakez-dark-mode'); } catch (_) {}
+  try {
+    localStorage.removeItem('rakez-dark-mode');
+  } catch (_) {
+    // Ignore storage access failures in restricted/private modes.
+  }
 }
 
 // Helper: treat 401/Unauthenticated as expected (redirect to login), not a runtime error
@@ -39,7 +43,9 @@ window.addEventListener(
     if (msg && typeof window !== 'undefined') {
       try {
         toast.error(msg);
-      } catch (_) {}
+      } catch (_) {
+        // Ignore toast failures to avoid interrupting global error handling.
+      }
     }
   },
   true

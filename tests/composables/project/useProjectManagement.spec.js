@@ -69,7 +69,10 @@ import contractService from '@/services/contractService';
 import { useProjectManagement } from '@/composables/project/useProjectManagement';
 
 async function mountComposable(mockData = []) {
-  contractService.getContracts.mockResolvedValue(mockData);
+  contractService.getContracts.mockResolvedValue({
+    items: mockData,
+    total: mockData.length,
+  });
   const Comp = defineComponent({
     setup() {
       return useProjectManagement();

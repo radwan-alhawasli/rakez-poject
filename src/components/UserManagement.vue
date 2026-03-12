@@ -655,7 +655,6 @@ export default {
     });
 
     return {
-      useAdminApi: props.useAdminApi,
       users,
       totalItems,
       loading,

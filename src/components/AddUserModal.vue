@@ -697,7 +697,6 @@ export default {
       isEdit,
       dateType,
       teamsList,
-      useAdminApi: props.useAdminApi,
       getFieldError,
       NATIONALITIES,
       MARITAL_STATUSES,

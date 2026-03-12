@@ -259,7 +259,9 @@ const downloadCommissionPdf = async commission => {
         full = data.commission;
         distributions = data.distributions ?? [];
       }
-    } catch (_) {}
+    } catch (_) {
+      // Fallback to existing endpoints when PDF helper endpoint is unavailable.
+    }
     if (full == null) {
       full = await commissionService.getCommissionById(id);
       distributions = await commissionService.getDistributions(id);
@@ -287,7 +289,9 @@ const downloadDepositPdf = async deposit => {
       const { getDepositClaimPdfData } = await import('@/services/pdfApi');
       const data = await getDepositClaimPdfData(id);
       if (data != null) full = data;
-    } catch (_) {}
+    } catch (_) {
+      // Fallback to existing endpoints when PDF helper endpoint is unavailable.
+    }
     if (full == null) full = await commissionService.getDepositById(id);
     const pdfBytes = await generateDepositClaimPdf(full);
     const blob = new Blob([pdfBytes], { type: 'application/pdf' });

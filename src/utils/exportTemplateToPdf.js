@@ -43,7 +43,9 @@ export async function exportDeveloperPlanTemplateToPdf(props) {
     try {
       await document.fonts.load('16px Amiri');
       await document.fonts.ready;
-    } catch (_) {}
+    } catch (_) {
+      // Continue export even if font loading events are unavailable.
+    }
   }
 
   const container = document.createElement('div');
