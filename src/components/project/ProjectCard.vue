@@ -112,10 +112,11 @@ const props = defineProps({
   isProjectManagerOnly: { type: Boolean, default: false },
 });
 
+// عرض صورة المشروع من الحقل project_image_url المرسل من الـ API
 const imageUrl = computed(() => {
   const url =
-    props.project?.image ??
     props.project?.project_image_url ??
+    props.project?.image ??
     props.project?.image_url ??
     props.project?.main_image ??
     props.project?.cover_image ??

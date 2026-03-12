@@ -306,29 +306,30 @@ function mapApiToForm(data) {
   form.gregorian_date = (formatDateForInput(data.gregorian_date) || data.gregorian_date) ?? '';
   form.agreement_duration_days = data.agreement_duration_days != null ? String(data.agreement_duration_days) : '';
   // التسويق والعمولة
-  form.commission_percent = data.commission_percent != null ? String(data.commission_percent) : '';
+  form.commission_percent = data.commission_percent != null ? String(data.commission_percent) : (data.commission_percentage != null ? String(data.commission_percentage) : '');
   form.commission_from = data.commission_from ?? 'owner';
   form.agency_number = data.agency_number ?? '';
   form.agency_date = (formatDateForInput(data.agency_date) || data.agency_date) ?? '';
   form.avg_property_value = data.avg_property_value != null ? String(data.avg_property_value) : '';
   form.release_date = (formatDateForInput(data.release_date) || data.release_date) ?? '';
-  // الطرف الثاني
-  form.second_party_name = data.second_party_name ?? '';
-  form.second_party_id_number = data.second_party_id_number ?? data.second_party_id ?? '';
-  form.second_party_phone = data.second_party_phone ?? '';
-  form.second_party_email = data.second_party_email ?? '';
-  form.second_party_address = data.second_party_address ?? '';
-  form.second_party_cr_number = data.second_party_cr_number ?? '';
-  form.second_party_signatory = data.second_party_signatory ?? '';
-  form.second_party_role = data.second_party_role ?? 'owner';
-  // المشاريع والوحدات
+  // الطرف الثاني — من الحقول المباشرة أو من كائن second_party_data إن وُجد
+  const sp = data.second_party_data;
+  form.second_party_name = data.second_party_name ?? sp?.name ?? sp?.second_party_name ?? '';
+  form.second_party_id_number = data.second_party_id_number ?? data.second_party_id ?? sp?.id_number ?? sp?.second_party_id ?? '';
+  form.second_party_phone = data.second_party_phone ?? sp?.phone ?? '';
+  form.second_party_email = data.second_party_email ?? sp?.email ?? '';
+  form.second_party_address = data.second_party_address ?? sp?.address ?? '';
+  form.second_party_cr_number = data.second_party_cr_number ?? sp?.cr_number ?? data.developer_number ?? '';
+  form.second_party_signatory = data.second_party_signatory ?? sp?.signatory ?? '';
+  form.second_party_role = data.second_party_role ?? sp?.role ?? 'owner';
+  // المشاريع والوحدات — unit_count و total_price من استجابة الـ API
   form.units_count = data.units_count ?? data.unit_count ?? (data.units && data.units.length ? data.units.reduce((s, u) => s + (parseInt(u.count) || 0), 0) : 0);
   form.unit_type = data.unit_type ?? (data.units && data.units[0] ? data.units[0].type : '') ?? '';
   form.project_name = data.project_name ?? '';
   form.district = data.district ?? '';
   form.total_units_value = data.total_units_value ?? 0;
   form.city = data.city ?? '';
-  form.notes = data.notes ?? '';
+  form.notes = data.notes ?? data.note ?? '';
   form.project_site_url = data.project_site_url ?? data.project_link ?? data.location_url ?? '';
 }
 

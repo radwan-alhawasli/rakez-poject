@@ -39,6 +39,14 @@
             <div class="section-bar"></div>
             <h3 class="section-title">المشاريع</h3>
           </div>
+          <div v-if="contractDetails.projectImageUrl" class="contract-modal-project-image-wrap">
+            <img
+              :src="contractDetails.projectImageUrl"
+              alt="صورة المشروع"
+              class="contract-modal-project-image"
+              @error="$event.target.style.display='none'"
+            />
+          </div>
           <div class="details-list">
             <div class="detail-row">
               <span class="detail-label">اسم المشروع:</span>
@@ -51,6 +59,10 @@
             <div class="detail-row">
               <span class="detail-label">عدد الوحدات:</span>
               <span class="detail-value">{{ contractDetails.unitCount }}</span>
+            </div>
+            <div v-if="contractDetails.totalPrice" class="detail-row">
+              <span class="detail-label">إجمالي السعر:</span>
+              <span class="detail-value">{{ contractDetails.totalPrice }}</span>
             </div>
           </div>
         </section>
@@ -222,17 +234,31 @@ export default {
               ? String(c.commission_from ?? '')
               : '';
 
+      // إجمالي السعر من API (total_price)
+      const totalPrice =
+        c.total_price != null && c.total_price !== ''
+          ? Number(c.total_price).toLocaleString('ar-SA') + ' ر.س'
+          : '';
+
+      // صورة المشروع من الـ API (project_image_url)
+      const projectImageUrl =
+        (c.project_image_url && String(c.project_image_url).trim()) ||
+        (c.image && String(c.image).trim()) ||
+        '';
+
       return {
         // بيانات المطور - الاسم هو اسم المطور (developer_name)
         name: c.developer_name || c.developer || 'غير محدد',
 
-        // بيانات المشروع - من API الحقول الصحيحة
+        // بيانات المشروع - من API الحقول الصحيحة (unit_count, total_price, project_image_url)
         projectName: c.project_name || 'غير محدد',
+        projectImageUrl: projectImageUrl || null,
         unitType: unitType,
         unitCount: unitCount,
+        totalPrice,
 
-        // تفاصيل التسويق - المسوقون هو اسم المستخدم الذي قدم الطلب (created_by_name)
-        marketer: c.created_by_name || c.marketer || c.marketer_name || 'غير محدد',
+        // تفاصيل التسويق — مقدم الطلب من user.name أو created_by_name
+        marketer: c.created_by_name || c.user?.name || c.marketer || c.marketer_name || 'غير محدد',
 
         // نسبة السعي والسعي من (فارغ إن لم يرجعه الـ API)
         commissionPercent,
@@ -350,6 +376,21 @@ export default {
 
 .details-section {
   margin-bottom: 32px;
+}
+
+.contract-modal-project-image-wrap {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-light-gray, #f1f5f9);
+  max-height: 220px;
+}
+.contract-modal-project-image {
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+  object-fit: cover;
+  display: block;
 }
 
 .section-header {

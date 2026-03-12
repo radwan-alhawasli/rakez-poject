@@ -253,12 +253,22 @@ const fetchProject = async () => {
         }
       }
     } else {
-      // Normalize from GET /contracts/show/:id (notes, project_progress, project_name)
+      // Normalize from GET /contracts/show/:id — تضمين الحقول المرجعة (unit_count, total_price, user, ...)
       project.value = {
         ...data,
         name: data.project_name || data.name,
         image: data.project_image_url || data.image,
-        notes: data.notes ?? null,
+        notes: data.notes ?? data.note ?? null,
+        unit_count: data.unit_count ?? null,
+        total_price: data.total_price ?? null,
+        user: data.user ?? null,
+        commission_percentage: data.commission_percent ?? data.commission_percentage ?? null,
+        commission_from: data.commission_from ?? null,
+        info: data.info ?? null,
+        second_party_data: data.second_party_data ?? null,
+        photography_department: data.photography_department ?? null,
+        boards_department: data.boards_department ?? null,
+        montage_department: data.montage_department ?? null,
       };
     }
 

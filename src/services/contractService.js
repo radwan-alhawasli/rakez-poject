@@ -35,6 +35,38 @@ function normalizeContractItem(p) {
 }
 
 /**
+ * تطبيع استجابة GET /contracts/show/:id — توحيد أسماء الحقول وتضمين الحقول المرجعة من الـ API.
+ * الحقول المدعومة: id, user_id, project_name, developer_*, city, district, units, unit_count,
+ * total_price, commission_percent, commission_from, user, info, second_party_data,
+ * photography_department, boards_department, montage_department, project_progress, ...
+ */
+function normalizeContractShowResponse(raw) {
+  if (!raw || typeof raw !== 'object') return raw;
+  const imageUrl = getContractImageUrl(raw);
+  return {
+    ...raw,
+    id: raw.id ?? raw.contract_id,
+    contract_id: raw.contract_id ?? raw.id,
+    name: raw.project_name ?? raw.name ?? (raw.id != null ? `مشروع #${raw.id}` : ''),
+    project_name: raw.project_name ?? raw.name,
+    notes: raw.notes ?? raw.note ?? null,
+    project_progress: raw.project_progress ?? null,
+    image: imageUrl ?? null,
+    project_image_url: imageUrl ?? raw.project_image_url,
+    commission_percentage: raw.commission_percent ?? raw.commission_percentage ?? null,
+    created_by_name: raw.user?.name ?? raw.created_by_name ?? null,
+    unit_count: raw.unit_count ?? (Array.isArray(raw.units) ? raw.units.reduce((s, u) => s + (parseInt(u.count) || 0), 0) : null),
+    total_price: raw.total_price ?? null,
+    user: raw.user ?? null,
+    info: raw.info ?? null,
+    second_party_data: raw.second_party_data ?? null,
+    photography_department: raw.photography_department ?? null,
+    boards_department: raw.boards_department ?? null,
+    montage_department: raw.montage_department ?? null,
+  };
+}
+
+/**
  * خدمة العقود - API Integration
  */
 const contractService = {
@@ -231,12 +263,13 @@ const contractService = {
 
   /**
    * جلب تفاصيل عقد
-   * GET /contracts/show/:id
+   * GET /contracts/show/:id — الاستجابة: { success, message, data: { id, project_name, units, unit_count, total_price, user, ... } }
    */
   async getContractById(id) {
     try {
       const response = await apiClient.get(`/contracts/show/${id}`);
-      return response.data.data || response.data;
+      const raw = response.data?.data ?? response.data;
+      return raw ? normalizeContractShowResponse(raw) : null;
     } catch (error) {
       return handleServiceError(error, 'Fetch contract by id', 'get', null);
     }
