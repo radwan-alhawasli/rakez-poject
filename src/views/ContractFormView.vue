@@ -635,7 +635,17 @@ export default {
     const downloadContract = async () => {
       isDownloading.value = true;
       try {
-        const pdfBytes = await downloadFilledContract(form);
+        let contractData = form;
+        if (requestId) {
+          try {
+            const { getContractFillData } = await import('@/services/pdfApi');
+            const data = await getContractFillData(requestId);
+            if (data != null && typeof data === 'object') contractData = data;
+          } catch (_) {
+            // Fallback to the current form payload when helper endpoint is unavailable.
+          }
+        }
+        const pdfBytes = await downloadFilledContract(contractData);
         const blob = new Blob([pdfBytes], { type: 'application/pdf' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);

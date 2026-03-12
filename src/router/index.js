@@ -485,16 +485,19 @@ const routes = [
             path: 'dashboard',
             name: 'CommissionsDashboard',
             component: () => import('../views/CommissionDepositsView.vue'),
+            meta: { permissions: [PERMISSIONS.ACCOUNTING_DASHBOARD_VIEW] },
           },
           {
             path: 'commissions',
             name: 'CommissionsList',
             component: () => import('../views/CommissionDepositsView.vue'),
+            meta: { permissions: [PERMISSIONS.ACCOUNTING_COMMISSIONS_APPROVE] },
           },
           {
             path: 'deposits',
             name: 'DepositsTracking',
             component: () => import('../views/CommissionDepositsView.vue'),
+            meta: { permissions: [PERMISSIONS.ACCOUNTING_DEPOSITS_VIEW] },
           },
         ],
       },
@@ -554,6 +557,23 @@ const router = createRouter({
   routes,
 });
 
+const LOGIN_ROUTE_NAME = 'Login';
+const ROOT_PATH = '/';
+const LOGIN_PATH = '/login';
+
+function isPublicRoute(route) {
+  return Boolean(route?.meta?.public);
+}
+
+function isLoginRoute(route) {
+  return route?.name === LOGIN_ROUTE_NAME;
+}
+
+function handleUnauthenticatedAccess(to, next) {
+  logger.warn('Unauthenticated access attempt to:', to.path);
+  next(LOGIN_PATH);
+}
+
 router.beforeEach((to, from, next) => {
   const isAuthenticated = authService.isAuthenticated();
   const user = authService.getCurrentUser();
@@ -565,20 +585,16 @@ router.beforeEach((to, from, next) => {
   }
 
   // Public routes - allow access
-  if (to.meta.public) {
+  if (isPublicRoute(to)) {
     // If already authenticated and trying to access login, redirect to dashboard
-    if (to.name === 'Login' && isAuthenticated) {
+    if (isLoginRoute(to) && isAuthenticated) {
       return redirectByRole(user, next);
     }
     return next();
   }
 
   // Protected routes - require authentication
-  if (!isAuthenticated) {
-    logger.warn('Unauthenticated access attempt to:', to.path);
-    next('/login');
-    return;
-  }
+  if (!isAuthenticated) return handleUnauthenticatedAccess(to, next);
 
   // Check role-based access control
   if (!canAccessRoute(user, to.meta)) {
@@ -599,7 +615,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // Handle root path and login redirect
-  if (to.path === '/' || (to.name === 'Login' && isAuthenticated)) {
+  if (to.path === ROOT_PATH || (isLoginRoute(to) && isAuthenticated)) {
     redirectByRole(user, next);
     return;
   }

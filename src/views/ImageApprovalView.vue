@@ -207,7 +207,7 @@ export default {
                   updated_at: new Date(data.updated_at || Date.now()).toLocaleDateString('ar-SA'),
                 };
               }
-            } catch (e) {
+            } catch (_e) {
               // console.error(`Error fetching photo for project ${project.id}`, e)
               return null;
             }

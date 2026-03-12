@@ -199,28 +199,53 @@ export const generateTeamPerformanceReport = async (month, year, format = 'pdf')
 };
 
 /**
- * Generate marketer performance report
+ * Generate marketer performance report (PDF built on frontend from API data).
  * GET /hr/reports/marketer-performance (params: marketer_id, month, year, format)
  */
 export const generateMarketerReport = async (marketerId, month, year, format = 'pdf') => {
   try {
+    if (format === 'pdf') {
+      try {
+        const dataResponse = await apiClient.get('/hr/reports/marketer-performance', {
+          params: { marketer_id: marketerId, month, year, format: 'json' },
+          responseType: 'json',
+        });
+        const report = dataResponse?.data?.data ?? dataResponse?.data ?? dataResponse;
+        const { generateMarketerPerformanceReportPdf } = await import('@/services/pdfService');
+        const pdfBytes = await generateMarketerPerformanceReportPdf(report, new Date().toISOString().slice(0, 10));
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `marketer_performance_${marketerId}_${month}_${year}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        return blob;
+      } catch (_err) {
+        const response = await apiClient.get('/hr/reports/marketer-performance', {
+          params: { marketer_id: marketerId, month, year, format: 'pdf' },
+          responseType: 'blob',
+        });
+        if (response.data instanceof Blob) {
+          const blob = await ensurePdfBlob(response);
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', `marketer_performance_${marketerId}_${month}_${year}.pdf`);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(url);
+        }
+        return response.data;
+      }
+    }
     const response = await apiClient.get('/hr/reports/marketer-performance', {
       params: { marketer_id: marketerId, month, year, format },
-      responseType: format === 'pdf' ? 'blob' : 'json',
+      responseType: 'json',
     });
-
-    if (format === 'pdf' && response.data instanceof Blob) {
-      const blob = await ensurePdfBlob(response);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `marketer_performance_${marketerId}_${month}_${year}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    }
-
     return response.data;
   } catch (error) {
     logger.error('Error generating marketer performance report:', error);
@@ -259,28 +284,53 @@ export const generateEmployeesReport = async (format = 'pdf') => {
 };
 
 /**
- * Generate expiring/ended contracts report
+ * Generate expiring/ended contracts report (PDF built on frontend from API data).
  * GET /hr/reports/expiring-contracts (params: days, format)
  */
 export const generateExpiringContractsReport = async (days = 30, format = 'pdf') => {
   try {
+    if (format === 'pdf') {
+      try {
+        const dataResponse = await apiClient.get('/hr/reports/expiring-contracts', {
+          params: { days, format: 'json' },
+          responseType: 'json',
+        });
+        const report = dataResponse?.data?.data ?? dataResponse?.data ?? dataResponse;
+        const { generateExpiringContractsReportPdf } = await import('@/services/pdfService');
+        const pdfBytes = await generateExpiringContractsReportPdf(report, days);
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `expiring_contracts_${days}days.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        return blob;
+      } catch (_err) {
+        const response = await apiClient.get('/hr/reports/expiring-contracts', {
+          params: { days, format: 'pdf' },
+          responseType: 'blob',
+        });
+        if (response.data instanceof Blob) {
+          const blob = await ensurePdfBlob(response);
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', `expiring_contracts_${days}days.pdf`);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(url);
+        }
+        return response.data;
+      }
+    }
     const response = await apiClient.get('/hr/reports/expiring-contracts', {
       params: { days, format },
-      responseType: format === 'pdf' ? 'blob' : 'json',
+      responseType: 'json',
     });
-
-    if (format === 'pdf' && response.data instanceof Blob) {
-      const blob = await ensurePdfBlob(response);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `expiring_contracts_${days}days.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    }
-
     return response.data;
   } catch (error) {
     logger.error('Error generating expiring contracts report:', error);

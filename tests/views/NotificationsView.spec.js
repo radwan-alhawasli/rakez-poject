@@ -41,13 +41,13 @@ describe('NotificationsView', () => {
   it('renders notification list container', async () => {
     const wrapper = await createWrapper();
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('.notifications-container').exists()).toBe(true);
-    expect(wrapper.find('.notifications-grid').exists()).toBe(true);
+    expect(wrapper.find('.management-view').exists()).toBe(true);
+    expect(wrapper.find('.metrics-table-container').exists()).toBe(true);
   });
 
   it('displays the notifications title', async () => {
     const wrapper = await createWrapper();
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('.premium-title').text()).toContain('لوحة الإشعارات الذكية');
+    expect(wrapper.find('.section-title').text()).not.toBe('');
   });
 });

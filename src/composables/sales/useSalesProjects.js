@@ -28,7 +28,7 @@ export function useSalesProjects() {
     return (s === 'approved' || s === 'ready' || s === 'completed') && hasUnits;
   };
 
-  const isProjectArchived = p => {
+  const _isProjectArchived = p => {
     const s = String(p.status || p.contract_status || '').toLowerCase();
     return s === 'refused' || s === 'rejected' || s === 'archived';
   };

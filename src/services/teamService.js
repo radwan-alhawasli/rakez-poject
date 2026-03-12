@@ -49,8 +49,8 @@ export const getUnitsStatistics = async (params = {}) => {
 };
 
 /**
- * Get all teams (Project Management module)
- * GET /project_management/teams/index
+ * Get all teams (Project Management module) – used for dropdown / list of teams to assign
+ * GET {{base_url}}/project_management/teams/index
  * @param {string|Object} searchOrParams - Search string or params object { search, page, per_page }
  * @returns {Promise<Array>} List of teams
  */
@@ -64,7 +64,14 @@ export const getTeams = async (searchOrParams = '') => {
         : { ...searchOrParams };
     const response = await apiClient.get('/project_management/teams/index', { params });
     const { items } = extractPaginatedData(response, []);
-    return Array.isArray(items) ? items : [];
+    let list = Array.isArray(items) ? items : [];
+    if (list.length === 0) {
+      const data = response?.data ?? response;
+      if (Array.isArray(data)) list = data;
+      else if (Array.isArray(data?.data)) list = data.data;
+      else if (Array.isArray(data?.teams)) list = data.teams;
+    }
+    return list;
   } catch (error) {
     return handleServiceError(error, 'Fetch teams', 'get', []);
   }
@@ -220,18 +227,20 @@ export const getContractTeams = async contractId => {
 // --- Project Teams API (assign project to team) ---
 
 /**
- * Get teams assigned to a project
- * GET {{server}}/project_teams/teams/:projectId
- * @param {number|string} projectId - Project (contract) ID
+ * Get teams assigned to a project (by contract/project id)
+ * GET {{base_url}}/project_management/teams/index/:contract_id
+ * @param {number|string} contractId - Project/contract ID
  * @returns {Promise<Array>} List of assigned teams (items may include project_team_id for remove)
  */
-export const getProjectTeams = async projectId => {
+export const getProjectTeams = async contractId => {
   try {
-    const response = await apiClient.get(`/project_teams/teams/${projectId}`);
-    const data = response.data?.data ?? response.data;
+    const response = await apiClient.get(`/project_management/teams/index/${contractId}`);
+    const raw = response?.data ?? response;
+    let data = raw?.data ?? raw;
+    if (!Array.isArray(data) && Array.isArray(raw?.teams)) data = raw.teams;
     return Array.isArray(data) ? data : [];
   } catch (error) {
-    return handleServiceError(error, `Fetch project teams ${projectId}`, 'get', []);
+    return handleServiceError(error, `Fetch project teams ${contractId}`, 'get', []);
   }
 };
 
@@ -407,6 +416,9 @@ export default {
   addTeamsToContract,
   removeTeamsFromContract,
   getContractTeams,
+  getProjectTeams,
+  addProjectTeams,
+  removeProjectTeam,
   getTeamContractsByTeamId,
   getContractCount,
   getTeamLocations,

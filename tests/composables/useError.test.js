@@ -13,6 +13,7 @@ vi.mock('../../src/utils/errorHandler', () => ({
     isExpected: false,
   })),
   retryWithBackoff: vi.fn(fn => fn()),
+  getApiErrorMessage: vi.fn((err, fallback) => err?.message || fallback || 'Error'),
 }));
 
 import { handleError } from '../../src/utils/errorHandler';

@@ -60,4 +60,14 @@ describe('Router guards', () => {
 
     expect(router.currentRoute.value.path).toBe('/login');
   });
+
+  it('redirects authenticated user away from login to role dashboard', async () => {
+    const mockUser = { email: 'sales@rakez.com', type: 5 };
+    mockAuthService.isAuthenticated.mockReturnValue(true);
+    mockAuthService.getCurrentUser.mockReturnValue(mockUser);
+
+    await router.push('/login');
+
+    expect(router.currentRoute.value.path).toBe('/dashboard');
+  });
 });

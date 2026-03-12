@@ -140,7 +140,7 @@ const aiService = {
 
   /**
    * جلب سجل المحادثات
-   * GET /api/ai/v2/conversations  <-- تحديث المسار بناءً على رسالتك
+   * GET /api/ai/conversations (مواءمة مع الباكند)
    * @param {number} [perPage=20] - عدد النتائج بالصفحة (الحد الأقصى 100)
    * @param {string|null} [section] - تصفية حسب قسم المساعد الذكي
    * @returns {Promise<{ items: Array, pagination: Object }>}
@@ -150,7 +150,7 @@ const aiService = {
       logger.debug('جلب المحادثات...');
       const params = { per_page: perPage };
       if (section) params.section = section;
-      const response = await apiClient.get('/ai/v2/conversations', { params });
+      const response = await apiClient.get('/ai/conversations', { params });
 
       let { items, total } = extractPaginatedData(response);
 
@@ -181,14 +181,14 @@ const aiService = {
 
   /**
    * جلب محادثة واحدة بالتفصيل (تاريخ الرسائل)
-   * GET /api/ai/v2/conversations/:sessionId/messages  <-- تحديث المسار بناءً على رسالتك
+   * GET /api/ai/conversations/:sessionId/messages (مواءمة مع الباكند)
    * @param {string} sessionId - معرّف الجلسة
    * @returns {Promise<Object>} المحادثة مع رسائلها
    */
   async getConversation(sessionId) {
     try {
       logger.debug('جلب محادثة...', sessionId);
-      const response = await apiClient.get(`/ai/v2/conversations/${sessionId}/messages`);
+      const response = await apiClient.get(`/ai/conversations/${sessionId}/messages`);
       return response.data?.data || response.data || {};
     } catch (error) {
       if (
@@ -209,14 +209,14 @@ const aiService = {
 
   /**
    * حذف محادثة
-   * DELETE /api/ai/v2/conversations/:sessionId  <-- تحديث المسار بناءً على رسالتك
+   * DELETE /api/ai/conversations/:sessionId (مواءمة مع الباكند)
    * @param {string} sessionId - معرّف الجلسة
    * @returns {Promise<Object>} الاستجابة
    */
   async deleteConversation(sessionId) {
     try {
       logger.debug('حذف محادثة', sessionId);
-      const response = await apiClient.delete(`/ai/v2/conversations/${sessionId}`);
+      const response = await apiClient.delete(`/ai/conversations/${sessionId}`);
       return response.data?.data || response.data || {};
     } catch (error) {
       return handleServiceError(error, 'حذف محادثة', 'delete');
@@ -274,14 +274,14 @@ const aiService = {
 
   /**
    * جلب مقالات قاعدة المعرفة (مع ترقيم الصفحات)
-   * GET /ai/assistant/knowledge
+   * GET /ai/knowledge (مواءمة مع الباكند)
    * @param {Object} params - module, language, is_active, page, per_page, search
    * @returns {Promise<{ items: Array, total: number }>}
    */
   async getKnowledge(params = {}) {
     try {
       logger.debug('جلب مقالات قاعدة المعرفة...');
-      const response = await apiClient.get('/ai/assistant/knowledge', { params });
+      const response = await apiClient.get('/ai/knowledge', { params });
       const { items, total } = extractPaginatedData(response, []);
       return { items, total };
     } catch (error) {
@@ -296,14 +296,14 @@ const aiService = {
 
   /**
    * إنشاء مقال في قاعدة المعرفة
-   * POST /ai/assistant/knowledge
+   * POST /ai/knowledge (مواءمة مع الباكند)
    * @param {Object} data - { module, title, content_md, language, tags, is_active, priority }
    * @returns {Promise<Object>} المقال المنشأ
    */
   async createKnowledge(data) {
     try {
       logger.debug('إنشاء مقال قاعدة المعرفة:', data);
-      const response = await apiClient.post('/ai/assistant/knowledge', data);
+      const response = await apiClient.post('/ai/knowledge', data);
       return response.data?.data || response.data || {};
     } catch (error) {
       return handleServiceError(error, 'إنشاء مقال قاعدة المعرفة', 'post');
@@ -312,7 +312,7 @@ const aiService = {
 
   /**
    * تحديث مقال في قاعدة المعرفة
-   * PUT /ai/assistant/knowledge/:id
+   * PUT /ai/knowledge/:id (مواءمة مع الباكند)
    * @param {number|string} id - معرّف المقال
    * @param {Object} data - بيانات التحديث
    * @returns {Promise<Object>} المقال المحدّث
@@ -320,7 +320,7 @@ const aiService = {
   async updateKnowledge(id, data) {
     try {
       logger.debug(`تحديث مقال قاعدة المعرفة ${id}:`, data);
-      const response = await apiClient.put(`/ai/assistant/knowledge/${id}`, data);
+      const response = await apiClient.put(`/ai/knowledge/${id}`, data);
       return response.data?.data || response.data || {};
     } catch (error) {
       return handleServiceError(error, `تحديث مقال قاعدة المعرفة ${id}`, 'put');
@@ -329,14 +329,14 @@ const aiService = {
 
   /**
    * حذف مقال من قاعدة المعرفة
-   * DELETE /ai/assistant/knowledge/:id
+   * DELETE /ai/knowledge/:id (مواءمة مع الباكند)
    * @param {number|string} id - معرّف المقال
    * @returns {Promise<Object>} الاستجابة
    */
   async deleteKnowledge(id) {
     try {
       logger.debug(`حذف مقال قاعدة المعرفة ${id}`);
-      const response = await apiClient.delete(`/ai/assistant/knowledge/${id}`);
+      const response = await apiClient.delete(`/ai/knowledge/${id}`);
       return response.data?.data || response.data || {};
     } catch (error) {
       return handleServiceError(error, `حذف مقال قاعدة المعرفة ${id}`, 'delete');

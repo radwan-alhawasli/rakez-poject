@@ -55,7 +55,7 @@ export const PERMISSIONS = {
   SALES_GOALS_CREATE: 'sales.goals.create',
   SALES_SCHEDULE_VIEW: 'sales.schedule.view',
   SALES_PROJECTS_ALLOCATE_SHIFTS: 'sales.projects.allocate_shifts',
-  SALES_PAYMENT_PLAN_MANAGE: 'sales.payment-plan.manage',
+  SALES_PAYMENT_PLAN_MANAGE: 'sales.payment_plan.manage',
   SALES_SOLD_UNITS_VIEW: 'sales.sold_units.view',
   SALES_DEPOSITS_VIEW: 'sales.deposits.view',
   SALES_ANALYTICS_VIEW: 'sales.analytics.view',
@@ -64,6 +64,8 @@ export const PERMISSIONS = {
   CREDIT_FINANCING_MANAGE: 'credit.financing.manage',
   CREDIT_TITLE_TRANSFER_MANAGE: 'credit.title_transfer.manage',
   CREDIT_CLAIM_FILES_GENERATE: 'credit.claim_files.generate',
+  CREDIT_CLAIM_FILES_VIEW: 'credit.claim_files.view',
+  CREDIT_CLAIM_FILES_MANAGE: 'credit.claim_files.manage',
   ACCOUNTING_DASHBOARD_VIEW: 'accounting.dashboard.view',
   ACCOUNTING_NOTIFICATIONS_VIEW: 'accounting.notifications.view',
   ACCOUNTING_SOLD_UNITS_VIEW: 'accounting.sold-units.view',
@@ -71,6 +73,8 @@ export const PERMISSIONS = {
   ACCOUNTING_DEPOSITS_VIEW: 'accounting.deposits.view',
   ACCOUNTING_SALARIES_VIEW: 'accounting.salaries.view',
   ACCOUNTING_DOWN_PAYMENT_CONFIRM: 'accounting.down_payment.confirm',
+  /** عرض قائمة المطورين (مثلاً في طلب مشروع حصري أو قسم المحاسبة) */
+  DEVELOPERS_LIST_VIEW: 'developers.list.view',
 };
 
 export const PERMISSION_DEFINITIONS = {
@@ -125,7 +129,7 @@ export const PERMISSION_DEFINITIONS = {
   'sales.tasks.create_for_marketing': 'Create daily tasks for marketing.',
   'sales.projects.allocate_shifts': 'Allocate projects/shifts to marketing staff.',
   'sales.negotiation.approve': 'Approve or reject negotiation requests.',
-  'sales.payment-plan.manage': 'Create and manage off-plan payment plans.',
+  'sales.payment_plan.manage': 'Create and manage off-plan payment plans.',
   'sales.sold_units.view': 'View sold units list and commission summaries.',
   'sales.deposits.view': 'View deposit management and follow-up data.',
   'sales.analytics.view': 'View sales analytics dashboard and commission reports.',
@@ -165,6 +169,8 @@ export const PERMISSION_DEFINITIONS = {
   'credit.financing.manage': 'Manage bank financing tracker stages.',
   'credit.title_transfer.manage': 'Manage title transfer process.',
   'credit.claim_files.generate': 'Generate claim files.',
+  'credit.claim_files.view': 'View claim files in Credit department.',
+  'credit.claim_files.manage': 'Manage claim files (create, combined, bulk) in Credit department.',
   'accounting.dashboard.view': 'View accounting dashboard metrics.',
   'accounting.notifications.view': 'View accounting notifications.',
   'accounting.sold-units.view': 'View sold units with commission information.',
@@ -177,6 +183,7 @@ export const PERMISSION_DEFINITIONS = {
   'accounting.salaries.distribute': 'Create and manage salary distributions.',
   'accounting.down_payment.confirm': 'Confirm down payments.',
   'agents.manage': 'Manage AI/Chatbot agents (create, edit, delete).',
+  'developers.list.view': 'View developers list (e.g. in exclusive project request or accounting).',
 };
 
 /** صلاحيات السيلز (أساس) — نفسها تُعطى لـ sales */
@@ -219,7 +226,7 @@ export const SALES_LEADER_EXTRA_PERMISSIONS = [
   'sales.tasks.create_for_marketing',
   'sales.projects.allocate_shifts',
   'sales.negotiation.approve',
-  'sales.payment-plan.manage',
+  'sales.payment_plan.manage',
   'ai-calls.manage',
 ];
 
@@ -281,7 +288,7 @@ export const BOOTSTRAP_ROLE_MAP = {
     'sales.tasks.create_for_marketing',
     'sales.projects.allocate_shifts',
     'sales.negotiation.approve',
-    'sales.payment-plan.manage',
+    'sales.payment_plan.manage',
     'sales.sold_units.view',
     'sales.deposits.view',
     'sales.analytics.view',
@@ -331,6 +338,7 @@ export const BOOTSTRAP_ROLE_MAP = {
     'tasks.create',
     'ai-calls.manage',
     'agents.manage',
+    'developers.list.view',
   ],
   project_management: [
     'contracts.view',
@@ -360,6 +368,7 @@ export const BOOTSTRAP_ROLE_MAP = {
     'sales.reservations.create',
     'use-ai-assistant',
     'tasks.create',
+    'developers.list.view',
   ],
   project_acquisition: [
     'contracts.view',
@@ -447,6 +456,8 @@ export const BOOTSTRAP_ROLE_MAP = {
     'credit.financing.manage',
     'credit.title_transfer.manage',
     'credit.claim_files.generate',
+    'credit.claim_files.view',
+    'credit.claim_files.manage',
     'notifications.view',
     'exclusive_projects.view',
     'exclusive_projects.request',
@@ -475,6 +486,7 @@ export const BOOTSTRAP_ROLE_MAP = {
     'exclusive_projects.contract.export',
     'use-ai-assistant',
     'tasks.create',
+    'developers.list.view',
   ],
   inventory: [
     'contracts.view',

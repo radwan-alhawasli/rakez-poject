@@ -64,21 +64,23 @@ describe('contractService', () => {
     it('returns list from response.data', async () => {
       mock.onGet('/contracts/index').reply(200, { data: [{ id: 1 }, { id: 2 }] });
       const result = await contractService.getContracts();
-      expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBe(2);
+      expect(Array.isArray(result.items)).toBe(true);
+      expect(result.items.length).toBe(2);
+      expect(result.total).toBe(2);
     });
 
     it('returns list from response.data.data.data', async () => {
       mock.onGet('/contracts/index').reply(200, { data: { data: [{ id: 1 }] } });
       const result = await contractService.getContracts();
-      expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBe(1);
+      expect(Array.isArray(result.items)).toBe(true);
+      expect(result.items.length).toBe(1);
+      expect(result.total).toBe(1);
     });
 
     it('returns empty array on error', async () => {
       mock.onGet('/contracts/index').reply(500, {});
       const result = await contractService.getContracts();
-      expect(result).toEqual([]);
+      expect(result).toEqual({ items: [], total: 0 });
     });
   });
 

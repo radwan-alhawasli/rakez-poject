@@ -1,6 +1,7 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import marketingService from '@/services/marketingService';
 import notificationService from '@/services/notificationService';
+import { generatePlatformDistributionPdf } from '@/services/pdfService';
 import logger from '@/utils/logger';
 import { useFormatters } from '@/composables/useFormatters';
 import { toast } from '@/composables/useToast';
@@ -87,21 +88,37 @@ export function useMarketingEmployeePlans() {
   const platformBreakdownTable = computed(() => {
     const marketingValue = Number(employeePlanBudgetSummary.value.marketing_value) || 0;
     const devPlan = selectedProject.value?.developer_plan ?? selectedProject.value?.developerPlan ?? {};
-    const cpm = Number(devPlan.average_cpm ?? devPlan.average_cpm) || 25;
-    const cpc = Number(devPlan.average_cpc ?? devPlan.average_cpc) || 2.5;
+    const platformViews = devPlan.platform_views ?? devPlan.platformViews ?? {};
+    const platformClicks = devPlan.platform_clicks ?? devPlan.platformClicks ?? {};
+    const hasManualValues = Object.keys(platformViews).length > 0 || Object.keys(platformClicks).length > 0;
+    const defaultCpm = Number(devPlan.average_cpm ?? devPlan.averageCpm) || 25;
+    const defaultCpc = Number(devPlan.average_cpc ?? devPlan.averageCpc) || 2.5;
+    const platformCpm = devPlan.platform_cpm ?? devPlan.platformCpm ?? {};
+    const platformCpc = devPlan.platform_cpc ?? devPlan.platformCpc ?? {};
     const rows = [];
     let totalViews = 0;
     let totalClicks = 0;
     platformBreakdownOrder.forEach(({ key, labelAr }, idx) => {
-      const pct = Number(platformDistribution[key]) || 0;
-      const budget = marketingValue * (pct / 100);
-      const views = cpm > 0 ? Math.round((budget / cpm) * 1000) : 0;
-      const clicks = cpc > 0 ? Math.round(budget / cpc) : 0;
+      const manualViews = Number(platformViews[key]) || 0;
+      const manualClicks = Number(platformClicks[key]) || 0;
+      let views;
+      let clicks;
+      if (hasManualValues && (manualViews > 0 || manualClicks > 0)) {
+        views = manualViews;
+        clicks = manualClicks;
+      } else {
+        const pct = Number(platformDistribution[key]) || 0;
+        const budget = marketingValue * (pct / 100);
+        const cpm = Number(platformCpm[key] ?? defaultCpm) || defaultCpm;
+        const cpc = Number(platformCpc[key] ?? defaultCpc) || defaultCpc;
+        views = cpm > 0 ? Math.round((budget / cpm) * 1000) : 0;
+        clicks = cpc > 0 ? Math.round(budget / cpc) : 0;
+      }
       totalViews += views;
       totalClicks += clicks;
       rows.push({ no: idx + 1, platform: labelAr, views, clicks });
     });
-    return { rows, totalViews, totalClicks, cpm, cpc };
+    return { rows, totalViews, totalClicks, cpm: defaultCpm, cpc: defaultCpc };
   });
 
   const loadProjects = async () => {
@@ -316,24 +333,30 @@ export function useMarketingEmployeePlans() {
     link.click();
   };
 
-  const loadArabicFontBytes = async () => {
-    const urls = [
-      '/fonts/amiri-arabic-400-normal.woff',
-      'https://cdn.jsdelivr.net/npm/@fontsource/amiri@5.0.0/files/amiri-arabic-400-normal.woff2',
-    ];
-    for (const url of urls) {
-      try {
-        const res = await fetch(url);
-        if (res.ok) return await res.arrayBuffer();
-      } catch (_) {}
-    }
-    throw new Error('Could not load Arabic font');
-  };
-
   const exportEmployeePlansPdf = async () => {
     try {
       const projectId = employeePlansProjectId.value;
       if (projectId) {
+        try {
+          const { getEmployeePlansPdfData } = await import('@/services/pdfApi');
+          const { buildDocumentPdf } = await import('@/services/pdfService');
+          const data = await getEmployeePlansPdfData(projectId);
+          if (data?.title != null && Array.isArray(data?.sections)) {
+            const pdfBytes = await buildDocumentPdf({
+              title: data.title,
+              subtitle: data.subtitle ?? `Date: ${new Date().toISOString().slice(0, 10)}`,
+              sections: data.sections,
+              footer: data.footer,
+            });
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `employee_plans_${new Date().toISOString().split('T')[0]}.pdf`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            return;
+          }
+        } catch (_) { /* try backend blob or local */ }
         const blob = await marketingService.exportEmployeePlansByProject(projectId, 'pdf');
         if (blob && blob.size > 0) {
           const link = document.createElement('a');
@@ -343,17 +366,12 @@ export function useMarketingEmployeePlans() {
           return;
         }
       }
-      const [pdfLib, fontkitMod] = await Promise.all([
-        import('pdf-lib'),
-        import('@pdf-lib/fontkit').then(m => m?.default ?? m),
-      ]);
-      const { PDFDocument, rgb } = pdfLib;
-      const fontkit = fontkitMod?.default ?? fontkitMod;
+      const { getPdfDeps, loadArabicFontBytes, reshapeArabic } = await import('@/services/pdfService');
+      const { PDFDocument, rgb, fontkit } = await getPdfDeps();
       const pdfDoc = await PDFDocument.create();
       pdfDoc.registerFontkit(fontkit);
       const fontBytes = await loadArabicFontBytes();
       const font = await pdfDoc.embedFont(fontBytes);
-      const reshapeArabic = t => (!t ? '' : String(t).split('').reverse().join(''));
       const page = pdfDoc.addPage([595, 842]);
       let y = 800;
       const draw = (text, size = 12) => {
@@ -366,7 +384,7 @@ export function useMarketingEmployeePlans() {
         });
         y -= size + 8;
       };
-      draw('Employee Marketing Plans / خطط الموظفين', 16);
+      draw('خطط الموظفين / Employee Marketing Plans', 16);
       draw(`Date: ${new Date().toISOString().slice(0, 10)}`);
       employeePlans.value.slice(0, 25).forEach(plan => {
         const name = plan.user?.name || plan.user_name || `User #${plan.user_id ?? '—'}`;
@@ -391,15 +409,23 @@ export function useMarketingEmployeePlans() {
       return;
     }
     try {
-      const blob = await marketingService.exportDistributionByProject(projectId);
-      if (blob && blob.size > 0) {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `خطة_اسبوعية_${new Date().toISOString().split('T')[0]}.pdf`;
-        link.click();
-      } else {
-        toast.error('تعذر تحميل التقرير من الخادم');
-      }
+      const table = platformBreakdownTable.value;
+      const distribution = {
+        rows: (table?.rows ?? []).map((r) => ({
+          platform_ar: r.platform,
+          clicks: r.clicks ?? 0,
+          impressions: r.views ?? 0,
+        })),
+        total_clicks: table?.totalClicks ?? 0,
+        total_impressions: table?.totalViews ?? 0,
+      };
+      const pdfBytes = await generatePlatformDistributionPdf(distribution);
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `خطة_اسبوعية_${new Date().toISOString().split('T')[0]}.pdf`;
+      link.click();
+      URL.revokeObjectURL(link.href);
     } catch (error) {
       logger.error('Error exporting weekly plan PDF:', error);
       toast.error('تعذر تصدير خطة اسبوعية PDF');

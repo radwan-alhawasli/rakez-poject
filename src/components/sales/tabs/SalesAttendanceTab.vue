@@ -63,7 +63,7 @@ import { useSalesAttendance } from '@/composables/sales/useSalesAttendance';
 const {
   paginatedAttendance, attendanceRecords, isLoadingAttendance,
   attendancePage: currentPage, attendancePerPage: perPage,
-  hasPermission, formatDate, getAttendanceStatusText,
+  hasPermission, formatDate,
   handleAttendancePageChange, handleAttendancePerPageChange,
   loadAttendance, showScheduleModal,
 } = useSalesAttendance();

@@ -236,7 +236,7 @@ describe('rbac', () => {
       expect(getDashboardPathForUser({ type: 5 })).toBe('/sales/dashboard');
       expect(getDashboardPathForUser({ type: 6 })).toBe('/credit/dashboard');
       expect(getDashboardPathForUser({ type: 7 })).toBe('/accounting/dashboard');
-      expect(getDashboardPathForUser({ type: 4 })).toBe('/editor/contracts');
+      expect(getDashboardPathForUser({ type: 4 })).toBe('/editor/dashboard');
       expect(getDashboardPathForUser({ type: 8 })).toBe('/hr/dashboard');
     });
 

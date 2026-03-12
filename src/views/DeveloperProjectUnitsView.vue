@@ -347,7 +347,7 @@ export default {
       isDownloading.value = rid;
       try {
         await accountingService.openClaimFileDownload(rid);
-      } catch (e) {
+      } catch (_e) {
         toast.error('فشل تحميل ملف المطالبة');
       } finally {
         isDownloading.value = null;

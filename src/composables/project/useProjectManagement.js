@@ -347,7 +347,7 @@ export function useProjectManagement() {
     activeMenuId.value = null;
     try {
       toast.info('أرشفة المشروع: سيتم ربطها بالـ API عند التوفر.');
-    } catch (e) {
+    } catch (_e) {
       toast.error('فشل أرشفة المشروع');
     }
   };
@@ -366,7 +366,7 @@ export function useProjectManagement() {
       } else {
         toast.info('تحميل العقد: سيتم ربطها بالـ API عند التوفر.');
       }
-    } catch (e) {
+    } catch (_e) {
       toast.error('فشل تحميل العقد');
     }
   };
@@ -384,19 +384,13 @@ export function useProjectManagement() {
     if (!project) return;
     assignTeamLoading.value = true;
     try {
-      const [assignedData, allTeams] = await Promise.all([
-        teamService.getProjectTeams(project.id),
-        teamService.getTeams(),
-      ]);
-      const raw = Array.isArray(assignedData) ? assignedData : assignedData?.data || [];
-      const assigned = raw.map(t => ({
-        id: t.team_id ?? t.id,
-        project_team_id: t.id,
-        name: t.team?.name ?? t.name ?? '',
-      }));
+      // All teams to select from: GET {{base_url}}/project_management/teams/index
+      const allTeams = await teamService.getTeams();
+      assignTeamAvailable.value = Array.isArray(allTeams) ? allTeams : [];
+      // Paused: get teams assigned to this contract (use when API is ready)
+      // const assignedData = await teamService.getProjectTeams(project.id);
+      const assigned = [];
       assignTeamAssigned.value = assigned;
-      const assignedIds = new Set(assigned.map(t => t.id));
-      assignTeamAvailable.value = allTeams.filter(t => !assignedIds.has(t.id));
     } catch (error) {
       logger.error('Error loading teams for assign modal:', error);
       toast.error('فشل تحميل قائمة الفرق');

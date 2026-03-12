@@ -161,7 +161,7 @@ import { useSalesDeposits } from '@/composables/sales/useSalesDeposits';
 const {
   depositsSubTab, depositsManagement, depositsFollowUp,
   isLoadingDepositsManagement, isLoadingDepositsFollowUp,
-  loadDepositsManagement, loadDepositsFollowUp, switchSubTab,
+  loadDepositsManagement, switchSubTab,
   formatCurrency, formatDate,
 } = useSalesDeposits();
 
