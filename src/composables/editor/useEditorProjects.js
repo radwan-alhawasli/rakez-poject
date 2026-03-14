@@ -18,10 +18,10 @@ export function useEditorProjects() {
   /** Map contractId -> true/false for manager: has montage links (from montage-department/show) */
   const montageHasLinksMap = ref({});
 
-  // Backend may return 1, "1", or true; treat all as "complete"
+  // API: has_photography_data, has_montage_data (both === 1 → after montage). Support legacy has_photography/has_montage.
   const isAfterMontage = c =>
-    (c.has_photography == 1 || c.has_photography === true) &&
-    (c.has_montage == 1 || c.has_montage === true);
+    (c.has_photography_data == 1 || c.has_photography == 1 || c.has_photography === true) &&
+    (c.has_montage_data == 1 || c.has_montage == 1 || c.has_montage === true);
 
   const beforeMontage = computed(() =>
     contracts.value.filter(c => !isAfterMontage(c))
@@ -78,12 +78,12 @@ export function useEditorProjects() {
     }
     await fetchMontage(contractId);
     await fetchContracts();
-    // If backend didn't set has_photography/has_montage in list, optimistically mark so project appears in "after montage"
+    // If backend didn't set flags in list, optimistically mark so project appears in "after montage"
     const id = Number(contractId);
     const stillBefore = contracts.value.find(c => Number(c.id) === id && !isAfterMontage(c));
     if (stillBefore) {
-      stillBefore.has_photography = 1;
-      stillBefore.has_montage = 1;
+      stillBefore.has_photography_data = 1;
+      stillBefore.has_montage_data = 1;
     }
   }
 
@@ -110,7 +110,7 @@ export function useEditorProjects() {
       await fetchMontage(id);
     }
     // Refresh has-links map for manager so buttons update
-    const ids = contracts.value.filter(c => c.has_photography === 1 && c.has_montage === 1).map(c => c.id);
+    const ids = contracts.value.filter(c => isAfterMontage(c)).map(c => c.id);
     if (ids.length) await fetchMontageLinksForProjects(ids);
   }
 

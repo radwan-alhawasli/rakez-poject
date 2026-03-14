@@ -75,9 +75,10 @@ const loading = ref(true);
 const rejectTarget = ref(null);
 const rejectReason = ref('');
 
+// API: has_photography_data, has_montage_data (both === 1 → after montage)
 const isAfterMontage = c =>
-  (c.has_photography == 1 || c.has_photography === true) &&
-  (c.has_montage == 1 || c.has_montage === true);
+  (c.has_photography_data == 1 || c.has_photography == 1 || c.has_photography === true) &&
+  (c.has_montage_data == 1 || c.has_montage == 1 || c.has_montage === true);
 
 const afterMontageList = computed(() =>
   contracts.value.filter(isAfterMontage)

@@ -1,6 +1,6 @@
 /**
  * Editor dashboard: same layout as Project Management.
- * Data from GET /editor/contracts/index; filter by has_photography / has_montage.
+ * Data from GET /editor/contracts/index; filter by has_photography_data / has_montage_data (both === 1 → after montage).
  */
 
 import { ref, computed } from 'vue';
@@ -11,10 +11,10 @@ export function useEditorDashboard() {
   const isLoading = ref(true);
   const allContracts = ref([]);
 
-  // Backend may return 1, "1", or true; treat all as "complete"
+  // API: has_photography_data, has_montage_data (both === 1). Support legacy has_photography/has_montage.
   const isAfterMontage = c =>
-    (c.has_photography == 1 || c.has_photography === true) &&
-    (c.has_montage == 1 || c.has_montage === true);
+    (c.has_photography_data == 1 || c.has_photography == 1 || c.has_photography === true) &&
+    (c.has_montage_data == 1 || c.has_montage == 1 || c.has_montage === true);
 
   const notReady = computed(() =>
     allContracts.value.filter(c => !isAfterMontage(c))

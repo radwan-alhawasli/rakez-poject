@@ -56,9 +56,10 @@ const contracts = ref([]);
 const loading = ref(true);
 const seeMoreProject = ref(null);
 
+// API: has_photography_data, has_montage_data (both === 1 → after montage)
 const isAfterMontage = c =>
-  (c.has_photography == 1 || c.has_photography === true) &&
-  (c.has_montage == 1 || c.has_montage === true);
+  (c.has_photography_data == 1 || c.has_photography == 1 || c.has_photography === true) &&
+  (c.has_montage_data == 1 || c.has_montage == 1 || c.has_montage === true);
 
 const notMontagedProjects = computed(() =>
   contracts.value.filter(c => !isAfterMontage(c))

@@ -110,19 +110,26 @@ apiClient.interceptors.response.use(
 
     // Don't log expected 404s, 401s from refresh attempts, refresh endpoint unavailable, or sensitive data in production
     if (!isExpected404 && !is401FromRefreshAttempt && !isRefreshEndpointUnavailable) {
-      // Only log error details in development
-      if (!import.meta.env.PROD) {
-        // For 403 errors, provide more context
-        if (status === 403) {
-          const userMessage =
-            error.response?.data?.message || 'ليس لديك صلاحية للوصول إلى هذا المورد';
-          logger.warn(`API Error [${status}]: ${userMessage}`);
-        } else {
-          logger.error(`API Error [${status}]:`, message);
-        }
+      // 403 on GET is often handled by services (they return empty data); log at debug to reduce console noise
+      const isGet403 = status === 403 && (error.config?.method || '').toLowerCase() === 'get';
+      if (isGet403 && !import.meta.env.PROD) {
+        const userMessage =
+          error.response?.data?.message || 'ليس لديك صلاحية للوصول إلى هذا المورد';
+        logger.debug(`API [403] ${error.config?.url}: ${userMessage}`);
       } else {
-        // In production, log minimal info
-        logger.error(`API Error [${status}]`);
+        // Only log error details in development
+        if (!import.meta.env.PROD) {
+          if (status === 403) {
+            const userMessage =
+              error.response?.data?.message || 'ليس لديك صلاحية للوصول إلى هذا المورد';
+            logger.warn(`API Error [${status}]: ${userMessage}`);
+          } else {
+            logger.error(`API Error [${status}]:`, message);
+          }
+        } else {
+          // In production, log minimal info
+          logger.error(`API Error [${status}]`);
+        }
       }
     }
 

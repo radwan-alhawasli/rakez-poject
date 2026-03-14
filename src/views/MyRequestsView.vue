@@ -180,8 +180,12 @@ export default {
     // Re-fetch when component is activated (returning to this route)
     onActivated(fetchRequests);
 
-    const completeContract = id => {
-      router.push(`/contract-form/${id}`);
+    const completeContract = (id) => {
+      if (id == null || id === '') {
+        logger.warn('completeContract: missing contract id');
+        return;
+      }
+      router.push({ name: 'ContractForm', params: { id: String(id) } });
     };
 
     /** Display label from API status (GET /contracts/index → status). */

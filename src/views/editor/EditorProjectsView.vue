@@ -132,7 +132,7 @@
             </div>
           </div>
           <!-- Manager: Approve / Reject (after montage only) -->
-          <div v-if="isManager && activeTab === 'after' && montageData && (selectedProject.has_montage == 1 || selectedProject.has_montage === true)" class="manager-actions">
+          <div v-if="isManager && activeTab === 'after' && montageData && (selectedProject.has_montage_data == 1 || selectedProject.has_montage == 1 || selectedProject.has_montage === true)" class="manager-actions">
             <h4>قرار المدير</h4>
             <div class="action-buttons">
               <button type="button" class="btn-approve" @click="doApprove(selectedProject.id)">قبول</button>
@@ -288,7 +288,7 @@ async function submitMontage() {
       description: montageForm.value.description || undefined,
     };
     await saveMontage(selectedProject.value.id, payload, montageData.value && Object.keys(montageData.value).length > 0);
-    // Refetch list so backend-updated has_photography/has_montage are reflected
+    // Refetch list so backend-updated has_photography_data/has_montage_data are reflected
     await fetchContracts();
     toast.success('تم الحفظ. تم نقل المشروع إلى "بعد المونتاج".');
     closeDetail();
