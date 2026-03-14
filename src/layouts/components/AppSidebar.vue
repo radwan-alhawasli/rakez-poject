@@ -180,6 +180,28 @@
               <span class="nav-text">إدارة المستخدمين</span>
             </div>
           </router-link>
+
+          <router-link
+            v-if="hasPermission('tasks.create')"
+            to="/tasks"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="إدارة المهام"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span class="nav-text">إدارة المهام</span>
+            </div>
+          </router-link>
   
           <router-link to="/agents" class="nav-item" active-class="active" data-tooltip="الوكلاء">
             <div class="nav-content">
@@ -735,6 +757,29 @@
             </div>
           </router-link>
 
+          <!-- إدارة المهام -->
+          <router-link
+            v-if="hasPermission('tasks.create')"
+            to="/tasks"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="إدارة المهام"
+          >
+            <div class="nav-content">
+              <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span class="nav-text">إدارة المهام</span>
+            </div>
+          </router-link>
+
           <!-- 3.1 الموافقة على الصور (للمدير فقط — مشاريع بانتظار القبول/الرفض) -->
           <router-link
             v-if="userRole == 10"
@@ -956,6 +1001,23 @@
                 <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
               </div>
               <span class="nav-text">الإشعارات</span>
+            </div>
+          </router-link>
+
+          <!-- إدارة المهام -->
+          <router-link
+            v-if="hasPermission('tasks.create')"
+            to="/tasks"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="إدارة المهام"
+          >
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span class="nav-text">إدارة المهام</span>
             </div>
           </router-link>
 
@@ -1204,6 +1266,23 @@
               <span class="nav-text">الإشعارات</span>
             </div>
           </router-link>
+
+          <!-- إدارة المهام -->
+          <router-link
+            v-if="hasPermission('tasks.create')"
+            to="/tasks"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="إدارة المهام"
+          >
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span class="nav-text">إدارة المهام</span>
+            </div>
+          </router-link>
   
           <!-- 3. إدارة الأفرقة (3.2) -->
           <router-link
@@ -1439,6 +1518,22 @@
               <span class="nav-text">الإشعارات</span>
             </div>
           </router-link>
+
+          <router-link
+            v-if="hasPermission('tasks.create')"
+            to="/tasks"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="إدارة المهام"
+          >
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span class="nav-text">إدارة المهام</span>
+            </div>
+          </router-link>
   
           <router-link
             to="/credit/bookings"
@@ -1593,6 +1688,22 @@
                 <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
               </div>
               <span class="nav-text">الإشعارات</span>
+            </div>
+          </router-link>
+
+          <router-link
+            v-if="hasPermission('tasks.create')"
+            to="/tasks"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="إدارة المهام"
+          >
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span class="nav-text">إدارة المهام</span>
             </div>
           </router-link>
   
@@ -1795,6 +1906,22 @@
           </router-link>
 
           <router-link
+            v-if="hasPermission('tasks.create')"
+            to="/tasks"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="إدارة المهام"
+          >
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span class="nav-text">إدارة المهام</span>
+            </div>
+          </router-link>
+
+          <router-link
             to="/profile"
             class="nav-item"
             active-class="active"
@@ -1845,6 +1972,22 @@
                 <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
               </div>
               <span class="nav-text">الإشعارات</span>
+            </div>
+          </router-link>
+
+          <router-link
+            v-if="hasPermission('tasks.create')"
+            to="/tasks"
+            class="nav-item"
+            active-class="active"
+            data-tooltip="إدارة المهام"
+          >
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span class="nav-text">إدارة المهام</span>
             </div>
           </router-link>
 
@@ -2607,30 +2750,19 @@ defineEmits(['logout']);
   white-space: nowrap;
   background: rgba(255, 255, 255, 0.05);
 }
+/* غلاف التمرير — عرض ثابت. التمرير الفعلي داخل SidebarScrollArea (شريط مخصص overlay) */
+.sidebar .sidebar-nav-outer {
+  width: 100%;
+}
 .sidebar .sidebar-nav {
-  flex: 1;
-  padding: 18px 10px;
-  overflow-y: auto;
-  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
 }
-.sidebar .sidebar-nav::-webkit-scrollbar { width: 6px; }
-.sidebar .sidebar-nav::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
-}
-.sidebar .sidebar-nav::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
-  transition: all 0.3s ease;
-}
-.sidebar .sidebar-nav::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+/* إخفاء شريط التمرير المخصص عند طي اللوحة (rail) */
+.sidebar:not(:hover):not(.open) .sidebar-scroll-track {
+  opacity: 0;
+  pointer-events: none;
 }
 .sidebar .sidebar-footer {
   padding: 18px 12px;

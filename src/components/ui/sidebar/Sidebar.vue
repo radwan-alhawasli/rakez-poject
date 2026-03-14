@@ -20,7 +20,7 @@ const isOpen = () => {
   <aside
     :class="
       cn(
-        'sidebar sidebar-component fixed top-0 z-[var(--z-sidebar)] flex h-full flex-col overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]',
+        'sidebar sidebar-component fixed top-0 z-[var(--z-sidebar)] flex h-full flex-col overflow-hidden transition-[width,margin,opacity,transform] duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]',
         side === 'right' ? 'right-0' : 'left-0',
         isMobile && !openMobile && 'sidebar-closed-mobile',
         isMobile && openMobile && 'sidebar-open-mobile open',

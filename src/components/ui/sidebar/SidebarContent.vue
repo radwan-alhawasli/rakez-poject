@@ -1,5 +1,6 @@
 <script setup>
 import { cn } from '@/lib/utils';
+import SidebarScrollArea from './SidebarScrollArea.vue';
 
 const props = defineProps({
   class: { type: [String, Object, Array], default: '' },
@@ -7,7 +8,12 @@ const props = defineProps({
 </script>
 
 <template>
-  <div :class="cn('sidebar-content sidebar-nav flex-1 overflow-y-auto overflow-x-hidden py-[18px] px-2.5', props.class)">
-    <slot />
+  <!-- حل نهائي: تمرير مخصص overlay + إخفاء الشريط الأصلي → لا حركة أفقية -->
+  <div :class="cn('sidebar-nav-outer flex-1 min-h-0 relative', props.class)">
+    <SidebarScrollArea>
+      <div class="sidebar-content sidebar-nav">
+        <slot />
+      </div>
+    </SidebarScrollArea>
   </div>
 </template>
