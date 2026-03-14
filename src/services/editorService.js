@@ -269,6 +269,40 @@ const editorService = {
       return handleServiceError(error, 'Update boards', 'put');
     }
   },
+
+  // --- Editor Teams (sales teams and members) ---
+
+  /**
+   * GET /editor/teams — Sales teams and members (e.g. phone)
+   * @param {Object} params - Query parameters
+   * @returns {Promise<Array>} List of teams with members
+   */
+  async getEditorTeams(params = {}) {
+    try {
+      const response = await apiClient.get('/editor/teams', { params });
+      const data = response.data?.data ?? response.data ?? [];
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      return handleServiceError(error, 'Fetch editor teams', 'get', []);
+    }
+  },
+
+  // --- Montage Department Approve (manager only) ---
+
+  /**
+   * POST /editor/montage-department/approve/:id — Manager approve or reject montage
+   * @param {number|string} id - Montage/contract id
+   * @param {Object} data - { status: 'approved'|'rejected', rejection_reason?: string }
+   * @returns {Promise<Object>}
+   */
+  async approveMontage(id, data) {
+    try {
+      const response = await apiClient.post(`/editor/montage-department/approve/${id}`, data);
+      return response.data?.data ?? response.data ?? {};
+    } catch (error) {
+      return handleServiceError(error, `Approve montage ${id}`, 'post');
+    }
+  },
 };
 
 export default editorService;

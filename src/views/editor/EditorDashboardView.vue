@@ -1,156 +1,209 @@
 <template>
-  <div class="editor-dashboard">
-    <div class="page-header">
-      <h1 class="page-title">لوحة تحكم قسم المونتاج</h1>
-      <p class="page-subtitle">عرض المشاريع حسب الحالة (بدون API حتى يتم توفيره)</p>
+  <div class="project-management-view project-management-design editor-dashboard-view">
+    <div class="welcome-header project-mgmt-header">
+      <div class="header-content">
+        <h1 class="welcome-title">لوحة تحكم قسم المونتاج</h1>
+        <p class="welcome-subtitle">عرض المشاريع حسب الحالة (غير جاهزة / جاهزة للتسويق / الأرشيف).</p>
+      </div>
+      <div class="controls-area">
+        <div class="search-container">
+          <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="search-input"
+            placeholder="ابحث عن مشروع بالاسم..."
+          />
+        </div>
+      </div>
     </div>
 
-    <div class="tabs-row">
-      <button
-        v-for="tab in tabs"
-        :key="tab.key"
-        :class="['tab-btn', { active: activeTab === tab.key }]"
-        @click="activeTab = tab.key"
-      >
-        {{ tab.label }}
-        <span class="tab-count">{{ getCount(tab.key) }}</span>
-      </button>
-    </div>
+    <div class="view-content">
+      <div class="tabs-container">
+        <button
+          :class="['tab-btn', { active: activeTab === 'not_ready' }]"
+          @click="activeTab = 'not_ready'"
+        >
+          مشاريع غير جاهزة ({{ notReadyCount }})
+        </button>
+        <button
+          :class="['tab-btn', { active: activeTab === 'ready' }]"
+          @click="activeTab = 'ready'"
+        >
+          مشاريع جاهزة للتسويق ({{ readyCount }})
+        </button>
+        <button
+          :class="['tab-btn', { active: activeTab === 'archive' }]"
+          @click="activeTab = 'archive'"
+        >
+          الأرشيف ({{ archiveCount }})
+        </button>
+      </div>
 
-    <div class="content-panel">
-      <section v-if="activeTab === 'available'" class="section">
-        <h2 class="section-title">متاح للعمل</h2>
-        <div class="cards-grid">
-          <div v-for="p in dashboardAvailable" :key="p.id" class="card">
-            <h3 class="card-title">{{ p.name }}</h3>
-            <p class="card-meta">المطور: {{ p.developer }}</p>
-            <p class="card-meta">الوحدات: {{ p.unitsCount }}</p>
-          </div>
-        </div>
-      </section>
-      <section v-else-if="activeTab === 'ready'" class="section">
-        <h2 class="section-title">جاهز للتسليم</h2>
-        <div class="cards-grid">
-          <div v-for="p in dashboardReady" :key="p.id" class="card">
-            <h3 class="card-title">{{ p.name }}</h3>
-            <p class="card-meta">المطور: {{ p.developer }}</p>
-            <p class="card-meta">الوحدات: {{ p.unitsCount }}</p>
-          </div>
-        </div>
-      </section>
-      <section v-else class="section">
-        <h2 class="section-title">غير جاهز</h2>
-        <div class="cards-grid">
-          <div v-for="p in dashboardNotReady" :key="p.id" class="card">
-            <h3 class="card-title">{{ p.name }}</h3>
-            <p class="card-meta">المطور: {{ p.developer }}</p>
-            <p class="card-meta">الوحدات: {{ p.unitsCount }}</p>
-          </div>
-        </div>
-      </section>
+      <div v-if="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>جاري تحميل المشاريع...</p>
+      </div>
+
+      <div v-else-if="filteredProjects.length === 0" class="empty-state">
+        <p>لا توجد مشاريع مطابقة للعرض.</p>
+      </div>
+
+      <div v-else class="projects-grid">
+        <router-link
+          v-for="item in filteredProjects"
+          :key="item.id"
+          :to="{ name: 'EditorProjects', query: { tab: activeTab === 'not_ready' ? 'before' : activeTab === 'ready' ? 'after' : 'archive' } }"
+          class="editor-dashboard-card"
+        >
+          <h3 class="card-title">{{ item.name || item.project_name || item.title || item.project_title || item.contract_number || item.contract_id || '—' }}</h3>
+          <p class="card-meta">عرض التفاصيل</p>
+        </router-link>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useEditorMockData } from '@/composables/editor/useEditorMockData';
+import { onMounted } from 'vue';
+import { useEditorDashboard } from '@/composables/editor/useEditorDashboard';
 
-const { dashboardAvailable, dashboardReady, dashboardNotReady } = useEditorMockData();
+const {
+  searchQuery,
+  isLoading,
+  activeTab,
+  notReadyCount,
+  readyCount,
+  archiveCount,
+  filteredProjects,
+  fetchContracts,
+} = useEditorDashboard();
 
-const activeTab = ref('available');
-const tabs = [
-  { key: 'available', label: 'متاح' },
-  { key: 'ready', label: 'جاهز' },
-  { key: 'notReady', label: 'غير جاهز' },
-];
-
-function getCount(key) {
-  if (key === 'available') return dashboardAvailable.value.length;
-  if (key === 'ready') return dashboardReady.value.length;
-  return dashboardNotReady.value.length;
-}
+onMounted(() => fetchContracts());
 </script>
 
 <style scoped>
-.editor-dashboard {
-  padding: 1.5rem;
+.editor-dashboard-view {
   direction: rtl;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-.page-header {
-  margin-bottom: 1.5rem;
-}
-.page-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0 0 0.25rem 0;
-}
-.page-subtitle {
-  color: var(--muted, #64748b);
-  margin: 0;
-  font-size: 0.9rem;
-}
-.tabs-row {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-.tab-btn {
-  padding: 0.6rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: #fff;
-  cursor: pointer;
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.tab-btn.active {
-  background: #27374d;
-  color: #fff;
-  border-color: #27374d;
-}
-.tab-count {
-  background: rgba(0,0,0,0.1);
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  font-size: 0.85rem;
-}
-.tab-btn.active .tab-count {
-  background: rgba(255,255,255,0.25);
-}
-.content-panel {
-  background: #fff;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  padding: 1.5rem;
-}
-.section-title {
-  font-size: 1.1rem;
-  margin: 0 0 1rem 0;
-}
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1rem;
-}
-.card {
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 1rem;
+  padding: 20px 30px;
+  min-height: 100vh;
   background: #f8fafc;
 }
-.card-title {
-  font-size: 1rem;
-  margin: 0 0 0.5rem 0;
+.editor-dashboard-view .project-mgmt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
 }
-.card-meta {
-  margin: 0.25rem 0;
-  font-size: 0.875rem;
+.editor-dashboard-view .view-content {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+.editor-dashboard-view .tabs-container {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 30px;
+  gap: 4px;
+}
+.editor-dashboard-view .tab-btn {
+  background: #f1f5f9;
+  border: 1px solid transparent;
+  border-bottom: none;
+  padding: 12px 20px;
+  font-size: 15px;
   color: #64748b;
+  cursor: pointer;
+  font-weight: 500;
+  border-radius: 10px 10px 0 0;
+}
+.editor-dashboard-view .tab-btn.active {
+  background: white;
+  color: #1e3a5f;
+  font-weight: 700;
+  border-color: #e2e8f0;
+  border-bottom: 1px solid white;
+  margin-bottom: -1px;
+}
+.editor-dashboard-view .projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+.editor-dashboard-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  background: #f8fafc;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.editor-dashboard-card:hover {
+  border-color: #b1a28f;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+.editor-dashboard-card .card-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: #1e293b;
+}
+.editor-dashboard-card .card-meta {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 60px 40px;
+  color: #64748b;
+  font-size: 15px;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f1f5f9;
+  border-top-color: #b1a28f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.search-container {
+  position: relative;
+  width: 300px;
+  max-width: 100%;
+}
+.search-container .search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #94a3b8;
+}
+.search-input {
+  width: 100%;
+  padding: 12px 16px 12px 44px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  font-size: 14px;
+  color: #1e293b;
+  outline: none;
+}
+.search-input:focus {
+  border-color: #b1a28f;
 }
 </style>

@@ -5,6 +5,9 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
+  optimizeDeps: {
+    include: ['arabic-reshaper'],
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

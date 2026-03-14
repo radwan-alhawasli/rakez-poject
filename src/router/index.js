@@ -12,6 +12,7 @@ import {
   ROLE_SALES,
   ROLE_CREDIT,
   ROLE_EDITOR,
+  ROLE_INVENTORY,
 } from '@/constants/roles';
 import { PERMISSIONS } from '@/constants/permissions';
 
@@ -87,6 +88,12 @@ const routes = [
         name: 'Contracts',
         component: () => import('../views/ContractsView.vue'),
         meta: { permissions: [PERMISSIONS.CONTRACTS_VIEW] },
+      },
+      {
+        path: 'inventory',
+        name: 'Inventory',
+        component: () => import('../views/InventoryView.vue'),
+        meta: { roles: [ROLE_INVENTORY] },
       },
       {
         path: 'users',
@@ -513,14 +520,19 @@ const routes = [
             component: () => import('../views/editor/EditorDashboardView.vue'),
           },
           {
+            path: 'projects',
+            name: 'EditorProjects',
+            component: () => import('../views/editor/EditorProjectsView.vue'),
+          },
+          {
             path: 'projects/not-montaged',
             name: 'EditorProjectsNotMontaged',
-            component: () => import('../views/editor/EditorProjectsNotMontagedView.vue'),
+            redirect: { name: 'EditorProjects', query: { tab: 'before' } },
           },
           {
             path: 'projects/after-montage',
             name: 'EditorProjectsAfterMontage',
-            component: () => import('../views/editor/EditorProjectsAfterMontageView.vue'),
+            redirect: { name: 'EditorProjects', query: { tab: 'after' } },
           },
           {
             path: 'teams',

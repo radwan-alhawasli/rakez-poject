@@ -2,13 +2,16 @@
   <div class="editor-after-montage">
     <div class="page-header">
       <h1 class="page-title">بعد المونتاج</h1>
-      <p class="page-subtitle">المشاريع التي تم إرسال رابط المونتاج لها (في انتظار المراجعة أو معتمدة/مرفوضة)</p>
+      <p class="page-subtitle">المشاريع التي تم إرسال رابط المونتاج لها (بيانات من الـ API)</p>
     </div>
 
-    <div v-if="montageProjects.length === 0" class="empty-state">
-      <p>لا توجد مشاريع بعد المونتاج. أضف رابط مونتاج من صفحة «غير مونتاج».</p>
+    <div v-if="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>جاري تحميل المشاريع...</p>
     </div>
-
+    <div v-else-if="afterMontageList.length === 0" class="empty-state">
+      <p>لا توجد مشاريع بعد المونتاج.</p>
+    </div>
     <div v-else class="table-wrap">
       <table class="data-table">
         <thead>
@@ -20,19 +23,19 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="p in montageProjects" :key="p.projectId">
-            <td>{{ p.projectName }}</td>
+          <tr v-for="p in afterMontageList" :key="p.id">
+            <td>{{ p.name || p.project_name || p.contract_number || '—' }}</td>
             <td>
-              <a v-if="p.montageLink" :href="p.montageLink" target="_blank" rel="noopener" class="link-cell">{{ p.montageLink }}</a>
+              <a v-if="montageLink(p)" :href="montageLink(p)" target="_blank" rel="noopener" class="link-cell">{{ montageLink(p) }}</a>
               <span v-else>—</span>
             </td>
             <td>
-              <span :class="['status-badge', p.status]">{{ statusLabel(p.status) }}</span>
+              <span :class="['status-badge', statusClass(p)]">{{ statusLabel(p) }}</span>
             </td>
             <td v-if="isManager">
-              <template v-if="p.status === 'pending'">
-                <button type="button" class="btn-approve" @click="setStatus(p.projectId, 'approved')">قبول</button>
-                <button type="button" class="btn-reject" @click="setStatus(p.projectId, 'rejected')">رفض</button>
+              <template v-if="isPending(p)">
+                <button type="button" class="btn-approve" @click="approve(p.id)">قبول</button>
+                <button type="button" class="btn-reject" @click="openReject(p)">رفض</button>
               </template>
               <span v-else>—</span>
             </td>
@@ -40,30 +43,121 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Reject modal -->
+    <div v-if="rejectTarget" class="modal-overlay" @click.self="rejectTarget = null">
+      <div class="modal-box">
+        <h3>رفض رابط المونتاج</h3>
+        <div class="form-group">
+          <label>سبب الرفض</label>
+          <input v-model="rejectReason" type="text" class="form-input" placeholder="اختياري" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" @click="rejectTarget = null">إلغاء</button>
+          <button type="button" class="btn-primary" @click="submitReject">تأكيد الرفض</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import authService from '@/services/authService';
-import { useEditorMockData } from '@/composables/editor/useEditorMockData';
+import editorService from '@/services/editorService';
 import { toast } from '@/composables/useToast';
 
 const user = authService.getCurrentUser();
 const isManager = computed(() => user?.is_manager === true || user?.is_manager === 1);
 
-const { montageProjects, setMontageStatus } = useEditorMockData();
+const contracts = ref([]);
+const loading = ref(true);
+const rejectTarget = ref(null);
+const rejectReason = ref('');
 
-function statusLabel(s) {
-  if (s === 'approved') return 'معتمد';
-  if (s === 'rejected') return 'مرفوض';
+const isAfterMontage = c =>
+  (c.has_photography == 1 || c.has_photography === true) &&
+  (c.has_montage == 1 || c.has_montage === true);
+
+const afterMontageList = computed(() =>
+  contracts.value.filter(isAfterMontage)
+);
+
+function montageLink(p) {
+  return p.image_url || p.montage_image_url || p.video_url || p.montage_video_url || '';
+}
+
+function hasLinks(p) {
+  return !!(p.image_url || p.montage_image_url || p.video_url || p.montage_video_url || (p.description && p.description.trim()));
+}
+
+function statusLabel(p) {
+  const s = p.montage_status ?? p.approval_status ?? p.status ?? '';
+  if (s === 'approved' || s === 'معتمد') return 'معتمد';
+  if (s === 'rejected' || s === 'مرفوض') return 'مرفوض';
   return 'قيد المراجعة';
 }
 
-function setStatus(projectId, status) {
-  setMontageStatus(projectId, status);
-  toast.success(status === 'approved' ? 'تم قبول رابط المونتاج' : 'تم رفض رابط المونتاج');
+function statusClass(p) {
+  const s = (p.montage_status ?? p.approval_status ?? p.status ?? '').toLowerCase();
+  if (s === 'approved') return 'approved';
+  if (s === 'rejected') return 'rejected';
+  return 'pending';
 }
+
+function isPending(p) {
+  const s = (p.montage_status ?? p.approval_status ?? p.status ?? '').toLowerCase();
+  return s !== 'approved' && s !== 'rejected';
+}
+
+async function fetchContracts() {
+  loading.value = true;
+  try {
+    const list = await editorService.getContracts();
+    contracts.value = Array.isArray(list) ? list : [];
+  } catch (_) {
+    contracts.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function approve(contractId) {
+  try {
+    await editorService.approveMontage(contractId, { status: 'approved' });
+    toast.success('تم قبول رابط المونتاج');
+    await fetchContracts();
+  } catch (e) {
+    toast.error(e?.message || 'فشل القبول');
+  }
+}
+
+function openReject(contract) {
+  rejectTarget.value = contract;
+  rejectReason.value = '';
+}
+
+async function submitReject() {
+  const c = rejectTarget.value;
+  const id = c?.id ?? (typeof c === 'object' ? null : c);
+  if (!id) return;
+  try {
+    await editorService.approveMontage(id, {
+      status: 'rejected',
+      rejection_reason: rejectReason.value?.trim() || undefined,
+    });
+    toast.success('تم رفض رابط المونتاج');
+    rejectTarget.value = null;
+    rejectReason.value = '';
+    await fetchContracts();
+  } catch (e) {
+    toast.error(e?.message || 'فشل الرفض');
+  }
+}
+
+onMounted(() => {
+  fetchContracts();
+});
 </script>
 
 <style scoped>
@@ -76,14 +170,22 @@ function setStatus(projectId, status) {
 .page-header { margin-bottom: 1.5rem; }
 .page-title { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.25rem 0; }
 .page-subtitle { color: #64748b; margin: 0; font-size: 0.9rem; }
+.loading-state,
 .empty-state {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 2rem;
   text-align: center;
+  padding: 2rem;
   color: #64748b;
 }
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 1rem;
+  border: 3px solid #e2e8f0;
+  border-top-color: #27374d;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 .table-wrap { overflow-x: auto; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; }
 .data-table { width: 100%; border-collapse: collapse; }
 .data-table th,
@@ -110,4 +212,22 @@ function setStatus(projectId, status) {
 }
 .btn-approve { background: #10b981; color: #fff; }
 .btn-reject { background: #ef4444; color: #fff; }
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+.modal-box { background: #fff; border-radius: 12px; padding: 1.5rem; max-width: 420px; width: 100%; }
+.modal-box h3 { margin: 0 0 1rem 0; }
+.form-group { margin: 1rem 0; }
+.form-group label { display: block; margin-bottom: 0.35rem; font-weight: 500; }
+.form-input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; }
+.modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem; }
+.btn-primary { padding: 0.5rem 1rem; background: #27374d; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+.btn-secondary { padding: 0.5rem 1rem; background: #e2e8f0; color: #334155; border: none; border-radius: 8px; cursor: pointer; }
 </style>

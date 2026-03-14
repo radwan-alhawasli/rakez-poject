@@ -2,16 +2,25 @@
   <div class="editor-not-montaged">
     <div class="page-header">
       <h1 class="page-title">مشاريع غير مونتاج</h1>
-      <p class="page-subtitle">المشاريع التي لم يُؤكد إكمال المونتاج لها بعد</p>
+      <p class="page-subtitle">المشاريع التي لم يُؤكد إكمال المونتاج لها بعد (بيانات من الـ API)</p>
     </div>
 
-    <div class="cards-grid">
+    <div v-if="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>جاري تحميل المشاريع...</p>
+    </div>
+    <div v-else-if="notMontagedProjects.length === 0" class="empty-state">
+      <p>لا توجد مشاريع قبل المونتاج.</p>
+    </div>
+    <div v-else class="cards-grid">
       <div v-for="p in notMontagedProjects" :key="p.id" class="card">
-        <h3 class="card-title">{{ p.name }}</h3>
-        <p class="card-meta">المطور: {{ p.developer }}</p>
+        <h3 class="card-title">{{ p.name || p.project_name || p.contract_number || '—' }}</h3>
+        <p class="card-meta">المطور: {{ p.developer_name || p.developer || '—' }}</p>
         <button type="button" class="btn-link" @click="openSeeMore(p)">عرض المزيد</button>
         <div class="card-actions">
-          <button type="button" class="btn-primary" @click="openMontageForm(p)">إضافة رابط المونتاج</button>
+          <router-link :to="{ name: 'EditorProjects', query: { tab: 'before' } }" class="btn-primary">
+            إضافة رابط المونتاج
+          </router-link>
         </div>
       </div>
     </div>
@@ -19,72 +28,61 @@
     <!-- See more modal -->
     <div v-if="seeMoreProject" class="modal-overlay" @click.self="seeMoreProject = null">
       <div class="modal-box">
-        <h3>{{ seeMoreProject.name }}</h3>
+        <h3>{{ seeMoreProject.name || seeMoreProject.project_name || '—' }}</h3>
         <dl class="detail-list">
           <dt>رقم المعلن</dt>
-          <dd>{{ seeMoreProject.publisherNumber || '—' }}</dd>
+          <dd>{{ seeMoreProject.advertiser_number ?? seeMoreProject.publisher_number ?? '—' }}</dd>
           <dt>رابط التصوير</dt>
           <dd>
-            <a v-if="seeMoreProject.photographyLink" :href="seeMoreProject.photographyLink" target="_blank" rel="noopener">{{ seeMoreProject.photographyLink }}</a>
+            <a v-if="seeMoreProject.photography_link || seeMoreProject.photography_url" :href="seeMoreProject.photography_link || seeMoreProject.photography_url" target="_blank" rel="noopener">{{ seeMoreProject.photography_link || seeMoreProject.photography_url }}</a>
             <span v-else>—</span>
           </dd>
           <dt>الوصف</dt>
           <dd>{{ seeMoreProject.description || '—' }}</dd>
           <dt>الوحدات المتاحة</dt>
-          <dd>{{ seeMoreProject.availableUnits ?? '—' }}</dd>
+          <dd>{{ seeMoreProject.available_units ?? '—' }}</dd>
         </dl>
         <button type="button" class="btn-secondary" @click="seeMoreProject = null">إغلاق</button>
-      </div>
-    </div>
-
-    <!-- Add montage link modal -->
-    <div v-if="montageFormProject" class="modal-overlay" @click.self="montageFormProject = null">
-      <div class="modal-box">
-        <h3>إضافة رابط المونتاج — {{ montageFormProject.name }}</h3>
-        <div class="form-group">
-          <label>رابط المونتاج</label>
-          <input v-model="montageLinkInput" type="url" class="form-input" placeholder="https://..." />
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" @click="montageFormProject = null">إلغاء</button>
-          <button type="button" class="btn-primary" :disabled="!montageLinkInput?.trim()" @click="submitMontageLink">إرسال</button>
-        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useEditorMockData } from '@/composables/editor/useEditorMockData';
-import { toast } from '@/composables/useToast';
+import { ref, computed, onMounted } from 'vue';
+import editorService from '@/services/editorService';
 
-const router = useRouter();
-const { notMontagedProjects, addMontageLink } = useEditorMockData();
-
+const contracts = ref([]);
+const loading = ref(true);
 const seeMoreProject = ref(null);
-const montageFormProject = ref(null);
-const montageLinkInput = ref('');
+
+const isAfterMontage = c =>
+  (c.has_photography == 1 || c.has_photography === true) &&
+  (c.has_montage == 1 || c.has_montage === true);
+
+const notMontagedProjects = computed(() =>
+  contracts.value.filter(c => !isAfterMontage(c))
+);
+
+async function fetchContracts() {
+  loading.value = true;
+  try {
+    const list = await editorService.getContracts();
+    contracts.value = Array.isArray(list) ? list : [];
+  } catch (_) {
+    contracts.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
 
 function openSeeMore(p) {
   seeMoreProject.value = { ...p };
 }
 
-function openMontageForm(p) {
-  montageFormProject.value = p;
-  montageLinkInput.value = '';
-}
-
-function submitMontageLink() {
-  const link = montageLinkInput.value?.trim();
-  if (!link || !montageFormProject.value) return;
-  addMontageLink(montageFormProject.value.id, montageFormProject.value.name, link);
-  toast.success('تم إرسال رابط المونتاج. سيتم مراجعته من المدير.');
-  montageFormProject.value = null;
-  montageLinkInput.value = '';
-  router.push({ name: 'EditorProjectsAfterMontage' });
-}
+onMounted(() => {
+  fetchContracts();
+});
 </script>
 
 <style scoped>
@@ -97,6 +95,22 @@ function submitMontageLink() {
 .page-header { margin-bottom: 1.5rem; }
 .page-title { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.25rem 0; }
 .page-subtitle { color: #64748b; margin: 0; font-size: 0.9rem; }
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 1rem;
+  border: 3px solid #e2e8f0;
+  border-top-color: #27374d;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -122,15 +136,15 @@ function submitMontageLink() {
 }
 .card-actions { margin-top: 1rem; }
 .btn-primary {
+  display: inline-block;
   padding: 0.5rem 1rem;
   background: #27374d;
   color: #fff;
   border: none;
   border-radius: 8px;
-  cursor: pointer;
+  text-decoration: none;
   font-size: 0.9rem;
 }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-secondary {
   padding: 0.5rem 1rem;
   background: #e2e8f0;
@@ -162,14 +176,4 @@ function submitMontageLink() {
 .detail-list dt { font-weight: 600; margin-top: 0.5rem; color: #64748b; font-size: 0.85rem; }
 .detail-list dd { margin: 0.15rem 0 0 0; }
 .detail-list a { color: #27374d; word-break: break-all; }
-.form-group { margin: 1rem 0; }
-.form-group label { display: block; margin-bottom: 0.35rem; font-weight: 500; }
-.form-input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 1rem;
-}
-.modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem; }
 </style>

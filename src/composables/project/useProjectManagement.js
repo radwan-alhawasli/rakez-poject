@@ -384,13 +384,12 @@ export function useProjectManagement() {
     if (!project) return;
     assignTeamLoading.value = true;
     try {
-      // All teams to select from: GET {{base_url}}/project_management/teams/index
+      // All teams: GET /project_management/teams/index
       const allTeams = await teamService.getTeams();
       assignTeamAvailable.value = Array.isArray(allTeams) ? allTeams : [];
-      // Paused: get teams assigned to this contract (use when API is ready)
-      // const assignedData = await teamService.getProjectTeams(project.id);
-      const assigned = [];
-      assignTeamAssigned.value = assigned;
+      // Assigned teams: GET /project_management/teams/index/:contractId
+      const assigned = await teamService.getProjectTeams(project.id);
+      assignTeamAssigned.value = Array.isArray(assigned) ? assigned : [];
     } catch (error) {
       logger.error('Error loading teams for assign modal:', error);
       toast.error('فشل تحميل قائمة الفرق');
@@ -404,7 +403,8 @@ export function useProjectManagement() {
     if (!project || !assignTeamSelectedId.value) return;
     assignTeamActionLoading.value = true;
     try {
-      await teamService.addProjectTeams(project.id, [Number(assignTeamSelectedId.value)]);
+      // POST /project_management/teams/add/:contract_id
+      await teamService.addTeamsToContract(project.id, [Number(assignTeamSelectedId.value)]);
       toast.success('تم تعيين الفريق بنجاح');
       assignTeamSelectedId.value = '';
       await loadAssignTeamData();
@@ -420,11 +420,12 @@ export function useProjectManagement() {
   const assignTeamRemove = async team => {
     const project = projectForAssignTeam.value;
     if (!project) return;
-    const projectTeamId = team.project_team_id ?? team.id;
-    if (!projectTeamId) return;
+    const teamId = team.id;
+    if (!teamId) return;
     assignTeamActionLoading.value = true;
     try {
-      await teamService.removeProjectTeam(projectTeamId);
+      // POST /project_management/teams/remove/:contract_id with body { team_id }
+      await teamService.removeTeamsFromContract(project.id, [teamId]);
       toast.success('تم إزالة الفريق بنجاح');
       await loadAssignTeamData();
       await fetchProjects();

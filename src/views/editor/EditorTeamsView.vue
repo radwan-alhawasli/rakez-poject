@@ -2,26 +2,38 @@
   <div class="editor-teams">
     <div class="page-header">
       <h1 class="page-title">الفرق</h1>
-      <p class="page-subtitle">عرض الفرق وأعضائها (للعرض فقط — لا يمكن التعديل حتى يتم توفير الـ API)</p>
+      <p class="page-subtitle">فرق المبيعات وأعضاء الفريق </p>
     </div>
 
-    <div class="teams-list">
+    <div v-if="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>جاري تحميل الفرق...</p>
+    </div>
+    <div v-else-if="error" class="error-state">
+      <p>{{ error }}</p>
+    </div>
+    <div v-else-if="teams.length === 0" class="empty-state">
+      <p>لا توجد فرق.</p>
+    </div>
+    <div v-else class="teams-list">
       <section v-for="team in teams" :key="team.id" class="team-card">
-        <h2 class="team-name">{{ team.name }}</h2>
-        <p class="team-lead">قائد الفريق: {{ team.lead }}</p>
+        <h2 class="team-name">{{ team.name || team.team_name || 'فريق' }}</h2>
+        <p v-if="team.lead" class="team-lead">قائد الفريق: {{ team.lead }}</p>
         <table class="members-table">
           <thead>
             <tr>
               <th>الاسم</th>
               <th>الدور</th>
               <th>البريد</th>
+              <th>الهاتف</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="m in team.members" :key="m.id">
-              <td>{{ m.name }}</td>
-              <td>{{ m.role }}</td>
-              <td>{{ m.email }}</td>
+            <tr v-for="m in teamMarketers(team)" :key="m.id || m.marketer_id">
+              <td>{{ m.name || m.user_name || m.marketer_name || '—' }}</td>
+              <td>{{ m.role || m.role_name || '—' }}</td>
+              <td>{{ m.email || '—' }}</td>
+              <td>{{ m.phone || '—' }}</td>
             </tr>
           </tbody>
         </table>
@@ -31,9 +43,34 @@
 </template>
 
 <script setup>
-import { useEditorMockData } from '@/composables/editor/useEditorMockData';
+import { ref, onMounted } from 'vue';
+import editorService from '@/services/editorService';
 
-const { teams } = useEditorMockData();
+const teams = ref([]);
+const loading = ref(true);
+const error = ref('');
+
+async function fetchTeams() {
+  loading.value = true;
+  error.value = '';
+  try {
+    const data = await editorService.getEditorTeams();
+    teams.value = Array.isArray(data) ? data : [];
+  } catch (e) {
+    teams.value = [];
+    error.value = e?.message || 'فشل تحميل الفرق';
+  } finally {
+    loading.value = false;
+  }
+}
+
+function teamMarketers(team) {
+  return team.marketers || team.members || team.users || [];
+}
+
+onMounted(() => {
+  fetchTeams();
+});
 </script>
 
 <style scoped>
@@ -46,6 +83,24 @@ const { teams } = useEditorMockData();
 .page-header { margin-bottom: 1.5rem; }
 .page-title { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.25rem 0; }
 .page-subtitle { color: #64748b; margin: 0; font-size: 0.9rem; }
+.loading-state,
+.error-state,
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+}
+.error-state { color: #b91c1c; }
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 1rem;
+  border: 3px solid #e2e8f0;
+  border-top-color: #27374d;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 .teams-list { display: flex; flex-direction: column; gap: 1.5rem; }
 .team-card {
   background: #fff;

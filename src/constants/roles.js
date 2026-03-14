@@ -8,6 +8,7 @@ export const ROLE_SALES = 5;
 export const ROLE_CREDIT = 6;
 export const ROLE_ACCOUNTING = 7;
 export const ROLE_HR = 8;
+export const ROLE_INVENTORY = 9;
 
 export const ROLE_MAP = {
   marketing: ROLE_MARKETING,
@@ -19,6 +20,7 @@ export const ROLE_MAP = {
   credit: ROLE_CREDIT,
   accounting: ROLE_ACCOUNTING,
   hr: ROLE_HR,
+  inventory: ROLE_INVENTORY,
 };
 
 export const ROLES = {
@@ -43,6 +45,7 @@ export const ROLES = {
     class: 'role-accounting',
   },
   [ROLE_HR]: { label: 'الموارد البشرية / HR', key: 'hr', class: 'role-hr' },
+  [ROLE_INVENTORY]: { label: 'المخزون / Inventory', key: 'inventory', class: 'role-inventory' },
 };
 
 export const getRoleLabel = (type, isManager = false) => {
