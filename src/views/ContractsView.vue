@@ -348,31 +348,36 @@ const closeModal = () => {
 };
 
 const handleApprove = async (c, notes = '') => {
-  try {
-    await contractService.approveContract(c.id, notes);
-    toast.success('تم اعتماد العقد');
-    fetchContracts();
-    closeModal();
-  } catch (err) {
-    logger.error('Error approving contract:', err);
-    const msg = getApiErrorMessage(err);
-    toast.error(msg);
-    fetchContracts();
+  // عند الاستدعاء من الـ Modal لا يُمرَّر عقد (الـ Modal نفّذ الطلب مسبقاً)، نكتفي بتحديث القائمة وإغلاق النافذة
+  if (c != null && (c.id ?? c.contract_id)) {
+    try {
+      await contractService.approveContract(c.id ?? c.contract_id, notes);
+      toast.success('تم اعتماد العقد');
+    } catch (err) {
+      logger.error('Error approving contract:', err);
+      toast.error(getApiErrorMessage(err));
+      fetchContracts();
+      return;
+    }
   }
+  fetchContracts();
+  closeModal();
 };
 
 const handleReject = async (c, notes = '') => {
-  try {
-    await contractService.rejectContract(c.id, notes);
-    toast.success('تم رفض العقد');
-    fetchContracts();
-    closeModal();
-  } catch (err) {
-    logger.error('Error rejecting contract:', err);
-    const msg = getApiErrorMessage(err);
-    toast.error(msg);
-    fetchContracts();
+  if (c != null && (c.id ?? c.contract_id)) {
+    try {
+      await contractService.rejectContract(c.id ?? c.contract_id, notes);
+      toast.success('تم رفض العقد');
+    } catch (err) {
+      logger.error('Error rejecting contract:', err);
+      toast.error(getApiErrorMessage(err));
+      fetchContracts();
+      return;
+    }
   }
+  fetchContracts();
+  closeModal();
 };
 
 function openEditModal(contract) {
