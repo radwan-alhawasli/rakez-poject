@@ -62,6 +62,7 @@ import notificationService from '@/services/notificationService';
 import authService from '@/services/authService';
 import { usePermissions } from '@/composables/usePermissions';
 import { getRoleLabel } from '@/constants/roles';
+import { normalizeRole } from '@/utils/rbac';
 import {
   SidebarProvider,
   SidebarInset,
@@ -145,59 +146,11 @@ export default {
     };
 
     const userRole = computed(() => {
-      // 1. Gather all potential role indicators
       const rawType = user.value?.type;
-      const rawRole = user.value?.role;
-
-      // 2. Helper to standardize values to string lowercase
-      const check = val =>
-        String(val || '')
-          .toLowerCase()
-          .trim();
-
-      // 3. HR Logic (8, 9, 'hr', 'HR')
-      // Supports string "8", number 8, string "hr"
-      if (check(rawType) === '8' || check(rawType) === '9' || check(rawType) === 'hr') return 8;
-      if (check(rawRole) === 'hr') return 8;
-
-      // 4. Admin
-      if (rawType === 1 || check(rawType) === 'admin' || check(rawRole) === 'admin') return 1;
-
-      // 5. Project Management (2) — المدير وغير المدير نفس القسم، التمييز عبر is_manager في القائمة
-      if (rawType == 2 || check(rawType) === 'project_management') {
-        return 2;
-      }
-
-      // 6. Map other text roles (أرقام الأدوار 1–13)
-      const roleMap = {
-        hr: 8,
-        marketer: 5,
-        sales: 6,
-        sales_leader: 7,
-        credit: 9,
-        accounting: 10,
-        inventory: 11,
-        editor: 3,
-        developer: 4,
-        marketing: 5,
-        accountant: 13,
-      };
-
-      // If type is a known string key, map it
-      if (typeof rawType === 'string' && roleMap[check(rawType)] !== undefined) {
-        return roleMap[check(rawType)];
-      }
-
-      // توافق عكسي: إذا الـ API يرسل type = 5 وليس role = marketing، نعرض قائمة المبيعات (كان 5 = مبيعات قديماً)
-      if (rawType == 5 && check(rawRole) !== 'marketing' && check(rawRole) !== 'marketer') {
-        return 6;
-      }
-      if (rawType == 5) {
-        return 5;
-      }
-
-      // Default: parse number or return 0
-      return parseInt(rawType) || 0;
+      // normalizeRole من rbac.js — مصدر واحد للحقيقة لتحويل الأدوار (1-13)
+      // يدعم: أرقام، نصوص رقمية ("8")، ومفاتيح نصية ("hr", "credit", "admin"...)
+      const normalized = normalizeRole(rawType);
+      return normalized !== null ? normalized : 0;
     });
 
     /** Role label for sidebar footer: قائد المبيعات vs المبيعات — نفس واجهة المبيعات (دور 6 أو 7، is_manager يحدد التسمية) */
