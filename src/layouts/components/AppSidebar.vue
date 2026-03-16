@@ -687,8 +687,8 @@
           </router-link>
         </template>
   
-        <!-- Project Manager Sidebar -->
-        <template v-else-if="userRole == 3 || userRole == 10">
+        <!-- Project Management Sidebar (Role 2) -->
+        <template v-else-if="userRole == 2">
           <!-- 1. لوحة التحكم (Dashboard) -->
           <router-link
             to="/dashboard"
@@ -782,7 +782,7 @@
 
           <!-- 3.1 الموافقة على الصور (للمدير فقط — مشاريع بانتظار القبول/الرفض) -->
           <router-link
-            v-if="userRole == 10"
+            v-if="user?.is_manager === true || user?.is_manager === 1"
             to="/image-approval"
             class="nav-item"
             active-class="active"
@@ -963,8 +963,8 @@
           </router-link>
         </template>
   
-    <!-- Sales Sidebar (Role 5) - Sales & Sales Leader -->
-        <template v-else-if="userRole == 5">
+    <!-- Sales Sidebar (Role 6 أو 7) — المبيعات وقائد المبيعات: نفس الواجهة /sales -->
+        <template v-else-if="userRole === 6 || userRole === 7">
           <!-- 1. لوحة التحكم -->
           <router-link
             v-if="hasPermission('sales.dashboard.view')"
@@ -1470,8 +1470,8 @@
           </router-link>
         </template>
 
-        <!-- Credit Sidebar (Role 6) -->
-        <template v-else-if="userRole == 6">
+        <!-- Credit Sidebar (Role 9) -->
+        <template v-else-if="userRole == 9">
           <router-link
             to="/credit/dashboard"
             class="nav-item"
@@ -1642,8 +1642,8 @@
           </router-link>
         </template>
   
-        <!-- Accounting Sidebar (Role 7) -->
-        <template v-else-if="userRole == 7">
+        <!-- Accounting / Accountant Sidebar (Role 10 أو 13) -->
+        <template v-else-if="userRole == 10 || userRole == 13">
           <router-link
             to="/accounting/dashboard"
             class="nav-item"
@@ -1860,8 +1860,8 @@
           </router-link>
         </template>
 
-        <!-- Inventory Sidebar (Role 9) -->
-        <template v-else-if="userRole == 9">
+        <!-- Inventory Sidebar (Role 11) -->
+        <template v-else-if="userRole == 11">
           <router-link
             to="/inventory"
             class="nav-item"
@@ -1943,8 +1943,8 @@
           </router-link>
         </template>
   
-        <!-- Editor (Montage / قسم المونتاج) Sidebar (Role 4) -->
-        <template v-else-if="userRole == 4">
+        <!-- Editor (Montage / قسم المونتاج) Sidebar (Role 3) -->
+        <template v-else-if="userRole == 3">
           <router-link
             to="/editor/dashboard"
             class="nav-item"
@@ -2063,8 +2063,53 @@
             </div>
           </router-link>
         </template>
+
+        <!-- Developer Sidebar (Role 4) -->
+        <template v-else-if="userRole == 4">
+          <router-link to="/dashboard" class="nav-item" active-class="active" data-tooltip="لوحة التحكم">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span class="nav-text">لوحة التحكم</span>
+            </div>
+          </router-link>
+          <router-link to="/notifications" class="nav-item" active-class="active" data-tooltip="الإشعارات">
+            <div class="nav-content">
+              <div class="icon-with-badge">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
+              </div>
+              <span class="nav-text">الإشعارات</span>
+            </div>
+          </router-link>
+          <router-link v-if="hasPermission('tasks.create')" to="/tasks" class="nav-item" active-class="active" data-tooltip="إدارة المهام">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span class="nav-text">إدارة المهام</span>
+            </div>
+          </router-link>
+          <router-link to="/profile" class="nav-item" active-class="active" data-tooltip="الملف الشخصي">
+            <div class="nav-content">
+              <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span class="nav-text">الملف الشخصي</span>
+            </div>
+          </router-link>
+        </template>
   
-        <!-- Marketer Sidebar (Matches Image 2) -->
+        <!-- Marketer / Default Sidebar (Role 5 وغير المطابقة) -->
         <template v-else>
           <router-link
             v-if="hasPermission('marketing.dashboard.view')"

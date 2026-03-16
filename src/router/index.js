@@ -7,9 +7,11 @@ import {
   ROLE_ADMIN,
   ROLE_PROJECT_MANAGEMENT,
   ROLE_ACCOUNTING,
+  ROLE_ACCOUNTANT,
   ROLE_HR,
   ROLE_MARKETING,
   ROLE_SALES,
+  ROLE_SALES_LEADER,
   ROLE_CREDIT,
   ROLE_EDITOR,
   ROLE_INVENTORY,
@@ -289,7 +291,7 @@ const routes = [
       {
         path: 'sales',
         component: () => import('../views/SalesViewExtended.vue'),
-        meta: { roles: [ROLE_SALES], permissions: [PERMISSIONS.SALES_DASHBOARD_VIEW] },
+        meta: { roles: [ROLE_SALES, ROLE_SALES_LEADER], permissions: [PERMISSIONS.SALES_DASHBOARD_VIEW] },
         children: [
           { path: '', name: 'Sales', redirect: { name: 'SalesDashboard' } },
           {
@@ -447,7 +449,7 @@ const routes = [
       {
         path: 'accounting',
         component: () => import('../views/AccountingView.vue'),
-        meta: { roles: [ROLE_ACCOUNTING], permissions: [PERMISSIONS.ACCOUNTING_DASHBOARD_VIEW] },
+        meta: { roles: [ROLE_ACCOUNTING, ROLE_ACCOUNTANT], permissions: [PERMISSIONS.ACCOUNTING_DASHBOARD_VIEW] },
         children: [
           { path: '', name: 'Accounting', redirect: { name: 'AccountingDashboard' } },
           {
@@ -485,7 +487,7 @@ const routes = [
       {
         path: 'commission-deposits',
         component: () => import('../views/CommissionDepositsView.vue'),
-        meta: { roles: [ROLE_ADMIN, ROLE_ACCOUNTING, ROLE_HR] },
+        meta: { roles: [ROLE_ADMIN, ROLE_ACCOUNTING, ROLE_ACCOUNTANT, ROLE_HR] },
         children: [
           { path: '', name: 'CommissionDeposits', redirect: { name: 'CommissionsDashboard' } },
           {

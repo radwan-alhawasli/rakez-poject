@@ -20,9 +20,12 @@ import {
   ROLE_ADMIN,
   ROLE_PROJECT_MANAGEMENT,
   ROLE_EDITOR,
+  ROLE_DEVELOPER,
   ROLE_SALES,
+  ROLE_SALES_LEADER,
   ROLE_CREDIT,
   ROLE_ACCOUNTING,
+  ROLE_ACCOUNTANT,
   ROLE_HR,
   ROLE_MARKETING,
   ROLE_INVENTORY,
@@ -36,12 +39,13 @@ import {
 
 const isTruthyLeaderFlag = value => value === true || value === 1 || value === '1';
 
-/** API may use is_leader or is_manager for Sales Leader (type 5). Both treated as leader. */
+/** قائد المبيعات: إما دور 7 (sales_leader) أو دور 6 (sales) مع is_manager/is_leader — نفس واجهة المبيعات. */
 export function isSalesLeader(user) {
   if (!user) return false;
   const role = normalizeRole(user.type);
-  if (role !== ROLE_SALES) return false;
-  return isTruthyLeaderFlag(user.is_leader) || isTruthyLeaderFlag(user.is_manager);
+  if (role === ROLE_SALES_LEADER) return true;
+  if (role === ROLE_SALES) return isTruthyLeaderFlag(user.is_leader) || isTruthyLeaderFlag(user.is_manager);
+  return false;
 }
 
 /**
@@ -118,7 +122,7 @@ export function isManager(user) {
 export function getEffectiveRoleKey(user) {
   if (!user) return 'default';
   const userRole = normalizeRole(user.type);
-  if (userRole === ROLE_SALES && isSalesLeader(user)) return 'sales_leader';
+  if (userRole === ROLE_SALES_LEADER || (userRole === ROLE_SALES && isSalesLeader(user))) return 'sales_leader';
   return ROLE_TO_BOOTSTRAP_KEY[userRole] || 'default';
 }
 
@@ -230,11 +234,13 @@ export function getDashboardPathForUser(user) {
   const normalizedRole = normalizeRole(user.type);
   if (normalizedRole === ROLE_HR) return '/hr/dashboard';
   if (normalizedRole === ROLE_MARKETING) return '/marketing/dashboard';
-  if (normalizedRole === ROLE_SALES) return '/sales/dashboard';
+  if (normalizedRole === ROLE_SALES || normalizedRole === ROLE_SALES_LEADER) return '/sales/dashboard';
   if (normalizedRole === ROLE_CREDIT) return '/credit/dashboard';
   if (normalizedRole === ROLE_ACCOUNTING) return '/accounting/dashboard';
   if (normalizedRole === ROLE_EDITOR) return '/editor/dashboard';
+  if (normalizedRole === ROLE_DEVELOPER) return '/dashboard';
   if (normalizedRole === ROLE_PROJECT_MANAGEMENT) return '/project-management';
   if (normalizedRole === ROLE_INVENTORY) return '/inventory';
+  if (normalizedRole === ROLE_ACCOUNTANT) return '/accounting/dashboard';
   return '/dashboard';
 }

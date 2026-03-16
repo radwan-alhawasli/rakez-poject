@@ -163,18 +163,24 @@ export default {
       // 4. Admin
       if (rawType === 1 || check(rawType) === 'admin' || check(rawRole) === 'admin') return 1;
 
-      // 5. Project Management
-      if (rawType == 3 || check(rawType) === 'project_management') {
-        return user.value?.is_manager ? 10 : 3;
+      // 5. Project Management (2) — المدير وغير المدير نفس القسم، التمييز عبر is_manager في القائمة
+      if (rawType == 2 || check(rawType) === 'project_management') {
+        return 2;
       }
 
-      // 6. Map other text roles
+      // 6. Map other text roles (أرقام الأدوار 1–13)
       const roleMap = {
         hr: 8,
-        marketer: 0,
-        sales: 5,
-        accounting: 7,
-        marketing: 0,
+        marketer: 5,
+        sales: 6,
+        sales_leader: 7,
+        credit: 9,
+        accounting: 10,
+        inventory: 11,
+        editor: 3,
+        developer: 4,
+        marketing: 5,
+        accountant: 13,
       };
 
       // If type is a known string key, map it
@@ -186,11 +192,11 @@ export default {
       return parseInt(rawType) || 0;
     });
 
-    /** Role label for sidebar footer: Sales Leader vs Sales when role is 5 (API uses is_manager or is_leader) */
+    /** Role label for sidebar footer: قائد المبيعات vs المبيعات — نفس واجهة المبيعات (دور 6 أو 7، is_manager يحدد التسمية) */
     const sidebarRoleLabel = computed(() => {
       const u = user.value;
       if (!u) return '';
-      if (userRole.value === 5) {
+      if (userRole.value === 6 || userRole.value === 7) {
         const isLeader =
           u.is_leader === true ||
           u.is_leader === 1 ||

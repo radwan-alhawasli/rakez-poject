@@ -42,7 +42,7 @@ const user = authService.getCurrentUser();
 const userName = computed(() => user?.name || 'الموارد البشرية');
 const isHR = computed(() => {
   const type = String(user?.type || '').toLowerCase();
-  return type === 'hr' || type === '8' || type === '9';
+  return type === 'hr' || type === '8' || Number(user?.type) === 8;
 });
 
 const activeTab = computed(() => {
