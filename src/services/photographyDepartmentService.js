@@ -56,18 +56,18 @@ const photographyDepartmentService = {
   },
 
   /**
-   * Approve photography for contract
-   * POST /photography-department/approve/:contract_id
+   * Approve photography for contract (manager acceptance)
+   * PATCH /photography-department/approve/:contract_id
    * @param {number|string} contractId - Contract ID
-   * @param {Object} data - Approval data (status, rejection_reason, etc.)
+   * @param {Object} data - Approval data (status: 'approved' | 'rejected', rejection_reason?)
    * @returns {Promise<Object>}
    */
   async approve(contractId, data = {}) {
     try {
-      const response = await apiClient.post(`/photography-department/approve/${contractId}`, data);
+      const response = await apiClient.patch(`/photography-department/approve/${contractId}`, data);
       return response.data?.data || response.data || {};
     } catch (error) {
-      return handleServiceError(error, `Approve photography for contract ${contractId}`, 'post');
+      return handleServiceError(error, `Approve photography for contract ${contractId}`, 'patch');
     }
   },
 };
