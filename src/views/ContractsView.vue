@@ -130,7 +130,14 @@
             </td>
             <td data-label="الإجراء">
               <button class="view-link" @click="viewContract(contract)">عرض</button>
-              <button type="button" class="edit-link" @click="openEditModal(contract)">تعديل</button>
+              <button
+                v-if="contract.status === 'Pending'"
+                type="button"
+                class="edit-link"
+                @click="openEditModal(contract)"
+              >
+                تعديل
+              </button>
             </td>
           </tr>
         </tbody>
@@ -213,12 +220,53 @@ function mapStatusForApi(filter) {
   return undefined;
 }
 
-/** Normalize raw status from API to display value (Pending|Approved|Refused). Backend may use status, approval_status, etc. */
+/** Normalize raw status from API to display value (Pending|Approved|Refused). Backend may use status, approval_status, project_progress, etc. */
 function normalizeStatusFromApi(contract) {
-  const raw = (contract?.status ?? contract?.approval_status ?? contract?.contract_status ?? '').toString().toLowerCase();
-  if (raw === 'approved' || raw === 'معتمد') return 'Approved';
-  if (raw === 'rejected' || raw === 'refused' || raw === 'مرفوض') return 'Refused';
+  const raw = (
+    contract?.status ??
+    contract?.approval_status ??
+    contract?.contract_status ??
+    contract?.admin_status ??
+    contract?.admin_approval_status ??
+    contract?.data?.status ??
+    contract?.contract?.status ??
+    ''
+  )
+    .toString()
+    .toLowerCase()
+    .trim();
+  const approvedValues = [
+    'approved', 'معتمد', '1', 'completed', 'مكتمل', 'complete', 'done', 'finished', 'closed', 'مغلق', 'active', 'نشط'
+  ];
+  const refusedValues = [
+    'rejected', 'refused', 'مرفوض', '0', 'cancelled', 'ملغى', 'canceled'
+  ];
+  if (approvedValues.includes(raw)) return 'Approved';
+  if (refusedValues.includes(raw)) return 'Refused';
+  // احتياطي: إذا كانت حالة الاعتماد غير معتمدة لكن حالة المشروع مكتملة، نعرض معتمد
+  const progress = (contract?.project_progress ?? contract?.progress ?? '')
+    .toString()
+    .toLowerCase()
+    .trim();
+  if (progress && ['completed', 'مكتمل', 'complete', 'done', 'finished', 'closed'].includes(progress)) {
+    return 'Approved';
+  }
   return 'Pending';
+}
+
+/** تحديث حالة عقد في القائمة محلياً (تحديث تفاؤلي بعد الموافقة/الرفض) */
+function updateContractStatusInList(contractId, newStatus) {
+  const id = contractId ?? selectedContract.value?.id ?? selectedContract.value?.contract_id;
+  if (id == null) return;
+  const idx = contracts.value.findIndex(
+    c => (c.id ?? c.contract_id) === id || (c.id ?? c.contract_id) == id
+  );
+  if (idx === -1) return;
+  const c = contracts.value[idx];
+  c.status = newStatus;
+  c.pending = newStatus === 'Pending';
+  c.approved = newStatus === 'Approved';
+  c.rejected = newStatus === 'Refused';
 }
 
 /** Maps API contract to view model (number, developer, createdDate, status: Pending|Approved|Refused, type). */
@@ -348,17 +396,23 @@ const closeModal = () => {
 };
 
 const handleApprove = async (c, notes = '') => {
-  // عند الاستدعاء من الـ Modal لا يُمرَّر عقد (الـ Modal نفّذ الطلب مسبقاً)، نكتفي بتحديث القائمة وإغلاق النافذة
+  // عند الاستدعاء من الـ Modal لا يُمرَّر عقد (الـ Modal نفّذ الطلب مسبقاً)
   if (c != null && (c.id ?? c.contract_id)) {
     try {
       await contractService.approveContract(c.id ?? c.contract_id, notes);
       toast.success('تم اعتماد العقد');
+      updateContractStatusInList(c.id ?? c.contract_id, 'Approved');
     } catch (err) {
       logger.error('Error approving contract:', err);
       toast.error(getApiErrorMessage(err));
       fetchContracts();
       return;
     }
+  } else {
+    // استدعاء من الـ Modal: تحديث تفاؤلي فوري ثم إعادة جلب القائمة
+    const sel = selectedContract.value;
+    const id = sel?.id ?? sel?.contract_id;
+    if (id != null) updateContractStatusInList(id, 'Approved');
   }
   fetchContracts();
   closeModal();
@@ -369,12 +423,17 @@ const handleReject = async (c, notes = '') => {
     try {
       await contractService.rejectContract(c.id ?? c.contract_id, notes);
       toast.success('تم رفض العقد');
+      updateContractStatusInList(c.id ?? c.contract_id, 'Refused');
     } catch (err) {
       logger.error('Error rejecting contract:', err);
       toast.error(getApiErrorMessage(err));
       fetchContracts();
       return;
     }
+  } else {
+    const sel = selectedContract.value;
+    const id = sel?.id ?? sel?.contract_id;
+    if (id != null) updateContractStatusInList(id, 'Refused');
   }
   fetchContracts();
   closeModal();

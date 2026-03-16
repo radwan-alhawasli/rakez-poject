@@ -39,6 +39,18 @@
             <label>المساحة (إجمالي القيمة)</label>
             <input v-model.number="form.total_units_value" type="number" class="form-input" placeholder="0" />
           </div>
+          <div class="field-group">
+            <label>السعي من</label>
+            <select v-model="form.commission_from" class="form-input">
+              <option value="">اختر الطرف</option>
+              <option value="owner">المالك</option>
+              <option value="partner">المشتري</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>نسبة السعي (%)</label>
+            <input v-model="form.commission_percent" type="number" class="form-input" placeholder="0" min="0" step="0.01" />
+          </div>
           <div class="field-group full">
             <label>متطلبات المطور (اختياري)</label>
             <textarea
@@ -139,6 +151,8 @@ const form = reactive({
   city: '',
   district: '',
   total_units_value: 0,
+  commission_from: 'owner',
+  commission_percent: '',
   developer_requiment: '',
   notes: '',
   project_image_url: '',
@@ -160,6 +174,9 @@ function mapApiToForm(data) {
       : data.unit_count != null
         ? Number(data.unit_count)
         : 0;
+  form.commission_from = data.commission_from ?? 'owner';
+  const commissionVal = data.commission_percent ?? data.commission_percentage;
+  form.commission_percent = commissionVal != null && commissionVal !== '' ? String(commissionVal) : '';
   form.developer_requiment = data.developer_requiment ?? data.developer_requirement ?? '';
   form.notes = data.notes ?? data.note ?? '';
   form.project_image_url = data.project_image_url ?? data.image ?? '';
@@ -176,14 +193,24 @@ function mapApiToForm(data) {
 }
 
 async function fetchDetails() {
-  loading.value = true;
+  const id = props.contractId;
+  if (id == null || id === '') {
+    loading.value = false;
+    toast.error('معرف العقد غير متوفر');
+    return;
+  }
+  if (props.initialData && Object.keys(props.initialData).length > 0) {
+    mapApiToForm(props.initialData);
+    loading.value = false;
+  } else {
+    loading.value = true;
+  }
   try {
-    if (props.initialData) mapApiToForm(props.initialData);
-    const data = await contractService.getContractById(props.contractId);
-    mapApiToForm(data);
+    const data = await contractService.getContractById(id);
+    if (data && typeof data === 'object') mapApiToForm(data);
   } catch (err) {
     logger.error('EditExclusiveProjectModal: fetch contract', err);
-    toast.error(getApiErrorMessage(err, 'فشل تحميل تفاصيل العقد'));
+    if (!props.initialData) toast.error(getApiErrorMessage(err, 'فشل تحميل تفاصيل العقد'));
   } finally {
     loading.value = false;
   }
@@ -207,6 +234,8 @@ async function submit() {
       developer_number: form.developer_number,
       city: form.city,
       district: form.district,
+      commission_from: form.commission_from || 'owner',
+      commission_percentage: Number(form.commission_percent) || 0,
       developer_requiment: form.developer_requiment || undefined,
       project_image_url: form.project_image_url || undefined,
       project_site_url: form.project_site_url || undefined,
