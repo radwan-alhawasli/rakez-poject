@@ -130,7 +130,14 @@
             </td>
             <td data-label="الإجراء">
               <button class="view-link" @click="viewContract(contract)">عرض</button>
-              <button type="button" class="edit-link" @click="openEditModal(contract)">تعديل</button>
+              <button
+                v-if="contract.status === 'Pending'"
+                type="button"
+                class="edit-link"
+                @click="openEditModal(contract)"
+              >
+                تعديل
+              </button>
             </td>
           </tr>
         </tbody>

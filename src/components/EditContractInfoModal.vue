@@ -73,15 +73,11 @@
           <div class="input-row grid-3">
             <div class="field-group">
               <label>السعي من</label>
-              <select v-model="form.commission_from" class="form-input">
-                <option value="">اختر الطرف</option>
-                <option value="owner">المالك</option>
-                <option value="partner">المشتري</option>
-              </select>
+              <input type="text" :value="commissionFromLabel" class="form-input readonly" readonly />
             </div>
             <div class="field-group">
               <label>نسبة السعي (%)</label>
-              <input v-model="form.commission_percent" type="number" class="form-input" placeholder="0" />
+              <input type="text" :value="commissionPercentDisplay" class="form-input readonly" readonly />
             </div>
           </div>
           <div class="input-row grid-3">
@@ -230,7 +226,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import AppModal from '@/components/AppModal.vue';
 import contractService from '@/services/contractService';
 import logger from '@/utils/logger';
@@ -287,7 +283,29 @@ const form = reactive({
   project_site_url: '',
 });
 
-/** Convert API date (DD-MM-YYYY or YYYY-MM-DD) to display format for text input. */
+const commissionFromLabel = computed(() => {
+  const v = (form.commission_from ?? '').toString().toLowerCase();
+  if (v === 'owner') return 'المالك';
+  if (v === 'partner') return 'المشتري';
+  return form.commission_from || '—';
+});
+const commissionPercentDisplay = computed(() => {
+  const p = form.commission_percent;
+  if (p === '' || p == null) return '—';
+  return `${String(p).trim()} %`;
+});
+
+/** تحويل أي تاريخ من الـ API إلى YYYY-MM-DD لعرضه في input type="date". */
+function toDateInputValue(val) {
+  if (!val) return '';
+  const s = String(val).trim().replace(/\//g, '-');
+  const parts = s.split('-').filter(Boolean);
+  if (parts.length !== 3) return s;
+  if (parts[0].length === 4) return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+  return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+}
+
+/** تحويل تاريخ API (DD-MM-YYYY أو YYYY-MM-DD) إلى نص للعرض في حقول نصية. */
 function formatDateForInput(val) {
   if (!val) return '';
   const s = String(val).trim();
@@ -300,42 +318,50 @@ function formatDateForInput(val) {
 
 function mapApiToForm(data) {
   if (!data || typeof data !== 'object') return;
-  // معلومات العقد الأساسية
+  // معلومات العقد الأساسية — دعم أسماء حقول متعددة من الـ API
   form.contract_number = data.contract_number ?? data.contract_id ?? data.id ?? '';
-  form.phone = data.phone ?? '';
-  form.contract_city = data.contract_city ?? 'الرياض';
-  form.hijri_date = data.hijri_date ?? '';
-  form.gregorian_date = (formatDateForInput(data.gregorian_date) || data.gregorian_date) ?? '';
-  form.agreement_duration_days = data.agreement_duration_days != null ? String(data.agreement_duration_days) : '';
+  form.phone = data.phone ?? data.company_phone ?? data.first_party_phone ?? data.contact_phone ?? data.phone_number ?? '';
+  form.contract_city = data.contract_city ?? data.city ?? 'الرياض';
+  form.hijri_date = data.hijri_date ?? data.hijri ?? '';
+  form.gregorian_date = toDateInputValue(data.gregorian_date ?? data.contract_date ?? data.date ?? data.created_at);
+  form.agreement_duration_days = data.agreement_duration_days != null ? String(data.agreement_duration_days) : (data.agreement_duration != null ? String(data.agreement_duration) : '');
   // التسويق والعمولة
-  form.commission_percent = data.commission_percent != null ? String(data.commission_percent) : (data.commission_percentage != null ? String(data.commission_percentage) : '');
-  form.commission_from = data.commission_from ?? 'owner';
-  form.agency_number = data.agency_number ?? '';
-  form.agency_date = (formatDateForInput(data.agency_date) || data.agency_date) ?? '';
-  form.avg_property_value = data.avg_property_value != null ? String(data.avg_property_value) : '';
-  form.release_date = (formatDateForInput(data.release_date) || data.release_date) ?? '';
+  const commissionVal = data.commission_percent ?? data.commission_percentage;
+  form.commission_percent = commissionVal != null && commissionVal !== '' ? String(commissionVal) : '';
+  form.commission_from = data.commission_from ?? (data.commission_source || 'owner');
+  form.agency_number = data.agency_number ?? data.agency_no ?? '';
+  form.agency_date = toDateInputValue(data.agency_date ?? data.agency_date_issued);
+  form.avg_property_value = data.avg_property_value != null ? String(data.avg_property_value) : (data.average_property_value != null ? String(data.average_property_value) : '');
+  form.release_date = toDateInputValue(data.release_date ?? data.release_and_end_date);
   // الطرف الثاني — من الحقول المباشرة أو من كائن second_party_data إن وُجد
   const sp = data.second_party_data;
-  form.second_party_name = data.second_party_name ?? sp?.name ?? sp?.second_party_name ?? '';
+  const info = data.info && typeof data.info === 'object' ? data.info : {};
+  form.second_party_name = data.second_party_name ?? sp?.name ?? sp?.second_party_name ?? data.developer_name ?? '';
   form.second_party_id_number = data.second_party_id_number ?? data.second_party_id ?? sp?.id_number ?? sp?.second_party_id ?? '';
-  form.second_party_phone = data.second_party_phone ?? sp?.phone ?? '';
+  form.second_party_phone = data.second_party_phone ?? sp?.phone ?? data.developer_phone ?? '';
   form.second_party_email = data.second_party_email ?? sp?.email ?? '';
   form.second_party_address = data.second_party_address ?? sp?.address ?? '';
-  form.second_party_cr_number = data.second_party_cr_number ?? sp?.cr_number ?? data.developer_number ?? '';
+  form.second_party_cr_number = data.second_party_cr_number ?? sp?.cr_number ?? data.developer_number ?? data.second_party_cr ?? '';
   form.second_party_signatory = data.second_party_signatory ?? sp?.signatory ?? '';
   form.second_party_role = data.second_party_role ?? sp?.role ?? 'owner';
   // المشاريع والوحدات — unit_count و total_price من استجابة الـ API
   form.units_count = data.units_count ?? data.unit_count ?? (data.units && data.units.length ? data.units.reduce((s, u) => s + (parseInt(u.count) || 0), 0) : 0);
   form.unit_type = data.unit_type ?? (data.units && data.units[0] ? data.units[0].type : '') ?? '';
-  form.project_name = data.project_name ?? '';
-  form.district = data.district ?? '';
-  form.total_units_value = data.total_units_value ?? 0;
-  form.city = data.city ?? '';
-  form.notes = data.notes ?? data.note ?? '';
-  form.project_site_url = data.project_site_url ?? data.project_link ?? data.location_url ?? '';
+  form.project_name = data.project_name ?? data.name ?? info.project_name ?? '';
+  form.district = data.district ?? info.district ?? '';
+  form.total_units_value = data.total_units_value ?? data.total_price ?? 0;
+  form.city = data.city ?? info.city ?? '';
+  form.notes = data.notes ?? data.note ?? info.notes ?? '';
+  form.project_site_url = data.project_site_url ?? data.project_link ?? data.location_url ?? info.project_site_url ?? '';
 }
 
 async function fetchDetails() {
+  const id = props.contractId;
+  if (id == null || id === '') {
+    loading.value = false;
+    toast.error('معرف العقد غير متوفر');
+    return;
+  }
   if (props.initialData && Object.keys(props.initialData).length > 0) {
     mapApiToForm(props.initialData);
     loading.value = false;
@@ -343,8 +369,8 @@ async function fetchDetails() {
     loading.value = true;
   }
   try {
-    const data = await contractService.getContractById(props.contractId);
-    mapApiToForm(data);
+    const data = await contractService.getContractById(id);
+    if (data && typeof data === 'object') mapApiToForm(data);
   } catch (err) {
     logger.error('EditContractInfoModal: fetch contract', err);
     if (!props.initialData) toast.error(getApiErrorMessage(err, 'فشل تحميل تفاصيل العقد'));

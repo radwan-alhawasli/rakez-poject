@@ -54,6 +54,7 @@ function normalizeContractShowResponse(raw) {
     image: imageUrl ?? null,
     project_image_url: imageUrl ?? raw.project_image_url,
     commission_percentage: raw.commission_percent ?? raw.commission_percentage ?? null,
+    commission_percent: raw.commission_percent ?? raw.commission_percentage ?? null,
     created_by_name: raw.user?.name ?? raw.created_by_name ?? null,
     unit_count: raw.unit_count ?? (Array.isArray(raw.units) ? raw.units.reduce((s, u) => s + (parseInt(u.count) || 0), 0) : null),
     total_price: raw.total_price ?? null,
@@ -262,8 +263,9 @@ const contractService = {
   },
 
   /**
-   * جلب تفاصيل عقد
-   * GET /contracts/show/:id — الاستجابة: { success, message, data: { id, project_name, units, unit_count, total_price, user, ... } }
+   * جلب تفاصيل عقد — المصدر الموحد لجميع بيانات العقد (مستكمل أو غير مستكمل).
+   * GET /contracts/show/:id — يُستدعى من: تعديل العقد (EditExclusiveProjectModal)، تعديل بيانات استكمال العقد (EditContractInfoModal)، استكمال العقد (ContractFormView)، وعرض التفاصيل.
+   * الاستجابة: { success, message, data: { id, project_name, units, commission_percent, commission_from, second_party_data, ... } }
    */
   async getContractById(id) {
     try {

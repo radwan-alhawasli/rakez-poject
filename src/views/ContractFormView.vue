@@ -119,22 +119,11 @@
             <div class="input-row grid-3">
               <div class="field-group">
                 <label>السعي من</label>
-                <select v-model="form.commission_from" class="form-input">
-                  <option value="">اختر الطرف</option>
-                  <option value="owner">المالك</option>
-                  <option value="partner">المشتري</option>
-                </select>
+                <input type="text" :value="commissionFromLabel" class="form-input readonly" readonly />
               </div>
               <div class="field-group">
                 <label>نسبة السعي (%)</label>
-                <input
-                  type="number"
-                  v-model="form.commission_percent"
-                  class="form-input"
-                  :class="{ 'input-error': getFieldError('commission_percent') }"
-                  placeholder="0"
-                />
-                <span v-if="getFieldError('commission_percent')" class="field-error">{{ getFieldError('commission_percent') }}</span>
+                <input type="text" :value="commissionPercentDisplay" class="form-input readonly" readonly />
               </div>
             </div>
 
@@ -372,7 +361,7 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import contractService from '@/services/contractService';
 import { downloadFilledContract } from '@/services/pdfService';
@@ -445,6 +434,18 @@ export default {
       average_unit_price: 0,
       notes: '',
       project_site_url: '',
+    });
+
+    const commissionFromLabel = computed(() => {
+      const v = (form.commission_from ?? '').toString().toLowerCase();
+      if (v === 'owner') return 'المالك';
+      if (v === 'partner') return 'المشتري';
+      return form.commission_from || '—';
+    });
+    const commissionPercentDisplay = computed(() => {
+      const p = form.commission_percent;
+      if (p === '' || p == null) return '—';
+      return `${String(p).trim()} %`;
     });
 
     const fetchContractDetails = async () => {
@@ -532,7 +533,8 @@ export default {
               form.agency_date = dateStr;
             }
           }
-          form.commission_percent = data.commission_percent || form.commission_percent;
+          const commissionVal = data.commission_percent ?? data.commission_percentage;
+          form.commission_percent = commissionVal != null && commissionVal !== '' ? String(commissionVal) : form.commission_percent;
           form.commission_from = data.commission_from || form.commission_from;
           form.avg_property_value = data.avg_property_value || form.avg_property_value;
           if (data.release_date) {
@@ -666,6 +668,8 @@ export default {
 
     return {
       form,
+      commissionFromLabel,
+      commissionPercentDisplay,
       isSaving,
       isDownloading,
       showDownloadModal,
