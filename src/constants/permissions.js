@@ -498,21 +498,41 @@ export const BOOTSTRAP_ROLE_MAP = {
     'tasks.create',
   ],
   default: ['contracts.view', 'notifications.view', 'use-ai-assistant', 'tasks.create'],
+  accountant: [
+    'accounting.dashboard.view',
+    'accounting.notifications.view',
+    'accounting.sold-units.view',
+    'accounting.sold-units.manage',
+    'accounting.commissions.approve',
+    'accounting.commissions.create',
+    'accounting.deposits.view',
+    'accounting.deposits.manage',
+    'accounting.salaries.view',
+    'accounting.salaries.distribute',
+    'accounting.down_payment.confirm',
+    'credit.claim_files.generate',
+    'notifications.view',
+    'developers.list.view',
+  ],
 };
 
 /**
  * Map frontend role type (number) to bootstrap role key
  * sales_leader: role 5 + (is_manager or is_leader) => use sales_leader map
  */
+/** مفتاح Bootstrap حسب المعرّف الرقمي للأدوار (1–13) */
 export const ROLE_TO_BOOTSTRAP_KEY = {
-  0: 'marketing',
   1: 'admin',
-  2: 'project_acquisition',
-  3: 'project_management',
-  4: 'editor',
-  5: 'sales',
-  6: 'credit',
-  7: 'accounting',
+  2: 'project_management',
+  3: 'editor',
+  4: 'developer',
+  5: 'marketing',
+  6: 'sales',
+  7: 'sales_leader',
   8: 'hr',
-  9: 'inventory',
+  9: 'credit',
+  10: 'accounting',
+  11: 'inventory',
+  12: 'default',
+  13: 'accountant',
 };

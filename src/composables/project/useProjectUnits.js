@@ -120,7 +120,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     projectSalesSummary.value = null;
     try {
       const user = authService.getCurrentUser();
-      if (user && user.type == 5) {
+      if (user && user.type == 6) {
         // استخدام بيانات المشروع المحمّلة مسبقاً من الصفحة (إن وُجدت) لعرض العدد والإحصائيات فوراً
         const initialProject = typeof getInitialProject === 'function' ? getInitialProject() : null;
         if (initialProject) {

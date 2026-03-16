@@ -141,7 +141,7 @@ export function useMarketingEmployeePlans() {
       const normalizedEmployees = Array.isArray(data) ? data : data?.items || [];
       marketingEmployees.value = normalizedEmployees.filter(
         e =>
-          String(e.type) === '0' || e.type === 0 || String(e.type).toLowerCase() === 'marketing'
+          String(e.type) === '5' || e.type === 5 || String(e.type).toLowerCase() === 'marketing'
       );
     } catch (error) {
       logger.error('Error loading employees:', error);

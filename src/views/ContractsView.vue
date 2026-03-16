@@ -205,7 +205,7 @@ const user = ref(authService.getCurrentUser());
 const userRole = computed(() => {
   const type = user.value?.type;
   if (type === 1 || type === 'admin' || user.value?.role === 'admin') return 1;
-  if (type == 3 || type === 'project_management') return 3;
+  if (type == 2 || type === 'project_management') return 2;
   return type ?? 0;
 });
 

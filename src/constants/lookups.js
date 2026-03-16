@@ -22,17 +22,9 @@ export const MARITAL_STATUSES = [
   { value: 'widowed', label: 'أرمل/أرملة' },
 ];
 
-/** Employee type / القسم - قائمة الأقسام كما كانت في إضافة الموظف (قيم رقمية + pm_manager / pm_employee) */
-export const EMPLOYEE_TYPE_OPTIONS = [
-  { value: 0, label: 'التسويق / Marketing' },
-  { value: 1, label: 'الإدارة / Admin' },
-  { value: 2, label: 'العقود / Acquisition' },
-  { value: 4, label: 'المونتاج / Editor' },
-  { value: 5, label: 'المبيعات / Sales' },
-  { value: 6, label: 'المحاسبة / Accounting' },
-  { value: 7, label: 'الائتمان / Credit' },
-  { value: 8, label: 'الموارد البشرية / HR' },
-];
+/** قائمة الأدوار لاختيار القسم عند إضافة/تعديل الموظف — مُستخرجة من constants/roles */
+import { ROLE_OPTIONS } from '@/constants/roles';
+export const EMPLOYEE_TYPE_OPTIONS = ROLE_OPTIONS;
 
 /** Lead sources for marketing (value, label) - load from API if /marketing/lead-sources or similar exists */
 export const LEAD_SOURCES = [
