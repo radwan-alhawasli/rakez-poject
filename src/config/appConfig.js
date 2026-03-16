@@ -35,7 +35,7 @@ const isProduction = env === 'production';
 
 // API Base URL — بدون شرطة نهائية (e.g. http://localhost:8000/api)
 // In development, default to local backend; otherwise use env or production URL.
-const defaultApiUrl = isDevelopment ? 'http://localhost:8000/api' : 'https://api.rakez.com.sa/api';
+const defaultApiUrl = isDevelopment ?  'https://api.rakez.com.sa/api':'http://localhost:8000/api';
 const apiBaseUrl = (getEnv('VITE_APP_API_BASE_URL') || defaultApiUrl).replace(
   /\/+$/,
   ''
