@@ -141,28 +141,19 @@
                 />
               </div>
               <div class="form-group">
-                <label class="label">القسم / الإدارة *</label>
+                <label class="label">الدور *</label>
                 <select v-model="form.type" class="input select" :class="{ 'input-error': getFieldError('role') }" required>
-                  <option value="" disabled>اختر القسم</option>
-                  <option :value="0">التسويق / Marketing</option>
-                  <option :value="1">الإدارة / Admin</option>
-                  <option :value="2">العقود / Acquisition</option>
-                  <option value="pm_manager">مدير إدارة المشاريع / PM Manager</option>
-                  <option value="pm_employee">موظف إدارة المشاريع / PM Employee</option>
-                  <option :value="4">المونتاج / Editor</option>
-                  <option :value="5">المبيعات / Sales</option>
-                  <option :value="6">المحاسبة / Accounting</option>
-                  <option :value="7">الائتمان / Credit</option>
-                  <option :value="8">الموارد البشرية / HR</option>
+                  <option value="" disabled>اختر الدور</option>
+                  <option v-for="opt in ROLE_OPTIONS" :key="String(opt.value)" :value="opt.value">{{ opt.label }}</option>
                 </select>
                 <span v-if="getFieldError('role')" class="field-error">{{ getFieldError('role') }}</span>
               </div>
             </div>
             <div class="form-group" v-else>
-              <label class="label">القسم / الإدارة *</label>
+              <label class="label">الدور *</label>
               <select v-model="form.type" class="input select" :class="{ 'input-error': getFieldError('role') }" required>
-                <option value="" disabled>اختر القسم</option>
-                <option v-for="opt in EMPLOYEE_TYPE_OPTIONS" :key="String(opt.value)" :value="opt.value">{{ opt.label }}</option>
+                <option value="" disabled>اختر الدور</option>
+                <option v-for="opt in ROLE_OPTIONS" :key="String(opt.value)" :value="opt.value">{{ opt.label }}</option>
               </select>
               <span v-if="getFieldError('role')" class="field-error">{{ getFieldError('role') }}</span>
             </div>
@@ -435,8 +426,8 @@
 <script>
 import { ref, watch, onMounted } from 'vue'
 import AppModal from '@/components/AppModal.vue'
-import { ROLE_MAP } from '@/constants/roles'
-import { NATIONALITIES, MARITAL_STATUSES, EMPLOYEE_TYPE_OPTIONS } from '@/constants/lookups'
+import { ROLE_MAP, ROLE_OPTIONS } from '@/constants/roles'
+import { NATIONALITIES, MARITAL_STATUSES } from '@/constants/lookups'
 import hrService from '@/services/hrService'
 import teamService from '@/services/teamService'
 import logger from '@/utils/logger'
@@ -577,15 +568,10 @@ export default {
       user => {
         if (user) {
           isEdit.value = true;
-          let typeValue =
+          const typeValue =
             typeof user.type === 'string' && ROLE_MAP[user.type] !== undefined
               ? ROLE_MAP[user.type]
               : user.type;
-
-          // Handle Project Management special case (3)
-          if (typeValue === 3) {
-            typeValue = user.is_manager ? 'pm_manager' : 'pm_employee';
-          }
 
           form.value = {
             ...user,
@@ -606,7 +592,8 @@ export default {
     watch(
       () => form.value.type,
       newType => {
-        if (newType !== 5 && newType !== 0) {
+        const salesOrMarketing = 5 === newType || 6 === newType;
+        if (!salesOrMarketing) {
           form.value.team = '';
         }
       }
@@ -646,16 +633,8 @@ export default {
         is_manager: form.value.is_manager,
       };
 
-      // Convert virtual PM types back to real type and is_manager flag
-      if (form.value.type === 'pm_manager') {
-        submissionData.type = 3;
-        submissionData.is_manager = true;
-      } else if (form.value.type === 'pm_employee') {
-        submissionData.type = 3;
-        submissionData.is_manager = false;
-      } else {
-        submissionData.type = parseInt(form.value.type, 10);
-      }
+      submissionData.type =
+        typeof form.value.type === 'number' ? form.value.type : parseInt(form.value.type, 10);
       // فريق: إرسال رقم من قائمة الفرق من الـ API
       if (form.value.team !== '' && form.value.team != null) {
         submissionData.team = Number(form.value.team);
@@ -700,7 +679,7 @@ export default {
       getFieldError,
       NATIONALITIES,
       MARITAL_STATUSES,
-      EMPLOYEE_TYPE_OPTIONS,
+      ROLE_OPTIONS,
       cvFileInput,
       signatureFileInput,
       handleCVUpload,

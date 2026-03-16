@@ -857,6 +857,37 @@ export default {
   color: #6b21a8;
   border: 1px solid #e9d5ff;
 }
+.role-editor {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+.role-sales {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+.role-sales-leader {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+.role-credit {
+  background: #e0e7ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
+.role-accounting,
+.role-accountant {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+.role-developer {
+  background: #f3e8ff;
+  color: #6b21a8;
+  border: 1px solid #e9d5ff;
+}
 .role-default {
   background: var(--color-light-gray);
   color: var(--color-charcoal);

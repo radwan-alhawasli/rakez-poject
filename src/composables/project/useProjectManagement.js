@@ -19,11 +19,11 @@ export function useProjectManagement() {
   const isEditor = computed(() => userRole.value == 4);
   const isManager = computed(() => {
     const u = authService.getCurrentUser();
-    return (u && u.type == 1) || (u && u.type == 3 && u.is_manager);
+    return (u && u.type == 1) || (u && u.type == 2 && u.is_manager);
   });
   const isProjectManagerOnly = computed(() => {
     const u = authService.getCurrentUser();
-    return u && u.type == 3 && !u.is_manager;
+    return u && u.type == 2 && !u.is_manager;
   });
 
   const activeTab = ref(isEditor.value ? 'all_projects' : 'not_ready');

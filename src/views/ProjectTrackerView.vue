@@ -162,20 +162,20 @@ const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', mi
 
 const isManager = computed(() => {
   const user = authService.getCurrentUser();
-  return user?.type == 1 || user?.type == 3 || user?.type == 10;
+  return user?.type == 1 || user?.type == 2 || user?.type == 10;
 });
 /** Only admin or PM manager can approve/reject photography (not PM employee) */
 const isApprovalManager = computed(() => {
   const user = authService.getCurrentUser();
-  return user?.type == 1 || user?.type == 10 || (user?.type == 3 && !!user?.is_manager);
+  return user?.type == 1 || user?.type == 10 || (user?.type == 2 && !!user?.is_manager);
 });
 const isSalesUser = computed(() => {
   const user = authService.getCurrentUser();
-  return user?.type == 5;
+  return user?.type == 6;
 });
 const isProjectManager = computed(() => {
   const user = authService.getCurrentUser();
-  return user?.type == 3;
+  return user?.type == 2;
 });
 const canReserve = computed(() => isSalesUser.value);
 
@@ -208,8 +208,8 @@ const fetchProject = async () => {
   try {
     const id = route.params.id;
     const user = authService.getCurrentUser();
-    const isEditor = user && user.type == 4;
-    const isSales = user && user.type == 5;
+    const isEditor = user && user.type == 3;
+    const isSales = user && user.type == 6;
 
     let data = null;
     try {

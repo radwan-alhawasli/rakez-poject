@@ -132,7 +132,7 @@ const fetchData = async () => {
     let apps = [];
     // Check if user is admin (type 1)
     const isUserAdmin = user.value && (user.value.type === 1 || user.value.type === 'admin');
-    const isUserEditor = user.value && user.value.type === 4;
+    const isUserEditor = user.value && user.value.type === 3;
 
     if (isUserAdmin) {
       const adminRes = await contractService.getAllContracts({ page: 1, per_page: 500 });
