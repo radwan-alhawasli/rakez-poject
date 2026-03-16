@@ -239,6 +239,8 @@ import { getApiErrorMessage } from '@/utils/errorHandler';
 
 const props = defineProps({
   contractId: { type: [Number, String], required: true },
+  /** بيانات أولية لتعبئة النموذج فوراً عند فتح اللوحة (من القائمة أو التفاصيل) */
+  initialData: { type: Object, default: null },
 });
 
 const emit = defineEmits(['close', 'saved']);
@@ -334,13 +336,18 @@ function mapApiToForm(data) {
 }
 
 async function fetchDetails() {
-  loading.value = true;
+  if (props.initialData && Object.keys(props.initialData).length > 0) {
+    mapApiToForm(props.initialData);
+    loading.value = false;
+  } else {
+    loading.value = true;
+  }
   try {
     const data = await contractService.getContractById(props.contractId);
     mapApiToForm(data);
   } catch (err) {
     logger.error('EditContractInfoModal: fetch contract', err);
-    toast.error(getApiErrorMessage(err, 'فشل تحميل تفاصيل العقد'));
+    if (!props.initialData) toast.error(getApiErrorMessage(err, 'فشل تحميل تفاصيل العقد'));
   } finally {
     loading.value = false;
   }

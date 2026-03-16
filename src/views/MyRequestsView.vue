@@ -78,6 +78,7 @@
     <EditContractInfoModal
       v-if="showEditModal"
       :contract-id="editingContractId"
+      :initial-data="editingContractData"
       @close="closeEditModal"
       @saved="onEditSaved"
     />
@@ -100,6 +101,7 @@ export default {
     const isLoading = ref(true);
     const showEditModal = ref(false);
     const editingContractId = ref(null);
+    const editingContractData = ref(null);
 
     // Check if contract is completed (has been filled with data)
     const isContractCompleted = item => {
@@ -141,11 +143,10 @@ export default {
             // If not, we fetch detail.
 
             if (status === 'approved') {
-              // Fetch full details to check completion
               try {
                 const fullDetails = await contractService.getContractById(item.id);
                 if (isContractCompleted(fullDetails)) {
-                  return { ...item, status: 'completed' }; // Show in list with "تعديل"
+                  return { ...item, ...fullDetails, status: 'completed' };
                 }
                 return { ...item, status: item.status };
               } catch (e) {
@@ -160,8 +161,8 @@ export default {
 
         const validRequests = processedRequests.filter(r => r !== null);
 
-        // Map API fields if they differ
         requests.value = validRequests.map(item => ({
+          ...item,
           id: item.id,
           project_name: item.project_name || 'بدون اسم',
           date: item.created_at ? item.created_at.split('T')[0] : 'غير متوفر',
@@ -213,12 +214,14 @@ export default {
     function openEditModal(request) {
       if (!request?.id) return;
       editingContractId.value = request.id;
+      editingContractData.value = request;
       showEditModal.value = true;
     }
 
     function closeEditModal() {
       showEditModal.value = false;
       editingContractId.value = null;
+      editingContractData.value = null;
     }
 
     function onEditSaved() {
@@ -231,6 +234,7 @@ export default {
       isLoading,
       showEditModal,
       editingContractId,
+      editingContractData,
       completeContract,
       statusLabel,
       statusClass,

@@ -176,14 +176,19 @@ function mapApiToForm(data) {
 }
 
 async function fetchDetails() {
-  loading.value = true;
+  // إذا وُجدت بيانات أولية (من القائمة أو من عرض التفاصيل)، نعبئ النموذج فوراً ونُظهر اللوحة بدون انتظار الـ API
+  if (props.initialData && Object.keys(props.initialData).length > 0) {
+    mapApiToForm(props.initialData);
+    loading.value = false;
+  } else {
+    loading.value = true;
+  }
   try {
-    if (props.initialData) mapApiToForm(props.initialData);
     const data = await contractService.getContractById(props.contractId);
     mapApiToForm(data);
   } catch (err) {
     logger.error('EditExclusiveProjectModal: fetch contract', err);
-    toast.error(getApiErrorMessage(err, 'فشل تحميل تفاصيل العقد'));
+    if (!props.initialData) toast.error(getApiErrorMessage(err, 'فشل تحميل تفاصيل العقد'));
   } finally {
     loading.value = false;
   }
