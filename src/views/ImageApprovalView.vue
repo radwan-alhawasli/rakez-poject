@@ -237,7 +237,7 @@ export default {
         confirmText: 'موافقة',
         resolve: async () => {
           try {
-            await contractService.updatePhotography(img.projectId, { status: 'approved' });
+            await contractService.approvePhotography(img.projectId, { status: 'approved' });
             pendingImages.value = pendingImages.value.filter(i => i.projectId !== img.projectId);
             toast.success('تمت الموافقة بنجاح');
           } catch (error) {
@@ -274,7 +274,7 @@ export default {
       if (!selectedItem.value) return;
 
       try {
-        await contractService.updatePhotography(selectedItem.value.projectId, {
+        await contractService.approvePhotography(selectedItem.value.projectId, {
           status: 'rejected',
           rejection_reason: rejectReasonInput.value,
         });
