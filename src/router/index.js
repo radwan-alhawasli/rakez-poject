@@ -602,7 +602,7 @@ router.beforeEach((to, from, next) => {
   if (isPublicRoute(to)) {
     // If already authenticated and trying to access login, redirect to dashboard
     if (isLoginRoute(to) && isAuthenticated) {
-      return redirectByRole(user, next);
+      return redirectByRole(user, next, to.path);
     }
     return next();
   }
@@ -624,26 +624,27 @@ router.beforeEach((to, from, next) => {
       return;
     }
     // Redirect to appropriate dashboard based on role
-    redirectByRole(user, next);
+    redirectByRole(user, next, to.path);
     return;
   }
 
   // Handle root path and login redirect
   if (to.path === ROOT_PATH || (isLoginRoute(to) && isAuthenticated)) {
-    redirectByRole(user, next);
+    redirectByRole(user, next, to.path);
     return;
   }
 
   next();
 });
 
-/**
- * Redirect user based on their role
- * @param {Object} user - User object
- * @param {Function} next - Router next function
- */
-function redirectByRole(user, next) {
-  next(getDashboardPathForUser(user));
+function redirectByRole(user, next, toPath) {
+  const dest = getDashboardPathForUser(user);
+  // حماية من التوجيه اللانهائي — إذا الوجهة نفس الصفحة الحالية، اسمح بالمرور
+  if (dest === toPath) {
+    next();
+    return;
+  }
+  next(dest);
 }
 
 export default router;
