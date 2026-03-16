@@ -188,6 +188,14 @@ export default {
         return roleMap[check(rawType)];
       }
 
+      // توافق عكسي: إذا الـ API يرسل type = 5 وليس role = marketing، نعرض قائمة المبيعات (كان 5 = مبيعات قديماً)
+      if (rawType == 5 && check(rawRole) !== 'marketing' && check(rawRole) !== 'marketer') {
+        return 6;
+      }
+      if (rawType == 5) {
+        return 5;
+      }
+
       // Default: parse number or return 0
       return parseInt(rawType) || 0;
     });
