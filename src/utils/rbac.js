@@ -213,6 +213,11 @@ export function canAccessRoute(user, routeMeta) {
   // If no user, deny access
   if (!user) return false;
 
+  // If requiresManager is set, user must have is_manager flag (any role)
+  if (routeMeta?.requiresManager) {
+    return user.is_manager === true || user.is_manager === 1 || user.is_manager === '1';
+  }
+
   // If no roles or permissions specified, allow authenticated users
   if (!routeMeta?.roles && !routeMeta?.permissions) return true;
 

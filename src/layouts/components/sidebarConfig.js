@@ -238,6 +238,11 @@ const inventoryItems = [
   COMMON_ITEMS.profile,
 ];
 
+/** عناصر للمديرين فقط (is_manager) — تظهر في كل الأدوار */
+const MANAGER_ONLY_ITEMS = [
+  { to: '/manager/employees', label: 'التقييم', tooltip: 'التقييم والمراجعات', icon: ICONS.star, showIf: 'isManager' },
+];
+
 /**
  * خريطة القوائم حسب رقم الدور
  * المفتاح = userRole (رقم 1-13)
@@ -264,5 +269,6 @@ export const SIDEBAR_NAV_MAP = {
  * @returns {Array} قائمة عناصر التنقل
  */
 export function getNavItemsForRole(role) {
-  return SIDEBAR_NAV_MAP[role] || marketingItems;
+  const roleItems = SIDEBAR_NAV_MAP[role] || marketingItems;
+  return [...MANAGER_ONLY_ITEMS, ...roleItems];
 }
