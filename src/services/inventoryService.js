@@ -62,6 +62,22 @@ const inventoryService = {
   },
 
   /**
+   * Get agency overview (dashboard stats)
+   * GET /inventory/contracts/agency-overview
+   * @param {Object} params - Query params (status, user_id, city, district)
+   * @returns {Promise<Object>}
+   */
+  async getAgencyOverview(params = {}) {
+    try {
+      const response = await apiClient.get('/inventory/contracts/agency-overview', { params });
+      return response.data?.data ?? response.data ?? {};
+    } catch (error) {
+      logger.error('Error fetching inventory agency overview:', error);
+      return handleServiceError(error, 'Inventory agency overview', 'get', {});
+    }
+  },
+
+  /**
    * Get all locations
    * GET /inventory/contracts/locations
    * @param {Object} params - Query params

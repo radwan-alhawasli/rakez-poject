@@ -12,6 +12,7 @@ import domainCredit from './domainCredit';
 import domainAccounting from './domainAccounting';
 import domainCommissionDeposits from './domainCommissionDeposits';
 import domainEditor from './domainEditor';
+import domainInventory from './domainInventory';
 
 const mainLayoutChildren = [
   ...mainChildren,
@@ -22,6 +23,7 @@ const mainLayoutChildren = [
   domainAccounting,
   domainCommissionDeposits,
   domainEditor,
+  domainInventory,
 ];
 
 const mainLayoutRoute = {

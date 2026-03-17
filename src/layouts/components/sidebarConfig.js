@@ -229,7 +229,10 @@ const accountingItems = [
 
 /** المخزون (دور 11) */
 const inventoryItems = [
-  { to: '/inventory', label: 'المخزون', tooltip: 'المخزون', icon: ICONS.inventory },
+  { to: '/inventory/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard },
+  { to: '/inventory/projects', label: 'المشاريع', tooltip: 'المشاريع على الخريطة', icon: ICONS.projects },
+  { to: '/inventory/contracts', label: 'العقود', tooltip: 'العقود', icon: ICONS.contracts },
+  { to: '/inventory/ai-suggestions', label: 'اقتراحات الذكاء الاصطناعي', tooltip: 'اقتراحات الذكاء الاصطناعي', icon: ICONS.ai },
   { ...COMMON_ITEMS.notifications },
   { ...COMMON_ITEMS.tasks },
   COMMON_ITEMS.profile,

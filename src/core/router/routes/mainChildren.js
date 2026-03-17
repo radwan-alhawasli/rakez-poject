@@ -60,12 +60,6 @@ export default [
     meta: { permissions: [PERMISSIONS.CONTRACTS_VIEW] },
   },
   {
-    path: 'inventory',
-    name: 'Inventory',
-    component: () => import('@/views/InventoryView.vue'),
-    meta: { roles: [ROLE_INVENTORY] },
-  },
-  {
     path: 'users',
     name: 'Users',
     component: () => import('@/views/UsersView.vue'),
