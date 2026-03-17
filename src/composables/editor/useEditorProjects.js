@@ -19,9 +19,16 @@ export function useEditorProjects() {
   const montageHasLinksMap = ref({});
 
   // API: has_photography_data, has_montage_data (both === 1 → after montage). Support legacy has_photography/has_montage.
-  const isAfterMontage = c =>
-    (c.has_photography_data == 1 || c.has_photography == 1 || c.has_photography === true) &&
-    (c.has_montage_data == 1 || c.has_montage == 1 || c.has_montage === true);
+  // When backend does not set flags, treat as after montage if contract has image_url and description from API.
+  const isAfterMontage = c => {
+    const hasFlags =
+      (c.has_photography_data == 1 || c.has_photography == 1 || c.has_photography === true) &&
+      (c.has_montage_data == 1 || c.has_montage == 1 || c.has_montage === true);
+    if (hasFlags) return true;
+    const hasImage = !!(c.image_url && String(c.image_url).trim());
+    const hasDesc = !!(c.description && String(c.description).trim());
+    return hasImage && hasDesc;
+  };
 
   const beforeMontage = computed(() =>
     contracts.value.filter(c => !isAfterMontage(c))
@@ -42,6 +49,35 @@ export function useEditorProjects() {
     }
   }
 
+  /**
+   * Merge contract detail (from editor/contracts/show/:id) into the list so the card displays the same data.
+   */
+  function mergeContractDetail(contractId, data) {
+    if (!contractId || !data || typeof data !== 'object') return;
+    const list = [...contracts.value];
+    const idx = list.findIndex(c => Number(c.id) === Number(contractId));
+    if (idx === -1) return;
+    list[idx] = { ...list[idx], ...data };
+    contracts.value = list;
+  }
+
+  /**
+   * Preload detail for all contracts so cards show data when the page opens (without clicking "See More").
+   * Fetches in parallel and merges each result into the list as it arrives.
+   */
+  async function preloadDetails() {
+    const list = contracts.value;
+    if (!list.length) return;
+    await Promise.all(
+      list.map(async (c) => {
+        try {
+          const data = await editorService.getContractById(c.id);
+          mergeContractDetail(c.id, data);
+        } catch (_) {}
+      })
+    );
+  }
+
   async function fetchDetail(id) {
     if (!id) return;
     detailLoading.value = true;
@@ -49,6 +85,7 @@ export function useEditorProjects() {
     try {
       const data = await editorService.getContractById(id);
       detail.value = data;
+      mergeContractDetail(id, data);
     } catch (_) {
       detail.value = {};
     } finally {
@@ -157,5 +194,7 @@ export function useEditorProjects() {
     approveMontage,
     montageHasLinksMap,
     fetchMontageLinksForProjects,
+    mergeContractDetail,
+    preloadDetails,
   };
 }

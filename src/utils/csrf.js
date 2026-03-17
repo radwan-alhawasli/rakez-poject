@@ -68,15 +68,19 @@ async function fetchCsrfToken() {
       throw new Error('No CSRF token received');
     })
     .catch(error => {
-      // Handle 404 (endpoint doesn't exist) immediately - don't wait for timeout
-      // Silently handle 404/timeout errors - don't log or propagate
-      if (error.response?.status === 404 || error.code === 'ECONNABORTED') {
-        csrfEndpointUnavailable = true; // Mark endpoint as unavailable
-        // Return null silently - don't log or throw
+      // Handle 404, timeout, or network unreachable (backend not running) - don't log or propagate
+      const isUnavailable =
+        error.response?.status === 404 ||
+        error.code === 'ECONNABORTED' ||
+        error.code === 'ERR_NETWORK' ||
+        error.code === 'ECONNREFUSED' ||
+        (!error.response && error.message?.includes('Network Error'));
+      if (isUnavailable) {
+        csrfEndpointUnavailable = true;
         return null;
       }
 
-      // Log other errors (non-404, non-timeout) but don't throw in development
+      // Log other errors (non-404, non-timeout, non-network) but don't throw in development
       if (error.response && error.response.status !== 404) {
         // Only log non-404 errors
         logger.error(
@@ -92,8 +96,8 @@ async function fetchCsrfToken() {
         return null;
       }
 
-      // In production, only throw if it's not a 404 or timeout
-      if (error.response?.status !== 404 && error.code !== 'ECONNABORTED') {
+      // In production, only throw if it's not 404, timeout, or network unreachable
+      if (!isUnavailable) {
         throw error;
       }
 

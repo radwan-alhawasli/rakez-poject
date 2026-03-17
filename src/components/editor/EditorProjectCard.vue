@@ -26,8 +26,11 @@
       </div>
     </dl>
     <div class="card-actions">
-      <!-- Editor: single button to add montage links -->
+      <!-- Editor: See More + Add Links -->
       <template v-if="!isManager">
+        <button type="button" class="btn-card btn-see-more" @click="$emit('see-more', project)">
+          عرض المزيد
+        </button>
         <button type="button" class="btn-card btn-add-links" @click="$emit('add-links', project)">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
           اضافه الروابط
@@ -64,28 +67,38 @@ const props = defineProps({
   hasLinks: { type: Boolean, default: null },
 });
 
-defineEmits(['add-links', 'approve', 'reject']);
+defineEmits(['add-links', 'see-more', 'approve', 'reject']);
 
-const advertiserNumber = computed(() =>
-  props.project.advertiser_number ?? props.project.publisher_number ?? props.project.publisherNumber
-);
-const photographyLink = computed(() =>
-  props.project.photography_link ?? props.project.photography_url ?? props.project.photographyLink ?? props.project.image_url
-);
-const description = computed(() =>
-  props.project.description ?? props.project.desc
-);
-const availableUnits = computed(() =>
-  props.project.available_units ?? props.project.availableUnits ?? props.project.units_count ?? props.project.unitsCount
-);
+const advertiserNumber = computed(() => {
+  const p = props.project;
+  const second = p?.second_party_data;
+  return second?.advertiser_section_url ?? p?.advertiser_number ?? p?.publisher_number ?? p?.publisherNumber;
+});
+const photographyLink = computed(() => {
+  const p = props.project;
+  const photo = p?.photography_department;
+  return photo?.image_url ?? p?.photography_link ?? p?.photography_url ?? p?.photographyLink ?? p?.image_url;
+});
+const description = computed(() => {
+  const p = props.project;
+  const photo = p?.photography_department;
+  return photo?.description ?? p?.description ?? p?.desc;
+});
+const availableUnits = computed(() => {
+  const p = props.project;
+  const units = p?.contract_units ?? p?.units;
+  if (Array.isArray(units)) return units.length;
+  return p?.available_units ?? p?.availableUnits ?? p?.units_count ?? p?.unitsCount;
+});
 
 /** True if project has montage links for manager to approve/reject; use prop if provided, else derive from project */
 const hasLinks = computed(() => {
   if (props.hasLinks === true || props.hasLinks === false) return props.hasLinks;
   const p = props.project;
-  const image = p?.montage_image_url ?? p?.image_url ?? p?.montage_image_link;
-  const video = p?.montage_video_url ?? p?.video_url ?? p?.montage_video_link;
-  const desc = p?.montage_description ?? p?.description;
+  const photo = p?.photography_department;
+  const image = photo?.image_url ?? p?.montage_image_url ?? p?.image_url ?? p?.montage_image_link;
+  const video = photo?.video_url ?? p?.montage_video_url ?? p?.video_url ?? p?.montage_video_link;
+  const desc = photo?.description ?? p?.montage_description ?? p?.description;
   return !!(image && String(image).trim()) || !!(video && String(video).trim()) || !!(desc && String(desc).trim());
 });
 
@@ -193,7 +206,8 @@ function displayValue(v) {
   color: #1e293b;
 }
 .btn-card svg { flex-shrink: 0; }
-.btn-add-links { width: 100%; }
+.btn-see-more { flex: 0 0 auto; }
+.btn-add-links { flex: 1; min-width: 0; }
 .btn-approve { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
 .btn-approve:hover { background: #a7f3d0; color: #047857; }
 .btn-reject { background: #fee2e2; color: #991b1b; border-color: #fecaca; }

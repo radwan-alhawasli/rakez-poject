@@ -40,6 +40,7 @@
             status-label="قبل المونتاج"
             status-class="status-pending"
             @add-links="openDetail($event)"
+            @see-more="openSeeMore($event)"
             @approve="doApprove($event.id)"
             @reject="openRejectModal($event.id)"
           />
@@ -62,26 +63,10 @@
               :status-class="montageStatusClass(p)"
               :has-links="isManager ? (montageHasLinksMap[p.id] ?? null) : null"
               @add-links="openDetail($event)"
+              @see-more="openSeeMore($event)"
               @approve="doApprove($event.id)"
               @reject="openRejectModal($event.id)"
             />
-          </div>
-          <!-- Sales teams and members -->
-          <div v-if="activeTab === 'after'" class="teams-section">
-            <h3 class="section-title">فرق المبيعات وأعضاء الفريق</h3>
-            <div v-if="teamsLoading" class="loading-inline">جاري التحميل...</div>
-            <div v-else-if="teams.length === 0" class="empty-inline">لا توجد فرق.</div>
-            <div v-else class="teams-list">
-              <div v-for="team in teams" :key="team.id" class="team-block">
-                <h4 class="team-name">{{ team.name || team.team_name || 'فريق' }}</h4>
-                <ul class="members-list">
-                  <li v-for="m in (team.members || team.users || [])" :key="m.id">
-                    {{ m.name || m.user_name || '—' }}
-                    <span v-if="m.phone" class="member-phone"> — {{ m.phone }}</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
           </div>
         </template>
       </section>
@@ -97,10 +82,12 @@
         <div v-if="detailLoading" class="loading-inline">جاري تحميل التفاصيل...</div>
         <template v-else>
           <div v-if="detail || montageData" class="detail-fields">
-            <p><strong>رقم المعلن:</strong> <span :class="{ 'value-null': !displayDetail.advertiser_number && !displayDetail.publisher_number }">{{ displayDetail.advertiser_number ?? displayDetail.publisher_number ?? '—' }}</span></p>
-            <p><strong>رابط التصوير:</strong> <span :class="{ 'value-null': !displayDetail.photography_link && !displayDetail.photography_url }">{{ displayDetail.photography_link ?? displayDetail.photography_url ?? '—' }}</span></p>
+            <p><strong>رقم المعلن:</strong> <span :class="{ 'value-null': !displayDetail.advertiser_number }">{{ displayDetail.advertiser_number ?? '—' }}</span></p>
+            <p><strong>رابط التصوير:</strong>
+              <a v-if="displayDetail.photography_link && displayDetail.photography_link !== '—'" :href="displayDetail.photography_link" target="_blank" rel="noopener noreferrer" class="link-cell">{{ displayDetail.photography_link }}</a>
+              <span v-else :class="{ 'value-null': true }">—</span></p>
             <p><strong>الوصف:</strong> <span :class="{ 'value-null': !displayDetail.description }">{{ displayDetail.description ?? '—' }}</span></p>
-            <p><strong>الوحدات المتاحة:</strong> <span :class="{ 'value-null': displayDetail.available_units == null }">{{ displayDetail.available_units ?? '—' }}</span></p>
+            <p><strong>الوحدات المتاحة:</strong> <span :class="{ 'value-null': displayDetail.available_units == null }">{{ displayDetail.available_units !== undefined && displayDetail.available_units !== null ? displayDetail.available_units : '—' }}</span></p>
           </div>
           <!-- Rejection reason (for editor to see) -->
           <div v-if="montageData?.rejection_reason" class="rejection-section">
@@ -143,6 +130,47 @@
       </div>
     </div>
 
+    <!-- See More modal (third screen): detail only, expandable long content -->
+    <div v-if="seeMoreProject" class="modal-overlay" @click.self="closeSeeMore">
+      <div class="modal-box modal-large modal-see-more">
+        <div class="modal-header">
+          <h2>{{ seeMoreProject.name || seeMoreProject.project_name || seeMoreProject.title || seeMoreProject.contract_number || 'تفاصيل المشروع' }}</h2>
+          <button type="button" class="btn-close" @click="closeSeeMore">×</button>
+        </div>
+        <div v-if="seeMoreLoading" class="loading-inline">جاري تحميل التفاصيل...</div>
+        <template v-else>
+          <div class="detail-fields see-more-fields">
+            <div class="detail-field" :class="{ expanded: seeMoreExpanded.advertiser }">
+              <p><strong>رقم المعلن:</strong> <span :class="{ 'value-null': !seeMoreDisplay.advertiser_number }">{{ seeMoreDisplay.advertiser_number ?? '—' }}</span></p>
+              <button v-if="isLongContent(seeMoreDisplay.advertiser_number)" type="button" class="btn-expand" @click="seeMoreExpanded.advertiser = !seeMoreExpanded.advertiser">{{ seeMoreExpanded.advertiser ? 'عرض أقل' : 'عرض المزيد' }}</button>
+            </div>
+            <div class="detail-field" :class="{ expanded: seeMoreExpanded.photography }">
+              <p><strong>رابط التصوير:</strong>
+                <a v-if="seeMoreDisplay.photography_link" :href="seeMoreDisplay.photography_link" target="_blank" rel="noopener noreferrer" class="link-cell">{{ seeMoreExpanded.photography ? seeMoreDisplay.photography_link : truncateUrl(seeMoreDisplay.photography_link) }}</a>
+                <span v-else :class="{ 'value-null': true }">—</span>
+              </p>
+              <button v-if="isLongContent(seeMoreDisplay.photography_link)" type="button" class="btn-expand" @click="seeMoreExpanded.photography = !seeMoreExpanded.photography">{{ seeMoreExpanded.photography ? 'عرض أقل' : 'عرض المزيد' }}</button>
+            </div>
+            <div class="detail-field" :class="{ expanded: seeMoreExpanded.description }">
+              <p><strong>الوصف:</strong> <span :class="{ 'value-null': !seeMoreDisplay.description }">{{ seeMoreExpanded.description ? (seeMoreDisplay.description ?? '—') : (truncateText(seeMoreDisplay.description, 80) ?? '—') }}</span></p>
+              <button v-if="isLongContent(seeMoreDisplay.description)" type="button" class="btn-expand" @click="seeMoreExpanded.description = !seeMoreExpanded.description">{{ seeMoreExpanded.description ? 'عرض أقل' : 'عرض المزيد' }}</button>
+            </div>
+            <div class="detail-field" :class="{ expanded: seeMoreExpanded.units }">
+              <p><strong>الوحدات المتاحة:</strong> <span :class="{ 'value-null': seeMoreDisplay.available_units == null }">{{ seeMoreDisplay.available_units !== undefined && seeMoreDisplay.available_units !== null ? seeMoreDisplay.available_units : '—' }}</span></p>
+              <div v-if="seeMoreUnits.length" class="units-list">
+                <button type="button" class="btn-expand" @click="seeMoreExpanded.units = !seeMoreExpanded.units">{{ seeMoreExpanded.units ? 'إخفاء تفاصيل الوحدات' : 'عرض تفاصيل الوحدات (' + seeMoreUnits.length + ')' }}</button>
+                <ul v-if="seeMoreExpanded.units" class="units-expanded">
+                  <li v-for="(u, i) in seeMoreUnits" :key="u.id || i">
+                    {{ u.unit_type }} {{ u.unit_number }} — {{ u.status }} — {{ formatPrice(u.price) }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+
     <!-- Reject reason modal -->
     <div v-if="rejectTargetId" class="modal-overlay" @click.self="rejectTargetId = null">
       <div class="modal-box">
@@ -162,6 +190,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import authService from '@/services/authService';
 import { useEditorProjects } from '@/composables/editor/useEditorProjects';
+import editorService from '@/services/editorService';
 import EditorProjectCard from '@/components/editor/EditorProjectCard.vue';
 import { toast } from '@/composables/useToast';
 
@@ -181,12 +210,11 @@ const {
   fetchDetail,
   fetchMontage,
   saveMontage,
-  fetchTeams,
   approveMontage,
-  teams,
-  teamsLoading,
   montageHasLinksMap,
   fetchMontageLinksForProjects,
+  mergeContractDetail,
+  preloadDetails,
 } = useEditorProjects();
 
 const activeTab = ref('before');
@@ -196,19 +224,86 @@ const montageSaving = ref(false);
 const rejectTargetId = ref(null);
 const rejectReason = ref('');
 
-// Merge contract detail + montage-department/show so fields from montage API are shown when contract API returns null
+const seeMoreProject = ref(null);
+const seeMoreDetail = ref(null);
+const seeMoreLoading = ref(false);
+const seeMoreExpanded = ref({ advertiser: false, photography: false, description: false, units: false });
+
+/**
+ * Map editor/contracts/show response to display fields.
+ * API shape: contract.second_party_data.advertiser_section_url, contract.photography_department.{ image_url, video_url, description }, contract.contract_units (array).
+ */
+function contractDisplayFromApi(contract) {
+  if (!contract || typeof contract !== 'object') return null;
+  const second = contract.second_party_data || {};
+  const photo = contract.photography_department || {};
+  const units = contract.contract_units ?? contract.units ?? [];
+  const unitsArray = Array.isArray(units) ? units : [];
+  return {
+    advertiser_number: second.advertiser_section_url ?? contract.advertiser_number ?? second.advertiser_number ?? contract.advertiser_section_url,
+    image_url: photo.image_url ?? contract.image_url,
+    video_url: photo.video_url ?? contract.video_url,
+    description: photo.description ?? contract.description,
+    unitsCount: unitsArray.length,
+    contract_units: unitsArray,
+  };
+}
+
+// Merge contract detail + montage. Prefer API shape (second_party_data, photography_department, contract_units), then flat fields.
 const displayDetail = computed(() => {
   const d = detail.value || {};
   const m = montageData.value || {};
-  const contract = m.contract || m.contract_data || {};
-  return {
-    advertiser_number: d.advertiser_number ?? contract.advertiser_number ?? m.advertiser_number,
-    publisher_number: d.publisher_number ?? contract.publisher_number ?? m.publisher_number,
-    photography_link: d.photography_link ?? contract.photography_link ?? m.photography_link,
-    photography_url: d.photography_url ?? contract.photography_url ?? m.photography_url,
-    description: d.description ?? contract.description ?? m.description,
-    available_units: d.available_units ?? contract.available_units ?? m.available_units,
+  const fromApi = contractDisplayFromApi(d);
+  const fromMontageContract = contractDisplayFromApi(m.contract || m.contract_data || {});
+  const fallbackUnits = d.contract_units ?? d.units ?? m.contract_units ?? m.units ?? [];
+  const fallbackCount = Array.isArray(fallbackUnits) ? fallbackUnits.length : 0;
+  const fallback = {
+    advertiser_number: d.advertiser_number ?? d.advertiser_section_url ?? m.advertiser_number,
+    photography_link: d.photography_link ?? d.photography_url ?? d.image_url ?? m.photography_link ?? m.image_url,
+    description: d.description ?? m.description,
+    unitsCount: fallbackCount,
   };
+  const api = fromApi || fromMontageContract;
+  const advertiser_number = api?.advertiser_number ?? fallback.advertiser_number;
+  const photography_link = api?.image_url ?? fallback.photography_link;
+  const description = api?.description ?? fallback.description;
+  const unitsCount = api?.unitsCount ?? fallback.unitsCount ?? 0;
+  return {
+    advertiser_number: advertiser_number ?? '—',
+    photography_link: photography_link ?? '—',
+    description: description ?? '—',
+    available_units: unitsCount,
+    units: api?.contract_units ?? [],
+  };
+});
+
+const seeMoreDisplay = computed(() => {
+  const d = seeMoreDetail.value || seeMoreProject.value || {};
+  const api = contractDisplayFromApi(d);
+  if (api) {
+    return {
+      advertiser_number: api.advertiser_number ?? '—',
+      photography_link: api.image_url ?? null,
+      description: api.description ?? null,
+      available_units: api.unitsCount,
+    };
+  }
+  const units = d.contract_units ?? d.units ?? [];
+  const unitsArray = Array.isArray(units) ? units : [];
+  return {
+    advertiser_number: d.advertiser_number ?? d.advertiser_section_url ?? d.publisher_number ?? '—',
+    photography_link: d.photography_link ?? d.photography_url ?? d.image_url ?? null,
+    description: d.description ?? null,
+    available_units: unitsArray.length,
+  };
+});
+
+const seeMoreUnits = computed(() => {
+  const d = seeMoreDetail.value || seeMoreProject.value || {};
+  const api = contractDisplayFromApi(d);
+  if (api) return api.contract_units || [];
+  const units = d.contract_units ?? d.units ?? [];
+  return Array.isArray(units) ? units : [];
 });
 
 watch(() => route.query.tab, (tab) => {
@@ -216,11 +311,8 @@ watch(() => route.query.tab, (tab) => {
 }, { immediate: true });
 
 watch(activeTab, (t) => {
-  if (t === 'after') {
-    fetchTeams();
-    if (isManager.value && afterMontage.value.length) {
-      fetchMontageLinksForProjects(afterMontage.value.map(p => p.id));
-    }
+  if (t === 'after' && isManager.value && afterMontage.value.length) {
+    fetchMontageLinksForProjects(afterMontage.value.map(p => p.id));
   }
 });
 
@@ -237,23 +329,61 @@ watch(selectedProject, async (p) => {
   await fetchMontage(p.id);
 }, { flush: 'post' });
 
-watch(montageData, (m) => {
+function applyMontageFormFromDetail() {
   if (!selectedProject.value) return;
+  const d = detail.value || {};
+  const m = montageData.value || {};
+  const api = contractDisplayFromApi(d);
   montageForm.value = {
-    image_url: (m && m.image_url) ?? '',
-    video_url: (m && m.video_url) ?? '',
-    description: (m && m.description) ?? '',
+    image_url: (m && m.image_url) ?? api?.image_url ?? d.image_url ?? '',
+    video_url: (m && m.video_url) ?? api?.video_url ?? d.video_url ?? '',
+    description: (m && m.description) ?? api?.description ?? d.description ?? '',
   };
+}
+
+watch(montageData, applyMontageFormFromDetail, { deep: true });
+
+watch(detail, () => {
+  applyMontageFormFromDetail();
 }, { deep: true });
 
-onMounted(() => {
-  fetchContracts();
+watch(seeMoreProject, async (p) => {
+  if (!p?.id) {
+    seeMoreDetail.value = null;
+    return;
+  }
+  seeMoreLoading.value = true;
+  seeMoreDetail.value = null;
+  seeMoreExpanded.value = { advertiser: false, photography: false, description: false, units: false };
+  try {
+    const data = await editorService.getContractById(p.id);
+    seeMoreDetail.value = data ?? {};
+    mergeContractDetail(p.id, data ?? {});
+  } catch (_) {
+    seeMoreDetail.value = { ...p };
+  } finally {
+    seeMoreLoading.value = false;
+  }
+}, { flush: 'post' });
+
+onMounted(async () => {
+  await fetchContracts();
   const tab = route.query.tab;
   if (tab === 'after' || tab === 'before') activeTab.value = tab;
+  preloadDetails();
 });
 
 function openDetail(p) {
   selectedProject.value = p;
+}
+
+function openSeeMore(p) {
+  seeMoreProject.value = p;
+}
+
+function closeSeeMore() {
+  seeMoreProject.value = null;
+  seeMoreDetail.value = null;
 }
 
 function openMontageForm(p) {
@@ -262,6 +392,29 @@ function openMontageForm(p) {
 
 function closeDetail() {
   selectedProject.value = null;
+}
+
+function isLongContent(str, max = 60) {
+  return typeof str === 'string' && str.length > max;
+}
+
+function truncateText(str, max = 80) {
+  if (str == null || str === '') return null;
+  const s = String(str);
+  return s.length <= max ? s : s.slice(0, max) + '...';
+}
+
+function truncateUrl(url, max = 50) {
+  if (!url) return '';
+  const s = String(url);
+  return s.length <= max ? s : s.slice(0, max) + '...';
+}
+
+function formatPrice(n) {
+  if (n == null) return '—';
+  const num = Number(n);
+  if (Number.isNaN(num)) return '—';
+  return new Intl.NumberFormat('ar-SA', { style: 'decimal' }).format(num);
 }
 
 function montageStatusLabel(p) {
@@ -421,6 +574,23 @@ async function doReject() {
 .modal-header h2 { margin: 0; font-size: 1.2rem; }
 .btn-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b; }
 .detail-fields p { margin: 0.5rem 0; }
+.modal-see-more .see-more-fields .detail-field { margin-bottom: 0.75rem; }
+.modal-see-more .see-more-fields .detail-field p { margin: 0.25rem 0; }
+.btn-expand {
+  background: none;
+  border: none;
+  color: #1e3a5f;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.25rem 0;
+  margin-top: 0.25rem;
+  text-decoration: underline;
+}
+.units-list { margin-top: 0.5rem; }
+.units-list ul { margin: 0; padding-right: 1.25rem; list-style: disc; }
+.units-list li { margin: 0.25rem 0; }
+.link-cell { color: #1e3a5f; word-break: break-all; text-decoration: none; }
+.link-cell:hover { text-decoration: underline; }
 .montage-form-section h4, .manager-actions h4 { margin: 1rem 0 0.5rem 0; font-size: 1rem; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 .form-group.full-width { grid-column: 1 / -1; }

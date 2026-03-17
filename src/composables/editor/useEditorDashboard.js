@@ -12,9 +12,16 @@ export function useEditorDashboard() {
   const allContracts = ref([]);
 
   // API: has_photography_data, has_montage_data (both === 1). Support legacy has_photography/has_montage.
-  const isAfterMontage = c =>
-    (c.has_photography_data == 1 || c.has_photography == 1 || c.has_photography === true) &&
-    (c.has_montage_data == 1 || c.has_montage == 1 || c.has_montage === true);
+  // When backend does not set flags, treat as after montage if contract has image_url and description from API.
+  const isAfterMontage = c => {
+    const hasFlags =
+      (c.has_photography_data == 1 || c.has_photography == 1 || c.has_photography === true) &&
+      (c.has_montage_data == 1 || c.has_montage == 1 || c.has_montage === true);
+    if (hasFlags) return true;
+    const hasImage = !!(c.image_url && String(c.image_url).trim());
+    const hasDesc = !!(c.description && String(c.description).trim());
+    return hasImage && hasDesc;
+  };
 
   const notReady = computed(() =>
     allContracts.value.filter(c => !isAfterMontage(c))
@@ -28,6 +35,13 @@ export function useEditorDashboard() {
   const readyCount = computed(() => ready.value.length);
   const archiveCount = computed(() => archive.value.length);
   const allProjectsCount = computed(() => allContracts.value.length);
+  /** Sum of available units across contracts (from units_count or units.length) */
+  const availableUnits = computed(() => {
+    return allContracts.value.reduce((sum, c) => {
+      const n = c.units_count ?? c.unitsCount ?? (Array.isArray(c.units) ? c.units.length : 0);
+      return sum + (Number(n) || 0);
+    }, 0);
+  });
 
   const activeTab = ref('not_ready');
 
@@ -67,6 +81,7 @@ export function useEditorDashboard() {
     readyCount,
     archiveCount,
     allProjectsCount,
+    availableUnits,
     filteredProjects,
     fetchContracts,
   };
