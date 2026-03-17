@@ -243,9 +243,11 @@ export default {
           ? Number(c.total_price).toLocaleString('ar-SA') + ' ر.س'
           : '';
 
-      // صورة المشروع من الـ API (project_image_url)
+      // صورة المشروع من الـ API — تعرض سواء معتمدة أو قيد المراجعة
+      const photo = c.photography_department;
       const projectImageUrl =
         (c.project_image_url && String(c.project_image_url).trim()) ||
+        (photo && (photo.image_url ?? photo.image) && String(photo.image_url || photo.image).trim()) ||
         (c.image && String(c.image).trim()) ||
         '';
 

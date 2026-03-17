@@ -257,10 +257,15 @@ const fetchProject = async () => {
       }
     } else {
       // Normalize from GET /contracts/show/:id — تضمين الحقول المرجعة (unit_count, total_price, user, ...)
+      const photo = data.photography_department;
+      const projectImage =
+        data.project_image_url ||
+        (photo && (photo.image_url || photo.image)) ||
+        data.image;
       project.value = {
         ...data,
         name: data.project_name || data.name,
-        image: data.project_image_url || data.image,
+        image: projectImage,
         notes: data.notes ?? data.note ?? null,
         unit_count: data.unit_count ?? null,
         total_price: data.total_price ?? null,

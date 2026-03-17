@@ -182,6 +182,19 @@
             <span class="unit-detail-label">السعر</span>
             <span class="unit-detail-value">{{ formatCurrency(selectedUnitForDetail.price) }} ريال</span>
           </div>
+          <div class="unit-detail-row unit-detail-row-diagram">
+            <span class="unit-detail-label">مخطط الوحدة</span>
+            <span class="unit-detail-value">
+              <template v-if="selectedUnitForDetail.diagrames">
+                <a v-if="!diagramImageError" :href="selectedUnitForDetail.diagrames" target="_blank" rel="noopener noreferrer" class="unit-diagram-preview-wrap">
+                  <img :src="selectedUnitForDetail.diagrames" alt="مخطط الوحدة" class="unit-diagram-preview" @error="onDiagramImageError" />
+                </a>
+                <a v-else :href="selectedUnitForDetail.diagrames" target="_blank" rel="noopener noreferrer" class="unit-diagram-link">{{ selectedUnitForDetail.diagrames }}</a>
+                <a v-if="!diagramImageError" :href="selectedUnitForDetail.diagrames" target="_blank" rel="noopener noreferrer" class="unit-diagram-link">فتح الرابط</a>
+              </template>
+              <template v-else>—</template>
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -224,6 +237,10 @@
             <div class="form-group full-width">
               <label>الوصف</label>
               <textarea v-model="unitForm.description" rows="3" placeholder="مثال: شقة واسعة مع شرفة وإطلالة"></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label>مخطط الوحدة (رابط)</label>
+              <input type="url" v-model="unitForm.diagrames" placeholder="https://example.com/diagram.webp" />
             </div>
           </div>
           <div class="modal-actions">
@@ -295,7 +312,7 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue';
+import { onMounted, computed, ref, watch } from 'vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
 import UnitReservationModal from '@/components/sales/UnitReservationModal.vue';
 import { useProjectUnits } from '@/composables/project/useProjectUnits';
@@ -352,6 +369,14 @@ const {
   closeWaitingListModal,
   submitWaitingList,
 } = useProjectUnits(props.projectId, props.projectName, () => props.project);
+
+const diagramImageError = ref(false);
+watch(selectedUnitForDetail, () => {
+  diagramImageError.value = false;
+}, { deep: true });
+function onDiagramImageError() {
+  diagramImageError.value = true;
+}
 
 const displayUnitCount = computed(() => {
   if (unitCountFromApi.value != null) return unitCountFromApi.value;
@@ -670,6 +695,38 @@ onMounted(() => {
 .unit-detail-value {
   font-weight: 600;
   color: #1e3a5f;
+}
+.unit-diagram-link {
+  color: #1e40af;
+  word-break: break-all;
+  text-decoration: none;
+  font-size: 13px;
+  display: inline-block;
+  margin-top: 6px;
+}
+.unit-diagram-link:hover {
+  text-decoration: underline;
+}
+.unit-detail-row-diagram .unit-detail-value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.unit-diagram-preview-wrap {
+  display: block;
+  max-width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+.unit-diagram-preview {
+  display: block;
+  max-width: 280px;
+  max-height: 200px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 /* Modal */

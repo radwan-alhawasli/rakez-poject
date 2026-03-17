@@ -47,6 +47,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     total_price: 0,
     area: 0,
     description: '',
+    diagrames: '',
   });
 
   // Reservation state
@@ -247,6 +248,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     unitForm.total_price = 0;
     unitForm.area = 0;
     unitForm.description = '';
+    unitForm.diagrames = '';
   };
 
   const openUnitDetail = (unit) => {
@@ -348,6 +350,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     unitForm.area = unit.area;
     unitForm.description = unit.description || '';
     unitForm.status = unit.status || 'pending';
+    unitForm.diagrames = unit.diagrames ?? '';
     showAddUnitModal.value = true;
   };
 

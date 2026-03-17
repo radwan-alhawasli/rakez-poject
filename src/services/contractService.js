@@ -3,11 +3,13 @@ import logger from '@/utils/logger';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
 
-/** استخراج رابط الصورة من أي حقل متوقع من الـ API */
+/** استخراج رابط الصورة من أي حقل متوقع من الـ API. يعرض الصورة سواء معتمدة أو قيد المراجعة. */
 function getContractImageUrl(p) {
   if (!p || typeof p !== 'object') return null;
+  const photo = p.photography_department;
   const url =
     p.project_image_url ??
+    (photo && (photo.image_url ?? photo.image)) ??
     p.image ??
     p.image_url ??
     p.main_image ??
@@ -42,7 +44,8 @@ function normalizeContractItem(p) {
  */
 function normalizeContractShowResponse(raw) {
   if (!raw || typeof raw !== 'object') return raw;
-  const imageUrl = getContractImageUrl(raw);
+  const imageUrl = getContractImageUrl(raw) || (raw.photography_department?.image_url ?? raw.photography_department?.image) || null;
+  const imageUrlTrimmed = typeof imageUrl === 'string' && imageUrl.trim() ? imageUrl.trim() : null;
   return {
     ...raw,
     id: raw.id ?? raw.contract_id,
@@ -51,8 +54,8 @@ function normalizeContractShowResponse(raw) {
     project_name: raw.project_name ?? raw.name,
     notes: raw.notes ?? raw.note ?? null,
     project_progress: raw.project_progress ?? null,
-    image: imageUrl ?? null,
-    project_image_url: imageUrl ?? raw.project_image_url,
+    image: imageUrlTrimmed ?? imageUrl ?? null,
+    project_image_url: imageUrlTrimmed ?? imageUrl ?? raw.project_image_url,
     commission_percentage: raw.commission_percent ?? raw.commission_percentage ?? null,
     commission_percent: raw.commission_percent ?? raw.commission_percentage ?? null,
     created_by_name: raw.user?.name ?? raw.created_by_name ?? null,

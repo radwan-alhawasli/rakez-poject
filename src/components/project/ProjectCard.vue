@@ -4,9 +4,8 @@
     :class="{ 'card-no-image': !project.hasImage }"
   >
     <div class="card-image-wrapper">
-      <!-- شريط علوي ثابت: حالة + موقع + قائمة — بدون تداخل مع الصورة -->
+      <!-- شريط علوي ثابت: موقع + قائمة — بدون تداخل مع الصورة -->
       <div class="card-image-top-bar">
-        <span class="status-badge status-available">{{ project.rakezStatusLabel }}</span>
         <span class="location-tag">{{ project.location }}</span>
         <div class="menu-container" @click.stop="$emit('toggle-menu', project.id)">
           <button class="menu-btn" type="button" aria-label="القائمة">
@@ -33,6 +32,7 @@
       <div v-if="activeMenuId === project.id" class="menu-backdrop" @click.stop="$emit('close-menu')"></div>
       <!-- منطقة عرض الصورة من الرابط المدخل — بدون تداخل -->
       <div class="card-image" :class="{ 'card-image-placeholder': !project.hasImage }">
+        <span v-if="project.hasImage && project.imagePending" class="card-image-pending-badge">قيد المراجعة</span>
         <template v-if="imageUrl">
           <img
             :src="imageUrl"
@@ -193,19 +193,6 @@ defineEmits([
   background: rgba(30, 58, 95, 0.92);
   flex-shrink: 0;
 }
-.card-image-top-bar .status-badge {
-  flex-shrink: 0;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  background: #6b7c3c;
-  color: #fff;
-}
-.card-image-top-bar .status-badge.pending {
-  background: #eab308;
-  color: #422006;
-}
 .card-image-top-bar .location-tag {
   flex: 1;
   min-width: 0;
@@ -230,10 +217,11 @@ defineEmits([
   z-index: 50;
 }
 
-/* منطقة عرض الصورة من الرابط المدخل — كبيرة وواضحة */
+/* منطقة عرض الصورة — ارتفاع ثابت لجميع البطاقات */
 .card-image {
-  min-height: 300px;
-  flex: 1;
+  height: 200px;
+  min-height: 200px;
+  flex: none;
   position: relative;
   background: #f1f5f9;
   display: flex;
@@ -245,20 +233,33 @@ defineEmits([
 .card-image img {
   width: 100%;
   height: 100%;
-  min-height: 300px;
   object-fit: cover;
   display: block;
 }
 .card-image-placeholder {
-  min-height: 140px;
+  height: 200px;
+  min-height: 200px;
 }
 .card-image-placeholder .placeholder-block {
   width: 100%;
-  min-height: 140px;
+  height: 200px;
+  min-height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+}
+.card-image-pending-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(234, 179, 8, 0.95);
+  color: #422006;
 }
 .menu-btn {
   width: 32px;
@@ -529,11 +530,12 @@ defineEmits([
 /* Responsive */
 @media (max-width: 768px) {
   .card-image,
-  .card-image img {
-    min-height: 240px;
+  .card-image-placeholder {
+    height: 200px;
+    min-height: 200px;
   }
   .card-image-placeholder .placeholder-block {
-    min-height: 120px;
+    min-height: 200px;
   }
   .card-content {
     padding: 14px;
@@ -550,11 +552,12 @@ defineEmits([
 
 @media (max-width: 576px) {
   .card-image,
-  .card-image img {
-    min-height: 220px;
+  .card-image-placeholder {
+    height: 200px;
+    min-height: 200px;
   }
   .card-image-placeholder .placeholder-block {
-    min-height: 100px;
+    min-height: 200px;
   }
   .card-content {
     padding: 12px;
@@ -572,11 +575,12 @@ defineEmits([
 
 @media (max-width: 320px) {
   .card-image,
-  .card-image img {
+  .card-image-placeholder {
+    height: 200px;
     min-height: 200px;
   }
   .card-image-placeholder .placeholder-block {
-    min-height: 90px;
+    min-height: 200px;
   }
   .card-content {
     padding: 10px;
@@ -600,8 +604,9 @@ defineEmits([
 
 @media (min-width: 1920px) {
   .card-image,
-  .card-image img {
-    min-height: 340px;
+  .card-image-placeholder {
+    height: 200px;
+    min-height: 200px;
   }
   .card-content {
     padding: 24px;

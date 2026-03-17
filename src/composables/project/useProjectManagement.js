@@ -178,13 +178,26 @@ export function useProjectManagement() {
         const rakezStatusLabel = p.status === 'Approved' ? 'متاح' : (p.status === 'Rejected' || p.status === 'Refused' ? 'مؤرشف' : (p.statusLabel || p.status || '—'));
         const propertyTypeLabel = (p.unit_type_label_ar && String(p.unit_type_label_ar).trim()) || unitType || (totalUnits ? 'وحدات' : 'مشروع');
 
+        const photo = p.photography_department;
         const imageUrl =
-          p.project_image_url ?? p.image ?? p.image_url ?? p.main_image ?? p.cover_image ?? p.photo ?? (typeof p.project_image === 'string' ? p.project_image : null);
+          p.project_image_url ??
+          (photo && (photo.image_url ?? photo.image)) ??
+          p.image ??
+          p.image_url ??
+          p.main_image ??
+          p.cover_image ??
+          p.photo ??
+          (typeof p.project_image === 'string' ? p.project_image : null);
         const imageStr = typeof imageUrl === 'string' && imageUrl.trim() ? imageUrl.trim() : '';
+        const imagePending =
+          !!photo &&
+          (String(photo.status || '').toLowerCase() === 'pending' ||
+            String(photo.approval_status || '').toLowerCase() === 'pending');
         return {
           id: p.id,
           contract_id: p.contract_id ?? p.id,
           name: p.project_name ?? p.name ?? `مشروع #${p.id}`,
+          imagePending: !!imageStr && imagePending,
           location:
             `${(p.district || '').trim()}${p.district && p.city ? ', ' : ''}${(
               p.city || ''
