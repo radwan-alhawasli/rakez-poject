@@ -11,14 +11,15 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
 import authService from '@/services/authService';
-import AccountingDashboardTab from '@/components/accounting/AccountingDashboardTab.vue';
-import AccountingNotificationsTab from '@/components/accounting/AccountingNotificationsTab.vue';
-import AccountingSoldUnitsTab from '@/components/accounting/AccountingSoldUnitsTab.vue';
-import AccountingDepositsTab from '@/components/accounting/AccountingDepositsTab.vue';
-import AccountingSalariesTab from '@/components/accounting/AccountingSalariesTab.vue';
+
+const AccountingDashboardTab = defineAsyncComponent(() => import('@/components/accounting/AccountingDashboardTab.vue'));
+const AccountingNotificationsTab = defineAsyncComponent(() => import('@/components/accounting/AccountingNotificationsTab.vue'));
+const AccountingSoldUnitsTab = defineAsyncComponent(() => import('@/components/accounting/AccountingSoldUnitsTab.vue'));
+const AccountingDepositsTab = defineAsyncComponent(() => import('@/components/accounting/AccountingDepositsTab.vue'));
+const AccountingSalariesTab = defineAsyncComponent(() => import('@/components/accounting/AccountingSalariesTab.vue'));
 
 const route = useRoute();
 const user = ref(authService.getCurrentUser());

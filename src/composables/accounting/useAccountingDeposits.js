@@ -1,14 +1,20 @@
 import { computed, ref } from 'vue';
 import accountingService from '@/services/accountingService';
-import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
+import { useAsyncAction } from '@/composables/useAsyncAction';
+import { MSG_ERROR_LOADING } from '@/constants/messages';
 
 export function useAccountingDeposits() {
-  const isLoading = ref(false);
+  const { run: runLoad, isLoading } = useAsyncAction({ loadingKey: 'isLoading' });
+  const { run: runGenerate, isGeneratingClaimFile } = useAsyncAction({
+    loadingKey: 'isGeneratingClaimFile',
+  });
+  const { run: runSave, isSavingDeposit } = useAsyncAction({ loadingKey: 'isSavingDeposit' });
+  const { run: runConfirm } = useAsyncAction({ loadingKey: 'isConfirmingCommission' });
+
   const deposits = ref([]);
   const depositsSubTab = ref('manage');
-  const isGeneratingClaimFile = ref(false);
   const currentPage = ref(1);
   const perPage = ref(25);
   const totalItems = ref(0);
@@ -16,44 +22,43 @@ export function useAccountingDeposits() {
 
   const showDepositModal = ref(false);
   const selectedDeposit = ref(null);
-  const isSavingDeposit = ref(false);
 
   const loadDeposits = async () => {
-    isLoading.value = true;
-    try {
-      const data = await accountingService.getPendingDeposits({
-        page: currentPage.value,
-        per_page: perPage.value,
-      });
+    const data = await runLoad(
+      () =>
+        accountingService.getPendingDeposits({
+          page: currentPage.value,
+          per_page: perPage.value,
+        }),
+      { errorMessage: MSG_ERROR_LOADING, showLoading: true }
+    );
+    if (data !== undefined) {
       deposits.value = data?.items ?? (Array.isArray(data) ? data : []);
       totalItems.value = data?.total ?? deposits.value.length;
-    } catch (error) {
-      logger.error('Error loading deposits:', error);
+    } else {
       deposits.value = [];
       totalItems.value = 0;
-    } finally {
-      isLoading.value = false;
     }
   };
 
   const loadDepositsFollowUp = async () => {
-    isLoading.value = true;
-    try {
-      const data = await accountingService.getDepositsFollowUp({
-        page: currentPage.value,
-        per_page: perPage.value,
-      });
+    const data = await runLoad(
+      () =>
+        accountingService.getDepositsFollowUp({
+          page: currentPage.value,
+          per_page: perPage.value,
+        }),
+      { errorMessage: MSG_ERROR_LOADING, showLoading: true }
+    );
+    if (data !== undefined) {
       const followUpItems = data?.items ?? (Array.isArray(data) ? data : []);
       deposits.value = followUpItems.filter(
         deposit => deposit.commission_source === 'owner' && deposit.unit_emptied !== false
       );
       totalItems.value = deposits.value.length;
-    } catch (error) {
-      logger.error('Error loading deposits follow-up:', error);
+    } else {
       deposits.value = [];
       totalItems.value = 0;
-    } finally {
-      isLoading.value = false;
     }
   };
 
@@ -66,31 +71,34 @@ export function useAccountingDeposits() {
 
   const generateClaimFile = async (deposit) => {
     const reservationId = deposit.reservation_id || deposit.id;
-    if (!reservationId) { toast.warning('رقم الحجز غير متوفر'); return; }
-    isGeneratingClaimFile.value = true;
-    try {
-      await accountingService.generateClaimFile(reservationId);
-      toast.success('تم إصدار ملف المطالبة بنجاح');
-      loadDepositsFollowUp();
-    } catch (error) {
-      logger.error('Error generating claim file:', error);
-      toast.error('حدث خطأ أثناء إصدار ملف المطالبة');
-    } finally {
-      isGeneratingClaimFile.value = false;
+    if (!reservationId) {
+      toast.warning('رقم الحجز غير متوفر');
+      return;
     }
+    const done = await runGenerate(
+      () => accountingService.generateClaimFile(reservationId),
+      {
+        successMessage: 'تم إصدار ملف المطالبة بنجاح',
+        errorMessage: 'حدث خطأ أثناء إصدار ملف المطالبة',
+      }
+    );
+    if (done !== undefined) loadDepositsFollowUp();
   };
 
   const confirmCommissionReceived = async (deposit) => {
     const reservationId = deposit.reservation_id || deposit.id;
-    if (!reservationId) { toast.warning('رقم الحجز غير متوفر'); return; }
-    try {
-      await accountingService.confirmCommissionReceived(reservationId);
-      toast.success('تم تأكيد وصول العمولة بنجاح');
-      loadDepositsFollowUp();
-    } catch (error) {
-      logger.error('Error confirming commission received:', error);
-      toast.error('حدث خطأ أثناء تأكيد وصول العمولة');
+    if (!reservationId) {
+      toast.warning('رقم الحجز غير متوفر');
+      return;
     }
+    const done = await runConfirm(
+      () => accountingService.confirmCommissionReceived(reservationId),
+      {
+        successMessage: 'تم تأكيد وصول العمولة بنجاح',
+        errorMessage: 'حدث خطأ أثناء تأكيد وصول العمولة',
+      }
+    );
+    if (done !== undefined) loadDepositsFollowUp();
   };
 
   const confirmDeposit = (deposit) => {
@@ -104,17 +112,20 @@ export function useAccountingDeposits() {
   };
 
   const handleDepositSubmit = async (data) => {
-    isSavingDeposit.value = true;
-    try {
-      if (data.action === 'confirm') { await accountingService.confirmDeposit(selectedDeposit.value.id); toast.success('تم تأكيد الوديعة بنجاح'); }
-      else if (data.action === 'refund') { await accountingService.processRefund(selectedDeposit.value.id); toast.success('تم معالجة الاسترداد بنجاح'); }
+    const successMsg =
+      data.action === 'confirm' ? 'تم تأكيد الوديعة بنجاح' : 'تم معالجة الاسترداد بنجاح';
+    const apiCall =
+      data.action === 'confirm'
+        ? () => accountingService.confirmDeposit(selectedDeposit.value.id)
+        : () => accountingService.processRefund(selectedDeposit.value.id);
+    const done = await runSave(apiCall, {
+      successMessage: successMsg,
+      errorMessage: 'حدث خطأ أثناء معالجة الوديعة',
+    });
+    if (done !== undefined) {
       showDepositModal.value = false;
-      if (depositsSubTab.value === 'manage') loadDeposits(); else loadDepositsFollowUp();
-    } catch (error) {
-      logger.error('Error processing deposit:', error);
-      toast.error('حدث خطأ أثناء معالجة الوديعة');
-    } finally {
-      isSavingDeposit.value = false;
+      if (depositsSubTab.value === 'manage') loadDeposits();
+      else loadDepositsFollowUp();
     }
   };
 

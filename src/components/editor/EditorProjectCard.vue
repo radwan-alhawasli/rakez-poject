@@ -12,7 +12,7 @@
       <div class="detail-row">
         <dt>رابط التصوير</dt>
         <dd :class="{ 'value-null': isNull(photographyLink) }">
-          <a v-if="photographyLink && !isNull(photographyLink)" :href="photographyLink" target="_blank" rel="noopener" class="link-cell">{{ photographyLink }}</a>
+          <a v-if="photographyLink && !isNull(photographyLink)" :href="photographyLink" target="_blank" rel="noopener noreferrer" class="link-cell">{{ photographyLink }}</a>
           <span v-else>{{ displayValue(photographyLink) }}</span>
         </dd>
       </div>

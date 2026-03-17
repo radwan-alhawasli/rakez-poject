@@ -216,10 +216,20 @@
     </form>
     <template #footer>
       <div class="modal-footer-actions">
-        <button type="button" class="btn-cancel" @click="emit('close')">إلغاء</button>
-        <button type="submit" class="btn-save" :disabled="saving" form="edit-contract-info-form" @click.prevent="submit">
-          {{ saving ? 'جاري الحفظ...' : 'حفظ التعديلات' }}
-        </button>
+        <Button type="button" variant="outline" class="btn-cancel" @click="emit('close')">
+          {{ LABEL_CANCEL }}
+        </Button>
+        <Button
+          type="submit"
+          variant="primary"
+          :loading="saving"
+          :disabled="saving"
+          form="edit-contract-info-form"
+          class="btn-save"
+          @click.prevent="submit"
+        >
+          {{ saving ? LABEL_SAVING : 'حفظ التعديلات' }}
+        </Button>
       </div>
     </template>
   </AppModal>
@@ -228,10 +238,12 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import AppModal from '@/components/AppModal.vue';
+import Button from '@/components/ui/Button.vue';
+import { LABEL_CANCEL, LABEL_SAVING } from '@/constants/actions';
 import contractService from '@/services/contractService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
-import { getApiErrorMessage } from '@/utils/errorHandler';
+import { showApiError } from '@/utils/errorHandler';
 
 const props = defineProps({
   contractId: { type: [Number, String], required: true },
@@ -419,7 +431,7 @@ async function submit() {
     emit('close');
   } catch (err) {
     logger.error('EditContractInfoModal: update contract info', err);
-    toast.error(getApiErrorMessage(err, 'فشل حفظ التعديلات'));
+    showApiError(err, 'فشل حفظ التعديلات');
   } finally {
     saving.value = false;
   }

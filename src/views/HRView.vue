@@ -27,15 +27,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
 import authService from '@/services/authService';
-import HRDashboardTab from '@/components/hr/HRDashboardTab.vue';
-import HRTeamsTab from '@/components/hr/HRTeamsTab.vue';
-import HRPerformanceTab from '@/components/hr/HRPerformanceTab.vue';
-import HREmployeePerformanceTab from '@/components/hr/HREmployeePerformanceTab.vue';
-import HRUsersTab from '@/components/hr/HRUsersTab.vue';
-import HRReportsTab from '@/components/hr/HRReportsTab.vue';
+
+const HRDashboardTab = defineAsyncComponent(() => import('@/components/hr/HRDashboardTab.vue'));
+const HRTeamsTab = defineAsyncComponent(() => import('@/components/hr/HRTeamsTab.vue'));
+const HRPerformanceTab = defineAsyncComponent(() => import('@/components/hr/HRPerformanceTab.vue'));
+const HREmployeePerformanceTab = defineAsyncComponent(() => import('@/components/hr/HREmployeePerformanceTab.vue'));
+const HRUsersTab = defineAsyncComponent(() => import('@/components/hr/HRUsersTab.vue'));
+const HRReportsTab = defineAsyncComponent(() => import('@/components/hr/HRReportsTab.vue'));
 
 const route = useRoute();
 const user = authService.getCurrentUser();

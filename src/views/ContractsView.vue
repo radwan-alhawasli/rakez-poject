@@ -185,7 +185,7 @@ import contractService from '@/services/contractService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
-import { getApiErrorMessage } from '@/utils/errorHandler';
+import { showApiError } from '@/utils/errorHandler';
 
 const activeFilter = ref('all');
 const searchQuery = ref('');
@@ -404,7 +404,7 @@ const handleApprove = async (c, notes = '') => {
       updateContractStatusInList(c.id ?? c.contract_id, 'Approved');
     } catch (err) {
       logger.error('Error approving contract:', err);
-      toast.error(getApiErrorMessage(err));
+      showApiError(err);
       fetchContracts();
       return;
     }
@@ -426,7 +426,7 @@ const handleReject = async (c, notes = '') => {
       updateContractStatusInList(c.id ?? c.contract_id, 'Refused');
     } catch (err) {
       logger.error('Error rejecting contract:', err);
-      toast.error(getApiErrorMessage(err));
+      showApiError(err);
       fetchContracts();
       return;
     }

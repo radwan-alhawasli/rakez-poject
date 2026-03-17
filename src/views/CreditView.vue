@@ -20,15 +20,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
-import CreditDashboardTab from '@/components/credit/CreditDashboardTab.vue';
-import CreditNotificationsTab from '@/components/credit/CreditNotificationsTab.vue';
-import CreditBookingsTab from '@/components/credit/CreditBookingsTab.vue';
-import CreditFinancingTab from '@/components/credit/CreditFinancingTab.vue';
-import CreditTitleTransferTab from '@/components/credit/CreditTitleTransferTab.vue';
-import CreditSoldProjectsTab from '@/components/credit/CreditSoldProjectsTab.vue';
-import CreditClaimFilesTab from '@/components/credit/CreditClaimFilesTab.vue';
+
+const CreditDashboardTab = defineAsyncComponent(() => import('@/components/credit/CreditDashboardTab.vue'));
+const CreditNotificationsTab = defineAsyncComponent(() => import('@/components/credit/CreditNotificationsTab.vue'));
+const CreditBookingsTab = defineAsyncComponent(() => import('@/components/credit/CreditBookingsTab.vue'));
+const CreditFinancingTab = defineAsyncComponent(() => import('@/components/credit/CreditFinancingTab.vue'));
+const CreditTitleTransferTab = defineAsyncComponent(() => import('@/components/credit/CreditTitleTransferTab.vue'));
+const CreditSoldProjectsTab = defineAsyncComponent(() => import('@/components/credit/CreditSoldProjectsTab.vue'));
+const CreditClaimFilesTab = defineAsyncComponent(() => import('@/components/credit/CreditClaimFilesTab.vue'));
 
 const route = useRoute();
 

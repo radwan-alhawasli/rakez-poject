@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import apiClient from '@/api/apiClient';
-import authService from './authService';
+import authService from '@/services/authService';
 import { createPusher } from '@/plugins/pusher';
 import logger from '@/utils/logger';
 import { ROLE_ADMIN, ROLE_ACCOUNTING, ROLE_CREDIT } from '@/constants/roles';

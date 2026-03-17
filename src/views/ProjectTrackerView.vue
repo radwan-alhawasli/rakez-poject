@@ -12,8 +12,11 @@
         <div class="header-image-container">
           <img
             :src="project.image || placeholderProjectSvg"
-            alt="Project Image"
+            :alt="project.name || 'صورة المشروع'"
             class="header-image"
+            width="1200"
+            height="400"
+            fetchpriority="high"
             @error="$event.target.src = placeholderProjectSvg"
           />
           <div class="header-overlay"></div>

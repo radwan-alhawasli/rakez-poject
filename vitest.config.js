@@ -25,7 +25,7 @@ export default defineConfig({
         '**/*.spec.js',
         '**/*.test.js',
         'src/main.js',
-        'src/router/**',
+        'src/core/router/**',
         'src/plugins/**',
         'src/strategies/**',
         'src/components/ui/**',
@@ -42,6 +42,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@shared': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
 });

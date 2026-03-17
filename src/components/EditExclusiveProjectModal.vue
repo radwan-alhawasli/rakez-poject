@@ -116,10 +116,20 @@
     </form>
     <template #footer>
       <div class="modal-footer-actions">
-        <button type="button" class="btn-close-large" @click="$emit('close')">إلغاء</button>
-        <button type="submit" class="btn-save" :disabled="saving" form="edit-exclusive-form-id" @click.prevent="submit">
-          {{ saving ? 'جاري الحفظ...' : 'حفظ التعديلات' }}
-        </button>
+        <Button type="button" variant="outline" class="btn-close-large" @click="$emit('close')">
+          {{ LABEL_CANCEL }}
+        </Button>
+        <Button
+          type="submit"
+          variant="primary"
+          :loading="saving"
+          :disabled="saving"
+          form="edit-exclusive-form-id"
+          class="btn-save"
+          @click.prevent="submit"
+        >
+          {{ saving ? LABEL_SAVING : 'حفظ التعديلات' }}
+        </Button>
       </div>
     </template>
   </AppModal>
@@ -128,10 +138,12 @@
 <script setup>
 import { ref, reactive, watch, onMounted } from 'vue';
 import AppModal from '@/components/AppModal.vue';
+import Button from '@/components/ui/Button.vue';
+import { LABEL_CANCEL, LABEL_SAVING } from '@/constants/actions';
 import contractService from '@/services/contractService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
-import { getApiErrorMessage } from '@/utils/errorHandler';
+import { showApiError } from '@/utils/errorHandler';
 
 const props = defineProps({
   contractId: { type: [Number, String], required: true },
@@ -210,7 +222,7 @@ async function fetchDetails() {
     if (data && typeof data === 'object') mapApiToForm(data);
   } catch (err) {
     logger.error('EditExclusiveProjectModal: fetch contract', err);
-    if (!props.initialData) toast.error(getApiErrorMessage(err, 'فشل تحميل تفاصيل العقد'));
+    if (!props.initialData) showApiError(err, 'فشل تحميل تفاصيل العقد');
   } finally {
     loading.value = false;
   }
@@ -252,7 +264,7 @@ async function submit() {
     emit('close');
   } catch (err) {
     logger.error('EditExclusiveProjectModal: update contract', err);
-    toast.error(getApiErrorMessage(err, 'فشل حفظ التعديلات'));
+    showApiError(err, 'فشل حفظ التعديلات');
   } finally {
     saving.value = false;
   }

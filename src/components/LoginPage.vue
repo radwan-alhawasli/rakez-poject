@@ -13,7 +13,7 @@
             <div class="brand-logo-ring"></div>
             <div class="brand-logo-ring brand-logo-ring-secondary"></div>
             <div class="brand-logo-beam"></div>
-            <img :src="rakezLogo" alt="شعار راكز العقارية" class="brand-logo" />
+            <img :src="rakezLogo" alt="شعار راكز العقارية" class="brand-logo" width="200" height="200" fetchpriority="high" />
           </div>
         </div>
         <div class="brand-copy">

@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import creditService from '@/services/creditService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
-import { getApiErrorMessage } from '@/utils/errorHandler';
+import { showApiError } from '@/utils/errorHandler';
 import { useFormatters } from '@/composables/useFormatters';
 import { getStatusClass } from '@/utils/statusHelpers';
 
@@ -51,7 +51,7 @@ export function useCreditFinancing() {
       loadFinancing();
     } catch (error) {
       logger.error('Error updating financing:', error);
-      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء تحديث بيانات التمويل'));
+      showApiError(error, 'حدث خطأ أثناء تحديث بيانات التمويل');
     } finally {
       isSavingFinancing.value = false;
     }

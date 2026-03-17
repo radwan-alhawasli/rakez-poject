@@ -2,7 +2,7 @@ import { ref, reactive, computed } from 'vue';
 import contractService from '@/services/contractService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
-import { getApiErrorMessage } from '@/utils/errorHandler';
+import { showApiError } from '@/utils/errorHandler';
 
 /**
  * @param {string|number} projectId - Contract/project ID
@@ -104,7 +104,7 @@ export function useProjectProgress(projectId, options = {}) {
           await contractService.updateContractStatusProjectManager(projectId, 'approved');
         } catch (err) {
           logger.warn('Tracker completed but contract status update failed:', err);
-          toast.error(getApiErrorMessage(err, 'تم حفظ المتتبع لكن تحديث حالة العقد فشل. جرّب تحديث الصفحة.'));
+          showApiError(err, 'تم حفظ المتتبع لكن تحديث حالة العقد فشل. جرّب تحديث الصفحة.');
         }
         onTrackerFullyCompleted?.(projectId);
         toast.success('تهانينا! تم إكمال المتتبع، يمكنك الآن إدارة الوحدات.');
@@ -113,7 +113,7 @@ export function useProjectProgress(projectId, options = {}) {
       }
     } catch (error) {
       logger.error('Failed to save progress:', error);
-      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء حفظ البيانات'));
+      showApiError(error, 'حدث خطأ أثناء حفظ البيانات');
     }
   };
 
@@ -129,7 +129,7 @@ export function useProjectProgress(projectId, options = {}) {
       toast.success('تم تحديث رابط المشروع');
     } catch (error) {
       logger.error('Failed to update project link:', error);
-      toast.error(getApiErrorMessage(error, 'فشل تحديث الرابط'));
+      showApiError(error, 'فشل تحديث الرابط');
     }
   };
 

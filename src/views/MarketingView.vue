@@ -16,17 +16,18 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
-import MarketingDashboardTab from '@/components/marketing/MarketingDashboardTab.vue';
-import MarketingProjectsTab from '@/components/marketing/MarketingProjectsTab.vue';
-import MarketingDeveloperPlanTab from '@/components/marketing/MarketingDeveloperPlanTab.vue';
-import MarketingEmployeePlansTab from '@/components/marketing/MarketingEmployeePlansTab.vue';
-import MarketingTasksTab from '@/components/marketing/MarketingTasksTab.vue';
-import MarketingLeadsTab from '@/components/marketing/MarketingLeadsTab.vue';
-import MarketingExpectedSalesTab from '@/components/marketing/MarketingExpectedSalesTab.vue';
-import MarketingReportsTab from '@/components/marketing/MarketingReportsTab.vue';
-import MarketingAiAssistantTab from '@/components/marketing/MarketingAiAssistantTab.vue';
+
+const MarketingDashboardTab = defineAsyncComponent(() => import('@/components/marketing/MarketingDashboardTab.vue'));
+const MarketingProjectsTab = defineAsyncComponent(() => import('@/components/marketing/MarketingProjectsTab.vue'));
+const MarketingDeveloperPlanTab = defineAsyncComponent(() => import('@/components/marketing/MarketingDeveloperPlanTab.vue'));
+const MarketingEmployeePlansTab = defineAsyncComponent(() => import('@/components/marketing/MarketingEmployeePlansTab.vue'));
+const MarketingTasksTab = defineAsyncComponent(() => import('@/components/marketing/MarketingTasksTab.vue'));
+const MarketingLeadsTab = defineAsyncComponent(() => import('@/components/marketing/MarketingLeadsTab.vue'));
+const MarketingExpectedSalesTab = defineAsyncComponent(() => import('@/components/marketing/MarketingExpectedSalesTab.vue'));
+const MarketingReportsTab = defineAsyncComponent(() => import('@/components/marketing/MarketingReportsTab.vue'));
+const MarketingAiAssistantTab = defineAsyncComponent(() => import('@/components/marketing/MarketingAiAssistantTab.vue'));
 
 const route = useRoute();
 

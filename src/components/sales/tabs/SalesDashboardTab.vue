@@ -104,7 +104,7 @@
           @click="viewProjectDetails(project.id)"
         >
           <div class="p-image">
-            <img :src="project.image || '/img/placeholder-project.jpg'" :alt="project.name || 'Project'" loading="lazy" />
+            <img :src="project.image || '/img/placeholder-project.jpg'" :alt="project.name || 'Project'" width="320" height="200" loading="lazy" />
           </div>
           <div class="p-info">
             <h4>{{ project.name }}</h4>

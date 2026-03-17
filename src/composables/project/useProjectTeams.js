@@ -1,14 +1,20 @@
 import { ref } from 'vue';
 import teamService from '@/services/teamService';
-import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
+import { useAsyncAction } from '@/composables/useAsyncAction';
+import { MSG_ERROR_LOADING } from '@/constants/messages';
 
 export function useProjectTeams(projectId) {
+  const { run: runLoad, assignedTeamsLoading } = useAsyncAction({
+    loadingKey: 'assignedTeamsLoading',
+  });
+  const { run: runTeamAction, isTeamActionLoading } = useAsyncAction({
+    loadingKey: 'isTeamActionLoading',
+  });
+
   const assignedTeams = ref([]);
   const availableTeams = ref([]);
   const selectedTeamId = ref('');
-  const assignedTeamsLoading = ref(false);
-  const isTeamActionLoading = ref(false);
 
   const showConfirmModal = ref(false);
   const confirmModalConfig = ref({ title: '', message: '', type: 'warning', confirmText: 'تأكيد', resolve: null });
@@ -20,33 +26,30 @@ export function useProjectTeams(projectId) {
 
   const loadTeams = async () => {
     if (!projectId) return;
-    assignedTeamsLoading.value = true;
-    try {
-      const assignedData = await teamService.getContractTeams(projectId);
+    const assignedData = await runLoad(
+      () => teamService.getContractTeams(projectId),
+      { errorMessage: MSG_ERROR_LOADING, showLoading: true }
+    );
+    if (assignedData !== undefined) {
       assignedTeams.value = Array.isArray(assignedData) ? assignedData : assignedData.data || [];
       const allTeams = await teamService.getTeams();
       const assignedIds = new Set(assignedTeams.value.map(t => t.id));
       availableTeams.value = allTeams.filter(t => !assignedIds.has(t.id));
-    } catch (error) {
-      logger.error('Error loading teams:', error);
-    } finally {
-      assignedTeamsLoading.value = false;
     }
   };
 
   const assignTeam = async () => {
     if (!selectedTeamId.value) return;
-    isTeamActionLoading.value = true;
-    try {
-      await teamService.addTeamsToContract(projectId, [selectedTeamId.value]);
-      toast.success('تم تعيين الفريق بنجاح');
+    const done = await runTeamAction(
+      () => teamService.addTeamsToContract(projectId, [selectedTeamId.value]),
+      {
+        successMessage: 'تم تعيين الفريق بنجاح',
+        errorMessage: 'حدث خطأ أثناء تعيين الفريق',
+      }
+    );
+    if (done !== undefined) {
       selectedTeamId.value = '';
       loadTeams();
-    } catch (error) {
-      logger.error('Error assigning team:', error);
-      toast.error('حدث خطأ أثناء تعيين الفريق');
-    } finally {
-      isTeamActionLoading.value = false;
     }
   };
 
@@ -57,16 +60,15 @@ export function useProjectTeams(projectId) {
       type: 'danger',
       confirmText: 'إزالة',
       resolve: async () => {
-        isTeamActionLoading.value = true;
-        try {
-          await teamService.removeTeamsFromContract(projectId, [team.id]);
-          toast.success('تم إزالة الفريق بنجاح');
+        const done = await runTeamAction(
+          () => teamService.removeTeamsFromContract(projectId, [team.id]),
+          {
+            successMessage: 'تم إزالة الفريق بنجاح',
+            errorMessage: 'حدث خطأ أثناء إزالة الفريق',
+          }
+        );
+        if (done !== undefined) {
           loadTeams();
-        } catch (error) {
-          logger.error('Error removing team:', error);
-          toast.error('حدث خطأ أثناء إزالة الفريق');
-        } finally {
-          isTeamActionLoading.value = false;
         }
       },
     };

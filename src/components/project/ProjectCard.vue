@@ -36,7 +36,9 @@
         <template v-if="imageUrl">
           <img
             :src="imageUrl"
-            alt=""
+            :alt="project.name || 'مشروع'"
+            width="320"
+            height="200"
             loading="lazy"
             @error="onImageError"
           />
