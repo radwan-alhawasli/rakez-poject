@@ -3,9 +3,9 @@
     class="login-view-shell"
     :class="{ 'intro-running': showIntro, 'intro-complete': !showIntro, 'page-pending': !pageReady }"
   >
-    <div class="login-view-content">
+    <main class="login-view-content">
       <LoginPage @login-success="onLoginSuccess" />
-    </div>
+    </main>
 
     <Transition name="intro-overlay">
       <LoginIntroSplash v-if="showIntro" @done="handleIntroDone" />

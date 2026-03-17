@@ -44,6 +44,9 @@
               :src="contractDetails.projectImageUrl"
               alt="صورة المشروع"
               class="contract-modal-project-image"
+              width="400"
+              height="240"
+              loading="lazy"
               @error="$event.target.style.display='none'"
             />
           </div>

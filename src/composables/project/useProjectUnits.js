@@ -6,7 +6,7 @@ import notificationService from '@/services/notificationService';
 import { generateUnitDetailsPdf } from '@/services/pdfService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
-import { getApiErrorMessage } from '@/utils/errorHandler';
+import { getApiErrorMessage, showApiError } from '@/utils/errorHandler';
 import { useFormatters } from '@/composables/useFormatters';
 import { NATIONALITIES } from '@/constants/lookups';
 import { extractPaginatedData } from '@/utils/paginationUtils';
@@ -232,7 +232,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
       logger.error('Error loading units:', error);
       units.value = [];
       unitCountFromApi.value = null;
-      toast.error(getApiErrorMessage(error, 'فشل تحميل الوحدات'));
+      showApiError(error, 'فشل تحميل الوحدات');
     } finally {
       unitsLoading.value = false;
     }
@@ -334,7 +334,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
       loadUnits();
     } catch (error) {
       logger.error(error);
-      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء حفظ الوحدة'));
+      showApiError(error, 'حدث خطأ أثناء حفظ الوحدة');
     }
   };
 
@@ -364,7 +364,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
           loadUnits();
         } catch (e) {
           logger.error(e);
-          toast.error(getApiErrorMessage(e, 'فشل حذف الوحدة'));
+          showApiError(e, 'فشل حذف الوحدة');
         }
       },
     };
@@ -382,7 +382,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
       }
     } catch (e) {
       logger.error(e);
-      toast.error(getApiErrorMessage(e, 'فشل تحميل العقد'));
+      showApiError(e, 'فشل تحميل العقد');
     }
   };
 
@@ -399,7 +399,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
       await loadUnits();
     } catch (error) {
       logger.error(error);
-      toast.error(getApiErrorMessage(error, 'فشل رفع ملف CSV للوحدات'));
+      showApiError(error, 'فشل رفع ملف CSV للوحدات');
     } finally {
       csvUploading.value = false;
       if (event.target) event.target.value = '';

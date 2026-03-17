@@ -21,7 +21,7 @@
         <div class="intro-logo-ring"></div>
         <div class="intro-logo-ring intro-logo-ring-secondary"></div>
         <div class="intro-logo-beam"></div>
-        <img :src="rakezLogo" alt="شعار راكز العقارية" class="intro-logo" />
+        <img :src="rakezLogo" alt="شعار راكز العقارية" class="intro-logo" width="200" height="200" fetchpriority="high" />
       </div>
     </div>
   </div>

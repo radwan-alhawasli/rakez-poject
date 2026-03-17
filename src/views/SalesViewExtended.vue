@@ -24,21 +24,23 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue';
 import { useSalesRouting } from '@/composables/sales/useSalesRouting';
-import ReservationsView from './ReservationsView.vue';
-import SalesDashboardTab from '@/components/sales/tabs/SalesDashboardTab.vue';
-import SalesTargetsTab from '@/components/sales/tabs/SalesTargetsTab.vue';
-import SalesProjectsTab from '@/components/sales/tabs/SalesProjectsTab.vue';
-import SalesAttendanceTab from '@/components/sales/tabs/SalesAttendanceTab.vue';
-import SalesTeamTab from '@/components/sales/tabs/SalesTeamTab.vue';
-import SalesTasksTab from '@/components/sales/tabs/SalesTasksTab.vue';
-import SalesAssignmentsTab from '@/components/sales/tabs/SalesAssignmentsTab.vue';
-import SalesPaymentPlansTab from '@/components/sales/tabs/SalesPaymentPlansTab.vue';
-import SalesProjectSchedulesTab from '@/components/sales/tabs/SalesProjectSchedulesTab.vue';
-import SalesSoldUnitsTab from '@/components/sales/tabs/SalesSoldUnitsTab.vue';
-import SalesDepositsTab from '@/components/sales/tabs/SalesDepositsTab.vue';
-import SalesAnalyticsTab from '@/components/sales/tabs/SalesAnalyticsTab.vue';
-import SalesUnitSearchTab from '@/components/sales/tabs/SalesUnitSearchTab.vue';
+
+const ReservationsView = defineAsyncComponent(() => import('./ReservationsView.vue'));
+const SalesDashboardTab = defineAsyncComponent(() => import('@/components/sales/tabs/SalesDashboardTab.vue'));
+const SalesTargetsTab = defineAsyncComponent(() => import('@/components/sales/tabs/SalesTargetsTab.vue'));
+const SalesProjectsTab = defineAsyncComponent(() => import('@/components/sales/tabs/SalesProjectsTab.vue'));
+const SalesAttendanceTab = defineAsyncComponent(() => import('@/components/sales/tabs/SalesAttendanceTab.vue'));
+const SalesTeamTab = defineAsyncComponent(() => import('@/components/sales/tabs/SalesTeamTab.vue'));
+const SalesTasksTab = defineAsyncComponent(() => import('@/components/sales/tabs/SalesTasksTab.vue'));
+const SalesAssignmentsTab = defineAsyncComponent(() => import('@/components/sales/tabs/SalesAssignmentsTab.vue'));
+const SalesPaymentPlansTab = defineAsyncComponent(() => import('@/components/sales/tabs/SalesPaymentPlansTab.vue'));
+const SalesProjectSchedulesTab = defineAsyncComponent(() => import('@/components/sales/tabs/SalesProjectSchedulesTab.vue'));
+const SalesSoldUnitsTab = defineAsyncComponent(() => import('@/components/sales/tabs/SalesSoldUnitsTab.vue'));
+const SalesDepositsTab = defineAsyncComponent(() => import('@/components/sales/tabs/SalesDepositsTab.vue'));
+const SalesAnalyticsTab = defineAsyncComponent(() => import('@/components/sales/tabs/SalesAnalyticsTab.vue'));
+const SalesUnitSearchTab = defineAsyncComponent(() => import('@/components/sales/tabs/SalesUnitSearchTab.vue'));
 
 export default {
   name: 'SalesViewExtended',

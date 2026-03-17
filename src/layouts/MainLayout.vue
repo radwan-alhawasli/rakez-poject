@@ -17,14 +17,16 @@
       class="app-container flex min-h-screen w-full flex-col"
       :class="{ 'sidebar-open': isSidebarOpen, 'sidebar-hovered': isSidebarHovered }"
     >
-    <AppHeader
-      :notifications="notifications"
-      :show-notifications="showNotifications"
-      :unread-count="unreadCount"
-      @toggle-notifications="toggleNotifications"
-      @mark-as-read="markAsRead"
-      @mark-all-read="markAllAsRead"
-    />
+    <header>
+      <AppHeader
+        :notifications="notifications"
+        :show-notifications="showNotifications"
+        :unread-count="unreadCount"
+        @toggle-notifications="toggleNotifications"
+        @mark-as-read="markAsRead"
+        @mark-all-read="markAllAsRead"
+      />
+    </header>
 
     <AppSidebar
       :user="user"
@@ -38,7 +40,6 @@
     <SidebarInset>
       <main
         class="main-content flex-1 min-h-0 overflow-auto overflow-x-hidden"
-        role="main"
       >
         <router-view v-slot="{ Component, route }">
           <transition name="fade-slide" mode="out-in">

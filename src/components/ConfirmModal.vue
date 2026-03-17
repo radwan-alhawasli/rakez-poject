@@ -82,6 +82,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { LABEL_CANCEL, LABEL_CONFIRM } from '@/constants/actions'
 
 export default {
   name: 'ConfirmModal',
@@ -95,13 +96,13 @@ export default {
     AlertDialogTitle,
   },
   props: {
-    title: {
-      type: String,
-      default: 'تأكيد الإجراء',
-    },
     message: {
       type: String,
       required: true,
+    },
+    title: {
+      type: String,
+      default: 'تأكيد الإجراء',
     },
     type: {
       type: String,
@@ -110,11 +111,11 @@ export default {
     },
     confirmText: {
       type: String,
-      default: 'تأكيد',
+      default: () => LABEL_CONFIRM,
     },
     cancelText: {
       type: String,
-      default: 'إلغاء',
+      default: () => LABEL_CANCEL,
     },
     open: {
       type: Boolean,

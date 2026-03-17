@@ -32,6 +32,9 @@
         <div class="image-wrapper">
           <img
             :src="img.image_url"
+            :alt="img.projectName || 'صورة مشروع'"
+            width="600"
+            height="400"
             loading="lazy"
             @error="
               $event.target.src =
@@ -54,13 +57,13 @@
             <div class="links-section">
               <div class="info-row">
                 <span class="label">رابط الصورة:</span>
-                <a :href="img.image_url" target="_blank" class="link-value">{{
+                <a :href="img.image_url" target="_blank" rel="noopener noreferrer" class="link-value">{{
                   truncateUrl(img.image_url)
                 }}</a>
               </div>
               <div class="info-row" v-if="img.video_url">
                 <span class="label">رابط الفيديو:</span>
-                <a :href="img.video_url" target="_blank" class="link-value">{{
+                <a :href="img.video_url" target="_blank" rel="noopener noreferrer" class="link-value">{{
                   truncateUrl(img.video_url)
                 }}</a>
               </div>

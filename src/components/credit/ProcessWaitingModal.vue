@@ -8,7 +8,7 @@
     <div class="modal-container">
       <div class="modal-header">
         <h2 class="modal-title">معالجة الحجز المنتظر</h2>
-        <button class="close-btn" @click="$emit('close')">
+        <button type="button" class="close-btn" aria-label="إغلاق" @click="$emit('close')">
           <svg
             width="24"
             height="24"

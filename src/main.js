@@ -2,12 +2,12 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import './assets/app.css';
 import App from './App.vue';
-import router from './router';
-import i18n from './i18n';
-import vPermission from './directives/permission';
-import { registerErrorReporter } from './utils/errorReporter';
-import { getApiErrorMessage } from './utils/errorHandler';
-import { toast } from './composables/useToast';
+import router from '@/core/router';
+import i18n from '@/core/i18n';
+import vPermission from '@/directives/permission';
+import { registerErrorReporter } from '@/utils/errorReporter';
+import { getApiErrorMessage } from '@/utils/errorHandler';
+import { toast } from '@/composables/useToast';
 
 // الوضع المظلم معطّل — إجبار الوضع الفاتح
 if (typeof document !== 'undefined') {

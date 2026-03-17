@@ -1,7 +1,7 @@
 <template>
   <Sidebar side="right" class="sidebar sidebar-luxury">
     <SidebarHeader>
-      <img src="/img/logo-circle.png" class="sidebar-logo-img" alt="Logo" />
+      <img src="/img/logo-circle.png" class="sidebar-logo-img" alt="شعار راكز" width="48" height="48" fetchpriority="high" />
       <div class="sidebar-logo-text">
         <span class="rakez-ar">راكز</span> | <span class="rakez-en">Rakez</span>
       </div>

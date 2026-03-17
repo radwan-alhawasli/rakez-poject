@@ -26,7 +26,7 @@
           <tr v-for="p in afterMontageList" :key="p.id">
             <td>{{ p.name || p.project_name || p.contract_number || '—' }}</td>
             <td>
-              <a v-if="montageLink(p)" :href="montageLink(p)" target="_blank" rel="noopener" class="link-cell">{{ montageLink(p) }}</a>
+              <a v-if="montageLink(p)" :href="montageLink(p)" target="_blank" rel="noopener noreferrer" class="link-cell">{{ montageLink(p) }}</a>
               <span v-else>—</span>
             </td>
             <td>

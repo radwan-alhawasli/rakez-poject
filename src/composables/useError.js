@@ -4,13 +4,14 @@
  */
 
 import { ref } from 'vue';
-import { handleError, retryWithBackoff, getApiErrorMessage } from '@/utils/errorHandler';
-import { toast } from '@/composables/useToast';
+import { handleError, retryWithBackoff, getApiErrorMessage, showApiError as showApiErrorUtil } from '@/utils/errorHandler';
 
 /**
- * Error handling composable
- * @param {Object} options - Options
- * @returns {Object} Error handling utilities
+ * Error handling composable. Use for loading state, execute/wrap for async calls, and showApiError in catch blocks.
+ * @param {Object} [options] - Options
+ * @param {boolean} [options.showNotifications=true] - Whether to show toast on error
+ * @param {boolean} [options.autoLog=true] - Whether to log errors
+ * @returns {{ error, isLoading, isRetrying, handle, clearError, execute, wrap, getApiErrorMessage, showApiError }}
  */
 export function useError(options = {}) {
   const { showNotifications = true, autoLog = true } = options;
@@ -85,15 +86,8 @@ export function useError(options = {}) {
     };
   };
 
-  /**
-   * Show API error as toast (use in catch blocks: catch (err) { showApiError(err); })
-   * @param {Error} err - Caught error
-   * @param {string} [fallback] - Optional fallback message
-   */
-  const showApiError = (err, fallback) => {
-    const msg = getApiErrorMessage(err, fallback);
-    if (msg) toast.error(msg);
-  };
+  /** Show API error as toast (delegates to centralized showApiError in errorHandler). */
+  const showApiError = showApiErrorUtil;
 
   return {
     error,
@@ -108,5 +102,5 @@ export function useError(options = {}) {
   };
 }
 
-export { getApiErrorMessage };
+export { getApiErrorMessage, showApiError };
 export default useError;

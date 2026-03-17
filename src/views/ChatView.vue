@@ -151,10 +151,10 @@
 
 <script>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import chatService from '../services/chatService'
-import userService from '../services/userService'
-import authService from '../services/authService'
-import { createPusher } from '../plugins/pusher'
+import chatService from '@/services/chatService'
+import userService from '@/services/userService'
+import authService from '@/services/authService'
+import { createPusher } from '@/plugins/pusher'
 
 export default {
   name: 'ChatView',

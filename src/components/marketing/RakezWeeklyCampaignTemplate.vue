@@ -3,7 +3,7 @@
   <div class="report-shell" dir="rtl">
     <div class="a4-page">
       <header class="top-logo">
-        <img v-if="logoSrc" :src="logoSrc" alt="RAKEZ Logo" class="logo-img" />
+        <img v-if="logoSrc" :src="logoSrc" alt="RAKEZ Logo" class="logo-img" width="120" height="48" loading="lazy" />
         <div v-else class="logo-text-wrap">
           <div class="logo-mark">راكز</div>
           <div class="logo-en">RAKEZ</div>

@@ -7,6 +7,11 @@
 
 import logger from './logger';
 import appConfig from '@/config/appConfig';
+import {
+  HTTP_UNAUTHORIZED,
+  HTTP_FORBIDDEN,
+  HTTP_NOT_FOUND,
+} from '@/constants/httpStatus';
 
 /**
  * Handle service errors gracefully
@@ -22,32 +27,30 @@ import appConfig from '@/config/appConfig';
 export function handleServiceError(error, operation, method = 'get', defaultValue = []) {
   const status = error?.response?.status || error?.status;
 
-  // Always throw for 401 (Unauthorized) errors - these indicate authentication issues
-  if (status === 401) {
+  if (status === HTTP_UNAUTHORIZED) {
     logger.warn(`${operation} - Unauthorized:`, error?.response?.data?.message || error?.message);
     throw error;
   }
 
-  // For GET requests, return empty data for expected 403/404 errors
-  if (method.toLowerCase() === 'get' && (status === 403 || status === 404)) {
-    // Only log in development, and only once per error type
+  const isGet = method.toLowerCase() === 'get';
+  const isExpectedEmptyResponse =
+    status === HTTP_FORBIDDEN || status === HTTP_NOT_FOUND;
+
+  if (isGet && isExpectedEmptyResponse) {
     if (appConfig.isDevelopment) {
       logger.debug(
-        `${operation} - ${status === 403 ? 'Forbidden' : 'Not Found'}:`,
+        `${operation} - ${status === HTTP_FORBIDDEN ? 'Forbidden' : 'Not Found'}:`,
         error?.response?.data?.message || error?.message
       );
     }
-    // Return appropriate empty value
     return defaultValue;
   }
 
-  // For other errors or non-GET methods, log and throw
-  if (status !== 403 && status !== 404) {
+  if (!isExpectedEmptyResponse) {
     logger.error(`${operation}:`, error);
-  } else if (method.toLowerCase() !== 'get') {
-    // Log 403/404 for POST/PUT/DELETE/PATCH as they're more critical
+  } else if (!isGet) {
     logger.warn(
-      `${operation} - ${status === 403 ? 'Forbidden' : 'Not Found'}:`,
+      `${operation} - ${status === HTTP_FORBIDDEN ? 'Forbidden' : 'Not Found'}:`,
       error?.response?.data?.message || error?.message
     );
   }

@@ -7,6 +7,7 @@ import logger from './logger';
 import appConfig from '@/config/appConfig';
 import { toast } from '@/composables/useToast';
 import { reportError } from './errorReporter';
+import { MSG_ERROR_GENERIC } from '@/constants/messages';
 
 /**
  * Error types
@@ -108,6 +109,16 @@ export function getApiErrorMessage(error, fallback) {
   if (status === 422) return errorMessages[ErrorTypes.VALIDATION].default;
   if (status >= 500) return errorMessages[ErrorTypes.SERVER].default;
   return fallback || errorMessages[ErrorTypes.UNKNOWN].default;
+}
+
+/**
+ * Show API error to user via toast. Use in catch blocks.
+ * @param {Error|object} err - Caught error
+ * @param {string} [fallback] - Fallback message when no specific message is found (default: MSG_ERROR_GENERIC)
+ */
+export function showApiError(err, fallback = MSG_ERROR_GENERIC) {
+  const msg = getApiErrorMessage(err, fallback);
+  if (msg) toast.error(msg);
 }
 
 /**

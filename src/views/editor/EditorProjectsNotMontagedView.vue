@@ -34,7 +34,7 @@
           <dd>{{ seeMoreProject.advertiser_number ?? seeMoreProject.publisher_number ?? '—' }}</dd>
           <dt>رابط التصوير</dt>
           <dd>
-            <a v-if="seeMoreProject.photography_link || seeMoreProject.photography_url" :href="seeMoreProject.photography_link || seeMoreProject.photography_url" target="_blank" rel="noopener">{{ seeMoreProject.photography_link || seeMoreProject.photography_url }}</a>
+            <a v-if="seeMoreProject.photography_link || seeMoreProject.photography_url" :href="seeMoreProject.photography_link || seeMoreProject.photography_url" target="_blank" rel="noopener noreferrer">{{ seeMoreProject.photography_link || seeMoreProject.photography_url }}</a>
             <span v-else>—</span>
           </dd>
           <dt>الوصف</dt>

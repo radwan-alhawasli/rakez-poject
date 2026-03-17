@@ -30,7 +30,7 @@
         :class="{ 'card-no-image': !project.hasImage }"
       >
         <div class="card-image" :class="{ 'card-image-placeholder': !project.hasImage }">
-          <img v-if="project.hasImage" :src="project.image" alt="" loading="lazy" />
+          <img v-if="project.hasImage" :src="project.image" :alt="project.name || 'مشروع'" width="320" height="200" loading="lazy" />
           <div v-else class="placeholder-block">
             <span class="placeholder-name">{{ project.name }}</span>
           </div>

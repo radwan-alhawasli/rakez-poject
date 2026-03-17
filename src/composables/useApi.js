@@ -1,14 +1,13 @@
 /**
- * API Composable
- * Provides reusable API call functionality with error handling
+ * API Composable – reusable API calls with loading state and error handling (delegates to useError).
+ * Use call() or createCall() for requests that return response data.
  */
 
 import { useError } from './useError';
 
 /**
- * API composable
- * @param {Object} options - Options
- * @returns {Object} API utilities
+ * @param {Object} [options] - Passed to useError (e.g. showNotifications, autoLog)
+ * @returns {{ call, createCall, isLoading, error, handle }}
  */
 export function useApi(options = {}) {
   const { handle, execute, isLoading, error } = useError(options);

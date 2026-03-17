@@ -1,7 +1,8 @@
 /**
  * Shared status classification helpers.
- * Used across accounting, credit, and other modules to map status strings
- * to CSS class names and Arabic labels.
+ * Map status strings (English or Arabic) to CSS class tokens: 'excellent' | 'good'.
+ * Use getStatusClass() for general statuses; getClaimStatusClass() for claim-file statuses.
+ * Ensure templates use these classes (e.g. status-excellent, status-good) for consistent styling.
  */
 
 /**

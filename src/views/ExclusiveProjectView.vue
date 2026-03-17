@@ -250,7 +250,7 @@ import contractService from '@/services/contractService';
 import notificationService from '@/services/notificationService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
-import { getApiErrorMessage } from '@/utils/errorHandler';
+import { showApiError } from '@/utils/errorHandler';
 import { normalizeDeveloper } from '@/utils/developerMapper';
 import { UNIT_TYPES } from '@/constants/lookups';
 import secureStorage from '@/utils/secureStorage';
@@ -436,7 +436,7 @@ const handleSubmit = async () => {
       status === 403
         ? 'الخادم رفض الطلب: لا توجد صلاحية لإنشاء عقد. يرجى التأكد من أن حسابك يسمح بإنشاء مشروع حصري (إعدادات الصلاحيات في النظام).'
         : 'حدث خطأ أثناء إرسال الطلب';
-    toast.error(getApiErrorMessage(error, fallback));
+    showApiError(error, fallback);
   } finally {
     isLoading.value = false;
   }

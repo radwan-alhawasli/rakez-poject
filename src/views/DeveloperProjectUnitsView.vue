@@ -189,6 +189,7 @@ import contractService from '@/services/contractService';
 import { normalizeDeveloper } from '@/utils/developerMapper';
 import { useFormatters } from '@/composables/useFormatters';
 import { toast } from '@/composables/useToast';
+import { showApiError } from '@/utils/errorHandler';
 import logger from '@/utils/logger';
 
 export default {
@@ -335,7 +336,7 @@ export default {
       } catch (error) {
         logger.error('Error loading claim file units', error);
         candidates.value = [];
-        toast.error('حدث خطأ أثناء تحميل الوحدات');
+        showApiError(error, 'حدث خطأ أثناء تحميل الوحدات');
       } finally {
         isLoadingCandidates.value = false;
       }
@@ -348,7 +349,7 @@ export default {
       try {
         await accountingService.openClaimFileDownload(rid);
       } catch (_e) {
-        toast.error('فشل تحميل ملف المطالبة');
+        showApiError(_e, 'فشل تحميل ملف المطالبة');
       } finally {
         isDownloading.value = null;
       }
@@ -397,8 +398,7 @@ export default {
         }
       } catch (error) {
         logger.error('Error creating claim file(s)', error);
-        const msg = error?.response?.data?.message;
-        toast.error(msg || 'حدث خطأ أثناء إنشاء ملف/ملفات المطالبة');
+        showApiError(error, 'حدث خطأ أثناء إنشاء ملف/ملفات المطالبة');
       } finally {
         isSubmitting.value = false;
       }

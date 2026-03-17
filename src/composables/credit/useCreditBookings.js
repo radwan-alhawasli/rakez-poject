@@ -3,7 +3,7 @@ import { useRoute, useRouter } from 'vue-router';
 import creditService from '@/services/creditService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
-import { getApiErrorMessage } from '@/utils/errorHandler';
+import { showApiError } from '@/utils/errorHandler';
 import { useFormatters } from '@/composables/useFormatters';
 
 export function useCreditBookings() {
@@ -591,7 +591,7 @@ export function useCreditBookings() {
       toast.success('تمت المرحلة بنجاح');
     } catch (e) {
       logger.error('Advance financing error:', e);
-      toast.error(getApiErrorMessage(e, 'حدث خطأ أثناء الانتقال للمرحلة التالية'));
+      showApiError(e, 'حدث خطأ أثناء الانتقال للمرحلة التالية');
     } finally {
       isAdvancing.value = false;
     }
@@ -632,7 +632,7 @@ export function useCreditBookings() {
       closeRejectFinancingModal();
     } catch (e) {
       logger.error('Reject financing error:', e);
-      toast.error(getApiErrorMessage(e, 'حدث خطأ أثناء رفض التمويل'));
+      showApiError(e, 'حدث خطأ أثناء رفض التمويل');
     } finally {
       isRejectingFinancing.value = false;
     }

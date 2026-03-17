@@ -5,6 +5,7 @@ import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 import { getClaimStatusClass } from '@/utils/statusHelpers';
+import { showApiError } from '@/utils/errorHandler';
 
 export function useCreditClaimFiles() {
   const isLoading = ref(false);
@@ -109,8 +110,7 @@ export function useCreditClaimFiles() {
       loadClaimFiles();
     } catch (error) {
       logger.error('Error generating bulk claim files:', error);
-      const msg = error?.response?.data?.message;
-      toast.error(msg || 'حدث خطأ أثناء إنشاء ملفات المطالبة');
+      showApiError(error, 'حدث خطأ أثناء إنشاء ملفات المطالبة');
     } finally {
       isSavingCombinedClaim.value = false;
     }
