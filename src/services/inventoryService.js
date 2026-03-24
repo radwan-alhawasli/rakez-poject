@@ -46,19 +46,26 @@ const inventoryService = {
   },
 
   /**
-   * Show contract unit
-   * GET /inventory/contracts/units/show/:id
-   * @param {number|string} id - Unit ID
+   * Contract + units (inventory map detail / pin popup)
+   * GET /inventory/contracts/units/show/:contractId
+   * @param {number|string} contractId - Contract ID
    * @returns {Promise<Object>}
    */
-  async getContractUnit(id) {
+  async getContractUnitsShow(contractId) {
     try {
-      const response = await apiClient.get(`/inventory/contracts/units/show/${id}`);
+      const response = await apiClient.get(`/inventory/contracts/units/show/${contractId}`);
       return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      logger.error(`Error fetching inventory unit ${id}:`, error);
+      logger.error(`Error fetching inventory contract units ${contractId}:`, error);
       throw error;
     }
+  },
+
+  /**
+   * @deprecated Use getContractUnitsShow(contractId) — same endpoint (contract id).
+   */
+  async getContractUnit(contractId) {
+    return this.getContractUnitsShow(contractId);
   },
 
   /**
@@ -78,16 +85,26 @@ const inventoryService = {
   },
 
   /**
-   * Get all locations
-   * GET /inventory/contracts/locations
+   * Map pins — project locations
+   * GET /inventory/contracts/locations?status=&user_id=&city=&district=&project_name=&has_photography=&has_montage=&per_page=
    * @param {Object} params - Query params
    * @returns {Promise<Array>}
    */
   async getContractsLocations(params = {}) {
     try {
       const response = await apiClient.get('/inventory/contracts/locations', { params });
-      const data = response.data?.data ?? response.data;
-      return Array.isArray(data) ? data : [];
+      let { items } = extractPaginatedData(response, []);
+      if (!Array.isArray(items) || items.length === 0) {
+        const body = response.data?.data ?? response.data;
+        if (Array.isArray(body)) {
+          items = body;
+        } else if (body && typeof body === 'object') {
+          if (Array.isArray(body.locations)) items = body.locations;
+          else if (Array.isArray(body.items)) items = body.items;
+          else if (Array.isArray(body.data)) items = body.data;
+        }
+      }
+      return Array.isArray(items) ? items : [];
     } catch (error) {
       logger.error('Error fetching inventory locations:', error);
       return handleServiceError(error, 'Inventory locations', 'get', []);

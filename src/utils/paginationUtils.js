@@ -53,6 +53,11 @@ export function extractPaginatedData(response, fallbackItems = []) {
     items = data.projects;
     total = data.meta?.total ?? data.total ?? items.length;
   }
+  // Format: { locations: [...] } (inventory map)
+  else if (Array.isArray(data.locations)) {
+    items = data.locations;
+    total = data.meta?.total ?? data.total ?? items.length;
+  }
   // Format: plain array
   else if (Array.isArray(data)) {
     items = data;
@@ -66,6 +71,12 @@ export function extractPaginatedData(response, fallbackItems = []) {
       total = nested.total ?? nested.meta?.total ?? items.length;
     } else if (Array.isArray(nested.employees)) {
       items = nested.employees;
+      total = nested.total ?? nested.meta?.total ?? items.length;
+    } else if (Array.isArray(nested.locations)) {
+      items = nested.locations;
+      total = nested.total ?? nested.meta?.total ?? items.length;
+    } else if (Array.isArray(nested.items)) {
+      items = nested.items;
       total = nested.total ?? nested.meta?.total ?? items.length;
     }
   }
