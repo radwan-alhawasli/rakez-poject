@@ -208,10 +208,10 @@ function displayValue(v) {
 .btn-card svg { flex-shrink: 0; }
 .btn-see-more { flex: 0 0 auto; }
 .btn-add-links { flex: 1; min-width: 0; }
-.btn-approve { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
-.btn-approve:hover { background: #a7f3d0; color: #047857; }
-.btn-reject { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
-.btn-reject:hover { background: #fecaca; color: #b91c1c; }
+.btn-approve { background: #1e3a5f; color: #fff; border-color: #1e3a5f; }
+.btn-approve:hover { background: #152d4a; border-color: #152d4a; color: #fff; }
+.btn-reject { background: #fff; color: #1e3a5f; border-color: #1e3a5f; }
+.btn-reject:hover { background: #f1f5f9; color: #152d4a; border-color: #152d4a; }
 .pending-label {
   width: 100%;
   text-align: center;

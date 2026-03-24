@@ -468,7 +468,6 @@ export default {
   flex: 1;
   padding: 10px;
   border-radius: 8px;
-  border: none;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -476,27 +475,32 @@ export default {
   justify-content: center;
   gap: 5px;
   font-size: 13px;
-  transition: background 0.2s;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 .action-btn svg {
   width: 16px;
   height: 16px;
 }
 
+/* Theme: shades of #B0A68A (approve = stronger, reject = lighter outline) */
 .action-btn.approve {
-  background: #dcfce7;
-  color: #166534;
+  background: #b0a68a;
+  color: #fffbf7;
+  border: 1px solid #9e957f;
 }
 .action-btn.approve:hover {
-  background: #bbf7d0;
+  background: #9e957f;
+  border-color: #8a826e;
 }
 
 .action-btn.reject {
-  background: #fee2e2;
-  color: #991b1b;
+  background: #ebe8e0;
+  color: #3d3a32;
+  border: 1px solid #c9c2b0;
 }
 .action-btn.reject:hover {
-  background: #fecaca;
+  background: #e0dcd4;
+  border-color: #b0a68a;
 }
 
 .empty-state,
@@ -553,12 +557,16 @@ export default {
   cursor: pointer;
 }
 .btn-danger-solid {
-  background: #ef4444;
-  color: white;
-  border: none;
+  background: #8a826e;
+  color: #fffbf7;
+  border: 1px solid #756d5c;
   padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
+}
+.btn-danger-solid:hover {
+  background: #756d5c;
+  border-color: #625a4a;
 }
 .form-input {
   width: 100%;

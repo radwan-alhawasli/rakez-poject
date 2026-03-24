@@ -2,7 +2,7 @@
   <div class="manager-employees-view">
     <div class="page-header">
       <h1 class="page-title">الموظفون</h1>
-      <p class="page-subtitle">قائمة الموظفين التابعين لك — انقر لعرض التقييمات والمراجعات.</p>
+      <p class="page-subtitle">قائمة الموظفين التابعين لك — انقر لعرض مهامه ومراجعاته.</p>
     </div>
 
     <div v-if="isLoading" class="loading-state">

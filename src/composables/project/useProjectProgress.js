@@ -20,7 +20,17 @@ export function useProjectProgress(projectId, options = {}) {
     { name: 'شهادة اتمام و اخرى', status: 'pending', apiKey: 'completion_certificate_url', value: '', entryDate: '', completedAt: null },
     { name: 'الاسعار و الوحدات', status: 'pending', apiKey: 'prices_units_url', value: '', entryDate: '', completedAt: null },
     { name: 'الضمانات و اخرى', status: 'pending', apiKey: 'marketing_license_url', value: '', entryDate: '', completedAt: null },
-    { name: 'رقم المعلن', status: 'pending', apiKey: 'advertiser_section_url', value: '', entryDate: '', completedAt: null, inputType: 'number', placeholder: 'أدخل رقم المعلن' },
+    {
+      name: 'رقم المعلن',
+      status: 'pending',
+      apiKey: 'advertiser_section_url',
+      value: '',
+      entryDate: '',
+      completedAt: null,
+      inputType: 'number',
+      inputLabel: 'رقم المعلن',
+      placeholder: '0000',
+    },
   ]);
 
   const activeStageIndex = ref(0);
@@ -75,8 +85,11 @@ export function useProjectProgress(projectId, options = {}) {
 
   const saveProgress = async () => {
     const currentStage = stages[activeStageIndex.value];
-    if (!currentStage.value) {
-      toast.warning('الرجاء إدخال الرابط قبل الحفظ');
+    if (!currentStage.value && currentStage.value !== 0) {
+      const msg = currentStage.apiKey === 'advertiser_section_url'
+        ? 'الرجاء إدخال رقم المعلن قبل الحفظ'
+        : 'الرجاء إدخال الرابط قبل الحفظ';
+      toast.warning(msg);
       return;
     }
     try {

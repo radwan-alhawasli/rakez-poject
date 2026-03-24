@@ -5,14 +5,6 @@
       <p class="page-subtitle">عرض وإدارة المهام التابعة لك.</p>
     </div>
 
-    <div v-if="statsLoading" class="loading-inline">جاري تحميل الإحصائيات...</div>
-    <div v-else-if="stats && Object.keys(stats).length" class="stats-row">
-      <div v-for="(val, key) in stats" :key="key" class="stat-badge">
-        <span class="stat-label">{{ formatStatKey(key) }}</span>
-        <span class="stat-value">{{ val }}</span>
-      </div>
-    </div>
-
     <div class="filters-bar">
       <select v-model="filters.status" class="filter-select">
         <option value="">كل الحالات</option>
@@ -62,9 +54,7 @@ import { ref, onMounted } from 'vue';
 import managerService from '@/services/managerService';
 
 const tasks = ref([]);
-const stats = ref({});
 const isLoading = ref(true);
-const statsLoading = ref(true);
 
 const filters = ref({
   status: '',
@@ -79,16 +69,6 @@ function formatDate(d) {
   if (!d) return '—';
   const d2 = new Date(d);
   return isNaN(d2.getTime()) ? d : d2.toLocaleDateString('ar-SA');
-}
-
-function formatStatKey(key) {
-  const map = {
-    total: 'الإجمالي',
-    pending: 'قيد الانتظار',
-    in_progress: 'قيد التنفيذ',
-    completed: 'مكتمل',
-  };
-  return map[key] || key;
 }
 
 async function fetchTasks() {
@@ -111,19 +91,7 @@ async function fetchTasks() {
   }
 }
 
-async function fetchStats() {
-  statsLoading.value = true;
-  try {
-    stats.value = await managerService.getTaskStatistics();
-  } catch (_) {
-    stats.value = {};
-  } finally {
-    statsLoading.value = false;
-  }
-}
-
 onMounted(() => {
-  fetchStats();
   fetchTasks();
 });
 </script>
@@ -148,33 +116,6 @@ onMounted(() => {
   font-size: 0.95rem;
   color: var(--color-dark-gray);
   margin: 0;
-}
-
-.stats-row {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 24px;
-}
-
-.stat-badge {
-  padding: 12px 20px;
-  background: var(--color-white);
-  border-radius: 12px;
-  border: 1px solid rgba(177, 162, 143, 0.2);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.stat-label {
-  font-size: 0.85rem;
-  color: var(--color-dark-gray);
-}
-
-.stat-value {
-  font-size: 1.25rem;
-  font-weight: 700;
 }
 
 .filters-bar {

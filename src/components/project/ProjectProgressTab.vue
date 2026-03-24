@@ -22,15 +22,21 @@
       <!-- Stage details card — hidden for sales users -->
       <div v-if="!isSalesUser" class="stage-content-area">
         <h3 class="stage-section-title">تفاصيل المرحلة: {{ stages[activeStageIndex].name }}</h3>
-        <p class="stage-section-subtitle">يرجى تقديم الرابط والتاريخ لهذه المرحلة.</p>
+        <p class="stage-section-subtitle">
+          {{
+            stages[activeStageIndex].apiKey === 'advertiser_section_url'
+              ? 'يرجى تقديم رقم المعلن والتاريخ لهذه المرحلة.'
+              : 'يرجى تقديم الرابط والتاريخ لهذه المرحلة.'
+          }}
+        </p>
         <div class="input-group">
-          <label>رابط المستند</label>
+          <label>{{ stages[activeStageIndex].inputLabel || 'رابط المستند' }}</label>
           <div class="input-wrapper">
             <input
               :type="stages[activeStageIndex].inputType || 'text'"
               v-model="stages[activeStageIndex].value"
               class="form-input"
-              placeholder="https://example.com/document"
+              :placeholder="stages[activeStageIndex].placeholder || 'https://example.com/document'"
               :disabled="stages[activeStageIndex].status === 'completed'"
             />
             <span class="input-icon">

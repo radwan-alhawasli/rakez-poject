@@ -605,8 +605,25 @@ async function doReject() {
 .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem; }
 .btn-primary { padding: 0.5rem 1rem; background: #1e3a5f; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
 .btn-secondary { padding: 0.5rem 1rem; background: #e2e8f0; color: #334155; border: none; border-radius: 8px; cursor: pointer; }
-.btn-approve { padding: 0.5rem 1rem; background: #10b981; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
-.btn-reject { padding: 0.5rem 1rem; background: #ef4444; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+.btn-approve {
+  padding: 0.5rem 1rem;
+  background: #1e3a5f;
+  color: #fff;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.btn-approve:hover:not(:disabled) { background: #152d4a; border-color: #152d4a; }
+.btn-reject {
+  padding: 0.5rem 1rem;
+  background: #fff;
+  color: #1e3a5f;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.btn-reject:hover:not(:disabled) { background: #f1f5f9; }
+.btn-reject:disabled { opacity: 0.5; cursor: not-allowed; }
 .manager-actions .action-buttons { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
 .loading-inline, .empty-inline { padding: 0.5rem 0; color: #64748b; font-size: 0.9rem; }
 </style>

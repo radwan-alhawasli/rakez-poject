@@ -205,14 +205,23 @@ onMounted(() => {
 .status-badge.rejected { background: #fee2e2; color: #991b1b; }
 .btn-approve, .btn-reject {
   padding: 0.35rem 0.75rem;
-  border: none;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.85rem;
   margin-left: 0.25rem;
 }
-.btn-approve { background: #10b981; color: #fff; }
-.btn-reject { background: #ef4444; color: #fff; }
+.btn-approve {
+  background: #27374d;
+  color: #fff;
+  border: 1px solid #27374d;
+}
+.btn-approve:hover { background: #1e2d3a; border-color: #1e2d3a; }
+.btn-reject {
+  background: #fff;
+  color: #27374d;
+  border: 1px solid #27374d;
+}
+.btn-reject:hover { background: #f1f5f9; }
 .modal-overlay {
   position: fixed;
   inset: 0;

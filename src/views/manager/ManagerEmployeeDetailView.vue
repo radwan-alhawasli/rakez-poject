@@ -18,6 +18,27 @@
         </div>
       </div>
 
+      <div class="tasks-section">
+        <div class="section-header">
+          <h2>المهام</h2>
+        </div>
+        <div v-if="tasksLoading" class="loading-inline">جاري تحميل المهام...</div>
+        <div v-else-if="tasks.length === 0" class="empty-inline">لا توجد مهام لهذا الموظف.</div>
+        <div v-else class="tasks-list">
+          <div v-for="t in tasks" :key="t.id" class="task-card">
+            <div class="task-header">
+              <h4>{{ t.title || t.name || '—' }}</h4>
+              <span :class="['task-status', taskStatusClass(t.status)]">{{ formatTaskStatus(t.status) }}</span>
+            </div>
+            <p v-if="t.description" class="task-desc">{{ t.description }}</p>
+            <div class="task-meta">
+              <span v-if="t.due_at">الموعد: {{ formatDate(t.due_at) }}</span>
+              <span v-if="t.section">القسم: {{ t.section }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="reviews-section">
         <div class="section-header">
           <h2>المراجعات</h2>
@@ -70,7 +91,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import managerService from '@/services/managerService';
 
@@ -79,8 +100,10 @@ const employeeId = computed(() => route.params.id);
 
 const employee = ref({});
 const reviews = ref([]);
+const tasks = ref([]);
 const isLoading = ref(true);
 const reviewsLoading = ref(false);
+const tasksLoading = ref(false);
 const showReviewForm = ref(false);
 const showDeleteConfirm = ref(false);
 const reviewSaving = ref(false);
@@ -95,14 +118,31 @@ function formatDate(d) {
   return isNaN(d2.getTime()) ? d : d2.toLocaleDateString('ar-SA');
 }
 
+function taskStatusClass(status) {
+  return String(status || 'unknown').toLowerCase().replace(/[\s-]+/g, '_');
+}
+
+function formatTaskStatus(status) {
+  const s = String(status || '').toLowerCase().replace(/[\s-]+/g, '_');
+  const map = {
+    pending: 'قيد الانتظار',
+    in_progress: 'قيد التنفيذ',
+    completed: 'مكتمل',
+    could_not_complete: 'لم يكتمل',
+  };
+  return map[s] || status || '—';
+}
+
 async function fetchEmployee() {
   const id = employeeId.value;
   if (!id) return;
   isLoading.value = true;
   try {
     employee.value = await managerService.getEmployee(id);
+    await fetchEmployeeTasks();
   } catch (_) {
     employee.value = {};
+    await fetchEmployeeTasks();
   } finally {
     isLoading.value = false;
   }
@@ -118,6 +158,31 @@ async function fetchReviews() {
     reviews.value = [];
   } finally {
     reviewsLoading.value = false;
+  }
+}
+
+async function fetchEmployeeTasks() {
+  const id = employeeId.value;
+  if (!id) return;
+  tasksLoading.value = true;
+  try {
+    const params = {
+      assigned_to: id,
+      per_page: 100,
+      sort_by: 'due_at',
+      sort_order: 'desc',
+    };
+    let res = await managerService.getTasks(params);
+    let items = res?.items ?? [];
+    if (!items.length && employee.value?.email) {
+      res = await managerService.getTasks({ ...params, assigned_to: employee.value.email });
+      items = res?.items ?? [];
+    }
+    tasks.value = items;
+  } catch (_) {
+    tasks.value = [];
+  } finally {
+    tasksLoading.value = false;
   }
 }
 
@@ -175,11 +240,6 @@ watch(employeeId, () => {
   fetchEmployee();
   fetchReviews();
 }, { immediate: true });
-
-onMounted(() => {
-  fetchEmployee();
-  fetchReviews();
-});
 </script>
 
 <style scoped>
@@ -232,6 +292,68 @@ onMounted(() => {
 
 .employee-header p {
   margin: 0;
+  color: var(--color-dark-gray);
+}
+
+.tasks-section {
+  background: var(--color-white);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(177, 162, 143, 0.2);
+  margin-bottom: 24px;
+}
+
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.task-card {
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.task-header h4 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.task-status {
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.task-status.pending { background: #fef3c7; color: #92400e; }
+.task-status.in_progress { background: #dbeafe; color: #1e40af; }
+.task-status.completed { background: #d1fae5; color: #065f46; }
+.task-status.could_not_complete { background: #f1f5f9; color: #475569; }
+
+.task-desc {
+  margin: 0 0 10px 0;
+  font-size: 0.95rem;
+  color: var(--color-dark-gray);
+  line-height: 1.5;
+}
+
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.9rem;
   color: var(--color-dark-gray);
 }
 
