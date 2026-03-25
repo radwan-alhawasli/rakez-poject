@@ -7,7 +7,11 @@ export function useSalesAnalytics() {
   const { formatCurrencyAr: formatCurrency } = useFormatters();
 
   const analyticsDashboard = ref(null);
-  const analyticsFilters = reactive({ from: '', to: '' });
+  const now = new Date();
+  const analyticsFilters = reactive({
+    from: new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10),
+    to: new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10),
+  });
   const isLoadingAnalytics = ref(false);
   const analyticsSubTab = ref('overview');
   const analyticsMonthlyReport = ref(null);

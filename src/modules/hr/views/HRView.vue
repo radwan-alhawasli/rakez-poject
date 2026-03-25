@@ -1,7 +1,7 @@
 <template>
   <div class="hr-view">
     <div class="tab-content custom-scrollbar">
-      <HRDashboardTab v-if="activeTab === 'dashboard'" :user-name="userName" />
+      <HRDashboardTab v-if="activeTab === 'dashboard'" />
 
       <HRTeamsTab v-else-if="activeTab === 'teams'" :is-h-r="isHR" />
 
@@ -35,7 +35,6 @@ const HRReportsTab = defineAsyncComponent(() => import('@/modules/hr/tabs/report
 
 const route = useRoute();
 const user = authService.getCurrentUser();
-const userName = computed(() => user?.name || 'الموارد البشرية');
 const isHR = computed(() => {
   const type = String(user?.type || '').toLowerCase();
   return type === 'hr' || type === '8' || Number(user?.type) === 8;

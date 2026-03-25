@@ -1,6 +1,6 @@
 # Feature modules (`src/modules`)
 
-Each **business domain** (sales, marketing, accounting, …) lives under `src/modules/<domain>/`.
+Each **business domain** (sales, marketing, accounting, editor, …) lives under `src/modules/<domain>/`.
 
 ## Layout
 

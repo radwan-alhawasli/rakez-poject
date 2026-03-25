@@ -1,14 +1,19 @@
 <template>
   <div class="rsv-overlay" @click.self="$emit('close')">
-    <div class="rsv-modal" role="dialog" :aria-labelledby="titleId">
+    <div class="rsv-modal rsv-modal--rakez" role="dialog" :aria-labelledby="titleId" dir="rtl">
 
       <!-- ── Header ── -->
       <div class="rsv-header">
-        <div>
+        <div class="rsv-header-inner">
+          <p class="rsv-kicker">مبيعات — حجز وحدة</p>
           <h2 :id="titleId" class="rsv-title">نموذج حجز الوحدة: {{ unitLabel }}</h2>
           <p class="rsv-subtitle">يرجى تعبئة جميع البيانات المطلوبة لإكمال عملية الحجز.</p>
         </div>
-        <button type="button" class="rsv-close" @click="$emit('close')" aria-label="إغلاق">×</button>
+        <button type="button" class="rsv-close" @click="$emit('close')" aria-label="إغلاق">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       <!-- ── Scrollable body ── -->
@@ -44,19 +49,16 @@
                 <span class="rsv-info-val">{{ contextDisplay.unitType }}</span>
               </div>
               <div class="rsv-info-cell">
-                <span class="rsv-info-key">فريق المشروع</span>
+                <span class="rsv-info-key">فرق التسويق المعينة</span>
                 <span class="rsv-info-val">{{ contextDisplay.projectTeam }}</span>
               </div>
               <div></div>
               <!-- row 4 -->
               <div class="rsv-info-cell">
-                <span class="rsv-info-key">أسم الموظف</span>
-                <span class="rsv-info-val">{{ contextDisplay.employeeName }}</span>
-              </div>
-              <div class="rsv-info-cell">
                 <span class="rsv-info-key">الدور</span>
                 <span class="rsv-info-val">{{ contextDisplay.floor }}</span>
               </div>
+              <div></div>
               <div></div>
               <!-- row 5 -->
               <div class="rsv-info-cell">
@@ -73,9 +75,11 @@
 
           <!-- ── Form fields ── -->
           <div class="rsv-fields">
+            <div class="rsv-section">
+              <h3 class="rsv-section-title">تفاصيل الحجز</h3>
 
-            <!-- نوع الحجز + تاريخ العقد + تاريخ الإخلاء -->
-            <div class="rsv-row rsv-row-3">
+            <!-- نوع الحجز + تاريخ العقد -->
+            <div class="rsv-row rsv-row-2">
               <div class="rsv-field">
                 <label class="rsv-label">نوع الحجز *</label>
                 <select v-model="form.reservation_type" required class="rsv-input">
@@ -86,10 +90,6 @@
               <div class="rsv-field">
                 <label class="rsv-label">تاريخ العقد *</label>
                 <input v-model="form.contract_date" type="date" required class="rsv-input" />
-              </div>
-              <div class="rsv-field">
-                <label class="rsv-label">تاريخ الإخلاء</label>
-                <input v-model="form.evacuation_date" type="date" class="rsv-input" />
               </div>
             </div>
 
@@ -121,7 +121,7 @@
             </template>
 
             <!-- ملاحظات التفاوض -->
-            <div class="rsv-field">
+            <div class="rsv-field rsv-field--full">
               <label class="rsv-label">ملاحظات التفاوض</label>
               <textarea
                 v-model="form.negotiation_notes"
@@ -130,6 +130,10 @@
                 placeholder="اكتب تفاصيل الصفقة التي سيتم التفاوض عليها..."
               />
             </div>
+            </div>
+
+            <div class="rsv-section">
+              <h3 class="rsv-section-title">بيانات العميل والدفع</h3>
 
             <!-- اسم العميل + رقم الجوال + الجنسية -->
             <div class="rsv-row rsv-row-3">
@@ -185,6 +189,7 @@
                 </select>
               </div>
             </div>
+            </div>
 
             <!-- Submit -->
             <button type="submit" class="rsv-submit" :disabled="isSubmitting">
@@ -201,6 +206,37 @@
 
 <script>
 import { computed, reactive, watch } from 'vue';
+
+/** اسم فريق من استجابة API: نص، كائن (name / team_name)، أو مصفوفة فرق */
+function formatTeamLabel(value) {
+  if (value == null || value === '') return '';
+  if (typeof value === 'string') {
+    const t = value.trim();
+    return t || '';
+  }
+  if (Array.isArray(value)) {
+    const parts = value.map(formatTeamLabel).filter(Boolean);
+    return [...new Set(parts)].join('، ');
+  }
+  if (typeof value === 'object') {
+    return (
+      formatTeamLabel(value.name) ||
+      formatTeamLabel(value.team_name) ||
+      formatTeamLabel(value.title) ||
+      formatTeamLabel(value.label) ||
+      ''
+    );
+  }
+  return String(value);
+}
+
+/** دمج جذر الاستجابة مع كائن context إن وُجد (صيغة API الجديدة) */
+function mergeReservationContextPayload(raw) {
+  const base = raw?.data?.data || raw?.data || raw || {};
+  if (!base || typeof base !== 'object') return {};
+  const nested = base.context && typeof base.context === 'object' ? base.context : {};
+  return { ...base, ...nested };
+}
 
 export default {
   name: 'UnitReservationModal',
@@ -231,7 +267,6 @@ export default {
       negotiation_notes: '',
       negotiation_reason: '',
       proposed_price: null,
-      evacuation_date: '',
       ...props.formData,
     });
 
@@ -260,13 +295,15 @@ export default {
     });
 
     const contextDisplay = computed(() => {
-      const ctx = props.context?.data?.data || props.context?.data || props.context || {};
+      const ctx = mergeReservationContextPayload(props.context);
       const unit = ctx.unit || props.unit || {};
-      const project = ctx.project || ctx.contract || {};
+      const project = {
+        ...(typeof ctx.contract === 'object' && ctx.contract ? ctx.contract : {}),
+        ...(typeof ctx.project === 'object' && ctx.project ? ctx.project : {}),
+      };
       const marketer = ctx.marketer || ctx.employee || {};
       const district = unit.district || project.district || ctx.district || '—';
       const unitType = unit.unit_type || unit.type || '—';
-      const employeeName = marketer.name || marketer.employee_name || '—';
       const projectName = project.project_name || project.name || project.contract_name || '—';
       const city = project.city || unit.city || ctx.city || '—';
       const area = unit.area || unit.area_m2 != null ? `${unit.area_m2 ?? unit.area} م²` : '—';
@@ -278,13 +315,32 @@ export default {
         floorRaw !== null && floorRaw !== undefined && !Number.isNaN(Number(floorRaw))
           ? String(floorRaw)
           : '—';
-      const projectTeam = project.team_name || ctx.project_team || 'غير معين';
+      const projectTeam =
+        formatTeamLabel(ctx.project_teams) ||
+        formatTeamLabel(ctx.teams) ||
+        formatTeamLabel(ctx.assigned_teams) ||
+        formatTeamLabel(ctx.contract_teams) ||
+        formatTeamLabel(ctx.marketing_teams) ||
+        formatTeamLabel(ctx.assigned_marketing_teams) ||
+        formatTeamLabel(ctx.project_team) ||
+        formatTeamLabel(ctx.project_team_name) ||
+        formatTeamLabel(unit.project_team) ||
+        formatTeamLabel(unit.project_team_name) ||
+        formatTeamLabel(unit.contract?.project_team) ||
+        formatTeamLabel(project.project_team) ||
+        formatTeamLabel(project.project_team_name) ||
+        formatTeamLabel(project.project_teams) ||
+        formatTeamLabel(project.contract_teams) ||
+        formatTeamLabel(project.assigned_teams) ||
+        formatTeamLabel(project.teams) ||
+        formatTeamLabel(project.team) ||
+        formatTeamLabel(project.team_name) ||
+        'غير معين';
       const marketerTeam = marketer.team_name || marketer.team || ctx.marketer_team || '—';
       const unitDisplay = (unit.unit_number || unit.unit_id || unit.id) ?? '—';
       return {
         district,
         unitType,
-        employeeName,
         project: projectName,
         unit: unitDisplay,
         city,
@@ -426,11 +482,24 @@ export default {
 </script>
 
 <style scoped>
+/* راكز — ألوان وهوية من luxury-theme */
+.rsv-modal--rakez {
+  font-family: 'Cairo', 'Tajawal', system-ui, sans-serif;
+  color: var(--color-charcoal);
+  background: var(--color-off-white);
+  border: 1px solid var(--color-medium-gray);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
 /* ── Overlay ── */
 .rsv-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(26, 38, 54, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -441,15 +510,11 @@ export default {
 
 /* ── Modal container ── */
 .rsv-modal {
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
   width: 100%;
-  max-width: 640px;
+  max-width: 680px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 /* ── Header ── */
@@ -457,64 +522,110 @@ export default {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid #e2e8f0;
+  gap: 16px;
+  padding: 22px 24px 18px;
+  background: linear-gradient(180deg, var(--color-white) 0%, var(--color-cream-gold-light) 100%);
+  border-bottom: 1px solid var(--color-medium-gray);
   flex-shrink: 0;
+  position: relative;
+}
+
+.rsv-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-navy-dark) 0%, var(--color-gold) 50%, var(--color-navy) 100%);
+}
+
+.rsv-header-inner {
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.rsv-kicker {
+  margin: 0 0 6px 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-gold-dark);
+  text-transform: uppercase;
 }
 
 .rsv-title {
   margin: 0 0 4px 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: #1e293b;
+  font-size: clamp(1.05rem, 2.5vw, 1.25rem);
+  font-weight: 800;
+  color: var(--color-navy);
+  line-height: 1.35;
 }
 
 .rsv-subtitle {
   margin: 0;
   font-size: 13px;
-  color: #64748b;
+  line-height: 1.5;
+  color: var(--color-dark-gray);
 }
 
 .rsv-close {
-  background: none;
-  border: none;
-  font-size: 22px;
-  line-height: 1;
-  color: #94a3b8;
+  background: var(--color-white);
+  border: 1px solid var(--color-medium-gray);
+  border-radius: var(--radius-sm);
+  color: var(--color-dark-gray);
   cursor: pointer;
-  padding: 2px 4px;
-  margin-top: -2px;
+  padding: 8px;
+  line-height: 0;
   flex-shrink: 0;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 .rsv-close:hover {
-  color: #1e293b;
+  color: var(--color-navy);
+  border-color: var(--color-gold);
+  background: var(--color-cream-gold);
 }
 
 /* ── Scrollable body ── */
 .rsv-body {
   overflow-y: auto;
   flex: 1;
+  background: var(--color-off-white);
 }
 
 /* ── Info card ── */
 .rsv-info-card {
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 16px 24px 20px;
+  background: var(--color-white);
+  margin: 0;
+  padding: 18px 24px 22px;
+  border-bottom: 1px solid var(--color-medium-gray);
 }
 
 .rsv-info-card-title {
-  margin: 0 0 14px 0;
-  font-size: 13px;
-  font-weight: 700;
-  color: #475569;
-  text-align: center;
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-navy);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* في RTL يصطف نحو اليمين (بداية السطر) */
+  gap: 10px;
+  width: 100%;
+}
+
+.rsv-info-card-title::before {
+  content: '';
+  width: 4px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+  flex-shrink: 0;
 }
 
 .rsv-info-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px 20px;
+  gap: 12px 18px;
 }
 
 .rsv-span2 {
@@ -524,29 +635,60 @@ export default {
 .rsv-info-cell {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--color-light-gray);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(226, 232, 240, 0.9);
 }
 
 .rsv-info-key {
   font-size: 11px;
-  font-weight: 600;
-  color: #94a3b8;
+  font-weight: 700;
+  color: var(--color-dark-gray);
   white-space: nowrap;
 }
 
 .rsv-info-val {
   font-size: 13px;
-  font-weight: 600;
-  color: #1e293b;
+  font-weight: 700;
+  color: var(--color-navy);
   word-break: break-word;
 }
 
 /* ── Form fields area ── */
 .rsv-fields {
-  padding: 20px 24px 24px;
+  padding: 20px 24px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.rsv-section {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.rsv-section-title {
+  margin: 0;
+  padding: 0 12px 8px 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-navy);
+  border-bottom: 2px solid var(--color-medium-gray);
+  position: relative;
+}
+
+.rsv-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  right: 0;
+  width: 56px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+  border-radius: 2px;
 }
 
 .rsv-row {
@@ -559,30 +701,38 @@ export default {
 .rsv-field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
+}
+
+.rsv-field--full {
+  grid-column: 1 / -1;
 }
 
 .rsv-label {
   font-size: 12px;
-  font-weight: 600;
-  color: #475569;
+  font-weight: 700;
+  color: var(--color-navy);
 }
 
 .rsv-input {
   width: 100%;
-  padding: 9px 11px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 13px;
-  color: #1e293b;
-  background: #ffffff;
+  padding: 10px 14px;
+  border: 1px solid var(--color-medium-gray);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--color-charcoal);
+  background: var(--color-white);
   box-sizing: border-box;
   font-family: inherit;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.rsv-input:hover {
+  border-color: #cbd5e1;
 }
 .rsv-input:focus {
   outline: none;
-  border-color: #334155;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(181, 169, 154, 0.25);
 }
 
 .rsv-textarea {
@@ -592,21 +742,26 @@ export default {
 
 /* ── Submit button ── */
 .rsv-submit {
-  margin-top: 6px;
+  margin-top: 4px;
   width: 100%;
-  padding: 12px;
-  background: #1e293b;
-  color: #ffffff;
+  padding: 14px 18px;
   border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 800;
   font-family: inherit;
-  transition: background 0.15s;
+  cursor: pointer;
+  color: var(--color-white);
+  background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-light) 55%, var(--color-navy) 100%);
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
 }
 .rsv-submit:hover:not(:disabled) {
-  background: #0f172a;
+  filter: brightness(1.05);
+  box-shadow: var(--shadow-navy);
+}
+.rsv-submit:active:not(:disabled) {
+  transform: translateY(1px);
 }
 .rsv-submit:disabled {
   opacity: 0.65;
@@ -617,7 +772,7 @@ export default {
 @media (max-width: 600px) {
   .rsv-modal {
     max-height: 100vh;
-    border-radius: 12px 12px 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     align-self: flex-end;
   }
   .rsv-overlay {
@@ -633,6 +788,12 @@ export default {
   }
   .rsv-span2 {
     grid-column: span 1;
+  }
+  .rsv-header {
+    padding: 20px 18px 16px;
+  }
+  .rsv-fields {
+    padding: 16px 18px 22px;
   }
 }
 </style>

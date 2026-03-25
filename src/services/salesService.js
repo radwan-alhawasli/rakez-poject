@@ -273,10 +273,12 @@ const salesService = {
    * Get reservation context for a unit
    * GET /sales/units/:unitId/reservation-context
    * @param {number|string} unitId - Unit ID
+   * @param {Object} [params] - اختياري: query مثل include أو with إن دعمها الباكند (مثال: { include: 'teams' })
    * @returns {Promise<Object>} Reservation context data
    */
-  getReservationContext(unitId) {
-    return apiClient.get(`/sales/units/${unitId}/reservation-context`);
+  getReservationContext(unitId, params = {}) {
+    const config = params && typeof params === 'object' && Object.keys(params).length > 0 ? { params } : {};
+    return apiClient.get(`/sales/units/${unitId}/reservation-context`, config);
   },
 
   /**

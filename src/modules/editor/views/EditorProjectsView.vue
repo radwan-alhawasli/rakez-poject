@@ -189,9 +189,9 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import authService from '@/services/authService';
-import { useEditorProjects } from '@/composables/editor/useEditorProjects';
+import { useEditorProjects } from '@/modules/editor/composables/useEditorProjects';
 import editorService from '@/services/editorService';
-import EditorProjectCard from '@/components/editor/EditorProjectCard.vue';
+import EditorProjectCard from '@/modules/editor/components/EditorProjectCard.vue';
 import { toast } from '@/composables/useToast';
 
 const route = useRoute();

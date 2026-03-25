@@ -1,0 +1,46 @@
+/**
+ * ERP-style dashboard widgets — extends luxury-theme tokens.
+ * Used by src/components/dashboard/widgets/* and department dashboards.
+ */
+
+.rakez-widget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(16px, 2vw, 22px);
+  align-items: stretch;
+  width: 100%;
+}
+
+.rakez-widget-grid--dense {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+/* Wide chart / bar blocks */
+.rakez-widget-span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 900px) {
+  .rakez-widget-span-2 {
+    grid-column: span 1;
+  }
+}
+
+.rakez-erp-dashboard {
+  direction: rtl;
+}
+
+/* Shared welcome banner — primary styles live in DashboardWelcomeHeader.vue (scoped) */
+.rakez-dashboard-welcome--banner {
+  box-sizing: border-box;
+}
+
+.rakez-dashboard-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-dark-gray, #64748b);
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(177, 162, 143, 0.22);
+}

@@ -60,12 +60,27 @@
             {{ getStatusLabel(reservation.status) }}
           </div>
           <div class="card-body">
-            <div class="card-unit">وحدة: {{ reservation.unit_number || reservation.unitNumber || '—' }}</div>
-            <div class="card-project">مشروع: {{ reservation.project_name || reservation.projectName || '—' }}</div>
-            <div class="card-client">العميل: {{ reservation.client_name || reservation.clientName || '—' }}</div>
-            <div class="card-date">تاريخ الحجز: {{ formatDate(reservation.contract_date || reservation.created_at || reservation.date) }}</div>
-            <div v-if="reservation.down_payment_amount" class="card-payment">
-              العربون: {{ formatCurrency(reservation.down_payment_amount) }} ريال
+            <div class="card-meta-block">
+              <div class="res-line res-line--title">
+                <span class="card-label">وحدة</span>
+                <span class="card-value">{{ reservation.unit_number || reservation.unitNumber || '—' }}</span>
+              </div>
+              <div class="res-line">
+                <span class="card-label">مشروع</span>
+                <span class="card-value">{{ reservation.project_name || reservation.projectName || '—' }}</span>
+              </div>
+              <div class="res-line">
+                <span class="card-label">العميل</span>
+                <span class="card-value">{{ reservation.client_name || reservation.clientName || '—' }}</span>
+              </div>
+              <div class="res-line">
+                <span class="card-label">تاريخ الحجز</span>
+                <span class="card-value">{{ formatDate(reservation.contract_date || reservation.created_at || reservation.date) }}</span>
+              </div>
+              <div v-if="reservation.down_payment_amount" class="res-line res-line--payment">
+                <span class="card-label">العربون</span>
+                <span class="card-value card-value--money">{{ formatCurrency(reservation.down_payment_amount) }} ريال</span>
+              </div>
             </div>
             <div class="card-actions">
               <button type="button" class="btn-details" @click="openDetails(reservation)">
@@ -133,12 +148,29 @@
         >
           <div class="card-status-badge waiting">انتظار</div>
           <div class="card-body">
-            <div class="card-unit">وحدة: {{ item.unit_number || item.contract_unit_id || '—' }}</div>
-            <div class="card-project">مشروع: {{ item.project_name || '—' }}</div>
-            <div class="card-client">العميل: {{ item.client_name || '—' }}</div>
-            <div class="card-date">الجوال: {{ item.client_mobile || '—' }}</div>
-            <div v-if="item.priority" class="card-payment">الأولوية: {{ item.priority }}</div>
-            <div v-if="item.notes" class="card-notes">{{ item.notes }}</div>
+            <div class="card-meta-block">
+              <div class="res-line res-line--title">
+                <span class="card-label">وحدة</span>
+                <span class="card-value">{{ item.unit_number || item.contract_unit_id || '—' }}</span>
+              </div>
+              <div class="res-line">
+                <span class="card-label">مشروع</span>
+                <span class="card-value">{{ item.project_name || '—' }}</span>
+              </div>
+              <div class="res-line">
+                <span class="card-label">العميل</span>
+                <span class="card-value">{{ item.client_name || '—' }}</span>
+              </div>
+              <div class="res-line">
+                <span class="card-label">الجوال</span>
+                <span class="card-value">{{ item.client_mobile || '—' }}</span>
+              </div>
+              <div v-if="item.priority" class="res-line">
+                <span class="card-label">الأولوية</span>
+                <span class="card-value">{{ item.priority }}</span>
+              </div>
+              <div v-if="item.notes" class="card-notes">{{ item.notes }}</div>
+            </div>
             <div class="card-actions">
               <button
                 v-if="canConvert"
@@ -180,13 +212,25 @@
         >
           <div class="card-status-badge negotiation">تفاوض</div>
           <div class="card-body">
-            <div class="card-unit">وحدة: {{ neg.unit_number || '—' }}</div>
-            <div class="card-project">مشروع: {{ neg.project_name || '—' }}</div>
-            <div class="card-client">العميل: {{ neg.client_name || '—' }}</div>
-            <div v-if="neg.proposed_price" class="card-payment">
-              السعر المقترح: {{ formatCurrency(neg.proposed_price) }} ريال
+            <div class="card-meta-block">
+              <div class="res-line res-line--title">
+                <span class="card-label">وحدة</span>
+                <span class="card-value">{{ neg.unit_number || '—' }}</span>
+              </div>
+              <div class="res-line">
+                <span class="card-label">مشروع</span>
+                <span class="card-value">{{ neg.project_name || '—' }}</span>
+              </div>
+              <div class="res-line">
+                <span class="card-label">العميل</span>
+                <span class="card-value">{{ neg.client_name || '—' }}</span>
+              </div>
+              <div v-if="neg.proposed_price" class="res-line res-line--payment">
+                <span class="card-label">السعر المقترح</span>
+                <span class="card-value card-value--money">{{ formatCurrency(neg.proposed_price) }} ريال</span>
+              </div>
+              <div v-if="neg.negotiation_notes" class="card-notes">{{ neg.negotiation_notes }}</div>
             </div>
-            <div v-if="neg.negotiation_notes" class="card-notes">{{ neg.negotiation_notes }}</div>
             <div class="card-actions">
               <button type="button" class="btn-details" @click="openDetails(neg)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -587,62 +631,71 @@ onMounted(loadAll);
   direction: rtl;
 }
 
+.reservations-page {
+  background: var(--color-off-white, #fdfbf7);
+  border-radius: var(--radius-md, 14px);
+}
 
 .filter-tabs {
   display: flex;
-  gap: 24px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid #e2e8f0;
+  gap: clamp(12px, 2vw, 24px);
+  margin-bottom: var(--space-md, 24px);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-medium-gray, #e2e8f0);
 }
 
 .tab-btn {
-  padding: 12px 0;
+  padding: 12px 4px;
   background: none;
   border: none;
   border-bottom: 3px solid transparent;
   font-size: 15px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--color-dark-gray, #64748b);
   cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
+  transition: color var(--transition-fast, 0.15s ease), border-color 0.2s ease;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
 .tab-btn:hover {
-  color: #1e3a5f;
+  color: var(--color-navy, #27374d);
 }
 
 .tab-btn.active {
-  color: #1e3a5f;
-  border-bottom-color: #1e3a5f;
+  color: var(--color-navy, #27374d);
+  font-weight: 700;
+  border-bottom-color: var(--color-gold, #b5a99a);
 }
 
 .tab-count {
-  background: #e2e8f0;
-  color: #475569;
+  background: var(--color-light-gray, #f8fafc);
+  color: var(--color-charcoal, #1e293b);
   padding: 2px 8px;
-  border-radius: 10px;
+  border-radius: var(--radius-full, 9999px);
   font-size: 12px;
   font-weight: 600;
+  border: 1px solid var(--color-medium-gray, #e2e8f0);
 }
 
 .tab-btn.active .tab-count {
-  background: #1e3a5f;
-  color: white;
+  background: var(--color-navy, #27374d);
+  color: var(--color-white, #fff);
+  border-color: var(--color-navy, #27374d);
 }
 
 .loading-state {
   text-align: center;
   padding: 60px 20px;
+  color: var(--color-dark-gray, #64748b);
 }
 
 .spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #e2e8f0;
-  border-top-color: #1e3a5f;
+  width: 44px;
+  height: 44px;
+  border: 3px solid var(--color-light-gray, #f8fafc);
+  border-top-color: var(--color-gold, #b5a99a);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto 16px;
@@ -655,146 +708,235 @@ onMounted(loadAll);
 .reservations-list {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: clamp(14px, 2vw, 20px);
 }
 
 .reservation-card {
   position: relative;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--color-white, #fff);
+  border-radius: var(--radius-md, 14px);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
+  border: 1px solid rgba(39, 55, 77, 0.1);
   overflow: hidden;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.reservation-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 3px;
+  background: linear-gradient(to left, var(--color-navy, #27374d), var(--color-gold, #b5a99a));
+  opacity: 0.92;
+  pointer-events: none;
 }
 
 .reservation-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md, 0 4px 20px rgba(0, 0, 0, 0.08));
+  border-color: rgba(181, 169, 154, 0.45);
 }
 
 .card-status-badge {
   position: absolute;
   top: 16px;
-  left: 16px;
+  inset-inline-end: 16px;
+  z-index: 1;
   padding: 6px 14px;
-  border-radius: 20px;
+  border-radius: var(--radius-full, 9999px);
   font-size: 12px;
-  font-weight: 600;
-  color: white;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
 }
 
 .card-status-badge.confirmed,
 .card-status-badge.approved {
-  background: #a68b5b;
+  background: linear-gradient(135deg, var(--color-navy, #27374d), var(--color-navy-dark, #1a2636));
+  color: var(--color-white, #fff);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 10px rgba(39, 55, 77, 0.25);
 }
 
 .card-status-badge.pending,
 .card-status-badge.waiting,
 .card-status-badge.under_negotiation {
-  background: #d97706;
+  background: var(--status-pending-bg, #fefce8);
+  color: var(--status-pending-text, #5c3d1a);
+  border-color: var(--status-pending-border, #d4a84b);
 }
 
 .card-status-badge.sold {
-  background: #2563eb;
+  background: rgba(39, 55, 77, 0.08);
+  color: var(--color-navy, #27374d);
+  border-color: rgba(39, 55, 77, 0.15);
 }
 
 .card-status-badge.cancelled,
 .card-status-badge.rejected {
-  background: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-error, #ef4444);
+  border-color: rgba(239, 68, 68, 0.35);
 }
 
 .card-status-badge.negotiation {
-  background: #7c3aed;
+  background: rgba(181, 169, 154, 0.25);
+  color: var(--color-navy, #27374d);
+  border-color: rgba(181, 169, 154, 0.55);
 }
 
 .card-body {
-  padding: 20px 20px 20px 56px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 20px 20px;
+  padding-inline-end: clamp(72px, 18vw, 120px);
+  gap: 0;
+  min-height: 0;
 }
 
-.card-unit {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 6px;
+.card-meta-block {
+  flex: 1 1 auto;
 }
 
-.card-project,
-.card-client,
-.card-date,
-.card-payment {
+.res-line {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 32%) 1fr;
+  gap: 10px 14px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-light-gray, #f8fafc);
   font-size: 14px;
-  color: #64748b;
+}
+
+.card-meta-block > .res-line:last-of-type {
+  border-bottom: none;
+}
+
+.res-line--title {
+  padding-top: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(181, 169, 154, 0.35);
   margin-bottom: 4px;
 }
 
-.card-payment {
-  color: #059669;
+.res-line--title .card-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-gold-dark, #9a8d7d);
+  text-transform: none;
+}
+
+.res-line--title .card-value {
+  font-size: clamp(17px, 2.2vw, 19px);
+  font-weight: 800;
+  color: var(--color-navy, #27374d);
+  letter-spacing: -0.02em;
+}
+
+.card-label {
+  font-size: 12px;
   font-weight: 600;
+  color: var(--color-dark-gray, #64748b);
+}
+
+.card-value {
+  font-weight: 600;
+  color: var(--color-charcoal, #1e293b);
+  word-break: break-word;
+}
+
+.res-line--payment .card-value--money {
+  color: var(--color-success, #16a34a);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 .card-notes {
   font-size: 13px;
-  color: #94a3b8;
-  margin-top: 6px;
-  font-style: italic;
+  color: var(--color-dark-gray, #64748b);
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--color-cream-gold-light, #f8f4ec);
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid rgba(181, 169, 154, 0.35);
+  line-height: 1.5;
 }
 
 .card-actions {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
-  margin-top: 16px;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-light-gray, #f8fafc);
 }
 
 .card-actions button {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 18px;
-  border-radius: 8px;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm, 8px);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition:
+    background var(--transition-fast, 0.15s ease),
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .card-actions button svg {
   width: 18px;
   height: 18px;
+  flex-shrink: 0;
 }
 
 .btn-details,
 .btn-edit {
-  background: white;
-  border: 1px solid #e2e8f0;
-  color: #475569;
+  flex: 1 1 auto;
+  min-width: 0;
+  background: var(--color-white, #fff);
+  border: 1px solid rgba(39, 55, 77, 0.18);
+  color: var(--color-navy, #27374d);
 }
 
 .btn-details:hover,
 .btn-edit:hover {
-  border-color: #b1a28f;
-  color: #b1a28f;
+  border-color: var(--color-gold, #b5a99a);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
 }
 
 .btn-confirm {
-  background: #059669;
+  flex: 1 1 auto;
+  background: linear-gradient(135deg, var(--color-navy, #27374d), var(--color-navy-dark, #1a2636));
   border: none;
-  color: white;
+  color: var(--color-white, #fff);
+  box-shadow: 0 4px 14px rgba(39, 55, 77, 0.22);
 }
 
 .btn-confirm:hover {
-  background: #047857;
+  box-shadow: 0 6px 18px rgba(39, 55, 77, 0.3);
 }
 
 .btn-cancel {
+  flex: 0 0 auto;
   background: transparent;
   border: none;
-  color: #ea580c;
+  color: var(--color-error, #ef4444);
 }
 
 .btn-cancel:hover {
-  color: #c2410c;
+  color: var(--color-navy-dark, #1a2636);
   text-decoration: underline;
 }
 
@@ -802,7 +944,7 @@ onMounted(loadAll);
 .detail-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(26, 38, 54, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -811,9 +953,10 @@ onMounted(loadAll);
 }
 
 .detail-modal {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  background: var(--color-white, #fff);
+  border-radius: var(--radius-lg, 20px);
+  box-shadow: var(--shadow-xl, 0 20px 60px rgba(0, 0, 0, 0.15));
+  border: 1px solid rgba(181, 169, 154, 0.35);
   max-width: 520px;
   width: 100%;
   max-height: 90vh;
@@ -825,28 +968,36 @@ onMounted(loadAll);
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-medium-gray, #e2e8f0);
+  background: linear-gradient(180deg, var(--color-cream-gold-light, #f8f4ec) 0%, var(--color-white, #fff) 100%);
 }
 
 .detail-modal-header h3 {
   margin: 0;
   font-size: 18px;
-  font-weight: 600;
-  color: #1e3a5f;
+  font-weight: 800;
+  color: var(--color-navy, #27374d);
 }
 
 .detail-modal-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: #94a3b8;
-  cursor: pointer;
+  background: var(--color-light-gray, #f8fafc);
+  border: 1px solid var(--color-medium-gray, #e2e8f0);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 22px;
   line-height: 1;
+  color: var(--color-dark-gray, #64748b);
+  cursor: pointer;
   padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .detail-modal-close:hover {
-  color: #1e293b;
+  color: var(--color-navy, #27374d);
+  border-color: var(--color-gold, #b5a99a);
 }
 
 .detail-modal-body {
@@ -862,37 +1013,40 @@ onMounted(loadAll);
 }
 
 .detail-section h4 {
-  font-size: 14px;
-  font-weight: 600;
-  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-navy, #27374d);
   margin: 0 0 10px 0;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(181, 169, 154, 0.45);
 }
 
 .detail-section p {
-  margin: 0 0 6px 0;
+  margin: 0 0 8px 0;
   font-size: 14px;
-  color: #1e293b;
+  color: var(--color-charcoal, #1e293b);
+  line-height: 1.5;
 }
 
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
-  border: 1px dashed #e2e8f0;
+  background: var(--color-white, #fff);
+  border-radius: var(--radius-md, 14px);
+  border: 1px dashed rgba(39, 55, 77, 0.2);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
 }
 
 .empty-state svg {
   width: 60px;
   height: 60px;
-  color: #cbd5e1;
+  color: var(--color-gold, #b5a99a);
+  opacity: 0.65;
   margin-bottom: 16px;
 }
 
 .empty-state p {
-  color: #94a3b8;
+  color: var(--color-dark-gray, #64748b);
   font-size: 15px;
   margin: 0;
 }
@@ -937,12 +1091,14 @@ onMounted(loadAll);
     grid-template-columns: 1fr;
   }
   .card-body {
-    padding-left: 20px;
+    padding: 18px;
+    padding-inline-end: 18px;
   }
   .card-status-badge {
     position: static;
-    display: inline-block;
-    margin-bottom: 12px;
+    display: inline-flex;
+    align-self: flex-start;
+    margin: 16px 18px 0;
   }
   .card-actions {
     flex-direction: column;
@@ -982,15 +1138,15 @@ onMounted(loadAll);
   }
   .card-body {
     padding: 16px;
+    padding-inline-end: 16px;
   }
-  .card-unit {
-    font-size: 16px;
-  }
-  .card-project,
-  .card-client,
-  .card-date,
-  .card-payment {
+  .res-line {
+    grid-template-columns: minmax(4.5rem, 36%) 1fr;
     font-size: 13px;
+    padding: 6px 0;
+  }
+  .res-line--title .card-value {
+    font-size: 16px;
   }
   .card-actions button {
     padding: 10px 14px;
@@ -1038,8 +1194,9 @@ onMounted(loadAll);
   }
   .card-body {
     padding: 12px;
+    padding-inline-end: 12px;
   }
-  .card-unit {
+  .res-line--title .card-value {
     font-size: 15px;
   }
   .card-actions button {
@@ -1063,13 +1220,10 @@ onMounted(loadAll);
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
   }
-  .card-unit {
+  .res-line--title .card-value {
     font-size: 20px;
   }
-  .card-project,
-  .card-client,
-  .card-date,
-  .card-payment {
+  .res-line {
     font-size: 15px;
   }
   .card-actions button {
@@ -1093,9 +1247,10 @@ onMounted(loadAll);
     border-radius: 16px;
   }
   .card-body {
-    padding: 24px 24px 24px 60px;
+    padding: 24px;
+    padding-inline-end: clamp(100px, 12vw, 140px);
   }
-  .card-unit {
+  .res-line--title .card-value {
     font-size: 22px;
   }
   .tab-btn {
@@ -1119,15 +1274,13 @@ onMounted(loadAll);
     border-radius: 20px;
   }
   .card-body {
-    padding: 28px 28px 28px 68px;
+    padding: 28px;
+    padding-inline-end: clamp(120px, 10vw, 160px);
   }
-  .card-unit {
+  .res-line--title .card-value {
     font-size: 24px;
   }
-  .card-project,
-  .card-client,
-  .card-date,
-  .card-payment {
+  .res-line {
     font-size: 18px;
   }
   .card-actions button {

@@ -216,12 +216,12 @@ import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import editorService from '@/services/editorService';
 import logger from '@/utils/logger';
-import EditorContractsSection from '@/components/editor/EditorContractsSection.vue';
-import EditorContractDetailSection from '@/components/editor/EditorContractDetailSection.vue';
-import EditorSecondPartySection from '@/components/editor/EditorSecondPartySection.vue';
-import EditorUnitsSection from '@/components/editor/EditorUnitsSection.vue';
-import EditorPhotographySection from '@/components/editor/EditorPhotographySection.vue';
-import EditorBoardsSection from '@/components/editor/EditorBoardsSection.vue';
+import EditorContractsSection from '@/modules/editor/components/EditorContractsSection.vue';
+import EditorContractDetailSection from '@/modules/editor/components/EditorContractDetailSection.vue';
+import EditorSecondPartySection from '@/modules/editor/components/EditorSecondPartySection.vue';
+import EditorUnitsSection from '@/modules/editor/components/EditorUnitsSection.vue';
+import EditorPhotographySection from '@/modules/editor/components/EditorPhotographySection.vue';
+import EditorBoardsSection from '@/modules/editor/components/EditorBoardsSection.vue';
 
 const EDITOR_TABS = [
   { id: 'contracts', name: 'EditorContracts', label: 'عقود' },

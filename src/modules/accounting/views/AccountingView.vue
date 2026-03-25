@@ -1,7 +1,7 @@
 <template>
   <div class="hr-view accounting-view">
     <div class="tab-content custom-scrollbar">
-      <AccountingDashboardTab v-if="activeTab === 'dashboard'" :user-name="userName" />
+      <AccountingDashboardTab v-if="activeTab === 'dashboard'" />
       <AccountingNotificationsTab v-else-if="activeTab === 'notifications'" />
       <AccountingSoldUnitsTab v-else-if="activeTab === 'sold-units'" />
       <AccountingDepositsTab v-else-if="activeTab === 'deposits'" />
@@ -11,9 +11,8 @@
 </template>
 
 <script setup>
-import { computed, ref, defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
-import authService from '@/services/authService';
 import '../styles/accounting-shell.css';
 
 const AccountingDashboardTab = defineAsyncComponent(() =>
@@ -33,8 +32,6 @@ const AccountingSalariesTab = defineAsyncComponent(() =>
 );
 
 const route = useRoute();
-const user = ref(authService.getCurrentUser());
-const userName = computed(() => user.value?.name || 'قسم المحاسبة');
 
 const activeTab = computed(() => {
   const name = route.name;

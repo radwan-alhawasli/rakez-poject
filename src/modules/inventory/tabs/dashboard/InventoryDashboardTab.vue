@@ -1,9 +1,6 @@
 <template>
-  <div class="inventory-dashboard-tab">
-    <div class="welcome-header">
-      <h1 class="welcome-title">لوحة تحكم المخزون</h1>
-      <p class="welcome-subtitle">نظرة عامة على المشاريع والعقود والوحدات.</p>
-    </div>
+  <div class="inventory-dashboard-tab rakez-erp-dashboard">
+    <DashboardWelcomeHeader greeting-name="المخزون" subtitle="نظرة عامة على المشاريع والعقود والوحدات." />
 
     <div v-if="isLoading" class="loading-state">
       <div class="spinner"></div>
@@ -16,77 +13,63 @@
     </div>
 
     <template v-else>
-      <div class="stats-grid">
-        <div class="stat-card animate-fade-in-up">
-          <div class="stat-content">
-            <span class="stat-label">الوحدات المتاحة</span>
-            <span class="stat-value number" :title="formatNumber(availableUnits)">{{ formatCompact(availableUnits) }}</span>
-            <span class="stat-desc">وحدة سكنية جاهزة للبيع</span>
-          </div>
-          <div class="stat-icon-bg units">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <circle cx="12" cy="12" r="6"></circle>
-              <circle cx="12" cy="12" r="2"></circle>
-            </svg>
-          </div>
-        </div>
-
-        <div
-          class="stat-card clickable animate-fade-in-up"
-          @click="$router.push('/inventory/projects')"
+      <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
+      <div class="rakez-widget-grid rakez-widget-grid--dense">
+        <LuxuryStatCard
+          label="الوحدات المتاحة"
+          :value="formatCompact(availableUnits)"
+          :title="formatNumber(availableUnits)"
+          description="وحدة سكنية جاهزة للبيع"
         >
-          <div class="stat-content">
-            <span class="stat-label">مشاريع التسويق</span>
-            <span class="stat-value number" :title="formatNumber(totalProjects)">{{ formatCompact(totalProjects) }}</span>
-            <span class="stat-desc">مشروع جاهز للتسويق - اضغط للعرض</span>
-          </div>
-          <div class="stat-icon-bg projects">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 11l3 3L22 4"></path>
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-            </svg>
-          </div>
-        </div>
+          <template #icon>
+            <DashboardStatIcon name="units" />
+          </template>
+        </LuxuryStatCard>
 
-        <div class="stat-card animate-fade-in-up">
-          <div class="stat-content">
-            <span class="stat-label">المشاريع الجاهزة</span>
-            <span class="stat-value number" :title="formatNumber(readyProjects)">{{ formatCompact(readyProjects) }}</span>
-            <span class="stat-desc">مشاريع مكتملة تحتوي على وحدات</span>
-          </div>
-          <div class="stat-icon-bg ready">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-          </div>
-        </div>
+        <LuxuryStatCard
+          clickable
+          label="مشاريع التسويق"
+          :value="formatCompact(totalProjects)"
+          :title="formatNumber(totalProjects)"
+          description="اضغط للعرض"
+          @click="goProjects"
+        >
+          <template #icon>
+            <DashboardStatIcon name="clipboard" />
+          </template>
+        </LuxuryStatCard>
 
-        <div class="stat-card animate-fade-in-up">
-          <div class="stat-content">
-            <span class="stat-label">المشاريع غير الجاهزة</span>
-            <span class="stat-value number" :title="formatNumber(notReadyProjects)">{{ formatCompact(notReadyProjects) }}</span>
-            <span class="stat-desc">لم يكتمل المتتبع (Tracker)</span>
-          </div>
-          <div class="stat-icon-bg not-ready">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-          </div>
-        </div>
+        <LuxuryStatCard
+          label="المشاريع الجاهزة"
+          :value="formatCompact(readyProjects)"
+          :title="formatNumber(readyProjects)"
+          description="مشاريع مكتملة تحتوي على وحدات"
+        >
+          <template #icon>
+            <DashboardStatIcon name="successCircle" />
+          </template>
+        </LuxuryStatCard>
+
+        <LuxuryStatCard
+          label="المشاريع غير الجاهزة"
+          :value="formatCompact(notReadyProjects)"
+          :title="formatNumber(notReadyProjects)"
+          description="لم يكتمل المتتبع (Tracker)"
+        >
+          <template #icon>
+            <DashboardStatIcon name="warningCircle" />
+          </template>
+        </LuxuryStatCard>
       </div>
 
-      <div class="overview-section">
-        <div class="section-header">
-          <h3 class="section-title">نظرة عامة على المشاريع</h3>
-          <p class="section-desc">توزيع المشاريع حسب حالتها الحالية.</p>
-        </div>
-        <div class="chart-placeholder">
-          <p style="color: var(--color-dark-gray); margin-top: 40px">مخطط بياني لتوزيع المشاريع</p>
-        </div>
+      <h3 class="rakez-dashboard-section-title">لوحة المؤشرات</h3>
+      <div class="rakez-widget-grid">
+        <DarkWidgetShell title="توزيع المخزون والمشاريع" subtitle="من نظرة الوكالة">
+          <DonutKpiWidget :segments="inventoryDonutSegments" :height="200" central-sub-label="إجمالي الأعداد" />
+        </DarkWidgetShell>
+        <DarkWidgetShell class="rakez-widget-span-2" title="نظرة عامة على المشاريع" subtitle="مؤشرات من نظرة الوكالة وفهرس العقود">
+          <DashboardMetricsBarChart :series="inventoryChartSeries" :height="260" />
+        </DarkWidgetShell>
       </div>
     </template>
   </div>
@@ -94,10 +77,23 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import DashboardMetricsBarChart from '@/components/dashboard/DashboardMetricsBarChart.vue';
+import LuxuryStatCard from '@/components/dashboard/widgets/LuxuryStatCard.vue';
+import DarkWidgetShell from '@/components/dashboard/widgets/DarkWidgetShell.vue';
+import DonutKpiWidget from '@/components/dashboard/widgets/DonutKpiWidget.vue';
 import inventoryService from '@/services/inventoryService';
 import { useFormatters } from '@/composables/useFormatters';
+import { inventoryProjectSegments } from '@/utils/dashboardData';
+import DashboardWelcomeHeader from '@/components/dashboard/DashboardWelcomeHeader.vue';
+import DashboardStatIcon from '@/components/dashboard/DashboardStatIcon.vue';
 
+const router = useRouter();
 const { formatCompact, formatNumber } = useFormatters();
+
+function goProjects() {
+  router.push('/inventory/projects');
+}
 
 const isLoading = ref(true);
 const error = ref(null);
@@ -106,6 +102,22 @@ const availableUnits = ref(0);
 const totalProjects = ref(0);
 const readyProjects = ref(0);
 const notReadyProjects = ref(0);
+
+const inventoryChartSeries = computed(() => [
+  { label: 'وحدات متاحة', value: Number(availableUnits.value) || 0 },
+  { label: 'مشاريع', value: Number(totalProjects.value) || 0 },
+  { label: 'جاهزة', value: Number(readyProjects.value) || 0 },
+  { label: 'غير جاهزة', value: Number(notReadyProjects.value) || 0 },
+]);
+
+const inventoryDonutSegments = computed(() =>
+  inventoryProjectSegments(
+    availableUnits.value,
+    totalProjects.value,
+    readyProjects.value,
+    notReadyProjects.value
+  )
+);
 
 async function fetchData() {
   isLoading.value = true;
@@ -151,26 +163,6 @@ onMounted(fetchData);
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-.welcome-header {
-  margin-bottom: 40px;
-  text-align: right;
-  padding-bottom: 25px;
-  border-bottom: 1px solid rgba(177, 162, 143, 0.15);
-}
-
-.welcome-title {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--color-charcoal);
-  margin: 0 0 0.5rem 0;
-}
-
-.welcome-subtitle {
-  font-size: 1rem;
-  color: var(--color-dark-gray);
-  margin: 0;
 }
 
 .stats-grid {

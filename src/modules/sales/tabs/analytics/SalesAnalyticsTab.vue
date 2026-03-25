@@ -3,38 +3,7 @@
     <div class="welcome-header">
       <div class="header-content">
         <h1 class="welcome-title">التحليلات والتقارير</h1>
-        <p class="welcome-subtitle">تقارير المبيعات والودائع والعمولات الشهرية</p>
-      </div>
-      <div class="date-filters">
-        <input
-          type="date"
-          :value="analyticsFilters.from"
-          class="date-input"
-          placeholder="من تاريخ"
-          @input="analyticsFilters.from = $event.target.value"
-        />
-        <span>إلى</span>
-        <input
-          type="date"
-          :value="analyticsFilters.to"
-          class="date-input"
-          placeholder="إلى تاريخ"
-          @input="analyticsFilters.to = $event.target.value"
-        />
-        <button class="btn-primary" @click="loadAnalyticsDashboard">
-          <svg
-            viewBox="0 0 24 24"
-            width="16"
-            height="16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="23 4 23 10 17 10"></polyline>
-            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-          </svg>
-          تحديث
-        </button>
+        <p class="welcome-subtitle">تقارير المبيعات والودائع والعمولات الشهرية (الفترة: الشهر الحالي)</p>
       </div>
     </div>
 
@@ -73,7 +42,7 @@
           <line x1="12" y1="20" x2="12" y2="4"></line>
           <line x1="6" y1="20" x2="6" y2="14"></line>
         </svg>
-        <p>لا توجد بيانات تحليلية. اضغط "تحديث" لتحميلها.</p>
+        <p>لا توجد بيانات تحليلية للفترة الحالية أو تعذر التحميل.</p>
       </div>
       <div v-else class="stats-grid analytics-grid">
         <div class="stat-card animate-fade-in-up hover-lift">
@@ -186,13 +155,23 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue';
 import { useSalesAnalytics } from '@/composables/sales/useSalesAnalytics';
 
 const {
-  analyticsDashboard, analyticsFilters, isLoadingAnalytics,
-  analyticsSubTab: activeSubTab, analyticsMonthlyReport, isLoadingMonthlyReport,
-  loadAnalyticsDashboard, loadAnalyticsMonthlyReport, formatCurrency,
+  analyticsDashboard,
+  isLoadingAnalytics,
+  analyticsSubTab: activeSubTab,
+  analyticsMonthlyReport,
+  isLoadingMonthlyReport,
+  loadAnalyticsDashboard,
+  loadAnalyticsMonthlyReport,
+  formatCurrency,
 } = useSalesAnalytics();
+
+onMounted(() => {
+  loadAnalyticsDashboard();
+});
 </script>
 
 <style scoped>
@@ -215,51 +194,11 @@ const {
 }
 
 .welcome-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 20px;
+  margin-bottom: 20px;
 }
 
 .header-content {
-  flex: 1;
   min-width: 0;
-}
-
-
-.date-filters {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.date-input {
-  padding: 8px 12px;
-  border: 1px solid var(--color-medium-gray);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  color: var(--color-charcoal);
-}
-
-.btn-primary {
-  padding: 10px 20px;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
-  color: white;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(177, 162, 143, 0.4);
 }
 
 .sub-tabs {
@@ -475,11 +414,6 @@ const {
 }
 
 @media (max-width: 576px) {
-  .date-filters {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
   .analytics-grid {
     grid-template-columns: 1fr;
   }

@@ -1,4 +1,4 @@
-import { ref, reactive, computed, shallowRef } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import salesService from '@/services/salesService';
 import authService from '@/services/authService';
 import { isSalesLeader } from '@/utils/rbac';
@@ -20,9 +20,6 @@ export function useSalesDashboard() {
     to: `${year}-${month}-${String(lastDay).padStart(2, '0')}`,
   });
 
-  const projects = shallowRef([]);
-  const isLoadingProjects = ref(false);
-
   const computedConfirmedVsNegotiationRatio = computed(() => {
     const d = dashboardData.value;
     if (!d) return 0;
@@ -32,35 +29,6 @@ export function useSalesDashboard() {
     const total = confirmed + negotiation;
     return total ? Math.round((confirmed / total) * 100) : 0;
   });
-
-  const dashboardProjects = computed(() =>
-    projects.value
-      .filter(p => {
-        const s = String(p.status || '').toLowerCase();
-        return !(s === 'refused' || s === 'rejected' || s === 'archived');
-      })
-      .slice(0, 4)
-  );
-
-  const loadProjects = async () => {
-    isLoadingProjects.value = true;
-    try {
-      const user = authService.getCurrentUser();
-      const isLeader = user && isSalesLeader(user);
-      const response = await salesService.getProjects({
-        scope: isLeader ? 'team' : 'me',
-        per_page: 100,
-      });
-      let rawData = response?.data?.data || response?.data || response;
-      if (!Array.isArray(rawData) && rawData?.data) rawData = rawData.data;
-      if (!Array.isArray(rawData)) rawData = [];
-      projects.value = rawData;
-    } catch (error) {
-      logger.error('Error loading projects:', error);
-    } finally {
-      isLoadingProjects.value = false;
-    }
-  };
 
   const loadDashboard = async () => {
     isLoadingDashboard.value = true;
@@ -90,9 +58,6 @@ export function useSalesDashboard() {
       } else {
         dashboardData.value = raw;
       }
-      if (projects.value.length === 0) {
-        await loadProjects();
-      }
     } catch (error) {
       logger.error('Error loading dashboard:', error);
     } finally {
@@ -104,7 +69,6 @@ export function useSalesDashboard() {
     dashboardData,
     isLoadingDashboard,
     dashboardFilters,
-    dashboardProjects,
     computedConfirmedVsNegotiationRatio,
     formatCurrency,
     loadDashboard,
