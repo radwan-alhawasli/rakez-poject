@@ -119,11 +119,23 @@
             <div class="input-row grid-3">
               <div class="field-group">
                 <label>السعي من</label>
-                <input type="text" :value="commissionFromLabel" class="form-input readonly" readonly />
+                <select v-model="form.commission_from" class="form-input" :class="{ 'input-error': getFieldError('commission_from') }">
+                  <option value="owner">المالك</option>
+                  <option value="buyer">المشتري</option>
+                </select>
+                <span v-if="getFieldError('commission_from')" class="field-error">{{ getFieldError('commission_from') }}</span>
               </div>
               <div class="field-group">
                 <label>نسبة السعي (%)</label>
-                <input type="text" :value="commissionPercentDisplay" class="form-input readonly" readonly />
+                <input
+                  v-model="form.commission_percent"
+                  type="text"
+                  inputmode="decimal"
+                  class="form-input"
+                  :class="{ 'input-error': getFieldError('commission_percent') }"
+                  placeholder="مثال: 5"
+                />
+                <span v-if="getFieldError('commission_percent')" class="field-error">{{ getFieldError('commission_percent') }}</span>
               </div>
             </div>
 
@@ -361,7 +373,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import contractService from '@/services/contractService';
 import { downloadFilledContract } from '@/services/pdfService';
@@ -410,7 +422,7 @@ export default {
       agency_number: '',
       agency_date: '',
       commission_percent: '',
-      commission_from: '',
+      commission_from: 'owner',
       avg_property_value: '',
       release_date: '',
 
@@ -436,23 +448,12 @@ export default {
       project_site_url: '',
     });
 
-    const commissionFromLabel = computed(() => {
-      const v = (form.commission_from ?? '').toString().toLowerCase();
-      if (v === 'owner') return 'المالك';
-      if (v === 'partner') return 'المشتري';
-      return form.commission_from || '—';
-    });
-    const commissionPercentDisplay = computed(() => {
-      const p = form.commission_percent;
-      if (p === '' || p == null) return '—';
-      return `${String(p).trim()} %`;
-    });
-
     const fetchContractDetails = async () => {
       if (!requestId) return;
       try {
         const data = await contractService.getContractById(requestId);
         if (data) {
+          const info = data.info && typeof data.info === 'object' ? data.info : {};
           // Project Info
           form.city = data.city || form.city;
           form.project_name = data.project_name || form.project_name;
@@ -468,22 +469,33 @@ export default {
             let calculatedValue = 0;
 
             data.units.forEach(u => {
-              const count = parseInt(u.count) || 0;
-              const price = parseInt(u.price) || 0;
+              const count = parseInt(u.count, 10) || 0;
+              const price = parseInt(u.price, 10) || 0;
               totalCount += count;
               calculatedValue += price * count;
             });
 
             form.units_count =
               totalCount > 0 ? totalCount : data.units_count || form.units_count || 0;
-            // Set avg_property_value using the calculated total
-            form.avg_property_value =
-              calculatedValue > 0
+            // متوسط قيمة العقار من استكمال العقد (info) يجب أن يظهر إن وُجد؛ الحساب من الوحدات احتياطي فقط
+            const apiAvg = data.avg_property_value ?? info.avg_property_value;
+            const hasApiAvg =
+              apiAvg !== null &&
+              apiAvg !== undefined &&
+              String(apiAvg).trim() !== '' &&
+              !Number.isNaN(Number(apiAvg));
+            form.avg_property_value = hasApiAvg
+              ? apiAvg
+              : calculatedValue > 0
                 ? calculatedValue
-                : data.avg_property_value || form.avg_property_value || 0;
+                : data.avg_property_value ?? info.avg_property_value ?? form.avg_property_value ?? '';
           } else {
             form.units_count = data.units_count || data.unit_count || form.units_count || 0;
             form.unit_type = data.unit_type || form.unit_type;
+            const av = data.avg_property_value ?? info.avg_property_value;
+            if (av !== null && av !== undefined && String(av).trim() !== '') {
+              form.avg_property_value = av;
+            }
           }
 
           form.total_units_value = data.total_units_value || form.total_units_value || 0;
@@ -533,10 +545,22 @@ export default {
               form.agency_date = dateStr;
             }
           }
-          const commissionVal = data.commission_percent ?? data.commission_percentage;
-          form.commission_percent = commissionVal != null && commissionVal !== '' ? String(commissionVal) : form.commission_percent;
-          form.commission_from = data.commission_from || form.commission_from;
-          form.avg_property_value = data.avg_property_value || form.avg_property_value;
+          const commissionVal =
+            data.commission_percent ??
+            data.commission_percentage ??
+            info.commission_percent ??
+            info.commission_percentage;
+          form.commission_percent =
+            commissionVal != null && commissionVal !== '' ? String(commissionVal) : form.commission_percent;
+          let cf =
+            data.commission_from ||
+            data.commission_source ||
+            info.commission_from ||
+            info.commission_source ||
+            form.commission_from ||
+            'owner';
+          if (String(cf).toLowerCase() === 'partner') cf = 'buyer';
+          form.commission_from = cf;
           if (data.release_date) {
             const dateStr = data.release_date;
             if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
@@ -562,10 +586,14 @@ export default {
         gregorian_date: form.gregorian_date,
         agreement_duration_days: String(form.agreement_duration_days || ''),
         commission_percent: form.commission_percent,
+        commission_from: form.commission_from || 'owner',
         project_name: form.project_name,
         city: form.city,
       };
-      if (!validate(dataToValidate)) return;
+      if (!validate(dataToValidate)) {
+        toast.error('يرجى تعبئة الحقول المطلوبة، بما فيها نسبة السعي ومصدر السعي والتواريخ.');
+        return;
+      }
 
       isSaving.value = true;
       try {
@@ -601,9 +629,11 @@ export default {
           await contractService.storeContractInfo(requestId, payload);
 
           toast.success('تم حفظ تعديلات العقد بنجاح');
+          await fetchContractDetails();
           showDownloadModal.value = true;
         } else {
           // إنشاء عقد جديد (إحضار مشاريع)
+          const pct = String(form.commission_percent ?? '').trim();
           const createPayload = {
             project_name: form.project_name,
             developer_name: form.second_party_name,
@@ -611,8 +641,9 @@ export default {
             city: form.city,
             district: form.district,
             note: form.notes,
-            commission_percentage: form.commission_percent,
-            commission_from: form.commission_from,
+            commission_percent: pct,
+            commission_percentage: pct,
+            commission_from: form.commission_from || 'owner',
             units: form.units_count
               ? [{ type: form.unit_type || 'شقة', count: form.units_count, price: form.average_unit_price || 0 }]
               : [],
@@ -668,8 +699,6 @@ export default {
 
     return {
       form,
-      commissionFromLabel,
-      commissionPercentDisplay,
       isSaving,
       isDownloading,
       showDownloadModal,

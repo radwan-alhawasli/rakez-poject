@@ -101,6 +101,7 @@
             <th>النوع</th>
             <th>رقم العقد/الطلب</th>
             <th>المطور</th>
+            <th>نسبة السعي</th>
             <th>تاريخ الإنشاء</th>
             <th>الحالة</th>
             <th>الإجراء</th>
@@ -113,6 +114,7 @@
             </td>
             <td class="font-bold" data-label="رقم العقد/الطلب">{{ contract.number }}</td>
             <td class="dev-name" data-label="المطور">{{ contract.developer }}</td>
+            <td data-label="نسبة السعي">{{ contract.commissionLabel }}</td>
             <td class="dir-ltr" data-label="تاريخ الإنشاء">{{ contract.createdDate }}</td>
             <td data-label="الحالة">
               <span
@@ -280,11 +282,18 @@ function mapContract(contract) {
       : created
         ? new Date(created).toLocaleDateString('ar-SA', { year: 'numeric', month: '2-digit', day: '2-digit' })
         : '—';
+  const commRaw = contract.commission_percent ?? contract.commission_percentage ?? contract.info?.commission_percent;
+  let commissionLabel = '—';
+  if (commRaw !== undefined && commRaw !== null && String(commRaw).trim() !== '') {
+    const n = parseFloat(String(commRaw).replace(/%/g, '').replace(/,/g, '').trim());
+    commissionLabel = Number.isFinite(n) ? `${n}%` : `${String(commRaw).trim()}%`;
+  }
   return {
     ...contract,
     id: contract.id ?? contract.contract_id,
     number: contract.number ?? contract.project_name ?? contract.id ?? contract.contract_id ?? '—',
     developer: contract.developer_name ?? contract.developer ?? contract.second_party_name ?? '—',
+    commissionLabel,
     createdDate,
     status,
     type: contract.contract_type ?? contract.type ?? 'Full Contract',

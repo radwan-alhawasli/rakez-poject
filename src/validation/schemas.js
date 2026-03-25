@@ -83,7 +83,13 @@ export const contractInfoSchema = z.object({
   second_party_id: z.string().min(1, 'رقم هوية الطرف الثاني مطلوب'),
   gregorian_date: z.string().min(1, 'التاريخ الميلادي مطلوب'),
   agreement_duration_days: z.string().min(1, 'مدة الاتفاقية مطلوبة'),
-  commission_percent: z.union([z.string(), z.number()]).refine(v => v !== '' && v !== 0, 'نسبة العمولة مطلوبة'),
+  commission_percent: z.union([z.string(), z.number()]).refine(v => {
+    const s = String(v ?? '').trim();
+    if (!s) return false;
+    const n = Number(s);
+    return !Number.isNaN(n) && n >= 0;
+  }, 'نسبة السعي مطلوبة (رقم صالح)'),
+  commission_from: z.string().min(1, 'مصدر السعي مطلوب'),
   project_name: z.string().min(2, 'اسم المشروع مطلوب'),
   city: z.string().min(1, 'المدينة مطلوبة'),
 });

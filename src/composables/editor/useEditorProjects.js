@@ -141,12 +141,34 @@ export function useEditorProjects() {
       status: status === 'approved' ? 'approved' : 'rejected',
       rejection_reason: rejectionReason || undefined,
     });
+    const st = status === 'approved' ? 'approved' : 'rejected';
+    const list = [...contracts.value];
+    const idx = list.findIndex(c => Number(c.id) === Number(id));
+    if (idx !== -1) {
+      list[idx] = {
+        ...list[idx],
+        montage_status: st,
+        approval_status: st,
+        montage_approval_status: st,
+      };
+      contracts.value = list;
+    }
     await fetchContracts();
+    const idxAfter = contracts.value.findIndex(c => Number(c.id) === Number(id));
+    if (idxAfter !== -1) {
+      const row = contracts.value[idxAfter];
+      const hasFinal =
+        row.montage_status || row.approval_status || row.montage_department?.status;
+      if (!hasFinal) {
+        const list2 = [...contracts.value];
+        list2[idxAfter] = { ...row, montage_status: st, approval_status: st, montage_approval_status: st };
+        contracts.value = list2;
+      }
+    }
     if (detail.value && Number(detail.value.id) === Number(id)) {
       await fetchDetail(id);
       await fetchMontage(id);
     }
-    // Refresh has-links map for manager so buttons update
     const ids = contracts.value.filter(c => isAfterMontage(c)).map(c => c.id);
     if (ids.length) await fetchMontageLinksForProjects(ids);
   }

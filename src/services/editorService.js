@@ -13,6 +13,7 @@ import { handleServiceError } from '@/utils/serviceErrorHandler';
  *   GET    /montage-department/show/{contractId}
  *   POST   /montage-department/store/{contractId}
  *   PUT    /montage-department/update/{contractId}
+ *   PATCH  /montage-department/approve/{contractId}
  *   GET    /photography-department/show/{contractId}
  *   POST   /photography-department/store/{contractId}
  *   PUT    /photography-department/update/{contractId}
@@ -290,17 +291,17 @@ const editorService = {
   // --- Montage Department Approve (manager only) ---
 
   /**
-   * POST /editor/montage-department/approve/:id — Manager approve or reject montage
+   * PATCH /editor/montage-department/approve/:id — Manager approve or reject montage
    * @param {number|string} id - Montage/contract id
    * @param {Object} data - { status: 'approved'|'rejected', rejection_reason?: string }
    * @returns {Promise<Object>}
    */
   async approveMontage(id, data) {
     try {
-      const response = await apiClient.post(`/editor/montage-department/approve/${id}`, data);
+      const response = await apiClient.patch(`/editor/montage-department/approve/${id}`, data);
       return response.data?.data ?? response.data ?? {};
     } catch (error) {
-      return handleServiceError(error, `Approve montage ${id}`, 'post');
+      return handleServiceError(error, `Approve montage ${id}`, 'patch');
     }
   },
 };

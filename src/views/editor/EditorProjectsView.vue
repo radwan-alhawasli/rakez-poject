@@ -118,8 +118,17 @@
               </button>
             </div>
           </div>
-          <!-- Manager: Approve / Reject (after montage only) -->
-          <div v-if="isManager && activeTab === 'after' && montageData && (selectedProject.has_montage_data == 1 || selectedProject.has_montage == 1 || selectedProject.has_montage === true)" class="manager-actions">
+          <!-- Manager: Approve / Reject (after montage only, إن لم يُعتمد/يُرفض بعد) -->
+          <div
+            v-if="
+              isManager &&
+              activeTab === 'after' &&
+              montageData &&
+              (selectedProject.has_montage_data == 1 || selectedProject.has_montage == 1 || selectedProject.has_montage === true) &&
+              !isMontageDecisionFinal(selectedProject, montageStatusLabel(selectedProject))
+            "
+            class="manager-actions"
+          >
             <h4>قرار المدير</h4>
             <div class="action-buttons">
               <button type="button" class="btn-approve" @click="doApprove(selectedProject.id)">قبول</button>
@@ -193,6 +202,7 @@ import { useEditorProjects } from '@/composables/editor/useEditorProjects';
 import editorService from '@/services/editorService';
 import EditorProjectCard from '@/components/editor/EditorProjectCard.vue';
 import { toast } from '@/composables/useToast';
+import { isMontageDecisionFinal } from '@/utils/montageApproval';
 
 const route = useRoute();
 const router = useRouter();
@@ -461,6 +471,13 @@ async function doApprove(id) {
   try {
     await approveMontage(id, 'approved');
     toast.success('تم القبول');
+    if (selectedProject.value && Number(selectedProject.value.id) === Number(id)) {
+      selectedProject.value = {
+        ...selectedProject.value,
+        montage_status: 'approved',
+        approval_status: 'approved',
+      };
+    }
     closeDetail();
   } catch (e) {
     toast.error(e?.message || 'فشل');
@@ -475,10 +492,18 @@ function openRejectModal(id) {
 async function doReject() {
   if (!rejectTargetId.value || !rejectReason.value.trim()) return;
   try {
-    await approveMontage(rejectTargetId.value, 'rejected', rejectReason.value.trim());
+    const rid = rejectTargetId.value;
+    await approveMontage(rid, 'rejected', rejectReason.value.trim());
     toast.success('تم الرفض');
     rejectTargetId.value = null;
     rejectReason.value = '';
+    if (selectedProject.value && Number(selectedProject.value.id) === Number(rid)) {
+      selectedProject.value = {
+        ...selectedProject.value,
+        montage_status: 'rejected',
+        approval_status: 'rejected',
+      };
+    }
     closeDetail();
   } catch (e) {
     toast.error(e?.message || 'فشل');
@@ -490,8 +515,9 @@ async function doReject() {
 .editor-projects-view {
   padding: 1.5rem;
   direction: rtl;
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
 }
 .page-header { margin-bottom: 1.5rem; }
 .page-title { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.25rem 0; }

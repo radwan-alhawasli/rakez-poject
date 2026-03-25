@@ -405,6 +405,8 @@ const handleSubmit = async () => {
         };
       });
 
+    const pctNum = Number(form.commission_percentage);
+    const pctValid = Number.isFinite(pctNum) ? pctNum : 0;
     const payload = {
       project_name: form.project_name?.trim() || '',
       developer_name: developerName,
@@ -415,7 +417,9 @@ const handleSubmit = async () => {
       project_image_url: form.project_location_url?.trim() || undefined,
       note: form.note?.trim() || undefined,
       units,
-      commission_percentage: Number(form.commission_percentage) || 0,
+      // الباكند يقرأ commission_percent غالباً؛ contractService.createContract يضيفه أيضاً إن وُجد commission_percentage فقط
+      commission_percent: String(pctValid),
+      commission_percentage: pctValid,
       commission_from: form.commission_from || 'owner',
     };
 

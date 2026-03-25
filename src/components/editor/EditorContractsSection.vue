@@ -1,49 +1,42 @@
 <template>
-  <div class="management-view">
+  <div class="management-view contracts-lines-root">
     <div class="section-header-compact">
       <div>
         <h2 class="section-title">عقود المحرر</h2>
-        <p class="section-subtitle">قائمة العقود المتاحة للمحرر.</p>
+        <p class="section-subtitle">قائمة العقود بعرض أسطر (عرض كامل).</p>
       </div>
     </div>
-    <div class="metrics-table-container table-responsive">
-      <table class="metrics-table table-mobile-stacked">
-        <thead>
-          <tr>
-            <th>رقم العقد</th>
-            <th>المشروع</th>
-            <th>الحالة</th>
-            <th>الإجراءات</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="contract in contracts"
-            :key="contract.id"
-            :style="selectedContractId === contract.id ? 'background: var(--color-light-gray)' : ''"
-          >
-            <td data-label="رقم العقد">{{ contract.id }}</td>
-            <td data-label="المشروع">{{ contract.project_name || contract.contract_name || 'غير محدد' }}</td>
-            <td data-label="الحالة">
-              <span class="status-tag good">{{ translateStatus(contract.status) }}</span>
-            </td>
-            <td data-label="الإجراءات">
-              <router-link :to="{ name: 'EditorContractDetail', params: { id: String(contract.id) } }" class="btn-action edit">
-                عرض
-              </router-link>
-            </td>
-          </tr>
-          <tr v-if="contracts.length === 0 && !isLoading">
-            <td
-              data-label=""
-              colspan="4"
-              style="text-align: center; padding: 40px; color: var(--color-dark-gray)"
-            >
-              لا توجد عقود
-            </td>
-          </tr>
-        </tbody>
-      </table>
+
+    <div v-if="isLoading" class="loading-inline">جاري التحميل...</div>
+
+    <div v-else class="contracts-lines" role="list">
+      <div class="contracts-lines-header" aria-hidden="true">
+        <span>رقم العقد</span>
+        <span>المشروع</span>
+        <span>نسبة السعي</span>
+        <span>الحالة</span>
+        <span>إجراء</span>
+      </div>
+      <div
+        v-for="contract in contracts"
+        :key="contract.id"
+        class="contract-line"
+        :class="{ selected: selectedContractId != null && String(selectedContractId) === String(contract.id) }"
+        role="listitem"
+      >
+        <span class="line-cell line-id">{{ contract.id }}</span>
+        <span class="line-cell line-name">{{ contract.project_name || contract.contract_name || 'غير محدد' }}</span>
+        <span class="line-cell line-commission">{{ formatCommission(contract) }}</span>
+        <span class="line-cell line-status">
+          <span class="status-tag good">{{ translateStatus(contract.status) }}</span>
+        </span>
+        <span class="line-cell line-actions">
+          <router-link :to="{ name: 'EditorContractDetail', params: { id: String(contract.id) } }" class="btn-action edit">
+            عرض
+          </router-link>
+        </span>
+      </div>
+      <div v-if="contracts.length === 0 && !isLoading" class="contracts-lines-empty">لا توجد عقود</div>
     </div>
   </div>
 </template>
@@ -81,9 +74,21 @@ const CONTRACT_STATUS_LABELS = {
 function translateStatus(val) {
   return CONTRACT_STATUS_LABELS[val] || val || 'قيد المعالجة';
 }
+
+function formatCommission(c) {
+  const raw = c?.commission_percent ?? c?.commission_percentage;
+  if (raw === undefined || raw === null || String(raw).trim() === '') return '—';
+  const n = parseFloat(String(raw).replace(/%/g, '').trim());
+  if (Number.isFinite(n)) return `${n}%`;
+  return String(raw).includes('%') ? String(raw) : `${raw}%`;
+}
 </script>
 
 <style scoped>
+.contracts-lines-root {
+  width: 100%;
+  max-width: none;
+}
 .section-header-compact {
   margin-bottom: 20px;
 }
@@ -98,35 +103,101 @@ function translateStatus(val) {
   color: var(--color-dark-gray);
   margin: 0;
 }
-.metrics-table-container {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  border-radius: 12px;
-  border: 1px solid var(--color-medium-gray);
+.loading-inline {
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-dark-gray);
 }
-.metrics-table {
+.contracts-lines {
   width: 100%;
-  border-collapse: collapse;
-  min-width: 500px;
+  border: 1px solid var(--color-medium-gray);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
 }
-.metrics-table th {
-  text-align: right;
-  padding: 12px 16px;
-  font-size: 13px;
-  font-weight: 600;
+.contracts-lines-header {
+  display: none;
+  grid-template-columns: minmax(72px, 0.32fr) minmax(0, 1.2fr) minmax(72px, 0.28fr) minmax(88px, 0.35fr) minmax(88px, 0.32fr);
+  gap: 12px;
+  align-items: center;
+  padding: 10px 18px;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--color-dark-gray);
   background: var(--color-light-gray);
   border-bottom: 1px solid var(--color-medium-gray);
-  white-space: nowrap;
+  text-align: right;
 }
-.metrics-table td {
-  padding: 12px 16px;
-  font-size: 14px;
+@media (min-width: 768px) {
+  .contracts-lines-header {
+    display: grid;
+  }
+}
+.contract-line {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px 12px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--color-light-gray);
+  text-align: right;
+}
+@media (min-width: 768px) {
+  .contract-line {
+    grid-template-columns: minmax(72px, 0.32fr) minmax(0, 1.2fr) minmax(72px, 0.28fr) minmax(88px, 0.35fr) minmax(88px, 0.32fr);
+    align-items: center;
+    gap: 12px;
+  }
+  .line-cell::before {
+    display: none;
+  }
+}
+.contract-line:last-child {
+  border-bottom: none;
+}
+.contract-line.selected {
+  background: var(--color-light-gray);
+}
+.line-cell {
+  min-width: 0;
+  font-size: 14px;
   color: var(--color-charcoal);
 }
-.metrics-table tr:last-child td {
-  border-bottom: none;
+@media (max-width: 767px) {
+  .line-id::before {
+    content: 'رقم العقد: ';
+    font-weight: 600;
+    color: var(--color-navy);
+  }
+  .line-name::before {
+    content: 'المشروع: ';
+    font-weight: 600;
+    color: var(--color-navy);
+  }
+  .line-commission::before {
+    content: 'نسبة السعي: ';
+    font-weight: 600;
+    color: var(--color-navy);
+  }
+  .line-status::before {
+    content: 'الحالة: ';
+    font-weight: 600;
+    color: var(--color-navy);
+  }
+}
+.line-id {
+  font-weight: 700;
+  color: var(--color-navy);
+}
+.line-name {
+  word-break: break-word;
+}
+.line-actions {
+  justify-self: start;
+}
+.contracts-lines-empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--color-dark-gray);
 }
 .status-tag {
   display: inline-block;
@@ -155,127 +226,5 @@ function translateStatus(val) {
 }
 .btn-action.edit:hover {
   background: var(--color-medium-gray);
-}
-
-@media (max-width: 768px) {
-  .metrics-table-container {
-    margin-inline: -16px;
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
-  }
-  .metrics-table th,
-  .metrics-table td {
-    padding: 10px 12px;
-    font-size: 13px;
-  }
-}
-@media (max-width: 576px) {
-  .section-title {
-    font-size: 17px;
-  }
-  .metrics-table th,
-  .metrics-table td {
-    padding: 10px;
-    font-size: 12px;
-  }
-  .btn-action {
-    padding: 8px 12px;
-    min-height: 44px;
-    font-size: 12px;
-  }
-}
-@media (max-width: 320px) {
-  .section-title {
-    font-size: 15px;
-  }
-  .metrics-table th,
-  .metrics-table td {
-    padding: 8px 6px;
-    font-size: 11px;
-  }
-  .status-tag {
-    font-size: 10px;
-    padding: 2px 6px;
-  }
-}
-@media (min-width: 1200px) {
-  .metrics-table th,
-  .metrics-table td {
-    padding: 14px 20px;
-  }
-}
-@media (min-width: 1920px) {
-  .section-title {
-    font-size: 22px;
-  }
-  .metrics-table th {
-    padding: 14px 24px;
-    font-size: 14px;
-  }
-  .metrics-table td {
-    padding: 14px 24px;
-    font-size: 15px;
-  }
-  .btn-action {
-    padding: 8px 18px;
-    font-size: 14px;
-  }
-}
-@media (min-width: 2560px) {
-  .section-title {
-    font-size: 24px;
-  }
-  .section-subtitle {
-    font-size: 16px;
-  }
-  .metrics-table-container {
-    border-radius: 16px;
-  }
-  .metrics-table th {
-    padding: 16px 28px;
-    font-size: 15px;
-  }
-  .metrics-table td {
-    padding: 16px 28px;
-    font-size: 16px;
-  }
-  .btn-action {
-    padding: 10px 22px;
-    font-size: 15px;
-  }
-  .status-tag {
-    font-size: 14px;
-    padding: 4px 14px;
-  }
-}
-@media (min-width: 3840px) {
-  .section-title {
-    font-size: 28px;
-  }
-  .section-subtitle {
-    font-size: 18px;
-  }
-  .metrics-table-container {
-    border-radius: 20px;
-  }
-  .metrics-table th {
-    padding: 20px 32px;
-    font-size: 17px;
-  }
-  .metrics-table td {
-    padding: 20px 32px;
-    font-size: 18px;
-  }
-  .btn-action {
-    padding: 12px 26px;
-    font-size: 17px;
-    border-radius: 12px;
-  }
-  .status-tag {
-    font-size: 16px;
-    padding: 4px 16px;
-    border-radius: 14px;
-  }
 }
 </style>

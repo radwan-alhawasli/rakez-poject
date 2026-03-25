@@ -689,6 +689,9 @@ export default {
 <style scoped>
 .editor-view {
   padding: 24px;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
 }
 
 .editor-tabs {

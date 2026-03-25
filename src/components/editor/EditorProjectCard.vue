@@ -36,9 +36,9 @@
           اضافه الروابط
         </button>
       </template>
-      <!-- Manager: accept/reject only when project has links; else pending -->
+      <!-- Manager: accept/reject only when project has links and decision not yet taken -->
       <template v-else>
-        <template v-if="hasLinks">
+        <template v-if="hasLinks && !montageFinal">
           <button type="button" class="btn-card btn-approve" @click="$emit('approve', project)">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
             قبول
@@ -48,7 +48,14 @@
             رفض
           </button>
         </template>
-        <span v-else class="pending-label">قيد المراجعة</span>
+        <span v-else-if="hasLinks && montageFinal" class="done-label">{{ finalDecisionLabel }}</span>
+        <div v-else class="manager-pending-block">
+          <span class="pending-label">قيد المراجعة</span>
+          <button type="button" class="btn-card btn-add-links" @click="$emit('add-links', project)">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            اضافه الروابط
+          </button>
+        </div>
       </template>
     </div>
   </div>
@@ -56,6 +63,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { isMontageDecisionFinal } from '@/utils/montageApproval';
 
 const props = defineProps({
   project: { type: Object, required: true },
@@ -100,6 +108,19 @@ const hasLinks = computed(() => {
   const video = photo?.video_url ?? p?.montage_video_url ?? p?.video_url ?? p?.montage_video_link;
   const desc = photo?.description ?? p?.montage_description ?? p?.description;
   return !!(image && String(image).trim()) || !!(video && String(video).trim()) || !!(desc && String(desc).trim());
+});
+
+/** After manager accepts/rejects, hide accept/reject buttons */
+const montageFinal = computed(() =>
+  isMontageDecisionFinal(props.project, props.statusLabel || '')
+);
+
+/** نص أسفل البطاقة بعد القرار: قبول أو رفض */
+const finalDecisionLabel = computed(() => {
+  const p = props.project;
+  const s = String(p.montage_status ?? p.approval_status ?? '').toLowerCase();
+  if (s === 'rejected' || s === 'refused' || props.statusLabel === 'مرفوض') return 'تم الرفض';
+  return 'تم القبول';
 });
 
 function isNull(v) {
@@ -186,6 +207,29 @@ function displayValue(v) {
   margin-top: auto;
   padding-top: 0.5rem;
   border-top: 1px solid #f1f5f9;
+}
+.done-label {
+  font-size: 0.85rem;
+  color: #64748b;
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  width: 100%;
+}
+.manager-pending-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+.manager-pending-block .pending-label {
+  text-align: center;
+  width: 100%;
+}
+.manager-pending-block .btn-add-links {
+  flex: none;
+  width: 100%;
 }
 .btn-card {
   flex: 1;

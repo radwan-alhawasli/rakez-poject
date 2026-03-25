@@ -54,7 +54,22 @@ const inventoryService = {
   async getContractUnitsShow(contractId) {
     try {
       const response = await apiClient.get(`/inventory/contracts/units/show/${contractId}`);
-      return response.data?.data ?? response.data ?? {};
+      const root = response.data;
+      // Laravel: { data: [...] } | { data: { contract_units, units } } | أحياناً طبقة data إضافية
+      let body = root?.data ?? root ?? {};
+      if (body && typeof body === 'object' && !Array.isArray(body) && body.data != null) {
+        const inner = body.data;
+        if (
+          Array.isArray(inner) ||
+          (typeof inner === 'object' &&
+            (Array.isArray(inner.contract_units) ||
+              Array.isArray(inner.units) ||
+              inner.contract != null))
+        ) {
+          body = inner;
+        }
+      }
+      return body ?? {};
     } catch (error) {
       logger.error(`Error fetching inventory contract units ${contractId}:`, error);
       throw error;

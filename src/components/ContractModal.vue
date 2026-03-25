@@ -221,13 +221,34 @@ export default {
         unitCount = c.units_count || c.unit_count || 0;
       }
 
-      // نسبة السعي والسعي من (من الـ API إن وُجدتا)
-      const commissionPercentRaw = c.commission_percent ?? c.commission_percentage;
-      const commissionPercent =
-        commissionPercentRaw !== undefined && commissionPercentRaw !== null && String(commissionPercentRaw).trim() !== ''
-          ? `${Number(commissionPercentRaw)}%`
-          : '';
-      const commissionFromRaw = (c.commission_from ?? '').toString().trim().toLowerCase();
+      // نسبة السعي والسعي من — حقول مسطّحة أو داخل info / contract
+      const commissionPercentRaw =
+        c.commission_percent ??
+        c.commission_percentage ??
+        c.info?.commission_percent ??
+        c.info?.commission_percentage ??
+        c.contract?.commission_percent ??
+        c.contract?.commission_percentage ??
+        c.second_party_data?.commission_percent;
+      let commissionPercent = '';
+      if (commissionPercentRaw !== undefined && commissionPercentRaw !== null && String(commissionPercentRaw).trim() !== '') {
+        const s = String(commissionPercentRaw).trim();
+        if (s.includes('%')) {
+          commissionPercent = s;
+        } else {
+          const n = parseFloat(s.replace(/,/g, ''));
+          commissionPercent = Number.isFinite(n) ? `${n}%` : `${s}%`;
+        }
+      }
+      const commissionFromRaw = (
+        c.commission_from ??
+        c.info?.commission_from ??
+        c.contract?.commission_from ??
+        ''
+      )
+        .toString()
+        .trim()
+        .toLowerCase();
       const commissionFrom =
         commissionFromRaw === 'owner'
           ? 'من المالك'

@@ -39,32 +39,48 @@
       <p>لا توجد عقود مطابقة.</p>
     </div>
 
-    <div v-else class="contracts-grid">
-      <div
-        v-for="c in filteredContracts"
-        :key="c.id"
-        :class="['contract-card', `countdown-${getCountdownClass(c)}`]"
-      >
-        <div class="card-header">
-          <h4>{{ c.project_name || c.name || c.contract_number || '—' }}</h4>
-          <span v-if="getCountdownClass(c) === 'red'" class="alert-badge">تنبيه</span>
-        </div>
-        <div class="card-stats">
-          <p><strong>عدد الوحدات:</strong> {{ getUnitsCount(c) }}</p>
-          <p><strong>الوحدات المتبقية:</strong> {{ getRemainingUnits(c) }}</p>
-        </div>
-        <div :class="['countdown', `countdown-${getCountdownClass(c)}`]">
-          <span class="countdown-dot"></span>
-          {{ getCountdownText(c) }}
-        </div>
-        <router-link
-          v-if="c.id"
-          :to="{ name: 'ContractForm', params: { id: c.id } }"
-          class="see-more-link"
-        >
-          عرض التفاصيل
-        </router-link>
-      </div>
+    <div v-else class="contracts-table-wrap">
+      <table class="contracts-table">
+        <thead>
+          <tr>
+            <th>المشروع</th>
+            <th>عدد الوحدات</th>
+            <th>الوحدات المتبقية</th>
+            <th>العد التنازلي</th>
+            <th>إجراء</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(c, idx) in filteredContracts"
+            :key="contractRowId(c) || `contract-row-${idx}`"
+            :class="['contract-row', `row-countdown-${getCountdownClass(c)}`]"
+          >
+            <td data-label="المشروع" class="cell-project">
+              <span class="project-title">{{ c.project_name || c.name || c.contract_number || '—' }}</span>
+              <span v-if="getCountdownClass(c) === 'red'" class="alert-badge-inline">تنبيه</span>
+            </td>
+            <td data-label="عدد الوحدات">{{ cellUnitsTotal(c) }}</td>
+            <td data-label="الوحدات المتبقية">{{ cellUnitsRemaining(c) }}</td>
+            <td data-label="العد التنازلي">
+              <span :class="['countdown-pill', `countdown-${getCountdownClass(c)}`]">
+                <span class="countdown-dot"></span>
+                {{ getCountdownText(c) }}
+              </span>
+            </td>
+            <td data-label="إجراء" class="cell-action">
+              <router-link
+                v-if="contractRowId(c)"
+                :to="{ name: 'ContractForm', params: { id: contractRowId(c) } }"
+                class="see-more-link"
+              >
+                عرض التفاصيل
+              </router-link>
+              <span v-else>—</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <div v-if="total > perPage" class="pagination-row">
@@ -84,6 +100,9 @@ const total = ref(0);
 const page = ref(1);
 const perPage = ref(20);
 const isLoading = ref(true);
+/** من GET /inventory/contracts/units/show/:contractId — { [contractId]: { total, available } } */
+const unitsStatsMap = ref({});
+const unitsHydrating = ref(false);
 const searchProjectName = ref('');
 const searchLocation = ref('');
 const searchDeveloper = ref('');
@@ -111,17 +130,170 @@ const filteredContracts = computed(() => {
   return list;
 });
 
-function getUnitsCount(c) {
-  const u = c.contract_units ?? c.units ?? [];
-  return Array.isArray(u) ? u.length : (parseInt(u) || 0);
+function contractRowId(c) {
+  const id = c?.id ?? c?.contract_id ?? c?.contract?.id;
+  return id != null && id !== '' ? String(id) : '';
 }
 
-function getRemainingUnits(c) {
-  const remaining = c.remaining_units ?? c.available_units;
-  if (remaining != null) return remaining;
-  const total = getUnitsCount(c);
-  const sold = c.sold_units ?? 0;
-  return Math.max(0, total - sold);
+/**
+ * يستخرج مصفوفة الوحدات من أي شكل شائع للـ API (بما فيها عندما تكون data مصفوفة مباشرة).
+ */
+function extractUnitsArrayFromShow(raw, depth = 0) {
+  if (raw == null || depth > 8) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw !== 'object') return [];
+
+  const pick = [
+    raw.units,
+    raw.contract_units,
+    raw.project_units,
+    raw.items,
+    raw.results,
+    raw.contract?.units,
+    raw.contract?.contract_units,
+  ];
+  for (const a of pick) {
+    if (Array.isArray(a)) return a;
+  }
+
+  if (Array.isArray(raw.data)) return raw.data;
+
+  if (raw.data != null && typeof raw.data === 'object') {
+    const nested = extractUnitsArrayFromShow(raw.data, depth + 1);
+    if (nested.length > 0) return nested;
+  }
+
+  return [];
+}
+
+/** متاحة صراحةً (حقول boolean أو status = available / متاحة …) */
+function isUnitAvailableStrict(u) {
+  if (u?.available === true || u?.is_available === true || u?.is_available === 1 || u?.is_available === '1')
+    return true;
+  const st = String(u?.status ?? u?.unit_status ?? u?.availability_status ?? '').trim().toLowerCase();
+  if (
+    st === 'available' ||
+    st === 'متاحة' ||
+    st === 'متاح' ||
+    st === 'for_sale' ||
+    st === 'for sale' ||
+    st === 'vacant' ||
+    st === 'free' ||
+    st === 'unsold' ||
+    st === 'open'
+  )
+    return true;
+  const av = String(u?.availability ?? '').trim().toLowerCase();
+  if (av === 'available') return true;
+  return false;
+}
+
+/** ليست مباعة/محجوزة/ملغاة — يُستخدم إذا لم يُرجع الـ API status=available لكن توجد وحدات */
+function isUnitNotSoldOrReserved(u) {
+  const st = String(u?.status ?? u?.unit_status ?? '').trim().toLowerCase();
+  if (!st) return true;
+  if (/(sold|مباع|reserved|محجوز|booked|cancelled|ملغ|rented|مؤجر)/i.test(st)) return false;
+  return true;
+}
+
+/** استجابة GET /inventory/contracts/units/show/:id */
+function computeStatsFromUnitsShow(raw) {
+  const units = extractUnitsArrayFromShow(raw);
+  const scalarTotal = Number(
+    raw?.total_units ??
+      raw?.unit_count ??
+      raw?.units_count ??
+      raw?.contract?.unit_count ??
+      raw?.contract?.units_count
+  );
+
+  // إجمالي وحدات العقد: طول القائمة الكاملة إن وُجدت، وإلا الحقول الرقمية من الـ API
+  let total = units.length > 0 ? units.length : 0;
+  if (total === 0 && Number.isFinite(scalarTotal) && scalarTotal >= 0) {
+    total = scalarTotal;
+  }
+
+  const scalarAvailable = Number(
+    raw?.available_units ??
+      raw?.available_count ??
+      raw?.units_available ??
+      raw?.contract?.available_units ??
+      raw?.contract?.available_count
+  );
+
+  // المتاح: أولاً الحالات الصريحة؛ إن كان الـ API لا يرسلها نحسب «غير المباع/المحجوز» حتى لا تبقى العمود صفراً دائماً
+  let available = 0;
+  if (units.length > 0) {
+    const strict = units.filter(isUnitAvailableStrict).length;
+    available = strict > 0 ? strict : units.filter(isUnitNotSoldOrReserved).length;
+  } else if (Number.isFinite(scalarAvailable) && scalarAvailable >= 0) {
+    available = scalarAvailable;
+  }
+
+  const t = Math.max(0, total);
+  let a = Math.max(0, available);
+  if (a > t) a = t;
+  return { total: t, available: a };
+}
+
+function getUnitsCountFallback(c) {
+  const u = c.contract_units ?? c.units ?? [];
+  return Array.isArray(u) ? u.length : (parseInt(u, 10) || 0);
+}
+
+function getAvailableCountFallback(c) {
+  const av = c.available_units ?? c.available_count ?? c.units_available;
+  if (av != null && av !== '') return Math.max(0, Number(av) || 0);
+  const u = c.contract_units ?? c.units ?? [];
+  if (Array.isArray(u) && u.length) {
+    const strict = u.filter(isUnitAvailableStrict).length;
+    return strict > 0 ? strict : u.filter(isUnitNotSoldOrReserved).length;
+  }
+  return 0;
+}
+
+function cellUnitsTotal(c) {
+  const id = contractRowId(c);
+  if (!id) return '—';
+  if (unitsHydrating.value && unitsStatsMap.value[id] === undefined) return '…';
+  const st = unitsStatsMap.value[id];
+  if (st) return st.total;
+  return getUnitsCountFallback(c);
+}
+
+function cellUnitsRemaining(c) {
+  const id = contractRowId(c);
+  if (!id) return '—';
+  if (unitsHydrating.value && unitsStatsMap.value[id] === undefined) return '…';
+  const st = unitsStatsMap.value[id];
+  if (st) return st.available;
+  return getAvailableCountFallback(c);
+}
+
+async function hydrateUnitsStatsForPage(list) {
+  const ids = [...new Set(list.map(c => contractRowId(c)).filter(Boolean))];
+  if (!ids.length) {
+    unitsStatsMap.value = {};
+    unitsHydrating.value = false;
+    return;
+  }
+  unitsHydrating.value = true;
+  const next = {};
+  try {
+    await Promise.all(
+      ids.map(async id => {
+        try {
+          const raw = await inventoryService.getContractUnitsShow(id);
+          next[id] = computeStatsFromUnitsShow(raw);
+        } catch {
+          next[id] = { total: 0, available: 0 };
+        }
+      })
+    );
+  } finally {
+    unitsStatsMap.value = next;
+    unitsHydrating.value = false;
+  }
 }
 
 function getContractEndDate(c) {
@@ -156,6 +328,7 @@ function getCountdownText(c) {
 
 async function fetchContracts() {
   isLoading.value = true;
+  unitsStatsMap.value = {};
   try {
     const res = await inventoryService.getContractsAdminIndex({
       page: page.value,
@@ -170,6 +343,12 @@ async function fetchContracts() {
   } finally {
     isLoading.value = false;
   }
+  if (contracts.value.length) {
+    unitsHydrating.value = true;
+    void hydrateUnitsStatsForPage(contracts.value);
+  } else {
+    unitsHydrating.value = false;
+  }
 }
 
 watch(page, fetchContracts, { immediate: true });
@@ -179,6 +358,8 @@ watch(filterStatus, () => { page.value = 1; fetchContracts(); });
 <style scoped>
 .inventory-contracts-tab {
   direction: rtl;
+  width: 100%;
+  max-width: none;
 }
 
 .welcome-header {
@@ -213,77 +394,86 @@ watch(filterStatus, () => { page.value = 1; fetchContracts(); });
   font-size: 14px;
 }
 
-.contracts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.contract-card {
+.contracts-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid rgba(177, 162, 143, 0.25);
+  border-radius: 12px;
   background: var(--color-white);
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid rgba(177, 162, 143, 0.2);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
 }
 
-.contract-card:hover {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+.contracts-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 14px;
 }
 
-.contract-card.countdown-red {
-  border-right: 4px solid #dc2626;
-  animation: pulse-red 2s ease-in-out infinite;
+.contracts-table thead {
+  background: var(--color-light-gray, #f1f5f9);
+  border-bottom: 1px solid rgba(177, 162, 143, 0.3);
 }
 
-@keyframes pulse-red {
-  0%, 100% { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); }
-  50% { box-shadow: 0 4px 25px rgba(220, 38, 38, 0.25); }
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-
-.card-header h4 {
-  margin: 0;
-  font-size: 16px;
+.contracts-table th {
+  text-align: right;
+  padding: 12px 16px;
   font-weight: 700;
-  flex: 1;
+  color: var(--color-navy, #1e3a5f);
+  white-space: nowrap;
 }
 
-.alert-badge {
+.contracts-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: middle;
+  color: #334155;
+}
+
+.contract-row:hover td {
+  background: rgba(177, 162, 143, 0.06);
+}
+
+.contract-row.row-countdown-red td:first-child {
+  border-inline-end: 4px solid #dc2626;
+}
+
+.cell-project {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.project-title {
+  display: inline;
+  margin-inline-end: 8px;
+}
+
+.alert-badge-inline {
+  display: inline-block;
   background: #dc2626;
   color: white;
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 6px;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  vertical-align: middle;
 }
 
-.card-stats p {
-  margin: 0 0 6px 0;
-  font-size: 14px;
-}
-
-.countdown {
-  margin-top: 12px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
-  display: flex;
+.countdown-pill {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 .countdown-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .countdown-green {
@@ -310,9 +500,11 @@ watch(filterStatus, () => { page.value = 1; fetchContracts(); });
 }
 .countdown-gray .countdown-dot { background: #94a3b8; }
 
+.cell-action {
+  white-space: nowrap;
+}
+
 .see-more-link {
-  display: inline-block;
-  margin-top: 16px;
   color: var(--color-gold);
   font-weight: 600;
   text-decoration: none;
@@ -320,6 +512,41 @@ watch(filterStatus, () => { page.value = 1; fetchContracts(); });
 
 .see-more-link:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .contracts-table {
+    min-width: 0;
+  }
+  .contracts-table thead {
+    display: none;
+  }
+  .contracts-table tbody tr {
+    display: block;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 12px 0;
+  }
+  .contracts-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border: none;
+    padding: 8px 14px;
+  }
+  .contracts-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #64748b;
+    flex-shrink: 0;
+  }
+  .cell-project {
+    flex-wrap: wrap;
+  }
+  .countdown-pill {
+    white-space: normal;
+    text-align: start;
+  }
 }
 
 .loading-state, .empty-state {
