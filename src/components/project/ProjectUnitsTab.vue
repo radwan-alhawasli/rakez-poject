@@ -314,7 +314,7 @@
 <script setup>
 import { onMounted, computed, ref, watch } from 'vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
-import UnitReservationModal from '@/components/sales/UnitReservationModal.vue';
+import UnitReservationModal from '@/modules/sales/components/UnitReservationModal.vue';
 import { useProjectUnits } from '@/composables/project/useProjectUnits';
 
 const props = defineProps({
