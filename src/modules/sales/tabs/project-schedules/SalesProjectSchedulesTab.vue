@@ -1,8 +1,8 @@
 <template>
   <div class="project-schedules-tab">
-    <!-- List View (no project selected) -->
-    <template v-if="!selectedScheduleProject">
-      <div class="welcome-header">
+    <!-- List View (route = project-schedules list only — detail URL uses detail layout after sync) -->
+    <template v-if="showScheduleProjectList">
+      <div class="welcome-header schedule-list-hero">
         <div class="header-content">
           <h1 class="welcome-title">إدارة دوام المشاريع</h1>
           <p class="welcome-subtitle">
@@ -38,9 +38,9 @@
 
     <!-- Detail View (project selected) -->
     <template v-else>
-      <div class="welcome-header schedule-detail-header">
+      <div class="welcome-header schedule-detail-header rakez-schedule-hero">
         <div class="header-content">
-          <button class="btn-back" @click="backToList">
+          <button type="button" class="btn-back" @click="backToList">
             <svg
               viewBox="0 0 24 24"
               width="20"
@@ -55,7 +55,7 @@
           </button>
           <h1 class="welcome-title">
             إدارة مشروع دوام:
-            {{ selectedScheduleProject.project_name || selectedScheduleProject.name }}
+            {{ selectedScheduleProject?.project_name || selectedScheduleProject?.name || '…' }}
           </h1>
           <p class="welcome-subtitle">
             قم بتعيين جداول الدوام للمسؤولين في هذا المشروع وجهة اتصال الطوارئ
@@ -69,7 +69,7 @@
       </div>
 
       <template v-else>
-        <div class="schedule-date-bar">
+        <div class="schedule-date-bar rakez-glass-bar">
           <div class="schedule-date-display">
             <span class="update-label">تاريخ التحديث:</span>
             <span class="update-value">{{ scheduleDisplayDate }}</span>
@@ -93,7 +93,7 @@
           :class="{ 'schedule-form--saving': isSavingSchedules }"
         >
           <!-- Right: Team Members Schedules -->
-          <div class="schedule-members-section">
+          <div class="schedule-members-section rakez-glass-panel">
             <h3 class="section-label">جداول المسوقين</h3>
             <div class="schedule-members-list">
               <div
@@ -155,7 +155,7 @@
           </div>
 
           <!-- Left: Emergency Contact -->
-          <div class="emergency-contact-section">
+          <div class="emergency-contact-section rakez-glass-panel">
             <h3 class="section-label">جهة اتصال الطوارئ</h3>
             <div class="emergency-form">
               <div class="form-group">
@@ -235,6 +235,7 @@
 import { useSalesSchedules } from '@/composables/sales/useSalesSchedules';
 
 const {
+  showScheduleProjectList,
   selectedScheduleProject, scheduleProjects, isLoadingScheduleProjects,
   isLoadingScheduleDetail, scheduleMembers, scheduleDisplayDate,
   scheduleDisplayTime, scheduleViewDate, scheduleDisplayDayName,
@@ -249,94 +250,226 @@ loadScheduleProjects();
 
 <style scoped>
 /* ============================
-   PROJECT SCHEDULES TAB
+   PROJECT SCHEDULES — هوية راكز (كحلي / ذهبي / زجاجي)
    ============================ */
 .project-schedules-tab {
   direction: rtl;
+  --rakez-schedule-navy: var(--color-navy, #27374d);
+  --rakez-schedule-navy-deep: #1a2d3d;
+  --rakez-schedule-gold: var(--color-gold, #b5a99a);
+  --rakez-schedule-glass: rgba(255, 255, 255, 0.62);
+  --rakez-schedule-glass-border: rgba(255, 255, 255, 0.55);
+}
+
+/* قائمة المشاريع — بطاقات زجاجية + شريط عنوان */
+.schedule-list-hero {
+  background: linear-gradient(
+    125deg,
+    var(--rakez-schedule-navy-deep) 0%,
+    var(--rakez-schedule-navy) 48%,
+    #1e3a52 100%
+  );
+  color: var(--rakez-schedule-gold);
+  border-radius: 16px;
+  padding: 22px 24px 24px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(181, 169, 154, 0.28);
+  box-shadow: 0 14px 42px rgba(39, 55, 77, 0.28);
+  position: relative;
+  overflow: hidden;
+}
+
+.schedule-list-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--rakez-schedule-gold), rgba(181, 169, 154, 0.35));
+  border-radius: 4px 0 0 4px;
+}
+
+.schedule-list-hero .welcome-title {
+  color: var(--rakez-schedule-gold);
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.schedule-list-hero .welcome-subtitle {
+  color: color-mix(in srgb, var(--rakez-schedule-gold) 82%, #ffffff);
+  margin: 8px 0 0 0;
+}
+
+.loading-state,
+.empty-state {
+  margin-top: 20px;
+  padding: 36px 24px;
+  text-align: center;
+  border-radius: 16px;
+  background: var(--rakez-schedule-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--rakez-schedule-glass-border);
+  box-shadow: 0 8px 28px rgba(39, 55, 77, 0.07);
+}
+
+.loading-state p,
+.empty-state p {
+  margin: 12px 0 0 0;
+  color: rgba(39, 55, 77, 0.65);
+  font-size: 0.95rem;
+}
+
+.loading-state .spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  border: 3px solid rgba(39, 55, 77, 0.12);
+  border-top-color: var(--rakez-schedule-navy);
+  border-radius: 50%;
+  animation: rakez-schedule-spin 0.85s linear infinite;
+}
+
+@keyframes rakez-schedule-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .schedule-projects-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
+  gap: 18px;
   margin-top: 20px;
 }
 
 .schedule-project-card {
-  background: var(--color-white);
-  border: 1px solid var(--color-medium-gray);
+  background: var(--rakez-schedule-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--rakez-schedule-glass-border);
   border-radius: 16px;
-  padding: 28px 24px;
+  padding: 24px 22px;
   cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  box-shadow: 0 4px 24px rgba(39, 55, 77, 0.08);
 }
 
 .schedule-project-card:hover {
-  border-color: var(--color-gold);
-  box-shadow: 0 6px 20px rgba(177, 162, 143, 0.18);
-  transform: translateY(-2px);
+  border-color: rgba(181, 169, 154, 0.65);
+  box-shadow: 0 12px 36px rgba(39, 55, 77, 0.14), 0 0 0 1px rgba(181, 169, 154, 0.2);
+  transform: translateY(-3px);
 }
 
 .project-card-title {
   font-size: clamp(16px, 1.2vw, 20px);
   font-weight: 700;
-  color: var(--color-charcoal);
+  color: var(--rakez-schedule-navy);
   margin: 0 0 8px 0;
 }
 
 .project-card-activity {
   font-size: 13px;
-  color: var(--color-dark-gray);
+  color: var(--color-dark-gray, #52606d);
   margin: 0 0 4px 0;
 }
 
 .project-card-team {
-  font-size: 13px;
-  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(39, 55, 77, 0.55);
   margin: 0;
 }
 
-/* Detail Header */
-.schedule-detail-header .header-content {
+/* تفاصيل المشروع — رأس كحلي */
+.rakez-schedule-hero.schedule-detail-header .header-content {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.rakez-schedule-hero {
+  background: linear-gradient(
+    125deg,
+    var(--rakez-schedule-navy-deep) 0%,
+    var(--rakez-schedule-navy) 42%,
+    #1c3550 100%
+  );
+  color: var(--rakez-schedule-gold);
+  border-radius: 16px;
+  padding: 22px 24px 26px;
+  margin: 0 0 18px 0;
+  border: 1px solid rgba(181, 169, 154, 0.3);
+  box-shadow: 0 16px 48px rgba(39, 55, 77, 0.32);
+  position: relative;
+  overflow: hidden;
+}
+
+.rakez-schedule-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 100% 0%, rgba(181, 169, 154, 0.12), transparent 55%);
+  pointer-events: none;
+}
+
+.rakez-schedule-hero .welcome-title {
+  color: var(--rakez-schedule-gold);
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.rakez-schedule-hero .welcome-subtitle {
+  color: color-mix(in srgb, var(--rakez-schedule-gold) 82%, #ffffff);
+  margin: 0;
+  max-width: 52ch;
+  line-height: 1.55;
 }
 
 .btn-back {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: none;
-  border: 1px solid var(--color-medium-gray);
-  border-radius: var(--radius-sm);
-  padding: 8px 16px;
+  gap: 8px;
+  background: rgba(181, 169, 154, 0.12);
+  border: 1px solid color-mix(in srgb, var(--rakez-schedule-gold) 55%, transparent);
+  border-radius: 10px;
+  padding: 9px 18px;
   font-size: 14px;
-  color: #475569;
+  font-weight: 600;
+  color: var(--rakez-schedule-gold);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s, color 0.2s;
   width: fit-content;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .btn-back:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
+  background: rgba(181, 169, 154, 0.22);
+  border-color: color-mix(in srgb, var(--rakez-schedule-gold) 75%, transparent);
 }
 
-/* Schedule date bar — 100% match with date */
-.schedule-date-bar {
+.btn-back svg {
+  flex-shrink: 0;
+  opacity: 0.95;
+  stroke: currentColor;
+}
+
+/* شريط التاريخ — زجاجي */
+.rakez-glass-bar.schedule-date-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 14px;
   padding: 14px 18px;
-  background: var(--color-light-gray);
-  border: 1px solid var(--color-medium-gray);
-  border-radius: 12px;
-  margin-top: 16px;
+  background: var(--rakez-schedule-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--rakez-schedule-glass-border);
+  border-radius: 14px;
+  margin-top: 4px;
+  box-shadow: 0 6px 28px rgba(39, 55, 77, 0.07);
 }
 
 .schedule-date-display {
@@ -347,14 +480,16 @@ loadScheduleProjects();
 }
 
 .schedule-date-display .update-label {
-  font-size: 13px;
-  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(39, 55, 77, 0.55);
+  letter-spacing: 0.02em;
 }
 
 .schedule-date-display .update-value {
   font-size: 14px;
-  font-weight: 600;
-  color: var(--color-navy);
+  font-weight: 700;
+  color: var(--rakez-schedule-navy);
 }
 
 .schedule-date-picker-wrap {
@@ -372,43 +507,83 @@ loadScheduleProjects();
 .schedule-date-input {
   width: auto;
   min-width: 160px;
-  padding: 8px 12px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(39, 55, 77, 0.12);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.schedule-date-input:focus {
+  outline: none;
+  border-color: rgba(181, 169, 154, 0.85);
+  box-shadow: 0 0 0 3px rgba(181, 169, 154, 0.2);
 }
 
 /* Detail Layout */
 .schedule-detail-layout {
   display: grid;
   grid-template-columns: 1fr 340px;
-  gap: 28px;
-  margin-top: 20px;
+  gap: 22px;
+  margin-top: 18px;
+  align-items: start;
+}
+
+/* ألواح زجاجية للعمودين */
+.rakez-glass-panel {
+  background: var(--rakez-schedule-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--rakez-schedule-glass-border);
+  border-radius: 16px;
+  padding: 20px 20px 22px;
+  box-shadow: 0 8px 32px rgba(39, 55, 77, 0.09);
+}
+
+.rakez-glass-panel .section-label {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rakez-glass-panel .section-label::before {
+  content: '';
+  width: 4px;
+  height: 1.1em;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--rakez-schedule-gold), rgba(181, 169, 154, 0.4));
+  flex-shrink: 0;
 }
 
 .section-label {
   font-size: 16px;
   font-weight: 700;
-  color: var(--color-navy);
+  color: var(--rakez-schedule-navy);
   margin: 0 0 16px 0;
   padding-bottom: 12px;
-  border-bottom: 2px solid var(--color-medium-gray);
+  border-bottom: 2px solid rgba(39, 55, 77, 0.08);
 }
 
 /* Members List */
 .schedule-members-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .schedule-member-card {
-  background: var(--color-white);
-  border: 1px solid var(--color-medium-gray);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(39, 55, 77, 0.1);
   border-radius: 12px;
-  padding: 16px 20px;
-  transition: border-color 0.2s;
+  padding: 14px 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .schedule-member-card:hover {
-  border-color: #cbd5e1;
+  border-color: rgba(181, 169, 154, 0.45);
+  box-shadow: 0 4px 16px rgba(39, 55, 77, 0.06);
 }
 
 .member-row {
@@ -434,6 +609,8 @@ loadScheduleProjects();
   font-weight: 700;
   font-size: 16px;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(39, 55, 77, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.35);
 }
 
 .member-name-label {
@@ -480,7 +657,8 @@ loadScheduleProjects();
 }
 
 .toggle-switch input:checked + .toggle-slider {
-  background: #2ecc71;
+  background: linear-gradient(135deg, #34a853 0%, #2d8f47 100%);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.25);
 }
 
 .toggle-switch input:checked + .toggle-slider::before {
@@ -493,13 +671,13 @@ loadScheduleProjects();
   gap: 12px;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid rgba(39, 55, 77, 0.08);
 }
 
 .member-time-row {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #f1f5f9;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(39, 55, 77, 0.08);
 }
 
 .member-time-row .time-label {
@@ -540,7 +718,8 @@ loadScheduleProjects();
 
 .member-time-row .time-field input:focus {
   outline: none;
-  border-color: var(--color-primary, #2563eb);
+  border-color: rgba(181, 169, 154, 0.95);
+  box-shadow: 0 0 0 2px rgba(181, 169, 154, 0.18);
 }
 
 .schedule-day {
@@ -555,19 +734,15 @@ loadScheduleProjects();
 }
 
 .schedule-status.present {
-  color: #059669;
+  color: #0d7a52;
 }
 
 .schedule-status.absent {
-  color: #94a3b8;
+  color: rgba(39, 55, 77, 0.45);
 }
 
-/* Emergency Contact */
+/* Emergency Contact — الخلفية من rakez-glass-panel */
 .emergency-contact-section {
-  background: var(--color-white);
-  border: 1px solid var(--color-medium-gray);
-  border-radius: 16px;
-  padding: 24px;
   height: fit-content;
   position: sticky;
   top: 20px;
@@ -588,21 +763,23 @@ loadScheduleProjects();
 .emergency-form .form-input {
   width: 100%;
   padding: 10px 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: var(--radius-sm);
+  border: 1px solid rgba(39, 55, 77, 0.12);
+  border-radius: 10px;
   font-size: 14px;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.88);
 }
 
 .emergency-form .form-input:focus {
   outline: none;
-  border-color: var(--color-gold);
+  border-color: rgba(181, 169, 154, 0.9);
+  box-shadow: 0 0 0 3px rgba(181, 169, 154, 0.18);
 }
 
-/* Save Bar */
+/* Save Bar — زر كحلي مع إطار ذهبي (هوية راكز) */
 .schedule-save-bar {
-  margin-top: 28px;
+  margin-top: 24px;
   display: flex;
   justify-content: flex-start;
 }
@@ -610,37 +787,45 @@ loadScheduleProjects();
 .btn-save-schedules {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
+  gap: 10px;
+  background: linear-gradient(180deg, #324d66 0%, var(--rakez-schedule-navy) 55%, var(--rakez-schedule-navy-deep) 100%);
   color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 12px 28px;
+  border: 1px solid rgba(181, 169, 154, 0.45);
+  border-radius: 12px;
+  padding: 13px 30px;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(177, 162, 143, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  box-shadow:
+    0 4px 18px rgba(39, 55, 77, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .btn-save-schedules:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(177, 162, 143, 0.4);
+  transform: translateY(-2px);
+  border-color: rgba(181, 169, 154, 0.75);
+  box-shadow:
+    0 10px 28px rgba(39, 55, 77, 0.4),
+    0 0 0 1px rgba(181, 169, 154, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .btn-save-schedules:disabled,
 .btn-save-schedules--saving {
   opacity: 1;
   cursor: wait;
-  background: linear-gradient(135deg, #94a3b8, #64748b) !important;
-  color: #fff !important;
-  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
+  background: linear-gradient(180deg, #5c6b7a 0%, #4a5568 100%) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 2px 10px rgba(39, 55, 77, 0.2);
   transform: none;
 }
 
 .btn-save-schedules--saving:hover {
   transform: none;
-  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
+  box-shadow: 0 2px 10px rgba(39, 55, 77, 0.2);
 }
 
 .btn-save-spinner {
@@ -708,8 +893,10 @@ loadScheduleProjects();
   .schedule-save-bar {
     position: sticky;
     bottom: 0;
-    background: var(--color-light-gray);
-    padding: 16px 0;
+    z-index: 5;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.92) 18%, rgba(255, 255, 255, 0.96) 100%);
+    backdrop-filter: blur(8px);
+    padding: 16px 0 20px;
     margin-top: 16px;
   }
   .btn-save-schedules {

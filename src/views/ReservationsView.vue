@@ -632,63 +632,101 @@ onMounted(loadAll);
 }
 
 .reservations-page {
-  background: var(--color-off-white, #fdfbf7);
-  border-radius: var(--radius-md, 14px);
+  background: transparent;
+  border-radius: 0;
 }
 
 .filter-tabs {
   display: flex;
-  gap: clamp(12px, 2vw, 24px);
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 6px;
   margin-bottom: var(--space-md, 24px);
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--color-medium-gray, #e2e8f0);
+  padding: 8px;
+  border-radius: 16px;
+  /* تبريد محايد — بدون درجات كريم/بيج */
+  background: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(248, 250, 252, 0.32) 50%,
+    rgba(255, 255, 255, 0.34) 100%
+  );
+  backdrop-filter: blur(10px) saturate(1.02);
+  -webkit-backdrop-filter: blur(10px) saturate(1.02);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 8px 28px -12px rgba(15, 23, 42, 0.12);
 }
 
 .tab-btn {
-  padding: 12px 4px;
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  font-size: 15px;
-  font-weight: 500;
+  flex: 1 1 auto;
+  justify-content: center;
+  min-width: min(100%, 7.5rem);
+  padding: 11px 14px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--color-dark-gray, #64748b);
   cursor: pointer;
-  transition: color var(--transition-fast, 0.15s ease), border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
-.tab-btn:hover {
+.tab-btn:hover:not(.active) {
   color: var(--color-navy, #27374d);
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(226, 232, 240, 0.5);
 }
 
 .tab-btn.active {
   color: var(--color-navy, #27374d);
-  font-weight: 700;
-  border-bottom-color: var(--color-gold, #b5a99a);
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.38);
+  border-color: rgba(39, 55, 77, 0.12);
+  box-shadow: none;
+}
+
+.tab-btn:focus-visible {
+  outline: 2px solid var(--color-gold, #b5a99a);
+  outline-offset: 2px;
 }
 
 .tab-count {
-  background: var(--color-light-gray, #f8fafc);
+  min-width: 1.35rem;
+  padding: 2px 7px;
+  text-align: center;
+  background: rgba(241, 245, 249, 0.75);
   color: var(--color-charcoal, #1e293b);
-  padding: 2px 8px;
   border-radius: var(--radius-full, 9999px);
-  font-size: 12px;
-  font-weight: 600;
-  border: 1px solid var(--color-medium-gray, #e2e8f0);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: none;
 }
 
 .tab-btn.active .tab-count {
-  background: var(--color-navy, #27374d);
+  background: linear-gradient(145deg, var(--color-navy-dark, #1a2636) 0%, var(--color-navy, #27374d) 100%);
   color: var(--color-white, #fff);
-  border-color: var(--color-navy, #27374d);
+  border-color: rgba(26, 38, 54, 0.5);
+  box-shadow: 0 2px 8px rgba(39, 55, 77, 0.28);
 }
 
 .loading-state {
   text-align: center;
   padding: 60px 20px;
   color: var(--color-dark-gray, #64748b);
+  background: transparent;
 }
 
 .spinner {
@@ -716,12 +754,18 @@ onMounted(loadAll);
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  background: var(--color-white, #fff);
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: var(--radius-md, 14px);
-  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
-  border: 1px solid rgba(39, 55, 77, 0.1);
+  box-shadow: none;
+  border: 1px solid rgba(39, 55, 77, 0.14);
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .reservation-card::before {
@@ -736,9 +780,10 @@ onMounted(loadAll);
 }
 
 .reservation-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md, 0 4px 20px rgba(0, 0, 0, 0.08));
-  border-color: rgba(181, 169, 154, 0.45);
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.34);
+  box-shadow: 0 8px 28px -12px rgba(15, 23, 42, 0.14);
+  border-color: rgba(39, 55, 77, 0.2);
 }
 
 .card-status-badge {
@@ -861,9 +906,9 @@ onMounted(loadAll);
   color: var(--color-dark-gray, #64748b);
   margin-top: 8px;
   padding: 10px 12px;
-  background: var(--color-cream-gold-light, #f8f4ec);
+  background: rgba(248, 250, 252, 0.55);
   border-radius: var(--radius-sm, 8px);
-  border: 1px solid rgba(181, 169, 154, 0.35);
+  border: 1px solid rgba(226, 232, 240, 0.7);
   line-height: 1.5;
 }
 
@@ -905,15 +950,16 @@ onMounted(loadAll);
 .btn-edit {
   flex: 1 1 auto;
   min-width: 0;
-  background: var(--color-white, #fff);
-  border: 1px solid rgba(39, 55, 77, 0.18);
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(39, 55, 77, 0.16);
   color: var(--color-navy, #27374d);
 }
 
 .btn-details:hover,
 .btn-edit:hover {
+  background: rgba(255, 255, 255, 0.65);
   border-color: var(--color-gold, #b5a99a);
-  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
+  box-shadow: none;
 }
 
 .btn-confirm {
@@ -1030,11 +1076,11 @@ onMounted(loadAll);
 
 .empty-state {
   text-align: center;
-  padding: 60px 20px;
-  background: var(--color-white, #fff);
+  padding: clamp(48px, 8vw, 72px) 24px;
+  background: transparent;
   border-radius: var(--radius-md, 14px);
-  border: 1px dashed rgba(39, 55, 77, 0.2);
-  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
+  border: 1px dashed rgba(39, 55, 77, 0.22);
+  box-shadow: none;
 }
 
 .empty-state svg {
@@ -1079,11 +1125,16 @@ onMounted(loadAll);
 /* ── Responsive: Tablet Portrait ── */
 @media (max-width: 768px) {
   .filter-tabs {
-    gap: 12px;
+    gap: 6px;
+    padding: 8px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    scrollbar-width: thin;
   }
   .tab-btn {
+    flex: 0 0 auto;
+    min-width: max-content;
     white-space: nowrap;
     font-size: 14px;
   }
@@ -1126,12 +1177,13 @@ onMounted(loadAll);
     font-size: 14px;
   }
   .filter-tabs {
-    gap: 8px;
+    gap: 6px;
+    padding: 6px;
     margin-bottom: 16px;
   }
   .tab-btn {
     font-size: 13px;
-    padding: 10px 0;
+    padding: 10px 12px;
   }
   .reservation-card {
     border-radius: 10px;
@@ -1186,7 +1238,7 @@ onMounted(loadAll);
   }
   .tab-btn {
     font-size: 12px;
-    padding: 8px 0;
+    padding: 8px 10px;
   }
   .tab-count {
     font-size: 10px;

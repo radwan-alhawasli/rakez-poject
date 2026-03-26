@@ -361,7 +361,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import contractService from '@/services/contractService';
 import { downloadFilledContract } from '@/services/pdfService';
@@ -392,7 +392,11 @@ export default {
     const isSaving = ref(false);
     const isDownloading = ref(false);
     const showDownloadModal = ref(false);
-    const requestId = route.params.id || null;
+    const requestId = computed(() => {
+      const raw = route.params.id;
+      if (raw == null || raw === '') return null;
+      return String(raw);
+    });
     const { validate, getFieldError, clearErrors } = useValidation(contractInfoSchema);
 
     const form = reactive({
@@ -449,9 +453,10 @@ export default {
     });
 
     const fetchContractDetails = async () => {
-      if (!requestId) return;
+      const id = requestId.value;
+      if (!id) return;
       try {
-        const data = await contractService.getContractById(requestId);
+        const data = await contractService.getContractById(id);
         if (data) {
           // Project Info
           form.city = data.city || form.city;
@@ -552,7 +557,13 @@ export default {
       }
     };
 
-    onMounted(fetchContractDetails);
+    watch(
+      () => route.params.id,
+      () => {
+        fetchContractDetails();
+      },
+      { immediate: true },
+    );
 
     const saveChanges = async () => {
       clearErrors();
@@ -569,8 +580,8 @@ export default {
 
       isSaving.value = true;
       try {
-        if (requestId) {
-          logger.debug('Updating contract:', requestId, form);
+        if (requestId.value) {
+          logger.debug('Updating contract:', requestId.value, form);
 
           const payload = {
             second_party_name: form.second_party_name,
@@ -598,10 +609,9 @@ export default {
             project_site_url: form.project_site_url || undefined,
           };
 
-          await contractService.storeContractInfo(requestId, payload);
+          await contractService.storeContractInfo(requestId.value, payload);
 
-          toast.success('تم حفظ تعديلات العقد بنجاح');
-          showDownloadModal.value = true;
+          router.push({ name: 'MyRequests', query: { contract_saved: '1' } });
         } else {
           // إنشاء عقد جديد (إحضار مشاريع)
           const createPayload = {
@@ -611,7 +621,7 @@ export default {
             city: form.city,
             district: form.district,
             note: form.notes,
-            commission_percentage: form.commission_percent,
+            commission_percent: Number(form.commission_percent) || 0,
             commission_from: form.commission_from,
             units: form.units_count
               ? [{ type: form.unit_type || 'شقة', count: form.units_count, price: form.average_unit_price || 0 }]
@@ -638,10 +648,10 @@ export default {
       isDownloading.value = true;
       try {
         let contractData = form;
-        if (requestId) {
+        if (requestId.value) {
           try {
             const { getContractFillData } = await import('@/services/pdfApi');
-            const data = await getContractFillData(requestId);
+            const data = await getContractFillData(requestId.value);
             if (data != null && typeof data === 'object') contractData = data;
           } catch (_) {
             // Fallback to the current form payload when helper endpoint is unavailable.
@@ -651,7 +661,7 @@ export default {
         const blob = new Blob([pdfBytes], { type: 'application/pdf' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `contract-${requestId || 'new'}.pdf`;
+        link.download = `contract-${requestId.value || 'new'}.pdf`;
         link.click();
       } catch (error) {
         logger.error('Download failed', error);

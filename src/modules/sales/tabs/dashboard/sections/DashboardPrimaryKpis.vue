@@ -89,5 +89,6 @@ const negotiationCount = computed(() => {
 <style scoped>
 .dashboard-kpis {
   margin-top: 8px;
+  margin-bottom: clamp(28px, 4vw, 44px);
 }
 </style>

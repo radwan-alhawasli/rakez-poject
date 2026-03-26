@@ -1,5 +1,5 @@
-import { ref, reactive, computed, shallowRef } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, reactive, computed, shallowRef, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import salesService from '@/services/salesService';
 import notificationService from '@/services/notificationService';
 import authService from '@/services/authService';
@@ -7,6 +7,7 @@ import { isSalesLeader } from '@/utils/rbac';
 import logger from '@/utils/logger';
 
 export function useSalesSchedules() {
+  const route = useRoute();
   const router = useRouter();
 
   const scheduleProjects = shallowRef([]);
@@ -104,6 +105,8 @@ export function useSalesSchedules() {
     return getArabicDayForDate(scheduleViewDate.value);
   });
 
+  const showScheduleProjectList = computed(() => route.name === 'SalesProjectSchedules');
+
   const updateScheduleViewTime = () => {
     const now = new Date();
     scheduleViewTime.value = now.toLocaleTimeString('ar-SA', {
@@ -150,29 +153,13 @@ export function useSalesSchedules() {
     }
   };
 
-  const loadScheduleForSelectedDate = async () => {
-    const project = selectedScheduleProject.value;
-    if (!project) return;
-    const projectId = project.contract_id || project.id;
-    const date = scheduleViewDate.value || new Date().toISOString().slice(0, 10);
-    isLoadingScheduleDetail.value = true;
-    try {
-      const result = await salesService.getProjectScheduleMembers(projectId, date);
-      const list = result.members ?? [];
-      scheduleMembers.value = list.map(m => normalizeScheduleMember(m));
-      scheduleServerDate.value = result.server_date ?? '';
-      scheduleServerTime.value = result.server_time ?? '';
-      scheduleDayNameAr.value = result.day_name_ar ?? '';
-      if (!result.server_time) updateScheduleViewTime();
-    } catch (error) {
-      logger.error('Error loading schedule for date:', error);
-      notificationService.addNotification('حدث خطأ أثناء تحميل دوام التاريخ المحدد', 'error');
-    } finally {
-      isLoadingScheduleDetail.value = false;
-    }
+  const projectMatchesRouteId = (project, routeProjectId) => {
+    if (project == null || routeProjectId == null) return false;
+    const id = project.contract_id ?? project.id;
+    return String(id) === String(routeProjectId);
   };
 
-  const openProjectSchedule = async project => {
+  const loadDetailForProject = async project => {
     selectedScheduleProject.value = project;
     scheduleViewDate.value = new Date().toISOString().slice(0, 10);
     scheduleServerDate.value = '';
@@ -200,13 +187,85 @@ export function useSalesSchedules() {
       } else {
         Object.assign(emergencyContact, { name: '', phone: '', role: 'أخرى' });
       }
-      router.push({ name: 'SalesProjectScheduleDetail', params: { projectId } });
     } catch (error) {
       logger.error('Error loading project schedule:', error);
       notificationService.addNotification('حدث خطأ أثناء تحميل بيانات المشروع', 'error');
     } finally {
       isLoadingScheduleDetail.value = false;
     }
+  };
+
+  const syncScheduleFromRoute = async () => {
+    if (route.name === 'SalesProjectSchedules') {
+      selectedScheduleProject.value = null;
+      scheduleMembers.value = [];
+      return;
+    }
+    if (route.name !== 'SalesProjectScheduleDetail') return;
+    const routeProjectId = route.params.projectId;
+    if (routeProjectId == null || routeProjectId === '') return;
+    if (isLoadingScheduleProjects.value) return;
+
+    const fromList = scheduleProjects.value.find(p => projectMatchesRouteId(p, routeProjectId));
+    const project =
+      fromList ||
+      (() => {
+        const n = Number(routeProjectId);
+        const id = Number.isFinite(n) ? n : routeProjectId;
+        return {
+          id,
+          contract_id: id,
+          project_name: 'مشروع',
+        };
+      })();
+
+    if (
+      selectedScheduleProject.value &&
+      projectMatchesRouteId(selectedScheduleProject.value, routeProjectId) &&
+      scheduleMembers.value.length > 0
+    ) {
+      return;
+    }
+
+    await loadDetailForProject(project);
+  };
+
+  watch(
+    () => [route.name, route.params.projectId, isLoadingScheduleProjects.value, scheduleProjects.value],
+    () => {
+      syncScheduleFromRoute();
+    },
+    { flush: 'post' }
+  );
+
+  const loadScheduleForSelectedDate = async () => {
+    const project = selectedScheduleProject.value;
+    if (!project) return;
+    const projectId = project.contract_id || project.id;
+    const date = scheduleViewDate.value || new Date().toISOString().slice(0, 10);
+    isLoadingScheduleDetail.value = true;
+    try {
+      const result = await salesService.getProjectScheduleMembers(projectId, date);
+      const list = result.members ?? [];
+      scheduleMembers.value = list.map(m => normalizeScheduleMember(m));
+      scheduleServerDate.value = result.server_date ?? '';
+      scheduleServerTime.value = result.server_time ?? '';
+      scheduleDayNameAr.value = result.day_name_ar ?? '';
+      if (!result.server_time) updateScheduleViewTime();
+    } catch (error) {
+      logger.error('Error loading schedule for date:', error);
+      notificationService.addNotification('حدث خطأ أثناء تحميل دوام التاريخ المحدد', 'error');
+    } finally {
+      isLoadingScheduleDetail.value = false;
+    }
+  };
+
+  const openProjectSchedule = project => {
+    const projectId = project.contract_id || project.id;
+    router.push({
+      name: 'SalesProjectScheduleDetail',
+      params: { projectId: String(projectId) },
+    });
   };
 
   const toggleScheduleMember = member => {
@@ -230,8 +289,7 @@ export function useSalesSchedules() {
   };
 
   const backToList = () => {
-    selectedScheduleProject.value = null;
-    scheduleMembers.value = [];
+    router.push({ name: 'SalesProjectSchedules' });
   };
 
   const saveAllSchedules = async () => {
@@ -297,6 +355,7 @@ export function useSalesSchedules() {
   return {
     scheduleProjects,
     isLoadingScheduleProjects,
+    showScheduleProjectList,
     selectedScheduleProject,
     scheduleMembers,
     isLoadingScheduleDetail,

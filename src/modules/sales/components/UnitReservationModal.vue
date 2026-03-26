@@ -5,7 +5,6 @@
       <!-- ── Header ── -->
       <div class="rsv-header">
         <div class="rsv-header-inner">
-          <p class="rsv-kicker">مبيعات — حجز وحدة</p>
           <h2 :id="titleId" class="rsv-title">نموذج حجز الوحدة: {{ unitLabel }}</h2>
           <p class="rsv-subtitle">يرجى تعبئة جميع البيانات المطلوبة لإكمال عملية الحجز.</p>
         </div>
@@ -20,56 +19,50 @@
       <div class="rsv-body">
         <form @submit.prevent="onSubmit">
 
-          <!-- ── Property info card ── -->
+          <!-- ── Property info card (3 أعمدة كالمرجع) ── -->
           <div class="rsv-info-card">
             <p class="rsv-info-card-title">تفاصيل العقار والمسوق</p>
             <div class="rsv-info-grid">
-              <!-- row 1 -->
+              <div class="rsv-info-cell">
+                <span class="rsv-info-key">المشروع</span>
+                <span class="rsv-info-val">{{ contextDisplay.project }}</span>
+              </div>
               <div class="rsv-info-cell">
                 <span class="rsv-info-key">الوحدة</span>
                 <span class="rsv-info-val">{{ contextDisplay.unit }}</span>
               </div>
-              <div class="rsv-info-cell rsv-span2">
-                <span class="rsv-info-key">المشروع</span>
-                <span class="rsv-info-val">{{ contextDisplay.project }}</span>
-              </div>
-              <!-- row 2 -->
-              <div class="rsv-info-cell">
-                <span class="rsv-info-key">السعر</span>
-                <span class="rsv-info-val">{{ contextDisplay.price }}</span>
-              </div>
-              <div class="rsv-info-cell">
-                <span class="rsv-info-key">المساحة</span>
-                <span class="rsv-info-val">{{ contextDisplay.area }}</span>
-              </div>
-              <div></div>
-              <!-- row 3 -->
-              <div class="rsv-info-cell">
-                <span class="rsv-info-key">نوع الوحدة</span>
-                <span class="rsv-info-val">{{ contextDisplay.unitType }}</span>
-              </div>
-              <div class="rsv-info-cell">
-                <span class="rsv-info-key">فرق التسويق المعينة</span>
-                <span class="rsv-info-val">{{ contextDisplay.projectTeam }}</span>
-              </div>
-              <div></div>
-              <!-- row 4 -->
-              <div class="rsv-info-cell">
-                <span class="rsv-info-key">الدور</span>
-                <span class="rsv-info-val">{{ contextDisplay.floor }}</span>
-              </div>
-              <div></div>
-              <div></div>
-              <!-- row 5 -->
               <div class="rsv-info-cell">
                 <span class="rsv-info-key">الحي</span>
                 <span class="rsv-info-val">{{ contextDisplay.district }}</span>
               </div>
               <div class="rsv-info-cell">
-                <span class="rsv-info-key">فريق المسوق</span>
+                <span class="rsv-info-key">المساحة</span>
+                <span class="rsv-info-val">{{ contextDisplay.area }}</span>
+              </div>
+              <div class="rsv-info-cell">
+                <span class="rsv-info-key">السعر</span>
+                <span class="rsv-info-val">{{ contextDisplay.price }}</span>
+              </div>
+              <div class="rsv-info-cell">
+                <span class="rsv-info-key">نوع الوحدة</span>
+                <span class="rsv-info-val">{{ contextDisplay.unitType }}</span>
+              </div>
+              <div class="rsv-info-cell">
+                <span class="rsv-info-key">الدور</span>
+                <span class="rsv-info-val">{{ contextDisplay.floor }}</span>
+              </div>
+              <div class="rsv-info-cell">
+                <span class="rsv-info-key">فريق المشروع</span>
+                <span class="rsv-info-val">{{ contextDisplay.projectTeam }}</span>
+              </div>
+              <div class="rsv-info-cell">
+                <span class="rsv-info-key">اسم الموظف</span>
+                <span class="rsv-info-val">{{ contextDisplay.employeeName }}</span>
+              </div>
+              <div class="rsv-info-cell rsv-info-cell--span3">
+                <span class="rsv-info-key">فريق التسويق</span>
                 <span class="rsv-info-val">{{ contextDisplay.marketerTeam }}</span>
               </div>
-              <div></div>
             </div>
           </div>
 
@@ -168,7 +161,7 @@
                 </select>
               </div>
               <div class="rsv-field">
-                <label class="rsv-label">رقم الآيبان للعميل</label>
+                <label class="rsv-label">IBAN للعميل</label>
                 <input v-model="form.client_iban" type="text" class="rsv-input" placeholder="SA00..." />
               </div>
             </div>
@@ -306,7 +299,11 @@ export default {
       const unitType = unit.unit_type || unit.type || '—';
       const projectName = project.project_name || project.name || project.contract_name || '—';
       const city = project.city || unit.city || ctx.city || '—';
-      const area = unit.area || unit.area_m2 != null ? `${unit.area_m2 ?? unit.area} م²` : '—';
+      const areaRaw = unit.area_m2 ?? unit.area;
+      const area =
+        areaRaw != null && areaRaw !== '' && !Number.isNaN(Number(areaRaw))
+          ? `${Number(areaRaw)} م²`
+          : '—';
       const price = unit.price != null || unit.total_price != null
         ? `${Number(unit.total_price ?? unit.price ?? 0).toLocaleString('en-US')} ر.س`
         : '—';
@@ -338,6 +335,17 @@ export default {
         'غير معين';
       const marketerTeam = marketer.team_name || marketer.team || ctx.marketer_team || '—';
       const unitDisplay = (unit.unit_number || unit.unit_id || unit.id) ?? '—';
+      const employeeNameRaw =
+        marketer.name ??
+        marketer.full_name ??
+        marketer.employee_name ??
+        ctx.employee_name ??
+        ctx.marketer_name ??
+        ctx.user_name;
+      const employeeName =
+        employeeNameRaw != null && String(employeeNameRaw).trim() !== ''
+          ? String(employeeNameRaw).trim()
+          : '—';
       return {
         district,
         unitType,
@@ -349,6 +357,7 @@ export default {
         floor,
         projectTeam,
         marketerTeam,
+        employeeName,
       };
     });
 
@@ -398,8 +407,8 @@ export default {
       Cheque: 'شيك',
     };
     const MECHANISM_LABELS = {
-      cash: 'نقدي',
-      Cash: 'نقدي',
+      cash: 'كاش',
+      Cash: 'كاش',
       mortgage: 'تمويل عقاري',
       Mortgage: 'تمويل عقاري',
       supported_bank: 'بنك مدعوم',
@@ -482,14 +491,14 @@ export default {
 </script>
 
 <style scoped>
-/* راكز — ألوان وهوية من luxury-theme */
+/* راكز — مطابقة مرجع نموذج الحجز (خلفية بيضاء، حدود رمادية فاتحة، ذهبي للأزرار) */
 .rsv-modal--rakez {
-  font-family: 'Cairo', 'Tajawal', system-ui, sans-serif;
-  color: var(--color-charcoal);
-  background: var(--color-off-white);
-  border: 1px solid var(--color-medium-gray);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  font-family: 'Cairo', 'Tajawal', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  color: #333c4e;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(51, 60, 78, 0.12);
   overflow: hidden;
 }
 
@@ -523,145 +532,117 @@ export default {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 22px 24px 18px;
-  background: linear-gradient(180deg, var(--color-white) 0%, var(--color-cream-gold-light) 100%);
-  border-bottom: 1px solid var(--color-medium-gray);
+  padding: 20px 22px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #e8e8e8;
   flex-shrink: 0;
   position: relative;
 }
 
-.rsv-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--color-navy-dark) 0%, var(--color-gold) 50%, var(--color-navy) 100%);
-}
-
 .rsv-header-inner {
   min-width: 0;
-  padding-top: 2px;
-}
-
-.rsv-kicker {
-  margin: 0 0 6px 0;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--color-gold-dark);
-  text-transform: uppercase;
+  padding-top: 0;
 }
 
 .rsv-title {
-  margin: 0 0 4px 0;
-  font-size: clamp(1.05rem, 2.5vw, 1.25rem);
+  margin: 0 0 6px 0;
+  font-size: clamp(1.05rem, 2.5vw, 1.22rem);
   font-weight: 800;
-  color: var(--color-navy);
+  color: #333c4e;
   line-height: 1.35;
 }
 
 .rsv-subtitle {
   margin: 0;
   font-size: 13px;
-  line-height: 1.5;
-  color: var(--color-dark-gray);
+  line-height: 1.55;
+  color: #757575;
 }
 
 .rsv-close {
-  background: var(--color-white);
-  border: 1px solid var(--color-medium-gray);
-  border-radius: var(--radius-sm);
-  color: var(--color-dark-gray);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #757575;
   cursor: pointer;
-  padding: 8px;
+  padding: 6px;
   line-height: 0;
   flex-shrink: 0;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  transition: color 0.15s, background 0.15s;
 }
 .rsv-close:hover {
-  color: var(--color-navy);
-  border-color: var(--color-gold);
-  background: var(--color-cream-gold);
+  color: #333c4e;
+  background: #f5f5f5;
 }
 
 /* ── Scrollable body ── */
 .rsv-body {
   overflow-y: auto;
   flex: 1;
-  background: var(--color-off-white);
+  background: #fafafa;
 }
 
 /* ── Info card ── */
 .rsv-info-card {
-  background: var(--color-white);
+  background: #ffffff;
   margin: 0;
-  padding: 18px 24px 22px;
-  border-bottom: 1px solid var(--color-medium-gray);
+  padding: 18px 18px 20px;
+  border-bottom: 1px solid #e8e8e8;
 }
 
 .rsv-info-card-title {
-  margin: 0 0 16px 0;
+  margin: 0 auto 14px;
+  padding: 8px 14px;
   font-size: 14px;
   font-weight: 800;
-  color: var(--color-navy);
-  display: flex;
-  align-items: center;
-  justify-content: flex-start; /* في RTL يصطف نحو اليمين (بداية السطر) */
-  gap: 10px;
+  color: #333c4e;
+  text-align: center;
   width: 100%;
-}
-
-.rsv-info-card-title::before {
-  content: '';
-  width: 4px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(180deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
-  flex-shrink: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .rsv-info-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px 18px;
+  gap: 10px 12px;
 }
 
-.rsv-span2 {
-  grid-column: span 2;
+.rsv-info-cell--span3 {
+  grid-column: 1 / -1;
 }
 
 .rsv-info-cell {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.35rem;
   padding: 10px 12px;
-  background: var(--color-light-gray);
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: #fafafa;
+  border-radius: 6px;
+  border: 1px solid #e8e8e8;
 }
 
 .rsv-info-key {
   font-size: 11px;
-  font-weight: 700;
-  color: var(--color-dark-gray);
+  font-weight: 600;
+  color: #757575;
   white-space: nowrap;
 }
 
 .rsv-info-val {
   font-size: 13px;
   font-weight: 700;
-  color: var(--color-navy);
+  color: #333c4e;
   word-break: break-word;
 }
 
 /* ── Form fields area ── */
 .rsv-fields {
-  padding: 20px 24px 26px;
+  padding: 18px 22px 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
+  background: #ffffff;
 }
 
 .rsv-section {
@@ -672,22 +653,22 @@ export default {
 
 .rsv-section-title {
   margin: 0;
-  padding: 0 12px 8px 0;
+  padding: 0 0 8px 0;
   font-size: 15px;
   font-weight: 800;
-  color: var(--color-navy);
-  border-bottom: 2px solid var(--color-medium-gray);
+  color: #333c4e;
+  border-bottom: 1px solid #e8e8e8;
   position: relative;
 }
 
 .rsv-section-title::after {
   content: '';
   position: absolute;
-  bottom: -2px;
-  right: 0;
-  width: 56px;
+  bottom: -1px;
+  inset-inline-start: 0;
+  width: 48px;
   height: 2px;
-  background: linear-gradient(90deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+  background: #b09b71;
   border-radius: 2px;
 }
 
@@ -711,28 +692,28 @@ export default {
 .rsv-label {
   font-size: 12px;
   font-weight: 700;
-  color: var(--color-navy);
+  color: #333c4e;
 }
 
 .rsv-input {
   width: 100%;
-  padding: 10px 14px;
-  border: 1px solid var(--color-medium-gray);
-  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
   font-size: 14px;
-  color: var(--color-charcoal);
-  background: var(--color-white);
+  color: #333c4e;
+  background: #ffffff;
   box-sizing: border-box;
   font-family: inherit;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .rsv-input:hover {
-  border-color: #cbd5e1;
+  border-color: #cfcfcf;
 }
 .rsv-input:focus {
   outline: none;
-  border-color: var(--color-gold);
-  box-shadow: 0 0 0 3px rgba(181, 169, 154, 0.25);
+  border-color: #b09b71;
+  box-shadow: 0 0 0 2px rgba(176, 155, 113, 0.2);
 }
 
 .rsv-textarea {
@@ -746,19 +727,19 @@ export default {
   width: 100%;
   padding: 14px 18px;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   font-size: 16px;
   font-weight: 800;
   font-family: inherit;
   cursor: pointer;
-  color: var(--color-white);
-  background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-light) 55%, var(--color-navy) 100%);
-  box-shadow: var(--shadow-lg);
+  color: #ffffff;
+  background: linear-gradient(180deg, #c4b896 0%, #b09b71 100%);
+  box-shadow: 0 2px 10px rgba(176, 155, 113, 0.35);
   transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
 }
 .rsv-submit:hover:not(:disabled) {
-  filter: brightness(1.05);
-  box-shadow: var(--shadow-navy);
+  filter: brightness(1.04);
+  box-shadow: 0 4px 14px rgba(176, 155, 113, 0.42);
 }
 .rsv-submit:active:not(:disabled) {
   transform: translateY(1px);
@@ -784,10 +765,10 @@ export default {
     grid-template-columns: 1fr;
   }
   .rsv-info-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
-  .rsv-span2 {
-    grid-column: span 1;
+  .rsv-info-cell--span3 {
+    grid-column: 1;
   }
   .rsv-header {
     padding: 20px 18px 16px;

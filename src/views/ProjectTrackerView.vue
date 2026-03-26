@@ -9,10 +9,16 @@
     <template v-else-if="project">
       <header class="tracker-page-header">
         <div class="tracker-page-header__accent" aria-hidden="true"></div>
+        <div class="tracker-page-header__mesh" aria-hidden="true"></div>
         <div class="tracker-page-header__inner">
-          <div class="tracker-page-header__meta">
-            <span>تاريخ التحديث: {{ currentDate }}</span>
-            <span class="tracker-page-header__time">{{ currentTime }}</span>
+          <div class="tracker-page-header__luxury-row">
+            <div class="tracker-brand-mark">
+              <span class="tracker-brand-mark__pillar" aria-hidden="true"></span>
+              <div class="tracker-brand-mark__lockup">
+                <span class="tracker-brand-mark__en">RAKEZ</span>
+                <span class="tracker-brand-mark__ar">راكز العقارية</span>
+              </div>
+            </div>
           </div>
           <h1 class="tracker-page-header__title">{{ project.name }}</h1>
           <p v-if="project.notes" class="tracker-page-header__notes">{{ project.notes }}</p>
@@ -146,9 +152,6 @@ const project = ref(null);
 
 const projectProgress = ref(null);
 const isTrackerCompleted = ref(false);
-const currentDate = new Date().toISOString().split('T')[0];
-const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
 const isManager = computed(() => {
   const user = authService.getCurrentUser();
   return user?.type == 1 || user?.type == 2 || user?.type == 10;
@@ -303,92 +306,127 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* شفافة — تظهر خلفية المنطقة الرئيسية في MainLayout (الصورة + الطبقة الشفافة) */
 .project-tracker-view {
   padding-bottom: 50px;
   min-height: 100%;
-  background: linear-gradient(
-    180deg,
-    var(--color-cream-gold-light, #f8f4ec) 0%,
-    var(--color-off-white, #fdfbf7) 320px,
-    var(--color-off-white, #fdfbf7) 100%
-  );
+  background: transparent;
 }
 
-/* رأس الصفحة — بدون صور، طبقات لونية خفيفة وهوية راكز */
+/* رأس المتتبع — طبقة فاخرة بعيدة عن أسلوب بطاقات الوحدات */
 .tracker-page-header {
   position: relative;
   direction: rtl;
-  /* inline-start = بداية السطر في RTL = أقصى اليمين */
   text-align: start;
+  overflow: hidden;
   background: linear-gradient(
-    145deg,
-    var(--color-white, #fff) 0%,
-    var(--color-cream-gold, #faf6f0) 42%,
-    var(--color-white, #fff) 100%
+    155deg,
+    #fdfcfa 0%,
+    #f4efe6 38%,
+    #faf7f2 72%,
+    #ffffff 100%
   );
-  border-bottom: 1px solid rgba(181, 169, 154, 0.35);
-  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
+  border-bottom: 1px solid rgba(26, 38, 54, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 24px 48px -32px rgba(26, 38, 54, 0.12);
+}
+.tracker-page-header__mesh {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.45;
+  background-image:
+    radial-gradient(ellipse 120% 80% at 100% 0%, rgba(181, 169, 154, 0.22) 0%, transparent 55%),
+    radial-gradient(ellipse 90% 60% at 0% 100%, rgba(39, 55, 77, 0.06) 0%, transparent 50%);
 }
 .tracker-page-header__accent {
-  height: 4px;
+  height: 3px;
   background: linear-gradient(
     90deg,
-    var(--color-navy-dark, #1a2636) 0%,
-    var(--color-gold, #b5a99a) 45%,
-    var(--color-navy, #27374d) 100%
+    #0f172a 0%,
+    #c4a574 38%,
+    #d4bc94 52%,
+    #1e293b 100%
   );
+  box-shadow: 0 0 20px rgba(196, 165, 116, 0.35);
 }
 .tracker-page-header__inner {
   position: relative;
+  z-index: 1;
   max-width: 1200px;
   margin-inline-start: 0;
   margin-inline-end: auto;
-  padding: 26px 30px 26px 36px;
+  padding: 22px 28px 28px 32px;
 }
-.tracker-page-header__inner::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  inset-inline-start: 22px;
-  inset-inline-end: auto;
-  transform: translateY(-50%);
-  width: 5px;
-  height: clamp(48px, 12vw, 72px);
-  border-radius: var(--radius-sm, 8px);
+.tracker-page-header__luxury-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 18px;
+  width: 100%;
+}
+.tracker-brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 52px;
+}
+/* شعار راكز — عمود ذهبي + كلمة إنجليزية + سطر عربي */
+.tracker-brand-mark__pillar {
+  position: relative;
+  width: 6px;
+  align-self: stretch;
+  min-height: 48px;
+  border-radius: 999px;
   background: linear-gradient(
     180deg,
-    var(--color-gold-light, #c5baad),
-    var(--color-gold-dark, #9a8d7d)
+    #e8dcc8 0%,
+    #b8956a 42%,
+    #8b6914 78%,
+    #4a3728 100%
   );
-  box-shadow: 0 2px 12px rgba(39, 55, 77, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 4px 16px rgba(74, 55, 40, 0.25);
+}
+.tracker-brand-mark__pillar::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, transparent 60%);
   pointer-events: none;
 }
-.tracker-page-header__meta {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-  margin-bottom: 12px;
-  padding: 6px 12px;
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  color: var(--color-navy, #27374d);
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(181, 169, 154, 0.45);
-  border-radius: var(--radius-full, 9999px);
-  box-shadow: 0 1px 4px rgba(39, 55, 77, 0.06);
+.tracker-brand-mark__lockup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
-.tracker-page-header__time {
-  opacity: 0.88;
-  font-variant-numeric: tabular-nums;
+.tracker-brand-mark__en {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+  font-weight: 700;
+  letter-spacing: 0.38em;
+  text-indent: 0.38em;
+  color: #0f172a;
+  line-height: 1.1;
+}
+.tracker-brand-mark__ar {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: rgba(15, 23, 42, 0.55);
+  text-transform: none;
 }
 .tracker-page-header__title {
-  margin: 0 0 8px 0;
-  font-size: clamp(1.4rem, 3.2vw, 2.05rem);
+  margin: 0 0 10px 0;
+  font-size: clamp(1.45rem, 3.2vw, 2.1rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--color-navy, #27374d);
-  line-height: 1.28;
+  letter-spacing: -0.03em;
+  color: var(--color-navy, #1e293b);
+  line-height: 1.25;
 }
 .tracker-page-header__notes {
   margin: 0;
@@ -493,18 +531,20 @@ onMounted(async () => {
 
 /* ===== Responsive ===== */
 @media (max-width: 992px) {
-  .tracker-page-header__inner { padding: 22px 20px 22px 28px; }
-  .tracker-page-header__inner::before { inset-inline-start: 16px; height: 52px; }
+  .tracker-page-header__inner { padding: 20px 18px 24px 22px; }
+  .tracker-page-header__luxury-row { gap: 14px; }
   .tracker-page-header__notes { font-size: 14px; }
   .tabs-nav { padding: 8px 18px 0; gap: 12px; }
   .tracker-container { padding: 6px 16px 28px; }
 }
 @media (max-width: 768px) {
-  .tracker-page-header__inner { padding: 18px 20px 18px 14px; }
-  .tracker-page-header__inner::before { display: none; }
+  .tracker-page-header__inner { padding: 16px 16px 22px 16px; }
+  .tracker-page-header__luxury-row {
+    justify-content: center;
+  }
+  .tracker-brand-mark__en { letter-spacing: 0.28em; text-indent: 0.28em; }
   .tracker-page-header__title,
   .tracker-page-header__notes { padding-left: 0; padding-right: 0; }
-  .tracker-page-header__meta { font-size: 11px; padding: 6px 12px; }
   .tabs-nav {
     padding: 6px 12px 0;
     gap: 4px;
@@ -519,7 +559,7 @@ onMounted(async () => {
   .tracker-container { padding: 4px 12px 24px; }
 }
 @media (max-width: 576px) {
-  .tracker-page-header__inner { padding: 16px 14px 16px 12px; }
+  .tracker-page-header__inner { padding: 14px 12px 18px 12px; }
   .tabs-nav {
     padding: 4px 8px 0;
     gap: 0;

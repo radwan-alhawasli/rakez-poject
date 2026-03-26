@@ -1116,12 +1116,19 @@ export default {
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
-/* Overlay: light layer so content and text are readable over the image */
+/* Overlay: شفاف + تغبيش زجاجي — الصورة تظهر أوضح مع قراءة معقولة للنص */
 .main-content::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.78) 0%, rgba(250, 248, 245, 0.85) 50%, rgba(255, 255, 255, 0.82) 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(250, 248, 245, 0.1) 45%,
+    rgba(255, 255, 255, 0.12) 100%
+  );
+  backdrop-filter: blur(6px) saturate(1.02);
+  -webkit-backdrop-filter: blur(6px) saturate(1.02);
   pointer-events: none;
   z-index: 0;
 }

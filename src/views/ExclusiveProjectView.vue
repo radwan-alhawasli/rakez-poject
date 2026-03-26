@@ -405,6 +405,7 @@ const handleSubmit = async () => {
         };
       });
 
+    /** يطابق Postman /contracts/store: commission_percent، وحدات { type, count, price }، ومشروع حصري */
     const payload = {
       project_name: form.project_name?.trim() || '',
       developer_name: developerName,
@@ -415,8 +416,10 @@ const handleSubmit = async () => {
       project_image_url: form.project_location_url?.trim() || undefined,
       note: form.note?.trim() || undefined,
       units,
-      commission_percentage: Number(form.commission_percentage) || 0,
+      commission_percent: Number(form.commission_percentage) || 0,
       commission_from: form.commission_from || 'owner',
+      is_exclusive: true,
+      type: 'Exclusive',
     };
 
     await contractService.createContract(payload);

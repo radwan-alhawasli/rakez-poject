@@ -247,7 +247,7 @@ async function submit() {
       city: form.city,
       district: form.district,
       commission_from: form.commission_from || 'owner',
-      commission_percentage: Number(form.commission_percent) || 0,
+      commission_percent: Number(form.commission_percent) || 0,
       developer_requiment: form.developer_requiment || undefined,
       project_image_url: form.project_image_url || undefined,
       project_site_url: form.project_site_url || undefined,

@@ -45,16 +45,11 @@
           <span v-if="commissionStatus" class="status-badge approved">{{ commissionStatus }}</span>
         </div>
         <div class="editable-fields">
-          <div class="field-group">
-            <label>نسبة العقد %</label>
-            <input
-              v-model.number="commissionForm.commission_percentage"
-              type="number"
-              class="form-input input-sm"
-              min="0"
-              max="100"
-              step="0.1"
-            />
+          <div class="field-group field-group-readonly">
+            <label>نسبة السعي</label>
+            <span class="form-input input-sm input-readonly" title="من بيانات العقد المرتبط بالوحدة">{{
+              commissionPercentDisplay
+            }}</span>
           </div>
           <div class="field-group">
             <label>السعي من</label>
@@ -82,14 +77,16 @@
               />
             </div>
             <div class="form-group">
-              <label>نسبة العمولة (%)</label>
+              <label>نسبة السعي (%)</label>
               <input
                 v-model.number="commissionForm.commission_percentage"
                 type="number"
                 class="form-input"
                 min="0"
                 max="100"
-                required
+                step="0.1"
+                readonly
+                title="قيمة ثابتة من بيانات العقد"
               />
             </div>
             <div class="form-group">
@@ -521,6 +518,43 @@ import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 
+/**
+ * نسبة السعي من بيانات العقد (contract / contract_infos)، وليس من حقول طلب مشروع حصري فقط.
+ */
+function pickCommissionPercentFromContract(unit) {
+  if (!unit || typeof unit !== 'object') return null;
+  const nested =
+    unit.contract ??
+    unit.reservation?.contract ??
+    unit.contract_unit?.contract ??
+    unit.contract_info ??
+    (Array.isArray(unit.contract_infos) ? unit.contract_infos[0] : unit.contract_infos);
+  const c = nested && typeof nested === 'object' ? nested : null;
+  const raw =
+    c?.commission_percent ??
+    c?.commission_percentage ??
+    unit.contract_commission_percent ??
+    unit.contract_commission_percentage ??
+    null;
+  if (raw === '' || raw == null) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+function pickCommissionSourceFromContract(unit) {
+  if (!unit || typeof unit !== 'object') return null;
+  const nested =
+    unit.contract ??
+    unit.reservation?.contract ??
+    unit.contract_unit?.contract ??
+    unit.contract_info ??
+    (Array.isArray(unit.contract_infos) ? unit.contract_infos[0] : unit.contract_infos);
+  const c = nested && typeof nested === 'object' ? nested : null;
+  const src = c?.commission_from ?? c?.commission_source ?? null;
+  if (src === 'owner' || src === 'buyer') return src;
+  return null;
+}
+
 const COMMISSION_TYPE_LABELS = {
   lead_generation: 'عمولة الجلب',
   persuasion: 'عمولة الإقناع',
@@ -574,6 +608,15 @@ export default {
       team_responsible: '',
       marketing_expenses: 0,
       bank_fees: 0,
+    });
+
+    const contractCommissionPercent = computed(() => pickCommissionPercentFromContract(props.unit));
+    const commissionPercentDisplay = computed(() => {
+      const v = contractCommissionPercent.value;
+      if (v == null) return '—';
+      const n = Number(v);
+      if (!Number.isFinite(n)) return '—';
+      return `${n}%`;
     });
 
     const commissionId = computed(() => props.unit?.commission_id ?? props.unit?.commission?.id);
@@ -693,8 +736,11 @@ const canConfirmDistribution = dist =>
         props.unit.contract_unit_id || props.unit.unit_id || props.unit.id;
       commissionForm.final_selling_price =
         props.unit.final_sale_price ?? props.unit.total_value ?? 0;
-      commissionForm.commission_percentage = props.unit.commission_percentage ?? 0;
-      commissionForm.commission_source = props.unit.commission_source || 'owner';
+      const pct = pickCommissionPercentFromContract(props.unit);
+      commissionForm.commission_percentage = pct != null ? pct : 0;
+      const srcContract = pickCommissionSourceFromContract(props.unit);
+      commissionForm.commission_source =
+        srcContract || props.unit.commission_source || 'owner';
       commissionForm.team_responsible = props.unit.team_name || '';
     };
 
@@ -823,6 +869,7 @@ const canConfirmDistribution = dist =>
       commissionSummary,
       distributions,
       commissionForm,
+      commissionPercentDisplay,
       leadGenRows,
       persuasionRows,
       closingRows,
@@ -976,6 +1023,18 @@ const canConfirmDistribution = dist =>
 
 .input-sm {
   width: 100px;
+}
+
+.input-readonly {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  background: #f8fafc;
+  color: var(--color-navy);
+  font-weight: 600;
+  cursor: default;
+  user-select: text;
 }
 
 .create-commission-section {

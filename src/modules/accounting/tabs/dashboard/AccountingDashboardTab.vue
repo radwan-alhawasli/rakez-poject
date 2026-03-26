@@ -41,6 +41,7 @@
         </template>
       </LuxuryStatCard>
       <LuxuryStatCard
+        v-if="!hideKpisForAccountingDepartmentRole"
         label="قيمة المبيعات"
         :value="formatCompact(dashboardMetrics.totalSalesValue)"
         description="اعتمادًا على سعر البيع النهائي"
@@ -50,6 +51,7 @@
         </template>
       </LuxuryStatCard>
       <LuxuryStatCard
+        v-if="!hideKpisForAccountingDepartmentRole"
         label="العربون المعلقة"
         :value="formatCompact(dashboardMetrics.pendingDepositsCount || 0)"
         description="بانتظار تأكيد الاستلام"
@@ -101,7 +103,9 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue';
+import { onMounted, computed, ref } from 'vue';
+import authService from '@/services/authService';
+import { ROLE_ACCOUNTING } from '@/constants/roles';
 import DashboardMetricsBarChart from '@/components/dashboard/DashboardMetricsBarChart.vue';
 import LuxuryStatCard from '@/components/dashboard/widgets/LuxuryStatCard.vue';
 import DarkWidgetShell from '@/components/dashboard/widgets/DarkWidgetShell.vue';
@@ -117,6 +121,13 @@ import DashboardStatIcon from '@/components/dashboard/DashboardStatIcon.vue';
 
 const { dashboardMetrics, loadDashboardMetrics } = useAccountingDashboard();
 const { formatCompact, formatCurrencyAr } = useFormatters();
+
+const currentUser = ref(authService.getCurrentUser());
+/** دور «المحاسبة» (القسم) — يختلف عن دور «المحاسب» */
+const hideKpisForAccountingDepartmentRole = computed(() => {
+  const t = currentUser.value?.type;
+  return t === ROLE_ACCOUNTING || String(t) === String(ROLE_ACCOUNTING);
+});
 
 const chartLabels = ['الوحدات المباعة', 'الودائع', 'المسترد', 'قيمة المشاريع', 'قيمة المبيعات', 'العمولات'];
 
