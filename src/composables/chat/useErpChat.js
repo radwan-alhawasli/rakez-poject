@@ -134,31 +134,61 @@ export function useErpChat() {
 
   const subscribeToConversation = convId => {
     if (!pusher || !convId) return;
-    const channelName = `conversation.${convId}`;
-    if (pusherSubscriptions.some(s => s.channelName === channelName)) return;
-    try {
-      logger.debug(`Subscribing to chat channel: ${channelName}`);
-      const ch = pusher.subscribe(channelName);
-      ch.bind('message.sent', data => {
-        logger.debug(`Real-time message received on ${channelName}:`, data);
-        if (activeConversation.value?.id === convId && data.sender_id !== currentUserId.value) {
-          const exists = messages.value.find(m => m.id === data.id);
-          if (!exists) {
-            messages.value = sortAndDedupeMessages([...messages.value, data]);
-            nextTick(() => scrollToBottom());
-            chatService.markAsRead(convId).catch(() => {});
-          }
-        }
-        updateConvPreview(convId, data.message || '');
-        const c = conversations.value.find(x => x.id === convId);
-        if (c && data.sender_id !== currentUserId.value && activeConversation.value?.id !== convId) {
-          c.unread_count = (c.unread_count || 0) + 1;
-        }
-      });
-      pusherSubscriptions.push({ channelName, channel: ch });
-    } catch (e) {
-      logger.debug('Pusher subscribe skipped', e);
-    }
+    
+    // We try both private and public channels because different environments or docs might vary
+    const channelsToTry = [`conversation.${convId}`, `private-conversation.${convId}`];
+    // Common event names in Laravel/Pusher setups
+    const eventsToTry = ['message.sent', 'MessageSent', 'message-sent'];
+
+    channelsToTry.forEach(channelName => {
+      if (pusherSubscriptions.some(s => s.channelName === channelName)) return;
+      
+      try {
+        logger.debug(`[Chat Real-time] Subscribing to: ${channelName}`);
+        const ch = pusher.subscribe(channelName);
+        
+        eventsToTry.forEach(eventName => {
+          ch.bind(eventName, data => {
+            logger.debug(`[Chat Real-time] Event '${eventName}' on '${channelName}':`, data);
+            
+            // Normalize data (handle both root object and nested .message)
+            const msgData = data.message ? data.message : data;
+            
+            if (activeConversation.value?.id === convId && Number(msgData.sender_id) !== currentUserId.value) {
+              const exists = messages.value.find(m => m.id === msgData.id);
+              if (!exists) {
+                messages.value = sortAndDedupeMessages([...messages.value, msgData]);
+                nextTick(scrollToBottom);
+                // Mark as read in backend if it's the active conversation
+                chatService.markAsRead(convId).catch(() => {});
+              }
+            }
+            
+            // Update preview and unread count in sidebar
+            const c = conversations.value.find(x => x.id === convId);
+            if (c) {
+              c._lastPreview = msgData.message || msgData.body || msgData.text || '';
+              c.last_message_at = new Date().toISOString();
+              if (Number(msgData.sender_id) !== currentUserId.value && activeConversation.value?.id !== convId) {
+                c.unread_count = (c.unread_count || 0) + 1;
+              }
+            }
+          });
+        });
+
+        pusherSubscriptions.push({ convId, channelName, ch });
+        
+        // Monitoring connection
+        ch.bind('pusher:subscription_succeeded', () => {
+          logger.debug(`[Chat Real-time] Subscription SUCCESS: ${channelName}`);
+        });
+        ch.bind('pusher:subscription_error', status => {
+          logger.warn(`[Chat Real-time] Subscription ERROR (${channelName}):`, status);
+        });
+      } catch (err) {
+        logger.warn(`[Chat Real-time] Subscription FAILED: ${channelName}`, err);
+      }
+    });
   };
 
   const initPusher = () => {
@@ -300,9 +330,9 @@ export function useErpChat() {
     searchDebounce = setTimeout(async () => {
       isSearchingUsers.value = true;
       try {
-        const res = await userService.getEmployees({ search: q, per_page: 20 });
-        searchedUsers.value = (res.items || [])
-          .filter(u => u.id !== currentUserId.value)
+        const list = await chatService.listUsers({ search: q });
+        searchedUsers.value = (list || [])
+          .filter(u => Number(u.id) !== currentUserId.value)
           .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ar'));
       } catch {
         searchedUsers.value = [];

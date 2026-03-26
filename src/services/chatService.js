@@ -187,6 +187,25 @@ const chatService = {
       return handleServiceError(error, 'Fetch chat unread count', 'get', 0);
     }
   },
+
+  /**
+   * GET /chat/list_user
+   * @param {Object} params
+   */
+  async listUsers(params = {}) {
+    try {
+      const res = await apiClient.get('/chat/list_user', { params });
+      const raw = unwrap(res);
+      const list = Array.isArray(raw) ? raw : (raw?.items ?? raw?.users ?? []);
+      return list.map(u => ({
+        id: u.id,
+        name: u.name || u.full_name || 'مستخدم',
+        email: u.email || '',
+      }));
+    } catch (error) {
+      return handleServiceError(error, 'Fetch chat user list', 'get', []);
+    }
+  },
 };
 
 export default chatService;
