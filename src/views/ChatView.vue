@@ -17,20 +17,31 @@
       <!-- قائمة المحادثات -->
       <aside class="erp-chat-sidebar" aria-label="قائمة المحادثات">
         <div class="erp-chat-sidebar-head">
-          <h2>المحادثات</h2>
+          <h2>
+            المحادثات
+            <span v-if="totalUnreadCount > 0" class="erp-chat-header-badge">{{ totalUnreadCount }}</span>
+          </h2>
         </div>
         <div class="erp-chat-search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            v-model="searchQuery"
-            type="search"
-            autocomplete="off"
-            placeholder="بحث باسم الموظف..."
-            aria-label="بحث في المحادثات"
-          />
+          <div class="erp-chat-search-inner">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              v-model="searchQuery"
+              type="text"
+              autocomplete="off"
+              placeholder="بحث باسم الموظف..."
+              aria-label="بحث في المحادثات"
+            />
+          </div>
+          <button type="button" class="erp-chat-add-btn" aria-label="محادثة جديدة" @click="showNewChatModal = true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </button>
         </div>
 
         <div class="erp-chat-conv-list custom-scrollbar">
@@ -99,7 +110,7 @@
               v-for="msg in messages"
               :key="msg.id"
               class="erp-chat-row"
-              :class="msg.sender_id === currentUserId ? 'is-mine' : 'is-theirs'"
+              :class="Number(msg.sender_id) === Number(currentUserId) ? 'is-mine' : 'is-theirs'"
               @contextmenu.prevent="onMessageContext($event, msg)"
             >
               <div class="erp-chat-bubble">
@@ -140,7 +151,7 @@
               @click="contextMenu.visible = false"
             >
               <button
-                v-if="contextMenu.msg?.sender_id === currentUserId"
+                v-if="Number(contextMenu.msg?.sender_id) === Number(currentUserId)"
                 type="button"
                 class="danger"
                 role="menuitem"
@@ -162,17 +173,24 @@
                   <line x1="15" y1="9" x2="15.01" y2="9" />
                 </svg>
               </button>
-              <div v-if="showEmoji" class="erp-chat-emoji-panel">
-                <span
-                  v-for="e in emojiList"
-                  :key="e"
-                  class="erp-chat-emoji-item"
-                  role="button"
-                  tabindex="0"
-                  @click="insertEmoji(e)"
-                  >{{ e }}</span
-                >
-              </div>
+
+              <Teleport to="body">
+                <div v-if="showEmoji" class="erp-chat-emoji-overlay" @click="showEmoji = false" />
+              </Teleport>
+
+              <Transition name="erp-emoji">
+                <div v-if="showEmoji" class="erp-chat-emoji-panel">
+                  <span
+                    v-for="e in emojiList"
+                    :key="e"
+                    class="erp-chat-emoji-item"
+                    role="button"
+                    tabindex="0"
+                    @click="insertEmoji(e)"
+                    >{{ e }}</span
+                  >
+                </div>
+              </Transition>
             </div>
             <input
               ref="composerInput"
@@ -240,11 +258,8 @@
                   <span class="erp-chat-user-email">{{ u.email || '' }}</span>
                 </div>
               </button>
-              <div
-                v-if="searchedUsers.length === 0 && userSearchQuery.trim().length > 0"
-                class="erp-chat-hint"
-              >
-                لا توجد نتائج
+              <div v-if="searchedUsers.length === 0" class="erp-chat-hint">
+                لم يتم العثور على موظفين
               </div>
             </template>
           </div>

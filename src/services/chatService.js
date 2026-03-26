@@ -60,7 +60,7 @@ export function normalizeMessage(raw) {
     ...raw,
     id: raw.id,
     conversation_id: raw.conversation_id,
-    sender_id: raw.sender_id ?? raw.senderId,
+    sender_id: raw.sender_id != null ? Number(raw.sender_id) : Number(raw.senderId || 0),
     message: raw.message ?? raw.body ?? raw.text ?? '',
     is_read: !!(raw.is_read ?? raw.isRead),
     created_at: raw.created_at || raw.createdAt,

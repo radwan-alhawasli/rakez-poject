@@ -3,7 +3,7 @@
  * @module composables/chat/useErpChat
  */
 
-import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue';
 import chatService from '@/services/chatService';
 import userService from '@/services/userService';
 import authService from '@/services/authService';
@@ -41,10 +41,11 @@ export function useErpChat() {
   const pusherSubscriptions = [];
   let searchDebounce = null;
 
-  const currentUser = authService.getCurrentUser();
-  const resolvedUserId =
-    currentUser?.id ?? Number(localStorage.getItem('userId') || 0);
-  const currentUserId = ref(Number.isFinite(resolvedUserId) ? resolvedUserId : 0);
+  const currentUserId = computed(() => {
+    const user = authService.getCurrentUser();
+    const id = user?.id ?? user?.user_id ?? localStorage.getItem('userId');
+    return id ? Number(id) : 0;
+  });
 
   const emojiList = EMOJI_LIST;
 
@@ -56,12 +57,41 @@ export function useErpChat() {
     );
   });
 
+  const totalUnreadCount = computed(() => {
+    return conversations.value.reduce((sum, c) => sum + (c.unread_count || 0), 0);
+  });
+
   const avatarLetter = name => (name || 'U').charAt(0).toUpperCase();
   const avatarColor = name => {
     const colors = ['#27374D', '#B5A99A', '#5B7B9A', '#6B8F71', '#8B6F5E', '#7B6B8F', '#6B8B9B', '#8F7B5B'];
     let hash = 0;
     for (const ch of (name || 'U')) hash = ch.charCodeAt(0) + ((hash << 5) - hash);
     return colors[Math.abs(hash) % colors.length];
+  };
+
+  /**
+   * Sort messages by date and deduplicate by ID.
+   * Ensures UI remains consistent regardless of arrival order.
+   */
+  const sortAndDedupeMessages = (list) => {
+    if (!Array.isArray(list)) return [];
+    
+    // Sort by created_at (primary) and id (secondary for tie-breaking)
+    const sorted = [...list].sort((a, b) => {
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      if (dateA !== dateB) return dateA - dateB;
+      // Fallback to ID for messages with same timestamp
+      return String(a.id).localeCompare(String(b.id));
+    });
+
+    // Deduplicate by ID
+    const seen = new Set();
+    return sorted.filter(m => {
+      if (seen.has(m.id)) return false;
+      seen.add(m.id);
+      return true;
+    });
   };
 
   const relativeTime = dt => {
@@ -104,15 +134,17 @@ export function useErpChat() {
 
   const subscribeToConversation = convId => {
     if (!pusher || !convId) return;
-    const channelName = `private-conversation.${convId}`;
+    const channelName = `conversation.${convId}`;
     if (pusherSubscriptions.some(s => s.channelName === channelName)) return;
     try {
+      logger.debug(`Subscribing to chat channel: ${channelName}`);
       const ch = pusher.subscribe(channelName);
       ch.bind('message.sent', data => {
+        logger.debug(`Real-time message received on ${channelName}:`, data);
         if (activeConversation.value?.id === convId && data.sender_id !== currentUserId.value) {
           const exists = messages.value.find(m => m.id === data.id);
           if (!exists) {
-            messages.value.push(data);
+            messages.value = sortAndDedupeMessages([...messages.value, data]);
             nextTick(() => scrollToBottom());
             chatService.markAsRead(convId).catch(() => {});
           }
@@ -155,7 +187,7 @@ export function useErpChat() {
       await chatService.markAsRead(conv.id);
       conv.unread_count = 0;
       const res = await chatService.getMessages(conv.id, 1, 50);
-      messages.value = [...(res.messages || [])].reverse();
+      messages.value = sortAndDedupeMessages(res.messages || []);
       hasMoreMessages.value = !!res.meta?.has_more_pages;
       currentPage.value = 1;
       await nextTick();
@@ -175,8 +207,7 @@ export function useErpChat() {
     try {
       const nextPage = currentPage.value + 1;
       const res = await chatService.getMessages(activeConversation.value.id, nextPage, 50);
-      const older = [...(res.messages || [])].reverse();
-      messages.value = [...older, ...messages.value];
+      messages.value = sortAndDedupeMessages([...(res.messages || []), ...messages.value]);
       hasMoreMessages.value = !!res.meta?.has_more_pages;
       currentPage.value = nextPage;
     } catch (e) {
@@ -207,8 +238,12 @@ export function useErpChat() {
     scrollToBottom();
     try {
       const saved = await chatService.sendMessage(activeConversation.value.id, text);
+      // Replace optimistic message with actual data from server
       const idx = messages.value.findIndex(m => m.id === optimistic.id);
-      if (idx !== -1 && saved) messages.value.splice(idx, 1, saved);
+      if (idx !== -1 && saved) {
+        messages.value.splice(idx, 1, saved);
+      }
+      messages.value = sortAndDedupeMessages(messages.value);
       updateConvPreview(activeConversation.value.id, text);
     } catch (e) {
       const idx = messages.value.findIndex(m => m.id === optimistic.id);
@@ -266,7 +301,9 @@ export function useErpChat() {
       isSearchingUsers.value = true;
       try {
         const res = await userService.getEmployees({ search: q, per_page: 20 });
-        searchedUsers.value = (res.items || []).filter(u => u.id !== currentUserId.value);
+        searchedUsers.value = (res.items || [])
+          .filter(u => u.id !== currentUserId.value)
+          .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ar'));
       } catch {
         searchedUsers.value = [];
       } finally {
@@ -299,6 +336,15 @@ export function useErpChat() {
     userSearchQuery.value = '';
     searchedUsers.value = [];
   };
+
+  /**
+   * Watch modal opening to fetch initial list of employees
+   */
+  watch(showNewChatModal, (val) => {
+    if (val && searchedUsers.value.length === 0) {
+      searchUsers();
+    }
+  });
 
   onMounted(async () => {
     await loadConversations();
@@ -344,6 +390,7 @@ export function useErpChat() {
     hasMoreMessages,
     contextMenu,
     filteredConversations,
+    totalUnreadCount,
     currentUserId,
     avatarLetter,
     avatarColor,
