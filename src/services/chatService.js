@@ -8,6 +8,7 @@
 
 import apiClient from '@/api/apiClient';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
+import { extractPaginatedData } from '@/utils/paginationUtils';
 
 /** @param {import('axios').AxiosResponse} res */
 function unwrap(res) {
@@ -195,11 +196,11 @@ const chatService = {
   async listUsers(params = {}) {
     try {
       const res = await apiClient.get('/chat/list_user', { params });
-      const raw = unwrap(res);
-      const list = Array.isArray(raw) ? raw : (raw?.items ?? raw?.users ?? []);
-      return list.map(u => ({
+      const { items } = extractPaginatedData(res);
+      
+      return items.map(u => ({
         id: u.id,
-        name: u.name || u.full_name || 'مستخدم',
+        name: u.name || u.full_name || u.username || u.display_name || 'مستخدم',
         email: u.email || '',
       }));
     } catch (error) {

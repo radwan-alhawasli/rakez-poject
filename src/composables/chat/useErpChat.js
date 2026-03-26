@@ -5,7 +5,6 @@
 
 import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue';
 import chatService from '@/services/chatService';
-import userService from '@/services/userService';
 import authService from '@/services/authService';
 import notificationService from '@/services/notificationService';
 import { createPusher } from '@/plugins/pusher';
@@ -323,14 +322,11 @@ export function useErpChat() {
   const searchUsers = () => {
     clearTimeout(searchDebounce);
     const q = userSearchQuery.value.trim();
-    if (!q) {
-      searchedUsers.value = [];
-      return;
-    }
     searchDebounce = setTimeout(async () => {
       isSearchingUsers.value = true;
       try {
-        const list = await chatService.listUsers({ search: q });
+        const params = q ? { search: q } : {};
+        const list = await chatService.listUsers(params);
         searchedUsers.value = (list || [])
           .filter(u => Number(u.id) !== currentUserId.value)
           .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ar'));
@@ -344,13 +340,18 @@ export function useErpChat() {
 
   const startConversation = async userId => {
     showNewChatModal.value = false;
+    searchQuery.value = '';
     userSearchQuery.value = '';
     searchedUsers.value = [];
     try {
       const conv = await chatService.getOrCreateConversation(userId);
       if (conv) {
-        const existing = conversations.value.find(c => c.id === conv.id);
-        if (!existing) conversations.value.unshift(conv);
+        // Move to top if exists, else unshift
+        const idx = conversations.value.findIndex(c => c.id === conv.id);
+        if (idx !== -1) {
+          conversations.value.splice(idx, 1);
+        }
+        conversations.value.unshift(conv);
         await openConversation(conv);
       }
     } catch (e) {
