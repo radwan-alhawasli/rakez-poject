@@ -102,5 +102,5 @@ export function useError(options = {}) {
   };
 }
 
-export { getApiErrorMessage, showApiError };
+export { getApiErrorMessage, showApiErrorUtil as showApiError };
 export default useError;

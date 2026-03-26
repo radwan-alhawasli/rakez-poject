@@ -73,7 +73,9 @@ export function useEditorProjects() {
         try {
           const data = await editorService.getContractById(c.id);
           mergeContractDetail(c.id, data);
-        } catch (_) {}
+        } catch (_) {
+          // Ignore preloading error for individual items
+        }
       })
     );
   }
@@ -168,7 +170,7 @@ export function useEditorProjects() {
             !!(data?.description && String(data.description).trim());
           map[id] = has;
         } catch (_) {
-          map[id] = false;
+          map[id] = false; // Default to false if fetch fails
         }
       })
     );

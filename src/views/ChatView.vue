@@ -88,7 +88,7 @@
             </div>
           </div>
 
-          <div ref="messagesArea" class="erp-chat-messages custom-scrollbar" @scroll.passive>
+          <div ref="messagesArea" class="erp-chat-messages custom-scrollbar">
             <div v-if="isLoadingMessages && messages.length === 0" class="erp-chat-loading">
               <div class="erp-chat-spinner" role="status" />
             </div>
