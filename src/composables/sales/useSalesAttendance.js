@@ -14,6 +14,7 @@ export function useSalesAttendance() {
   const attendancePage = ref(1);
   const attendancePerPage = ref(25);
   const showScheduleModal = ref(false);
+  const scheduleCreateSaving = ref(false);
   const scheduleForm = reactive({
     contract_id: '',
     employee_id: '',
@@ -76,6 +77,14 @@ export function useSalesAttendance() {
   const openScheduleModal = async (teamMembers, teamProjects, loadTeamMembers, loadTeamProjects) => {
     if (teamMembers.value.length === 0) await loadTeamMembers();
     if (teamProjects.value.length === 0) await loadTeamProjects();
+    const today = new Date().toISOString().slice(0, 10);
+    Object.assign(scheduleForm, {
+      contract_id: '',
+      employee_id: '',
+      date: today,
+      start_time: '08:00',
+      end_time: '17:00',
+    });
     showScheduleModal.value = true;
   };
 
@@ -84,13 +93,18 @@ export function useSalesAttendance() {
       notificationService.addNotification('غير مصرح لك بإدارة الدوام', 'warning');
       return;
     }
+    if (!scheduleForm.contract_id || !scheduleForm.employee_id || !scheduleForm.date) {
+      notificationService.addNotification('يرجى اختيار المسوق والمشروع والتاريخ', 'warning');
+      return;
+    }
+    scheduleCreateSaving.value = true;
     try {
       await salesService.createSchedule({
         contract_id: scheduleForm.contract_id,
         user_id: scheduleForm.employee_id,
         schedule_date: scheduleForm.date,
-        start_time: scheduleForm.start_time,
-        end_time: scheduleForm.end_time,
+        start_time: scheduleForm.start_time || '08:00',
+        end_time: scheduleForm.end_time || '17:00',
       });
       notificationService.addNotification('تم إنشاء الجدول بنجاح', 'success');
       showScheduleModal.value = false;
@@ -98,13 +112,15 @@ export function useSalesAttendance() {
       Object.assign(scheduleForm, {
         contract_id: '',
         employee_id: '',
-        date: '',
-        start_time: '',
-        end_time: '',
+        date: new Date().toISOString().slice(0, 10),
+        start_time: '08:00',
+        end_time: '17:00',
       });
     } catch (error) {
       logger.error('Error creating schedule:', error);
       notificationService.addNotification('حدث خطأ أثناء إنشاء الجدول', 'error');
+    } finally {
+      scheduleCreateSaving.value = false;
     }
   };
 
@@ -115,6 +131,7 @@ export function useSalesAttendance() {
     attendancePage,
     attendancePerPage,
     showScheduleModal,
+    scheduleCreateSaving,
     scheduleForm,
     loadAttendance,
     getAttendanceStatusText,

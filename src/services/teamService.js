@@ -229,20 +229,11 @@ export const getContractTeams = async contractId => {
 /**
  * Get teams assigned to a project (by contract/project id)
  * GET {{base_url}}/project_management/teams/index/:contract_id
+ * يستخدم نفس تطبيع الاستجابة مثل getContractTeams (مصفوفة / ترقيم / teams)
  * @param {number|string} contractId - Project/contract ID
  * @returns {Promise<Array>} List of assigned teams (items may include project_team_id for remove)
  */
-export const getProjectTeams = async contractId => {
-  try {
-    const response = await apiClient.get(`/project_management/teams/index/${contractId}`);
-    const raw = response?.data ?? response;
-    let data = raw?.data ?? raw;
-    if (!Array.isArray(data) && Array.isArray(raw?.teams)) data = raw.teams;
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    return handleServiceError(error, `Fetch project teams ${contractId}`, 'get', []);
-  }
-};
+export const getProjectTeams = async contractId => getContractTeams(contractId);
 
 /**
  * Assign teams to a project

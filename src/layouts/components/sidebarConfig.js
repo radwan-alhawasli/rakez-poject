@@ -51,6 +51,7 @@ const COMMON_ITEMS = {
   tasks: { to: '/tasks', label: 'إدارة المهام', tooltip: 'إدارة المهام', icon: ICONS.tasks, permission: 'tasks.create' },
   notifications: { to: '/notifications', label: 'الإشعارات', tooltip: 'الإشعارات', icon: ICONS.notifications, hasBadge: true },
   dashboard: { to: '/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard },
+  chat: { to: '/chat', label: 'الدردشة', tooltip: 'المحادثات الفورية', icon: ICONS.agents },
 };
 
 // ── تعريف القوائم حسب الدور ──
@@ -58,6 +59,7 @@ const COMMON_ITEMS = {
 /** Admin (دور 1) — وصول كامل لجميع الأقسام */
 const adminItems = [
   COMMON_ITEMS.dashboard,
+  COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications },
   { to: '/project-management', label: 'إدارة المشاريع', tooltip: 'إدارة المشاريع', icon: ICONS.projects },
   { to: '/sales/analytics', label: 'التحليلات', tooltip: 'التحليلات', icon: ICONS.analytics },
@@ -120,6 +122,7 @@ const adminItems = [
 /** إدارة المشاريع (دور 2) */
 const pmItems = [
   COMMON_ITEMS.dashboard,
+  COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications },
   { to: '/project-management', label: 'إدارة المشاريع', tooltip: 'إدارة المشاريع', icon: ICONS.projects },
   { ...COMMON_ITEMS.tasks },
@@ -136,10 +139,10 @@ const pmItems = [
 /** المونتاج / المحرر (دور 3) */
 const editorItems = [
   { to: '/editor/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard },
+  { to: '/chat', label: 'الدردشة', tooltip: 'الدردشة', icon: ICONS.agents },
   { ...COMMON_ITEMS.notifications, hasBadge: true },
   { ...COMMON_ITEMS.tasks },
   { to: '/editor/projects', label: 'المشاريع', tooltip: 'المشاريع (قبل / بعد المونتاج)', icon: ICONS.contracts },
-  { to: '/chat', label: 'الدردشة', tooltip: 'الدردشة', icon: ICONS.agents },
   { to: '/ai-assistant', label: 'الذكاء الاصطناعي', tooltip: 'الذكاء الاصطناعي', icon: ICONS.ai },
   { to: '/editor/teams', label: 'الفرق', tooltip: 'الفرق', icon: ICONS.teams },
   { to: '/editor/ratings', label: 'التقييمات', tooltip: 'تقييمات الموظفين', icon: ICONS.star, showIf: 'isManager' },
@@ -149,6 +152,7 @@ const editorItems = [
 /** المطور (دور 4) */
 const developerItems = [
   COMMON_ITEMS.dashboard,
+  COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications, hasBadge: true },
   { ...COMMON_ITEMS.tasks },
   COMMON_ITEMS.profile,
@@ -157,6 +161,7 @@ const developerItems = [
 /** التسويق (دور 5) */
 const marketingItems = [
   { to: '/marketing/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard, permission: 'marketing.dashboard.view' },
+  COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications, hasBadge: true },
   COMMON_ITEMS.myRequests,
   COMMON_ITEMS.exclusiveRequest,
@@ -171,6 +176,7 @@ const marketingItems = [
 /** المبيعات (دور 6) وقائد المبيعات (دور 7) — نفس الواجهة */
 const salesItems = [
   { to: '/sales/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard, permission: 'sales.dashboard.view' },
+  COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications, permission: 'notifications.view', hasBadge: true },
   { ...COMMON_ITEMS.tasks },
   { to: '/sales/projects', label: 'المشاريع', tooltip: 'المشاريع', icon: ICONS.projects, permission: 'sales.projects.view' },
@@ -189,6 +195,7 @@ const salesItems = [
 /** الموارد البشرية (دور 8) */
 const hrItems = [
   { to: '/hr/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard, permission: 'hr.dashboard.view' },
+  COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications, permission: 'notifications.view', hasBadge: true },
   { ...COMMON_ITEMS.tasks },
   { to: '/hr/teams', label: 'إدارة الفرق', tooltip: 'إدارة الفرق', icon: ICONS.teams, permission: 'hr.teams.manage' },
@@ -204,6 +211,7 @@ const hrItems = [
 /** الائتمان (دور 9) */
 const creditItems = [
   { to: '/credit/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard },
+  COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications, hasBadge: true },
   { ...COMMON_ITEMS.tasks },
   { to: '/credit/bookings', label: 'إدارة الحجوزات', tooltip: 'إدارة الحجوزات', icon: ICONS.tasks },
@@ -216,6 +224,7 @@ const creditItems = [
 /** المحاسبة (دور 10) والمحاسب (دور 13) */
 const accountingItems = [
   { to: '/accounting/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard },
+  COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications, to: '/accounting/notifications', hasBadge: true },
   { ...COMMON_ITEMS.tasks },
   { to: '/accounting/sold-units', label: 'الوحدات المباعة', tooltip: 'الوحدات المباعة', icon: ICONS.projects },
@@ -230,6 +239,7 @@ const accountingItems = [
 /** المخزون (دور 11) */
 const inventoryItems = [
   { to: '/inventory/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard },
+  COMMON_ITEMS.chat,
   { to: '/inventory/projects', label: 'المشاريع', tooltip: 'المشاريع على الخريطة', icon: ICONS.projects },
   { to: '/inventory/contracts', label: 'العقود', tooltip: 'العقود', icon: ICONS.contracts },
   { to: '/inventory/ai-suggestions', label: 'اقتراحات الذكاء الاصطناعي', tooltip: 'اقتراحات الذكاء الاصطناعي', icon: ICONS.ai },

@@ -10,6 +10,7 @@ import { getApiErrorMessage, showApiError } from '@/utils/errorHandler';
 import { useFormatters } from '@/composables/useFormatters';
 import { NATIONALITIES } from '@/constants/lookups';
 import { extractPaginatedData } from '@/utils/paginationUtils';
+import { getContractTeams } from '@/services/teamService';
 
 /**
  * @param {string|number} projectId
@@ -24,7 +25,8 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
   /** عند المستخدم sales: إحصائيات المشروع من getProjectDetails عند فراغ قائمة الوحدات */
   const projectSalesSummary = ref(null);
   const unitsLoading = ref(false);
-  const unitsFilterTab = ref('all');
+  /** التبويب الافتراضي عند فتح جدول الوحدات */
+  const unitsFilterTab = ref('available');
   const filteredUnits = computed(() => {
     const list = Array.isArray(units.value) ? units.value : [];
     const tab = unitsFilterTab.value;
@@ -415,10 +417,23 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     reservationForm.contract_id = projectId;
     reservationForm.contract_unit_id = unit.id;
     reservationContextRef.value = null;
+    let data = null;
     try {
-      const response = await salesService.getReservationContext(unit.id);
-      const data = response?.data?.data || response?.data;
-      reservationContextRef.value = data ?? null;
+      let response;
+      try {
+        response = await salesService.getReservationContext(unit.id, { include: 'teams' });
+      } catch (e) {
+        const st = e?.response?.status;
+        if (st === 400 || st === 422) {
+          response = await salesService.getReservationContext(unit.id);
+        } else {
+          throw e;
+        }
+      }
+      data = response?.data?.data ?? response?.data ?? null;
+      if (data && typeof data === 'object' && data.context && typeof data.context === 'object') {
+        data = { ...data, ...data.context };
+      }
       if (data?.lookups) {
         reservationLookups.value = data.lookups;
         const lookups = data.lookups;
@@ -431,6 +446,23 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
       logger.error('Reservation context', e);
       reservationLookups.value = null;
     }
+
+    let teamsList = [];
+    if (projectId) {
+      try {
+        const t = await getContractTeams(projectId);
+        teamsList = Array.isArray(t) ? t : [];
+      } catch (e) {
+        logger.warn('Reservation modal: could not load project marketing teams', e);
+      }
+    }
+
+    if (data && typeof data === 'object') {
+      reservationContextRef.value = teamsList.length ? { ...data, project_teams: teamsList } : data;
+    } else {
+      reservationContextRef.value = teamsList.length ? { project_teams: teamsList } : null;
+    }
+
     showReservationModal.value = true;
   };
 

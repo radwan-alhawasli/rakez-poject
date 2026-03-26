@@ -456,6 +456,7 @@ const accountingService = {
   },
 
   // --- Deposits ---
+  // RAKEZ_LAST_SYSTEM (docs/RAKEZ_LAST_SYSTEM_API_REFERENCE.md, Accounting): /api/accounting/deposits, …/follow-up, …/pending — here as /accounting/deposits/* (no extra /api; see apiClient baseURL).
 
   /**
    * Get pending deposits awaiting confirmation

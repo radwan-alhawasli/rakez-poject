@@ -187,7 +187,7 @@ import contractService from '@/services/contractService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
-import { showApiError } from '@/utils/errorHandler';
+import { showApiError, getApiErrorMessage } from '@/utils/errorHandler';
 
 const activeFilter = ref('all');
 const searchQuery = ref('');

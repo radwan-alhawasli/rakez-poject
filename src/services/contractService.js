@@ -36,166 +36,83 @@ function normalizeContractItem(p) {
   };
 }
 
-function isMeaningfulContractValue(v) {
-  if (v === null || v === undefined) return false;
-  if (typeof v === 'string' && v.trim() === '') return false;
-  return true;
-}
-
-/**
- * يدمج `data.info` (استكمال العقد عبر POST /contracts/store/info) مع جذر العقد.
- * الباكند غالباً يضع التواريخ والسعي ومدة الاتفاق والطرف الثاني داخل `info` بينما
- * `commission_percent` قد يبقى على الجذر بعد الإنشاء فقط — نأخذ أول قيمة معنى من الجذر ثم info.
- */
-function mergeContractInfoIntoRoot(raw) {
-  if (!raw || typeof raw !== 'object') return raw;
-  const info = raw.info && typeof raw.info === 'object' ? raw.info : {};
-
-  const pick = (rootKeys, infoKeys = rootKeys) => {
-    const rk = Array.isArray(rootKeys) ? rootKeys : [rootKeys];
-    const ik = Array.isArray(infoKeys) ? infoKeys : [infoKeys];
-    for (const k of rk) {
-      if (isMeaningfulContractValue(raw[k])) return raw[k];
-    }
-    for (const k of ik) {
-      if (isMeaningfulContractValue(info[k])) return info[k];
-    }
-    return undefined;
-  };
-
-  const m = { ...raw };
-
-  const commissionPct = pick(['commission_percent', 'commission_percentage'], ['commission_percent', 'commission_percentage']);
-  if (commissionPct !== undefined) {
-    m.commission_percent = commissionPct;
-    m.commission_percentage = commissionPct;
-  }
-
-  const commissionFrom = pick(['commission_from'], ['commission_from', 'commission_source']);
-  if (commissionFrom !== undefined) {
-    m.commission_from =
-      String(commissionFrom).toLowerCase() === 'partner' ? 'buyer' : commissionFrom;
-  }
-
-  const fields = [
-    ['gregorian_date'],
-    ['hijri_date'],
-    ['contract_city'],
-    ['agreement_duration_days'],
-    ['agency_number'],
-    ['agency_date'],
-    ['avg_property_value'],
-    ['release_date'],
-    ['location_url'],
-    ['second_party_name'],
-    ['second_party_phone'],
-    ['second_party_email'],
-    ['second_party_address'],
-    ['second_party_cr_number'],
-    ['second_party_signatory'],
-    ['second_party_role'],
-  ];
-  for (const keys of fields) {
-    const v = pick(keys, keys);
-    if (v !== undefined) m[keys[0]] = v;
-  }
-
-  const spId = pick(['second_party_id_number', 'second_party_id'], ['second_party_id_number', 'second_party_id']);
-  if (spId !== undefined) {
-    m.second_party_id_number = spId;
-    m.second_party_id = spId;
-  }
-
-  const siteUrl = pick(['project_site_url', 'location_url', 'project_link'], ['location_url', 'project_site_url', 'project_link']);
-  if (siteUrl !== undefined) {
-    m.project_site_url = siteUrl;
-    if (!isMeaningfulContractValue(m.location_url)) m.location_url = siteUrl;
-  }
-
-  return m;
-}
-
-/**
- * POST /contracts/store — الباكند يتوقع غالباً `commission_percent` (نص) بينما "مشروع حصري"
- * يرسل `commission_percentage` فقط فيصبح الحقل null في قاعدة البيانات.
- */
-function normalizeContractStorePayload(body) {
-  if (!body || typeof body !== 'object') return body;
-  const p = { ...body };
-
-  const raw =
-    p.commission_percent ?? p.commission_percentage ?? p.commission_rate ?? p.commission_pct ?? null;
-  const str = raw === null || raw === undefined ? '' : String(raw).trim();
-  const num = str === '' ? NaN : Number(str);
-
-  if (str !== '' && Number.isFinite(num)) {
-    p.commission_percent = str;
-    p.commission_percentage = num;
-  } else if (str !== '' && !Number.isFinite(num)) {
-    p.commission_percent = str;
-    p.commission_percentage = str;
-  }
-
-  const cf = p.commission_from != null ? String(p.commission_from).trim().toLowerCase() : '';
-  if (cf === 'partner') {
-    p.commission_from = 'buyer';
-  }
-
-  return p;
-}
-
-/** POST/PUT استكمال العقد — نفس تسمية السعي للباكند */
-function normalizeContractInfoStorePayload(body) {
-  if (!body || typeof body !== 'object') return body;
-  const p = { ...body };
-  const raw = p.commission_percent ?? p.commission_percentage ?? null;
-  const str = raw === null || raw === undefined ? '' : String(raw).trim();
-  if (str !== '') {
-    p.commission_percent = str;
-    p.commission_percentage = str;
-  }
-  const cf = p.commission_from != null ? String(p.commission_from).trim().toLowerCase() : '';
-  if (cf === 'partner') {
-    p.commission_from = 'buyer';
-  }
-  return p;
-}
-
 /**
  * تطبيع استجابة GET /contracts/show/:id — توحيد أسماء الحقول وتضمين الحقول المرجعة من الـ API.
  * الحقول المدعومة: id, user_id, project_name, developer_*, city, district, units, unit_count,
  * total_price, commission_percent, commission_from, user, info, second_party_data,
  * photography_department, boards_department, montage_department, project_progress, ...
  */
+/**
+ * جسم إنشاء/تحديث العقد — يطابق GET /contracts/show (commission_percent وليس commission_percentage).
+ * يدعم المفتاحين للتوافق مع كود قديم ثم يُخرج شكلاً واحداً للخادم.
+ */
+function normalizeContractWritePayload(raw) {
+  if (!raw || typeof raw !== 'object') return raw;
+  const out = { ...raw };
+  const pct = out.commission_percent ?? out.commission_percentage;
+  if (pct !== undefined && pct !== null && pct !== '') {
+    const n = Number(pct);
+    out.commission_percent = Number.isFinite(n) ? n : pct;
+  }
+  delete out.commission_percentage;
+  if (Array.isArray(out.units)) {
+    out.units = out.units.map(u => ({
+      type: u.type != null ? String(u.type) : '',
+      count: Number(u.count) || 0,
+      price: Number(u.price) || 0,
+    }));
+  }
+  return out;
+}
+
+/**
+ * فك طبقات استجابة GET /contracts/show/:id إن وُجدت (مثل data.contract أو غلاف success).
+ */
+function unwrapContractShowPayload(raw) {
+  if (raw == null || typeof raw !== 'object') return null;
+  let o = raw;
+  if (o.contract && typeof o.contract === 'object') {
+    o = { ...o, ...o.contract };
+  }
+  if (o.contract_data && typeof o.contract_data === 'object') {
+    o = { ...o, ...o.contract_data };
+  }
+  return o;
+}
+
+/** دمج حقول المشروع المضمّنة (project / exclusive_project) في الجذر حتى تُقرأ note وurl وغيرها من GET /contracts/show */
+function mergeNestedProjectIntoRoot(raw) {
+  if (raw == null || typeof raw !== 'object') return raw;
+  const nested = raw.project ?? raw.exclusive_project;
+  if (!nested || typeof nested !== 'object') return raw;
+  return { ...nested, ...raw };
+}
+
 function normalizeContractShowResponse(raw) {
   if (!raw || typeof raw !== 'object') return raw;
-  const merged = mergeContractInfoIntoRoot(raw);
-  const imageUrl = getContractImageUrl(merged) || (merged.photography_department?.image_url ?? merged.photography_department?.image) || null;
+  const imageUrl = getContractImageUrl(raw) || (raw.photography_department?.image_url ?? raw.photography_department?.image) || null;
   const imageUrlTrimmed = typeof imageUrl === 'string' && imageUrl.trim() ? imageUrl.trim() : null;
-  const cp = merged.commission_percent ?? merged.commission_percentage ?? null;
   return {
-    ...merged,
-    id: merged.id ?? merged.contract_id,
-    contract_id: merged.contract_id ?? merged.id,
-    name: merged.project_name ?? merged.name ?? (merged.id != null ? `مشروع #${merged.id}` : ''),
-    project_name: merged.project_name ?? merged.name,
-    notes: merged.notes ?? merged.note ?? null,
-    project_progress: merged.project_progress ?? null,
+    ...raw,
+    id: raw.id ?? raw.contract_id,
+    contract_id: raw.contract_id ?? raw.id,
+    name: raw.project_name ?? raw.name ?? (raw.id != null ? `مشروع #${raw.id}` : ''),
+    project_name: raw.project_name ?? raw.name,
+    notes: raw.notes ?? raw.note ?? null,
+    project_progress: raw.project_progress ?? null,
     image: imageUrlTrimmed ?? imageUrl ?? null,
-    project_image_url: imageUrlTrimmed ?? imageUrl ?? merged.project_image_url,
-    commission_percentage: cp,
-    commission_percent: cp,
-    created_by_name: merged.user?.name ?? merged.created_by_name ?? null,
-    unit_count:
-      merged.unit_count ??
-      (Array.isArray(merged.units) ? merged.units.reduce((s, u) => s + (parseInt(u.count, 10) || 0), 0) : null),
-    total_price: merged.total_price ?? null,
-    user: merged.user ?? null,
-    info: merged.info ?? null,
-    second_party_data: merged.second_party_data ?? null,
-    photography_department: merged.photography_department ?? null,
-    boards_department: merged.boards_department ?? null,
-    montage_department: merged.montage_department ?? null,
+    project_image_url: imageUrlTrimmed ?? imageUrl ?? raw.project_image_url,
+    commission_percentage: raw.commission_percent ?? raw.commission_percentage ?? null,
+    commission_percent: raw.commission_percent ?? raw.commission_percentage ?? null,
+    created_by_name: raw.user?.name ?? raw.created_by_name ?? null,
+    unit_count: raw.unit_count ?? (Array.isArray(raw.units) ? raw.units.reduce((s, u) => s + (parseInt(u.count) || 0), 0) : null),
+    total_price: raw.total_price ?? null,
+    user: raw.user ?? null,
+    info: raw.info ?? null,
+    second_party_data: raw.second_party_data ?? null,
+    photography_department: raw.photography_department ?? null,
+    boards_department: raw.boards_department ?? null,
+    montage_department: raw.montage_department ?? null,
   };
 }
 
@@ -402,7 +319,11 @@ const contractService = {
   async getContractById(id) {
     try {
       const response = await apiClient.get(`/contracts/show/${id}`);
-      const raw = response.data?.data ?? response.data;
+      let raw = response.data?.data ?? response.data;
+      if (raw != null && typeof raw === 'object') {
+        raw = unwrapContractShowPayload(raw) ?? raw;
+        raw = mergeNestedProjectIntoRoot(raw);
+      }
       return raw ? normalizeContractShowResponse(raw) : null;
     } catch (error) {
       return handleServiceError(error, 'Fetch contract by id', 'get', null);
@@ -413,7 +334,9 @@ const contractService = {
    * إنشاء عقد / مشروع حصري
    * Endpoint: POST {{base_url}}/contracts/store (apiClient baseURL from appConfig)
    * Payload: project_name, developer_name, developer_number, city, district,
-   *          developer_requiment?, project_image_url?, note?, units[], commission_percent?, commission_percentage?, commission_from?
+   *          developer_requiment?, project_image_url?, note?, units[{type,count,price}],
+   *          commission_percent (أو commission_percentage — يُطبَّع تلقائياً), commission_from?,
+   *          is_exclusive?, type? (مثلاً Exclusive لمشروع حصري)
    *
    * ملاحظة: لكي تظهر صورة المشروع في بطاقات إدارة المشاريع، يجب أن يرجع الـ API عند جلب
    * القائمة (GET /contracts/index) أو التفاصيل (GET /contracts/show/:id) حقل project_image_url
@@ -421,9 +344,9 @@ const contractService = {
    */
   async createContract(payload) {
     try {
-      const normalized = normalizeContractStorePayload(payload);
-      logger.debug('Creating contract (POST /contracts/store):', normalized);
-      const response = await apiClient.post('/contracts/store', normalized);
+      const body = normalizeContractWritePayload(payload);
+      logger.debug('Creating contract (POST /contracts/store):', body);
+      const response = await apiClient.post('/contracts/store', body);
       return response.data;
     } catch (error) {
       return handleServiceError(error, 'Create contract', 'post');
@@ -436,7 +359,8 @@ const contractService = {
    */
   async updateContract(id, payload) {
     try {
-      const response = await apiClient.put(`/contracts/update/${id}`, payload);
+      const body = normalizeContractWritePayload(payload);
+      const response = await apiClient.put(`/contracts/update/${id}`, body);
       return response.data;
     } catch (error) {
       return handleServiceError(error, 'Update contract', 'put');
@@ -450,9 +374,8 @@ const contractService = {
    */
   async storeContractInfo(id, payload) {
     try {
-      const body = normalizeContractInfoStorePayload(payload);
-      logger.debug(`Storing contract info for ${id}:`, body);
-      const response = await apiClient.post(`/contracts/store/info/${id}`, body);
+      logger.debug(`Storing contract info for ${id}:`, payload);
+      const response = await apiClient.post(`/contracts/store/info/${id}`, payload);
       return response.data;
     } catch (error) {
       return handleServiceError(error, 'Store contract info', 'post');
@@ -473,7 +396,8 @@ const contractService = {
    */
   async updateContractInfo(id, payload) {
     try {
-      const body = normalizeContractInfoStorePayload(payload);
+      const body =
+        payload && typeof payload === 'object' ? normalizeContractWritePayload({ ...payload }) : payload;
       logger.debug(`Updating contract info for ${id}:`, body);
       const response = await apiClient.put(`/contracts/update/info/${id}`, body);
       return response.data;
@@ -915,4 +839,5 @@ const contractService = {
   },
 };
 
+export { normalizeContractWritePayload };
 export default contractService;

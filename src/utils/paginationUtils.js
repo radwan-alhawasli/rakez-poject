@@ -53,6 +53,11 @@ export function extractPaginatedData(response, fallbackItems = []) {
     items = data.projects;
     total = data.meta?.total ?? data.total ?? items.length;
   }
+  // Format: { teams: [...] } (project_management teams index, reservation-context)
+  else if (Array.isArray(data.teams)) {
+    items = data.teams;
+    total = data.meta?.total ?? data.total ?? items.length;
+  }
   // Format: { locations: [...] } (inventory map)
   else if (Array.isArray(data.locations)) {
     items = data.locations;
@@ -77,6 +82,9 @@ export function extractPaginatedData(response, fallbackItems = []) {
       total = nested.total ?? nested.meta?.total ?? items.length;
     } else if (Array.isArray(nested.items)) {
       items = nested.items;
+      total = nested.total ?? nested.meta?.total ?? items.length;
+    } else if (Array.isArray(nested.teams)) {
+      items = nested.teams;
       total = nested.total ?? nested.meta?.total ?? items.length;
     }
   }

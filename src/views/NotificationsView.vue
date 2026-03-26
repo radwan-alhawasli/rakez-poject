@@ -93,7 +93,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import Pagination from '@/components/Pagination.vue';
-import NotificationDetailModal from '@/components/accounting/NotificationDetailModal.vue';
+import NotificationDetailModal from '@/modules/accounting/components/NotificationDetailModal.vue';
 import notificationService from '@/services/notificationService';
 import { useFormatters } from '@/composables/useFormatters';
 

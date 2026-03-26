@@ -53,7 +53,7 @@ export async function exportDeveloperPlanTemplateToPdf(props) {
   document.body.appendChild(container);
 
   const { default: RakezWeeklyCampaignTemplate } = await import(
-    '@/components/marketing/RakezWeeklyCampaignTemplate.vue'
+    '@/modules/marketing/components/RakezWeeklyCampaignTemplate.vue'
   );
   const app = createApp(RakezWeeklyCampaignTemplate, props);
   app.mount(container);
