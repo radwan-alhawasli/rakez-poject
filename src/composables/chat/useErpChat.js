@@ -37,6 +37,7 @@ export function useErpChat() {
   const contextMenu = ref({ visible: false, x: 0, y: 0, msg: null });
 
   let pusher = null;
+  const isPusherConnected = ref(false);
   const pusherSubscriptions = [];
   let searchDebounce = null;
 
@@ -195,7 +196,37 @@ export function useErpChat() {
     if (!token) return;
     pusher = createPusher(token);
     if (!pusher) return;
+    
+    pusher.connection.bind('state_change', states => {
+      isPusherConnected.value = states.current === 'connected';
+      logger.debug(`[Chat Pusher] State changed: ${states.previous} -> ${states.current}`);
+    });
+    isPusherConnected.value = pusher.connection.state === 'connected';
+
     conversations.value.forEach(c => subscribeToConversation(c.id));
+
+    // Global listener for new messages (even for conversations not yet in list)
+    if (currentUserId.value) {
+      const globalChannel = `private-user-notifications.${currentUserId.value}`;
+      try {
+        const globalCh = pusher.subscribe(globalChannel);
+        globalCh.bind('message.sent', data => {
+          const msgData = data.message ? data.message : data;
+          const convId = msgData.conversation_id;
+          if (convId) {
+            // If already subscribed or in list, conversational listeners handle it.
+            // But we can use this to refresh list for brand new threads.
+            const exists = conversations.value.find(c => c.id === convId);
+            if (!exists) {
+              loadConversations();
+            }
+          }
+        });
+        pusherSubscriptions.push({ channelName: globalChannel, ch: globalCh });
+      } catch (err) {
+        logger.warn(`[Chat Real-time] Global subscription failed`, err);
+      }
+    }
   };
 
   const updateConvPreview = (convId, text) => {
@@ -385,12 +416,6 @@ export function useErpChat() {
 
   onBeforeUnmount(() => {
     document.removeEventListener('click', hideContextMenu);
-    pusherSubscriptions.forEach(({ channelName, channel }) => {
-      try {
-        channel.unbind_all?.();
-        pusher?.unsubscribe?.(channelName);
-      } catch { /* */ }
-    });
     pusherSubscriptions.length = 0;
     if (pusher) {
       try {
@@ -399,6 +424,29 @@ export function useErpChat() {
       pusher = null;
     }
   });
+
+  const removeConversation = async convId => {
+    // Usually we just hide it locally for the session unless backend has delete endpoint
+    conversations.value = conversations.value.filter(c => c.id !== convId);
+    if (activeConversation.value?.id === convId) {
+      activeConversation.value = null;
+      messages.value = [];
+    }
+    
+    // Unsubscribe from its channels
+    const toRemove = pusherSubscriptions.filter(s => s.convId === convId);
+    toRemove.forEach(s => {
+      try {
+        s.ch.unbind_all();
+        pusher?.unsubscribe(s.channelName);
+      } catch { /* */ }
+    });
+    
+    // Update local subscriptions record
+    const remains = pusherSubscriptions.filter(s => s.convId !== convId);
+    pusherSubscriptions.length = 0;
+    pusherSubscriptions.push(...remains);
+  };
 
   return {
     conversations,
@@ -438,5 +486,7 @@ export function useErpChat() {
     searchUsers,
     startConversation,
     closeNewChatModal,
+    removeConversation,
+    isPusherConnected,
   };
 }

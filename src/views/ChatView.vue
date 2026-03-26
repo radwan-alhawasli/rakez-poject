@@ -21,6 +21,9 @@
             المحادثات
             <span v-if="totalUnreadCount > 0" class="erp-chat-header-badge">{{ totalUnreadCount }}</span>
           </h2>
+          <div class="erp-chat-status" :class="{ 'is-online': isPusherConnected }" :title="isPusherConnected ? 'اتصال مباشر نشط' : 'جاري الاتصال...'">
+            {{ isPusherConnected ? 'متصل' : 'أوفلاين' }}
+          </div>
         </div>
         <div class="erp-chat-search">
           <div class="erp-chat-search-inner">
@@ -69,6 +72,12 @@
                 <div class="erp-chat-conv-row">
                   <span class="erp-chat-conv-preview">{{ conv._lastPreview || '—' }}</span>
                   <span v-if="conv.unread_count > 0" class="erp-chat-unread">{{ conv.unread_count }}</span>
+                  <button type="button" class="erp-chat-delete-conv" title="إزالة من القائمة" @click.stop="removeConversation(conv.id)">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </button>
@@ -324,5 +333,7 @@ const {
   searchUsers,
   startConversation,
   closeNewChatModal,
+  removeConversation,
+  isPusherConnected,
 } = useErpChat();
 </script>
