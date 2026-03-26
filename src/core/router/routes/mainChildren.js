@@ -9,7 +9,6 @@ import {
   ROLE_PROJECT_MANAGEMENT,
   ROLE_ACCOUNTING,
   ROLE_HR,
-  ROLE_INVENTORY,
 } from '@/constants/roles';
 
 export default [

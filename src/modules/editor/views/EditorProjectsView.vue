@@ -386,10 +386,6 @@ function closeSeeMore() {
   seeMoreDetail.value = null;
 }
 
-function openMontageForm(p) {
-  selectedProject.value = p;
-}
-
 function closeDetail() {
   selectedProject.value = null;
 }

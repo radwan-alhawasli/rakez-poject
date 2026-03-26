@@ -164,7 +164,7 @@ async function fetchContracts() {
     });
     contracts.value = res?.items ?? [];
     total.value = res?.total ?? contracts.value.length;
-  } catch (e) {
+  } catch (_) {
     contracts.value = [];
     total.value = 0;
   } finally {

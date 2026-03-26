@@ -3,7 +3,7 @@
  * and after montage (both === 1). Uses GET /editor/contracts/index and show/:id.
  */
 
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import editorService from '@/services/editorService';
 
 export function useEditorProjects() {

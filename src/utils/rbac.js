@@ -119,13 +119,6 @@ export function isManager(user) {
   return isAdmin(user) || (hasRole(user, ROLE_PROJECT_MANAGEMENT) && user.is_manager === true);
 }
 
-/** تمييز التسويق عن المبيعات عندما type قديم = 5 (قديماً 5 كان مبيعات، والآن 5 = تسويق) */
-function isMarketingByRole(user) {
-  if (!user) return false;
-  const r = String(user.role || '').toLowerCase().trim();
-  return r === 'marketing' || r === 'marketer';
-}
-
 export function getEffectiveRoleKey(user) {
   if (!user) return 'default';
   const userRole = normalizeRole(user.type);

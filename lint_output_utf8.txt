@@ -1,0 +1,28 @@
+﻿
+> contract-management-system@1.0.0 lint
+> eslint src
+
+
+C:\Users\emadh\OneDrive\Desktop\front.rakez\rakez-poject\src\composables\project\useProjectTeams.js
+  3:10  warning  'toast' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+C:\Users\emadh\OneDrive\Desktop\front.rakez\rakez-poject\src\core\router\routes\mainChildren.js
+  12:3  warning  'ROLE_INVENTORY' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+C:\Users\emadh\OneDrive\Desktop\front.rakez\rakez-poject\src\modules\editor\composables\useEditorProjects.js
+  6:25  warning  'watch' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+C:\Users\emadh\OneDrive\Desktop\front.rakez\rakez-poject\src\modules\editor\views\EditorProjectsView.vue
+  389:10  warning  'openMontageForm' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+C:\Users\emadh\OneDrive\Desktop\front.rakez\rakez-poject\src\modules\inventory\tabs\ai-suggestions\InventoryAISuggestionsTab.vue
+  91:12  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+
+C:\Users\emadh\OneDrive\Desktop\front.rakez\rakez-poject\src\modules\inventory\tabs\contracts\InventoryContractsTab.vue
+  167:12  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+
+C:\Users\emadh\OneDrive\Desktop\front.rakez\rakez-poject\src\utils\rbac.js
+  123:10  warning  'isMarketingByRole' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+ظ£û 7 problems (0 errors, 7 warnings)
+

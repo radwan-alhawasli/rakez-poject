@@ -88,7 +88,7 @@ onMounted(async () => {
     ]);
     contracts.value = indexRes?.items ?? [];
     locations.value = Array.isArray(locRes) ? locRes : (locRes?.data ?? []);
-  } catch (e) {
+  } catch (_) {
     contracts.value = [];
     locations.value = [];
   } finally {
