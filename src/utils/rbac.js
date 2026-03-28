@@ -3,6 +3,16 @@
  * Use constants from constants/roles and constants/permissions instead of magic numbers/strings.
  *
  * @module utils/rbac
+ * @typedef {Object} User - User object from auth
+ * @property {number|string} type - Role type
+ * @property {string[]} [permissions]
+ * @property {boolean} [is_leader]
+ * @property {boolean} [is_manager]
+ * @property {string} [email]
+ * @typedef {Object} RouteMeta
+ * @property {boolean} [public]
+ * @property {number|string|Array<number|string>} [roles]
+ * @property {string|string[]} [permissions]
  */
 
 import {
@@ -27,27 +37,10 @@ import {
   SALES_LEADER_EXTRA_PERMISSIONS,
 } from '@/constants/permissions';
 
-export interface User {
-  type: number | string;
-  permissions?: string[];
-  is_leader?: boolean | number | string;
-  is_manager?: boolean | number | string;
-  email?: string;
-  [key: string]: any;
-}
-
-export interface RouteMeta {
-  public?: boolean;
-  roles?: number | string | Array<number | string>;
-  permissions?: string | string[];
-  requiresManager?: boolean;
-  [key: string]: any;
-}
-
-const isTruthyLeaderFlag = (value: any): boolean => value === true || value === 1 || value === '1';
+const isTruthyLeaderFlag = value => value === true || value === 1 || value === '1';
 
 /** قائد المبيعات: إما دور 7 (sales_leader) أو دور 6 (sales) مع is_manager/is_leader — نفس واجهة المبيعات. */
-export function isSalesLeader(user?: User | null): boolean {
+export function isSalesLeader(user) {
   if (!user) return false;
   const role = normalizeRole(user.type);
   if (role === ROLE_SALES_LEADER) return true;
@@ -57,10 +50,10 @@ export function isSalesLeader(user?: User | null): boolean {
 
 /**
  * Normalize role type to numeric value
- * @param roleType - Role type (string or number)
- * @returns Normalized role type or null
+ * @param {string|number} roleType - Role type (string or number)
+ * @returns {number} Normalized role type
  */
-export function normalizeRole(roleType?: string | number | null): number | null {
+export function normalizeRole(roleType) {
   if (roleType === null || roleType === undefined) return null;
 
   if (typeof roleType === 'number' && Number.isFinite(roleType)) {
@@ -88,11 +81,11 @@ export function normalizeRole(roleType?: string | number | null): number | null 
 
 /**
  * Check if user has a specific role
- * @param user - User object with type property
- * @param allowedRoles - Role(s) to check against
- * @returns True if user has the role
+ * @param {User} user - User object with type property
+ * @param {string|number|Array<string|number>} allowedRoles - Role(s) to check against
+ * @returns {boolean} True if user has the role
  */
-export function hasRole(user: User | null | undefined, allowedRoles: string | number | Array<string | number>): boolean {
+export function hasRole(user, allowedRoles) {
   if (!user || user.type === undefined || user.type === null) return false;
 
   const userRole = normalizeRole(user.type);
@@ -109,37 +102,37 @@ export function hasRole(user: User | null | undefined, allowedRoles: string | nu
 
 /**
  * Check if user is admin
- * @param user - User object
- * @returns True if user is admin
+ * @param {Object} user - User object
+ * @returns {boolean} True if user is admin
  */
-export function isAdmin(user?: User | null): boolean {
+export function isAdmin(user) {
   return hasRole(user, ROLE_ADMIN) || hasRole(user, 'admin');
 }
 
 /**
  * Check if user is manager (admin or PM manager)
- * @param user - User object
- * @returns True if user is manager
+ * @param {Object} user - User object
+ * @returns {boolean} True if user is manager
  */
-export function isManager(user?: User | null): boolean {
+export function isManager(user) {
   if (!user) return false;
   return isAdmin(user) || (hasRole(user, ROLE_PROJECT_MANAGEMENT) && user.is_manager === true);
 }
 
-export function getEffectiveRoleKey(user?: User | null): string {
+export function getEffectiveRoleKey(user) {
   if (!user) return 'default';
   const userRole = normalizeRole(user.type);
   if (userRole === ROLE_SALES_LEADER || (userRole === ROLE_SALES && isSalesLeader(user))) return 'sales_leader';
   // type 5 = marketing (حسب constants/roles.js) — لا حاجة لتوافق عكسي
-  return ROLE_TO_BOOTSTRAP_KEY[userRole as keyof typeof ROLE_TO_BOOTSTRAP_KEY] || 'default';
+  return ROLE_TO_BOOTSTRAP_KEY[userRole] || 'default';
 }
 
 /**
  * Get user's permissions (from API or derived from role via bootstrap map)
- * @param user - User object
- * @returns Array of permission keys
+ * @param {Object} user - User object
+ * @returns {string[]} Array of permission keys
  */
-export function getUserPermissions(user?: User | null): string[] {
+export function getUserPermissions(user) {
   if (!user) return [];
   if (Array.isArray(user.permissions) && user.permissions.length > 0) {
     // Sales leader: merge API permissions with full leader set so sidebar/routes always work
@@ -150,7 +143,7 @@ export function getUserPermissions(user?: User | null): string[] {
     return user.permissions;
   }
   const bootstrapKey = getEffectiveRoleKey(user);
-  const perms = BOOTSTRAP_ROLE_MAP[bootstrapKey as keyof typeof BOOTSTRAP_ROLE_MAP] || BOOTSTRAP_ROLE_MAP.default || [];
+  const perms = BOOTSTRAP_ROLE_MAP[bootstrapKey] || BOOTSTRAP_ROLE_MAP.default || [];
   return Array.isArray(perms) ? perms : [];
 }
 
@@ -175,11 +168,11 @@ if (!import.meta.env.PROD) {
 
 /**
  * Check if user has a specific permission
- * @param user - User object
- * @param permission - Permission key (e.g. 'contracts.view')
- * @returns True if user has the permission
+ * @param {Object} user - User object
+ * @param {string} permission - Permission key (e.g. 'contracts.view')
+ * @returns {boolean} True if user has the permission
  */
-export function hasPermission(user: User | null | undefined, permission: string): boolean {
+export function hasPermission(user, permission) {
   if (!user || !permission) return false;
   if (isAdmin(user)) return true;
   const perms = getUserPermissions(user);
@@ -188,11 +181,11 @@ export function hasPermission(user: User | null | undefined, permission: string)
 
 /**
  * Check if user has any of the given permissions
- * @param user - User object
- * @param permissions - Permission key or array of keys
- * @returns True if user has at least one permission
+ * @param {Object} user - User object
+ * @param {string|string[]} permissions - Permission key or array of keys
+ * @returns {boolean} True if user has at least one permission
  */
-export function hasAnyPermission(user: User | null | undefined, permissions: string | string[]): boolean {
+export function hasAnyPermission(user, permissions) {
   if (!user || !permissions) return false;
   if (isAdmin(user)) return true;
   const allowed = Array.isArray(permissions) ? permissions : [permissions];
@@ -202,11 +195,11 @@ export function hasAnyPermission(user: User | null | undefined, permissions: str
 
 /**
  * Check if user can access a route based on required roles or permissions
- * @param user - User object
- * @param routeMeta - Route meta object with roles/permissions
- * @returns True if user can access the route
+ * @param {User} user - User object
+ * @param {RouteMeta} routeMeta - Route meta object with roles/permissions
+ * @returns {boolean} True if user can access the route
  */
-export function canAccessRoute(user: User | null | undefined, routeMeta?: RouteMeta): boolean {
+export function canAccessRoute(user, routeMeta) {
   // Public routes are accessible to everyone
   if (routeMeta?.public) return true;
 
@@ -239,10 +232,10 @@ export function canAccessRoute(user: User | null | undefined, routeMeta?: RouteM
 
 /**
  * Get the dashboard path for a user based on their role (single source of truth for login and router redirects)
- * @param user - User object with type property
- * @returns Path to role-specific dashboard
+ * @param {User} user - User object with type property
+ * @returns {string} Path to role-specific dashboard
  */
-export function getDashboardPathForUser(user?: User | null): string {
+export function getDashboardPathForUser(user) {
   if (!user) return '/dashboard';
   const normalizedRole = normalizeRole(user.type);
   if (normalizedRole === ROLE_HR) return '/hr/dashboard';
