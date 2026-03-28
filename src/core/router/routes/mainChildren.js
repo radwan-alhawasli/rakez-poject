@@ -55,7 +55,7 @@ export default [
   {
     path: 'contracts',
     name: 'Contracts',
-    component: () => import('@/views/ContractsView.vue'),
+    component: () => import('@/modules/sales/views/ContractsView.vue'),
     meta: { permissions: [PERMISSIONS.CONTRACTS_VIEW] },
   },
   {
@@ -75,7 +75,7 @@ export default [
   {
     path: 'contract-form',
     name: 'ContractFormNew',
-    component: () => import('@/views/ContractFormView.vue'),
+    component: () => import('@/modules/sales/views/ContractFormView.vue'),
     /** استكمال عقد المشروع الحصري: من لديه طلب حصري أو إكمال عقد دون عرض كل العقود */
     meta: {
       permissions: [
@@ -88,7 +88,7 @@ export default [
   {
     path: 'contract-form/:id',
     name: 'ContractForm',
-    component: () => import('@/views/ContractFormView.vue'),
+    component: () => import('@/modules/sales/views/ContractFormView.vue'),
     meta: {
       permissions: [
         PERMISSIONS.CONTRACTS_VIEW,
@@ -102,14 +102,14 @@ export default [
     name: 'ProjectTracker',
     component: () => import('@/views/ProjectTrackerView.vue'),
   },
-  { path: 'reservations', name: 'Reservations', component: () => import('@/views/ReservationsView.vue') },
+  { path: 'reservations', name: 'Reservations', component: () => import('@/modules/sales/views/ReservationsView.vue') },
   {
     path: 'cancelled-reservations',
     name: 'CancelledReservations',
-    component: () => import('@/views/CancelledReservationsView.vue'),
+    component: () => import('@/modules/sales/views/CancelledReservationsView.vue'),
   },
   { path: 'profile', name: 'Profile', component: () => import('@/views/ProfileView.vue') },
-  { path: 'tasks', name: 'Tasks', component: () => import('@/views/TasksView.vue') },
+  { path: 'tasks', name: 'Tasks', component: () => import('@/modules/project-management/views/TasksView.vue') },
   { path: 'teams', name: 'Teams', component: () => import('@/views/TeamsView.vue') },
   { path: 'team-management', name: 'TeamManagement', component: () => import('@/views/TeamManagementView.vue') },
   { path: 'image-approval', name: 'ImageApproval', component: () => import('@/views/ImageApprovalView.vue') },
