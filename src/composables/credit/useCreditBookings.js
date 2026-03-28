@@ -3,7 +3,7 @@ import { useRoute, useRouter } from 'vue-router';
 import creditService from '@/services/creditService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
-import { showApiError } from '@/utils/errorHandler';
+import { showApiError, getApiErrorMessage } from '@/utils/errorHandler';
 import { useFormatters } from '@/composables/useFormatters';
 
 export function useCreditBookings() {

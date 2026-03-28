@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { createPinia } from 'pinia';
-import SalesViewExtended from '../../src/views/SalesViewExtended.vue';
+import SalesViewExtended from '../../src/modules/sales/views/SalesViewExtended.vue';
 
 vi.mock('../../src/services/authService', () => ({
   default: {

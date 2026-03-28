@@ -88,7 +88,7 @@ describe('useProjectUnits', () => {
     const wrapper = mountComposable();
     expect(wrapper.vm.units).toEqual([]);
     expect(wrapper.vm.unitsLoading).toBe(false);
-    expect(wrapper.vm.unitsFilterTab).toBe('all');
+    expect(wrapper.vm.unitsFilterTab).toBe('available');
     expect(wrapper.vm.showAddUnitModal).toBe(false);
     expect(wrapper.vm.isEditingUnit).toBe(false);
   });

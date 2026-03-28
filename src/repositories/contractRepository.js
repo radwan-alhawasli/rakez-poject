@@ -5,6 +5,7 @@
 
 import apiClient from '@/api/apiClient';
 import logger from '@/utils/logger';
+import { normalizeContractWritePayload } from '@/services/contractService';
 
 class ContractRepository {
   /**
@@ -55,7 +56,7 @@ class ContractRepository {
    */
   async create(data) {
     try {
-      const response = await apiClient.post('/contracts/store', data);
+      const response = await apiClient.post('/contracts/store', normalizeContractWritePayload(data));
       return response.data?.data || response.data;
     } catch (error) {
       logger.error('ContractRepository.create error:', error);
@@ -71,7 +72,7 @@ class ContractRepository {
    */
   async update(id, data) {
     try {
-      const response = await apiClient.put(`/contracts/update/${id}`, data);
+      const response = await apiClient.put(`/contracts/update/${id}`, normalizeContractWritePayload(data));
       return response.data?.data || response.data;
     } catch (error) {
       logger.error('ContractRepository.update error:', error);

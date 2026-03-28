@@ -31,9 +31,19 @@ export function useAccountingSoldUnits() {
     }
   };
 
-  const viewSoldUnitDetail = (unit) => {
+  const viewSoldUnitDetail = async (unit) => {
     selectedSoldUnit.value = unit;
     soldUnitDetailView.value = 'detail';
+    const reservationId = unit?.reservation_id ?? unit?.id;
+    if (reservationId == null) return;
+    try {
+      const detail = await accountingService.getSoldUnitById(reservationId);
+      if (detail && typeof detail === 'object') {
+        selectedSoldUnit.value = { ...unit, ...detail };
+      }
+    } catch (error) {
+      logger.error('Error loading sold unit detail:', error);
+    }
   };
 
   const handleSoldUnitDetailBack = () => {

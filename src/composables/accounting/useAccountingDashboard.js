@@ -67,8 +67,6 @@ export function useAccountingDashboard() {
     userName,
     isLoading,
     dashboardMetrics,
-    dashboardFromDate,
-    dashboardToDate,
     loadDashboardMetrics,
     formatCurrency,
   };

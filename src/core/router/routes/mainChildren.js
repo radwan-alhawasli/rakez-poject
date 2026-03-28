@@ -9,7 +9,6 @@ import {
   ROLE_PROJECT_MANAGEMENT,
   ROLE_ACCOUNTING,
   ROLE_HR,
-  ROLE_INVENTORY,
 } from '@/constants/roles';
 
 export default [
@@ -77,13 +76,26 @@ export default [
     path: 'contract-form',
     name: 'ContractFormNew',
     component: () => import('@/views/ContractFormView.vue'),
-    meta: { permissions: [PERMISSIONS.CONTRACTS_VIEW] },
+    /** استكمال عقد المشروع الحصري: من لديه طلب حصري أو إكمال عقد دون عرض كل العقود */
+    meta: {
+      permissions: [
+        PERMISSIONS.CONTRACTS_VIEW,
+        PERMISSIONS.EXCLUSIVE_PROJECTS_REQUEST,
+        PERMISSIONS.EXCLUSIVE_PROJECTS_CONTRACT_COMPLETE,
+      ],
+    },
   },
   {
     path: 'contract-form/:id',
     name: 'ContractForm',
     component: () => import('@/views/ContractFormView.vue'),
-    meta: { permissions: [PERMISSIONS.CONTRACTS_VIEW] },
+    meta: {
+      permissions: [
+        PERMISSIONS.CONTRACTS_VIEW,
+        PERMISSIONS.EXCLUSIVE_PROJECTS_REQUEST,
+        PERMISSIONS.EXCLUSIVE_PROJECTS_CONTRACT_COMPLETE,
+      ],
+    },
   },
   {
     path: 'project-tracker/:id',

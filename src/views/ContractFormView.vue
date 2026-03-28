@@ -119,23 +119,11 @@
             <div class="input-row grid-3">
               <div class="field-group">
                 <label>السعي من</label>
-                <select v-model="form.commission_from" class="form-input" :class="{ 'input-error': getFieldError('commission_from') }">
-                  <option value="owner">المالك</option>
-                  <option value="buyer">المشتري</option>
-                </select>
-                <span v-if="getFieldError('commission_from')" class="field-error">{{ getFieldError('commission_from') }}</span>
+                <input type="text" :value="commissionFromLabel" class="form-input readonly" readonly />
               </div>
               <div class="field-group">
                 <label>نسبة السعي (%)</label>
-                <input
-                  v-model="form.commission_percent"
-                  type="text"
-                  inputmode="decimal"
-                  class="form-input"
-                  :class="{ 'input-error': getFieldError('commission_percent') }"
-                  placeholder="مثال: 5"
-                />
-                <span v-if="getFieldError('commission_percent')" class="field-error">{{ getFieldError('commission_percent') }}</span>
+                <input type="text" :value="commissionPercentDisplay" class="form-input readonly" readonly />
               </div>
             </div>
 
@@ -373,7 +361,7 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import contractService from '@/services/contractService';
 import { downloadFilledContract } from '@/services/pdfService';
@@ -404,7 +392,11 @@ export default {
     const isSaving = ref(false);
     const isDownloading = ref(false);
     const showDownloadModal = ref(false);
-    const requestId = route.params.id || null;
+    const requestId = computed(() => {
+      const raw = route.params.id;
+      if (raw == null || raw === '') return null;
+      return String(raw);
+    });
     const { validate, getFieldError, clearErrors } = useValidation(contractInfoSchema);
 
     const form = reactive({
@@ -422,7 +414,7 @@ export default {
       agency_number: '',
       agency_date: '',
       commission_percent: '',
-      commission_from: 'owner',
+      commission_from: '',
       avg_property_value: '',
       release_date: '',
 
@@ -448,12 +440,24 @@ export default {
       project_site_url: '',
     });
 
+    const commissionFromLabel = computed(() => {
+      const v = (form.commission_from ?? '').toString().toLowerCase();
+      if (v === 'owner') return 'المالك';
+      if (v === 'partner') return 'المشتري';
+      return form.commission_from || '—';
+    });
+    const commissionPercentDisplay = computed(() => {
+      const p = form.commission_percent;
+      if (p === '' || p == null) return '—';
+      return `${String(p).trim()} %`;
+    });
+
     const fetchContractDetails = async () => {
-      if (!requestId) return;
+      const id = requestId.value;
+      if (!id) return;
       try {
-        const data = await contractService.getContractById(requestId);
+        const data = await contractService.getContractById(id);
         if (data) {
-          const info = data.info && typeof data.info === 'object' ? data.info : {};
           // Project Info
           form.city = data.city || form.city;
           form.project_name = data.project_name || form.project_name;
@@ -469,33 +473,22 @@ export default {
             let calculatedValue = 0;
 
             data.units.forEach(u => {
-              const count = parseInt(u.count, 10) || 0;
-              const price = parseInt(u.price, 10) || 0;
+              const count = parseInt(u.count) || 0;
+              const price = parseInt(u.price) || 0;
               totalCount += count;
               calculatedValue += price * count;
             });
 
             form.units_count =
               totalCount > 0 ? totalCount : data.units_count || form.units_count || 0;
-            // متوسط قيمة العقار من استكمال العقد (info) يجب أن يظهر إن وُجد؛ الحساب من الوحدات احتياطي فقط
-            const apiAvg = data.avg_property_value ?? info.avg_property_value;
-            const hasApiAvg =
-              apiAvg !== null &&
-              apiAvg !== undefined &&
-              String(apiAvg).trim() !== '' &&
-              !Number.isNaN(Number(apiAvg));
-            form.avg_property_value = hasApiAvg
-              ? apiAvg
-              : calculatedValue > 0
+            // Set avg_property_value using the calculated total
+            form.avg_property_value =
+              calculatedValue > 0
                 ? calculatedValue
-                : data.avg_property_value ?? info.avg_property_value ?? form.avg_property_value ?? '';
+                : data.avg_property_value || form.avg_property_value || 0;
           } else {
             form.units_count = data.units_count || data.unit_count || form.units_count || 0;
             form.unit_type = data.unit_type || form.unit_type;
-            const av = data.avg_property_value ?? info.avg_property_value;
-            if (av !== null && av !== undefined && String(av).trim() !== '') {
-              form.avg_property_value = av;
-            }
           }
 
           form.total_units_value = data.total_units_value || form.total_units_value || 0;
@@ -545,22 +538,10 @@ export default {
               form.agency_date = dateStr;
             }
           }
-          const commissionVal =
-            data.commission_percent ??
-            data.commission_percentage ??
-            info.commission_percent ??
-            info.commission_percentage;
-          form.commission_percent =
-            commissionVal != null && commissionVal !== '' ? String(commissionVal) : form.commission_percent;
-          let cf =
-            data.commission_from ||
-            data.commission_source ||
-            info.commission_from ||
-            info.commission_source ||
-            form.commission_from ||
-            'owner';
-          if (String(cf).toLowerCase() === 'partner') cf = 'buyer';
-          form.commission_from = cf;
+          const commissionVal = data.commission_percent ?? data.commission_percentage;
+          form.commission_percent = commissionVal != null && commissionVal !== '' ? String(commissionVal) : form.commission_percent;
+          form.commission_from = data.commission_from || form.commission_from;
+          form.avg_property_value = data.avg_property_value || form.avg_property_value;
           if (data.release_date) {
             const dateStr = data.release_date;
             if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
@@ -576,7 +557,13 @@ export default {
       }
     };
 
-    onMounted(fetchContractDetails);
+    watch(
+      () => route.params.id,
+      () => {
+        fetchContractDetails();
+      },
+      { immediate: true },
+    );
 
     const saveChanges = async () => {
       clearErrors();
@@ -586,19 +573,15 @@ export default {
         gregorian_date: form.gregorian_date,
         agreement_duration_days: String(form.agreement_duration_days || ''),
         commission_percent: form.commission_percent,
-        commission_from: form.commission_from || 'owner',
         project_name: form.project_name,
         city: form.city,
       };
-      if (!validate(dataToValidate)) {
-        toast.error('يرجى تعبئة الحقول المطلوبة، بما فيها نسبة السعي ومصدر السعي والتواريخ.');
-        return;
-      }
+      if (!validate(dataToValidate)) return;
 
       isSaving.value = true;
       try {
-        if (requestId) {
-          logger.debug('Updating contract:', requestId, form);
+        if (requestId.value) {
+          logger.debug('Updating contract:', requestId.value, form);
 
           const payload = {
             second_party_name: form.second_party_name,
@@ -626,14 +609,11 @@ export default {
             project_site_url: form.project_site_url || undefined,
           };
 
-          await contractService.storeContractInfo(requestId, payload);
+          await contractService.storeContractInfo(requestId.value, payload);
 
-          toast.success('تم حفظ تعديلات العقد بنجاح');
-          await fetchContractDetails();
-          showDownloadModal.value = true;
+          router.push({ name: 'MyRequests', query: { contract_saved: '1' } });
         } else {
           // إنشاء عقد جديد (إحضار مشاريع)
-          const pct = String(form.commission_percent ?? '').trim();
           const createPayload = {
             project_name: form.project_name,
             developer_name: form.second_party_name,
@@ -641,9 +621,8 @@ export default {
             city: form.city,
             district: form.district,
             note: form.notes,
-            commission_percent: pct,
-            commission_percentage: pct,
-            commission_from: form.commission_from || 'owner',
+            commission_percent: Number(form.commission_percent) || 0,
+            commission_from: form.commission_from,
             units: form.units_count
               ? [{ type: form.unit_type || 'شقة', count: form.units_count, price: form.average_unit_price || 0 }]
               : [],
@@ -669,10 +648,10 @@ export default {
       isDownloading.value = true;
       try {
         let contractData = form;
-        if (requestId) {
+        if (requestId.value) {
           try {
             const { getContractFillData } = await import('@/services/pdfApi');
-            const data = await getContractFillData(requestId);
+            const data = await getContractFillData(requestId.value);
             if (data != null && typeof data === 'object') contractData = data;
           } catch (_) {
             // Fallback to the current form payload when helper endpoint is unavailable.
@@ -682,7 +661,7 @@ export default {
         const blob = new Blob([pdfBytes], { type: 'application/pdf' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `contract-${requestId || 'new'}.pdf`;
+        link.download = `contract-${requestId.value || 'new'}.pdf`;
         link.click();
       } catch (error) {
         logger.error('Download failed', error);
@@ -699,6 +678,8 @@ export default {
 
     return {
       form,
+      commissionFromLabel,
+      commissionPercentDisplay,
       isSaving,
       isDownloading,
       showDownloadModal,

@@ -77,6 +77,7 @@
     <!-- مودال تعديل بيانات استكمال العقد -->
     <EditContractInfoModal
       v-if="showEditModal"
+      :key="String(editingContractId)"
       :contract-id="editingContractId"
       :initial-data="editingContractData"
       @close="closeEditModal"
@@ -86,42 +87,30 @@
 </template>
 
 <script>
-import { ref, onMounted, onActivated } from 'vue';
+import { ref, onMounted, onActivated, watch } from 'vue';
 import EditContractInfoModal from '@/components/EditContractInfoModal.vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import contractService from '@/services/contractService';
 import logger from '@/utils/logger';
+import { toast } from '@/composables/useToast';
 
 export default {
   name: 'MyRequestsView',
   components: { EditContractInfoModal },
   setup() {
     const router = useRouter();
+    const route = useRoute();
     const requests = ref([]);
     const isLoading = ref(true);
     const showEditModal = ref(false);
     const editingContractId = ref(null);
     const editingContractData = ref(null);
 
-    // Check if contract is completed (has been filled with data)
-    const isContractCompleted = item => {
-      // Check if contract has completion data
-      // We check for fields that are ONLY present after the "Complete Contract" form is submitted.
-      // These fields are not part of the initial Exclusive Project Request.
-
-      const hasDate = item.gregorian_date && item.gregorian_date !== '';
-      const hasHijri = item.hijri_date && item.hijri_date !== '';
-      const hasDuration =
-        item.agreement_duration_days != null &&
-        item.agreement_duration_days !== '' &&
-        item.agreement_duration_days != 0;
-      const hasCommission = item.commission_percent != null && item.commission_percent !== '';
-
-      // If ANY of these specific completion fields are present, the contract is considered completed.
-      // We avoid checking second_party_name alone as it might be pre-filled from developer info.
-      return hasDate || hasHijri || hasDuration || hasCommission;
-    };
-
+    /**
+     * استكمال العقد يختلف عن اعتماد الطلب: المعتمد قد لا يكون قد أكمل نموذج الاستكمال بعد.
+     * لا نستخدم commission_percent كدليل على الاكتمال لأنه يُرسل مع طلب المشروع الحصري الأولي.
+     * نعتمد فقط status === 'completed' من الـ API (قائمة أو تفاصيل).
+     */
     const fetchRequests = async () => {
       isLoading.value = true;
       try {
@@ -145,16 +134,31 @@ export default {
             if (status === 'approved') {
               try {
                 const fullDetails = await contractService.getContractById(item.id);
-                if (isContractCompleted(fullDetails)) {
+                const detailStatus = (fullDetails.status || '')
+                  .toString()
+                  .toLowerCase();
+                if (detailStatus === 'completed') {
                   return { ...item, ...fullDetails, status: 'completed' };
                 }
-                return { ...item, status: item.status };
+                return { ...item, ...fullDetails, status: item.status };
               } catch (e) {
                 logger.error(`Failed to fetch details for ${item.id}`, e);
                 return item;
               }
             }
-            // Preserve API status: pending, completed, rejected, etc.
+            /** عقود مكتملة من القائمة فقط — نجلب GET /contracts/show لملء مودال التعديل وباقي الحقول */
+            if (status === 'completed') {
+              try {
+                const fullDetails = await contractService.getContractById(item.id);
+                if (fullDetails && typeof fullDetails === 'object') {
+                  return { ...item, ...fullDetails, status: 'completed' };
+                }
+              } catch (e) {
+                logger.error(`Failed to fetch details for completed ${item.id}`, e);
+              }
+              return item;
+            }
+            // Preserve API status: pending, rejected, etc.
             return item;
           })
         );
@@ -175,6 +179,20 @@ export default {
       }
     };
 
+    /** بعد «حفظ واعتماد العقد» من نموذج الاستكمال: عرض الرسائل هنا وإزالة query. */
+    watch(
+      () => route.query.contract_saved,
+      (v) => {
+        if (v !== '1') return;
+        toast.success('تم حفظ واعتماد العقد بنجاح');
+        toast.info('يمكنك الآن تحميل نسخة PDF من العقد عند الحاجة.');
+        const rest = { ...route.query };
+        delete rest.contract_saved;
+        router.replace({ name: 'MyRequests', query: rest });
+      },
+      { immediate: true },
+    );
+
     // Fetch on mount
     onMounted(fetchRequests);
 
@@ -192,7 +210,7 @@ export default {
     /** Display label from API status (GET /contracts/index → status). */
     const statusLabel = (status) => {
       const s = (status || '').toString().toLowerCase();
-      if (s === 'approved') return 'موافق عليه';
+      if (s === 'approved') return 'معتمد';
       if (s === 'rejected' || s === 'refused') return 'مرفوض';
       if (s === 'completed') return 'مكتمل';
       return 'معلق';

@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-view">
+  <div class="dashboard-view rakez-erp-dashboard">
     <!-- Loading State -->
     <div v-if="isLoading" class="loading-state">
       <div class="spinner"></div>
@@ -9,95 +9,79 @@
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
-      <button @click="fetchData">إعادة المحاولة</button>
+      <button type="button" @click="fetchData">إعادة المحاولة</button>
     </div>
 
     <template v-else>
-    <!-- Header -->
-    <div class="welcome-header">
-      <h1 class="welcome-title">أهلاً بعودتك، {{ userName }}!</h1>
-      <p class="welcome-subtitle">إدارة المشاريع والموافقات.</p>
-    </div>
+      <DashboardWelcomeHeader :user-name="userName" subtitle="إدارة المشاريع والموافقات." />
 
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-      <!-- Available Units -->
-      <div class="stat-card animate-fade-in-up animate-stagger-1 hover-lift">
-        <div class="stat-content">
-          <span class="stat-label">الوحدات المتاحة</span>
-          <span class="stat-value number" :title="formatNumber(availableUnits)">{{ formatCompact(availableUnits) }}</span>
-          <span class="stat-desc">وحدة سكنية جاهزة للبيع</span>
-        </div>
-        <div class="stat-icon-bg units">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <circle cx="12" cy="12" r="6"></circle>
-            <circle cx="12" cy="12" r="2"></circle>
-          </svg>
-        </div>
-      </div>
+      <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
+      <div class="rakez-widget-grid rakez-widget-grid--dense dashboard-main-grid">
+        <LuxuryStatCard
+          label="الوحدات المتاحة"
+          :value="formatCompact(availableUnits)"
+          :title="formatNumber(availableUnits)"
+          description="وحدة سكنية جاهزة للبيع (تقديري من العقود)"
+        >
+          <template #icon>
+            <DashboardStatIcon name="units" />
+          </template>
+        </LuxuryStatCard>
 
-      <!-- Marketing Projects (Now Total Projects) -->
-      <div
-        class="stat-card clickable animate-fade-in-up animate-stagger-2 hover-lift hover-shine"
-        @click="$router.push('/project-management')"
-      >
-        <div class="stat-content">
-          <span class="stat-label">مشاريع التسويق (إجمالي المشاريع)</span>
-          <span class="stat-value number" :title="formatNumber(totalProjects)">{{ formatCompact(totalProjects) }}</span>
-          <span class="stat-desc">مشروع جاهز للتسويق - اضغط للعرض</span>
-        </div>
-        <div class="stat-icon-bg projects">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 11l3 3L22 4"></path>
-            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-          </svg>
-        </div>
-      </div>
+        <LuxuryStatCard
+          clickable
+          label="مشاريع التسويق (إجمالي)"
+          :value="formatCompact(totalProjects)"
+          :title="formatNumber(totalProjects)"
+          description="اضغط للعرض"
+          @click="$router.push('/project-management')"
+        >
+          <template #icon>
+            <DashboardStatIcon name="clipboard" />
+          </template>
+        </LuxuryStatCard>
 
-      <!-- Ready Projects -->
-      <div class="stat-card animate-fade-in-up animate-stagger-3 hover-lift">
-        <div class="stat-content">
-          <span class="stat-label">المشاريع الجاهزة</span>
-          <span class="stat-value number" :title="formatNumber(readyProjects)">{{ formatCompact(readyProjects) }}</span>
-          <span class="stat-desc">مشاريع مكتملة تحتوي على وحدات</span>
-        </div>
-        <div class="stat-icon-bg ready">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
-        </div>
+        <LuxuryStatCard
+          label="المشاريع الجاهزة"
+          :value="formatCompact(readyProjects)"
+          :title="formatNumber(readyProjects)"
+          description="مشاريع مكتملة تحتوي على وحدات"
+        >
+          <template #icon>
+            <DashboardStatIcon name="successCircle" />
+          </template>
+        </LuxuryStatCard>
+
+        <LuxuryStatCard
+          label="المشاريع غير الجاهزة"
+          :value="formatCompact(notReadyProjects)"
+          :title="formatNumber(notReadyProjects)"
+          description="لم يكتمل المتتبع (Tracker)"
+        >
+          <template #icon>
+            <DashboardStatIcon name="warningCircle" />
+          </template>
+        </LuxuryStatCard>
       </div>
 
-      <!-- Not Ready Projects -->
-      <div class="stat-card animate-fade-in-up animate-stagger-4 hover-lift">
-        <div class="stat-content">
-          <span class="stat-label">المشاريع غير الجاهزة</span>
-          <span class="stat-value number" :title="formatNumber(notReadyProjects)">{{ formatCompact(notReadyProjects) }}</span>
-          <span class="stat-desc">لم يكتمل المتتبع (Tracker)</span>
-        </div>
-        <div class="stat-icon-bg not-ready">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-        </div>
+      <h3 class="rakez-dashboard-section-title">لوحة المؤشرات</h3>
+      <div class="rakez-widget-grid dashboard-widgets-bottom">
+        <DarkWidgetShell title="توزيع المشاريع" :subtitle="`جاهز للتسويق ${readinessPct}%`">
+          <DonutKpiWidget
+            :segments="projectReadinessSplit"
+            :height="200"
+            :central-label="readinessPct + '%'"
+            central-sub-label="جاهز للتسويق"
+          />
+        </DarkWidgetShell>
+        <DarkWidgetShell title="تفصيل الجاهزية" subtitle="عدد المشاريع حسب الحالة">
+          <ProgressBreakdownWidget :rows="projectReadinessSplit" value-type="number" />
+          <p class="dashboard-portfolio-note">إجمالي قيمة الوحدات (تقديري): {{ formatCurrencyAr(totalPortfolioValue) }}</p>
+        </DarkWidgetShell>
+        <DarkWidgetShell class="rakez-widget-span-2" title="مؤشرات سريعة" subtitle="وحدات ومشاريع">
+          <DashboardMetricsBarChart :series="mainBarSeries" :height="240" />
+        </DarkWidgetShell>
       </div>
-    </div>
-
-    <!-- Overview (Placeholder for Chart) -->
-    <div class="overview-section">
-      <div class="section-header">
-        <h3 class="section-title">نظرة عامة على المشاريع</h3>
-        <p class="section-desc">توزيع المشاريع حسب حالتها الحالية.</p>
-      </div>
-      <div class="chart-placeholder">
-        <!-- Add Chart here later if needed -->
-        <p style="color: var(--color-dark-gray); margin-top: 40px">مخطط بياني لتوزيع المشاريع</p>
-      </div>
-    </div>
     </template>
   </div>
 </template>
@@ -109,28 +93,52 @@ import authService from '@/services/authService';
 import contractService from '@/services/contractService';
 import logger from '@/utils/logger';
 import { useFormatters } from '@/composables/useFormatters';
+import LuxuryStatCard from '@/components/dashboard/widgets/LuxuryStatCard.vue';
+import DarkWidgetShell from '@/components/dashboard/widgets/DarkWidgetShell.vue';
+import DonutKpiWidget from '@/components/dashboard/widgets/DonutKpiWidget.vue';
+import ProgressBreakdownWidget from '@/components/dashboard/widgets/ProgressBreakdownWidget.vue';
+import DashboardMetricsBarChart from '@/components/dashboard/DashboardMetricsBarChart.vue';
+import DashboardWelcomeHeader from '@/components/dashboard/DashboardWelcomeHeader.vue';
+import DashboardStatIcon from '@/components/dashboard/DashboardStatIcon.vue';
 
 const router = useRouter();
 const user = ref(authService.getCurrentUser());
 const userName = computed(() => user.value?.name || 'مستخدم');
-const { formatCompact, formatNumber } = useFormatters();
+const { formatCompact, formatNumber, formatCurrencyAr } = useFormatters();
 
 const isLoading = ref(true);
 const error = ref(null);
 
-// Stats
-const totalProjectValue = ref(0);
+const totalPortfolioValue = ref(0);
 const availableUnits = ref(0);
 const totalProjects = ref(0);
 const readyProjects = ref(0);
 const notReadyProjects = ref(0);
+
+const readinessPct = computed(() => {
+  const t = totalProjects.value;
+  if (!t) return 0;
+  return Math.round((readyProjects.value / t) * 100);
+});
+
+/** دونات + شريط تقدم: نفس قيمة جاهز / غير جاهز */
+const projectReadinessSplit = computed(() => [
+  { label: 'جاهز للتسويق', value: Number(readyProjects.value) || 0 },
+  { label: 'تحت الإعداد', value: Number(notReadyProjects.value) || 0 },
+]);
+
+const mainBarSeries = computed(() => [
+  { label: 'وحدات (تقدير)', value: Number(availableUnits.value) || 0 },
+  { label: 'مشاريع', value: Number(totalProjects.value) || 0 },
+  { label: 'جاهزة', value: Number(readyProjects.value) || 0 },
+  { label: 'غير جاهزة', value: Number(notReadyProjects.value) || 0 },
+]);
 
 const fetchData = async () => {
   isLoading.value = true;
   error.value = null;
   try {
     let apps = [];
-    // Check if user is admin (type 1)
     const isUserAdmin = user.value && (user.value.type === 1 || user.value.type === 'admin');
     const isUserEditor = user.value && user.value.type === 3;
 
@@ -148,13 +156,12 @@ const fetchData = async () => {
 
     totalProjects.value = projects.length;
 
-    // Logic for Ready/Not Ready
-    readyProjects.value = projects.filter(
+    const readyCount = projects.filter(
       p => p.status === 'Approved' || (p.units && p.units.length > 0)
     ).length;
-    notReadyProjects.value = projects.filter(p => p.status !== 'Approved').length;
+    readyProjects.value = readyCount;
+    notReadyProjects.value = Math.max(0, projects.length - readyCount);
 
-    // Calculate Total Value and Available Units
     let valueSum = 0;
     let unitsSum = 0;
 
@@ -170,8 +177,7 @@ const fetchData = async () => {
     });
 
     availableUnits.value = unitsSum;
-    // Format to Millions if large enough, else keep as is
-    totalProjectValue.value = (valueSum / 1000000).toFixed(2);
+    totalPortfolioValue.value = valueSum;
   } catch (e) {
     logger.error('Error fetching dashboard data', e);
     error.value = 'حدث خطأ في تحميل البيانات';
@@ -181,7 +187,6 @@ const fetchData = async () => {
 };
 
 onMounted(() => {
-  // Redirect HR users to their specialized dashboard
   const currentUser = authService.getCurrentUser();
   if (currentUser?.type == 8) {
     router.push('/hr/dashboard');
@@ -206,15 +211,6 @@ onMounted(() => {
     transform: translateY(0);
   }
 }
-
-/* Welcome Header - Luxury Enhanced */
-.welcome-header {
-  margin-bottom: 40px;
-  text-align: right;
-  padding-bottom: 25px;
-  border-bottom: 1px solid rgba(177, 162, 143, 0.15);
-}
-
 
 /* Stats Grid - Luxury Layout */
 .stats-grid {
@@ -298,7 +294,6 @@ onMounted(() => {
   opacity: 0.8;
 }
 
-/* Stat Content - Elegant Typography */
 .stat-content {
   display: flex;
   flex-direction: column;
@@ -344,7 +339,6 @@ onMounted(() => {
   opacity: 0.85;
 }
 
-/* Stat Icons - Luxury Glass-morphism */
 .stat-icon-bg {
   width: 70px;
   height: 70px;
@@ -440,7 +434,8 @@ onMounted(() => {
 }
 
 .chart-placeholder {
-  height: 320px;
+  min-height: 280px;
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -452,6 +447,7 @@ onMounted(() => {
   z-index: 1;
   box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.02);
   transition: all 0.4s ease;
+  padding: 24px 16px;
 }
 
 .chart-placeholder:hover {
@@ -459,11 +455,100 @@ onMounted(() => {
   background: linear-gradient(135deg, var(--color-white) 0%, var(--color-light-gray) 100%);
 }
 
-.chart-placeholder p {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
+/* مخطط داخل الهوية الفاتحة */
+.luxury-overview-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.luxury-donut {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 8px 28px rgba(39, 55, 77, 0.12);
+}
+
+.luxury-donut-center {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background: var(--color-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(177, 162, 143, 0.35);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.luxury-donut-center strong {
+  font-size: 1.35rem;
+  color: var(--color-navy);
+  font-weight: 800;
+}
+
+.luxury-donut-center span {
+  font-size: 11px;
   color: var(--color-dark-gray);
+}
+
+.luxury-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-width: 200px;
+  max-width: 420px;
+}
+
+.luxury-bar-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 140px) 1fr minmax(48px, 72px);
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--color-dark-gray);
+}
+
+.luxury-bar-track {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-medium-gray);
+  overflow: hidden;
+  border: 1px solid rgba(177, 162, 143, 0.2);
+}
+
+.luxury-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.luxury-bar-value {
+  text-align: left;
+  direction: ltr;
+  font-weight: 700;
+  color: var(--color-charcoal);
+  font-variant-numeric: tabular-nums;
+}
+
+.luxury-portfolio-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--color-dark-gray);
+}
+
+.dashboard-portfolio-note {
+  margin: 14px 0 0;
+  font-size: 0.78rem;
+  color: rgba(226, 232, 240, 0.82);
+  line-height: 1.45;
 }
 
 .loading-state {
@@ -510,15 +595,12 @@ onMounted(() => {
   opacity: 0.9;
 }
 
-/* ============================
-   DASHBOARD RESPONSIVE
-   ============================ */
 @media (max-width: 576px) {
   .dashboard-view {
     padding: 10px 12px;
   }
   .page-title,
-  .welcome-title {
+  :deep(.rakez-dashboard-welcome__title) {
     font-size: 20px;
   }
   .stat-card {
@@ -531,14 +613,14 @@ onMounted(() => {
     padding: 28px 40px;
   }
   .page-title,
-  .welcome-title {
+  :deep(.rakez-dashboard-welcome__title) {
     font-size: 34px;
   }
   .stat-value {
     font-size: 32px;
   }
   .chart-placeholder {
-    padding: 60px 40px;
+    padding: 40px 32px;
   }
 }
 
@@ -547,7 +629,7 @@ onMounted(() => {
     padding: 36px 52px;
   }
   .page-title,
-  .welcome-title {
+  :deep(.rakez-dashboard-welcome__title) {
     font-size: 40px;
   }
   .stat-value {
@@ -564,7 +646,7 @@ onMounted(() => {
     padding: 48px 60px;
   }
   .page-title,
-  .welcome-title {
+  :deep(.rakez-dashboard-welcome__title) {
     font-size: 52px;
   }
   .stat-value {
@@ -575,15 +657,19 @@ onMounted(() => {
     border-radius: 24px;
   }
   .chart-placeholder {
-    padding: 80px 60px;
+    padding: 48px 40px;
     border-radius: 24px;
   }
 }
 
 @media (max-width: 768px) {
-  .chart-placeholder, .chart-container, [class*="chart"] { height: 240px; }
+  .chart-placeholder {
+    min-height: 240px;
+  }
 }
 @media (max-width: 576px) {
-  .chart-placeholder, .chart-container, [class*="chart"] { height: 200px; }
+  .chart-placeholder {
+    min-height: 200px;
+  }
 }
 </style>

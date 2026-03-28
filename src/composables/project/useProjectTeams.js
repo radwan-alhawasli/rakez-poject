@@ -1,6 +1,5 @@
 import { ref } from 'vue';
 import teamService from '@/services/teamService';
-import { toast } from '@/composables/useToast';
 import { useAsyncAction } from '@/composables/useAsyncAction';
 import { MSG_ERROR_LOADING } from '@/constants/messages';
 
