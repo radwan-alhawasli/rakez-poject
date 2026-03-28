@@ -158,15 +158,17 @@ watch(
       await nextTick();
       const el = notificationWrapperRef.value;
       if (el) {
-        const rect = el.getBoundingClientRect();
-        dropdownPositionStyle.value = {
-          position: 'fixed',
-          top: `${rect.bottom + 10}px`,
-          right: `${window.innerWidth - rect.right}px`,
-          zIndex: 9999,
-        };
+        requestAnimationFrame(() => {
+          const rect = el.getBoundingClientRect();
+          dropdownPositionStyle.value = {
+            position: 'fixed',
+            top: `${rect.bottom + 10}px`,
+            right: `${window.innerWidth - rect.right}px`,
+            zIndex: 9999,
+          };
+        });
       }
-      setTimeout(() => document.addEventListener('click', handleClickOutside), 0);
+      setTimeout(() => document.addEventListener('click', handleClickOutside, { passive: true }), 0);
     } else {
       document.removeEventListener('click', handleClickOutside);
     }

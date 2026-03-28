@@ -343,14 +343,17 @@ const fetchContracts = async () => {
 };
 
 const filteredContracts = computed(() => {
-  let filtered = contracts.value;
-  if (searchQuery.value) {
-    const q = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(
-      c => c.number?.toString().includes(q) || c.developer?.toLowerCase().includes(q)
+  const allContracts = contracts.value;
+  const query = searchQuery.value?.trim().toLowerCase();
+  
+  if (!query) return allContracts;
+
+  return allContracts.filter(c => {
+    return (
+      (c.number && c.number.toString().includes(query)) ||
+      (c.developer && c.developer.toLowerCase().includes(query))
     );
-  }
-  return filtered;
+  });
 });
 
 const paginatedContracts = computed(() => filteredContracts.value);
@@ -368,11 +371,31 @@ const handlePerPageChange = newPerPage => {
 };
 
 const totalCount = computed(() => totalFromApi.value);
-const pendingCount = computed(() => contracts.value.filter(c => c.status === 'Pending').length);
-const approvedCount = computed(
-  () => contracts.value.filter(c => c.status === 'Approved').length
-);
-const archiveCount = computed(() => contracts.value.filter(c => c.status === 'Refused').length);
+
+// Cache the length calculations to prevent full array iteration on minor state changes
+const pendingCount = computed(() => {
+  let count = 0;
+  for (let i = 0, len = contracts.value.length; i < len; i++) {
+    if (contracts.value[i].status === 'Pending') count++;
+  }
+  return count;
+});
+
+const approvedCount = computed(() => {
+  let count = 0;
+  for (let i = 0, len = contracts.value.length; i < len; i++) {
+    if (contracts.value[i].status === 'Approved') count++;
+  }
+  return count;
+});
+
+const archiveCount = computed(() => {
+  let count = 0;
+  for (let i = 0, len = contracts.value.length; i < len; i++) {
+    if (contracts.value[i].status === 'Refused') count++;
+  }
+  return count;
+});
 
 const viewContract = async c => {
   try {

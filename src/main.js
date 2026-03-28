@@ -9,23 +9,26 @@ import { registerErrorReporter } from '@/utils/errorReporter';
 import { getApiErrorMessage } from '@/utils/errorHandler';
 import { toast } from '@/composables/useToast';
 
-// الوضع المظلم معطّل — إجبار الوضع الفاتح
+// Initialize theme (supporting system preference or local storage)
 if (typeof document !== 'undefined') {
-  document.documentElement.classList.remove('dark');
-  try {
-    localStorage.removeItem('rakez-dark-mode');
-  } catch (_) {
-    // Ignore storage access failures in restricted/private modes.
+  const isDarkMode =
+    localStorage.getItem('rakez-dark-mode') === 'true' ||
+    (!('rakez-dark-mode' in localStorage) &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches);
+  if (isDarkMode) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
   }
 }
 
 // Helper: treat 401/Unauthenticated as expected (redirect to login), not a runtime error
 function isAuthError(reason) {
-  if (!reason) return false;
+  if (!reason || typeof reason !== 'object') return false;
   return (
     reason.isAuthRedirect === true ||
     reason.status === 401 ||
-    (reason.message && String(reason.message).toLowerCase().includes('unauthenticated'))
+    (typeof reason.message === 'string' && reason.message.toLowerCase().includes('unauthenticated'))
   );
 }
 

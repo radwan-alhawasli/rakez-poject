@@ -2,28 +2,25 @@
  * Authentication service: login, logout, session and current user.
  *
  * @module services/authService
- * @typedef {Object} AuthUser
- * @property {string} [name]
- * @property {string} email
- * @property {number|string} type - Role type (see constants/roles)
- * @property {string[]} [permissions]
- * @property {boolean} [is_leader]
- * @property {boolean} [is_manager]
  */
 
 import apiClient from '@/api/apiClient';
 import { ROLE_MAP } from '@/constants/roles';
 import secureStorage from '@/utils/secureStorage';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
+// Import User type from our new TS file
+import { type User as AuthUser } from '@/utils/rbac';
+
+export type { AuthUser };
 
 const authService = {
   /**
    * Login user with email and password
-   * @param {string} email
-   * @param {string} password
-   * @returns {Promise<AuthUser>} User data
+   * @param email - User email
+   * @param password - User password
+   * @returns User data
    */
-  async login(email, password) {
+  async login(email: string, password: string): Promise<AuthUser | null> {
     try {
       // Use the base URL from apiClient configuration
       const response = await apiClient.post('/login', { email, password });
@@ -46,7 +43,7 @@ const authService = {
           throw new Error('Authentication failed: no user data returned');
         }
 
-        const userData = { ...user };
+        const userData: AuthUser = { ...user };
 
         // Normalize type if it comes as string "admin" from backend
         if (typeof userData.type === 'string' && ROLE_MAP[userData.type] !== undefined) {
@@ -79,7 +76,7 @@ const authService = {
   /**
    * Logout user
    */
-  async logout() {
+  async logout(): Promise<void> {
     try {
       await apiClient.post('/logout');
     } catch (error) {
@@ -93,31 +90,31 @@ const authService = {
   /**
    * Clear session data
    */
-  clearSession() {
+  clearSession(): void {
     secureStorage.clearSession();
   },
 
   /**
    * Get current logged in user info (from storage)
-   * @returns {AuthUser|null}
+   * @returns AuthUser | null
    */
-  getCurrentUser() {
+  getCurrentUser(): AuthUser | null {
     return secureStorage.getUserInfo();
   },
 
   /**
    * Fetch current user from API (GET /user) and update storage.
    * Use after login or on app load to sync permissions and profile.
-   * @returns {Promise<AuthUser|null>} Updated user or null on failure
+   * @returns Updated user or null on failure
    */
-  async fetchCurrentUser() {
+  async fetchCurrentUser(): Promise<AuthUser | null> {
     if (!secureStorage.getToken()) return null;
     try {
       const response = await apiClient.get('/user');
       const user = response.data?.data ?? response.data?.user ?? response.data;
       if (!user) return this.getCurrentUser();
 
-      const userData = { ...user };
+      const userData: AuthUser = { ...user };
       if (typeof userData.type === 'string' && ROLE_MAP[userData.type] !== undefined) {
         userData.type = ROLE_MAP[userData.type];
       }
@@ -131,7 +128,7 @@ const authService = {
 
       secureStorage.setUserInfo(userData);
       return userData;
-    } catch (error) {
+    } catch (error: any) {
       if (error?.status === 401) {
         this.clearSession();
       }
@@ -142,9 +139,9 @@ const authService = {
 
   /**
    * Check if user is authenticated
-   * @returns {boolean}
+   * @returns boolean
    */
-  isAuthenticated() {
+  isAuthenticated(): boolean {
     const token = secureStorage.getToken();
     if (!token) return false;
 
@@ -159,32 +156,32 @@ const authService = {
 
   /**
    * Get authentication token
-   * @returns {string|null}
+   * @returns string | null
    */
-  getToken() {
+  getToken(): string | null {
     return secureStorage.getToken();
   },
 
   /**
    * Check if session is about to expire
-   * @returns {boolean}
+   * @returns boolean
    */
-  isSessionExpiring() {
+  isSessionExpiring(): boolean {
     return secureStorage.shouldShowWarning();
   },
 
   /**
    * Get time until session expires
-   * @returns {number} Milliseconds until expiration
+   * @returns Milliseconds until expiration (number)
    */
-  getTimeUntilExpiration() {
+  getTimeUntilExpiration(): number {
     return secureStorage.getTimeUntilExpiration();
   },
 
   /**
    * Extend session
    */
-  extendSession() {
+  extendSession(): void {
     secureStorage.extendSession();
   },
 };
