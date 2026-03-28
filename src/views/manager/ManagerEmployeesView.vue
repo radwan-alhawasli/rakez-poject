@@ -39,9 +39,10 @@
 import { ref, computed, onMounted } from 'vue';
 import authService from '@/services/authService';
 import managerService from '@/services/managerService';
+import { filterEmployeesByManagerRole } from '@/utils/managerEmployeeRoleFilter';
 
-const user = authService.getCurrentUser();
-const isManager = computed(() => user?.is_manager === true || user?.is_manager === 1);
+const user = computed(() => authService.getCurrentUser());
+const isManager = computed(() => user.value?.is_manager === true || user.value?.is_manager === 1);
 
 const employees = ref([]);
 const isLoading = ref(true);
@@ -51,7 +52,8 @@ async function fetchEmployees() {
   isLoading.value = true;
   try {
     const res = await managerService.getEmployees();
-    employees.value = res?.items ?? [];
+    const raw = res?.items ?? [];
+    employees.value = filterEmployeesByManagerRole(raw, user.value);
   } catch (_) {
     employees.value = [];
   } finally {

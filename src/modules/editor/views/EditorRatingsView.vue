@@ -2,7 +2,7 @@
   <div class="editor-ratings">
     <div class="page-header">
       <h1 class="page-title">تقييم الموظفين</h1>
-      <p class="page-subtitle">مدير المونتاج فقط — تقييم أداء موظفي القسم (بيانات من الـ API عند توفره)</p>
+      <p class="page-subtitle">مدير القسم — يظهر موظفو نفس الدور فقط (مثلاً مونتاج مع مونتاج).</p>
     </div>
 
     <div v-if="!isManager" class="no-access">
@@ -45,9 +45,10 @@
 import { ref, computed, onMounted } from 'vue';
 import authService from '@/services/authService';
 import editorService from '@/services/editorService';
+import { filterEmployeesByManagerRole } from '@/utils/managerEmployeeRoleFilter';
 
-const user = authService.getCurrentUser();
-const isManager = computed(() => user?.is_manager === true || user?.is_manager === 1);
+const user = computed(() => authService.getCurrentUser());
+const isManager = computed(() => user.value?.is_manager === true || user.value?.is_manager === 1);
 
 const employees = ref([]);
 const loading = ref(false);
@@ -75,10 +76,14 @@ async function fetchEmployees() {
           id: m.id,
           name: m.name || m.user_name,
           team_name: team.name || team.team_name,
+          type: m.type,
+          user_type: m.user_type,
+          role: m.role,
+          user: m.user,
         });
       }
     }
-    employees.value = list;
+    employees.value = filterEmployeesByManagerRole(list, user.value);
   } catch (_) {
     employees.value = [];
   } finally {
