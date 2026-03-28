@@ -11,7 +11,10 @@ import { toast } from '@/composables/useToast';
 
 // Initialize theme (supporting system preference or local storage)
 if (typeof document !== 'undefined') {
-  const isDarkMode = localStorage.getItem('rakez-dark-mode') === 'true';
+  const isDarkMode =
+    localStorage.getItem('rakez-dark-mode') === 'true' ||
+    (!('rakez-dark-mode' in localStorage) &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches);
   if (isDarkMode) {
     document.documentElement.classList.add('dark');
   } else {

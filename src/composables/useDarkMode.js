@@ -22,7 +22,7 @@ export function useDarkMode() {
     if (stored !== null) {
       isDark.value = stored === 'true';
     } else {
-      isDark.value = false; // explicitly disable dark mode default behavior
+      isDark.value = window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
     applyTheme(isDark.value);
   });
@@ -34,4 +34,3 @@ export function useDarkMode() {
 
   return { isDark, toggle };
 }
-
