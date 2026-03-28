@@ -86,6 +86,9 @@
             <p><strong>رابط التصوير:</strong>
               <a v-if="displayDetail.photography_link && displayDetail.photography_link !== '—'" :href="displayDetail.photography_link" target="_blank" rel="noopener noreferrer" class="link-cell">{{ displayDetail.photography_link }}</a>
               <span v-else :class="{ 'value-null': true }">—</span></p>
+            <p><strong>رابط الفيديو:</strong>
+              <a v-if="displayDetail.video_link && displayDetail.video_link !== '—'" :href="displayDetail.video_link" target="_blank" rel="noopener noreferrer" class="link-cell">{{ displayDetail.video_link }}</a>
+              <span v-else :class="{ 'value-null': true }">—</span></p>
             <p><strong>الوصف:</strong> <span :class="{ 'value-null': !displayDetail.description }">{{ displayDetail.description ?? '—' }}</span></p>
             <p><strong>الوحدات المتاحة:</strong> <span :class="{ 'value-null': displayDetail.available_units == null }">{{ displayDetail.available_units !== undefined && displayDetail.available_units !== null ? displayDetail.available_units : '—' }}</span></p>
           </div>
@@ -159,6 +162,13 @@
                 <span v-else :class="{ 'value-null': true }">—</span>
               </p>
               <button v-if="isLongContent(seeMoreDisplay.photography_link)" type="button" class="btn-expand" @click="seeMoreExpanded.photography = !seeMoreExpanded.photography">{{ seeMoreExpanded.photography ? 'عرض أقل' : 'عرض المزيد' }}</button>
+            </div>
+            <div class="detail-field" :class="{ expanded: seeMoreExpanded.video }">
+              <p><strong>رابط الفيديو:</strong>
+                <a v-if="seeMoreDisplay.video_link" :href="seeMoreDisplay.video_link" target="_blank" rel="noopener noreferrer" class="link-cell">{{ seeMoreExpanded.video ? seeMoreDisplay.video_link : truncateUrl(seeMoreDisplay.video_link) }}</a>
+                <span v-else :class="{ 'value-null': true }">—</span>
+              </p>
+              <button v-if="isLongContent(seeMoreDisplay.video_link)" type="button" class="btn-expand" @click="seeMoreExpanded.video = !seeMoreExpanded.video">{{ seeMoreExpanded.video ? 'عرض أقل' : 'عرض المزيد' }}</button>
             </div>
             <div class="detail-field" :class="{ expanded: seeMoreExpanded.description }">
               <p><strong>الوصف:</strong> <span :class="{ 'value-null': !seeMoreDisplay.description }">{{ seeMoreExpanded.description ? (seeMoreDisplay.description ?? '—') : (truncateText(seeMoreDisplay.description, 80) ?? '—') }}</span></p>
@@ -237,7 +247,7 @@ const rejectReason = ref('');
 const seeMoreProject = ref(null);
 const seeMoreDetail = ref(null);
 const seeMoreLoading = ref(false);
-const seeMoreExpanded = ref({ advertiser: false, photography: false, description: false, units: false });
+const seeMoreExpanded = ref({ advertiser: false, photography: false, video: false, description: false, units: false });
 
 /**
  * Map editor/contracts/show response to display fields.
@@ -247,12 +257,13 @@ function contractDisplayFromApi(contract) {
   if (!contract || typeof contract !== 'object') return null;
   const second = contract.second_party_data || {};
   const photo = contract.photography_department || {};
+  const mont = contract.montage_department || {};
   const units = contract.contract_units ?? contract.units ?? [];
   const unitsArray = Array.isArray(units) ? units : [];
   return {
     advertiser_number: second.advertiser_section_url ?? contract.advertiser_number ?? second.advertiser_number ?? contract.advertiser_section_url,
     image_url: photo.image_url ?? contract.image_url,
-    video_url: photo.video_url ?? contract.video_url,
+    video_url: photo.video_url ?? mont.video_url ?? contract.video_url,
     description: photo.description ?? contract.description,
     unitsCount: unitsArray.length,
     contract_units: unitsArray,
@@ -270,17 +281,25 @@ const displayDetail = computed(() => {
   const fallback = {
     advertiser_number: d.advertiser_number ?? d.advertiser_section_url ?? m.advertiser_number,
     photography_link: d.photography_link ?? d.photography_url ?? d.image_url ?? m.photography_link ?? m.image_url,
+    video_link:
+      d.photography_department?.video_url ??
+      d.montage_department?.video_url ??
+      d.video_url ??
+      m.video_url ??
+      m.photography_department?.video_url,
     description: d.description ?? m.description,
     unitsCount: fallbackCount,
   };
   const api = fromApi || fromMontageContract;
   const advertiser_number = api?.advertiser_number ?? fallback.advertiser_number;
   const photography_link = api?.image_url ?? fallback.photography_link;
+  const video_link = api?.video_url ?? fallback.video_link;
   const description = api?.description ?? fallback.description;
   const unitsCount = api?.unitsCount ?? fallback.unitsCount ?? 0;
   return {
     advertiser_number: advertiser_number ?? '—',
     photography_link: photography_link ?? '—',
+    video_link: video_link ?? '—',
     description: description ?? '—',
     available_units: unitsCount,
     units: api?.contract_units ?? [],
@@ -294,6 +313,7 @@ const seeMoreDisplay = computed(() => {
     return {
       advertiser_number: api.advertiser_number ?? '—',
       photography_link: api.image_url ?? null,
+      video_link: api.video_url ?? null,
       description: api.description ?? null,
       available_units: api.unitsCount,
     };
@@ -303,6 +323,8 @@ const seeMoreDisplay = computed(() => {
   return {
     advertiser_number: d.advertiser_number ?? d.advertiser_section_url ?? d.publisher_number ?? '—',
     photography_link: d.photography_link ?? d.photography_url ?? d.image_url ?? null,
+    video_link:
+      d.photography_department?.video_url ?? d.montage_department?.video_url ?? d.video_url ?? d.montage_video_url ?? null,
     description: d.description ?? null,
     available_units: unitsArray.length,
   };
@@ -364,7 +386,7 @@ watch(seeMoreProject, async (p) => {
   }
   seeMoreLoading.value = true;
   seeMoreDetail.value = null;
-  seeMoreExpanded.value = { advertiser: false, photography: false, description: false, units: false };
+  seeMoreExpanded.value = { advertiser: false, photography: false, video: false, description: false, units: false };
   try {
     const data = await editorService.getContractById(p.id);
     seeMoreDetail.value = data ?? {};

@@ -252,8 +252,8 @@ export function getDashboardPathForUser(user) {
   if (normalizedRole === ROLE_ACCOUNTING) return '/accounting/dashboard';
   if (normalizedRole === ROLE_EDITOR) return '/editor/dashboard';
   if (normalizedRole === ROLE_DEVELOPER) return '/dashboard';
-  if (normalizedRole === ROLE_PROJECT_MANAGEMENT) return '/project-management';
-  if (normalizedRole === ROLE_INVENTORY) return '/inventory';
+  if (normalizedRole === ROLE_PROJECT_MANAGEMENT) return '/project-management/dashboard';
+  if (normalizedRole === ROLE_INVENTORY) return '/inventory/dashboard';
   if (normalizedRole === ROLE_ACCOUNTANT) return '/accounting/dashboard';
   return '/dashboard';
 }

@@ -92,7 +92,7 @@
             </div>
             <div class="input-row">
               <div class="field-group full">
-                <label>رابط موقع المشروع / صورة المشروع</label>
+                <label>رابط صورة المشروع</label>
                 <input
                   type="text"
                   v-model="form.project_location_url"

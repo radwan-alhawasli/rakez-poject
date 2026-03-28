@@ -17,6 +17,13 @@
         </dd>
       </div>
       <div class="detail-row">
+        <dt>رابط الفيديو</dt>
+        <dd :class="{ 'value-null': isNull(videoLink) }">
+          <a v-if="videoLink && !isNull(videoLink)" :href="videoLink" target="_blank" rel="noopener noreferrer" class="link-cell">{{ videoLink }}</a>
+          <span v-else>{{ displayValue(videoLink) }}</span>
+        </dd>
+      </div>
+      <div class="detail-row">
         <dt>الوصف</dt>
         <dd :class="{ 'value-null': isNull(description) }">{{ displayValue(description) }}</dd>
       </div>
@@ -86,6 +93,19 @@ const photographyLink = computed(() => {
   const p = props.project;
   const photo = p?.photography_department;
   return photo?.image_url ?? p?.photography_link ?? p?.photography_url ?? p?.photographyLink ?? p?.image_url;
+});
+const videoLink = computed(() => {
+  const p = props.project;
+  const photo = p?.photography_department;
+  const mont = p?.montage_department;
+  return (
+    photo?.video_url ??
+    mont?.video_url ??
+    p?.montage_video_url ??
+    p?.video_url ??
+    p?.montage_video_link ??
+    ''
+  );
 });
 const description = computed(() => {
   const p = props.project;
