@@ -25,12 +25,12 @@ export default defineConfig({
     port: 8080,
     open: true,
   },
+  esbuild: {
+    drop: ['console', 'debugger'],
+  },
   build: {
     chunkSizeWarningLimit: 1200,
     minify: 'esbuild',
-    esbuild: {
-      drop: ['console', 'debugger'],
-    },
     rollupOptions: {
       output: {
         chunkFileNames: 'assets/[name]-[hash].js',
