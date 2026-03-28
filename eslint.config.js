@@ -40,7 +40,6 @@ export default [
       'vue/multi-word-component-names': 'off',
       // shadcn/radix-vue uses HTML-like component names (Dialog, Button, etc.) — this is intentional
       'vue/no-reserved-component-names': 'off',
-      'max-lines': ['warn', { max: 500, skipBlankLines: true, skipComments: true }],
     },
   },
   {

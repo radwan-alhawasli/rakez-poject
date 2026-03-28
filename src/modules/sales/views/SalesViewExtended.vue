@@ -28,7 +28,7 @@ import { defineAsyncComponent } from 'vue';
 import { useSalesRouting } from '@/composables/sales/useSalesRouting';
 import '../styles/sales-shell.css';
 
-const ReservationsView = defineAsyncComponent(() => import('@/modules/sales/views/ReservationsView.vue'));
+const ReservationsView = defineAsyncComponent(() => import('@/views/ReservationsView.vue'));
 const SalesDashboardTab = defineAsyncComponent(() =>
   import('@/modules/sales/tabs/dashboard/SalesDashboardTab.vue')
 );
