@@ -292,8 +292,8 @@ const editorService = {
 
   /**
    * PATCH /editor/montage-department/approve/:id — Manager approve or reject montage
-   * @param {number|string} id - Montage/contract id
-   * @param {Object} data - { status: 'approved'|'rejected', rejection_reason?: string }
+   * @param {number|string} id - Contract id (same as other editor montage routes)
+   * @param {Object} data - { approved: '1'|'0', comment?: string } — comment used when rejecting
    * @returns {Promise<Object>}
    */
   async approveMontage(id, data) {

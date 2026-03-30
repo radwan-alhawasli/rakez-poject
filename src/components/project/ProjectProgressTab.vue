@@ -34,6 +34,7 @@
           <div class="input-wrapper">
             <input
               :type="stages[activeStageIndex].inputType || 'text'"
+              :inputmode="stages[activeStageIndex].inputmode || undefined"
               v-model="stages[activeStageIndex].value"
               class="form-input"
               :placeholder="stages[activeStageIndex].placeholder || 'https://example.com/document'"

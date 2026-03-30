@@ -62,6 +62,7 @@
               :status-label="montageStatusLabel(p)"
               :status-class="montageStatusClass(p)"
               :has-links="isManager ? (montageHasLinksMap[p.id] ?? null) : null"
+              compact-links
               @add-links="openDetail($event)"
               @see-more="openSeeMore($event)"
               @approve="doApprove($event.id)"
@@ -92,10 +93,10 @@
             <p><strong>الوصف:</strong> <span :class="{ 'value-null': !displayDetail.description }">{{ displayDetail.description ?? '—' }}</span></p>
             <p><strong>الوحدات المتاحة:</strong> <span :class="{ 'value-null': displayDetail.available_units == null }">{{ displayDetail.available_units !== undefined && displayDetail.available_units !== null ? displayDetail.available_units : '—' }}</span></p>
           </div>
-          <!-- Rejection reason (for editor to see) -->
-          <div v-if="montageData?.rejection_reason" class="rejection-section">
-            <h4>سبب الرفض من المدير</h4>
-            <p class="rejection-text">{{ montageData.rejection_reason }}</p>
+          <!-- Rejection / manager comment (for editor to see) -->
+          <div v-if="montageRejectionNote" class="rejection-section">
+            <h4>ملاحظة المدير (الرفض)</h4>
+            <p class="rejection-text">{{ montageRejectionNote }}</p>
           </div>
           <!-- Montage form: images, videos, description -->
           <div class="montage-form-section">
@@ -186,6 +187,13 @@
               </div>
             </div>
           </div>
+          <div v-if="seeMoreMontageRejection" class="rejection-section">
+            <h4>ملاحظة المدير (الرفض)</h4>
+            <p class="rejection-text">{{ seeMoreMontageRejection }}</p>
+          </div>
+          <div v-if="seeMoreMontageStatusLine" class="see-more-montage-status">
+            <p><strong>حالة اعتماد المونتاج:</strong> {{ seeMoreMontageStatusLine }}</p>
+          </div>
         </template>
       </div>
     </div>
@@ -246,8 +254,31 @@ const rejectReason = ref('');
 
 const seeMoreProject = ref(null);
 const seeMoreDetail = ref(null);
+const seeMoreMontage = ref(null);
 const seeMoreLoading = ref(false);
 const seeMoreExpanded = ref({ advertiser: false, photography: false, video: false, description: false, units: false });
+
+const montageRejectionNote = computed(() => {
+  const m = montageData.value || {};
+  const t = m.rejection_reason ?? m.comment;
+  return t && String(t).trim() ? String(t).trim() : '';
+});
+
+const seeMoreMontageRejection = computed(() => {
+  const m = seeMoreMontage.value || {};
+  const t = m.rejection_reason ?? m.comment;
+  return t && String(t).trim() ? String(t).trim() : '';
+});
+
+const seeMoreMontageStatusLine = computed(() => {
+  const m = seeMoreMontage.value || {};
+  if (m.approved === '1' || m.approved === 1) return 'معتمد';
+  if (m.approved === '0' || m.approved === 0) return 'مرفوض';
+  const st = m.status != null ? String(m.status) : '';
+  if (st.includes('معتمد')) return 'معتمد';
+  if (st.includes('مرفوض') || st.includes('رفض')) return 'مرفوض';
+  return st || '';
+});
 
 /**
  * Map editor/contracts/show response to display fields.
@@ -382,17 +413,29 @@ watch(detail, () => {
 watch(seeMoreProject, async (p) => {
   if (!p?.id) {
     seeMoreDetail.value = null;
+    seeMoreMontage.value = null;
     return;
   }
   seeMoreLoading.value = true;
   seeMoreDetail.value = null;
+  seeMoreMontage.value = null;
   seeMoreExpanded.value = { advertiser: false, photography: false, video: false, description: false, units: false };
   try {
     const data = await editorService.getContractById(p.id);
     seeMoreDetail.value = data ?? {};
     mergeContractDetail(p.id, data ?? {});
+    try {
+      seeMoreMontage.value = await editorService.getMontage(p.id);
+    } catch (_) {
+      seeMoreMontage.value = null;
+    }
   } catch (_) {
     seeMoreDetail.value = { ...p };
+    try {
+      seeMoreMontage.value = await editorService.getMontage(p.id);
+    } catch (_) {
+      seeMoreMontage.value = null;
+    }
   } finally {
     seeMoreLoading.value = false;
   }
@@ -416,6 +459,7 @@ function openSeeMore(p) {
 function closeSeeMore() {
   seeMoreProject.value = null;
   seeMoreDetail.value = null;
+  seeMoreMontage.value = null;
 }
 
 function closeDetail() {
@@ -446,6 +490,15 @@ function formatPrice(n) {
 }
 
 function montageStatusLabel(p) {
+  const md = p.montage_department;
+  if (md?.approved === '1' || md?.approved === 1) return 'معتمد';
+  if (md?.approved === '0' || md?.approved === 0) return 'مرفوض';
+  const mst = md?.status != null ? String(md.status) : '';
+  if (mst.includes('معتمد')) return 'معتمد';
+  if (mst.includes('مرفوض') || mst.includes('رفض')) return 'مرفوض';
+  const slo = mst.toLowerCase();
+  if (slo.includes('approv') || slo.includes('accept')) return 'معتمد';
+  if (slo.includes('reject') || slo.includes('refus')) return 'مرفوض';
   const status = p.montage_status ?? p.approval_status ?? p.status;
   if (status === 'approved') return 'معتمد';
   if (status === 'rejected') return 'مرفوض';
@@ -453,6 +506,15 @@ function montageStatusLabel(p) {
 }
 
 function montageStatusClass(p) {
+  const md = p.montage_department;
+  if (md?.approved === '1' || md?.approved === 1) return 'status-approved';
+  if (md?.approved === '0' || md?.approved === 0) return 'status-rejected';
+  const mst = md?.status != null ? String(md.status) : '';
+  if (mst.includes('معتمد')) return 'status-approved';
+  if (mst.includes('مرفوض') || mst.includes('رفض')) return 'status-rejected';
+  const slo = mst.toLowerCase();
+  if (slo.includes('approv') || slo.includes('accept')) return 'status-approved';
+  if (slo.includes('reject') || slo.includes('refus')) return 'status-rejected';
   const status = p.montage_status ?? p.approval_status ?? p.status;
   if (status === 'approved') return 'status-approved';
   if (status === 'rejected') return 'status-rejected';
@@ -475,7 +537,7 @@ async function submitMontage() {
     closeDetail();
     activeTab.value = 'after';
     router.replace({ query: { ...route.query, tab: 'after' } });
-    if (isManager.value && afterMontage.value.length) {
+    if (afterMontage.value.length) {
       fetchMontageLinksForProjects(afterMontage.value.map(p => p.id));
     }
   } catch (e) {
