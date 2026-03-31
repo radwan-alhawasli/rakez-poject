@@ -1,0 +1,228 @@
+
+.error-state {
+  text-align: center;
+  padding: 50px;
+  color: var(--color-dark-gray);
+}
+
+.error-state button {
+  margin-top: 15px;
+  padding: 10px 24px;
+  background: var(--color-navy);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.error-state button:hover {
+  opacity: 0.9;
+}
+
+/* Responsive: Tablet Landscape */
+@media (max-width: 992px) {
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .page-title {
+    font-size: 24px;
+  }
+}
+
+/* Responsive: Tablet Portrait */
+@media (max-width: 768px) {
+  .projects-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .tabs-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    white-space: nowrap;
+    font-size: 13px;
+  }
+  .page-title {
+    font-size: 22px;
+  }
+  .page-subtitle {
+    font-size: 13px;
+  }
+  .modal-content {
+    width: 95%;
+  }
+  .form-container {
+    padding: 15px;
+  }
+  .grid-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* Responsive: Mobile */
+@media (max-width: 576px) {
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+  .page-title {
+    font-size: 20px;
+  }
+  .page-subtitle {
+    font-size: 12px;
+  }
+  .tabs-container {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tab-btn {
+    font-size: 12px;
+    padding: 8px 0;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .project-card {
+    padding: 14px;
+  }
+  .project-name {
+    font-size: 14px;
+  }
+  .add-board-btn,
+  .completed-badge {
+    min-height: 44px;
+    font-size: 14px;
+  }
+  .modal-header-strip {
+    font-size: 16px;
+    padding: 12px;
+  }
+  .section-header {
+    font-size: 14px;
+    padding: 8px;
+  }
+  .box-input {
+    padding: 10px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+  .save-btn {
+    width: 100%;
+    padding: 12px 20px;
+    min-height: 44px;
+    font-size: 14px;
+  }
+  .close-btn {
+    top: 10px;
+    left: 12px;
+    font-size: 20px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Responsive: Extra Small Mobile */
+@media (max-width: 320px) {
+  .page-title {
+    font-size: 18px;
+  }
+  .project-card {
+    padding: 10px;
+  }
+  .project-name {
+    font-size: 13px;
+  }
+  .project-id {
+    font-size: 10px;
+  }
+  .project-location {
+    font-size: 11px;
+  }
+  .modal-content {
+    border-radius: 12px;
+  }
+  .form-container {
+    padding: 10px;
+    gap: 10px;
+  }
+  .section-body {
+    padding: 10px;
+  }
+  .box-input {
+    font-size: 12px;
+  }
+}
+
+/* Responsive: Large Desktop */
+@media (min-width: 1920px) {
+  .page-title {
+    font-size: 34px;
+  }
+  .page-subtitle {
+    font-size: 17px;
+  }
+  .tabs-container {
+    gap: 40px;
+    margin-bottom: 36px;
+  }
+  .tab-btn {
+    font-size: 17px;
+    padding: 12px 0;
+  }
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 28px;
+  }
+  .project-card {
+    padding: 28px;
+  }
+  .project-name {
+    font-size: 18px;
+  }
+  .project-location {
+    font-size: 15px;
+  }
+  .add-board-btn,
+  .completed-badge {
+    font-size: 16px;
+    padding: 14px;
+  }
+  .modal-content {
+    width: 650px;
+  }
+  .modal-header-strip {
+    font-size: 22px;
+    padding: 18px;
+  }
+  .section-header {
+    font-size: 18px;
+  }
+  .box-input {
+    font-size: 16px;
+    padding: 12px 16px;
+  }
+  .save-btn {
+    font-size: 17px;
+    padding: 14px 70px;
+  }
+}
+
+/* Responsive: Ultra-wide */
+@media (min-width: 2560px) {
+  .page-title {
+    font-size: 40px;
+  }
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 32px;
+  }
+  .project-card {
+    padding: 32px;
+  }
+}

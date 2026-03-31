@@ -1,0 +1,324 @@
+/* تنسيقات أهداف المبيعات — من الأب SalesViewExtended */
+.targets-tab {
+  width: 100%;
+  direction: rtl;
+}
+
+.welcome-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.btn-add {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(177, 162, 143, 0.4);
+}
+
+.btn-add svg {
+  width: 18px;
+  height: 18px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--color-dark-gray);
+  text-align: center;
+}
+
+.empty-state.error-state {
+  color: #b91c1c;
+}
+
+.empty-state.error-state p {
+  color: inherit;
+  margin-bottom: 12px;
+}
+
+.empty-state .btn-add {
+  margin-top: 12px;
+}
+
+.targets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.target-card {
+  position: relative;
+  background: var(--color-white);
+  border: 1px solid rgba(39, 55, 77, 0.1);
+  border-radius: 16px;
+  padding: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 12px rgba(39, 55, 77, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: visible;
+}
+
+.target-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 4px;
+  background: var(--color-navy, #27374D);
+  opacity: 0.9;
+  border-radius: 16px 16px 0 0;
+  transition: background 0.3s ease;
+}
+
+/* ===== بطاقة الهدف المنجز ===== */
+.target-card-completed {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 40%, #f8fafc 100%);
+  border-color: rgba(5, 150, 105, 0.25);
+  box-shadow: 0 2px 12px rgba(5, 150, 105, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.target-card-completed::before {
+  height: 5px;
+  background: linear-gradient(90deg, #10b981, #059669, #047857);
+  opacity: 1;
+}
+
+.target-card-completed:hover {
+  border-color: rgba(5, 150, 105, 0.35);
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.target-card-completed .target-footer {
+  background: rgba(236, 253, 245, 0.7);
+  border-color: rgba(5, 150, 105, 0.1);
+}
+
+.completed-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.35);
+  animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.completed-badge svg {
+  width: 20px;
+  height: 20px;
+  color: white;
+}
+
+@keyframes badgePop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.target-card > .card-menu-wrap {
+  top: 14px;
+  left: 14px;
+}
+
+.card-menu-wrap {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+}
+
+.card-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-navy);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.card-menu-btn:hover {
+  color: var(--color-navy);
+  opacity: 0.85;
+}
+
+.card-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  min-width: 200px;
+  background: var(--color-white);
+  border: 1px solid var(--color-medium-gray);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  padding: 6px 0;
+}
+
+.card-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  text-align: right;
+  font-size: 0.9375rem;
+  color: var(--color-navy);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.card-dropdown-item:hover {
+  background: #f1f5f9;
+}
+
+.card-dropdown-item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.card-dropdown-status {
+  padding: 8px 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.card-dropdown-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-dark-gray);
+  margin-bottom: 6px;
+}
+
+.card-dropdown-select {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: var(--color-white);
+  cursor: pointer;
+}
+
+.card-dropdown-select:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.card-dropdown-item-done {
+  font-weight: 600;
+  color: #059669;
+}
+
+.card-dropdown-item-done:hover:not(:disabled) {
+  background: #ecfdf5;
+}
+
+.assign-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.assign-modal {
+  background: var(--color-white);
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  max-width: 420px;
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.assign-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.assign-modal-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.assign-close {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--color-dark-gray);
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.assign-close:hover {
+  background: #f1f5f9;
+  color: var(--color-navy);
+}
+
+.assign-project-name {
+  margin: 0;
+  padding: 12px 20px;
+  font-size: 0.9375rem;
+  color: var(--color-dark-gray);
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.assign-marketers-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 20px;
+  max-height: 280px;
+}
+
+.assign-marketer-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}

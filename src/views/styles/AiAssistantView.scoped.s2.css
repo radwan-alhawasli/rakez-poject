@@ -1,0 +1,116 @@
+
+/* ── Responsive: Extra Small Mobile ── */
+@media (max-width: 320px) {
+  .ai-assistant-sidebar {
+    max-height: 120px;
+  }
+  .ai-assistant-sidebar-head {
+    padding: 8px;
+    gap: 6px;
+  }
+  .ai-assistant-brand-text {
+    font-size: 13px;
+  }
+  .ai-assistant-new-chat {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .ai-assistant-search {
+    font-size: 11px;
+  }
+  .ai-assistant-main :deep(.chatbot-messages) {
+    padding: 8px;
+  }
+  .ai-assistant-main :deep(.chatbot-input-wrap) {
+    padding: 8px;
+  }
+  .ai-assistant-main :deep(.chatbot-input-wrap textarea) {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+}
+
+/* ── Responsive: Large Desktop ── */
+@media (min-width: 1200px) {
+  .ai-assistant-sidebar {
+    width: 300px;
+    min-width: 300px;
+  }
+}
+
+/* ── Responsive: Full HD ── */
+@media (min-width: 1920px) {
+  .ai-assistant-sidebar {
+    width: 340px;
+    min-width: 340px;
+  }
+  .ai-assistant-brand-text {
+    font-size: 17px;
+  }
+  .ai-assistant-new-chat {
+    font-size: 15px;
+    padding: 12px 16px;
+  }
+  .ai-assistant-main :deep(.chatbot-messages) {
+    padding: 28px;
+  }
+  .ai-assistant-main :deep(.chatbot-input-wrap textarea) {
+    font-size: 16px;
+  }
+}
+
+/* ── Responsive: QHD ── */
+@media (min-width: 2560px) {
+  .ai-assistant-sidebar {
+    width: 380px;
+    min-width: 380px;
+  }
+  .ai-assistant-brand-text {
+    font-size: 18px;
+  }
+  .ai-assistant-history-btn {
+    font-size: 15px;
+  }
+  .ai-assistant-main :deep(.chatbot-messages) {
+    padding: 32px;
+  }
+  .ai-assistant-main :deep(.chatbot-input-wrap textarea) {
+    font-size: 17px;
+    min-height: 56px;
+  }
+}
+
+/* ── Responsive: 4K ── */
+@media (min-width: 3840px) {
+  .ai-assistant-sidebar {
+    width: 440px;
+    min-width: 440px;
+  }
+  .ai-assistant-brand-text {
+    font-size: 22px;
+  }
+  .ai-assistant-new-chat {
+    font-size: 18px;
+    padding: 14px 20px;
+  }
+  .ai-assistant-search {
+    font-size: 16px;
+    padding: 14px 18px 14px 42px;
+  }
+  .ai-assistant-history-btn {
+    font-size: 17px;
+    padding: 14px 16px;
+  }
+  .ai-assistant-main :deep(.chatbot-messages) {
+    padding: 40px;
+  }
+  .ai-assistant-main :deep(.chatbot-input-wrap textarea) {
+    font-size: 20px;
+    min-height: 64px;
+  }
+  .ai-assistant-main :deep(.chatbot-send-btn) {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+  }
+}

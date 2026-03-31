@@ -1,0 +1,325 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* تصميم البطاقة مطابق لهوية الشركة ولوحة مشاريع المبيعات (Sales) */
+.project-card.rakez-card {
+  background: var(--color-white, #fff);
+  border: 1px solid var(--color-medium-gray, #e5e7eb);
+  border-radius: 16px;
+  overflow: visible;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.project-card.rakez-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* غلاف الصورة: شريط علوي ثابت + منطقة صورة كبيرة بدون تداخل */
+.card-image-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px 16px 0 0;
+  overflow: visible;
+  background: #f1f5f9;
+}
+
+/* شريط علوي: حالة | موقع | قائمة — صف واحد بدون تداخل */
+.card-image-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(30, 58, 95, 0.92);
+  flex-shrink: 0;
+}
+.card-image-top-bar .location-tag {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+.card-image-top-bar .menu-container {
+  position: relative;
+  flex-shrink: 0;
+  z-index: 100;
+}
+.card-image-top-bar {
+  position: relative;
+  z-index: 50;
+}
+
+/* منطقة عرض الصورة — ارتفاع ثابت لجميع البطاقات */
+.card-image {
+  height: 200px;
+  min-height: 200px;
+  flex: none;
+  position: relative;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0 0 16px 16px;
+}
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.card-image-placeholder {
+  height: 200px;
+  min-height: 200px;
+}
+.card-image-placeholder .placeholder-block {
+  width: 100%;
+  height: 200px;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.card-image-pending-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(234, 179, 8, 0.95);
+  color: #422006;
+}
+.menu-btn {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.menu-btn:hover {
+  background: #fff;
+  color: #1e3a5f;
+}
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e2e8f0;
+  min-width: 220px;
+  width: max-content;
+  max-width: 320px;
+  z-index: 1100;
+  overflow: visible;
+  animation: fadeIn 0.2s;
+}
+
+/* حاوية القائمة فقط — بدون مربع، تظهر القائمة فقط */
+.card-dropdown-row {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 12px 0 0;
+  background: transparent;
+  z-index: 600;
+}
+.dropdown-menu-inline {
+  position: relative;
+  top: 0;
+  right: 0;
+  left: auto;
+  min-width: 220px;
+  max-width: 320px;
+  max-height: 240px;
+  overflow-y: auto;
+  width: max-content;
+}
+.menu-item {
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+  min-height: 40px;
+}
+.menu-item svg {
+  flex-shrink: 0;
+}
+.menu-item:hover {
+  background: #f8fafc;
+}
+.menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 500;
+  cursor: default;
+}
+
+/* عنوان البطاقة — شريط أزرق داكن (هوية الشركة) */
+.card-title-block {
+  background: #1e3a5f;
+  color: #fff;
+  padding: 14px 16px;
+  margin: 0;
+}
+.card-title-main {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+  word-break: break-word;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.card-title-type {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.card-content {
+  padding: 14px 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.project-name,
+.project-location,
+.project-description-line {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+}
+.assignee {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* أشرطة التقدم — نفس المبيعات */
+.progress-row.rakez-progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.progress-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+.progress-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+  margin-right: auto;
+}
+.progress-bar {
+  flex: 1 1 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.2s;
+}
+.contract-fill-gray {
+  background: #9ca3af;
+}
+.contract-fill-green,
+.progress-fill-green {
+  background: #22c55e;
+}
+.contract-fill-yellow {
+  background: #eab308;
+}
+.contract-fill-red {
+  background: #ef4444;
+}
+
+/* السعر والمواصفات */
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+.price-label {
+  color: #6b7280;
+  font-weight: 500;
+}
+.price-value {
+  color: #111827;
+  font-weight: 700;
+}
+.specs-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: #374151;
+}
+.spec-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.spec-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  vertical-align: middle;
+}

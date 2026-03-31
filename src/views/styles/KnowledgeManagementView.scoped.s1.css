@@ -1,0 +1,325 @@
+.knowledge-view {
+  padding: 24px;
+  direction: rtl;
+  animation: fadeIn 0.4s ease-out;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.knowledge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.knowledge-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-navy, var(--color-navy));
+  margin: 0 0 4px 0;
+}
+.knowledge-subtitle {
+  font-size: 14px;
+  color: var(--color-dark-gray, var(--color-dark-gray));
+  margin: 0;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(
+    135deg,
+    var(--color-gold, var(--color-gold)) 0%,
+    var(--color-gold-dark, var(--color-gold-dark)) 100%
+  );
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(177, 162, 143, 0.35);
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* الفلاتر */
+.knowledge-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.filter-group {
+  flex: 1;
+  min-width: 160px;
+}
+.filter-input,
+.filter-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--color-medium-gray, var(--color-medium-gray));
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--color-charcoal, var(--color-charcoal));
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.filter-input:focus,
+.filter-select:focus {
+  border-color: var(--color-gold, var(--color-gold));
+}
+
+/* الجدول */
+.knowledge-table-wrap {
+  background: #fff;
+  border: 1px solid var(--color-medium-gray, var(--color-medium-gray));
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.knowledge-loading {
+  padding: 40px;
+  text-align: center;
+  color: var(--color-dark-gray, var(--color-dark-gray));
+  font-size: 14px;
+}
+.knowledge-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.knowledge-table th {
+  text-align: right;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-dark-gray, var(--color-dark-gray));
+  background: var(--color-light-gray, var(--color-light-gray));
+  border-bottom: 1px solid var(--color-medium-gray, var(--color-medium-gray));
+  white-space: nowrap;
+}
+.knowledge-table td {
+  padding: 12px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--color-light-gray);
+  color: var(--color-charcoal, var(--color-charcoal));
+}
+.knowledge-table tr:last-child td {
+  border-bottom: none;
+}
+.knowledge-table tr:hover td {
+  background: #fafbfc;
+}
+.knowledge-cell-title {
+  font-weight: 600;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.knowledge-empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--color-dark-gray, var(--color-dark-gray));
+}
+
+.knowledge-lang-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #eef2ff;
+  color: #4338ca;
+}
+.knowledge-status {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.knowledge-status.active {
+  background: #ecfdf5;
+  color: #059669;
+}
+.knowledge-status.inactive {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.knowledge-actions-cell {
+  display: flex;
+  gap: 6px;
+}
+.btn-icon {
+  padding: 6px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-dark-gray, var(--color-dark-gray));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+.btn-icon:hover {
+  background: var(--color-light-gray, var(--color-light-gray));
+  color: var(--color-navy, var(--color-navy));
+}
+.btn-icon-danger:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* النافذة المنبثقة */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 58, 95, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  padding: 20px;
+  backdrop-filter: blur(2px);
+}
+.knowledge-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 640px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.18);
+}
+.knowledge-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-medium-gray, var(--color-medium-gray));
+}
+.knowledge-modal-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-navy, var(--color-navy));
+  margin: 0;
+}
+.btn-close {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--color-dark-gray, var(--color-dark-gray));
+  border-radius: 8px;
+  display: flex;
+  transition: color 0.15s;
+}
+.btn-close:hover {
+  color: var(--color-navy, var(--color-navy));
+}
+
+.knowledge-form {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+.form-row-2 > .form-group {
+  flex: 1;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-charcoal, var(--color-charcoal));
+}
+.required {
+  color: #dc2626;
+}
+.form-group input[type='text'],
+.form-group input[type='number'],
+.form-group select,
+.form-group textarea {
+  padding: 10px 14px;
+  border: 1px solid var(--color-medium-gray, var(--color-medium-gray));
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--color-charcoal, var(--color-charcoal));
+  outline: none;
+  transition: border-color 0.15s;
+  direction: rtl;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--color-gold, var(--color-gold));
+}
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.form-group-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.form-group-checkbox input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-gold, var(--color-gold));
+}
+
+.knowledge-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 8px;
+}
+.btn-cancel {
+  padding: 10px 20px;
+  border: 1px solid var(--color-medium-gray, var(--color-medium-gray));
+  border-radius: 10px;
+  background: #fff;
+  color: var(--color-charcoal, var(--color-charcoal));
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
