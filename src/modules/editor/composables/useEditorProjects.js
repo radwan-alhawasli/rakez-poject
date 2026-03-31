@@ -5,6 +5,7 @@
 
 import { ref, computed } from 'vue';
 import editorService from '@/services/editorService';
+import { buildContractPatchFromMontageShow } from '@/utils/montageApproval';
 
 export function useEditorProjects() {
   const contracts = ref([]);
@@ -19,12 +20,20 @@ export function useEditorProjects() {
   const montageHasLinksMap = ref({});
 
   // API: has_photography_data, has_montage_data (both === 1 → after montage). Support legacy has_photography/has_montage.
-  // When backend does not set flags, treat as after montage if contract has image_url and description from API.
+  // When backend does not set flags, treat as after montage if contract has image_url and description from API,
+  // or if montage_department alone has any link/text (links-only path).
   const isAfterMontage = c => {
     const hasFlags =
       (c.has_photography_data == 1 || c.has_photography == 1 || c.has_photography === true) &&
       (c.has_montage_data == 1 || c.has_montage == 1 || c.has_montage === true);
     if (hasFlags) return true;
+    const mont = c.montage_department;
+    if (mont && typeof mont === 'object') {
+      const mi = mont.image_url && String(mont.image_url).trim();
+      const mv = mont.video_url && String(mont.video_url).trim();
+      const md = mont.description && String(mont.description).trim();
+      if (mi || mv || md) return true;
+    }
     const hasImage = !!(c.image_url && String(c.image_url).trim());
     const hasDesc = !!(c.description && String(c.description).trim());
     return hasImage && hasDesc;
@@ -58,6 +67,27 @@ export function useEditorProjects() {
     const idx = list.findIndex(c => Number(c.id) === Number(contractId));
     if (idx === -1) return;
     list[idx] = { ...list[idx], ...data };
+    contracts.value = list;
+  }
+
+  /** Merge montage-department/show into list row so status / approved / comment match API. */
+  function mergeMontageShowIntoContract(contractId, showData) {
+    if (!contractId || !showData || typeof showData !== 'object') return;
+    if (!Object.keys(showData).length) return;
+    const patch = buildContractPatchFromMontageShow(showData);
+    if (!patch.montage_department || typeof patch.montage_department !== 'object') return;
+    const list = [...contracts.value];
+    const idx = list.findIndex(c => Number(c.id) === Number(contractId));
+    if (idx === -1) return;
+    const prev = list[idx].montage_department;
+    list[idx] = {
+      ...list[idx],
+      ...patch,
+      montage_department: {
+        ...(typeof prev === 'object' && prev ? prev : {}),
+        ...patch.montage_department,
+      },
+    };
     contracts.value = list;
   }
 
@@ -102,6 +132,7 @@ export function useEditorProjects() {
     try {
       const data = await editorService.getMontage(contractId);
       montageData.value = data;
+      mergeMontageShowIntoContract(contractId, data);
     } catch (_) {
       montageData.value = {};
     } finally {
@@ -110,13 +141,26 @@ export function useEditorProjects() {
   }
 
   async function saveMontage(contractId, payload, isUpdate = false) {
-    if (isUpdate) {
-      await editorService.updateMontage(contractId, payload);
-    } else {
-      await editorService.createMontage(contractId, payload);
+    const save = async (update) =>
+      update
+        ? editorService.updateMontage(contractId, payload)
+        : editorService.createMontage(contractId, payload);
+    try {
+      await save(isUpdate);
+    } catch (e) {
+      const msg = String(e?.message || '');
+      if (
+        !isUpdate &&
+        (msg.includes('معلومات') || msg.includes('العقد') || msg.includes('الطرف الثاني'))
+      ) {
+        await editorService.updateMontage(contractId, payload);
+      } else {
+        throw e;
+      }
     }
     await fetchMontage(contractId);
     await fetchContracts();
+    mergeMontageShowIntoContract(contractId, montageData.value || {});
     // If backend didn't set flags in list, optimistically mark so project appears in "after montage"
     const id = Number(contractId);
     const stillBefore = contracts.value.find(c => Number(c.id) === id && !isAfterMontage(c));
@@ -139,19 +183,29 @@ export function useEditorProjects() {
   }
 
   async function approveMontage(id, status, rejectionReason = '') {
-    await editorService.approveMontage(id, {
-      status: status === 'approved' ? 'approved' : 'rejected',
-      rejection_reason: rejectionReason || undefined,
-    });
+    const approved = status === 'approved' ? '1' : '0';
+    const body = { approved };
+    if (approved === '0') {
+      body.comment = String(rejectionReason || '').trim() || '';
+    }
+    await editorService.approveMontage(id, body);
     const st = status === 'approved' ? 'approved' : 'rejected';
     const list = [...contracts.value];
     const idx = list.findIndex(c => Number(c.id) === Number(id));
     if (idx !== -1) {
+      const prevMd = list[idx].montage_department;
       list[idx] = {
         ...list[idx],
         montage_status: st,
         approval_status: st,
         montage_approval_status: st,
+        montage_department: {
+          ...(typeof prevMd === 'object' && prevMd ? prevMd : {}),
+          approved,
+          ...(approved === '1'
+            ? { comment: null, rejection_reason: null }
+            : { comment: body.comment, rejection_reason: body.comment }),
+        },
       };
       contracts.value = list;
     }
@@ -186,6 +240,7 @@ export function useEditorProjects() {
       ids.map(async id => {
         try {
           const data = await editorService.getMontage(id);
+          mergeMontageShowIntoContract(id, data);
           const has =
             !!(data?.image_url && String(data.image_url).trim()) ||
             !!(data?.video_url && String(data.video_url).trim()) ||

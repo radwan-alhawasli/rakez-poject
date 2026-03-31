@@ -12,26 +12,30 @@
       <div class="detail-row">
         <dt>رابط التصوير</dt>
         <dd :class="{ 'value-null': isNull(photographyLink) }">
-          <a v-if="photographyLink && !isNull(photographyLink)" :href="photographyLink" target="_blank" rel="noopener noreferrer" class="link-cell">{{ photographyLink }}</a>
+          <a v-if="photographyLink && !isNull(photographyLink)" :href="photographyLink" target="_blank" rel="noopener noreferrer" class="link-cell">{{ linkLabel(photographyLink) }}</a>
           <span v-else>{{ displayValue(photographyLink) }}</span>
         </dd>
       </div>
       <div class="detail-row">
         <dt>رابط الفيديو</dt>
         <dd :class="{ 'value-null': isNull(videoLink) }">
-          <a v-if="videoLink && !isNull(videoLink)" :href="videoLink" target="_blank" rel="noopener noreferrer" class="link-cell">{{ videoLink }}</a>
+          <a v-if="videoLink && !isNull(videoLink)" :href="videoLink" target="_blank" rel="noopener noreferrer" class="link-cell">{{ linkLabel(videoLink) }}</a>
           <span v-else>{{ displayValue(videoLink) }}</span>
         </dd>
       </div>
       <div class="detail-row">
         <dt>الوصف</dt>
-        <dd :class="{ 'value-null': isNull(description) }">{{ displayValue(description) }}</dd>
+        <dd :class="{ 'value-null': isNull(description) }">{{ descriptionLabel }}</dd>
       </div>
       <div class="detail-row">
         <dt>الوحدات المتاحة</dt>
         <dd :class="{ 'value-null': isNull(availableUnits) }">{{ displayValue(availableUnits) }}</dd>
       </div>
     </dl>
+    <div v-if="!isManager && montageRejectionComment" class="card-manager-note">
+      <p class="manager-note-label">ملاحظة المدير (الرفض)</p>
+      <p class="manager-note-text">{{ montageRejectionComment }}</p>
+    </div>
     <div class="card-actions">
       <!-- Editor: See More + Add Links -->
       <template v-if="!isManager">
@@ -55,7 +59,17 @@
             رفض
           </button>
         </template>
-        <span v-else-if="hasLinks && montageFinal" class="done-label">{{ finalDecisionLabel }}</span>
+        <div v-else-if="hasLinks && montageFinal" class="done-block">
+          <span class="done-label">{{ finalDecisionLabel }}</span>
+          <button
+            v-if="compactLinks"
+            type="button"
+            class="btn-card btn-see-more"
+            @click="$emit('see-more', project)"
+          >
+            عرض المزيد
+          </button>
+        </div>
         <div v-else class="manager-pending-block">
           <span class="pending-label">قيد المراجعة</span>
           <button type="button" class="btn-card btn-add-links" @click="$emit('add-links', project)">
@@ -80,6 +94,8 @@ const props = defineProps({
   isManager: { type: Boolean, default: false },
   /** Optional: when true, manager sees accept/reject; when false, manager sees "قيد المراجعة". If not passed, derived from project montage fields. */
   hasLinks: { type: Boolean, default: null },
+  /** After-montage tab: shorten links on card; use "عرض المزيد" for full text + rejection in modal */
+  compactLinks: { type: Boolean, default: false },
 });
 
 defineEmits(['add-links', 'see-more', 'approve', 'reject']);
@@ -124,10 +140,51 @@ const hasLinks = computed(() => {
   if (props.hasLinks === true || props.hasLinks === false) return props.hasLinks;
   const p = props.project;
   const photo = p?.photography_department;
-  const image = photo?.image_url ?? p?.montage_image_url ?? p?.image_url ?? p?.montage_image_link;
-  const video = photo?.video_url ?? p?.montage_video_url ?? p?.video_url ?? p?.montage_video_link;
-  const desc = photo?.description ?? p?.montage_description ?? p?.description;
+  const mont = p?.montage_department;
+  const image =
+    photo?.image_url ??
+    mont?.image_url ??
+    p?.montage_image_url ??
+    p?.image_url ??
+    p?.montage_image_link;
+  const video =
+    photo?.video_url ??
+    mont?.video_url ??
+    p?.montage_video_url ??
+    p?.video_url ??
+    p?.montage_video_link;
+  const desc = photo?.description ?? mont?.description ?? p?.montage_description ?? p?.description;
   return !!(image && String(image).trim()) || !!(video && String(video).trim()) || !!(desc && String(desc).trim());
+});
+
+/** Rejection comment from manager — visible to all editors */
+function isRejectedState(p) {
+  if (!p) return false;
+  const s = String(p.montage_status ?? p.approval_status ?? '').toLowerCase();
+  const md = p.montage_department;
+  const ap = md?.approved;
+  const stRaw = md?.status != null ? String(md.status) : '';
+  const slo = stRaw.toLowerCase();
+  return (
+    s === 'rejected' ||
+    s === 'refused' ||
+    ap === '0' ||
+    ap === 0 ||
+    ap === false ||
+    stRaw.includes('مرفوض') ||
+    stRaw.includes('رفض') ||
+    slo.includes('reject') ||
+    slo.includes('refus')
+  );
+}
+
+const montageRejectionComment = computed(() => {
+  if (props.isManager) return '';
+  const p = props.project;
+  if (!isRejectedState(p)) return '';
+  const md = p.montage_department;
+  const text = md?.comment ?? md?.rejection_reason ?? p.montage_rejection_reason;
+  return text && String(text).trim() ? String(text).trim() : '';
 });
 
 /** After manager accepts/rejects, hide accept/reject buttons */
@@ -138,9 +195,28 @@ const montageFinal = computed(() =>
 /** نص أسفل البطاقة بعد القرار: قبول أو رفض */
 const finalDecisionLabel = computed(() => {
   const p = props.project;
-  const s = String(p.montage_status ?? p.approval_status ?? '').toLowerCase();
-  if (s === 'rejected' || s === 'refused' || props.statusLabel === 'مرفوض') return 'تم الرفض';
+  if (isRejectedState(p) || props.statusLabel === 'مرفوض') return 'تم الرفض';
   return 'تم القبول';
+});
+
+const LINK_COMPACT = 44;
+function truncateUrlLocal(url, max = LINK_COMPACT) {
+  if (url == null || url === '') return '';
+  const s = String(url);
+  return s.length <= max ? s : `${s.slice(0, max)}…`;
+}
+
+function linkLabel(url) {
+  if (isNull(url)) return displayValue(url);
+  return props.compactLinks ? truncateUrlLocal(url) : String(url);
+}
+
+const descriptionLabel = computed(() => {
+  const v = description.value;
+  if (isNull(v)) return displayValue(v);
+  const s = String(v);
+  if (!props.compactLinks || s.length <= 80) return s;
+  return `${s.slice(0, 80)}…`;
 });
 
 function isNull(v) {
@@ -235,6 +311,17 @@ function displayValue(v) {
   text-align: center;
   width: 100%;
 }
+.done-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  align-items: stretch;
+}
+.done-block .btn-see-more {
+  flex: none;
+  width: 100%;
+}
 .manager-pending-block {
   display: flex;
   flex-direction: column;
@@ -285,5 +372,25 @@ function displayValue(v) {
   background: #f1f5f9;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
+}
+.card-manager-note {
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+.manager-note-label {
+  margin: 0 0 0.35rem 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #991b1b;
+}
+.manager-note-text {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #1e293b;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 </style>
