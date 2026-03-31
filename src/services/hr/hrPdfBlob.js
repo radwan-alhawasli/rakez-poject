@@ -1,3 +1,6 @@
+/**
+ * @param {any} response
+ */
 export async function ensurePdfBlob(response) {
   const status = response?.status ?? 0;
   if (status < 200 || status >= 300) {

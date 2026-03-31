@@ -2,6 +2,7 @@ import apiClient from '@/api/apiClient';
 import logger from '@/utils/logger';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
+import { getCaughtMessage, getCaughtStatus } from '@/utils/caughtError';
 import { creditNotificationsApi } from '@/services/credit/creditNotificationsApi.js';
 
 /**
@@ -10,6 +11,9 @@ import { creditNotificationsApi } from '@/services/credit/creditNotificationsApi
  */
 
 /** Throw if bookingId is missing/invalid so we never call the API with undefined. */
+/**
+ * @param {any} bookingId
+ */
 function requireBookingId(bookingId) {
   if (bookingId === undefined || bookingId === null || String(bookingId).trim() === '') {
     const err = new Error('معرف الحجز غير صالح');
@@ -23,7 +27,7 @@ const creditService = {
   /**
    * Get credit department dashboard
    * GET /credit/dashboard
-   * @param {Object} params - Query parameters
+   * @param {any} params - Query parameters
    * @returns {Promise<Object>} Dashboard data
    */
   async getDashboard(params = {}) {
@@ -79,8 +83,8 @@ const creditService = {
   /**
    * Get confirmed bookings
    * GET /credit/bookings/confirmed
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} List of confirmed bookings
+   * @param {any} params - Query parameters
+   * @returns {Promise<{ items: unknown[]; total: number }>}
    */
   async getConfirmedBookings(params = {}) {
     try {
@@ -100,6 +104,7 @@ const creditService = {
   /**
    * Get confirmed booking details (uses same endpoint as getBookingById; backend has no separate confirmed/:id)
    * GET /credit/bookings/:id
+    * @param {any} bookingId
    */
   async getConfirmedBookingById(bookingId) {
     return this.getBookingById(bookingId);
@@ -108,6 +113,7 @@ const creditService = {
   /**
    * Show booking details (project, unit, client, financial, marketing, financing_tracker, title_transfer, claim_file)
    * GET /credit/bookings/:id or GET /credit/bookings/show/:id – backend includes data.id in response
+    * @param {any} bookingId
    */
   async getBookingById(bookingId) {
     requireBookingId(bookingId);
@@ -123,7 +129,8 @@ const creditService = {
   /**
    * Cancel booking (e.g. bank rejected or client withdrew)
    * POST /credit/bookings/:booking_id/cancel
-   * @param {Object} data - { cancellation_reason }
+   * @param {any} data - { cancellation_reason }
+    * @param {any} bookingId
    */
   async cancelBooking(bookingId, data = {}) {
     requireBookingId(bookingId);
@@ -141,8 +148,8 @@ const creditService = {
   /**
    * Get bookings under negotiation
    * GET /credit/bookings/negotiation
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} List of bookings under negotiation
+   * @param {any} params - Query parameters
+   * @returns {Promise<{ items: unknown[]; total: number }>}
    */
   async getNegotiationBookings(params = {}) {
     try {
@@ -163,7 +170,7 @@ const creditService = {
    * Update negotiation status
    * PATCH /credit/bookings/negotiation/:booking_id
    * @param {number|string} bookingId - Booking ID (from List Negotiation Bookings)
-   * @param {Object} data - Update data (optional body per Postman)
+   * @param {any} data - Update data (optional body per Postman)
    * @returns {Promise<Object>} Updated booking
    */
   async updateNegotiation(bookingId, data = {}) {
@@ -182,8 +189,8 @@ const creditService = {
   /**
    * Get waiting bookings
    * GET /credit/bookings/waiting
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} List of waiting bookings
+   * @param {any} params - Query parameters
+   * @returns {Promise<{ items: unknown[]; total: number }>}
    */
   async getWaitingBookings(params = {}) {
     try {
@@ -242,7 +249,7 @@ const creditService = {
    * POST /credit/bookings/waiting/:booking_id/process
    * Note: Not in official Postman collection (04 - Bookings - Negotiation & Waiting). Backend may implement separately.
    * @param {number|string} bookingId - Booking ID
-   * @param {Object} data - Process data (action, notes, etc.)
+   * @param {any} data - Process data (action, notes, etc.)
    * @returns {Promise<Object>} Processed booking
    */
   async processWaitingBooking(bookingId, data) {
@@ -263,6 +270,7 @@ const creditService = {
    * POST /credit/bookings/:booking_id/financing/advance
    * If no tracker: initializes (201). If tracker exists: completes current stage (200).
    * Body optional (stage 1: bank_name, client_salary, employment_type; stage 4: appraiser_name).
+    * @param {any} bookingId
    */
   async advanceFinancing(bookingId, data = {}) {
     requireBookingId(bookingId);
@@ -281,6 +289,7 @@ const creditService = {
   /**
    * Initialize financing tracker for a confirmed bank-financing booking
    * POST /credit/bookings/:booking_id/financing
+    * @param {any} bookingId
    */
   async initializeFinancingTracker(bookingId) {
     requireBookingId(bookingId);
@@ -297,6 +306,7 @@ const creditService = {
    * Get financing status for a booking (Tab 3.2.2). Booking-centric: no tracker IDs in URL or response.
    * GET /credit/bookings/:booking_id/financing
    * Response: data with financing, progress_summary, current_stage, booking_id when started; data = null when not started.
+    * @param {any} bookingId
    */
   async getFinancingTracker(bookingId) {
     requireBookingId(bookingId);
@@ -312,6 +322,8 @@ const creditService = {
    * Complete a financing stage (1–5). Booking-centric: no tracker_id.
    * PATCH /credit/bookings/:booking_id/financing/stage/:stage_number
    * للمرحلة 1: bank_name مطلوب؛ وإلا يرجع الـ API 422 مع errors.bank_name.
+    * @param {any} bookingId
+    * @param {any} stageNumber
    */
   async completeFinancingStage(bookingId, stageNumber, data = {}) {
     requireBookingId(bookingId);
@@ -331,12 +343,14 @@ const creditService = {
    * Reject financing (sets reservation credit_status to rejected). Booking-centric: no tracker_id.
    * POST /credit/bookings/:booking_id/financing/reject
    * Body: reason (مطلوب).
+    * @param {any} bookingId
    */
   async rejectFinancing(bookingId, data = {}) {
     requireBookingId(bookingId);
     try {
+      const dataAny = /** @type {any} */ (data);
       const body =
-        typeof data === 'string' ? { reason: data } : { reason: data?.reason ?? 'رفض التمويل' };
+        typeof data === 'string' ? { reason: data } : { reason: dataAny?.reason ?? 'رفض التمويل' };
       const response = await apiClient.post(`/credit/bookings/${bookingId}/financing/reject`, body);
       return response.data?.data ?? response.data ?? {};
     } catch (error) {
@@ -361,6 +375,9 @@ const creditService = {
     }
   },
 
+  /**
+   * @param {any} financingId
+   */
   async getFinancingById(financingId) {
     try {
       const response = await apiClient.get(`/credit/financing/${financingId}`);
@@ -371,6 +388,10 @@ const creditService = {
     }
   },
 
+  /**
+   * @param {any} financingId
+   * @param {any} data
+   */
   async updateFinancing(financingId, data) {
     try {
       const response = await apiClient.put(`/credit/financing/${financingId}`, data);
@@ -386,6 +407,7 @@ const creditService = {
   /**
    * Initialize title transfer for a booking (after financing completed or cash)
    * POST /credit/bookings/:booking_id/title-transfer
+    * @param {any} bookingId
    */
   async initializeTitleTransfer(bookingId) {
     requireBookingId(bookingId);
@@ -401,7 +423,8 @@ const creditService = {
   /**
    * Schedule title transfer (موعد الإفراغ)
    * PATCH /credit/title-transfer/:transfer_id/schedule
-   * @param {Object} data - { scheduled_date (YYYY-MM-DD), notes }
+   * @param {any} data - { scheduled_date (YYYY-MM-DD), notes }
+    * @param {any} transferId
    */
   async scheduleTitleTransfer(transferId, data = {}) {
     try {
@@ -417,6 +440,7 @@ const creditService = {
    * Unschedule title transfer (إلغاء موعد الافراغ)
    * PATCH /credit/title-transfer/:transfer_id/unschedule
    * Clears scheduled evacuation date. Only when transfer status is scheduled.
+    * @param {any} transferId
    */
   async unscheduleTitleTransfer(transferId) {
     try {
@@ -431,6 +455,7 @@ const creditService = {
   /**
    * Complete title transfer (تم الإفراغ) – moves to sold
    * POST /credit/title-transfer/:transfer_id/complete
+    * @param {any} transferId
    */
   async completeTitleTransfer(transferId, data = {}) {
     try {
@@ -475,12 +500,13 @@ const creditService = {
    * Initialize title transfer for a booking (backend has no generic POST /credit/title-transfer).
    * Accepts (bookingId) or (data) where data.booking_id is the booking ID (for backward compatibility).
    * @param {number|string|Object} bookingIdOrData - Booking ID, or object with booking_id
-   * @param {Object} [_optionalData] - Optional; kept for backward compatibility, not used
+   * @param {any} [_optionalData] - Optional; kept for backward compatibility, not used
    */
   async createTitleTransfer(bookingIdOrData, _optionalData = {}) {
+    const asObj = /** @type {any} */ (bookingIdOrData);
     const bookingId =
       typeof bookingIdOrData === 'object' && bookingIdOrData !== null
-        ? bookingIdOrData.booking_id ?? bookingIdOrData.bookingId
+        ? asObj.booking_id ?? asObj.bookingId
         : bookingIdOrData;
     if (bookingId === undefined || bookingId === null) {
       const err = new Error('معرف الحجز مطلوب لإنشاء طلب نقل الملكية');
@@ -496,6 +522,7 @@ const creditService = {
    * Get payment plan for a booking (on-map projects)
    * GET /credit/bookings/:booking_id/payment-plan
    * Permission: credit.payment_plan.manage
+    * @param {any} bookingId
    */
   async getPaymentPlan(bookingId) {
     requireBookingId(bookingId);
@@ -511,6 +538,7 @@ const creditService = {
    * Create payment plan for a booking
    * POST /credit/bookings/:booking_id/payment-plan
    * Body: installments[] with due_date (>= today), amount (required), description (optional)
+    * @param {any} bookingId
    */
   async createPaymentPlan(bookingId, data = {}) {
     requireBookingId(bookingId);
@@ -527,6 +555,7 @@ const creditService = {
    * Update a payment installment
    * PUT /credit/payment-installments/:installment_id
    * Body: due_date, amount, description, status (pending|paid|overdue)
+    * @param {any} installmentId
    */
   async updateInstallment(installmentId, data = {}) {
     try {
@@ -541,6 +570,7 @@ const creditService = {
   /**
    * Delete a payment installment
    * DELETE /credit/payment-installments/:installment_id
+    * @param {any} installmentId
    */
   async deleteInstallment(installmentId) {
     try {
@@ -557,8 +587,8 @@ const creditService = {
   /**
    * Get sold projects requiring credit processing
    * GET /credit/sold-projects
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} List of sold projects
+   * @param {any} params - Query parameters
+   * @returns {Promise<{ items: unknown[]; total: number }>}
    */
   async getSoldProjects(params = {}) {
     try {
@@ -583,9 +613,12 @@ const creditService = {
       const { items } = await this.getSoldProjects({ per_page: 500 });
       const found =
         Array.isArray(items) &&
-        items.find(
-          p => String(p.id) === String(projectId) || String(p.contract_id) === String(projectId)
-        );
+        items.find(p => {
+          const row = /** @type {Record<string, unknown>} */ (p);
+          return (
+            String(row.id) === String(projectId) || String(row.contract_id) === String(projectId)
+          );
+        });
       return found || {};
     } catch (error) {
       logger.error(`Error fetching sold project ${projectId}:`, error);
@@ -621,11 +654,11 @@ const creditService = {
       const { items, total } = extractPaginatedData(response, []);
       return { items, total };
     } catch (error) {
-      const status = error?.response?.status;
+      const status = getCaughtStatus(error);
       if (status === 403) {
         logger.debug(
           'Claim file candidates - Forbidden (accounting/credit permission):',
-          error?.response?.data?.message || error?.message
+          getCaughtMessage(error)
         );
         return { items: [], total: 0, forbidden: true };
       }
@@ -641,6 +674,7 @@ const creditService = {
   /**
    * Generate individual claim file for a sold booking (no body required).
    * POST /credit/bookings/:id/claim-file
+    * @param {any} bookingId
    */
   async generateClaimFileForBooking(bookingId) {
     requireBookingId(bookingId);
@@ -656,7 +690,7 @@ const creditService = {
   /**
    * Generate individual claim files for multiple bookings at once.
    * POST /credit/claim-files/generate-bulk
-   * @param {Object} data - { reservation_ids: number[] }
+   * @param {any} data - { reservation_ids: number[] }
    * @returns {Promise<Object>} { created: { "123": 1, ... }, errors: { "125": "..." } }
    */
   async generateBulkClaimFiles(data) {
@@ -672,7 +706,7 @@ const creditService = {
   /**
    * Create a combined claim file merging multiple sold bookings into one record.
    * POST /credit/claim-files/combined
-   * @param {Object} data - { booking_ids: number[] (min 2), claim_type: 'commission', notes?: string }
+   * @param {any} data - { booking_ids: number[] (min 2), claim_type: 'commission', notes?: string }
    * @returns {Promise<Object>} Combined claim file with items array
    */
   async createCombinedClaimFile(data) {
@@ -688,6 +722,7 @@ const creditService = {
   /**
    * Get claim file details by ID (combined or individual).
    * GET /credit/claim-files/:id
+    * @param {any} claimFileId
    */
   async getClaimFileById(claimFileId) {
     try {
@@ -702,6 +737,7 @@ const creditService = {
   /**
    * Generate PDF for a claim file.
    * POST /credit/claim-files/:id/pdf
+    * @param {any} claimFileId
    */
   async generateClaimFilePdf(claimFileId) {
     try {
@@ -716,12 +752,16 @@ const creditService = {
   /**
    * Get claim file PDF download URL.
    * GET /credit/claim-files/:id/pdf (returns file stream)
+    * @param {any} claimFileId
    */
   getClaimFilePdfDownloadUrl(claimFileId) {
     const baseURL = apiClient.defaults?.baseURL ?? '';
     return `${baseURL}/credit/claim-files/${claimFileId}/pdf`;
   },
 
+  /**
+   * @param {any} data
+   */
   async createClaimFile(data) {
     try {
       const response = await apiClient.post('/credit/claim-files', data);
@@ -732,6 +772,9 @@ const creditService = {
     }
   },
 
+  /**
+   * @param {any} claimId
+   */
   async submitClaim(claimId) {
     try {
       const response = await apiClient.post(`/credit/claim-files/${claimId}/submit`);
@@ -742,6 +785,10 @@ const creditService = {
     }
   },
 
+  /**
+   * @param {any} claimId
+   * @param {any} data
+   */
   async approveClaim(claimId, data) {
     try {
       const response = await apiClient.post(`/credit/claim-files/${claimId}/approve`, data);

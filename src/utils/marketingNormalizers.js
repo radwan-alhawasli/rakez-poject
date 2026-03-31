@@ -1,11 +1,19 @@
+/**
+ * @param {any} value
+ */
 const toNumber = (value, fallback = 0) => {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
 };
 
+/**
+ * @param {any} value
+ */
 const toArray = value => (Array.isArray(value) ? value : []);
 
-export const normalizeMarketingDashboard = (raw = {}) => {
+/** @param {any} [raw] */
+export const normalizeMarketingDashboard = raw => {
+  raw = raw ?? {};
   return {
     total_leads: toNumber(raw.total_leads),
     available_units_value: toNumber(raw.available_units_value),
@@ -19,7 +27,9 @@ export const normalizeMarketingDashboard = (raw = {}) => {
   };
 };
 
-export const normalizeProjectDetails = (raw = {}) => {
+/** @param {any} [raw] */
+export const normalizeProjectDetails = raw => {
+  raw = raw ?? {};
   const units = toArray(raw.units);
   const availableUnits = units.filter(u => {
     const s = String(u.status || '').toLowerCase();
@@ -72,7 +82,9 @@ export const normalizeProjectDetails = (raw = {}) => {
   };
 };
 
-export const normalizeExpectedSale = (raw = {}) => {
+/** @param {any} [raw] */
+export const normalizeExpectedSale = raw => {
+  raw = raw ?? {};
   const direct = toNumber(
     raw.direct_communications ??
       raw.direct_contacts ??
@@ -113,8 +125,12 @@ export const normalizeExpectedSale = (raw = {}) => {
   };
 };
 
-export const normalizeListResponse = (items = []) => toArray(items);
+/** @param {any} [items] */
+export const normalizeListResponse = items => toArray(items ?? []);
 
+/**
+ * @param {any} value
+ */
 const toDisplayValue = value => {
   if (value === null || value === undefined || value === '') return '-';
   if (typeof value === 'number') return Number.isFinite(value) ? String(value) : '-';
@@ -124,6 +140,9 @@ const toDisplayValue = value => {
   return String(value);
 };
 
+/**
+ * @param {any} value
+ */
 export const normalizeReportRows = (value, reportName = '') => {
   if (Array.isArray(value)) {
     return value.map((row, index) => ({

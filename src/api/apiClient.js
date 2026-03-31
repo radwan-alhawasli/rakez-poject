@@ -7,6 +7,15 @@
  * @module api/apiClient
  * @typedef {import('axios').AxiosInstance} ApiClient
  * @typedef {{ status?: number; data?: unknown }} ApiErrorResponse
+ * @typedef {Error & {
+ *   status: number | null;
+ *   data?: unknown;
+ *   response?: { status: number | null; data?: unknown };
+ *   url: string;
+ *   method?: string;
+ *   code?: string | undefined;
+ *   isAuthRedirect?: boolean;
+ * }} NormalizedApiError
  */
 
 import axios from 'axios';
@@ -134,7 +143,8 @@ apiClient.interceptors.response.use(
     }
 
     // Create a proper Error instance instead of rejecting with a plain object
-    const apiError = new Error(message);
+    /** @type {NormalizedApiError} */
+    const apiError = /** @type {NormalizedApiError} */ (new Error(message));
     apiError.name = 'APIError';
     apiError.status = status;
     apiError.data = error.response?.data;

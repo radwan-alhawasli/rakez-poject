@@ -1,0 +1,58 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e5]:
+    - banner:
+      - banner [ref=e6]:
+        - generic [ref=e7]:
+          - button [ref=e8] [cursor=pointer]:
+            - img [ref=e9]
+          - button [ref=e12] [cursor=pointer]:
+            - img [ref=e13]
+        - generic [ref=e17]:
+          - generic [ref=e18]: راكز العقارية
+          - generic [ref=e19]: "|"
+          - generic [ref=e20]: Rakez Real Estate
+    - complementary [ref=e21]:
+      - img "شعار راكز" [ref=e23]
+      - generic [ref=e27]:
+        - link [ref=e28] [cursor=pointer]:
+          - /url: /chat
+          - img [ref=e30]
+        - link [ref=e32] [cursor=pointer]:
+          - /url: /notifications
+          - img [ref=e35]
+        - link [ref=e38] [cursor=pointer]:
+          - /url: /my-requests
+          - img [ref=e40]
+        - link [ref=e43] [cursor=pointer]:
+          - /url: /exclusive-request
+          - img [ref=e45]
+        - link [ref=e48] [cursor=pointer]:
+          - /url: /ai-assistant
+          - img [ref=e50]
+        - link [ref=e52] [cursor=pointer]:
+          - /url: /profile
+          - img [ref=e54]
+      - generic [ref=e57]:
+        - generic [ref=e60]: S
+        - button [ref=e61] [cursor=pointer]:
+          - img [ref=e63]
+    - main [ref=e67]:
+      - generic [ref=e68]:
+        - generic [ref=e69]:
+          - heading "حجوزاتي" [level=1] [ref=e70]
+          - paragraph [ref=e71]: عرض جميع الوحدات التي قمت بحجزها وتتبع حالتها.
+        - generic [ref=e72]:
+          - button "حجوزات" [ref=e73] [cursor=pointer]
+          - button "حجوزات ملغاة" [ref=e74] [cursor=pointer]
+          - button "انتظار" [ref=e75] [cursor=pointer]
+          - button "تفاوضات" [ref=e76] [cursor=pointer]
+        - generic [ref=e77]:
+          - img [ref=e78]
+          - paragraph [ref=e80]: لا توجد حجوزات في هذا القسم
+    - contentinfo [ref=e81]:
+      - paragraph [ref=e82]: جميع الحقوق محفوظة © شركة راكز العقارية 2025
+  - img [ref=e83]
+```

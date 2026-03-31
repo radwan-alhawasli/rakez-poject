@@ -23,7 +23,7 @@ export const getDashboardMetrics = async () => {
 
 /**
  * Get all employees (api: GET /hr/list_employees)
- * @param {Object} params - Query parameters including search term
+ * @param {any} params - Query parameters including search term
  */
 export const getEmployees = async (params = {}) => {
   try {
@@ -37,6 +37,7 @@ export const getEmployees = async (params = {}) => {
 
 /**
  * Get employee by ID (api: GET /hr/show_employee/:id)
+  * @param {any} employeeId
  */
 export const getEmployeeById = async employeeId => {
   try {
@@ -50,7 +51,7 @@ export const getEmployeeById = async employeeId => {
 
 /**
  * Create new employee (api: POST /hr/add_employee)
- * @param {Object} employeeData - Employee info (name, email, type, password, etc.)
+ * @param {any} employeeData - Employee info (name, email, type, password, etc.)
  */
 export const createEmployee = async employeeData => {
   try {
@@ -64,6 +65,8 @@ export const createEmployee = async employeeData => {
 
 /**
  * Update employee (api: PUT /hr/update_employee/:id)
+  * @param {any} employeeId
+  * @param {any} employeeData
  */
 export const updateEmployee = async (employeeId, employeeData) => {
   try {
@@ -77,6 +80,7 @@ export const updateEmployee = async (employeeId, employeeData) => {
 
 /**
  * Delete employee (api: DELETE /hr/delete_employee/:id)
+  * @param {any} employeeId
  */
 export const deleteEmployee = async employeeId => {
   try {

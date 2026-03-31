@@ -4,18 +4,28 @@ import authService from '@/services/authService';
 import { createPusher } from '@/plugins/pusher';
 import logger from '@/utils/logger';
 import { ROLE_ADMIN, ROLE_ACCOUNTING, ROLE_CREDIT } from '@/constants/roles';
+import { getCaughtMessage } from '@/utils/caughtError';
 
+/** @type {import('vue').Ref<Array<Record<string, unknown>>>} */
 const notifications = ref([]);
 const unreadCount = ref(0);
+/** @type {any} */
 let pusher = null;
+/** @type {any[]} */
 let channels = [];
 
+/**
+ * @param {any} error
+ */
 const isNotFoundError = error => {
   const status = error?.status || error?.response?.status;
   const message = String(error?.message || '').toLowerCase();
   return status === 404 || message.includes('could not be found');
 };
 
+/**
+ * @param {any} response
+ */
 const normalizeNotifications = response => {
   const data = response?.data?.data ?? response?.data?.notifications ?? response?.data ?? [];
   if (Array.isArray(data)) return data;
@@ -45,13 +55,16 @@ const notificationService = {
 
     // 2. Setup Pusher only when key is configured (avoids ws://... failed when Reverb not running or wrong port)
     if (!pusher) {
-      pusher = createPusher(token);
+      pusher = createPusher(token ?? '');
     }
     if (!pusher) return;
 
     // Subscribe to Public
     const publicChannel = pusher.subscribe('public-notifications');
-    publicChannel.bind('public.notification', data => {
+    /**
+     * @param {any} data
+     */
+    publicChannel.bind('public.notification', /** @param {any} data */ data => {
       this.addReceivedNotification(data, 'public');
     });
     channels.push(publicChannel);
@@ -59,7 +72,10 @@ const notificationService = {
     // Subscribe to User Private
     if (user && user.id) {
       const userChannel = pusher.subscribe(`private-user-notifications.${user.id}`);
-      userChannel.bind('user.notification', data => {
+      /**
+       * @param {any} data
+       */
+      userChannel.bind('user.notification', /** @param {any} data */ data => {
         this.addReceivedNotification(data, 'private');
       });
       channels.push(userChannel);
@@ -68,7 +84,10 @@ const notificationService = {
     // Subscribe to Admin Private
     if (user && user.type === ROLE_ADMIN) {
       const adminChannel = pusher.subscribe('private-admin-notifications');
-      adminChannel.bind('admin.notification', data => {
+      /**
+       * @param {any} data
+       */
+      adminChannel.bind('admin.notification', /** @param {any} data */ data => {
         this.addReceivedNotification(data, 'admin');
       });
       channels.push(adminChannel);
@@ -89,13 +108,16 @@ const notificationService = {
         String(user.type) === String(ROLE_ACCOUNTING) ||
         String(user.role || '').toLowerCase() === 'accounting');
 
+    /**
+     * @param {any} path
+     */
     const fetchSafe = async path => {
       try {
         const response = await apiClient.get(path);
         return normalizeNotifications(response);
       } catch (error) {
         if (!isNotFoundError(error)) {
-          logger.warn(`Notifications endpoint failed: ${path}`, error?.message || error);
+          logger.warn(`Notifications endpoint failed: ${path}`, getCaughtMessage(error));
         }
         return [];
       }
@@ -120,7 +142,11 @@ const notificationService = {
       }));
 
       // Sort by date newest first
-      notifications.value = all.sort((a, b) => new Date(b.time) - new Date(a.time));
+      notifications.value = all.sort((a, b) => {
+        const tb = new Date(String(b.time ?? '')).getTime();
+        const ta = new Date(String(a.time ?? '')).getTime();
+        return tb - ta;
+      });
       this.updateUnreadCount();
     } catch (error) {
       logger.error('Error fetching notifications:', error);
@@ -177,7 +203,7 @@ const notificationService = {
    * Get notifications for a specific user (Admin only)
    * GET /admin/notifications/user/:userId
    * @param {number|string} userId - User ID
-   * @returns {Promise<Array>} List of user notifications
+   * @returns {Promise<unknown[]>} List of user notifications
    */
   async getUserNotifications(userId) {
     try {
@@ -192,7 +218,7 @@ const notificationService = {
   /**
    * Get all public notifications (Admin only)
    * GET /admin/notifications/public
-   * @returns {Promise<Array>} List of public notifications
+   * @returns {Promise<unknown[]>} List of public notifications
    */
   async getAdminPublicNotifications() {
     try {
@@ -208,7 +234,7 @@ const notificationService = {
    * Add a local notification (for success/error toasts from UI actions)
    * @param {string} message - Notification message
    * @param {string} [type='info'] - Type: 'success', 'info', 'warning', 'error'
-   * @param {Object} [options={}] - Optional extra options (reserved for future use)
+   * @param {any} [options={}] - Optional extra options (reserved for future use)
    */
   addNotification(message, type = 'info', options = {}) {
     const newNotif = {
@@ -226,7 +252,7 @@ const notificationService = {
 
   /**
    * Handle incoming WebSocket notification
-   * @param {Object} data - Notification data from Pusher
+   * @param {any} data - Notification data from Pusher
    * @param {string} source - Notification source ('public', 'private', 'admin')
    */
   addReceivedNotification(data, source) {
@@ -356,8 +382,8 @@ const notificationService = {
   /**
    * Get my notifications
    * GET /notifications
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} List of notifications
+   * @param {any} params - Query parameters
+   * @returns {Promise<unknown[]>} List of notifications
    */
   async getMyNotifications(params = {}) {
     try {
@@ -424,8 +450,8 @@ const notificationService = {
   /**
    * Get public notifications
    * GET /notifications/public
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} List of public notifications
+   * @param {any} params - Query parameters
+   * @returns {Promise<unknown[]>} List of public notifications
    */
   async getPublicNotifications(params = {}) {
     try {
@@ -441,7 +467,7 @@ const notificationService = {
   /**
    * Send notification to role (Admin only).
    * Backend may not implement POST /admin/notifications/send-to-role; 404 throws with code NOT_AVAILABLE.
-   * @param {Object} data - Notification data (role, message, etc.)
+   * @param {any} data - Notification data (role, message, etc.)
    * @returns {Promise<Object>} Response
    */
   async sendToRole(data) {

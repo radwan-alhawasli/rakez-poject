@@ -1,0 +1,145 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e5]:
+    - banner:
+      - banner [ref=e6]:
+        - generic [ref=e7]:
+          - button [ref=e8] [cursor=pointer]:
+            - img [ref=e9]
+          - button [ref=e12] [cursor=pointer]:
+            - img [ref=e13]
+        - generic [ref=e17]:
+          - generic [ref=e18]: راكز العقارية
+          - generic [ref=e19]: "|"
+          - generic [ref=e20]: Rakez Real Estate
+    - complementary [ref=e21]:
+      - img "شعار راكز" [ref=e23]
+      - generic [ref=e27]:
+        - link [ref=e28] [cursor=pointer]:
+          - /url: /sales/dashboard
+          - img [ref=e30]
+        - link [ref=e35] [cursor=pointer]:
+          - /url: /chat
+          - img [ref=e37]
+        - link [ref=e39] [cursor=pointer]:
+          - /url: /notifications
+          - img [ref=e42]
+        - link [ref=e45] [cursor=pointer]:
+          - /url: /tasks
+          - img [ref=e47]
+        - link [ref=e50] [cursor=pointer]:
+          - /url: /sales/projects
+          - img [ref=e52]
+        - link [ref=e55] [cursor=pointer]:
+          - /url: /sales/unit-search
+          - img [ref=e57]
+        - link [ref=e60] [cursor=pointer]:
+          - /url: /sales/reservations
+          - img [ref=e62]
+        - link [ref=e64] [cursor=pointer]:
+          - /url: /sales/targets
+          - img [ref=e66]
+        - link [ref=e70] [cursor=pointer]:
+          - /url: /sales/team
+          - img [ref=e72]
+        - link [ref=e77] [cursor=pointer]:
+          - /url: /sales/attendance
+          - img [ref=e79]
+        - link [ref=e82] [cursor=pointer]:
+          - /url: /sales/project-schedules
+          - img [ref=e84]
+        - link [ref=e87] [cursor=pointer]:
+          - /url: /my-requests
+          - img [ref=e89]
+        - link [ref=e92] [cursor=pointer]:
+          - /url: /exclusive-request
+          - img [ref=e94]
+        - link [ref=e97] [cursor=pointer]:
+          - /url: /ai-assistant
+          - img [ref=e99]
+        - link [ref=e101] [cursor=pointer]:
+          - /url: /profile
+          - img [ref=e103]
+      - generic [ref=e106]:
+        - generic [ref=e109]: A
+        - button [ref=e110] [cursor=pointer]:
+          - img [ref=e112]
+    - main [ref=e116]:
+      - generic [ref=e117]:
+        - generic [ref=e118]:
+          - heading "أهلاً بعودتك، Accounting User!" [level=1] [ref=e119]
+          - paragraph [ref=e120]: إدارة المشاريع والموافقات.
+        - heading "المؤشرات الرئيسية" [level=3] [ref=e121]
+        - generic [ref=e122]:
+          - article "0" [ref=e123]:
+            - generic [ref=e125]:
+              - generic [ref=e126]:
+                - generic [ref=e127]: الوحدات المتاحة
+                - generic "0" [ref=e128]
+                - generic [ref=e129]: وحدة سكنية جاهزة للبيع (تقديري من العقود)
+              - img [ref=e132]
+          - article "0" [ref=e136] [cursor=pointer]:
+            - generic [ref=e138]:
+              - generic [ref=e139]:
+                - generic [ref=e140]: مشاريع التسويق (إجمالي)
+                - generic "0" [ref=e141]
+                - generic [ref=e142]: اضغط للعرض
+              - img [ref=e145]
+          - article "0" [ref=e148]:
+            - generic [ref=e150]:
+              - generic [ref=e151]:
+                - generic [ref=e152]: المشاريع الجاهزة
+                - generic "0" [ref=e153]
+                - generic [ref=e154]: مشاريع مكتملة تحتوي على وحدات
+              - img [ref=e157]
+          - article "0" [ref=e160]:
+            - generic [ref=e162]:
+              - generic [ref=e163]:
+                - generic [ref=e164]: المشاريع غير الجاهزة
+                - generic "0" [ref=e165]
+                - generic [ref=e166]: لم يكتمل المتتبع (Tracker)
+              - img [ref=e169]
+        - heading "لوحة المؤشرات" [level=3] [ref=e171]
+        - generic [ref=e172]:
+          - generic [ref=e173]:
+            - generic [ref=e175]:
+              - heading "توزيع المشاريع" [level=3] [ref=e176]
+              - paragraph [ref=e177]: جاهز للتسويق 0%
+            - paragraph [ref=e184]: لا توجد بيانات للعرض
+          - generic [ref=e185]:
+            - generic [ref=e187]:
+              - heading "تفصيل الجاهزية" [level=3] [ref=e188]
+              - paragraph [ref=e189]: عدد المشاريع حسب الحالة
+            - generic [ref=e194]:
+              - list [ref=e196]:
+                - listitem [ref=e197]:
+                  - generic [ref=e198]:
+                    - generic [ref=e199]: جاهز للتسويق
+                    - generic [ref=e200]: "0"
+                - listitem [ref=e201]:
+                  - generic [ref=e202]:
+                    - generic [ref=e203]: تحت الإعداد
+                    - generic [ref=e204]: "0"
+              - paragraph [ref=e205]: "إجمالي قيمة الوحدات (تقديري): ‏0 ر.س.‏"
+          - generic [ref=e206]:
+            - generic [ref=e208]:
+              - heading "مؤشرات سريعة" [level=3] [ref=e209]
+              - paragraph [ref=e210]: وحدات ومشاريع
+            - figure [ref=e217]:
+              - img [ref=e218]:
+                - generic [ref=e220]:
+                  - generic [ref=e224]: وحدات (تقدير)
+                  - generic [ref=e227]: جاهزة
+                - generic [ref=e229]:
+                  - generic [ref=e233]: "0"
+                  - generic [ref=e236]: "0.2"
+                  - generic [ref=e239]: "0.4"
+                  - generic [ref=e242]: "0.6"
+                  - generic [ref=e245]: "0.8"
+                  - generic [ref=e248]: "1"
+    - contentinfo [ref=e259]:
+      - paragraph [ref=e260]: جميع الحقوق محفوظة © شركة راكز العقارية 2025
+  - img [ref=e261]
+```

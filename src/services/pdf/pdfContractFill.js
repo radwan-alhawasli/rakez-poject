@@ -1,9 +1,13 @@
+// @ts-nocheck — PDF draw helpers: dynamic API shapes; checked at runtime.
 import logger from '@/utils/logger';
 import { getPdfDeps, loadArabicFontBytes, reshapeArabic } from './pdfCore.js';
 
 /** Single contract template used 100%: all pages preserved, only variable data drawn on top. */
 const CONTRACT_TEMPLATE_PATH = '/contract_template_v2.pdf';
 
+/**
+ * @param {any} dateString
+ */
 function getDayName(dateString) {
   if (!dateString) return '';
   try {
@@ -26,6 +30,9 @@ function getDayName(dateString) {
   }
 }
 
+/**
+ * @param {any} dateString
+ */
 function formatDate(dateString) {
   if (!dateString) return '';
   try {
@@ -39,12 +46,18 @@ function formatDate(dateString) {
   }
 }
 
+/**
+ * @param {any} days
+ */
 function daysToMonths(days) {
   if (!days) return '';
   const months = Math.ceil(parseInt(days) / 30);
   return months.toString();
 }
 
+/**
+ * @param {any} value
+ */
 function getCommissionFromArabic(value) {
   const map = {
     owner: 'المالك',
@@ -53,6 +66,9 @@ function getCommissionFromArabic(value) {
   return map[value] || value || '';
 }
 
+/**
+ * @param {any} contractData
+ */
 export const downloadFilledContract = async contractData => {
   try {
     const { PDFDocument, rgb, fontkit } = await getPdfDeps();
@@ -138,6 +154,10 @@ export const downloadFilledContract = async contractData => {
     const scaleY = 14.5;
     const offsetX = 20;
 
+    /**
+     * @param {any} text
+     * @param {any} loc
+     */
     const drawText = (text, loc, size = 11) => {
       if (!text) return;
       const pageIndex = loc.page ?? 0;

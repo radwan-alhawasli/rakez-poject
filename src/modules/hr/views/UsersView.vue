@@ -5,9 +5,9 @@
 </template>
 
 <script setup>
-import UserManagement from '@/components/UserManagement.vue';
+import { defineAsyncComponent } from 'vue';
 
-
+const UserManagement = defineAsyncComponent(() => import('@/components/UserManagement.vue'));
 </script>
 
 <style scoped>

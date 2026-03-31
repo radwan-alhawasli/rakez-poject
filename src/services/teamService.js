@@ -19,7 +19,7 @@ import { extractPaginatedData } from '@/utils/paginationUtils';
 /**
  * Get project management dashboard
  * GET /project_management/dashboard
- * @param {Object} params - Query parameters (date ranges, filters)
+ * @param {any} params - Query parameters (date ranges, filters)
  * @returns {Promise<Object>} Dashboard data with KPIs and statistics
  */
 export const getProjectManagementDashboard = async (params = {}) => {
@@ -34,7 +34,7 @@ export const getProjectManagementDashboard = async (params = {}) => {
 /**
  * Get units statistics
  * GET /project_management/dashboard/units-statistics
- * @param {Object} params - Query parameters (date ranges, filters)
+ * @param {any} params - Query parameters (date ranges, filters)
  * @returns {Promise<Object>} Units statistics data
  */
 export const getUnitsStatistics = async (params = {}) => {
@@ -52,7 +52,7 @@ export const getUnitsStatistics = async (params = {}) => {
  * Get all teams (Project Management module) – used for dropdown / list of teams to assign
  * GET {{base_url}}/project_management/teams/index
  * @param {string|Object} searchOrParams - Search string or params object { search, page, per_page }
- * @returns {Promise<Array>} List of teams
+ * @returns {Promise<unknown[]>} List of teams
  */
 export const getTeams = async (searchOrParams = '') => {
   try {
@@ -80,7 +80,7 @@ export const getTeams = async (searchOrParams = '') => {
 /**
  * Create a new team
  * POST /project_management/teams/store
- * @param {Object} teamData - Team data (name, description, etc.)
+ * @param {any} teamData - Team data (name, description, etc.)
  * @returns {Promise<Object>} Created team
  */
 export const createTeam = async teamData => {
@@ -96,7 +96,7 @@ export const createTeam = async teamData => {
  * Update an existing team
  * PUT /project_management/teams/update/:id
  * @param {number|string} id - Team ID
- * @param {Object} teamData - Update data (name, description, etc.)
+ * @param {any} teamData - Update data (name, description, etc.)
  * @returns {Promise<Object>} Updated team
  */
 export const updateTeam = async (id, teamData) => {
@@ -111,6 +111,7 @@ export const updateTeam = async (id, teamData) => {
 /**
  * Get team details by ID
  * GET /project_management/teams/show/:id
+  * @param {any} id
  */
 export const getTeamById = async id => {
   try {
@@ -124,6 +125,7 @@ export const getTeamById = async id => {
 /**
  * Delete a team
  * DELETE /project_management/teams/delete/:id
+  * @param {any} id
  */
 export const deleteTeam = async id => {
   try {
@@ -138,8 +140,8 @@ export const deleteTeam = async id => {
  * Get contracts assigned to a specific team
  * GET /project_management/teams/contracts/:id
  * @param {number|string} id - Team ID
- * @param {Object} params - Query parameters
- * @returns {Promise<Array>} List of contracts
+ * @param {any} params - Query parameters
+ * @returns {Promise<unknown[]>} List of contracts
  */
 export const getTeamContracts = async (id, params = {}) => {
   try {
@@ -154,8 +156,8 @@ export const getTeamContracts = async (id, params = {}) => {
  * Get contract locations for a specific team
  * GET /project_management/teams/contracts/locations/:id
  * @param {number|string} id - Team ID
- * @param {Object} params - Query parameters
- * @returns {Promise<Array>} List of contract locations
+ * @param {any} params - Query parameters
+ * @returns {Promise<unknown[]>} List of contract locations
  */
 export const getTeamContractLocations = async (id, params = {}) => {
   try {
@@ -209,9 +211,12 @@ export const removeTeamsFromContract = async (contractId, teamIds) => {
  * Tries project_management first (same source as add/remove), then fallback to project_teams
  * GET /project_management/teams/index/:contractId | GET /project_teams/teams/:contractId
  * @param {number|string} contractId - Contract ID
- * @returns {Promise<Array>} List of teams assigned to contract
+ * @returns {Promise<unknown[]>} List of teams assigned to contract
  */
 export const getContractTeams = async contractId => {
+  /**
+   * @param {any} response
+   */
   const toItems = response => {
     const { items } = extractPaginatedData(response, []);
     return Array.isArray(items) ? items : [];
@@ -231,7 +236,7 @@ export const getContractTeams = async contractId => {
  * GET {{base_url}}/project_management/teams/index/:contract_id
  * يستخدم نفس تطبيع الاستجابة مثل getContractTeams (مصفوفة / ترقيم / teams)
  * @param {number|string} contractId - Project/contract ID
- * @returns {Promise<Array>} List of assigned teams (items may include project_team_id for remove)
+ * @returns {Promise<unknown[]>} List of assigned teams (items may include project_team_id for remove)
  */
 export const getProjectTeams = async contractId => getContractTeams(contractId);
 
@@ -272,7 +277,7 @@ export const removeProjectTeam = async projectTeamId => {
 /**
  * Get team contracts (api.php: GET project_management/teams/contracts/{teamId})
  * @param {number|string} teamId - Team ID
- * @param {Object} params - Query parameters
+ * @param {any} params - Query parameters
  */
 export const getTeamContractsByTeamId = async (teamId, params = {}) => {
   try {
@@ -304,7 +309,7 @@ export const getContractCount = async teamId => {
  * Get team locations
  * GET /teams/locations/:teamId
  * @param {number|string} teamId - Team ID
- * @param {Object} params - Query parameters
+ * @param {any} params - Query parameters
  */
 export const getTeamLocations = async (teamId, params = {}) => {
   try {
@@ -320,7 +325,7 @@ export const getTeamLocations = async (teamId, params = {}) => {
  * Assign location to team
  * POST /teams/locations
  * @param {number|string} teamId - Team ID
- * @param {Object} data - Location assignment data
+ * @param {any} data - Location assignment data
  */
 export const assignLocation = async (teamId, data) => {
   try {
@@ -335,7 +340,7 @@ export const assignLocation = async (teamId, data) => {
  * Get sales average for team
  * GET /teams/sales-average/:teamId
  * @param {number|string} teamId - Team ID
- * @param {Object} params - Query parameters
+ * @param {any} params - Query parameters
  */
 export const getSalesAverage = async (teamId, params = {}) => {
   try {
@@ -350,7 +355,7 @@ export const getSalesAverage = async (teamId, params = {}) => {
  * Get team performance
  * GET /teams/performance/:teamId
  * @param {number|string} teamId - Team ID
- * @param {Object} params - Query parameters
+ * @param {any} params - Query parameters
  */
 export const getTeamPerformance = async (teamId, params = {}) => {
   try {
@@ -365,7 +370,7 @@ export const getTeamPerformance = async (teamId, params = {}) => {
  * Get team members
  * GET /teams/members/:teamId
  * @param {number|string} teamId - Team ID
- * @param {Object} params - Query parameters
+ * @param {any} params - Query parameters
  */
 export const getTeamMembers = async (teamId, params = {}) => {
   try {
@@ -381,7 +386,7 @@ export const getTeamMembers = async (teamId, params = {}) => {
  * Get team statistics
  * GET /teams/stats/:teamId
  * @param {number|string} teamId - Team ID
- * @param {Object} params - Query parameters
+ * @param {any} params - Query parameters
  */
 export const getTeamStats = async (teamId, params = {}) => {
   try {

@@ -1,0 +1,13 @@
+{
+  "description": "Max gzip size (bytes) per built asset filename substring. Tune after intentional bundle growth.",
+  "chunks": [
+    { "match": "vendor-pdf", "maxGzipBytes": 590000 },
+    { "match": "vendor-charts", "maxGzipBytes": 78000 },
+    { "match": "vendor-vue", "maxGzipBytes": 58000 },
+    { "match": "vendor-canvas", "maxGzipBytes": 52000 },
+    { "match": "vendor-utils", "maxGzipBytes": 50000 },
+    { "match": "vendor-ui", "maxGzipBytes": 35000 },
+    { "match": "vendor-markdown", "maxGzipBytes": 15000 }
+  ],
+  "defaultMaxGzipBytes": 72000
+}

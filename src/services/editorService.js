@@ -27,8 +27,8 @@ const editorService = {
 
   /**
    * GET /editor/contracts/index — ContractController@adminIndex
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} List of contracts
+   * @param {any} params - Query parameters
+   * @returns {Promise<unknown[]>} List of contracts
    */
   async getContracts(params = {}) {
     try {
@@ -75,7 +75,7 @@ const editorService = {
   /**
    * GET /editor/contracts/units/show/:contractId — ContractUnitController@indexByContract
    * @param {number|string} contractId - Contract ID
-   * @returns {Promise<Array>} Units for the contract
+   * @returns {Promise<unknown[]>} Units for the contract
    */
   async getContractUnits(contractId) {
     try {
@@ -91,8 +91,8 @@ const editorService = {
 
   /**
    * GET /editor/developers — DeveloperController@index
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} List of developers
+   * @param {any} params - Query parameters
+   * @returns {Promise<unknown[]>} List of developers
    */
   async getDevelopers(params = {}) {
     try {
@@ -137,7 +137,7 @@ const editorService = {
   /**
    * POST /editor/montage-department/store/:contractId
    * @param {number|string} contractId - Contract ID
-   * @param {Object} data - Montage data
+   * @param {any} data - Montage data
    * @returns {Promise<Object>} Created montage
    */
   async createMontage(contractId, data) {
@@ -152,7 +152,7 @@ const editorService = {
   /**
    * PUT /editor/montage-department/update/:contractId — MontageDepartmentController@update
    * @param {number|string} contractId - Contract ID
-   * @param {Object} data - Update data
+   * @param {any} data - Update data
    * @returns {Promise<Object>} Updated montage
    */
   async updateMontage(contractId, data) {
@@ -183,7 +183,7 @@ const editorService = {
   /**
    * POST /editor/photography-department/store/:contractId — PhotographyDepartmentController@store
    * @param {number|string} contractId - Contract ID
-   * @param {Object} data - Photography data
+   * @param {any} data - Photography data
    * @returns {Promise<Object>} Created record
    */
   async createPhotography(contractId, data) {
@@ -198,7 +198,7 @@ const editorService = {
   /**
    * PUT /editor/photography-department/update/:contractId — PhotographyDepartmentController@update
    * @param {number|string} contractId - Contract ID
-   * @param {Object} data - Update data
+   * @param {any} data - Update data
    * @returns {Promise<Object>} Updated record
    */
   async updatePhotography(contractId, data) {
@@ -213,7 +213,7 @@ const editorService = {
   /**
    * PATCH /editor/photography-department/approve/:contractId — PhotographyDepartmentController@approve
    * @param {number|string} contractId - Contract ID
-   * @param {Object} data - e.g. { status, rejection_reason }
+   * @param {any} data - e.g. { status, rejection_reason }
    * @returns {Promise<Object>}
    */
   async approvePhotography(contractId, data = {}) {
@@ -244,7 +244,7 @@ const editorService = {
   /**
    * POST /editor/boards-department/store/:contractId — BoardsDepartmentController@store
    * @param {number|string} contractId - Contract ID
-   * @param {Object} data - Boards data
+   * @param {any} data - Boards data
    * @returns {Promise<Object>} Created record
    */
   async createBoards(contractId, data) {
@@ -259,7 +259,7 @@ const editorService = {
   /**
    * PUT /editor/boards-department/update/:contractId — BoardsDepartmentController@update
    * @param {number|string} contractId - Contract ID
-   * @param {Object} data - Update data
+   * @param {any} data - Update data
    * @returns {Promise<Object>} Updated record
    */
   async updateBoards(contractId, data) {
@@ -275,8 +275,8 @@ const editorService = {
 
   /**
    * GET /editor/teams — Sales teams and members (e.g. phone)
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} List of teams with members
+   * @param {any} params - Query parameters
+   * @returns {Promise<unknown[]>} List of teams with members
    */
   async getEditorTeams(params = {}) {
     try {
@@ -293,7 +293,7 @@ const editorService = {
   /**
    * PATCH /editor/montage-department/approve/:id — Manager approve or reject montage
    * @param {number|string} id - Contract id (same as other editor montage routes)
-   * @param {Object} data - { approved: '1'|'0', comment?: string } — comment used when rejecting
+   * @param {any} data - { approved: '1'|'0', comment?: string } — comment used when rejecting
    * @returns {Promise<Object>}
    */
   async approveMontage(id, data) {

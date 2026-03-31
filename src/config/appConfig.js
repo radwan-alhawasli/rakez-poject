@@ -26,7 +26,8 @@ import logger from '@/utils/logger';
 
 // Vite exposes env via import.meta.env (process.env is not available in browser).
 // Use VITE_APP_* in .env for client-side config.
-const getEnv = (key) => (typeof import.meta.env !== 'undefined' && import.meta.env[key]) || '';
+/** @param {string} key */
+const getEnv = key => (typeof import.meta.env !== 'undefined' && import.meta.env[key]) || '';
 
 // Determine environment first (needed for API URL logic)
 const env = String(import.meta.env?.MODE || 'development').toLowerCase();

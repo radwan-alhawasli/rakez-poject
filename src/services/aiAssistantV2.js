@@ -17,12 +17,13 @@ export const AI_V2_MESSAGES = {
 
 /**
  * إعادة إلقاء الخطأ مع رمز الحالة والبيانات للتعامل معه في الواجهة
- * @param {Error} err
+ * @param {*} err
  * @returns {never}
  */
 function rethrowWithStatus(err) {
   const status = err.response?.status ?? err.status ?? null;
-  const apiError = err instanceof Error ? err : new Error(err?.message || 'فشل طلب المساعد الذكي');
+  const apiError =
+    err instanceof Error ? err : new Error((err && err.message) || 'فشل طلب المساعد الذكي');
   apiError.status = status;
   apiError.data = err.response?.data ?? err.data;
   apiError.response = err.response;
@@ -34,7 +35,7 @@ function rethrowWithStatus(err) {
  * POST /ai/v2/chat
  * @param {string} message - رسالة المستخدم
  * @param {string|null} sessionId - معرّف الجلسة الاختياري للاستمرارية
- * @param {Object} pageContext - { route, entity_id, entity_type, filters }
+ * @param {any} pageContext - { route, entity_id, entity_type, filters }
  * @returns {Promise<{ success: boolean, data: Object }>}
  */
 export async function chat(message, sessionId = null, pageContext = {}) {
@@ -55,9 +56,9 @@ export async function chat(message, sessionId = null, pageContext = {}) {
  * بحث RAG فقط
  * POST /ai/v2/search
  * @param {string} query - نص البحث
- * @param {Object} filters - فلاتر اختيارية
+ * @param {any} filters - فلاتر اختيارية
  * @param {number} limit - حد النتائج
- * @returns {Promise<Array>} قائمة المصادر
+ * @returns {Promise<unknown[]>} قائمة المصادر
  */
 export async function search(query, filters = {}, limit = 10) {
   try {
@@ -102,7 +103,7 @@ export async function explainAccess(route, entityType = null, entityId = null) {
  */
 export function parseSSE(buffer) {
   const blocks = buffer.split('\n\n');
-  const remainder = blocks.pop();
+  const remainder = blocks.pop() ?? '';
   const events = [];
   for (const block of blocks) {
     if (!block.trim()) continue;
@@ -127,8 +128,8 @@ export function parseSSE(buffer) {
  * POST /ai/v2/chat/stream
  * @param {string} message
  * @param {string|null} sessionId
- * @param {Object} pageContext
- * @param {Object} callbacks - { onStatus, onDelta, onDone, onMeta, onError }
+ * @param {any} pageContext
+ * @param {any} callbacks - { onStatus, onDelta, onDone, onMeta, onError }
  * @param {AbortSignal} [signal]
  */
 export async function chatStream(
@@ -139,7 +140,7 @@ export async function chatStream(
   signal
 ) {
   const { onStatus, onDelta, onDone, onMeta, onError } = callbacks;
-  const token = secureStorage.getToken();
+  const token = secureStorage.getToken() ?? '';
   const baseUrl = appConfig.apiBaseUrl;
 
   const response = await fetch(`${baseUrl}/ai/v2/chat/stream`, {
@@ -162,6 +163,9 @@ export async function chatStream(
     throw new Error(errorData.message || `HTTP ${response.status}`);
   }
 
+  if (!response.body) {
+    throw new Error(`HTTP ${response.status}: empty body`);
+  }
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let sseBuffer = '';

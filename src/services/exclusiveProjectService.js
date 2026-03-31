@@ -23,6 +23,7 @@ const exclusiveProjectService = {
   /**
    * Get exclusive project details
    * GET /exclusive-projects/:id
+    * @param {any} id
    */
   async getExclusiveProjectById(id) {
     try {
@@ -36,6 +37,7 @@ const exclusiveProjectService = {
   /**
    * Create new exclusive project
    * POST /exclusive-projects
+    * @param {any} projectData
    */
   async createExclusiveProject(projectData) {
     try {
@@ -49,6 +51,8 @@ const exclusiveProjectService = {
   /**
    * Update exclusive project
    * PUT /exclusive-projects/:id
+    * @param {any} id
+    * @param {any} projectData
    */
   async updateExclusiveProject(id, projectData) {
     try {
@@ -62,6 +66,7 @@ const exclusiveProjectService = {
   /**
    * Delete exclusive project
    * DELETE /exclusive-projects/:id
+    * @param {any} id
    */
   async deleteExclusiveProject(id) {
     try {
@@ -75,6 +80,7 @@ const exclusiveProjectService = {
   /**
    * Approve exclusive project
    * POST /exclusive-projects/:id/approve
+    * @param {any} id
    */
   async approveExclusiveProject(id, notes = '') {
     try {
@@ -88,6 +94,7 @@ const exclusiveProjectService = {
   /**
    * Reject exclusive project
    * POST /exclusive-projects/:id/reject
+    * @param {any} id
    */
   async rejectExclusiveProject(id, reason = '') {
     try {
@@ -102,7 +109,7 @@ const exclusiveProjectService = {
    * Complete exclusive project contract
    * PUT /exclusive-projects/:id/contract
    * @param {number|string} id - Project ID
-   * @param {Object} data - Contract data (contract_number, signed_date, etc.)
+   * @param {any} data - Contract data (contract_number, signed_date, etc.)
    * @returns {Promise<Object>} Completed contract data
    */
   async completeExclusiveContract(id, data) {

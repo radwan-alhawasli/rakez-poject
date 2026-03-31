@@ -1,6 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:8080';
+const ciE2ePreview = process.env.CI_E2E_PREVIEW === '1' || process.env.CI_E2E_PREVIEW === 'true';
+const baseURL =
+  process.env.PLAYWRIGHT_BASE_URL ||
+  (ciE2ePreview ? 'http://127.0.0.1:4173' : 'http://localhost:8080');
 const skipWebServer =
   process.env.PLAYWRIGHT_SKIP_WEBSERVER === '1' ||
   process.env.PLAYWRIGHT_SKIP_WEBSERVER === 'true';
@@ -25,12 +28,21 @@ export default defineConfig({
   ],
   ...(skipWebServer
     ? {}
-    : {
-        webServer: {
-          command: 'npm run dev',
-          url: 'http://localhost:8080',
-          reuseExistingServer: !process.env.CI,
-          timeout: 120_000,
-        },
-      }),
+    : ciE2ePreview
+      ? {
+          webServer: {
+            command: 'npm run build && npm run preview -- --host 127.0.0.1 --port 4173',
+            url: 'http://127.0.0.1:4173',
+            reuseExistingServer: !process.env.CI,
+            timeout: 180_000,
+          },
+        }
+      : {
+          webServer: {
+            command: 'npm run dev',
+            url: 'http://localhost:8080',
+            reuseExistingServer: !process.env.CI,
+            timeout: 120_000,
+          },
+        }),
 });

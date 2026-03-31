@@ -268,45 +268,11 @@
       </div>
     </template>
 
-    <!-- Detail Modal -->
-    <div
+    <ReservationDetailModal
       v-if="detailItem"
-      class="detail-modal-overlay"
-      @click.self="detailItem = null"
-    >
-      <div class="detail-modal">
-        <div class="detail-modal-header">
-          <h3>تفاصيل الحجز</h3>
-          <button type="button" class="detail-modal-close" @click="detailItem = null">&times;</button>
-        </div>
-        <div class="detail-modal-body">
-          <div class="detail-section">
-            <h4>الوحدة والمشروع</h4>
-            <p><strong>وحدة:</strong> {{ detailItem.unit_number || detailItem.unitNumber || '—' }}</p>
-            <p><strong>مشروع:</strong> {{ detailItem.project_name || detailItem.projectName || '—' }}</p>
-            <p><strong>نوع الحجز:</strong> {{ detailItem.reservation_type === 'negotiation' ? 'تفاوض' : 'حجز مؤكد' }}</p>
-            <p><strong>التاريخ:</strong> {{ formatDate(detailItem.contract_date || detailItem.created_at || detailItem.date) }}</p>
-          </div>
-          <div class="detail-section">
-            <h4>تفاصيل العميل</h4>
-            <p><strong>الاسم:</strong> {{ detailItem.client_name || detailItem.clientName || '—' }}</p>
-            <p><strong>الجوال:</strong> {{ detailItem.client_mobile || detailItem.clientPhone || '—' }}</p>
-            <p><strong>الجنسية:</strong> {{ detailItem.client_nationality || detailItem.clientNationality || '—' }}</p>
-          </div>
-          <div class="detail-section">
-            <h4>التفاصيل المالية</h4>
-            <p><strong>العربون:</strong> {{ formatCurrency(detailItem.down_payment_amount || detailItem.depositAmount || 0) }} ريال</p>
-            <p><strong>حالة العربون:</strong> {{ detailItem.down_payment_status === 'refundable' ? 'قابل للاسترداد' : 'غير قابل للاسترداد' }}</p>
-            <p><strong>طريقة الدفع:</strong> {{ detailItem.payment_method || detailItem.paymentMethod || '—' }}</p>
-            <p><strong>آلية الشراء:</strong> {{ detailItem.purchase_mechanism || detailItem.purchaseMethod || '—' }}</p>
-          </div>
-          <div class="detail-section">
-            <h4>المسوق</h4>
-            <p><strong>الاسم:</strong> {{ detailItem.marketing_employee_name || detailItem.marketerName || '—' }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
+      :item="detailItem"
+      @close="detailItem = null"
+    />
 
     <ConfirmModal
       v-if="showConfirmModal"
@@ -322,6 +288,7 @@
 
 <script setup>
 import ConfirmModal from '@/components/ConfirmModal.vue';
+import ReservationDetailModal from '@/modules/sales/components/ReservationDetailModal.vue';
 import { useReservationsView } from '@/composables/views/useReservationsView';
 
 const {

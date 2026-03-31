@@ -15,8 +15,8 @@ export const salesServiceCoreMethods = {
   /**
    * Get list of sales projects
    * GET /api/sales/projects — Permission: sales.projects.view
-   * @param {Object} params - status (available|pending), q (search by project name), city, district, scope (me|team|all; default me for sales, all for sales_leader), per_page (default 15)
-   * @returns {Promise<Object>} { success, data: Array, meta: { current_page, last_page, per_page, total } }
+   * @param {any} params - status (available|pending), q (search by project name), city, district, scope (me|team|all; default me for sales, all for sales_leader), per_page (default 15)
+   * @returns {Promise<Object>} { success, data: unknown[], meta: { current_page, last_page, per_page, total } }
    */
   getProjects(params = {}) {
     return apiClient.get('/sales/projects', { params });
@@ -37,7 +37,7 @@ export const salesServiceCoreMethods = {
    * GET /sales/projects/{contractId}/units
    * Query: status (available|reserved|sold|pending), floor, min_price, max_price, per_page
    * @param {number|string} projectId - Contract ID
-   * @param {Object} params - Query parameters
+   * @param {any} params - Query parameters
    * @returns {Promise<Object>} Axios response; data array normalized with id, status, area for compatibility
    */
   async getProjectUnits(projectId, params = {}) {
@@ -60,7 +60,7 @@ export const salesServiceCoreMethods = {
    * Get emergency contacts for a project
    * GET /sales/projects/:projectId/emergency-contacts
    * @param {number|string} projectId - Project ID
-   * @returns {Promise<Array>} List of emergency contacts
+   * @returns {Promise<unknown[]>} List of emergency contacts
    */
   getEmergencyContacts(projectId) {
     return apiClient.get(`/sales/projects/${projectId}/emergency-contacts`);
@@ -71,7 +71,7 @@ export const salesServiceCoreMethods = {
    * Get reservation context for a unit
    * GET /sales/units/:unitId/reservation-context
    * @param {number|string} unitId - Unit ID
-   * @param {Object} [params] - اختياري: query مثل include أو with إن دعمها الباكند (مثال: { include: 'teams' })
+   * @param {any} [params] - اختياري: query مثل include أو with إن دعمها الباكند (مثال: { include: 'teams' })
    * @returns {Promise<Object>} Reservation context data
    */
   getReservationContext(unitId, params = {}) {
@@ -83,7 +83,7 @@ export const salesServiceCoreMethods = {
    * Create a new reservation (payload normalized per API spec 1.6: reservation_type aliases, required fields, defaults).
    * Aliases: عقد|contract|confirmed → confirmed_reservation; تفاوض|negotiation → negotiation.
    * POST /sales/reservations — Spec 1.6
-   * @param {Object} data - contract_id, contract_unit_id, contract_date, reservation_type (confirmed_reservation|negotiation or aliases عقد/تفاوض), client_name, client_mobile, client_nationality, client_iban, payment_method, down_payment_amount, down_payment_status, purchase_mechanism; for negotiation: negotiation_notes, negotiation_reason, proposed_price
+   * @param {any} data - contract_id, contract_unit_id, contract_date, reservation_type (confirmed_reservation|negotiation or aliases عقد/تفاوض), client_name, client_mobile, client_nationality, client_iban, payment_method, down_payment_amount, down_payment_status, purchase_mechanism; for negotiation: negotiation_notes, negotiation_reason, proposed_price
    * @returns {Promise<Object>} Created reservation (reservation_id, status, voucher_url, etc.)
    */
   createReservation(data) {
@@ -93,8 +93,8 @@ export const salesServiceCoreMethods = {
   /**
    * Get list of reservations
    * GET /sales/reservations
-   * @param {Object} params - mine (bool), include_cancelled (bool), contract_id, status (under_negotiation|confirmed|cancelled), from, to, per_page
-   * @returns {Promise<{ items: Array, total: number }>} Paginated list of reservations
+   * @param {any} params - mine (bool), include_cancelled (bool), contract_id, status (under_negotiation|confirmed|cancelled), from, to, per_page
+   * @returns {Promise<{ items: unknown[], total: number }>} Paginated list of reservations
    */
   async getReservations(params = {}) {
     try {
@@ -131,7 +131,7 @@ export const salesServiceCoreMethods = {
    * POST /sales/reservations/{id}/cancel
    * API body: { cancellation_reason } (optional). Spec 1.9.
    * @param {number|string} reservationId - Reservation ID
-   * @param {Object} data - { cancellation_reason } or { reason } (reason mapped to cancellation_reason)
+   * @param {any} data - { cancellation_reason } or { reason } (reason mapped to cancellation_reason)
    * @returns {Promise<Object>} Cancelled reservation
    */
   cancelReservation(reservationId, data = {}) {
@@ -145,7 +145,7 @@ export const salesServiceCoreMethods = {
    * Log an action for a reservation
    * POST /sales/reservations/{id}/actions
    * @param {number|string} reservationId - Reservation ID
-   * @param {Object} data - { action_type: 'lead_acquisition'|'persuasion'|'closing', notes }
+   * @param {any} data - { action_type: 'lead_acquisition'|'persuasion'|'closing', notes }
    * @returns {Promise<Object>} Action log entry
    */
   logAction(reservationId, data) {
@@ -162,7 +162,9 @@ export const salesServiceCoreMethods = {
     const response = await apiClient.get(`/sales/reservations/${reservationId}/voucher`, {
       responseType: 'blob',
     });
-    return response?.data instanceof Blob ? response.data : response;
+    const data = response?.data;
+    if (data instanceof Blob) return data;
+    throw new Error('Expected blob response for voucher download');
   },
 
   /**
@@ -177,7 +179,11 @@ export const salesServiceCoreMethods = {
       responseType: 'blob',
       headers: { Accept: 'application/pdf' },
     });
-    const blob = response?.data instanceof Blob ? response.data : response;
+    const raw = response?.data;
+    if (!(raw instanceof Blob)) {
+      throw new Error('Expected PDF blob for unit download');
+    }
+    const blob = raw;
     let filename;
     const contentDisposition = response?.headers?.['content-disposition'];
     if (contentDisposition) {
@@ -194,8 +200,8 @@ export const salesServiceCoreMethods = {
    * Role behavior: Sales Leader → all team goals (targets assigned to any team member);
    * Sales staff (non-leader) → only targets where marketer_id = current user.
    * Each item: marketer_id / marketer_name = assignee (user type `sales` in the system — sales team member).
-   * @param {Object} params - Optional: from, to, status (new|in_progress|completed), per_page
-   * @returns {Promise<Array>} List of targets (SalesTargetItem: units[], marketer_id, marketer_name, contract_id, etc.)
+   * @param {any} params - Optional: from, to, status (new|in_progress|completed), per_page
+   * @returns {Promise<unknown[]>} List of targets (SalesTargetItem: units[], marketer_id, marketer_name, contract_id, etc.)
    */
   async getMyTargets(params = {}) {
     const response = await apiClient.get('/sales/targets/my', { params });
@@ -214,7 +220,7 @@ export const salesServiceCoreMethods = {
    * Permission: sales.targets.view. Used when opening the "assigned units" modal from team goals.
    * Each item: marketer_id / marketer_name = assignee (user type `sales` — sales team member).
    * @param {number|string} contractId - Contract/Project ID
-   * @returns {Promise<Array>} List of targets for this project (SalesTargetItem: units[], marketer_id, marketer_name, etc.)
+   * @returns {Promise<unknown[]>} List of targets for this project (SalesTargetItem: units[], marketer_id, marketer_name, etc.)
    */
   async getTargetsByProject(contractId) {
     const response = await apiClient.get(`/sales/targets/by-project/${contractId}`);
@@ -228,7 +234,7 @@ export const salesServiceCoreMethods = {
    * Update a sales target
    * PATCH /sales/targets/{id}
    * @param {number|string} targetId - Target ID
-   * @param {Object} data - { status: 'new'|'in_progress'|'completed' }
+   * @param {any} data - { status: 'new'|'in_progress'|'completed' }
    * @returns {Promise<Object>} Updated target
    */
   updateTarget(targetId, data) {
@@ -238,7 +244,7 @@ export const salesServiceCoreMethods = {
   /**
    * Create target (leader only). Assignee must be a user of type `sales` (from team/members).
    * POST /sales/targets — Permission: sales.team.manage
-   * @param {Object} data - marketer_id (user type sales, from GET /sales/team/members), contract_id, contract_unit_id, target_type (reservation|negotiation|closing), start_date, end_date, leader_notes
+   * @param {any} data - marketer_id (user type sales, from GET /sales/team/members), contract_id, contract_unit_id, target_type (reservation|negotiation|closing), start_date, end_date, leader_notes
    * @returns {Promise<Object>} Created target
    */
   createTarget(data) {
@@ -249,8 +255,8 @@ export const salesServiceCoreMethods = {
   /**
    * Get my attendance records
    * GET /sales/attendance/my
-   * @param {Object} params - Optional query (from, to)
-   * @returns {Promise<Array>} List of attendance records
+   * @param {any} params - Optional query (from, to)
+   * @returns {Promise<unknown[]>} List of attendance records
    */
   async getMyAttendance(params = {}) {
     const response = await apiClient.get('/sales/attendance/my', { params });
@@ -262,8 +268,8 @@ export const salesServiceCoreMethods = {
   /**
    * Get team attendance records
    * GET /sales/attendance/team
-   * @param {Object} params - Optional query (from, to, contract_id, user_id)
-   * @returns {Promise<Array>} List of team attendance records
+   * @param {any} params - Optional query (from, to, contract_id, user_id)
+   * @returns {Promise<unknown[]>} List of team attendance records
    */
   async getTeamAttendance(params = {}) {
     const response = await apiClient.get('/sales/attendance/team', { params });
@@ -277,7 +283,7 @@ export const salesServiceCoreMethods = {
    * POST /sales/attendance/schedules
    * المدير يرسل: schedule_date (Y-m-d), start_time, end_time. اليوم (day_name_ar) يُستنتج من التاريخ ويُرجع في الاستجابة.
    * الساعات: يمكن إرسال "08:00" أو "08:00:00"؛ يتم تحويلها داخلياً إلى H:i:s.
-   * @param {Object} data - { contract_id, user_id, schedule_date (Y-m-d), start_time, end_time }
+   * @param {any} data - { contract_id, user_id, schedule_date (Y-m-d), start_time, end_time }
    * @returns {Promise<Object>} SalesAttendanceResource: schedule_date, day_name_ar, day_of_week, start_time, end_time, user_id, user_name, project_id, project_name, project_location
    */
   createSchedule(data) {
@@ -288,8 +294,8 @@ export const salesServiceCoreMethods = {
   /**
    * Get team projects
    * GET /sales/team/projects
-   * @param {Object} params - page, per_page, query params
-   * @returns {Promise<{ items: Array, total: number }>} List of projects assigned to team
+   * @param {any} params - page, per_page, query params
+   * @returns {Promise<{ items: unknown[], total: number }>} List of projects assigned to team
    */
   async getTeamProjects(params = {}) {
     try {
@@ -304,8 +310,8 @@ export const salesServiceCoreMethods = {
   /**
    * Get my project assignments (sales leader)
    * GET /sales/assignments/my
-   * @param {Object} params - page, per_page (1-100, default 15)
-   * @returns {Promise<{ items: Array, total: number }>} List of project assignments
+   * @param {any} params - page, per_page (1-100, default 15)
+   * @returns {Promise<{ items: unknown[], total: number }>} List of project assignments
    */
   async getMyAssignments(params = {}) {
     try {
@@ -320,8 +326,8 @@ export const salesServiceCoreMethods = {
   /**
    * Get all project assignments (admin)
    * GET /admin/sales/project-assignments
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} List of project assignments
+   * @param {any} params - Query parameters
+   * @returns {Promise<unknown[]>} List of project assignments
    */
   async getProjectAssignments(params = {}) {
     try {
@@ -337,8 +343,8 @@ export const salesServiceCoreMethods = {
    * Get sales team members (leader only).
    * GET /api/sales/team/members — Permission: sales.team.manage (403 for non-leaders).
    * Used on Team Goals page and in "Add new goal" form for assignee dropdown (marketer_id / name).
-   * @param {Object} params - with_ratings (default: true); use false for lighter response in create-goal dropdown
-   * @returns {Promise<Array>} List of team members with id, name, email, team, rating (leader_rating), confirmed_bookings, etc.
+   * @param {any} params - with_ratings (default: true); use false for lighter response in create-goal dropdown
+   * @returns {Promise<unknown[]>} List of team members with id, name, email, team, rating (leader_rating), confirmed_bookings, etc.
    */
   async getTeamMembers(params = {}) {
     const { with_ratings = true } = params;
@@ -366,7 +372,7 @@ export const salesServiceCoreMethods = {
   /**
    * Team recommendations (ترشيح بالذكاء الاصطناعي) — members sorted by recommendation score.
    * GET /api/sales/team/recommendations
-   * @returns {Promise<Array>} Same shape as getTeamMembers with recommendation_score, confirmed_percent, unit_type_avg_score, etc.
+   * @returns {Promise<unknown[]>} Same shape as getTeamMembers with recommendation_score, confirmed_percent, unit_type_avg_score, etc.
    */
   async getTeamRecommendations() {
     const response = await apiClient.get('/sales/team/recommendations');
@@ -408,7 +414,7 @@ export const salesServiceCoreMethods = {
    */
   rateTeamMember(memberId, rating, comment = null) {
     const body = {};
-    if (rating != null && rating !== '') body.rating = Number(rating);
+    if (rating != null) body.rating = Number(rating);
     if (comment != null && String(comment).trim() !== '') body.comment = String(comment).trim();
     if (Object.keys(body).length === 0) return Promise.reject(new Error('يجب إرسال التقييم و/أو التعليق'));
     return apiClient.patch(`/sales/team/members/${memberId}/rating`, body);
@@ -427,7 +433,7 @@ export const salesServiceCoreMethods = {
   /**
    * Assign project to leader (admin only)
    * POST /admin/sales/project-assignments
-   * @param {Object} data - { leader_id, contract_id, start_date, end_date }
+   * @param {any} data - { leader_id, contract_id, start_date, end_date }
    * @returns {Promise<Object>} Assignment result
    */
   assignProject(data) {
@@ -438,7 +444,7 @@ export const salesServiceCoreMethods = {
   /**
    * Get projects with marketing tasks
    * GET /sales/tasks/projects
-   * @returns {Promise<Array>} List of projects with tasks
+   * @returns {Promise<unknown[]>} List of projects with tasks
    */
   async getTaskProjects() {
     const response = await apiClient.get('/sales/tasks/projects');
@@ -457,7 +463,7 @@ export const salesServiceCoreMethods = {
    * Get tasks for a specific project
    * GET /sales/tasks/projects/:projectId
    * @param {number|string} projectId - Project ID
-   * @returns {Promise<Array>} List of tasks for the project
+   * @returns {Promise<unknown[]>} List of tasks for the project
    */
   async getProjectTasks(projectId) {
     const response = await apiClient.get(`/sales/tasks/projects/${projectId}`);
@@ -475,7 +481,7 @@ export const salesServiceCoreMethods = {
   /**
    * Create marketing task (leader only)
    * POST /sales/marketing-tasks
-   * @param {Object} data - contract_id, task_name, marketer_id, participating_marketers_count, design_link, design_number, design_description
+   * @param {any} data - contract_id, task_name, marketer_id, participating_marketers_count, design_link, design_number, design_description
    * @returns {Promise<Object>} Created task
    */
   createMarketingTask(data) {
@@ -486,7 +492,7 @@ export const salesServiceCoreMethods = {
    * Update marketing task status
    * PATCH /sales/marketing-tasks/{id}
    * @param {number|string} taskId - Task ID
-   * @param {Object} data - { status: 'new'|'in_progress'|'completed' }
+   * @param {any} data - { status: 'new'|'in_progress'|'completed' }
    * @returns {Promise<Object>} Updated task
    */
   updateTaskStatus(taskId, data) {
@@ -499,7 +505,7 @@ export const salesServiceCoreMethods = {
    * Update emergency contacts for a project
    * PATCH /sales/projects/emergency-contacts
    * @param {number|string} projectId - Project ID
-   * @param {Object} data - Emergency contacts data
+   * @param {any} data - Emergency contacts data
    * @returns {Promise<Object>} Updated emergency contacts
    */
   async updateEmergencyContacts(projectId, data) {
@@ -509,13 +515,13 @@ export const salesServiceCoreMethods = {
 
   /**
    * Update my target (api.php: PATCH sales/targets/{id})
-   * @param {number|string} [targetId] - Target ID (or pass single arg as data with data.id)
-   * @param {Object} [data] - Target update data (amount, period, etc.)
+   * @param {number|string|Object} targetIdOrData - Target ID or payload object with `id` when `data` omitted
+   * @param {any} [data] - Target update data (amount, period, etc.)
    * @returns {Promise<Object>} Updated target
    */
   async updateMyTarget(targetIdOrData, data) {
     const isDataOnly = typeof targetIdOrData === 'object' && data === undefined;
-    const targetId = isDataOnly ? targetIdOrData?.id : targetIdOrData;
+    const targetId = isDataOnly ? /** @type {any} */ (targetIdOrData).id : targetIdOrData;
     const payload = isDataOnly ? targetIdOrData : data ?? {};
     if (targetId == null) return Promise.reject(new Error('Target ID is required'));
     const response = await apiClient.patch(`/sales/targets/${targetId}`, payload);
@@ -525,8 +531,8 @@ export const salesServiceCoreMethods = {
   /**
    * Get waiting list
    * GET /sales/waiting-list
-   * @param {Object} params - status, sales_staff_id, contract_id, contract_unit_id, active_only, per_page
-   * @returns {Promise<Array>} List of waiting list entries
+   * @param {any} params - status, sales_staff_id, contract_id, contract_unit_id, active_only, per_page
+   * @returns {Promise<unknown[]>} List of waiting list entries
    */
   async getWaitingList(params = {}) {
     const response = await apiClient.get('/sales/waiting-list', { params });
@@ -538,8 +544,8 @@ export const salesServiceCoreMethods = {
    * Get waiting list by unit
    * GET /sales/waiting-list/unit
    * @param {number|string} unitId - Unit ID
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} Waiting list entries for unit
+   * @param {any} params - Query parameters
+   * @returns {Promise<unknown[]>} Waiting list entries for unit
    */
   async getWaitingListByUnit(unitId, params = {}) {
     const response = await apiClient.get(`/sales/waiting-list/unit/${unitId}`, { params });

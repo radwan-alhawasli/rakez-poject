@@ -12,9 +12,9 @@
  * - { data: { data: [...], total: N } }
  * - Plain array (fallback: total = length)
  *
- * @param {Object} response - Axios response (response.data) or raw API response object
- * @param {Array} fallbackItems - Fallback if no items found
- * @returns {{ items: Array, total: number }}
+ * @param {any} response - Axios response (response.data) or raw API response object
+ * @param {unknown[]} fallbackItems - Fallback if no items found
+ * @returns {{ items: unknown[], total: number }}
  */
 export function extractPaginatedData(response, fallbackItems = []) {
   const data = response?.data ?? response;

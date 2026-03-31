@@ -13,8 +13,8 @@ const managerService = {
   /**
    * List employees under manager
    * GET /manager/employees
-   * @param {Object} params - Query params
-   * @returns {Promise<{ items: Array, total?: number }>}
+   * @param {any} params - Query params
+   * @returns {Promise<{ items: unknown[], total?: number }>}
    */
   async getEmployees(params = {}) {
     try {
@@ -32,6 +32,7 @@ const managerService = {
   /**
    * Show employee
    * GET /manager/employees/:employeeId
+    * @param {any} employeeId
    */
   async getEmployee(employeeId) {
     try {
@@ -46,6 +47,7 @@ const managerService = {
   /**
    * List reviews per employee
    * GET /manager/employees/:employeeId/reviews
+    * @param {any} employeeId
    */
   async getReviews(employeeId, params = {}) {
     try {
@@ -61,6 +63,8 @@ const managerService = {
   /**
    * Show a review
    * GET /manager/employees/:employeeId/reviews/:reviewId
+    * @param {any} employeeId
+    * @param {any} reviewId
    */
   async getReview(employeeId, reviewId) {
     try {
@@ -75,6 +79,8 @@ const managerService = {
   /**
    * Create a review
    * POST /manager/employees/:employeeId/reviews
+    * @param {any} employeeId
+    * @param {any} data
    */
   async createReview(employeeId, data) {
     try {
@@ -89,6 +95,9 @@ const managerService = {
   /**
    * Update a review
    * PUT /manager/employees/:employeeId/reviews/:reviewId
+    * @param {any} employeeId
+    * @param {any} reviewId
+    * @param {any} data
    */
   async updateReview(employeeId, reviewId, data) {
     try {
@@ -103,6 +112,8 @@ const managerService = {
   /**
    * Delete a review
    * DELETE /manager/employees/:employeeId/reviews/:reviewId
+    * @param {any} employeeId
+    * @param {any} reviewId
    */
   async deleteReview(employeeId, reviewId) {
     try {
@@ -131,6 +142,7 @@ const managerService = {
   /**
    * Show a task
    * GET /manager/tasks/:taskId
+    * @param {any} taskId
    */
   async getTask(taskId) {
     try {

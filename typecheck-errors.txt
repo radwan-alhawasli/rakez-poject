@@ -1,0 +1,1101 @@
+﻿
+> contract-management-system@1.0.0 typecheck
+> tsc -p tsconfig.checkjs.json
+
+src/api/apiClient.js(139,14): error TS2339: Property 'status' does not exist on type 'Error'.
+src/api/apiClient.js(140,14): error TS2339: Property 'data' does not exist on type 'Error'.
+src/api/apiClient.js(144,14): error TS2339: Property 'response' does not exist on type 'Error'.
+src/api/apiClient.js(148,14): error TS2339: Property 'url' does not exist on type 'Error'.
+src/api/apiClient.js(149,14): error TS2339: Property 'method' does not exist on type 'Error'.
+src/api/apiClient.js(150,14): error TS2339: Property 'code' does not exist on type 'Error'.
+src/api/apiClient.js(155,18): error TS2339: Property 'isAuthRedirect' does not exist on type 'Error'.
+src/config/appConfig.js(29,17): error TS7006: Parameter 'key' implicitly has an 'any' type.
+src/constants/roles.js(75,30): error TS7006: Parameter 'type' implicitly has an 'any' type.
+src/constants/roles.js(77,33): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+  No index signature with a parameter of type 'string' was found on type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+src/constants/roles.js(77,64): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+  No index signature with a parameter of type 'string' was found on type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+src/constants/roles.js(81,10): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ 1: { label: string; key: string; class: string; }; 2: { label: string; key: string; class: string; }; 3: { label: string; key: string; class: string; }; 4: { label: string; key: string; class: string; }; 5: { label: string; key: string; class: string; }; ... 7 more ...; 13: { ...; }; }'.
+src/constants/roles.js(84,29): error TS7006: Parameter 'type' implicitly has an 'any' type.
+src/constants/roles.js(86,33): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+  No index signature with a parameter of type 'string' was found on type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+src/constants/roles.js(86,64): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+  No index signature with a parameter of type 'string' was found on type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+src/constants/roles.js(87,10): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ 1: { label: string; key: string; class: string; }; 2: { label: string; key: string; class: string; }; 3: { label: string; key: string; class: string; }; 4: { label: string; key: string; class: string; }; 5: { label: string; key: string; class: string; }; ... 7 more ...; 13: { ...; }; }'.
+src/plugins/pusher.js(4,17): error TS7006: Parameter 'key' implicitly has an 'any' type.
+src/plugins/pusher.js(11,30): error TS7006: Parameter 'token' implicitly has an 'any' type.
+src/plugins/pusher.js(31,13): error TS2339: Property 'wsHost' does not exist on type '{ authEndpoint: any; auth: { headers: { Authorization: string; }; }; }'.
+src/plugins/pusher.js(32,13): error TS2339: Property 'wsPort' does not exist on type '{ authEndpoint: any; auth: { headers: { Authorization: string; }; }; }'.
+src/plugins/pusher.js(33,13): error TS2339: Property 'wssPort' does not exist on type '{ authEndpoint: any; auth: { headers: { Authorization: string; }; }; }'.
+src/plugins/pusher.js(34,13): error TS2339: Property 'forceTLS' does not exist on type '{ authEndpoint: any; auth: { headers: { Authorization: string; }; }; }'.
+src/plugins/pusher.js(35,13): error TS2339: Property 'disableStats' does not exist on type '{ authEndpoint: any; auth: { headers: { Authorization: string; }; }; }'.
+src/plugins/pusher.js(37,13): error TS2339: Property 'cluster' does not exist on type '{ authEndpoint: any; auth: { headers: { Authorization: string; }; }; }'.
+src/plugins/pusher.js(38,13): error TS2339: Property 'encrypted' does not exist on type '{ authEndpoint: any; auth: { headers: { Authorization: string; }; }; }'.
+src/plugins/pusher.js(41,34): error TS2345: Argument of type '{ authEndpoint: any; auth: { headers: { Authorization: string; }; }; }' is not assignable to parameter of type 'Options'.
+  Property 'cluster' is missing in type '{ authEndpoint: any; auth: { headers: { Authorization: string; }; }; }' but required in type 'Options'.
+src/services/accountingService.js(59,18): error TS2339: Property 'from_date' does not exist on type 'Object'.
+src/services/accountingService.js(59,58): error TS2339: Property 'from_date' does not exist on type 'Object'.
+src/services/accountingService.js(60,18): error TS2339: Property 'to_date' does not exist on type 'Object'.
+src/services/accountingService.js(60,54): error TS2339: Property 'to_date' does not exist on type 'Object'.
+src/services/accountingService.js(78,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/accountingService.js(88,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/accountingService.js(94,16): error TS2353: Object literal may only specify known properties, and 'items' does not exist in type 'any[]'.
+src/services/accountingService.js(97,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/accountingService.js(140,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/accountingService.js(148,29): error TS2339: Property 'response' does not exist on type '{}'.
+src/services/accountingService.js(152,18): error TS2339: Property 'response' does not exist on type '{}'.
+src/services/accountingService.js(152,52): error TS2339: Property 'message' does not exist on type '{}'.
+src/services/accountingService.js(157,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/accountingService.js(170,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/accountingService.js(180,29): error TS2339: Property 'response' does not exist on type '{}'.
+src/services/accountingService.js(184,18): error TS2339: Property 'response' does not exist on type '{}'.
+src/services/accountingService.js(184,52): error TS2339: Property 'message' does not exist on type '{}'.
+src/services/accountingService.js(188,26): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/accountingService.js(230,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/accountingService.js(239,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/accountingService.js(246,31): error TS7006: Parameter 'm' implicitly has an 'any' type.
+src/services/accountingService.js(282,32): error TS2339: Property 'contract_unit_id' does not exist on type 'Object'.
+src/services/accountingService.js(283,35): error TS2339: Property 'final_selling_price' does not exist on type 'Object'.
+src/services/accountingService.js(283,63): error TS2339: Property 'amount' does not exist on type 'Object'.
+src/services/accountingService.js(283,78): error TS2339: Property 'total_value' does not exist on type 'Object'.
+src/services/accountingService.js(284,37): error TS2339: Property 'commission_percentage' does not exist on type 'Object'.
+src/services/accountingService.js(285,33): error TS2339: Property 'commission_source' does not exist on type 'Object'.
+src/services/accountingService.js(286,32): error TS2339: Property 'team_responsible' does not exist on type 'Object'.
+src/services/accountingService.js(286,57): error TS2339: Property 'team_name' does not exist on type 'Object'.
+src/services/accountingService.js(287,34): error TS2339: Property 'marketing_expenses' does not exist on type 'Object'.
+src/services/accountingService.js(288,25): error TS2339: Property 'bank_fees' does not exist on type 'Object'.
+src/services/accountingService.js(314,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/accountingService.js(354,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/accountingService.js(390,35): error TS2339: Property 'distributions' does not exist on type 'Object'.
+src/services/accountingService.js(390,60): error TS7006: Parameter 'd' implicitly has an 'any' type.
+src/services/accountingService.js(391,15): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ jalb: string; iqnaa: string; iqfal: string; external: string; lead_generation: string; persuasion: string; closing: string; team_leader: string; assistant_pm: string; project_manager: string; ... 6 more ...; other: string; }'.
+src/services/accountingService.js(479,22): error TS8024: JSDoc '@param' tag has name '_data', but there is no parameter with that name.
+src/services/accountingService.js(502,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/accountingService.js(508,16): error TS2353: Object literal may only specify known properties, and 'items' does not exist in type 'any[]'.
+src/services/accountingService.js(511,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/accountingService.js(541,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/accountingService.js(547,16): error TS2353: Object literal may only specify known properties, and 'items' does not exist in type 'any[]'.
+src/services/accountingService.js(550,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/accountingService.js(618,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/accountingService.js(624,16): error TS2353: Object literal may only specify known properties, and 'items' does not exist in type 'any[]'.
+src/services/accountingService.js(626,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/accountingService.js(730,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/accountingService.js(736,16): error TS2353: Object literal may only specify known properties, and 'items' does not exist in type 'any[]'.
+src/services/accountingService.js(739,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/accountingService.js(772,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/accountingService.js(778,16): error TS2353: Object literal may only specify known properties, and 'items' does not exist in type 'any[]'.
+src/services/adminEmployeeService.js(16,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/adminEmployeeService.js(25,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/adminEmployeeService.js(49,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/adminEmployeeService.js(58,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/agentService.js(17,26): error TS7006: Parameter 'agents' implicitly has an 'any' type.
+src/services/agentService.js(25,17): error TS7006: Parameter 'agents' implicitly has an 'any' type.
+src/services/agentService.js(26,30): error TS7006: Parameter 'm' implicitly has an 'any' type.
+src/services/agentService.js(26,33): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/services/agentService.js(49,24): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/services/agentService.js(62,18): error TS2339: Property 'name' does not exist on type 'Object'.
+src/services/agentService.js(63,25): error TS2339: Property 'description' does not exist on type 'Object'.
+src/services/agentService.js(64,32): error TS2339: Property 'humanHelpEnabled' does not exist on type 'Object'.
+src/services/agentService.js(65,28): error TS2339: Property 'humanHelpLabel' does not exist on type 'Object'.
+src/services/agentService.js(66,29): error TS2339: Property 'finishEnabled' does not exist on type 'Object'.
+src/services/agentService.js(67,25): error TS2339: Property 'finishLabel' does not exist on type 'Object'.
+src/services/agentService.js(84,36): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/services/agentService.js(89,18): error TS2339: Property 'name' does not exist on type 'Object'.
+src/services/agentService.js(89,44): error TS2339: Property 'name' does not exist on type 'Object'.
+src/services/agentService.js(90,25): error TS2339: Property 'description' does not exist on type 'Object'.
+src/services/agentService.js(90,58): error TS2339: Property 'description' does not exist on type 'Object'.
+src/services/agentService.js(92,14): error TS2339: Property 'humanHelpEnabled' does not exist on type 'Object'.
+src/services/agentService.js(93,20): error TS2339: Property 'humanHelpEnabled' does not exist on type 'Object'.
+src/services/agentService.js(96,14): error TS2339: Property 'humanHelpLabel' does not exist on type 'Object'.
+src/services/agentService.js(96,50): error TS2339: Property 'humanHelpLabel' does not exist on type 'Object'.
+src/services/agentService.js(98,14): error TS2339: Property 'finishEnabled' does not exist on type 'Object'.
+src/services/agentService.js(98,51): error TS2339: Property 'finishEnabled' does not exist on type 'Object'.
+src/services/agentService.js(99,25): error TS2339: Property 'finishLabel' does not exist on type 'Object'.
+src/services/agentService.js(99,58): error TS2339: Property 'finishLabel' does not exist on type 'Object'.
+src/services/agentService.js(113,36): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/services/aiAssistantV2.js(24,22): error TS2339: Property 'response' does not exist on type 'Error'.
+src/services/aiAssistantV2.js(24,46): error TS2339: Property 'status' does not exist on type 'Error'.
+src/services/aiAssistantV2.js(25,64): error TS2339: Property 'message' does not exist on type 'never'.
+src/services/aiAssistantV2.js(26,12): error TS2339: Property 'status' does not exist on type 'Error'.
+src/services/aiAssistantV2.js(27,12): error TS2339: Property 'data' does not exist on type 'Error'.
+src/services/aiAssistantV2.js(27,23): error TS2339: Property 'response' does not exist on type 'Error'.
+src/services/aiAssistantV2.js(27,45): error TS2339: Property 'data' does not exist on type 'Error'.
+src/services/aiAssistantV2.js(28,12): error TS2339: Property 'response' does not exist on type 'Error'.
+src/services/aiAssistantV2.js(28,27): error TS2339: Property 'response' does not exist on type 'Error'.
+src/services/aiAssistantV2.js(50,23): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/aiAssistantV2.js(60,22): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/aiAssistantV2.js(73,23): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/aiAssistantV2.js(95,23): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/aiAssistantV2.js(122,20): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/services/aiAssistantV2.js(141,11): error TS2339: Property 'onStatus' does not exist on type 'Object'.
+src/services/aiAssistantV2.js(141,21): error TS2339: Property 'onDelta' does not exist on type 'Object'.
+src/services/aiAssistantV2.js(141,30): error TS2339: Property 'onDone' does not exist on type 'Object'.
+src/services/aiAssistantV2.js(141,38): error TS2339: Property 'onMeta' does not exist on type 'Object'.
+src/services/aiAssistantV2.js(141,46): error TS2339: Property 'onError' does not exist on type 'Object'.
+src/services/aiAssistantV2.js(165,18): error TS18047: 'response.body' is possibly 'null'.
+src/services/aiService.js(25,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/aiService.js(41,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/aiService.js(87,20): error TS18047: 'response.body' is possibly 'null'.
+src/services/aiService.js(146,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/aiService.js(152,27): error TS2339: Property 'section' does not exist on type '{ per_page: number; }'.
+src/services/aiService.js(174,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/aiService.js(195,16): error TS2339: Property 'response' does not exist on type '{}'.
+src/services/aiService.js(196,16): error TS2339: Property 'status' does not exist on type '{}'.
+src/services/aiService.js(197,17): error TS2339: Property 'response' does not exist on type '{}'.
+src/services/aiService.js(198,18): error TS2339: Property 'response' does not exist on type '{}'.
+src/services/aiService.js(206,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/aiService.js(222,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/aiService.js(229,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/aiService.js(238,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/aiService.js(255,23): error TS2741: Property 'message' is missing in type '{}' but required in type '{ message: string; module?: string | undefined; page_key?: string | undefined; language?: string | undefined; conversation_id?: number | null | undefined; }'.
+src/services/aiService.js(265,24): error TS2339: Property 'module' does not exist on type '{ message: string; language: string; }'.
+src/services/aiService.js(266,26): error TS2339: Property 'page_key' does not exist on type '{ message: string; language: string; }'.
+src/services/aiService.js(267,41): error TS2339: Property 'conversation_id' does not exist on type '{ message: string; language: string; }'.
+src/services/aiService.js(271,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/aiService.js(279,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/aiService.js(289,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/aiService.js(309,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/aiService.js(326,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/aiService.js(342,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/authService.js(52,50): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+src/services/authService.js(53,27): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+src/services/authService.js(75,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/authService.js(87,26): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/authService.js(105,5): error TS2322: Type 'Object | null' is not assignable to type 'AuthUser | null'.
+  The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
+    Type 'Object' is missing the following properties from type 'AuthUser': email, type
+src/services/authService.js(121,48): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+src/services/authService.js(122,25): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+src/services/authService.js(135,18): error TS2339: Property 'status' does not exist on type '{}'.
+src/services/authService.js(138,26): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/boardsDepartmentService.js(23,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/boardsDepartmentService.js(43,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/boardsDepartmentService.js(59,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/chatService.js(29,9): error TS2339: Property 'other_user' does not exist on type 'object'.
+src/services/chatService.js(30,9): error TS2339: Property 'otherUser' does not exist on type 'object'.
+src/services/chatService.js(31,9): error TS2339: Property 'participant' does not exist on type 'object'.
+src/services/chatService.js(32,9): error TS2339: Property 'user' does not exist on type 'object'.
+src/services/chatService.js(34,22): error TS2339: Property 'last_message_at' does not exist on type 'object'.
+src/services/chatService.js(34,45): error TS2339: Property 'lastMessageAt' does not exist on type 'object'.
+src/services/chatService.js(34,66): error TS2339: Property 'updated_at' does not exist on type 'object'.
+src/services/chatService.js(35,21): error TS2339: Property '_lastPreview' does not exist on type 'object'.
+src/services/chatService.js(36,30): error TS2339: Property 'last_message' does not exist on type 'object'.
+src/services/chatService.js(37,20): error TS2339: Property 'last_message' does not exist on type 'object'.
+src/services/chatService.js(43,13): error TS2339: Property 'id' does not exist on type 'object'.
+src/services/chatService.js(50,30): error TS2339: Property 'unread_count' does not exist on type 'object'.
+src/services/chatService.js(50,50): error TS2339: Property 'unreadCount' does not exist on type 'object'.
+src/services/chatService.js(51,41): error TS2339: Property '_lastPreview' does not exist on type 'object'.
+src/services/chatService.js(62,13): error TS2339: Property 'id' does not exist on type 'object'.
+src/services/chatService.js(63,26): error TS2339: Property 'conversation_id' does not exist on type 'object'.
+src/services/chatService.js(64,20): error TS2339: Property 'sender_id' does not exist on type 'object'.
+src/services/chatService.js(64,51): error TS2339: Property 'sender_id' does not exist on type 'object'.
+src/services/chatService.js(64,75): error TS2339: Property 'senderId' does not exist on type 'object'.
+src/services/chatService.js(65,18): error TS2339: Property 'message' does not exist on type 'object'.
+src/services/chatService.js(65,33): error TS2339: Property 'body' does not exist on type 'object'.
+src/services/chatService.js(65,45): error TS2339: Property 'text' does not exist on type 'object'.
+src/services/chatService.js(66,21): error TS2339: Property 'is_read' does not exist on type 'object'.
+src/services/chatService.js(66,36): error TS2339: Property 'isRead' does not exist on type 'object'.
+src/services/chatService.js(67,21): error TS2339: Property 'created_at' does not exist on type 'object'.
+src/services/chatService.js(67,39): error TS2339: Property 'createdAt' does not exist on type 'object'.
+src/services/chatService.js(71,30): error TS7006: Parameter 'meta' implicitly has an 'any' type.
+src/services/chatService.js(99,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/chatService.js(113,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/chatService.js(134,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/chatService.js(142,21): error TS7006: Parameter 'conversationId' implicitly has an 'any' type.
+src/services/chatService.js(150,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/chatService.js(157,20): error TS7006: Parameter 'conversationId' implicitly has an 'any' type.
+src/services/chatService.js(162,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/chatService.js(169,23): error TS7006: Parameter 'messageId' implicitly has an 'any' type.
+src/services/chatService.js(174,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/chatService.js(188,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/chatService.js(207,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(14,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/commissionService.js(22,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(30,27): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/commissionService.js(35,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(43,26): error TS7006: Parameter 'commissionData' implicitly has an 'any' type.
+src/services/commissionService.js(48,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(64,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(72,26): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/commissionService.js(77,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(85,29): error TS7006: Parameter 'calculationData' implicitly has an 'any' type.
+src/services/commissionService.js(90,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(98,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/commissionService.js(106,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(114,24): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/commissionService.js(119,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(127,23): error TS7006: Parameter 'depositData' implicitly has an 'any' type.
+src/services/commissionService.js(132,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(140,23): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/commissionService.js(140,27): error TS7006: Parameter 'depositData' implicitly has an 'any' type.
+src/services/commissionService.js(145,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(153,23): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/commissionService.js(158,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(174,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(187,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(200,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(209,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/commissionService.js(220,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(244,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(263,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(278,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(296,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(311,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(326,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(342,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(359,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(376,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(391,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(406,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/commissionService.js(423,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contract/contractNormalize.js(2,30): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/services/contract/contractNormalize.js(18,39): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/services/contract/contractNormalize.js(38,47): error TS7006: Parameter 'raw' implicitly has an 'any' type.
+src/services/contract/contractNormalize.js(48,31): error TS7006: Parameter 'u' implicitly has an 'any' type.
+src/services/contract/contractNormalize.js(58,43): error TS7006: Parameter 'raw' implicitly has an 'any' type.
+src/services/contract/contractNormalize.js(71,44): error TS7006: Parameter 'raw' implicitly has an 'any' type.
+src/services/contract/contractNormalize.js(78,47): error TS7006: Parameter 'raw' implicitly has an 'any' type.
+src/services/contract/contractNormalize.js(95,81): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/services/contract/contractNormalize.js(95,84): error TS7006: Parameter 'u' implicitly has an 'any' type.
+src/services/contractService.js(23,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/contractService.js(31,29): error TS2339: Property 'response' does not exist on type '{}'.
+src/services/contractService.js(31,56): error TS2339: Property 'status' does not exist on type '{}'.
+src/services/contractService.js(42,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/contractService.js(56,29): error TS2339: Property 'response' does not exist on type '{}'.
+src/services/contractService.js(56,56): error TS2339: Property 'status' does not exist on type '{}'.
+src/services/contractService.js(68,30): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/contractService.js(68,42): error TS7006: Parameter 'status' implicitly has an 'any' type.
+src/services/contractService.js(76,25): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/contractService.js(81,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(89,30): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/contractService.js(94,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(98,25): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/contractService.js(102,24): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/contractService.js(110,44): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/contractService.js(110,56): error TS7006: Parameter 'status' implicitly has an 'any' type.
+src/services/contractService.js(115,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(123,35): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/contractService.js(123,47): error TS7006: Parameter 'status' implicitly has an 'any' type.
+src/services/contractService.js(128,13): error TS2339: Property 'response' does not exist on type 'Error'.
+src/services/contractService.js(133,26): error TS2339: Property 'notes' does not exist on type '{ status: any; }'.
+src/services/contractService.js(137,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(147,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/contractService.js(152,23): error TS2339: Property 'page' does not exist on type 'Object'.
+src/services/contractService.js(153,27): error TS2339: Property 'per_page' does not exist on type 'Object'.
+src/services/contractService.js(164,29): error TS2339: Property 'response' does not exist on type '{}'.
+src/services/contractService.js(164,56): error TS2339: Property 'status' does not exist on type '{}'.
+src/services/contractService.js(191,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(199,31): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(204,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(213,25): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(223,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(239,24): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/contractService.js(246,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(254,24): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(254,28): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/contractService.js(260,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(269,27): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(269,31): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/contractService.js(275,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(283,30): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(283,34): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/contractService.js(291,28): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(291,32): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/contractService.js(299,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(307,30): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(307,34): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/contractService.js(312,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(320,31): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(320,35): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/contractService.js(325,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(333,28): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(339,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(349,26): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(373,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(382,25): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/contractService.js(382,37): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/contractService.js(395,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(403,28): error TS7006: Parameter 'unitId' implicitly has an 'any' type.
+src/services/contractService.js(403,36): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/contractService.js(408,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(417,32): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(417,36): error TS7006: Parameter 'formData' implicitly has an 'any' type.
+src/services/contractService.js(422,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(430,24): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(437,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(446,26): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(446,30): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/contractService.js(456,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(465,27): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(465,31): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/contractService.js(475,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(484,28): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(489,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(514,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(523,32): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/contractService.js(539,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(560,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(568,20): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(573,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(581,22): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(581,26): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/contractService.js(586,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(594,23): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/contractService.js(594,27): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/contractService.js(599,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(607,38): error TS7006: Parameter 'email' implicitly has an 'any' type.
+src/services/contractService.js(614,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(631,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(646,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(669,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(689,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(697,32): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/contractService.js(715,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/contractService.js(731,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/credit/creditNotificationsApi.js(18,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/credit/creditNotificationsApi.js(37,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/credit/creditNotificationsApi.js(49,30): error TS7006: Parameter 'notificationId' implicitly has an 'any' type.
+src/services/credit/creditNotificationsApi.js(54,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/credit/creditNotificationsApi.js(67,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(13,27): error TS7006: Parameter 'bookingId' implicitly has an 'any' type.
+src/services/creditService.js(16,9): error TS2339: Property 'code' does not exist on type 'Error'.
+src/services/creditService.js(36,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(49,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(69,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(83,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/creditService.js(89,16): error TS2353: Object literal may only specify known properties, and 'items' does not exist in type 'any[]'.
+src/services/creditService.js(92,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(104,33): error TS7006: Parameter 'bookingId' implicitly has an 'any' type.
+src/services/creditService.js(112,24): error TS7006: Parameter 'bookingId' implicitly has an 'any' type.
+src/services/creditService.js(128,23): error TS7006: Parameter 'bookingId' implicitly has an 'any' type.
+src/services/creditService.js(145,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/creditService.js(151,16): error TS2353: Object literal may only specify known properties, and 'items' does not exist in type 'any[]'.
+src/services/creditService.js(154,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(186,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/creditService.js(192,16): error TS2353: Object literal may only specify known properties, and 'items' does not exist in type 'any[]'.
+src/services/creditService.js(195,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(215,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(232,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(267,26): error TS7006: Parameter 'bookingId' implicitly has an 'any' type.
+src/services/creditService.js(285,36): error TS7006: Parameter 'bookingId' implicitly has an 'any' type.
+src/services/creditService.js(301,29): error TS7006: Parameter 'bookingId' implicitly has an 'any' type.
+src/services/creditService.js(307,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(316,32): error TS7006: Parameter 'bookingId' implicitly has an 'any' type.
+src/services/creditService.js(316,43): error TS7006: Parameter 'stageNumber' implicitly has an 'any' type.
+src/services/creditService.js(335,25): error TS7006: Parameter 'bookingId' implicitly has an 'any' type.
+src/services/creditService.js(339,71): error TS2339: Property 'reason' does not exist on type '{}'.
+src/services/creditService.js(359,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(364,26): error TS7006: Parameter 'financingId' implicitly has an 'any' type.
+src/services/creditService.js(374,25): error TS7006: Parameter 'financingId' implicitly has an 'any' type.
+src/services/creditService.js(374,38): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/creditService.js(390,33): error TS7006: Parameter 'bookingId' implicitly has an 'any' type.
+src/services/creditService.js(406,31): error TS7006: Parameter 'transferId' implicitly has an 'any' type.
+src/services/creditService.js(421,33): error TS7006: Parameter 'transferId' implicitly has an 'any' type.
+src/services/creditService.js(435,31): error TS7006: Parameter 'transferId' implicitly has an 'any' type.
+src/services/creditService.js(458,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(483,27): error TS2339: Property 'booking_id' does not exist on type 'Object'.
+src/services/creditService.js(483,57): error TS2339: Property 'bookingId' does not exist on type 'Object'.
+src/services/creditService.js(487,11): error TS2339: Property 'code' does not exist on type 'Error'.
+src/services/creditService.js(500,24): error TS7006: Parameter 'bookingId' implicitly has an 'any' type.
+src/services/creditService.js(506,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(515,27): error TS7006: Parameter 'bookingId' implicitly has an 'any' type.
+src/services/creditService.js(531,27): error TS7006: Parameter 'installmentId' implicitly has an 'any' type.
+src/services/creditService.js(545,27): error TS7006: Parameter 'installmentId' implicitly has an 'any' type.
+src/services/creditService.js(561,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/creditService.js(567,16): error TS2353: Object literal may only specify known properties, and 'items' does not exist in type 'any[]'.
+src/services/creditService.js(570,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(583,15): error TS2339: Property 'items' does not exist on type 'any[]'.
+src/services/creditService.js(609,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(624,29): error TS2339: Property 'response' does not exist on type '{}'.
+src/services/creditService.js(628,18): error TS2339: Property 'response' does not exist on type '{}'.
+src/services/creditService.js(628,52): error TS2339: Property 'message' does not exist on type '{}'.
+src/services/creditService.js(633,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/creditService.js(645,37): error TS7006: Parameter 'bookingId' implicitly has an 'any' type.
+src/services/creditService.js(692,26): error TS7006: Parameter 'claimFileId' implicitly has an 'any' type.
+src/services/creditService.js(706,30): error TS7006: Parameter 'claimFileId' implicitly has an 'any' type.
+src/services/creditService.js(720,30): error TS7006: Parameter 'claimFileId' implicitly has an 'any' type.
+src/services/creditService.js(725,25): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/creditService.js(735,21): error TS7006: Parameter 'claimId' implicitly has an 'any' type.
+src/services/creditService.js(745,22): error TS7006: Parameter 'claimId' implicitly has an 'any' type.
+src/services/creditService.js(745,31): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/editorService.js(31,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/editorService.js(39,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(53,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(69,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(78,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/editorService.js(86,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(95,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/editorService.js(103,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(117,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(133,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(148,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(163,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(179,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(194,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(209,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(224,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(240,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(255,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(270,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(279,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/editorService.js(287,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/editorService.js(304,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/exclusiveProjectService.js(19,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/exclusiveProjectService.js(27,33): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/exclusiveProjectService.js(32,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/exclusiveProjectService.js(40,32): error TS7006: Parameter 'projectData' implicitly has an 'any' type.
+src/services/exclusiveProjectService.js(45,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/exclusiveProjectService.js(53,32): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/exclusiveProjectService.js(53,36): error TS7006: Parameter 'projectData' implicitly has an 'any' type.
+src/services/exclusiveProjectService.js(58,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/exclusiveProjectService.js(66,32): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/exclusiveProjectService.js(71,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/exclusiveProjectService.js(79,33): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/exclusiveProjectService.js(84,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/exclusiveProjectService.js(92,32): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/exclusiveProjectService.js(97,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/exclusiveProjectService.js(113,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/exclusiveProjectService.js(126,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/hr/hrDashboardEmployees.js(34,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/hr/hrDashboardEmployees.js(41,38): error TS7006: Parameter 'employeeId' implicitly has an 'any' type.
+src/services/hr/hrDashboardEmployees.js(68,38): error TS7006: Parameter 'employeeId' implicitly has an 'any' type.
+src/services/hr/hrDashboardEmployees.js(68,50): error TS7006: Parameter 'employeeData' implicitly has an 'any' type.
+src/services/hr/hrDashboardEmployees.js(81,37): error TS7006: Parameter 'employeeId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(26,35): error TS7006: Parameter 'teamData' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(40,36): error TS7006: Parameter 'teamId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(40,44): error TS7006: Parameter 'teamData' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(54,35): error TS7006: Parameter 'teamId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(115,46): error TS7006: Parameter 'marketerId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(129,31): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/hr/hrOperations.js(146,33): error TS7006: Parameter 'userData' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(160,31): error TS7006: Parameter 'userId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(174,34): error TS7006: Parameter 'userId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(174,42): error TS7006: Parameter 'userData' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(204,33): error TS7006: Parameter 'userId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(239,31): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/hr/hrOperations.js(248,26): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/hr/hrOperations.js(260,40): error TS7006: Parameter 'userId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(268,37): error TS7006: Parameter 'userId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(268,45): error TS7006: Parameter 'warningData' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(282,36): error TS7006: Parameter 'warningId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(297,31): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/hr/hrOperations.js(306,26): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/hr/hrOperations.js(318,41): error TS7006: Parameter 'userId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(326,42): error TS7006: Parameter 'userId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(326,50): error TS7006: Parameter 'contractData' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(340,37): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(354,40): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(354,52): error TS7006: Parameter 'contractData' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(368,42): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(388,42): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(404,40): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/hr/hrOperations.js(418,41): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/hr/hrPdfBlob.js(1,37): error TS7006: Parameter 'response' implicitly has an 'any' type.
+src/services/hr/hrPerformance.js(22,39): error TS7006: Parameter 'marketerId' implicitly has an 'any' type.
+src/services/hr/hrPerformance.js(22,51): error TS7006: Parameter 'goalData' implicitly has an 'any' type.
+src/services/hr/hrReportingGenerate.js(12,53): error TS7006: Parameter 'month' implicitly has an 'any' type.
+src/services/hr/hrReportingGenerate.js(12,60): error TS7006: Parameter 'year' implicitly has an 'any' type.
+src/services/hr/hrReportingGenerate.js(42,46): error TS7006: Parameter 'marketerId' implicitly has an 'any' type.
+src/services/hr/hrReportingGenerate.js(42,58): error TS7006: Parameter 'month' implicitly has an 'any' type.
+src/services/hr/hrReportingGenerate.js(42,65): error TS7006: Parameter 'year' implicitly has an 'any' type.
+src/services/hr/hrTeams.js(13,31): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/hr/hrTeams.js(21,27): error TS2339: Property 'response' does not exist on type '{}'.
+src/services/hr/hrTeams.js(31,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/hr/hrTeams.js(40,22): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/hr/hrTeams.js(55,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/hr/hrTeams.js(63,34): error TS7006: Parameter 'teamId' implicitly has an 'any' type.
+src/services/hr/hrTeams.js(77,33): error TS7006: Parameter 'teamData' implicitly has an 'any' type.
+src/services/hr/hrTeams.js(91,34): error TS7006: Parameter 'teamId' implicitly has an 'any' type.
+src/services/hr/hrTeams.js(91,42): error TS7006: Parameter 'teamData' implicitly has an 'any' type.
+src/services/hr/hrTeams.js(105,33): error TS7006: Parameter 'teamId' implicitly has an 'any' type.
+src/services/hr/hrTeams.js(118,43): error TS7006: Parameter 'teamId' implicitly has an 'any' type.
+src/services/hr/hrTeams.js(118,51): error TS7006: Parameter 'marketerIds' implicitly has an 'any' type.
+src/services/hr/hrTeams.js(134,39): error TS7006: Parameter 'teamId' implicitly has an 'any' type.
+src/services/hr/hrTeams.js(148,47): error TS7006: Parameter 'teamId' implicitly has an 'any' type.
+src/services/hr/hrTeams.js(162,42): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/hr/hrTeams.js(177,42): error TS7006: Parameter 'teamId' implicitly has an 'any' type.
+src/services/inventoryService.js(32,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/inventoryService.js(41,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/inventoryService.js(82,25): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/inventoryService.js(98,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/inventoryService.js(106,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/inventoryService.js(125,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/managerService.js(17,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/managerService.js(28,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/managerService.js(36,21): error TS7006: Parameter 'employeeId' implicitly has an 'any' type.
+src/services/managerService.js(50,20): error TS7006: Parameter 'employeeId' implicitly has an 'any' type.
+src/services/managerService.js(57,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/managerService.js(65,19): error TS7006: Parameter 'employeeId' implicitly has an 'any' type.
+src/services/managerService.js(65,31): error TS7006: Parameter 'reviewId' implicitly has an 'any' type.
+src/services/managerService.js(79,22): error TS7006: Parameter 'employeeId' implicitly has an 'any' type.
+src/services/managerService.js(79,34): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/managerService.js(93,22): error TS7006: Parameter 'employeeId' implicitly has an 'any' type.
+src/services/managerService.js(93,34): error TS7006: Parameter 'reviewId' implicitly has an 'any' type.
+src/services/managerService.js(93,44): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/managerService.js(107,22): error TS7006: Parameter 'employeeId' implicitly has an 'any' type.
+src/services/managerService.js(107,34): error TS7006: Parameter 'reviewId' implicitly has an 'any' type.
+src/services/managerService.js(127,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/managerService.js(135,17): error TS7006: Parameter 'taskId' implicitly has an 'any' type.
+src/services/managerService.js(155,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(12,17): error TS7006: Parameter 'response' implicitly has an 'any' type.
+src/services/marketingService.js(14,29): error TS7006: Parameter 'response' implicitly has an 'any' type.
+src/services/marketingService.js(14,56): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/services/marketingService.js(35,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(49,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(60,24): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/marketingService.js(65,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(72,32): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/marketingService.js(77,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(86,32): error TS7006: Parameter 'projectId' implicitly has an 'any' type.
+src/services/marketingService.js(89,31): error TS2345: Argument of type 'null' is not assignable to parameter of type '{} | undefined'.
+src/services/marketingService.js(91,11): error TS18046: 'error' is of type 'unknown'.
+src/services/marketingService.js(96,25): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/marketingService.js(101,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(105,26): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/marketingService.js(112,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(121,38): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/marketingService.js(121,50): error TS7006: Parameter 'marketingPercent' implicitly has an 'any' type.
+src/services/marketingService.js(124,58): error TS2339: Property 'unit_price' does not exist on type '{ contract_id: number; marketing_percent: number; }'.
+src/services/marketingService.js(128,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(137,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(141,28): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/marketingService.js(146,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(150,29): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/marketingService.js(165,43): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+src/services/marketingService.js(166,15): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+src/services/marketingService.js(172,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(180,26): error TS7006: Parameter 'projectId' implicitly has an 'any' type.
+src/services/marketingService.js(184,23): error TS2339: Property 'project_id' does not exist on type '{}'.
+src/services/marketingService.js(185,23): error TS2339: Property 'marketing_project_id' does not exist on type '{}'.
+src/services/marketingService.js(191,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(205,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(216,29): error TS7006: Parameter 'planId' implicitly has an 'any' type.
+src/services/marketingService.js(221,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(225,28): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/marketingService.js(235,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(239,29): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/marketingService.js(244,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(248,34): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/marketingService.js(253,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(264,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(272,28): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/marketingService.js(277,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(287,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(295,20): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/marketingService.js(300,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(304,20): error TS7006: Parameter 'taskId' implicitly has an 'any' type.
+src/services/marketingService.js(304,28): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/marketingService.js(309,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(313,26): error TS7006: Parameter 'taskId' implicitly has an 'any' type.
+src/services/marketingService.js(313,34): error TS7006: Parameter 'status' implicitly has an 'any' type.
+src/services/marketingService.js(318,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(328,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(336,21): error TS7006: Parameter 'leadId' implicitly has an 'any' type.
+src/services/marketingService.js(339,31): error TS2345: Argument of type 'null' is not assignable to parameter of type '{} | undefined'.
+src/services/marketingService.js(341,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(345,19): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/marketingService.js(350,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(354,20): error TS7006: Parameter 'leadId' implicitly has an 'any' type.
+src/services/marketingService.js(354,28): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/marketingService.js(359,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(363,21): error TS7006: Parameter 'leadId' implicitly has an 'any' type.
+src/services/marketingService.js(368,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(378,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(389,24): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/marketingService.js(394,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(401,24): error TS7006: Parameter 'projectId' implicitly has an 'any' type.
+src/services/marketingService.js(406,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(413,27): error TS7006: Parameter 'projectId' implicitly has an 'any' type.
+src/services/marketingService.js(413,38): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/services/marketingService.js(418,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(425,37): error TS7006: Parameter 'projectId' implicitly has an 'any' type.
+src/services/marketingService.js(430,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(442,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(459,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(471,38): error TS7006: Parameter 'userId' implicitly has an 'any' type.
+src/services/marketingService.js(476,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(485,37): error TS7006: Parameter 'projectId' implicitly has an 'any' type.
+src/services/marketingService.js(500,28): error TS7006: Parameter 'planId' implicitly has an 'any' type.
+src/services/marketingService.js(508,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(516,38): error TS7006: Parameter 'projectId' implicitly has an 'any' type.
+src/services/marketingService.js(531,29): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/marketingService.js(542,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(551,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(555,40): error TS7006: Parameter 'projectId' implicitly has an 'any' type.
+src/services/marketingService.js(563,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(574,37): error TS7006: Parameter 'distributionId' implicitly has an 'any' type.
+src/services/marketingService.js(582,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/marketingService.js(586,38): error TS7006: Parameter 'distributionId' implicitly has an 'any' type.
+src/services/marketingService.js(594,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/notificationService.js(10,5): error TS7034: Variable 'pusher' implicitly has type 'any' in some locations where its type cannot be determined.
+src/services/notificationService.js(11,5): error TS7034: Variable 'channels' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/services/notificationService.js(13,25): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/services/notificationService.js(19,32): error TS7006: Parameter 'response' implicitly has an 'any' type.
+src/services/notificationService.js(47,10): error TS7005: Variable 'pusher' implicitly has an 'any' type.
+src/services/notificationService.js(54,47): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/notificationService.js(60,22): error TS2339: Property 'id' does not exist on type 'AuthUser'.
+src/services/notificationService.js(61,79): error TS2339: Property 'id' does not exist on type 'AuthUser'.
+src/services/notificationService.js(62,45): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/notificationService.js(71,47): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/notificationService.js(90,21): error TS2339: Property 'role' does not exist on type 'AuthUser'.
+src/services/notificationService.js(92,29): error TS7006: Parameter 'path' implicitly has an 'any' type.
+src/services/notificationService.js(98,72): error TS2339: Property 'message' does not exist on type '{}'.
+src/services/notificationService.js(123,7): error TS2322: Type '{ id: any; title: any; time: any; read: boolean; type: any; eventType: any; status: any; actionRequired: boolean; }[]' is not assignable to type 'never[]'.
+  Type '{ id: any; title: any; time: any; read: boolean; type: any; eventType: any; status: any; actionRequired: boolean; }' is not assignable to type 'never'.
+src/services/notificationService.js(123,48): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/services/notificationService.js(123,67): error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/services/notificationService.js(180,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/notificationService.js(195,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/notificationService.js(223,33): error TS2345: Argument of type '{ constructor: Function; toString(): string; toLocaleString(): string; valueOf(): Object; hasOwnProperty(v: PropertyKey): boolean; isPrototypeOf(v: Object): boolean; ... 6 more ...; actionRequired: boolean; }' is not assignable to parameter of type 'never'.
+src/services/notificationService.js(234,16): error TS2339: Property 'id' does not exist on type 'Object'.
+src/services/notificationService.js(235,19): error TS2339: Property 'message' does not exist on type 'Object'.
+src/services/notificationService.js(241,33): error TS2345: Argument of type '{ id: any; title: any; time: string; read: boolean; type: string; actionRequired: boolean; }' is not assignable to parameter of type 'never'.
+src/services/notificationService.js(245,63): error TS2339: Property 'message' does not exist on type 'Object'.
+src/services/notificationService.js(260,21): error TS2339: Property 'role' does not exist on type 'AuthUser'.
+src/services/notificationService.js(265,21): error TS2339: Property 'role' does not exist on type 'AuthUser'.
+src/services/notificationService.js(276,49): error TS2339: Property 'id' does not exist on type 'never'.
+src/services/notificationService.js(278,11): error TS2339: Property 'read' does not exist on type 'never'.
+src/services/notificationService.js(279,11): error TS2339: Property 'actionRequired' does not exist on type 'never'.
+src/services/notificationService.js(284,49): error TS2339: Property 'id' does not exist on type 'never'.
+src/services/notificationService.js(286,11): error TS2339: Property 'read' does not exist on type 'never'.
+src/services/notificationService.js(287,11): error TS2339: Property 'actionRequired' does not exist on type 'never'.
+src/services/notificationService.js(304,21): error TS2339: Property 'role' does not exist on type 'AuthUser'.
+src/services/notificationService.js(309,21): error TS2339: Property 'role' does not exist on type 'AuthUser'.
+src/services/notificationService.js(319,11): error TS2339: Property 'read' does not exist on type 'never'.
+src/services/notificationService.js(320,11): error TS2339: Property 'actionRequired' does not exist on type 'never'.
+src/services/notificationService.js(326,11): error TS2339: Property 'read' does not exist on type 'never'.
+src/services/notificationService.js(327,11): error TS2339: Property 'actionRequired' does not exist on type 'never'.
+src/services/notificationService.js(338,60): error TS2339: Property 'read' does not exist on type 'never'.
+src/services/notificationService.js(346,9): error TS7005: Variable 'pusher' implicitly has an 'any' type.
+src/services/notificationService.js(347,7): error TS7005: Variable 'channels' implicitly has an 'any[]' type.
+src/services/notificationService.js(360,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/notificationService.js(428,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/notificationService.js(454,22): error TS2339: Property 'code' does not exist on type 'Error'.
+src/services/notificationService.js(455,22): error TS2339: Property 'status' does not exist on type 'Error'.
+src/services/pdf/pdfContractFill.js(7,21): error TS7006: Parameter 'dateString' implicitly has an 'any' type.
+src/services/pdf/pdfContractFill.js(29,21): error TS7006: Parameter 'dateString' implicitly has an 'any' type.
+src/services/pdf/pdfContractFill.js(42,23): error TS7006: Parameter 'days' implicitly has an 'any' type.
+src/services/pdf/pdfContractFill.js(48,34): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/services/pdf/pdfContractFill.js(53,10): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ owner: string; partner: string; }'.
+src/services/pdf/pdfContractFill.js(56,45): error TS7006: Parameter 'contractData' implicitly has an 'any' type.
+src/services/pdf/pdfContractFill.js(141,23): error TS7006: Parameter 'text' implicitly has an 'any' type.
+src/services/pdf/pdfContractFill.js(141,29): error TS7006: Parameter 'loc' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(2,39): error TS7016: Could not find a declaration file for module 'arabic-reshaper'. 'C:/Users/emadh/OneDrive/Desktop/front.rakez/rakez-poject/node_modules/arabic-reshaper/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/arabic-reshaper` if it exists or add a new declaration (.d.ts) file containing `declare module 'arabic-reshaper';`
+src/services/pdf/pdfCore.js(5,5): error TS7034: Variable '_pdfDepsPromise' implicitly has type 'any' in some locations where its type cannot be determined.
+src/services/pdf/pdfCore.js(9,7): error TS7005: Variable '_pdfDepsPromise' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(48,23): error TS7006: Parameter 'code' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(65,22): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(69,31): error TS7006: Parameter 'text' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(113,31): error TS7006: Parameter 'text' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(149,36): error TS7006: Parameter 'font' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(149,42): error TS7006: Parameter 'text' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(149,48): error TS7006: Parameter 'size' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(156,29): error TS7006: Parameter 'page' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(156,35): error TS7006: Parameter 'font' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(156,41): error TS7006: Parameter 'text' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(156,47): error TS7006: Parameter 'xRight' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(156,55): error TS7006: Parameter 'y' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(156,58): error TS7006: Parameter 'size' implicitly has an 'any' type.
+src/services/pdf/pdfCore.js(156,64): error TS7006: Parameter 'color' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(6,27): error TS7006: Parameter 'page' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(6,33): error TS7006: Parameter 'font' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(6,39): error TS7006: Parameter 'rgb' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(6,44): error TS7006: Parameter 'title' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(6,51): error TS7006: Parameter 'y' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(20,24): error TS7006: Parameter 'page' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(20,30): error TS7006: Parameter 'font' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(20,36): error TS7006: Parameter 'rgb' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(20,41): error TS7006: Parameter 'rows' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(20,47): error TS7006: Parameter 'y' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(39,24): error TS7006: Parameter 'page' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(39,30): error TS7006: Parameter 'font' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(39,36): error TS7006: Parameter 'rgb' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(39,41): error TS7006: Parameter 'headers' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(39,50): error TS7006: Parameter 'rows' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(39,56): error TS7006: Parameter 'y' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(50,20): error TS7006: Parameter 'h' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(50,23): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(63,18): error TS7006: Parameter 'cell' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(63,24): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(79,42): error TS7031: Binding element 'title' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(79,49): error TS7031: Binding element 'subtitle' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(79,59): error TS7031: Binding element 'sections' implicitly has an 'any' type.
+src/services/pdf/pdfDocumentBuilder.js(79,69): error TS7031: Binding element 'footer' implicitly has an 'any' type.
+src/services/pdf/pdfReservationVoucher.js(3,53): error TS7006: Parameter 'reservation' implicitly has an 'any' type.
+src/services/pdf/pdfReservationVoucher.js(14,49): error TS2339: Property 'name' does not exist on type '{}'.
+src/services/pdf/pdfReservationVoucher.js(15,37): error TS2339: Property 'city' does not exist on type '{}'.
+src/services/pdf/pdfReservationVoucher.js(16,38): error TS2339: Property 'district' does not exist on type '{}'.
+src/services/pdf/pdfReservationVoucher.js(17,45): error TS2339: Property 'developer_name' does not exist on type '{}'.
+src/services/pdf/pdfReservationVoucher.js(18,40): error TS2339: Property 'number' does not exist on type '{}'.
+src/services/pdf/pdfReservationVoucher.js(18,56): error TS2339: Property 'unit_number' does not exist on type '{}'.
+src/services/pdf/pdfReservationVoucher.js(19,42): error TS2339: Property 'type' does not exist on type '{}'.
+src/services/pdf/pdfReservationVoucher.js(19,56): error TS2339: Property 'unit_type' does not exist on type '{}'.
+src/services/pdf/pdfReservationVoucher.js(20,39): error TS2339: Property 'area' does not exist on type '{}'.
+src/services/pdf/pdfReservationVoucher.js(21,34): error TS2339: Property 'floor' does not exist on type '{}'.
+src/services/pdf/pdfReservationVoucher.js(22,45): error TS2339: Property 'price' does not exist on type '{}'.
+src/services/pdf/pdfReservationVoucher.js(22,73): error TS2339: Property 'price' does not exist on type '{}'.
+src/services/pdf/pdfReservationVoucher.js(28,42): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ bank_transfer: string; cash: string; bank_financing: string; }'.
+src/services/pdf/pdfReservationVoucher.js(31,36): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ cash: string; supported_bank: string; unsupported_bank: string; }'.
+src/services/pdf/pdfReservationVoucher.js(46,45): error TS2339: Property 'name' does not exist on type '{}'.
+src/services/pdf/pdfReservationVoucher.js(47,37): error TS2339: Property 'team' does not exist on type '{}'.
+src/services/pdf/pdfStandardReports.js(4,50): error TS7006: Parameter 'contract' implicitly has an 'any' type.
+src/services/pdf/pdfStandardReports.js(31,50): error TS7006: Parameter 'commission' implicitly has an 'any' type.
+src/services/pdf/pdfStandardReports.js(31,62): error TS7006: Parameter 'distributions' implicitly has an 'any[]' type.
+src/services/pdf/pdfStandardReports.js(39,41): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ pending: string; approved: string; paid: string; rejected: string; }'.
+src/services/pdf/pdfStandardReports.js(50,9): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ pending: string; approved: string; paid: string; rejected: string; }'.
+src/services/pdf/pdfStandardReports.js(73,47): error TS7006: Parameter 'deposit' implicitly has an 'any' type.
+src/services/pdf/pdfStandardReports.js(79,51): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ owner: string; buyer: string; }'.
+src/services/pdf/pdfStandardReports.js(82,34): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ pending: string; received: string; confirmed: string; refunded: string; }'.
+src/services/pdf/pdfStandardReports.js(103,60): error TS7006: Parameter 'report' implicitly has an 'any' type.
+src/services/pdf/pdfStandardReports.js(103,68): error TS7006: Parameter 'generatedAt' implicitly has an 'any' type.
+src/services/pdf/pdfStandardReports.js(109,27): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/services/pdf/pdfStandardReports.js(123,7): error TS2353: Object literal may only specify known properties, and 'infoRows' does not exist in type '{ sectionTitle: string; headers: string[]; rows: any; }'.
+src/services/pdf/pdfStandardReports.js(141,58): error TS7006: Parameter 'report' implicitly has an 'any' type.
+src/services/pdf/pdfStandardReports.js(148,26): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/services/pdf/pdfStandardReports.js(153,27): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/services/pdf/pdfStandardReports.js(159,7): error TS2353: Object literal may only specify known properties, and 'infoRows' does not exist in type '{ sectionTitle: string; headers: string[]; rows: any; }'.
+src/services/pdf/pdfStandardReports.js(175,54): error TS7006: Parameter 'plan' implicitly has an 'any' type.
+src/services/pdf/pdfStandardReports.js(192,7): error TS2353: Object literal may only specify known properties, and 'headers' does not exist in type '{ sectionTitle: string; infoRows: any[][]; }'.
+src/services/pdf/pdfStandardReports.js(200,7): error TS2353: Object literal may only specify known properties, and 'headers' does not exist in type '{ sectionTitle: string; infoRows: any[][]; }'.
+src/services/pdf/pdfUnitDetails.js(4,46): error TS7006: Parameter 'unit' implicitly has an 'any' type.
+src/services/pdf/pdfUnitDetails.js(19,23): error TS7006: Parameter 'label' implicitly has an 'any' type.
+src/services/pdf/pdfUnitDetails.js(19,30): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/services/pdf/pdfUnitDetails.js(34,27): error TS2339: Property 'projectName' does not exist on type '{}'.
+src/services/pdf/pdfUnitDetails.js(35,36): error TS2339: Property 'projectName' does not exist on type '{}'.
+src/services/pdf/pdfUnitDetails.js(58,25): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ available: string; reserved: string; sold: string; pending: string; }'.
+src/services/pdf/pdfWeeklyPlatform.js(26,17): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(30,33): error TS7006: Parameter 'distribution' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(33,75): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(33,78): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(34,85): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(34,88): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(35,33): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(35,36): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(59,9): error TS7034: Variable 'tableRows' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/services/pdf/pdfWeeklyPlatform.js(68,7): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ instagram: string; snapchat: string; tiktok: string; x: string; google_youtube: string; other: string; aqar: string; }'.
+  No index signature with a parameter of type 'string' was found on type '{ instagram: string; snapchat: string; tiktok: string; x: string; google_youtube: string; other: string; aqar: string; }'.
+src/services/pdf/pdfWeeklyPlatform.js(76,5): error TS7005: Variable 'tableRows' implicitly has an 'any[]' type.
+src/services/pdf/pdfWeeklyPlatform.js(90,28): error TS7006: Parameter 'pdfDoc' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(90,36): error TS7006: Parameter 'page' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(90,42): error TS7006: Parameter 'w' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(90,45): error TS7006: Parameter 'yStart' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(112,29): error TS7006: Parameter 'num' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(142,55): error TS7006: Parameter 'distribution' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(169,22): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(170,25): error TS7006: Parameter 'text' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(170,31): error TS7006: Parameter 'size' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(170,37): error TS7006: Parameter 'yPos' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(180,18): error TS7006: Parameter 'text' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(180,24): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(180,27): error TS7006: Parameter 'yPos' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(211,129): error TS2339: Property 'length' does not exist on type 'never'.
+src/services/pdf/pdfWeeklyPlatform.js(234,22): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(234,27): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(239,18): error TS7006: Parameter 'cell' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(239,24): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(277,26): error TS7006: Parameter 'text' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(277,32): error TS7006: Parameter 'xRight' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(277,40): error TS7006: Parameter 'yPos' implicitly has an 'any' type.
+src/services/pdf/pdfWeeklyPlatform.js(277,46): error TS7006: Parameter 'color' implicitly has an 'any' type.
+src/services/pdfApi.js(7,22): error TS7006: Parameter 'response' implicitly has an 'any' type.
+src/services/pdfApi.js(17,43): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/pdfApi.js(27,49): error TS7006: Parameter 'reservationId' implicitly has an 'any' type.
+src/services/pdfApi.js(37,38): error TS7006: Parameter 'unitId' implicitly has an 'any' type.
+src/services/pdfApi.js(46,49): error TS7006: Parameter 'claimId' implicitly has an 'any' type.
+src/services/pdfApi.js(55,46): error TS7006: Parameter 'depositId' implicitly has an 'any' type.
+src/services/pdfApi.js(95,47): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/pdfApi.js(104,47): error TS7006: Parameter 'marketingProjectId' implicitly has an 'any' type.
+src/services/pdfApi.js(115,49): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/pdfApi.js(124,44): error TS7006: Parameter 'contractId' implicitly has an 'any' type.
+src/services/photographyDepartmentService.js(22,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/photographyDepartmentService.js(38,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/photographyDepartmentService.js(54,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/photographyDepartmentService.js(70,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesNegotiationsApi.js(9,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesReservationPayload.js(7,25): error TS2339: Property 'reservation_type' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(7,51): error TS2339: Property 'reservationType' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(16,5): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ ╪╣┘é╪»: string; contract: string; confirmed: string; ╪ز┘╪د┘ê╪╢: string; negotiation: string; }'.
+src/services/sales/salesReservationPayload.js(19,24): error TS2339: Property 'contract_id' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(20,29): error TS2339: Property 'contract_unit_id' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(21,26): error TS2339: Property 'contract_date' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(23,24): error TS2339: Property 'client_name' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(24,26): error TS2339: Property 'client_mobile' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(24,49): error TS2339: Property 'phone' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(24,64): error TS2339: Property 'mobile' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(25,31): error TS2339: Property 'client_nationality' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(26,24): error TS2339: Property 'client_iban' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(26,45): error TS2339: Property 'clientIban' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(27,27): error TS2339: Property 'payment_method' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(27,51): error TS2339: Property 'paymentMethod' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(28,39): error TS2339: Property 'down_payment_amount' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(28,68): error TS2339: Property 'downPaymentAmount' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(29,32): error TS2339: Property 'down_payment_status' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(29,61): error TS2339: Property 'downPaymentStatus' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(30,31): error TS2339: Property 'purchase_mechanism' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(30,59): error TS2339: Property 'purchaseMechanism' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(32,13): error TS2339: Property 'evacuation_date' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(32,38): error TS2339: Property 'evacuation_date' does not exist on type '{ contract_id: any; contract_unit_id: any; contract_date: any; reservation_type: any; client_name: any; client_mobile: any; client_nationality: any; client_iban: any; payment_method: any; down_payment_amount: number; down_payment_status: any; purchase_mechanism: any; }'.
+src/services/sales/salesReservationPayload.js(32,61): error TS2339: Property 'evacuation_date' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(34,13): error TS2339: Property 'negotiation_notes' does not exist on type '{ contract_id: any; contract_unit_id: any; contract_date: any; reservation_type: any; client_name: any; client_mobile: any; client_nationality: any; client_iban: any; payment_method: any; down_payment_amount: number; down_payment_status: any; purchase_mechanism: any; }'.
+src/services/sales/salesReservationPayload.js(34,39): error TS2339: Property 'negotiation_notes' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(35,13): error TS2339: Property 'negotiation_reason' does not exist on type '{ contract_id: any; contract_unit_id: any; contract_date: any; reservation_type: any; client_name: any; client_mobile: any; client_nationality: any; client_iban: any; payment_method: any; down_payment_amount: number; down_payment_status: any; purchase_mechanism: any; }'.
+src/services/sales/salesReservationPayload.js(35,40): error TS2339: Property 'negotiation_reason' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(36,13): error TS2339: Property 'proposed_price' does not exist on type '{ contract_id: any; contract_unit_id: any; contract_date: any; reservation_type: any; client_name: any; client_mobile: any; client_nationality: any; client_iban: any; payment_method: any; down_payment_amount: number; down_payment_status: any; purchase_mechanism: any; }'.
+src/services/sales/salesReservationPayload.js(37,13): error TS2339: Property 'proposed_price' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(37,45): error TS2339: Property 'proposed_price' does not exist on type 'Object'.
+src/services/sales/salesReservationPayload.js(37,81): error TS2339: Property 'proposed_price' does not exist on type 'Object'.
+src/services/sales/salesServiceCoreMethods.js(63,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceCoreMethods.js(97,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceCoreMethods.js(105,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceCoreMethods.js(138,39): error TS2339: Property 'cancellation_reason' does not exist on type 'Object'.
+src/services/sales/salesServiceCoreMethods.js(138,68): error TS2339: Property 'reason' does not exist on type 'Object'.
+src/services/sales/salesServiceCoreMethods.js(165,61): error TS2740: Type 'AxiosResponse<any, any, {}>' is missing the following properties from type 'Blob': size, type, arrayBuffer, bytes, and 3 more.
+src/services/sales/salesServiceCoreMethods.js(187,14): error TS2322: Type 'AxiosResponse<any, any, {}> | Blob' is not assignable to type 'Blob'.
+  Type 'AxiosResponse<any, any, {}>' is missing the following properties from type 'Blob': size, type, arrayBuffer, bytes, and 3 more.
+src/services/sales/salesServiceCoreMethods.js(198,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceCoreMethods.js(217,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceCoreMethods.js(253,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceCoreMethods.js(266,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceCoreMethods.js(292,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceCoreMethods.js(300,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceCoreMethods.js(308,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceCoreMethods.js(316,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceCoreMethods.js(324,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceCoreMethods.js(332,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceCoreMethods.js(341,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceCoreMethods.js(344,13): error TS2339: Property 'with_ratings' does not exist on type 'Object'.
+src/services/sales/salesServiceCoreMethods.js(369,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceCoreMethods.js(411,27): error TS2367: This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.
+src/services/sales/salesServiceCoreMethods.js(441,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceCoreMethods.js(460,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceCoreMethods.js(512,30): error TS8024: JSDoc '@param' tag has name 'targetId', but there is no parameter with that name.
+src/services/sales/salesServiceCoreMethods.js(516,24): error TS7006: Parameter 'targetIdOrData' implicitly has an 'any' type.
+src/services/sales/salesServiceCoreMethods.js(529,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceCoreMethods.js(542,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceExtendedMethods.js(45,27): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/sales/salesServiceExtendedMethods.js(118,35): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceExtendedMethods.js(136,14): error TS2339: Property 'getTeamMembers' does not exist on type '{ addToWaitingList(data: Object): Promise<Object>; convertToReservation(waitingListId: string | number, data?: Object): Promise<Object>; ... 19 more ...; saveProjectSchedules(projectId: string | number, schedules: any[], date?: string | undefined): Promise<...>; }'.
+src/services/sales/salesServiceExtendedMethods.js(137,14): error TS2339: Property 'getTeamAttendance' does not exist on type '{ addToWaitingList(data: Object): Promise<Object>; convertToReservation(waitingListId: string | number, data?: Object): Promise<Object>; ... 19 more ...; saveProjectSchedules(projectId: string | number, schedules: any[], date?: string | undefined): Promise<...>; }'.
+src/services/sales/salesServiceExtendedMethods.js(141,9): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/services/sales/salesServiceExtendedMethods.js(143,39): error TS7006: Parameter 'm' implicitly has an 'any' type.
+src/services/sales/salesServiceExtendedMethods.js(144,42): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/services/sales/salesServiceExtendedMethods.js(153,45): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/services/sales/salesServiceExtendedMethods.js(153,64): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/services/sales/salesServiceExtendedMethods.js(163,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceExtendedMethods.js(174,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceExtendedMethods.js(188,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceExtendedMethods.js(198,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceExtendedMethods.js(206,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceExtendedMethods.js(224,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceExtendedMethods.js(232,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceExtendedMethods.js(241,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceExtendedMethods.js(250,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceExtendedMethods.js(259,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceExtendedMethods.js(277,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceExtendedMethods.js(292,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceExtendedMethods.js(311,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceExtendedMethods.js(330,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceExtendedMethods.js(347,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/sales/salesServiceExtendedMethods.js(358,14): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/sales/salesServiceExtendedMethods.js(364,20): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/services/sales/salesServiceExtendedMethods.js(385,16): error TS2339: Property 'createSchedule' does not exist on type '{ addToWaitingList(data: Object): Promise<Object>; convertToReservation(waitingListId: string | number, data?: Object): Promise<Object>; ... 19 more ...; saveProjectSchedules(projectId: string | number, schedules: any[], date?: string | undefined): Promise<...>; }'.
+src/services/taskService.js(20,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/taskService.js(35,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/taskService.js(43,58): error TS1131: Property or signature expected.
+src/services/taskService.js(53,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/taskService.js(67,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/taskService.js(81,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/taskService.js(96,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(30,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(47,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(55,22): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/teamService.js(76,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(91,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(107,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(115,34): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/teamService.js(120,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(128,33): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/services/teamService.js(133,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(142,22): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/teamService.js(149,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(158,22): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/teamService.js(167,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(185,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(203,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(212,22): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/teamService.js(215,19): error TS7006: Parameter 'response' implicitly has an 'any' type.
+src/services/teamService.js(223,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(234,22): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/teamService.js(253,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(268,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(285,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(299,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(315,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(330,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(345,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(360,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(376,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/teamService.js(391,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/userService.js(9,33): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/userService.js(18,43): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+src/services/userService.js(19,15): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ admin: number; project_management: number; editor: number; developer: number; marketing: number; sales: number; sales_leader: number; hr: number; credit: number; accounting: number; inventory: number; default: number; accountant: number; }'.
+src/services/userService.js(24,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/userService.js(37,28): error TS2339: Property 'name' does not exist on type 'Object'.
+src/services/userService.js(38,29): error TS2339: Property 'email' does not exist on type 'Object'.
+src/services/userService.js(39,32): error TS2339: Property 'password' does not exist on type 'Object'.
+src/services/userService.js(40,29): error TS2339: Property 'phone' does not exist on type 'Object'.
+src/services/userService.js(41,37): error TS2339: Property 'type' does not exist on type 'Object'.
+src/services/userService.js(42,31): error TS2339: Property 'team_id' does not exist on type 'Object'.
+src/services/userService.js(42,55): error TS2339: Property 'team' does not exist on type 'Object'.
+src/services/userService.js(43,35): error TS2339: Property 'national_id' does not exist on type 'Object'.
+src/services/userService.js(44,27): error TS2339: Property 'dob' does not exist on type 'Object'.
+src/services/userService.js(45,34): error TS2339: Property 'start_date' does not exist on type 'Object'.
+src/services/userService.js(46,37): error TS2339: Property 'contract_type' does not exist on type 'Object'.
+src/services/userService.js(47,37): error TS2339: Property 'social_status' does not exist on type 'Object'.
+src/services/userService.js(48,28): error TS2339: Property 'iban' does not exist on type 'Object'.
+src/services/userService.js(49,30): error TS2339: Property 'salary' does not exist on type 'Object'.
+src/services/userService.js(50,36): error TS2339: Property 'is_manager' does not exist on type 'Object'.
+src/services/userService.js(56,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/userService.js(70,29): error TS2339: Property 'email' does not exist on type 'Object'.
+src/services/userService.js(74,28): error TS2339: Property 'name' does not exist on type 'Object'.
+src/services/userService.js(75,37): error TS2339: Property 'type' does not exist on type 'Object'.
+src/services/userService.js(78,24): error TS2339: Property 'phone' does not exist on type 'Object'.
+src/services/userService.js(79,17): error TS2339: Property 'phone' does not exist on type '{ email: any; name: any; type: number; }'.
+src/services/userService.js(79,38): error TS2339: Property 'phone' does not exist on type 'Object'.
+src/services/userService.js(82,24): error TS2339: Property 'is_manager' does not exist on type 'Object'.
+src/services/userService.js(83,17): error TS2339: Property 'is_manager' does not exist on type '{ email: any; name: any; type: number; }'.
+src/services/userService.js(83,45): error TS2339: Property 'is_manager' does not exist on type 'Object'.
+src/services/userService.js(87,24): error TS2339: Property 'salary' does not exist on type 'Object'.
+src/services/userService.js(87,40): error TS2339: Property 'salary' does not exist on type '{ email: any; name: any; type: number; }'.
+src/services/userService.js(87,62): error TS2339: Property 'salary' does not exist on type 'Object'.
+src/services/userService.js(88,24): error TS2339: Property 'iban' does not exist on type 'Object'.
+src/services/userService.js(88,38): error TS2339: Property 'iban' does not exist on type '{ email: any; name: any; type: number; }'.
+src/services/userService.js(88,58): error TS2339: Property 'iban' does not exist on type 'Object'.
+src/services/userService.js(89,24): error TS2339: Property 'identity_image' does not exist on type 'Object'.
+src/services/userService.js(89,48): error TS2339: Property 'identity_image' does not exist on type '{ email: any; name: any; type: number; }'.
+src/services/userService.js(89,78): error TS2339: Property 'identity_image' does not exist on type 'Object'.
+src/services/userService.js(90,24): error TS2339: Property 'signed_contract' does not exist on type 'Object'.
+src/services/userService.js(90,49): error TS2339: Property 'signed_contract' does not exist on type '{ email: any; name: any; type: number; }'.
+src/services/userService.js(90,80): error TS2339: Property 'signed_contract' does not exist on type 'Object'.
+src/services/userService.js(93,24): error TS2339: Property 'password' does not exist on type 'Object'.
+src/services/userService.js(93,49): error TS2339: Property 'password' does not exist on type 'Object'.
+src/services/userService.js(94,17): error TS2339: Property 'password' does not exist on type '{ email: any; name: any; type: number; }'.
+src/services/userService.js(94,41): error TS2339: Property 'password' does not exist on type 'Object'.
+src/services/userService.js(100,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/userService.js(114,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/userService.js(128,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/userService.js(135,24): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/services/userService.js(143,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/services/userService.js(157,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/utils/csrf.js(10,5): error TS7034: Variable 'csrfToken' implicitly has type 'any' in some locations where its type cannot be determined.
+src/utils/csrf.js(11,5): error TS7034: Variable 'tokenFetchPromise' implicitly has type 'any' in some locations where its type cannot be determined.
+src/utils/csrf.js(12,5): error TS7034: Variable 'apiClientInstance' implicitly has type 'any' in some locations where its type cannot be determined.
+src/utils/csrf.js(28,8): error TS7005: Variable 'apiClientInstance' implicitly has an 'any' type.
+src/utils/csrf.js(34,5): error TS2322: Type 'null' is not assignable to type 'string'.
+src/utils/csrf.js(37,7): error TS7005: Variable 'tokenFetchPromise' implicitly has an 'any' type.
+src/utils/csrf.js(118,7): error TS7005: Variable 'csrfToken' implicitly has an 'any' type.
+src/utils/csrf.js(148,38): error TS2322: Type 'null' is not assignable to type 'Object'.
+src/utils/csrf.js(149,36): error TS7005: Variable 'apiClientInstance' implicitly has an 'any' type.
+src/utils/csrf.js(161,18): error TS2339: Property 'interceptors' does not exist on type 'Object'.
+src/utils/csrf.js(162,11): error TS7006: Parameter 'config' implicitly has an 'any' type.
+src/utils/csrf.js(175,5): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/utils/csrf.js(179,18): error TS2339: Property 'interceptors' does not exist on type 'Object'.
+src/utils/csrf.js(180,5): error TS7006: Parameter 'response' implicitly has an 'any' type.
+src/utils/csrf.js(181,11): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/utils/csrf.js(190,18): error TS2349: This expression is not callable.
+  Type 'Object' has no call signatures.
+src/utils/logger.js(10,11): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+src/utils/logger.js(11,10): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+src/utils/logger.js(12,9): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+src/utils/logger.js(13,10): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+src/utils/logger.js(14,11): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+src/utils/logger.js(22,11): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+src/utils/marketingNormalizers.js(1,19): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/utils/marketingNormalizers.js(6,17): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/utils/marketingNormalizers.js(10,31): error TS2339: Property 'total_leads' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(11,41): error TS2339: Property 'available_units_value' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(12,41): error TS2339: Property 'available_units_count' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(13,47): error TS2339: Property 'daily_task_achievement_rate' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(14,40): error TS2339: Property 'daily_deposits_count' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(15,32): error TS2339: Property 'deposit_cost' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(16,43): error TS2339: Property 'total_expected_bookings' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(17,48): error TS2339: Property 'total_expected_booking_value' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(18,37): error TS2339: Property 'total_daily_spend' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(23,29): error TS2339: Property 'units' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(33,26): error TS2339: Property 'units_count' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(37,20): error TS2339: Property 'units_available' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(38,22): error TS2339: Property 'units_available' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(43,20): error TS2339: Property 'units_pending' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(44,22): error TS2339: Property 'units_pending' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(50,20): error TS2339: Property 'avg_unit_price' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(50,42): error TS2339: Property 'average_unit_price' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(50,68): error TS2339: Property 'avg_price' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(52,30): error TS2339: Property 'contract_number' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(52,53): error TS2339: Property 'contract_info' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(59,11): error TS2339: Property 'location' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(60,12): error TS2339: Property 'city' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(60,24): error TS2339: Property 'district' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(60,40): error TS2339: Property 'city' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(60,50): error TS2339: Property 'district' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(62,40): error TS2339: Property 'available_units_count' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(63,57): error TS2339: Property 'pending_units_count' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(65,11): error TS2339: Property 'total_available_value' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(65,40): error TS2339: Property 'available_units_value' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(69,41): error TS2339: Property 'commission_percent' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(69,67): error TS2339: Property 'commission_percentage' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(70,28): error TS2339: Property 'advertiser_number' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(71,34): error TS2339: Property 'advertiser_number_value' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(77,9): error TS2339: Property 'direct_communications' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(78,11): error TS2339: Property 'direct_contacts' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(79,11): error TS2339: Property 'direct_contact_count' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(80,11): error TS2339: Property 'direct_communication_count' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(82,34): error TS2339: Property 'hand_raises' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(82,53): error TS2339: Property 'raised_hands' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(82,73): error TS2339: Property 'hand_raise_count' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(84,42): error TS2339: Property 'conversion_rate' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(89,18): error TS2339: Property 'expected_bookings' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(93,9): error TS2339: Property 'campaign_budget' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(93,32): error TS2339: Property 'marketing_budget' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(93,56): error TS2339: Property 'marketing_value' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(93,79): error TS2339: Property 'total_budget' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(97,9): error TS2339: Property 'expected_booking_value' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(97,39): error TS2339: Property 'total_expected_booking_value' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(97,75): error TS2339: Property 'average_booking_value' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(111,24): error TS2339: Property 'deposit_per_booking' does not exist on type '{}'.
+src/utils/marketingNormalizers.js(116,39): error TS7006: Parameter 'items' implicitly has an 'any[]' type.
+src/utils/marketingNormalizers.js(118,24): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/utils/marketingNormalizers.js(127,37): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/utils/paginationUtils.js(16,12): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/utils/paginationUtils.js(17,23): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/utils/paginationUtils.js(20,26): error TS2339: Property 'data' does not exist on type 'Object'.
+src/utils/serviceErrorHandler.js(28,25): error TS2339: Property 'response' does not exist on type 'Error'.
+src/utils/serviceErrorHandler.js(28,52): error TS2339: Property 'status' does not exist on type 'Error'.
+src/utils/serviceErrorHandler.js(31,56): error TS2339: Property 'response' does not exist on type 'Error'.
+src/utils/serviceErrorHandler.js(43,16): error TS2339: Property 'response' does not exist on type 'Error'.
+src/utils/serviceErrorHandler.js(54,14): error TS2339: Property 'response' does not exist on type 'Error'.
+src/utils/serviceErrorHandler.js(71,17): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+src/utils/serviceErrorHandler.js(75,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/utils/tokenRefresh.js(10,5): error TS7034: Variable 'failedQueue' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/utils/tokenRefresh.js(11,5): error TS7034: Variable 'apiClientInstance' implicitly has type 'any' in some locations where its type cannot be determined.
+src/utils/tokenRefresh.js(22,27): error TS2339: Property 'defaults' does not exist on type 'Object'.
+src/utils/tokenRefresh.js(31,23): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/utils/tokenRefresh.js(32,3): error TS7005: Variable 'failedQueue' implicitly has an 'any[]' type.
+src/utils/tokenRefresh.js(48,8): error TS7005: Variable 'apiClientInstance' implicitly has an 'any' type.
+src/utils/tokenRefresh.js(56,11): error TS2339: Property 'status' does not exist on type 'Error'.
+src/utils/tokenRefresh.js(76,9): error TS18046: 'error' is of type 'unknown'.
+src/utils/tokenRefresh.js(86,21): error TS2339: Property 'status' does not exist on type 'Error'.
+src/utils/tokenRefresh.js(87,21): error TS2339: Property 'originalError' does not exist on type 'Error'.
+src/utils/tokenRefresh.js(113,46): error TS2322: Type 'null' is not assignable to type 'Object'.
+src/utils/tokenRefresh.js(114,36): error TS7005: Variable 'apiClientInstance' implicitly has an 'any' type.
+src/utils/tokenRefresh.js(122,18): error TS2339: Property 'interceptors' does not exist on type 'Object'.
+src/utils/tokenRefresh.js(123,5): error TS7006: Parameter 'response' implicitly has an 'any' type.
+src/utils/tokenRefresh.js(124,11): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/utils/tokenRefresh.js(142,22): error TS2349: This expression is not callable.
+  Type 'Object' has no call signatures.
+src/utils/tokenRefresh.js(154,30): error TS2345: Argument of type 'string' is not assignable to parameter of type 'null | undefined'.
+src/utils/tokenRefresh.js(158,18): error TS2349: This expression is not callable.
+  Type 'Object' has no call signatures.
+src/utils/tokenRefresh.js(163,13): error TS18046: 'refreshError' is of type 'unknown'.
+src/utils/tokenRefresh.js(164,13): error TS18046: 'refreshError' is of type 'unknown'.

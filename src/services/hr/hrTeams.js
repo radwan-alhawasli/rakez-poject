@@ -2,6 +2,7 @@ import apiClient from '@/api/apiClient';
 import logger from '@/utils/logger';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
+import { getCaughtStatus } from '@/utils/caughtError';
 
 // ==================== Team Management APIs ====================
 
@@ -9,8 +10,8 @@ import { extractPaginatedData } from '@/utils/paginationUtils';
  * Get paginated HR teams with performance data.
  * Tries GET /hr/teams first; if backend returns 404 (route not in API collection),
  * falls back to GET /project_management/teams/index so HR view still gets teams.
- * @param {Object} params - page, per_page (1-100), year, month
- * @returns {Promise<{ items: Array, total: number }>}
+ * @param {any} params - page, per_page (1-100), year, month
+ * @returns {Promise<{ items: unknown[], total: number }>}
  */
 export const getTeams = async (params = {}) => {
   try {
@@ -18,7 +19,7 @@ export const getTeams = async (params = {}) => {
     const { items, total } = extractPaginatedData(response, []);
     return { items: items ?? [], total: total ?? 0 };
   } catch (error) {
-    const status = error?.response?.status;
+    const status = getCaughtStatus(error);
     if (status === 404) {
       try {
         const fallback = await apiClient.get('/project_management/teams/index', { params });
@@ -36,8 +37,8 @@ export const getTeams = async (params = {}) => {
  * Get HR team members (list)
  * GET /hr/teams/:id/members → HrTeamController::members
  * @param {number|string} teamId - Team ID
- * @param {Object} params - Optional query params
- * @returns {Promise<Array>} List of team members
+ * @param {any} params - Optional query params
+ * @returns {Promise<unknown[]>} List of team members
  */
 export const getHRTeamMembers = async (teamId, params = {}) => {
   try {
@@ -59,6 +60,7 @@ export const getHRTeamMembers = async (teamId, params = {}) => {
 /**
  * Get team details by ID
  * GET /teams/show/:id
+  * @param {any} teamId
  */
 export const getTeamById = async teamId => {
   try {
@@ -73,6 +75,7 @@ export const getTeamById = async teamId => {
 /**
  * Create a new team
  * POST /project_management/teams/store
+  * @param {any} teamData
  */
 export const createTeam = async teamData => {
   try {
@@ -87,6 +90,8 @@ export const createTeam = async teamData => {
 /**
  * Update an existing team
  * PUT /project_management/teams/update/:id
+  * @param {any} teamId
+  * @param {any} teamData
  */
 export const updateTeam = async (teamId, teamData) => {
   try {
@@ -101,6 +106,7 @@ export const updateTeam = async (teamId, teamData) => {
 /**
  * Delete a team
  * DELETE /project_management/teams/delete/:id
+  * @param {any} teamId
  */
 export const deleteTeam = async teamId => {
   try {
@@ -114,6 +120,8 @@ export const deleteTeam = async teamId => {
 
 /**
  * Link marketers to team (api.php: POST hr/teams/{id}/members)
+  * @param {any} teamId
+  * @param {any} marketerIds
  */
 export const linkMarketersToTeam = async (teamId, marketerIds) => {
   try {
@@ -130,6 +138,7 @@ export const linkMarketersToTeam = async (teamId, marketerIds) => {
 /**
  * Get team contracts (projects)
  * GET /hr/teams/contracts/:id
+  * @param {any} teamId
  */
 export const getTeamContracts = async teamId => {
   try {
@@ -144,6 +153,7 @@ export const getTeamContracts = async teamId => {
 /**
  * Get team contract locations by team ID
  * GET /hr/teams/contracts/locations/:id
+  * @param {any} teamId
  */
 export const getTeamContractLocations = async teamId => {
   try {
@@ -158,6 +168,7 @@ export const getTeamContractLocations = async teamId => {
 /**
  * Get teams for a specific contract
  * GET /hr/teams/getTeamsForContract/:contractId
+  * @param {any} contractId
  */
 export const getTeamsForContract = async contractId => {
   try {
@@ -173,6 +184,7 @@ export const getTeamsForContract = async contractId => {
  * Get team sales average
  * GET /hr/teams/sales-average/:teamId
  * Returns: { average_sales: { sold_units_per_sales_employee: number } }
+  * @param {any} teamId
  */
 export const getTeamSalesAverage = async teamId => {
   try {

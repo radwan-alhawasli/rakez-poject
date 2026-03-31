@@ -13,7 +13,7 @@ const adminEmployeeService = {
   /**
    * List roles
    * GET /admin/employees/roles
-   * @returns {Promise<Array>}
+   * @returns {Promise<unknown[]>}
    */
   async listRoles() {
     try {
@@ -29,7 +29,7 @@ const adminEmployeeService = {
   /**
    * Add employee
    * POST /admin/employees/add_employee
-   * @param {Object} data - { name, email, password, type, role }
+   * @param {any} data - { name, email, password, type, role }
    * @returns {Promise<Object>}
    */
   async addEmployee(data) {
@@ -45,8 +45,8 @@ const adminEmployeeService = {
   /**
    * List employees
    * GET /admin/employees/list_employees
-   * @param {Object} params - Query params
-   * @returns {Promise<{ items: Array, total: number }>}
+   * @param {any} params - Query params
+   * @returns {Promise<{ items: unknown[], total: number }>}
    */
   async listEmployees(params = {}) {
     try {
@@ -79,7 +79,7 @@ const adminEmployeeService = {
    * Update employee
    * PUT /admin/employees/update_employee/:id
    * @param {number|string} id - Employee ID
-   * @param {Object} data - { name?, type?, ... }
+   * @param {any} data - { name?, type?, ... }
    * @returns {Promise<Object>}
    */
   async updateEmployee(id, data) {

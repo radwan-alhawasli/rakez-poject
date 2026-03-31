@@ -32,7 +32,7 @@ const boardsDepartmentService = {
    * Create boards department data
    * POST /boards-department/store/:contract_id
    * @param {number|string} contractId - Contract ID
-   * @param {Object} data - Boards department data
+   * @param {any} data - Boards department data
    * @returns {Promise<Object>}
    */
   async store(contractId, data) {
@@ -48,7 +48,7 @@ const boardsDepartmentService = {
    * Update boards department data
    * PUT /boards-department/update/:contract_id
    * @param {number|string} contractId - Contract ID
-   * @param {Object} data - Update data
+   * @param {any} data - Update data
    * @returns {Promise<Object>}
    */
   async update(contractId, data) {

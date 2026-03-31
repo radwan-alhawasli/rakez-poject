@@ -3,9 +3,11 @@
  *
  * @module services/authService
  * @typedef {Object} AuthUser
+ * @property {number|string} [id]
  * @property {string} [name]
  * @property {string} email
  * @property {number|string} type - Role type (see constants/roles)
+ * @property {string} [role] - Text role (e.g. accounting) when present
  * @property {string[]} [permissions]
  * @property {boolean} [is_leader]
  * @property {boolean} [is_manager]
@@ -15,6 +17,7 @@ import apiClient from '@/api/apiClient';
 import { ROLE_MAP } from '@/constants/roles';
 import secureStorage from '@/utils/secureStorage';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
+import { getCaughtStatus } from '@/utils/caughtError';
 
 const authService = {
   /**
@@ -102,7 +105,7 @@ const authService = {
    * @returns {AuthUser|null}
    */
   getCurrentUser() {
-    return secureStorage.getUserInfo();
+    return /** @type {AuthUser|null} */ (secureStorage.getUserInfo());
   },
 
   /**
@@ -132,7 +135,7 @@ const authService = {
       secureStorage.setUserInfo(userData);
       return userData;
     } catch (error) {
-      if (error?.status === 401) {
+      if (getCaughtStatus(error) === 401) {
         this.clearSession();
       }
       handleServiceError(error, 'Fetch current user', 'get', null);

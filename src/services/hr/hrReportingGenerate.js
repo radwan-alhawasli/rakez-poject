@@ -8,6 +8,8 @@ import { ensurePdfBlob } from '@/services/hr/hrPdfBlob.js';
 /**
  * Generate monthly team performance report
  * GET /hr/reports/team-performance (params: month, year, format)
+  * @param {any} month
+  * @param {any} year
  */
 export const generateTeamPerformanceReport = async (month, year, format = 'pdf') => {
   try {
@@ -38,6 +40,9 @@ export const generateTeamPerformanceReport = async (month, year, format = 'pdf')
 /**
  * Generate marketer performance report (PDF built on frontend from API data).
  * GET /hr/reports/marketer-performance (params: marketer_id, month, year, format)
+  * @param {any} marketerId
+  * @param {any} month
+  * @param {any} year
  */
 export const generateMarketerReport = async (marketerId, month, year, format = 'pdf') => {
   try {

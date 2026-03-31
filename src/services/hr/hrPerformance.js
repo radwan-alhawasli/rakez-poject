@@ -18,6 +18,8 @@ export const getMarketerPerformance = async (params = {}) => {
 
 /**
  * Update marketer goal (no dedicated route in api.php; kept for backward compat, may no-op)
+  * @param {any} marketerId
+  * @param {any} goalData
  */
 export const setMarketerGoal = async (marketerId, goalData) => {
   try {

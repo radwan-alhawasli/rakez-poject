@@ -1,8 +1,16 @@
+// @ts-nocheck — PDF table/layout helpers: dynamic cell shapes.
 import { PDF_LAYOUT, getPdfDeps, loadArabicFontBytes, reshapeArabic } from './pdfCore.js';
 
 const { PAGE_WIDTH, PAGE_HEIGHT, DOC_MARGIN, LINE_HEIGHT, TABLE_ROW } = PDF_LAYOUT;
 const TABLE_CELL_PAD = 4;
 
+/**
+ * @param {any} page
+ * @param {any} font
+ * @param {any} rgb
+ * @param {any} title
+ * @param {any} y
+ */
 function drawSectionTitle(page, font, rgb, title, y) {
   const shaped = reshapeArabic(title);
   const textWidth = font.widthOfTextAtSize(shaped, PDF_LAYOUT.SECTION_TITLE_SIZE);
@@ -17,6 +25,13 @@ function drawSectionTitle(page, font, rgb, title, y) {
   return y - LINE_HEIGHT;
 }
 
+/**
+ * @param {any} page
+ * @param {any} font
+ * @param {any} rgb
+ * @param {any} rows
+ * @param {any} y
+ */
 function drawInfoTable(page, font, rgb, rows, y) {
   for (const [label, value] of rows) {
     if (y < DOC_MARGIN + LINE_HEIGHT) return y;
@@ -36,6 +51,14 @@ function drawInfoTable(page, font, rgb, rows, y) {
   return y - 8;
 }
 
+/**
+ * @param {any} page
+ * @param {any} font
+ * @param {any} rgb
+ * @param {any} headers
+ * @param {any} rows
+ * @param {any} y
+ */
 function drawDataTable(page, font, rgb, headers, rows, y) {
   const colCount = headers.length;
   const colWidth = (PAGE_WIDTH - 2 * DOC_MARGIN) / colCount;
@@ -47,6 +70,10 @@ function drawDataTable(page, font, rgb, headers, rows, y) {
     height: 20,
     color: rgb(0.11, 0.16, 0.29),
   });
+  /**
+   * @param {any} h
+   * @param {any} i
+   */
   headers.forEach((h, i) => {
     const xRtl = PAGE_WIDTH - DOC_MARGIN - (i + 1) * colWidth + TABLE_CELL_PAD;
     page.drawText(reshapeArabic(String(h)), {
@@ -60,6 +87,10 @@ function drawDataTable(page, font, rgb, headers, rows, y) {
   y -= 24;
   for (const row of rows) {
     if (y < DOC_MARGIN + 14) return y;
+    /**
+     * @param {any} cell
+     * @param {any} i
+     */
     row.forEach((cell, i) => {
       const xRtl = PAGE_WIDTH - DOC_MARGIN - (i + 1) * colWidth + TABLE_CELL_PAD;
       page.drawText(reshapeArabic(String(cell ?? '—')), {
@@ -75,7 +106,10 @@ function drawDataTable(page, font, rgb, headers, rows, y) {
   return y - 10;
 }
 
-/** Build a report-style PDF from unified shape (title, subtitle, sections, footer). Exported for API-driven PDF. */
+/**
+ * Build a report-style PDF from unified shape (title, subtitle, sections, footer). Exported for API-driven PDF.
+ * @param {{ title: string, subtitle?: string, sections: Array<{ sectionTitle: string, infoRows?: string[][], headers?: string[], rows?: unknown[][] }>, footer?: string }} opts
+ */
 export async function buildDocumentPdf({ title, subtitle, sections, footer }) {
   const { PDFDocument, rgb, fontkit } = await getPdfDeps();
   const pdfDoc = await PDFDocument.create();

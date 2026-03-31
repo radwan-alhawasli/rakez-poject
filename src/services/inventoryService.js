@@ -28,8 +28,8 @@ const inventoryService = {
   /**
    * List contracts (admin index)
    * GET /inventory/contracts/admin-index
-   * @param {Object} params - Query params
-   * @returns {Promise<{ items: Array, total: number }>}
+   * @param {any} params - Query params
+   * @returns {Promise<{ items: unknown[], total: number }>}
    */
   async getContractsAdminIndex(params = {}) {
     try {
@@ -78,6 +78,7 @@ const inventoryService = {
 
   /**
    * @deprecated Use getContractUnitsShow(contractId) — same endpoint (contract id).
+    * @param {any} contractId
    */
   async getContractUnit(contractId) {
     return this.getContractUnitsShow(contractId);
@@ -86,7 +87,7 @@ const inventoryService = {
   /**
    * Get agency overview (dashboard stats)
    * GET /inventory/contracts/agency-overview
-   * @param {Object} params - Query params (status, user_id, city, district)
+   * @param {any} params - Query params (status, user_id, city, district)
    * @returns {Promise<Object>}
    */
   async getAgencyOverview(params = {}) {
@@ -102,8 +103,8 @@ const inventoryService = {
   /**
    * Map pins — project locations
    * GET /inventory/contracts/locations?status=&user_id=&city=&district=&project_name=&has_photography=&has_montage=&per_page=
-   * @param {Object} params - Query params
-   * @returns {Promise<Array>}
+   * @param {any} params - Query params
+   * @returns {Promise<unknown[]>}
    */
   async getContractsLocations(params = {}) {
     try {

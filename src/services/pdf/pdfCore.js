@@ -2,6 +2,7 @@
 import * as ArabicReshaperModule from 'arabic-reshaper';
 const ArabicReshaper = ArabicReshaperModule?.default ?? ArabicReshaperModule;
 
+/** @type {Promise<any>|null} */
 let _pdfDepsPromise = null;
 
 /** Shared PDF deps (pdf-lib + fontkit) for use by composables and other services. */
@@ -45,6 +46,9 @@ export async function loadArabicFontBytes() {
 }
 
 /** Check if a character is in the Arabic Unicode block (including presentation forms). */
+/**
+ * @param {any} code
+ */
 function isArabicChar(code) {
   return (
     (code >= 0x0600 && code <= 0x06ff) ||
@@ -61,11 +65,17 @@ function isArabicChar(code) {
  * @param {string} text
  * @returns {string}
  */
-/** True if the character is only whitespace (space, tab, etc.). */
+/**
+ * True if the character is only whitespace (space, tab, etc.).
+ * @param {any} s
+ */
 function isSpaceOnly(s) {
   return /^\s*$/.test(s);
 }
 
+/**
+ * @param {any} text
+ */
 export function reshapeArabic(text) {
   if (!text) return '';
   const str = String(text);
@@ -110,6 +120,9 @@ export function reshapeArabic(text) {
 }
 
 /** Reshape Arabic only (logical order), for use with drawTextRtl. No character reverse. */
+/**
+ * @param {any} text
+ */
 function reshapeArabicLogical(text) {
   if (!text) return '';
   const str = String(text);
@@ -146,6 +159,11 @@ function reshapeArabicLogical(text) {
   return nonArabic + arabicParts.join('');
 }
 
+/**
+ * @param {any} font
+ * @param {any} text
+ * @param {any} size
+ */
 export function widthOfLogicalText(font, text, size) {
   const logical = reshapeArabicLogical(text);
   if (!logical) return 0;
@@ -153,6 +171,15 @@ export function widthOfLogicalText(font, text, size) {
 }
 
 /** Draw text RTL: logical order, each character placed from right to left so it reads correctly. */
+/**
+ * @param {any} page
+ * @param {any} font
+ * @param {any} text
+ * @param {any} xRight
+ * @param {any} y
+ * @param {any} size
+ * @param {any} color
+ */
 export function drawTextRtl(page, font, text, xRight, y, size, color) {
   const logical = reshapeArabicLogical(text);
   if (!logical) return;
@@ -172,7 +199,10 @@ export const DEVELOPER_PLAN_TEMPLATE_PATHS = [
   '/developer_plan_template.pdf',
 ];
 
-/** Table cell positions when using template (دوم_12) — نضع الأرقام في خلايا الجدول الموجود. Tune to match your template. */
+/**
+ * Table cell positions when using template (دوم_12) — نضع الأرقام في خلايا الجدول الموجود. Tune to match your template.
+ * @type {{ startY: number | null, rowHeight: number, colLefts: number[] | null, cellPadding: number }}
+ */
 export const DEVELOPER_PLAN_TEMPLATE_TABLE = {
   startY: null,
   rowHeight: 24,

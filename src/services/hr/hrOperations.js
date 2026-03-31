@@ -22,6 +22,7 @@ export const refreshDashboard = async () => {
 /**
  * Create team (HR endpoint)
  * POST /hr/teams
+  * @param {any} teamData
  */
 export const createHRTeam = async teamData => {
   try {
@@ -36,6 +37,8 @@ export const createHRTeam = async teamData => {
 /**
  * Update team (HR endpoint)
  * PUT /hr/teams/:id
+  * @param {any} teamId
+  * @param {any} teamData
  */
 export const updateHRTeam = async (teamId, teamData) => {
   try {
@@ -50,6 +53,7 @@ export const updateHRTeam = async (teamId, teamData) => {
 /**
  * Delete team (HR endpoint)
  * DELETE /hr/teams/:id
+  * @param {any} teamId
  */
 export const deleteHRTeam = async teamId => {
   try {
@@ -65,7 +69,7 @@ export const deleteHRTeam = async teamId => {
  * Assign member to team
  * POST /hr/teams/:id/members
  * @param {number|string} teamId - Team ID
- * @param {Object} data - Body (e.g. user_id, role)
+ * @param {any} data - Body (e.g. user_id, role)
  */
 export const assignTeamMember = async (teamId, data) => {
   try {
@@ -111,6 +115,7 @@ export const listMarketerPerformance = async (params = {}) => {
 /**
  * Show marketer performance details
  * GET /hr/marketers/:id/performance
+  * @param {any} marketerId
  */
 export const showMarketerPerformance = async marketerId => {
   try {
@@ -125,8 +130,8 @@ export const showMarketerPerformance = async marketerId => {
 /**
  * List users (HR)
  * GET /hr/users
- * @param {Object} params - page, per_page, search, etc.
- * @returns {Promise<{ items: Array, total: number }>}
+ * @param {any} params - page, per_page, search, etc.
+ * @returns {Promise<{ items: unknown[], total: number }>}
  */
 export const listUsers = async (params = {}) => {
   try {
@@ -142,6 +147,7 @@ export const listUsers = async (params = {}) => {
 /**
  * Create user
  * POST /hr/users
+  * @param {any} userData
  */
 export const createUser = async userData => {
   try {
@@ -156,6 +162,7 @@ export const createUser = async userData => {
 /**
  * Show user details
  * GET /hr/users/:id
+  * @param {any} userId
  */
 export const showUser = async userId => {
   try {
@@ -170,6 +177,8 @@ export const showUser = async userId => {
 /**
  * Update user
  * PUT /hr/users/:id
+  * @param {any} userId
+  * @param {any} userData
  */
 export const updateUser = async (userId, userData) => {
   try {
@@ -185,7 +194,7 @@ export const updateUser = async (userId, userData) => {
  * Toggle user status
  * PATCH /hr/users/:id/status
  * @param {number|string} userId - User ID
- * @param {Object} [data] - Optional body (e.g. reason)
+ * @param {any} [data] - Optional body (e.g. reason)
  */
 export const toggleUserStatus = async (userId, data = {}) => {
   try {
@@ -200,6 +209,7 @@ export const toggleUserStatus = async (userId, data = {}) => {
 /**
  * Delete user
  * DELETE /hr/users/:id
+  * @param {any} userId
  */
 export const deleteUser = async userId => {
   try {
@@ -235,8 +245,8 @@ export const uploadUserFiles = async (userId, formData) => {
  * Get paginated warnings for a user
  * GET /hr/users/:user_id/warnings
  * @param {number|string} userId - User ID
- * @param {Object} params - page, per_page, year, type
- * @returns {Promise<{ items: Array, total: number }>}
+ * @param {any} params - page, per_page, year, type
+ * @returns {Promise<{ items: unknown[], total: number }>}
  */
 export const getUserWarnings = async (userId, params = {}) => {
   try {
@@ -256,6 +266,7 @@ export const getUserWarnings = async (userId, params = {}) => {
 /**
  * @deprecated Use getUserWarnings(userId, params) instead
  * List user warnings - requires userId
+  * @param {any} userId
  */
 export const listUserWarnings = async (userId, params = {}) => {
   return getUserWarnings(userId, params);
@@ -264,6 +275,8 @@ export const listUserWarnings = async (userId, params = {}) => {
 /**
  * Create warning for user
  * POST /hr/users/:user_id/warnings
+  * @param {any} userId
+  * @param {any} warningData
  */
 export const createWarning = async (userId, warningData) => {
   try {
@@ -278,6 +291,7 @@ export const createWarning = async (userId, warningData) => {
 /**
  * Delete warning
  * DELETE /hr/warnings/:id
+  * @param {any} warningId
  */
 export const deleteWarning = async warningId => {
   try {
@@ -293,8 +307,8 @@ export const deleteWarning = async warningId => {
  * Get paginated employment contracts for a user
  * GET /hr/users/:user_id/contracts
  * @param {number|string} userId - User ID
- * @param {Object} params - page, per_page
- * @returns {Promise<{ items: Array, total: number }>}
+ * @param {any} params - page, per_page
+ * @returns {Promise<{ items: unknown[], total: number }>}
  */
 export const getUserContracts = async (userId, params = {}) => {
   try {
@@ -314,6 +328,7 @@ export const getUserContracts = async (userId, params = {}) => {
 /**
  * @deprecated Use getUserContracts(userId, params) instead
  * List user contracts - requires userId
+  * @param {any} userId
  */
 export const listUserContracts = async (userId, params = {}) => {
   return getUserContracts(userId, params);
@@ -322,6 +337,8 @@ export const listUserContracts = async (userId, params = {}) => {
 /**
  * Create user contract
  * POST /hr/users/:user_id/contracts
+  * @param {any} userId
+  * @param {any} contractData
  */
 export const createUserContract = async (userId, contractData) => {
   try {
@@ -336,6 +353,7 @@ export const createUserContract = async (userId, contractData) => {
 /**
  * Show HR contract
  * GET /hr/contracts/:id
+  * @param {any} contractId
  */
 export const showHRContract = async contractId => {
   try {
@@ -350,6 +368,8 @@ export const showHRContract = async contractId => {
 /**
  * Update HR contract
  * PUT /hr/contracts/:id
+  * @param {any} contractId
+  * @param {any} contractData
  */
 export const updateHRContract = async (contractId, contractData) => {
   try {
@@ -364,6 +384,7 @@ export const updateHRContract = async (contractId, contractData) => {
 /**
  * Generate contract PDF
  * POST /hr/contracts/pdf
+  * @param {any} contractId
  */
 export const generateContractPDF = async contractId => {
   try {
@@ -384,6 +405,7 @@ export const generateContractPDF = async contractId => {
 /**
  * Download contract PDF
  * GET /hr/contracts/pdf/:id
+  * @param {any} contractId
  */
 export const downloadContractPDF = async contractId => {
   try {
@@ -400,6 +422,7 @@ export const downloadContractPDF = async contractId => {
 /**
  * Activate contract
  * POST /hr/contracts/activate
+  * @param {any} contractId
  */
 export const activateContract = async (contractId, data = {}) => {
   try {
@@ -414,6 +437,7 @@ export const activateContract = async (contractId, data = {}) => {
 /**
  * Terminate contract
  * POST /hr/contracts/terminate
+  * @param {any} contractId
  */
 export const terminateContract = async (contractId, data = {}) => {
   try {

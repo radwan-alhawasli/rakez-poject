@@ -8,6 +8,15 @@ import logger from '@/utils/logger';
 import { useFormatters } from '@/composables/useFormatters';
 import { usePermissions } from '@/composables/usePermissions';
 import { toast } from '@/composables/useToast';
+import {
+  getStatusClass,
+  getStatusText,
+  contractTimelineDaysLeft,
+  durationStatusClass,
+  contractTimelineLabel,
+  getRecommendedEmployee as getRecommendedEmployeePure,
+  formatDistribution,
+} from '@/modules/marketing/tabs/projects/marketingProjectsUiHelpers.js';
 
 export function useMarketingProjects() {
   const router = useRouter();
@@ -330,66 +339,8 @@ export function useMarketingProjects() {
     }
   };
 
-  // Utility functions
-  const getStatusClass = status => {
-    const s = String(status || '').toLowerCase();
-    const statusMap = { active: 'status-active', approved: 'status-active', completed: 'status-completed', pending: 'status-pending', cancelled: 'status-cancelled' };
-    return statusMap[s] || 'status-pending';
-  };
-
-  const getStatusText = status => {
-    const s = String(status || '').toLowerCase();
-    const textMap = { active: 'نشط', approved: 'معتمد', completed: 'مكتمل', pending: 'قيد الانتظار', cancelled: 'ملغي' };
-    return textMap[s] || 'غير محدد';
-  };
-
-  const contractTimelineDaysLeft = project => {
-    if (!project) return null;
-    const candidates = [project.contract_end_date, project.end_date, project.agreement_end_date, project.marketing_project?.contract_end_date];
-    const endDateRaw = candidates.find(Boolean);
-    if (!endDateRaw) return null;
-    const endDate = new Date(endDateRaw);
-    if (Number.isNaN(endDate.getTime())) return null;
-    return Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-  };
-
-  const durationStatusClass = daysLeft => {
-    if (daysLeft === null) return 'status-pending';
-    if (daysLeft < 30) return 'status-cancelled';
-    if (daysLeft < 90) return 'status-pending';
-    return 'status-active';
-  };
-
-  const contractTimelineLabel = project => {
-    const daysLeft = contractTimelineDaysLeft(project);
-    if (daysLeft === null) return 'غير متاح';
-    if (daysLeft < 0) return 'منتهي';
-    if (daysLeft >= 90) return `${daysLeft} يوم (أخضر)`;
-    if (daysLeft >= 30) return `${daysLeft} يوم (برتقالي)`;
-    return `${daysLeft} يوم (أحمر)`;
-  };
-
-  const getRecommendedEmployee = project => {
-    if (!project) return '—';
-    const id = project.id ?? project.marketing_project_id;
-    const apiRec = id != null ? recommendedEmployeeByProjectId.value[id] : null;
-    if (apiRec && (apiRec.name || apiRec.employee_name || apiRec.user_name)) {
-      return apiRec.name || apiRec.employee_name || apiRec.user_name;
-    }
-    const plans = project?.employee_plans || [];
-    if (!plans.length) return 'تقديريًا: أعلى أداء غير متاح';
-    const sorted = [...plans].sort((a, b) => (Number(b.marketing_value) || 0) - (Number(a.marketing_value) || 0));
-    const top = sorted[0];
-    const name = top?.user?.name || top?.user_name || `User #${top?.user_id ?? ''}`;
-    return `${name} (تقديري حسب الأداء)`;
-  };
-
-  const formatDistribution = obj => {
-    if (!obj || typeof obj !== 'object') return '—';
-    const entries = Object.entries(obj);
-    if (!entries.length) return '—';
-    return entries.map(([k, v]) => `${k}: ${v}`).join(' • ');
-  };
+  const getRecommendedEmployee = project =>
+    getRecommendedEmployeePure(project, recommendedEmployeeByProjectId.value);
 
   onMounted(() => {
     loadProjects();

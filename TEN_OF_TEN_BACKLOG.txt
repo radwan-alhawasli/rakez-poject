@@ -4,21 +4,20 @@ A) Files still over 500 lines (eslint max-lines is error at 500 with skipBlankLi
    - src/services/pdfService.js — already modular under src/services/pdf/ (facade re-exports).
    - src/services/hrService.js — facade; implementation under src/services/hr/ (watch hrOperations.js ~450 lines).
    - src/services/salesService.js — facade composing salesServiceCoreMethods + salesServiceExtendedMethods + salesNegotiationsApi under src/services/sales/.
-   - src/services/contractService.js, creditService.js, accountingService.js, marketingService.js
+   - contractService.js — split into src/services/contracts/* + facade (same pattern as sales). Remaining: creditService.js, accountingService.js, marketingService.js
    - Large Vue SFCs: SoldUnitDetailView.vue, EditContractInfoModal.vue, UserManagement.vue, ContractFormView.vue, EditorView.vue, EditorProjectsView.vue, ReservationsView.vue, TasksView.vue, MarketingProjectsTab.vue — extract template sections/modals or move logic deeper into existing composables.
 
 B) Security / UX
-   - Audit every v-html / API-sourced HTML against sanitizer usage.
-   - Confirm token/storage strategy (secureStorage) against XSS and session fixation assumptions.
+   - Source of truth: docs/SECURITY.md (v-html / innerHTML inventory, safeHtml.js, CSRF, localStorage & session assumptions). Keep the table updated when adding HTML rendering paths.
 
 C) Types & contracts
-   - Prefer JSDoc @typedef + // @ts-check on critical services (e.g. accountingService.js for sold-units). Full .ts migration remains optional for new code only.
+   - CI gate: `npm run typecheck` (tsconfig.checkjs.json on src/api + src/services; strict checkJs with noImplicitAny + useUnknownInCatchVariables; see docs/TYPECHECK_SCOPE.md and src/utils/caughtError.js). Prefer JSDoc @typedef for new surface area. Full .ts migration remains optional for new code only.
 
 D) Tests
    - Raise Vitest coverage on extracted composables (useMainLayout, split marketing tabs).
 
 E) Performance
-   - Lazy-load heavy modals/tabs with defineAsyncComponent where bundle analysis shows wins.
+   - Bundle budgets: `npm run build:check-budget` + docs/PERFORMANCE_BUDGETS.md + scripts/performance-budgets.json (gzip limits per vendor chunk). Lazy-load heavy modals/tabs with defineAsyncComponent / dynamic import where analysis shows wins; align increases with budget updates.
 
 F) Structure (done)
    - Canonical path: src/modules/<domain>/views only; no parallel src/views. Keep new routes aligned with viewDomainMap.js.

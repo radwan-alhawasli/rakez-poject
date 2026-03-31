@@ -10,8 +10,8 @@ const commissionService = {
   /**
    * Get list of commissions
    * GET /commissions
-   * @param {Object} params - page, per_page
-   * @returns {Promise<{ items: Array, total: number }>}
+   * @param {any} params - page, per_page
+   * @returns {Promise<{ items: unknown[], total: number }>}
    */
   async getCommissions(params = {}) {
     try {
@@ -26,6 +26,7 @@ const commissionService = {
   /**
    * Get commission details
    * GET /commissions/:id
+    * @param {any} id
    */
   async getCommissionById(id) {
     try {
@@ -39,6 +40,7 @@ const commissionService = {
   /**
    * Create commission
    * POST /commissions
+    * @param {any} commissionData
    */
   async createCommission(commissionData) {
     try {
@@ -53,7 +55,7 @@ const commissionService = {
    * Update commission expenses
    * PUT /sales/commissions/:id/expenses
    * @param {number|string} id - Commission ID
-   * @param {Object} commissionData - Expense update data
+   * @param {any} commissionData - Expense update data
    * @returns {Promise<Object>} Updated commission
    */
   async updateCommission(id, commissionData) {
@@ -68,6 +70,7 @@ const commissionService = {
   /**
    * Delete commission
    * DELETE /commissions/:id
+    * @param {any} id
    */
   async deleteCommission(id) {
     try {
@@ -81,6 +84,7 @@ const commissionService = {
   /**
    * Calculate commission
    * POST /commissions/calculate
+    * @param {any} calculationData
    */
   async calculateCommission(calculationData) {
     try {
@@ -94,8 +98,8 @@ const commissionService = {
   /**
    * Get list of deposits
    * GET /deposits
-   * @param {Object} params - page, per_page
-   * @returns {Promise<{ items: Array, total: number }>}
+   * @param {any} params - page, per_page
+   * @returns {Promise<{ items: unknown[], total: number }>}
    */
   async getDeposits(params = {}) {
     try {
@@ -110,6 +114,7 @@ const commissionService = {
   /**
    * Get deposit details
    * GET /deposits/:id
+    * @param {any} id
    */
   async getDepositById(id) {
     try {
@@ -123,6 +128,7 @@ const commissionService = {
   /**
    * Create deposit
    * POST /deposits
+    * @param {any} depositData
    */
   async createDeposit(depositData) {
     try {
@@ -136,6 +142,8 @@ const commissionService = {
   /**
    * Update deposit
    * PUT /deposits/:id
+    * @param {any} id
+    * @param {any} depositData
    */
   async updateDeposit(id, depositData) {
     try {
@@ -149,6 +157,7 @@ const commissionService = {
   /**
    * Delete deposit
    * DELETE /deposits/:id
+    * @param {any} id
    */
   async deleteDeposit(id) {
     try {
@@ -163,7 +172,7 @@ const commissionService = {
    * Confirm deposit receipt (previously processDeposit)
    * POST /sales/deposits/:id/confirm-receipt
    * @param {number|string} id - Deposit ID
-   * @param {Object} paymentData - Payment data
+   * @param {any} paymentData - Payment data
    * @returns {Promise<Object>} Confirmed deposit
    */
   async processDeposit(id, paymentData) {
@@ -205,8 +214,8 @@ const commissionService = {
    * Get commission distributions
    * GET /commissions/:commission_id/distributions
    * @param {number|string} commissionId - Commission ID
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} List of distributions
+   * @param {any} params - Query parameters
+   * @returns {Promise<unknown[]>} List of distributions
    */
   async getDistributions(commissionId, params = {}) {
     try {
@@ -229,7 +238,7 @@ const commissionService = {
    * Create commission distribution
    * POST /commissions/:commission_id/distributions
    * @param {number|string} commissionId - Commission ID
-   * @param {Object} data - Distribution data
+   * @param {any} data - Distribution data
    * @returns {Promise<Object>} Created distribution
    */
   async createDistribution(commissionId, data) {
@@ -252,7 +261,7 @@ const commissionService = {
    * Update commission distribution
    * PUT /commissions/distributions/:id
    * @param {number|string} id - Distribution ID
-   * @param {Object} data - Distribution update data
+   * @param {any} data - Distribution update data
    * @returns {Promise<Object>} Updated distribution
    */
   async updateDistribution(id, data) {
@@ -331,7 +340,7 @@ const commissionService = {
    * Refund deposit
    * POST /deposits/:id/refund
    * @param {number|string} id - Deposit ID
-   * @param {Object} data - Refund data (refund_amount, refund_reason, refund_date)
+   * @param {any} data - Refund data (refund_amount, refund_reason, refund_date)
    * @returns {Promise<Object>} Refunded deposit
    */
   async refundDeposit(id, data) {
@@ -380,7 +389,7 @@ const commissionService = {
   /**
    * Get commission statistics
    * GET /commissions/stats
-   * @param {Object} params - Query parameters
+   * @param {any} params - Query parameters
    * @returns {Promise<Object>} Commission statistics
    */
   async getCommissionStats(params = {}) {
@@ -395,7 +404,7 @@ const commissionService = {
   /**
    * Get deposit statistics
    * GET /deposits/stats
-   * @param {Object} params - Query parameters
+   * @param {any} params - Query parameters
    * @returns {Promise<Object>} Deposit statistics
    */
   async getDepositStats(params = {}) {
@@ -410,7 +419,7 @@ const commissionService = {
   /**
    * Get commission analytics (monthly report)
    * GET /sales/analytics/commissions/monthly-report
-   * @param {Object} params - Query parameters
+   * @param {any} params - Query parameters
    * @returns {Promise<Object>} Analytics dashboard data
    */
   async getCommissionAnalytics(params = {}) {

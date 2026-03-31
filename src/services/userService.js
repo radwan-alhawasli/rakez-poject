@@ -6,13 +6,14 @@ import { extractPaginatedData } from '@/utils/paginationUtils';
 const userService = {
   /**
    * Get all employees (api: GET /hr/users)
-   * @returns {Promise<{ items: Array, total: number }>} List of employees
+   * @returns {Promise<{ items: unknown[], total: number }>} List of employees
    */
   async getEmployees(params = {}) {
     try {
       const response = await apiClient.get('/hr/users', { params });
       const { items, total } = extractPaginatedData(response, []);
-      const employees = items.map(emp => ({
+      const list = /** @type {any[]} */ (items);
+      const employees = list.map(emp => ({
         ...emp,
         type:
           typeof emp.type === 'string' && ROLE_MAP[emp.type] !== undefined
@@ -28,7 +29,7 @@ const userService = {
   /**
    * Add a new employee (api: POST /hr/users)
    * Payload: { email, password, phone, name, type, ... }
-   * @param {Object} employeeData
+   * @param {any} employeeData
    * @returns {Promise<Object>} Created employee
    */
   async addEmployee(employeeData) {
@@ -61,11 +62,12 @@ const userService = {
    * Update an existing employee (api: PUT /hr/users/:id)
    * Payload: { email, phone, name, type } + optional password
    * @param {number|string} id
-   * @param {Object} employeeData
+   * @param {any} employeeData
    * @returns {Promise<Object>} Updated employee
    */
   async updateEmployee(id, employeeData) {
     try {
+      /** @type {Record<string, any>} */
       const payload = {
         email: employeeData.email,
         // phone: employeeData.phone, // Commented out in some examples, keeping to be safe or strictly following request?
@@ -131,8 +133,8 @@ const userService = {
 
   /**
    * List all roles (api: GET /hr/users/roles)
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} List of roles
+   * @param {any} params - Query parameters
+   * @returns {Promise<unknown[]>} List of roles
    */
   async listRoles(params = {}) {
     try {

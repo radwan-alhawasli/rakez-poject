@@ -1,10 +1,11 @@
 /**
  * Normalize reservation form/API payload for POST /sales/reservations.
- * @param {Object} data
+ * @param {any} data
  * @returns {Object}
  */
 export function normalizeReservationPayload(data) {
   const typeRaw = data?.reservation_type ?? data?.reservationType ?? 'negotiation';
+  /** @type {Record<string, string>} */
   const typeMap = {
     عقد: 'confirmed_reservation',
     contract: 'confirmed_reservation',
@@ -13,8 +14,10 @@ export function normalizeReservationPayload(data) {
     negotiation: 'negotiation',
   };
   const reservation_type =
-    typeMap[typeRaw] ?? (typeRaw === 'confirmed_reservation' || typeRaw === 'negotiation' ? typeRaw : 'negotiation');
+    typeMap[String(typeRaw)] ??
+    (typeRaw === 'confirmed_reservation' || typeRaw === 'negotiation' ? typeRaw : 'negotiation');
 
+  /** @type {any} */
   const payload = {
     contract_id: data?.contract_id,
     contract_unit_id: data?.contract_unit_id,

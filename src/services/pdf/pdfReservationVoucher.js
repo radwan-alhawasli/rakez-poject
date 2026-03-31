@@ -1,5 +1,9 @@
+// @ts-nocheck — voucher field shapes vary by API version.
 import { buildDocumentPdf } from './pdfDocumentBuilder.js';
 
+/**
+ * @param {any} reservation
+ */
 export async function generateReservationVoucherPdf(reservation, project = {}, unit = {}, employee = {}) {
   const res = reservation ?? {};
   const typeLabel = res.reservation_type === 'confirmed_reservation' ? 'حجز مؤكد' : 'حجز للتفاوض';

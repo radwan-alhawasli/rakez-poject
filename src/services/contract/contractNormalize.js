@@ -1,4 +1,7 @@
 /** استخراج رابط الصورة من أي حقل متوقع من الـ API. يعرض الصورة سواء معتمدة أو قيد المراجعة. */
+/**
+ * @param {any} p
+ */
 function getContractImageUrl(p) {
   if (!p || typeof p !== 'object') return null;
   const photo = p.photography_department;
@@ -15,6 +18,9 @@ function getContractImageUrl(p) {
 }
 
 /** Normalize a contract from GET /contracts/index or /contracts/show to the same details shape we use everywhere. */
+/**
+ * @param {any} p
+ */
 export function normalizeContractItem(p) {
   if (!p || typeof p !== 'object') return p;
   const imageUrl = getContractImageUrl(p);
@@ -34,6 +40,7 @@ export function normalizeContractItem(p) {
 /**
  * جسم إنشاء/تحديث العقد — يطابق GET /contracts/show (commission_percent وليس commission_percentage).
  * يدعم المفتاحين للتوافق مع كود قديم ثم يُخرج شكلاً واحداً للخادم.
+  * @param {any} raw
  */
 export function normalizeContractWritePayload(raw) {
   if (!raw || typeof raw !== 'object') return raw;
@@ -45,7 +52,7 @@ export function normalizeContractWritePayload(raw) {
   }
   delete out.commission_percentage;
   if (Array.isArray(out.units)) {
-    out.units = out.units.map(u => ({
+    out.units = out.units.map(/** @param {any} u */ u => ({
       type: u.type != null ? String(u.type) : '',
       count: Number(u.count) || 0,
       price: Number(u.price) || 0,
@@ -55,6 +62,9 @@ export function normalizeContractWritePayload(raw) {
 }
 
 /** فك طبقات استجابة GET /contracts/show/:id إن وُجدت (مثل data.contract أو غلاف success). */
+/**
+ * @param {any} raw
+ */
 export function unwrapContractShowPayload(raw) {
   if (raw == null || typeof raw !== 'object') return null;
   let o = raw;
@@ -68,6 +78,9 @@ export function unwrapContractShowPayload(raw) {
 }
 
 /** دمج حقول المشروع المضمّنة (project / exclusive_project) في الجذر حتى تُقرأ note وurl وغيرها من GET /contracts/show */
+/**
+ * @param {any} raw
+ */
 export function mergeNestedProjectIntoRoot(raw) {
   if (raw == null || typeof raw !== 'object') return raw;
   const nested = raw.project ?? raw.exclusive_project;
@@ -75,6 +88,9 @@ export function mergeNestedProjectIntoRoot(raw) {
   return { ...nested, ...raw };
 }
 
+/**
+ * @param {any} raw
+ */
 export function normalizeContractShowResponse(raw) {
   if (!raw || typeof raw !== 'object') return raw;
   const imageUrl = getContractImageUrl(raw) || (raw.photography_department?.image_url ?? raw.photography_department?.image) || null;
@@ -92,7 +108,15 @@ export function normalizeContractShowResponse(raw) {
     commission_percentage: raw.commission_percent ?? raw.commission_percentage ?? null,
     commission_percent: raw.commission_percent ?? raw.commission_percentage ?? null,
     created_by_name: raw.user?.name ?? raw.created_by_name ?? null,
-    unit_count: raw.unit_count ?? (Array.isArray(raw.units) ? raw.units.reduce((s, u) => s + (parseInt(u.count) || 0), 0) : null),
+    unit_count:
+      raw.unit_count ??
+      (Array.isArray(raw.units)
+        ? raw.units.reduce(
+            /** @type {(s: number, u: any) => number} */
+            ((s, u) => s + (parseInt(u.count, 10) || 0)),
+            0
+          )
+        : null),
     total_price: raw.total_price ?? null,
     user: raw.user ?? null,
     info: raw.info ?? null,

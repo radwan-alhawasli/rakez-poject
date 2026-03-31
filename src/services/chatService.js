@@ -21,7 +21,7 @@ function unwrap(res) {
 
 /**
  * Normalize conversation payload from API (handles minor field name differences).
- * @param {object} raw
+ * @param {any} raw
  */
 export function normalizeConversation(raw) {
   if (!raw || typeof raw !== 'object') return null;
@@ -53,7 +53,7 @@ export function normalizeConversation(raw) {
 }
 
 /**
- * @param {object} raw
+ * @param {any} raw
  */
 export function normalizeMessage(raw) {
   if (!raw || typeof raw !== 'object') return null;
@@ -68,6 +68,9 @@ export function normalizeMessage(raw) {
   };
 }
 
+/**
+ * @param {any} meta
+ */
 function normalizePagination(meta) {
   const m = meta || {};
   const p = m.pagination || m;
@@ -138,6 +141,7 @@ const chatService = {
   /**
    * POST /chat/conversations/:conversationId/messages
    * @param {string} message
+    * @param {any} conversationId
    */
   async sendMessage(conversationId, message) {
     try {
@@ -153,6 +157,7 @@ const chatService = {
 
   /**
    * PATCH /chat/conversations/:conversationId/read
+    * @param {any} conversationId
    */
   async markAsRead(conversationId) {
     try {
@@ -165,6 +170,7 @@ const chatService = {
 
   /**
    * DELETE /chat/messages/:messageId
+    * @param {any} messageId
    */
   async deleteMessage(messageId) {
     try {
@@ -191,14 +197,14 @@ const chatService = {
 
   /**
    * GET /chat/list_user
-   * @param {Object} params
+   * @param {any} params
    */
   async listUsers(params = {}) {
     try {
       const res = await apiClient.get('/chat/list_user', { params });
       const { items } = extractPaginatedData(res);
-      
-      return items.map(u => ({
+      const list = /** @type {any[]} */ (items);
+      return list.map(u => ({
         id: u.id,
         name: u.name || u.full_name || u.username || u.display_name || 'مستخدم',
         email: u.email || '',

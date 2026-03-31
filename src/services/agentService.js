@@ -14,6 +14,9 @@ function getStoredAgents() {
   }
 }
 
+/**
+ * @param {any} agents
+ */
 function setStoredAgents(agents) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(agents));
@@ -22,8 +25,15 @@ function setStoredAgents(agents) {
   }
 }
 
+/**
+ * @param {any} agents
+ */
 function nextId(agents) {
-  const max = agents.reduce((m, a) => Math.max(m, Number(a.id) || 0), 0);
+  const max = agents.reduce(
+    /** @type {(m: number, a: any) => number} */
+    ((m, a) => Math.max(m, Number(a.id) || 0)),
+    0
+  );
   return String(max + 1);
 }
 
@@ -46,12 +56,12 @@ const agentService = {
    */
   async getAgent(id) {
     const agents = getStoredAgents();
-    return agents.find(a => String(a.id) === String(id)) || null;
+    return agents.find(/** @param {any} a */ a => String(a.id) === String(id)) || null;
   },
 
   /**
    * Create a new agent.
-   * @param {Object} data - { name, description?, humanHelpEnabled, humanHelpLabel, finishEnabled, finishLabel }
+   * @param {any} data - { name, description?, humanHelpEnabled, humanHelpLabel, finishEnabled, finishLabel }
    * @returns {Promise<Object>} Created agent with id, createdAt, updatedAt
    */
   async createAgent(data) {
@@ -76,12 +86,12 @@ const agentService = {
   /**
    * Update an existing agent.
    * @param {string|number} id
-   * @param {Object} data - same shape as create
+   * @param {any} data - same shape as create
    * @returns {Promise<Object|null>} Updated agent or null if not found
    */
   async updateAgent(id, data) {
     const agents = getStoredAgents();
-    const index = agents.findIndex(a => String(a.id) === String(id));
+    const index = agents.findIndex(/** @param {any} a */ a => String(a.id) === String(id));
     if (index === -1) return null;
     const now = new Date().toISOString();
     agents[index] = {
@@ -110,7 +120,7 @@ const agentService = {
    */
   async deleteAgent(id) {
     const agents = getStoredAgents();
-    const filtered = agents.filter(a => String(a.id) !== String(id));
+    const filtered = agents.filter(/** @param {any} a */ a => String(a.id) !== String(id));
     if (filtered.length === agents.length) return false;
     setStoredAgents(filtered);
     return true;

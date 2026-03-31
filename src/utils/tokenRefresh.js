@@ -3,18 +3,22 @@
  * Handles automatic token refresh and retry logic
  */
 
+import axios from 'axios';
 import secureStorage from './secureStorage';
 import logger from './logger';
+import { getCaughtMessage, getCaughtStatus } from '@/utils/caughtError';
 
 let isRefreshing = false;
+/** @type {any[]} */
 let failedQueue = [];
+/** @type {import('axios').AxiosInstance | null} */
 let apiClientInstance = null;
 let hasLoggedRefresh404 = false; // Track if we've already logged the 404 warning
 let refreshEndpointAvailable = true; // Assume available until we get a 404
 
 /**
  * Initialize token refresh utility with apiClient instance
- * @param {Object} client - Axios instance
+ * @param {import('axios').AxiosInstance} client - Axios instance
  */
 export function initTokenRefresh(client) {
   apiClientInstance = client;
@@ -27,6 +31,8 @@ export function initTokenRefresh(client) {
 
 /**
  * Process queued requests after token refresh
+ * @param {*} error
+ * @param {string|null|undefined} [token]
  */
 function processQueue(error, token = null) {
   failedQueue.forEach(prom => {
@@ -73,7 +79,7 @@ async function refreshToken() {
     throw new Error('No token in refresh response');
   } catch (error) {
     // Handle 404 (endpoint doesn't exist) gracefully
-    if (error.response?.status === 404) {
+    if (getCaughtStatus(error) === 404) {
       refreshEndpointAvailable = false;
       // Only log once to reduce console noise
       if (!hasLoggedRefresh404) {
@@ -108,7 +114,7 @@ function addToQueue(resolve, reject) {
 /**
  * Token refresh interceptor
  * Automatically refreshes token on 401 and retries failed requests
- * @param {Object} client - Axios instance (optional, uses initialized instance if not provided)
+ * @param {import('axios').AxiosInstance | null} [client] - Axios instance (optional, uses initialized instance if not provided)
  */
 export function setupTokenRefreshInterceptor(client = null) {
   const clientInstance = client || apiClientInstance;
@@ -121,11 +127,22 @@ export function setupTokenRefreshInterceptor(client = null) {
 
   clientInstance.interceptors.response.use(
     response => response,
-    async error => {
+    /**
+     * @param {unknown} err
+     */
+    async err => {
+      if (!axios.isAxiosError(err)) {
+        return Promise.reject(err);
+      }
+      const error = err;
       const originalRequest = error.config;
+      if (!originalRequest) {
+        return Promise.reject(error);
+      }
 
       // If error is 401 and we haven't tried to refresh yet
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      const reqAny = /** @type {any} */ (originalRequest);
+      if (error.response?.status === 401 && !reqAny._retry) {
         // Don't attempt refresh if endpoint is not available
         if (!refreshEndpointAvailable) {
           // Endpoint not available, just reject the error
@@ -146,7 +163,7 @@ export function setupTokenRefreshInterceptor(client = null) {
             });
         }
 
-        originalRequest._retry = true;
+        reqAny._retry = true;
         isRefreshing = true;
 
         try {
@@ -160,8 +177,8 @@ export function setupTokenRefreshInterceptor(client = null) {
           processQueue(refreshError, null);
           // If refresh failed with 404, mark endpoint as unavailable
           if (
-            refreshError.response?.status === 404 ||
-            refreshError.message?.includes('not available')
+            getCaughtStatus(refreshError) === 404 ||
+            getCaughtMessage(refreshError).includes('not available')
           ) {
             refreshEndpointAvailable = false;
           }

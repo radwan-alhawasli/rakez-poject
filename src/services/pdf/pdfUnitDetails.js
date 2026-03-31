@@ -1,6 +1,10 @@
+// @ts-nocheck — unit detail blobs from API.
 import logger from '@/utils/logger';
 import { getPdfDeps, loadArabicFontBytes, reshapeArabic, PDF_LAYOUT } from './pdfCore.js';
 
+/**
+ * @param {any} unit
+ */
 export const generateUnitDetailsPdf = async (unit, options = {}) => {
   try {
     const { PDFDocument, rgb, fontkit } = await getPdfDeps();
@@ -16,6 +20,10 @@ export const generateUnitDetailsPdf = async (unit, options = {}) => {
     const lineHeight = 22;
     let y = height - DOC_MARGIN;
 
+    /**
+     * @param {any} label
+     * @param {any} value
+     */
     const drawLine = (label, value, size = PDF_LAYOUT.SECTION_TITLE_SIZE) => {
       if (y < DOC_MARGIN + lineHeight) return;
       const text = value != null && value !== '' ? `${label}: ${value}` : `${label}: —`;

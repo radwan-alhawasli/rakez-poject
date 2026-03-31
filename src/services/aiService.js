@@ -4,6 +4,7 @@ import secureStorage from '@/utils/secureStorage';
 import logger from '@/utils/logger';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
+import { getCaughtRequestUrl, getCaughtStatus } from '@/utils/caughtError';
 
 /**
  * خدمة المساعد الذكي
@@ -13,7 +14,7 @@ const aiService = {
   /**
    * سؤال مباشر (بدون سجل جلسة)
    * POST /api/ai/ask
-   * @param {Object} payload - بيانات السؤال
+   * @param {any} payload - بيانات السؤال
    * @returns {Promise<Object>} الإجابة
    */
   async askQuestion(payload) {
@@ -29,7 +30,7 @@ const aiService = {
   /**
    * دردشة (مع سجل الجلسة)
    * POST /api/ai/chat
-   * @param {Object} payload - بيانات الدردشة
+   * @param {any} payload - بيانات الدردشة
    * @returns {Promise<Object>} الرد
    */
   async chat(payload) {
@@ -47,7 +48,7 @@ const aiService = {
    * POST /api/ai/chat  (مع stream=true)
    * يستخدم fetch + ReadableStream لأن Axios لا يدعم البث في المتصفح
    *
-   * @param {Object} payload - بيانات الدردشة
+   * @param {any} payload - بيانات الدردشة
    * @param {Function} onChunk - callback يُنادى مع كل جزء نصي جديد
    * @param {AbortSignal} [signal] - إشارة إلغاء اختياري
    * @returns {Promise<{fullText: string, session_id: string|null}>}
@@ -84,6 +85,9 @@ const aiService = {
       return { fullText: text, session_id: data.session_id || null };
     }
 
+    if (!response.body) {
+      throw new Error('No response body for stream');
+    }
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let fullText = '';
@@ -143,12 +147,12 @@ const aiService = {
    * GET /api/ai/conversations (مواءمة مع الباكند)
    * @param {number} [perPage=20] - عدد النتائج بالصفحة (الحد الأقصى 100)
    * @param {string|null} [section] - تصفية حسب قسم المساعد الذكي
-   * @returns {Promise<{ items: Array, pagination: Object }>}
+   * @returns {Promise<{ items: unknown[], pagination: Object }>}
    */
   async getConversations(perPage = 20, section = null) {
     try {
       logger.debug('جلب المحادثات...');
-      const params = { per_page: perPage };
+      const params = /** @type {Record<string, any>} */ ({ per_page: perPage });
       if (section) params.section = section;
       const response = await apiClient.get('/ai/conversations', { params });
 
@@ -191,12 +195,9 @@ const aiService = {
       const response = await apiClient.get(`/ai/conversations/${sessionId}/messages`);
       return response.data?.data || response.data || {};
     } catch (error) {
-      if (
-        error?.response?.status === 405 ||
-        error?.status === 405 ||
-        (error?.response?.status === 404 &&
-          error?.response?.config?.url?.includes('/conversations/'))
-      ) {
+      const st = getCaughtStatus(error);
+      const url = getCaughtRequestUrl(error) || '';
+      if (st === 405 || (st === 404 && url.includes('/conversations/'))) {
         // إذا كان الخادم لا يدعم GET
         logger.warn(
           'طريقة GET غير مدعومة لجلب محادثة (تم اصطياد خطأ 405/404). هذا المسار قد لا يكون متوفراً في الـ Backend.'
@@ -226,7 +227,7 @@ const aiService = {
   /**
    * جلب الأقسام المتاحة
    * GET /api/ai/sections
-   * @returns {Promise<Array>} قائمة الأقسام
+   * @returns {Promise<unknown[]>} قائمة الأقسام
    */
   async getAvailableSections() {
     try {
@@ -244,15 +245,10 @@ const aiService = {
   /**
    * دردشة مساعد المساعدة حسب السياق
    * POST /ai/assistant/chat
-   * @param {Object} params
-   * @param {string} params.message - رسالة المستخدم (مطلوب، الحد الأقصى 6000 حرف)
-   * @param {string} [params.module] - سياق القسم الحالي (مثل: 'contracts', 'hr')
-   * @param {string} [params.page_key] - مفتاح الصفحة الحالية (مثل: 'contracts.create')
-   * @param {string} [params.language='ar'] - لغة الرد (ar|en)
-   * @param {number|null} [params.conversation_id] - معرّف المحادثة للاستمرار فيها
+   * @param {Record<string, any>} [params] message, module, page_key, language (ar|en), conversation_id
    * @returns {Promise<Object>} { reply, conversation_id, ... }
    */
-  async assistantChat({ message, module, page_key, language = 'ar', conversation_id = null } = {}) {
+  async assistantChat({ message = '', module, page_key, language = 'ar', conversation_id = null } = {}) {
     try {
       logger.debug('دردشة مساعد المساعدة:', {
         message,
@@ -261,6 +257,7 @@ const aiService = {
         language,
         conversation_id,
       });
+      /** @type {Record<string, any>} */
       const body = { message, language };
       if (module) body.module = module;
       if (page_key) body.page_key = page_key;
@@ -275,8 +272,8 @@ const aiService = {
   /**
    * جلب مقالات قاعدة المعرفة (مع ترقيم الصفحات)
    * GET /ai/knowledge (مواءمة مع الباكند)
-   * @param {Object} params - module, language, is_active, page, per_page, search
-   * @returns {Promise<{ items: Array, total: number }>}
+   * @param {any} params - module, language, is_active, page, per_page, search
+   * @returns {Promise<{ items: unknown[], total: number }>}
    */
   async getKnowledge(params = {}) {
     try {
@@ -297,7 +294,7 @@ const aiService = {
   /**
    * إنشاء مقال في قاعدة المعرفة
    * POST /ai/knowledge (مواءمة مع الباكند)
-   * @param {Object} data - { module, title, content_md, language, tags, is_active, priority }
+   * @param {any} data - { module, title, content_md, language, tags, is_active, priority }
    * @returns {Promise<Object>} المقال المنشأ
    */
   async createKnowledge(data) {
@@ -314,7 +311,7 @@ const aiService = {
    * تحديث مقال في قاعدة المعرفة
    * PUT /ai/knowledge/:id (مواءمة مع الباكند)
    * @param {number|string} id - معرّف المقال
-   * @param {Object} data - بيانات التحديث
+   * @param {any} data - بيانات التحديث
    * @returns {Promise<Object>} المقال المحدّث
    */
   async updateKnowledge(id, data) {

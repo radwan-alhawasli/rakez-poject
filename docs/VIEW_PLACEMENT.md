@@ -31,4 +31,6 @@
 ## E2E (Playwright, optional)
 
 - Local default: `npm run test:e2e` starts Vite via [`playwright.config.js`](../playwright.config.js) (`webServer` on `http://localhost:8080`).
-- **CI manual run:** workflow [`.github/workflows/e2e.yml`](../.github/workflows/e2e.yml) (`workflow_dispatch`). Set input **base_url** to a running deployment. The workflow sets `PLAYWRIGHT_SKIP_WEBSERVER=1` and `PLAYWRIGHT_BASE_URL` so tests hit that origin only (no dev server in the runner).
+- **PR CI:** workflow [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) job **e2e-smoke** (E2E (preview, seeded auth)) runs `npm run build`, serves `vite preview` on `127.0.0.1:4173`, then `playwright test e2e` (all specs under [`e2e/`](../e2e/)) with `PLAYWRIGHT_SKIP_WEBSERVER=1`. No repo secrets required. Layering details: [`docs/E2E_CI.md`](E2E_CI.md).
+- **Staging / manual:** workflow [`.github/workflows/e2e.yml`](../.github/workflows/e2e.yml) (`workflow_dispatch`). Set input **base_url** to a running deployment. The workflow sets `PLAYWRIGHT_SKIP_WEBSERVER=1` and `PLAYWRIGHT_BASE_URL` so tests hit that origin only (no dev server in the runner).
+- **Local preview parity:** set `CI_E2E_PREVIEW=1` to use `vite preview` on port 4173 via Playwright `webServer` (see `playwright.config.js`).

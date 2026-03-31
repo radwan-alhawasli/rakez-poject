@@ -19,6 +19,7 @@ export const ROLE_DEFAULT = 12;
 export const ROLE_ACCOUNTANT = 13;
 
 /** مفتاح النص ← المعرّف الرقمي (للاستجابة من الـ API) */
+/** @type {Record<string, number>} */
 export const ROLE_MAP = {
   admin: ROLE_ADMIN,
   project_management: ROLE_PROJECT_MANAGEMENT,
@@ -36,6 +37,7 @@ export const ROLE_MAP = {
 };
 
 /** المعرّف الرقمي ← { label عربي احترافي، key، class للـ badge } */
+/** @type {Record<number, { label: string; key: string; class: string }>} */
 export const ROLES = {
   [ROLE_ADMIN]: { label: 'الإدارة', key: 'admin', class: 'role-admin' },
   [ROLE_PROJECT_MANAGEMENT]: { label: 'إدارة المشاريع', key: 'project_management', class: 'role-pm' },
@@ -72,17 +74,37 @@ export const ROLE_OPTIONS = [
   { value: ROLE_DEFAULT, label: 'افتراضي' },
 ];
 
+/**
+ * @param {string|number} type
+ * @returns {number|null}
+ */
+function resolveRoleKey(type) {
+  if (typeof type === 'string') {
+    if (ROLE_MAP[type] !== undefined) return ROLE_MAP[type];
+    const n = Number(type);
+    if (Number.isFinite(n) && Object.prototype.hasOwnProperty.call(ROLES, n)) return n;
+    return null;
+  }
+  if (typeof type === 'number') {
+    if (Object.prototype.hasOwnProperty.call(ROLES, type)) return type;
+    return null;
+  }
+  return null;
+}
+
+/** @param {string|number} type */
 export const getRoleLabel = (type, isManager = false) => {
-  const normalizedType =
-    typeof type === 'string' && ROLE_MAP[type] !== undefined ? ROLE_MAP[type] : type;
-  if (normalizedType === ROLE_PROJECT_MANAGEMENT && isManager) {
+  const roleKey = resolveRoleKey(type);
+  if (roleKey === ROLE_PROJECT_MANAGEMENT && isManager) {
     return 'مدير إدارة المشاريع';
   }
-  return ROLES[normalizedType]?.label ?? (type != null && type !== '' ? `دور ${type}` : 'غير محدد');
+  const entry = roleKey != null ? ROLES[roleKey] : undefined;
+  return entry?.label ?? (type != null && type !== '' ? `دور ${type}` : 'غير محدد');
 };
 
+/** @param {string|number} type */
 export const getRoleClass = type => {
-  const normalizedType =
-    typeof type === 'string' && ROLE_MAP[type] !== undefined ? ROLE_MAP[type] : type;
-  return ROLES[normalizedType]?.class ?? 'role-default';
+  const roleKey = resolveRoleKey(type);
+  const entry = roleKey != null ? ROLES[roleKey] : undefined;
+  return entry?.class ?? 'role-default';
 };

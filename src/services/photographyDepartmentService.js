@@ -27,7 +27,7 @@ const photographyDepartmentService = {
    * Create photography department data
    * POST /photography-department/store/:contract_id
    * @param {number|string} contractId - Contract ID
-   * @param {Object} data - Photography department data
+   * @param {any} data - Photography department data
    * @returns {Promise<Object>}
    */
   async store(contractId, data) {
@@ -43,7 +43,7 @@ const photographyDepartmentService = {
    * Update photography department data
    * PUT /photography-department/update/:contract_id
    * @param {number|string} contractId - Contract ID
-   * @param {Object} data - Update data
+   * @param {any} data - Update data
    * @returns {Promise<Object>}
    */
   async update(contractId, data) {
@@ -59,7 +59,7 @@ const photographyDepartmentService = {
    * Approve photography for contract (manager acceptance)
    * PATCH /photography-department/approve/:contract_id
    * @param {number|string} contractId - Contract ID
-   * @param {Object} data - Approval data (status: 'approved' | 'rejected', rejection_reason?)
+   * @param {any} data - Approval data (status: 'approved' | 'rejected', rejection_reason?)
    * @returns {Promise<Object>}
    */
   async approve(contractId, data = {}) {

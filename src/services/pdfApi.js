@@ -4,6 +4,9 @@
  */
 import apiClient from '@/api/apiClient';
 
+/**
+ * @param {any} response
+ */
 function extractData(response) {
   const data = response?.data;
   if (data != null && typeof data === 'object' && 'data' in data) return data.data;
@@ -13,6 +16,7 @@ function extractData(response) {
 /**
  * Contract fill data for exclusive contract template.
  * GET /api/contracts/:id/fill-data
+  * @param {any} contractId
  */
 export async function getContractFillData(contractId) {
   const response = await apiClient.get(`/contracts/${contractId}/fill-data`);
@@ -23,6 +27,7 @@ export async function getContractFillData(contractId) {
  * Reservation voucher data (reservation, project, unit, employee).
  * GET /api/sales/reservations/:id/voucher-data
  * Note: downloadVoucher (file) is unchanged when a stored PDF exists.
+  * @param {any} reservationId
  */
 export async function getReservationVoucherData(reservationId) {
   const response = await apiClient.get(`/sales/reservations/${reservationId}/voucher-data`);
@@ -33,6 +38,7 @@ export async function getReservationVoucherData(reservationId) {
  * Unit details for unit PDF.
  * GET /api/sales/units/:unitId/pdf-data
  * Note: unitPdf (file download) is unchanged.
+  * @param {any} unitId
  */
 export async function getUnitPdfData(unitId) {
   const response = await apiClient.get(`/sales/units/${unitId}/pdf-data`);
@@ -42,6 +48,7 @@ export async function getUnitPdfData(unitId) {
 /**
  * Commission claim + distributions for PDF.
  * GET /api/accounting/commissions/:id/pdf-data
+  * @param {any} claimId
  */
 export async function getCommissionClaimPdfData(claimId) {
   const response = await apiClient.get(`/accounting/commissions/${claimId}/pdf-data`);
@@ -51,6 +58,7 @@ export async function getCommissionClaimPdfData(claimId) {
 /**
  * Deposit claim for PDF.
  * GET /api/accounting/deposits/:id/pdf-data
+  * @param {any} depositId
  */
 export async function getDepositClaimPdfData(depositId) {
   const response = await apiClient.get(`/accounting/deposits/${depositId}/pdf-data`);
@@ -91,6 +99,7 @@ export async function getMarketingReportsPdfData(params = {}) {
 /**
  * Developer plan data for PDF.
  * GET /marketing/reports/developer-plan/:contractId/pdf-data
+  * @param {any} contractId
  */
 export async function getDeveloperPlanPdfData(contractId) {
   const response = await apiClient.get(`/marketing/reports/developer-plan/${contractId}/pdf-data`);
@@ -100,6 +109,7 @@ export async function getDeveloperPlanPdfData(contractId) {
 /**
  * Employee plans for project (for PDF export).
  * GET /marketing/employee-plans/pdf-data?marketing_project_id=
+  * @param {any} marketingProjectId
  */
 export async function getEmployeePlansPdfData(marketingProjectId) {
   const response = await apiClient.get('/marketing/employee-plans/pdf-data', {
@@ -111,6 +121,7 @@ export async function getEmployeePlansPdfData(marketingProjectId) {
 /**
  * Contract summary for project management PDF.
  * GET /contracts/:id/summary-pdf-data
+  * @param {any} contractId
  */
 export async function getContractSummaryPdfData(contractId) {
   const response = await apiClient.get(`/contracts/${contractId}/summary-pdf-data`);
@@ -120,6 +131,7 @@ export async function getContractSummaryPdfData(contractId) {
 /**
  * HR contract PDF data (for frontend-built contract PDF).
  * GET /hr/contracts/:id/pdf-data
+  * @param {any} contractId
  */
 export async function getHrContractPdfData(contractId) {
   const response = await apiClient.get(`/hr/contracts/${contractId}/pdf-data`);

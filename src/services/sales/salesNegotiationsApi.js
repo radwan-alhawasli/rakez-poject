@@ -5,8 +5,8 @@ export const salesNegotiationsApi = {
   /**
    * Get pending negotiations
    * GET /sales/negotiations/pending
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} List of pending negotiations
+   * @param {any} params - Query parameters
+   * @returns {Promise<unknown[]>} List of pending negotiations
    */
   async getPendingNegotiations(params = {}) {
     const response = await apiClient.get('/sales/negotiations/pending', { params });
@@ -18,7 +18,7 @@ export const salesNegotiationsApi = {
    * Approve negotiation
    * POST /sales/negotiations/approve
    * @param {number|string} negotiationId - Negotiation ID
-   * @param {Object} data - Approval data
+   * @param {any} data - Approval data
    * @returns {Promise<Object>} Approved negotiation
    */
   async approveNegotiation(negotiationId, data = {}) {
@@ -30,7 +30,7 @@ export const salesNegotiationsApi = {
    * Reject negotiation
    * POST /sales/negotiations/reject
    * @param {number|string} negotiationId - Negotiation ID
-   * @param {Object} data - Rejection data
+   * @param {any} data - Rejection data
    * @returns {Promise<Object>} Rejected negotiation
    */
   async rejectNegotiation(negotiationId, data = {}) {

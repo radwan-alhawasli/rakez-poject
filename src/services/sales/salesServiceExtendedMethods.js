@@ -10,7 +10,7 @@ export const salesServiceExtendedMethods = {
   /**
    * Add to waiting list
    * POST /sales/waiting-list
-   * @param {Object} data - { contract_id, contract_unit_id, client_name, client_mobile, client_email?, priority, notes? }
+   * @param {any} data - { contract_id, contract_unit_id, client_name, client_mobile, client_email?, priority, notes? }
    * @returns {Promise<Object>} Created waiting list entry
    */
   async addToWaitingList(data) {
@@ -22,7 +22,7 @@ export const salesServiceExtendedMethods = {
    * Convert waiting list entry to reservation (leader only)
    * POST /sales/waiting-list/{id}/convert
    * @param {number|string} waitingListId - Waiting list entry ID
-   * @param {Object} data - contract_date, reservation_type, client_nationality, client_iban, payment_method, down_payment_amount, down_payment_status, purchase_mechanism; for negotiation add negotiation_notes
+   * @param {any} data - contract_date, reservation_type, client_nationality, client_iban, payment_method, down_payment_amount, down_payment_status, purchase_mechanism; for negotiation add negotiation_notes
    * @returns {Promise<Object>} Created reservation
    */
   async convertToReservation(waitingListId, data = {}) {
@@ -42,6 +42,9 @@ export const salesServiceExtendedMethods = {
   },
 
   /** Alias for cancelWaitingListEntry. DELETE /sales/waiting-list/{id} */
+  /**
+   * @param {any} id
+   */
   async deleteWaitingList(id) {
     return this.cancelWaitingListEntry(id);
   },
@@ -61,7 +64,7 @@ export const salesServiceExtendedMethods = {
    * Create payment plan for off-plan project
    * POST /sales/reservations/{reservation_id}/payment-plan
    * @param {number|string} reservationId - Reservation ID
-   * @param {Object} data - Payment plan data (installments array)
+   * @param {any} data - Payment plan data (installments array)
    * @returns {Promise<Object>} Created payment plan
    */
   async createPaymentPlan(reservationId, data) {
@@ -76,7 +79,7 @@ export const salesServiceExtendedMethods = {
    * Update payment installment
    * PUT /sales/payment-installments/{installment_id}
    * @param {number|string} installmentId - Installment ID
-   * @param {Object} data - Update data
+   * @param {any} data - Update data
    * @returns {Promise<Object>} Updated installment
    */
   async updatePaymentInstallment(installmentId, data) {
@@ -99,7 +102,7 @@ export const salesServiceExtendedMethods = {
    * Update marketing task
    * PATCH /sales/marketing-tasks
    * @param {number|string} taskId - Task ID
-   * @param {Object} data - Update data
+   * @param {any} data - Update data
    * @returns {Promise<Object>} Updated task
    */
   async updateMarketingTask(taskId, data) {
@@ -115,7 +118,7 @@ export const salesServiceExtendedMethods = {
    * API returns server_date, server_time, day_name_ar for 100% match with backend (app timezone).
    * @param {number|string} projectId - Project/Contract ID
    * @param {string} [date] - Optional date (YYYY-MM-DD), defaults to today
-   * @returns {Promise<{ members: Array, server_date?: string, server_time?: string, day_name_ar?: string }>}
+   * @returns {Promise<{ members: unknown[], server_date?: string, server_time?: string, day_name_ar?: string }>}
    */
   async getProjectScheduleMembers(projectId, date) {
     const params = {};
@@ -132,16 +135,20 @@ export const salesServiceExtendedMethods = {
         day_name_ar: payload.day_name_ar ?? null,
       };
     } catch {
+      const self = /** @type {any} */ (this);
       const [teamMembers, attendance] = await Promise.all([
-        this.getTeamMembers(),
-        this.getTeamAttendance({ contract_id: projectId }).catch(() => []),
+        self.getTeamMembers(),
+        self.getTeamAttendance({ contract_id: projectId }).catch(() => []),
       ]);
       const today = (date || new Date().toISOString().slice(0, 10)).toString().slice(0, 10);
       const todayRecords = attendance.filter(
+        /**
+         * @param {any} r
+         */
         r => (r.date || r.schedule_date || '').slice(0, 10) === today
       );
-      const members = teamMembers.map(m => {
-        const record = todayRecords.find(r => (r.user_id ?? r.employee_id) === m.id);
+      const members = teamMembers.map(/** @param {any} m */ m => {
+        const record = todayRecords.find(/** @param {any} r */ r => (r.user_id ?? r.employee_id) === m.id);
         return {
           ...m,
           is_present: !!record,
@@ -150,7 +157,7 @@ export const salesServiceExtendedMethods = {
           status: record?.status || 'absent',
         };
       });
-      return { members, server_date: today, server_time: null, day_name_ar: null };
+      return { members, server_date: today, server_time: undefined, day_name_ar: undefined };
     }
   },
 
@@ -159,8 +166,8 @@ export const salesServiceExtendedMethods = {
   /**
    * Search units across all projects
    * GET /sales/units/search
-   * @param {Object} params - city, district, min_area, max_area, min_bedrooms, max_bedrooms, status, min_price, max_price, unit_type, floor, project_id, q, sort_by, sort_dir, page, per_page
-   * @returns {Promise<{ items: Array, total: number, meta: Object, filters_available?: Object }>}
+   * @param {any} params - city, district, min_area, max_area, min_bedrooms, max_bedrooms, status, min_price, max_price, unit_type, floor, project_id, q, sort_by, sort_dir, page, per_page
+   * @returns {Promise<{ items: unknown[], total: number, meta: Object, filters_available?: Object }>}
    */
   async searchUnits(params = {}) {
     try {
@@ -194,8 +201,8 @@ export const salesServiceExtendedMethods = {
   /**
    * Get sold units
    * GET /sales/sold-units
-   * @param {Object} params - Optional filters (page, per_page, project_id, date range)
-   * @returns {Promise<{ items: Array, total: number }>} Paginated sold units
+   * @param {any} params - Optional filters (page, per_page, project_id, date range)
+   * @returns {Promise<{ items: unknown[], total: number }>} Paginated sold units
    */
   async getSoldUnits(params = {}) {
     try {
@@ -211,7 +218,7 @@ export const salesServiceExtendedMethods = {
    * Get commission summary for a sold unit
    * GET /sales/sold-units/{unitId}/commission-summary
    * @param {number|string} unitId - Unit ID
-   * @param {Object} params - Optional query parameters
+   * @param {any} params - Optional query parameters
    * @returns {Promise<Object>} Commission summary for the unit
    */
   async getSoldUnitCommissionSummary(unitId, params = {}) {
@@ -228,8 +235,8 @@ export const salesServiceExtendedMethods = {
   /**
    * Get deposits management data
    * GET /sales/deposits/management
-   * @param {Object} params - Optional filters (page, per_page, status, project_id)
-   * @returns {Promise<{ items: Array, total: number }>} Deposits management data
+   * @param {any} params - Optional filters (page, per_page, status, project_id)
+   * @returns {Promise<{ items: unknown[], total: number }>} Deposits management data
    */
   async getDepositsManagement(params = {}) {
     try {
@@ -246,8 +253,8 @@ export const salesServiceExtendedMethods = {
   /**
    * Get deposits follow-up data
    * GET /sales/deposits/follow-up
-   * @param {Object} params - Optional filters (page, per_page, status, overdue_only)
-   * @returns {Promise<{ items: Array, total: number }>} Deposits requiring follow-up
+   * @param {any} params - Optional filters (page, per_page, status, overdue_only)
+   * @returns {Promise<{ items: unknown[], total: number }>} Deposits requiring follow-up
    */
   async getDepositsFollowUp(params = {}) {
     try {
@@ -266,7 +273,7 @@ export const salesServiceExtendedMethods = {
   /**
    * Get analytics dashboard data
    * GET /sales/analytics/dashboard
-   * @param {Object} params - Optional filters (from, to, scope)
+   * @param {any} params - Optional filters (from, to, scope)
    * @returns {Promise<Object>} Analytics dashboard metrics
    */
   async getAnalyticsDashboard(params = {}) {
@@ -281,7 +288,7 @@ export const salesServiceExtendedMethods = {
   /**
    * Get analytics for sold units
    * GET /sales/analytics/sold-units
-   * @param {Object} params - Optional filters (from, to, project_id)
+   * @param {any} params - Optional filters (from, to, project_id)
    * @returns {Promise<Object>} Sold units analytics
    */
   async getAnalyticsSoldUnits(params = {}) {
@@ -297,7 +304,7 @@ export const salesServiceExtendedMethods = {
    * Get deposit statistics by project
    * GET /sales/analytics/deposits/stats/project/{contractId}
    * @param {number|string} contractId - Contract/Project ID
-   * @param {Object} params - Optional query parameters
+   * @param {any} params - Optional query parameters
    * @returns {Promise<Object>} Deposit statistics for the project
    */
   async getAnalyticsDepositStatsByProject(contractId, params = {}) {
@@ -316,7 +323,7 @@ export const salesServiceExtendedMethods = {
    * Get commission statistics by employee
    * GET /sales/analytics/commissions/stats/employee/{userId}
    * @param {number|string} userId - User/Employee ID
-   * @param {Object} params - Optional query parameters (from, to)
+   * @param {any} params - Optional query parameters (from, to)
    * @returns {Promise<Object>} Commission statistics for the employee
    */
   async getAnalyticsCommissionStatsByEmployee(userId, params = {}) {
@@ -334,7 +341,7 @@ export const salesServiceExtendedMethods = {
   /**
    * Get monthly commission report
    * GET /sales/analytics/commissions/monthly-report
-   * @param {Object} params - Required: year (2020-2100), month (1-12)
+   * @param {any} params - Required: year (2020-2100), month (1-12)
    * @returns {Promise<Object>} Monthly commission report data
    */
   async getAnalyticsMonthlyCommissionReport(params = {}) {
@@ -355,12 +362,15 @@ export const salesServiceExtendedMethods = {
    * الساعات: يمكن إرسال "08:00" أو "08:00:00"؛ يتم تحويلها داخلياً إلى H:i:s.
    * Falls back to individual createSchedule calls on error.
    * @param {number|string} projectId - Project/Contract ID
-   * @param {Array} schedules - Array of { user_id, is_present|present, start_time?, end_time? }
+   * @param {any[]} schedules - Array of { user_id, is_present|present, start_time?, end_time? }
    * @param {string} [date] - schedule_date (YYYY-MM-DD), defaults to today
    * @returns {Promise<Object>} Result with created/updated/removed counts; may include items[] (SalesAttendanceResource with schedule_date, day_name_ar, start_time, end_time, ...)
    */
   async saveProjectSchedules(projectId, schedules, date) {
     const schedule_date = (date || new Date().toISOString().slice(0, 10)).replace(/\//g, '-');
+    /**
+     * @param {any} v
+     */
     const toTime = v => {
       if (!v) return '08:00';
       const s = String(v).trim();
@@ -379,10 +389,11 @@ export const salesServiceExtendedMethods = {
       const response = await apiClient.post(`/sales/attendance/project/${projectId}/bulk`, payload);
       return response.data?.data ?? response.data ?? {};
     } catch {
+      const self = /** @type {any} */ (this);
       const presentMembers = schedules.filter(s => s.is_present ?? s.present);
       const results = await Promise.allSettled(
         presentMembers.map(s =>
-          this.createSchedule({
+          self.createSchedule({
             contract_id: projectId,
             user_id: s.user_id,
             schedule_date,

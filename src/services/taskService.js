@@ -9,7 +9,7 @@ import { extractPaginatedData } from '@/utils/paginationUtils';
 export default {
   /**
    * Create a new task
-   * @param {Object} taskData - The task details (task_name, team_id, due_at, assigned_to, status, etc.)
+   * @param {any} taskData - The task details (task_name, team_id, due_at, assigned_to, status, etc.)
    * @returns {Promise<Object>} The created task data
    */
   async createTask(taskData) {
@@ -40,7 +40,7 @@ export default {
    * Get users for a given section (for assignee dropdown).
    * API: GET /tasks/sections/:section/users → list of users in that section/role.
    * @param {string} section - Section key (e.g. 'marketing', 'sales')
-   * @returns {Promise<Array<{ id: number, name: string, ... }>>}
+   * @returns {Promise<Array<Record<string, unknown>>>}
    */
   async getSectionUsers(section) {
     if (!section) return [];
@@ -56,7 +56,7 @@ export default {
 
   /**
    * Get tasks assigned to the current authenticated user
-   * @param {Object} params - Query parameters (status, per_page, page)
+   * @param {any} params - Query parameters (status, per_page, page)
    * @returns {Promise<Object>} Paginated task list { items: [...], total: ... }
    */
   async getMyTasks(params = {}) {
@@ -70,7 +70,7 @@ export default {
 
   /**
    * Get tasks created/requested by the current user and assigned to others
-   * @param {Object} params - Query parameters (status, per_page, page)
+   * @param {any} params - Query parameters (status, per_page, page)
    * @returns {Promise<Object>} Paginated task list { items: [...], total: ... }
    */
   async getRequestedTasks(params = {}) {
@@ -85,7 +85,7 @@ export default {
   /**
    * Update the status of a task assigned to the current user
    * @param {number|string} taskId - The ID of the task
-   * @param {Object} data - Update data { status, cannot_complete_reason }
+   * @param {any} data - Update data { status, cannot_complete_reason }
    * @returns {Promise<Object>} The updated task data
    */
   async updateTaskStatus(taskId, data) {

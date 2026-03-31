@@ -7,11 +7,26 @@ const isProduction = import.meta.env.PROD;
 const noop = () => {};
 
 const dev = {
-  debug: (...args) => console.debug(...args),
-  info: (...args) => console.info(...args),
-  log: (...args) => console.log(...args),
-  warn: (...args) => console.warn(...args),
-  error: (...args) => console.error(...args),
+  /** @param {...any} args */
+  debug(...args) {
+    console.debug(...args);
+  },
+  /** @param {...any} args */
+  info(...args) {
+    console.info(...args);
+  },
+  /** @param {...any} args */
+  log(...args) {
+    console.log(...args);
+  },
+  /** @param {...any} args */
+  warn(...args) {
+    console.warn(...args);
+  },
+  /** @param {...any} args */
+  error(...args) {
+    console.error(...args);
+  },
 };
 
 const prod = {
@@ -19,7 +34,10 @@ const prod = {
   info: noop,
   log: noop,
   warn: noop,
-  error: (...args) => console.error(...args),
+  /** @param {...any} args */
+  error(...args) {
+    console.error(...args);
+  },
 };
 
 export default isProduction ? prod : dev;

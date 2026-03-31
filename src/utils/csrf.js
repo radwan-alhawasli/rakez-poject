@@ -7,14 +7,17 @@ import axios from 'axios';
 import appConfig from '@/config/appConfig';
 import logger from './logger';
 
+/** @type {string|null} */
 let csrfToken = null;
+/** @type {Promise<string|null>|null} */
 let tokenFetchPromise = null;
+/** @type {import('axios').AxiosInstance|null} */
 let apiClientInstance = null;
 let csrfEndpointUnavailable = false; // Track if CSRF endpoint is unavailable to skip future requests
 
 /**
  * Initialize CSRF utility with apiClient instance
- * @param {Object} client - Axios instance
+ * @param {import('axios').AxiosInstance} client - Axios instance
  */
 export function initCsrf(client) {
   apiClientInstance = client;
@@ -22,7 +25,7 @@ export function initCsrf(client) {
 
 /**
  * Get CSRF token from server
- * @returns {Promise<string>} CSRF token
+ * @returns {Promise<string|null>} CSRF token
  */
 async function fetchCsrfToken() {
   if (!apiClientInstance) {
@@ -143,7 +146,7 @@ function clearCsrfToken() {
 
 /**
  * Setup CSRF token interceptor for API requests
- * @param {Object} client - Axios instance (optional, uses initialized instance if not provided)
+ * @param {import('axios').AxiosInstance|null} [client] - Axios instance (optional, uses initialized instance if not provided)
  */
 export function setupCsrfInterceptor(client = null) {
   const clientInstance = client || apiClientInstance;
@@ -159,6 +162,9 @@ export function setupCsrfInterceptor(client = null) {
   }
 
   clientInstance.interceptors.request.use(
+    /**
+     * @param {any} config
+     */
     async config => {
       // Skip CSRF for GET requests and public endpoints
       if (config.method === 'get' || config.url?.includes('/public/')) {
@@ -172,12 +178,21 @@ export function setupCsrfInterceptor(client = null) {
       }
       return config;
     },
+    /**
+     * @param {any} error
+     */
     error => Promise.reject(error)
   );
 
   // Refresh token on 403 (Forbidden) - might be CSRF token expired
   clientInstance.interceptors.response.use(
+    /**
+     * @param {any} response
+     */
     response => response,
+    /**
+     * @param {any} error
+     */
     async error => {
       if (error.response?.status === 403 && error.config && !error.config._csrfRetry) {
         error.config._csrfRetry = true;

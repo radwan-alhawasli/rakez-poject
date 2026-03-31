@@ -45,6 +45,7 @@ export const creditNotificationsApi = {
   /**
    * Mark notification as read
    * POST /credit/notifications/:notification_id/read
+    * @param {any} notificationId
    */
   async markNotificationRead(notificationId) {
     try {
