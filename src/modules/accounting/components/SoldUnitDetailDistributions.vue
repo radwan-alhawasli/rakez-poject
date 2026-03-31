@@ -37,7 +37,7 @@
               {{ emp.name }}
             </option>
           </select>
-          <button type="button" class="btn-icon delete" @click="leadGenRows.splice(idx, 1)" title="حذف">
+          <button type="button" class="btn-icon delete" @click="removeLeadGenRow(idx)" title="حذف">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="3 6 5 6 21 6"></polyline>
               <path
@@ -85,7 +85,7 @@
             placeholder="النسبة %"
           />
           <span class="calc-amount">{{ formatCurrency(calcAmount(row.percentage)) }}</span>
-          <button type="button" class="btn-icon delete" @click="closingRows.splice(idx, 1)" title="حذف">
+          <button type="button" class="btn-icon delete" @click="removeClosingRow(idx)" title="حذف">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="3 6 5 6 21 6"></polyline>
               <path
@@ -131,7 +131,7 @@
             placeholder="النسبة %"
           />
           <span class="calc-amount">{{ formatCurrency(calcAmount(row.percentage)) }}</span>
-          <button type="button" class="btn-icon delete" @click="persuasionRows.splice(idx, 1)" title="حذف">
+          <button type="button" class="btn-icon delete" @click="removePersuasionRow(idx)" title="حذف">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="3 6 5 6 21 6"></polyline>
               <path
@@ -340,17 +340,17 @@
 
 <script setup>
 const hasExternalBroker = defineModel('hasExternalBroker', { type: Boolean, required: true });
+const commissionForm = defineModel('commissionForm', { type: Object, required: true });
+const leadGenRows = defineModel('leadGenRows', { type: Array, required: true });
+const persuasionRows = defineModel('persuasionRows', { type: Array, required: true });
+const closingRows = defineModel('closingRows', { type: Array, required: true });
+const externalMarketer = defineModel('externalMarketer', { type: Object, required: true });
+const managementPct = defineModel('managementPct', { type: Object, required: true });
 
 defineProps({
   employees: { type: Array, default: () => [] },
   commissionSummary: { type: Object, default: null },
   distributions: { type: Array, default: () => [] },
-  commissionForm: { type: Object, required: true },
-  leadGenRows: { type: Object, required: true },
-  persuasionRows: { type: Object, required: true },
-  closingRows: { type: Object, required: true },
-  externalMarketer: { type: Object, required: true },
-  managementPct: { type: Object, required: true },
   isSaving: { type: Boolean, required: true },
   formatCurrency: { type: Function, required: true },
   formatNumber: { type: Function, required: true },
@@ -366,4 +366,14 @@ defineProps({
   totalDistPct: { type: Number, required: true },
   companyAmount: { type: Number, required: true },
 });
+
+function removeLeadGenRow(idx) {
+  leadGenRows.value = leadGenRows.value.filter((_, i) => i !== idx);
+}
+function removeClosingRow(idx) {
+  closingRows.value = closingRows.value.filter((_, i) => i !== idx);
+}
+function removePersuasionRow(idx) {
+  persuasionRows.value = persuasionRows.value.filter((_, i) => i !== idx);
+}
 </script>

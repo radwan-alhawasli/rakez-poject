@@ -1,7 +1,31 @@
+// @ts-check
 import apiClient from '@/api/apiClient';
 import logger from '@/utils/logger';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
+
+/**
+ * @typedef {Object} AccountingSoldUnitListItem
+ * @property {number|string} [id]
+ * @property {number|string} [reservation_id]
+ * @property {string} [unit_number]
+ * @property {string} [project_name]
+ * @property {string} [customer_name]
+ * @property {string} [client_name]
+ * @property {string} [commission_status]
+ * @property {Object} [contract]
+ * @property {Object} [reservation]
+ */
+
+/**
+ * @typedef {Object} AccountingSoldUnitDetail
+ * @property {number|string} [id]
+ * @property {number|string} [reservation_id]
+ * @property {Array<{ id: number|string, name: string }>} [available_marketers]
+ * @property {Array<Object>} [distributions]
+ * @property {Object} [commission_summary]
+ * @property {Object} [contract_unit]
+ */
 
 /**
  * @typedef {Object} AccountingDashboardApi
@@ -194,7 +218,7 @@ const accountingService = {
    * Get all sold units with commission info
    * GET /accounting/sold-units
    * @param {Object} params - Query parameters
-   * @returns {Promise<Array>} List of sold units
+   * @returns {Promise<{ items: AccountingSoldUnitListItem[], total: number }>}
    */
   async getSoldUnits(params = {}) {
     try {
@@ -231,7 +255,7 @@ const accountingService = {
    * GET /accounting/sold-units/:reservation_id
    * Response includes available_marketers array (id, name) for dropdown
    * @param {number|string} reservationId - Reservation ID
-   * @returns {Promise<Object>} Sold unit details
+   * @returns {Promise<AccountingSoldUnitDetail>}
    */
   async getSoldUnitById(reservationId) {
     try {

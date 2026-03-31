@@ -302,7 +302,7 @@ onMounted(() => {
 const routes = [
   {
     path: '/dashboard',
-    component: () => import('@/views/DashboardView.vue')
+    component: () => import('@/modules/app/views/DashboardView.vue')
   }
 ]
 ```

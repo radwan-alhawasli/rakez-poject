@@ -1,6 +1,6 @@
 /**
- * Domain → path for views migrated from src/views (Phase 2).
- * Source of truth for grep/audits; router imports use @/modules/... directly.
+ * Domain → route-level view names under src/modules/<domain>/views.
+ * Source of truth for grep/audits; router imports use @/modules/... only.
  */
 export const VIEW_DOMAIN_MAP = {
   app: [

@@ -1,0 +1,38 @@
+# Run Playwright against a deployed/staging URL (no local dev server).
+# Actions → E2E (manual) → Run workflow → set base_url (e.g. https://app.example.com).
+name: E2E (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Full origin of the running app (no trailing slash), e.g. https://staging.example.com'
+        required: true
+        type: string
+
+jobs:
+  playwright:
+    name: Playwright against remote base URL
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        env:
+          CI: "true"
+          PLAYWRIGHT_BASE_URL: ${{ github.event.inputs.base_url }}
+          PLAYWRIGHT_SKIP_WEBSERVER: "1"
+        run: npm run test:e2e
