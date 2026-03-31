@@ -1,6 +1,6 @@
 Technical debt backlog toward 10/10 quality (post-refactor sweep March 2026)
 
-A) Files still over 500 lines (enforce gradually; eslint max-lines is warn)
+A) Files still over 500 lines (eslint max-lines is error at 500 with skipBlankLines/skipComments; documented eslint-disable max-lines only in: EditorView.vue, useCreditBookings.js, EditContractInfoModal.vue — split remaining large files gradually)
    - src/services/pdfService.js (~1127) — split: pdfFonts+reshape helpers vs document generators (preserve internal helper visibility or use a pdf/ folder with explicit imports).
    - src/services/hrService.js (~997)
    - src/services/salesService.js (~966) — registry extracted; consider 2–3 method modules with Object.assign onto one default export.

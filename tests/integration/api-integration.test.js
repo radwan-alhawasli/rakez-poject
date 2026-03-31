@@ -1,14 +1,21 @@
 /**
- * API Integration Tests
- * Tests actual API calls against test/staging environment
+ * API integration tests — real HTTP against a configured backend.
  *
- * Note: These tests require a running API server.
- * Set VITE_API_BASE_URL environment variable to point to your test API.
+ * When to run (see also docs/VIEW_PLACEMENT.md for frontend layout; env vars here):
+ *
+ * - Default `npm run test:run`: **skipped** (no integration base URL configured).
+ * - Staging / non-local URL: set `INTEGRATION_API_BASE_URL` (recommended) **or** set
+ *   `VITE_APP_API_BASE_URL` / `VITE_API_BASE_URL` to a non-localhost URL. Vitest must see
+ *   the same `VITE_APP_API_BASE_URL` as `apiClient` / `authService` (set in the shell or CI env).
+ * - Local API (localhost / 127.0.0.1): set `RUN_API_INTEGRATION=1` plus `VITE_APP_API_BASE_URL`
+ *   (or `INTEGRATION_API_BASE_URL`) so the suite is explicitly opted in.
+ *
+ * Optional auth scenarios require `TEST_USER_EMAIL` and `TEST_USER_PASSWORD`.
  */
 
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import axios from 'axios';
 
-// Mock all dependencies to prevent initialization errors
 vi.mock('../../src/utils/csrf', async importOriginal => {
   const actual = await importOriginal();
   return {
@@ -27,12 +34,29 @@ vi.mock('../../src/utils/tokenRefresh', async importOriginal => {
   };
 });
 
+const storageState = { token: null, refreshToken: null, user: null };
+
 vi.mock('../../src/utils/secureStorage', () => ({
   default: {
-    getToken: vi.fn(() => null),
+    getToken: vi.fn(() => storageState.token),
+    setToken: vi.fn(t => {
+      storageState.token = t;
+    }),
+    setRefreshToken: vi.fn(t => {
+      storageState.refreshToken = t;
+    }),
+    setUserInfo: vi.fn(u => {
+      storageState.user = u;
+    }),
+    getUserInfo: vi.fn(() => storageState.user),
+    getRefreshToken: vi.fn(() => storageState.refreshToken),
     updateLastActivity: vi.fn(),
     isSessionExpired: vi.fn(() => false),
-    clearSession: vi.fn(),
+    clearSession: vi.fn(() => {
+      storageState.token = null;
+      storageState.refreshToken = null;
+      storageState.user = null;
+    }),
   },
 }));
 
@@ -45,83 +69,77 @@ vi.mock('../../src/utils/logger', () => ({
 }));
 
 import authService from '../../src/services/authService';
-import apiClient from '../../src/api/apiClient';
 
-// Skip integration tests if API URL is not configured
-const API_BASE_URL = process.env.VITE_API_BASE_URL || process.env.VUE_APP_API_BASE_URL;
-const SKIP_INTEGRATION = !API_BASE_URL || API_BASE_URL.includes('localhost');
+function trimBase(u) {
+  return (u || '').trim().replace(/\/+$/, '');
+}
+
+const explicitIntegration = trimBase(process.env.INTEGRATION_API_BASE_URL);
+const viteBase = trimBase(process.env.VITE_APP_API_BASE_URL || process.env.VITE_API_BASE_URL);
+const isLocal = u => u && /localhost|127\.0\.0\.1/i.test(u);
+const runLocal = process.env.RUN_API_INTEGRATION === '1';
+
+const effectiveBase =
+  explicitIntegration ||
+  (!isLocal(viteBase) ? viteBase : '') ||
+  (runLocal ? viteBase : '');
+
+const SKIP_INTEGRATION = !effectiveBase;
+
+const hasAuthCreds = !!(process.env.TEST_USER_EMAIL && process.env.TEST_USER_PASSWORD);
 
 describe.skipIf(SKIP_INTEGRATION)('API Integration Tests', () => {
-  let authToken = null;
-
-  beforeAll(async () => {
-    // Setup: Login to get auth token
-    try {
-      const testCredentials = {
-        email: process.env.TEST_USER_EMAIL || 'admin@rakez.com',
-        password: process.env.TEST_USER_PASSWORD || 'password',
-      };
-
-      // Note: This would require actual API to be running
-      // For now, we'll skip if credentials are not provided
-      if (testCredentials.email && testCredentials.password) {
-        // const user = await authService.login(testCredentials.email, testCredentials.password)
-        // authToken = user.token
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn('Could not authenticate for integration tests:', error.message);
-    }
+  beforeAll(() => {
+    storageState.token = null;
+    storageState.refreshToken = null;
+    storageState.user = null;
   });
 
   afterAll(async () => {
-    // Cleanup: Logout if authenticated
-    if (authToken) {
+    if (storageState.token) {
       try {
         await authService.logout();
-      } catch (error) {
-        // Ignore logout errors
+      } catch {
+        // ignore
       }
     }
+    storageState.token = null;
+    storageState.refreshToken = null;
+    storageState.user = null;
   });
 
-  describe('Authentication Flow', () => {
-    it('should successfully login with valid credentials', async () => {
-      // This test requires actual API
-      // Skipped if API is not available
-      expect(true).toBe(true); // Placeholder
-    });
-
-    it('should reject invalid credentials', async () => {
-      // This test requires actual API
-      // Skipped if API is not available
-      expect(true).toBe(true); // Placeholder
+  describe('API reachability', () => {
+    it('responds on /health (HTTP status from API host)', async () => {
+      const url = `${effectiveBase}/health`;
+      const res = await axios.get(url, {
+        timeout: 25000,
+        validateStatus: () => true,
+      });
+      expect(res.status).toBeGreaterThanOrEqual(200);
+      expect(res.status).toBeLessThan(600);
     });
   });
 
-  describe('API Health Check', () => {
-    it('should be able to reach API base URL', async () => {
-      if (!API_BASE_URL) {
-        expect(true).toBe(true); // Skip if no API URL
-        return;
-      }
+  describe.skipIf(!hasAuthCreds)('Authentication flow', () => {
+    it('fails login with invalid credentials', async () => {
+      await expect(
+        authService.login('invalid-integration@example.test', 'wrong-password-xyz')
+      ).rejects.toThrow();
+    });
 
-      try {
-        // Simple health check - adjust endpoint as needed
-        const response = await apiClient.get('/health');
-        expect(response.status).toBe(200);
-      } catch (error) {
-        // If health endpoint doesn't exist, that's okay
-        // We just want to verify the API is reachable
-        expect(error.response?.status).not.toBe(0);
-      }
+    it('logs in with valid credentials', async () => {
+      const email = process.env.TEST_USER_EMAIL;
+      const password = process.env.TEST_USER_PASSWORD;
+      const user = await authService.login(email, password);
+      expect(user).toBeTruthy();
+      expect(user.email || email).toBeTruthy();
+      expect(storageState.token).toBeTruthy();
     });
   });
 });
 
-// Export configuration for CI/CD
 export const integrationTestConfig = {
-  apiBaseUrl: API_BASE_URL,
+  apiBaseUrl: effectiveBase,
   skipTests: SKIP_INTEGRATION,
   testCredentials: {
     email: process.env.TEST_USER_EMAIL,
