@@ -106,7 +106,7 @@
             <div
               v-if="msg.contentHtml"
               class="chatbot-bubble-text chatbot-bubble-markdown"
-              v-html="msg.contentHtml"
+              v-html="safeChatHtml(msg.contentHtml)"
             ></div>
             <div v-else-if="msg.content" class="chatbot-bubble-text">{{ msg.content }}</div>
 
@@ -233,6 +233,7 @@
 <script>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useChatbot } from '@/composables/useChatbot';
+import { sanitizeHtml, RICH_CHAT_HTML_OPTIONS } from '@/utils/safeHtml';
 
 export default {
   name: 'ChatbotPanel',
@@ -327,6 +328,10 @@ export default {
       sendQuickPrompt(t);
     }
 
+    function safeChatHtml(html) {
+      return sanitizeHtml(html || '', RICH_CHAT_HTML_OPTIONS);
+    }
+
     onMounted(() => {
       nextTick(() => inputRef.value?.focus());
     });
@@ -350,6 +355,7 @@ export default {
       onNavigate,
       onCopy,
       retryLastMessage,
+      safeChatHtml,
     };
   },
 };

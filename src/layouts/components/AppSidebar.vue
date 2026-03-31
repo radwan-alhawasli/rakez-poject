@@ -1,7 +1,14 @@
 <template>
   <Sidebar side="right" class="sidebar sidebar-luxury">
     <SidebarHeader>
-      <img src="/img/logo-circle.png" class="sidebar-logo-img" alt="شعار راكز" width="48" height="48" fetchpriority="high" />
+      <img
+        :src="sidebarLogoSrc"
+        class="sidebar-logo-img"
+        alt="شعار راكز"
+        width="48"
+        height="48"
+        fetchpriority="high"
+      />
       <div class="sidebar-logo-text">
         <span class="rakez-ar">راكز</span> | <span class="rakez-en">Rakez</span>
       </div>
@@ -23,7 +30,7 @@
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
-                v-html="item.icon"
+                v-html="sanitizeNavIconSvg(item.icon)"
               ></svg>
               <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
             </div>
@@ -34,7 +41,7 @@
               fill="none"
               stroke="currentColor"
               stroke-width="2"
-              v-html="item.icon"
+              v-html="sanitizeNavIconSvg(item.icon)"
             ></svg>
             <span class="nav-text">{{ getItemLabel(item) }}</span>
           </div>
@@ -75,6 +82,12 @@
 
 <script setup>
 import { computed } from 'vue';
+
+/** مسار ثابت من public؛ في Vitest يُستخدم data URI لأن مسارات `/img/*` تُفسَّر خطأ كـ module. */
+const sidebarLogoSrc = import.meta.env.VITEST
+  ? 'data:image/gif;base64,R0lGODlhAQABAAAAACw='
+  : '/img/logo-circle.png';
+
 import {
   Sidebar,
   SidebarHeader,
@@ -82,6 +95,7 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { getNavItemsForRole } from './sidebarConfig.js';
+import { sanitizeNavIconSvg } from '@/utils/safeHtml';
 
 const props = defineProps({
   user: { type: Object, default: null },

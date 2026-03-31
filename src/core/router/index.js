@@ -14,4 +14,5 @@ const router = createRouter({
 
 registerGuards(router);
 
+export { VIEW_DOMAIN_MAP } from './viewDomainMap';
 export default router;

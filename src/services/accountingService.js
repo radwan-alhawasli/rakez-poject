@@ -4,6 +4,19 @@ import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
 
 /**
+ * @typedef {Object} AccountingDashboardApi
+ * @property {number} [total_units_sold]
+ * @property {number} [total_deposits]
+ * @property {number} [total_deposits_refunded]
+ * @property {number} [total_projects_value]
+ * @property {number} [total_sales_value]
+ * @property {number} [total_commissions]
+ * @property {number} [pending_deposits]
+ * @property {number} [pending_salaries]
+ * @property {number} [unread_notifications]
+ */
+
+/**
  * Accounting Department Service
  * Manages accounting operations including dashboard, notifications, sold units, commissions, deposits, salaries, and confirmations
  */

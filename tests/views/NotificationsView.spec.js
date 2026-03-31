@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { createPinia } from 'pinia';
-import NotificationsView from '../../src/views/NotificationsView.vue';
+import NotificationsView from '@/modules/app/views/NotificationsView.vue';
 
 vi.mock('../../src/services/notificationService', () => ({
   default: {

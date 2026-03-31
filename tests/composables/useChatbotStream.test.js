@@ -15,6 +15,8 @@ vi.mock('../../src/utils/logger', () => ({
 
 vi.mock('../../src/utils/safeHtml', () => ({
   sanitizeMarkdown: vi.fn(text => `<p>${text}</p>`),
+  sanitizeHtml: vi.fn((html, _opts) => (typeof html === 'string' ? html : '')),
+  RICH_CHAT_HTML_OPTIONS: {},
 }));
 
 vi.mock('../../src/utils/routeMapper', () => ({

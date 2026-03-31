@@ -2,15 +2,24 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import viteCompression from 'vite-plugin-compression';
+import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'path';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     vue(),
     tailwindcss(),
     viteCompression({ algorithm: 'gzip', ext: '.gz' }),
     viteCompression({ algorithm: 'brotliCompress', ext: '.br' }),
-  ],
+    mode === 'analyze' &&
+      visualizer({
+        filename: 'dist/stats.html',
+        open: false,
+        gzipSize: true,
+        brotliSize: true,
+        template: 'treemap',
+      }),
+  ].filter(Boolean),
   optimizeDeps: {
     include: ['arabic-reshaper'],
   },
@@ -65,4 +74,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

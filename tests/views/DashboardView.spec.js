@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { createPinia } from 'pinia';
-import DashboardView from '../../src/views/DashboardView.vue';
+import DashboardView from '@/modules/app/views/DashboardView.vue';
 
 vi.mock('../../src/services/authService', () => ({
   default: {
@@ -30,6 +30,7 @@ vi.mock('../../src/composables/useFormatters', () => ({
   useFormatters: vi.fn(() => ({
     formatCompact: value => String(value ?? 0),
     formatNumber: value => String(value ?? 0),
+    formatCurrencyAr: value => (value == null ? '—' : `${value} ر.س`),
   })),
 }));
 
@@ -58,7 +59,7 @@ describe('DashboardView', () => {
     const wrapper = await createWrapper();
     await flushPromises();
     await wrapper.vm.$nextTick();
-    const statValues = wrapper.findAll('.stat-value');
+    const statValues = wrapper.findAll('.luxury-stat-card__value');
     expect(statValues.length).toBeGreaterThan(0);
   });
 
@@ -66,7 +67,8 @@ describe('DashboardView', () => {
     const wrapper = await createWrapper();
     await flushPromises();
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('.welcome-title').exists()).toBe(true);
-    expect(wrapper.find('.welcome-title').text()).toContain('أهلاً بعودتك');
+    const title = wrapper.find('.rakez-dashboard-welcome__title');
+    expect(title.exists()).toBe(true);
+    expect(title.text()).toContain('أهلاً بعودتك');
   });
 });

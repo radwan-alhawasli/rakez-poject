@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { createPinia } from 'pinia';
-import ReservationsView from '../../src/views/ReservationsView.vue';
+import ReservationsView from '@/modules/sales/views/ReservationsView.vue';
 
 vi.mock('../../src/services/salesService', () => ({
   default: {

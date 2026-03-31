@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { createPinia } from 'pinia';
-import TeamsView from '../../src/views/TeamsView.vue';
+import TeamsView from '@/modules/hr/views/TeamsView.vue';
 
 vi.mock('../../src/services/userService', () => ({
   default: {

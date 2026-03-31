@@ -35,7 +35,7 @@ export default [
     },
     rules: {
       'max-lines': [
-        'warn',
+        'error',
         {
           max: 500,
           skipBlankLines: true,

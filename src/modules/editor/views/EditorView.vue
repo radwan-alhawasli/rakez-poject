@@ -212,6 +212,7 @@
 </template>
 
 <script>
+/* eslint-disable max-lines -- Documented exception: editor shell with contracts/photo/boards sections; composition split planned per submodule. */
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import editorService from '@/services/editorService';

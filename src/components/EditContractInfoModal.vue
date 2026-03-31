@@ -254,6 +254,7 @@
 </template>
 
 <script setup>
+/* eslint-disable max-lines -- Documented exception: parity form mirroring contract completion fields; structural split deferred without UX risk. */
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import AppModal from '@/components/AppModal.vue';
 import Button from '@/components/ui/Button.vue';

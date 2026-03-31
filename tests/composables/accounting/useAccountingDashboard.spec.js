@@ -63,8 +63,11 @@ describe('useAccountingDashboard', () => {
     expect(wrapper.vm.dashboardMetrics.unreadNotifications).toBe(0);
   });
 
-  it('should have dynamic date filters for current month', () => {
+  it('should pass current month from_date/to_date to getDashboard on load', async () => {
+    accountingService.getDashboard.mockResolvedValue({});
     const wrapper = mountComposable();
+    await wrapper.vm.loadDashboardMetrics();
+    const params = accountingService.getDashboard.mock.calls[0][0];
     const now = new Date();
     const expectedFrom = new Date(now.getFullYear(), now.getMonth(), 1)
       .toISOString()
@@ -72,8 +75,8 @@ describe('useAccountingDashboard', () => {
     const expectedTo = new Date(now.getFullYear(), now.getMonth() + 1, 0)
       .toISOString()
       .slice(0, 10);
-    expect(wrapper.vm.dashboardFromDate).toBe(expectedFrom);
-    expect(wrapper.vm.dashboardToDate).toBe(expectedTo);
+    expect(params.from_date).toBe(expectedFrom);
+    expect(params.to_date).toBe(expectedTo);
   });
 
   it('should set isLoading=true then false during loadDashboardMetrics', async () => {

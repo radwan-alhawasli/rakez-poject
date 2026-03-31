@@ -100,18 +100,18 @@ describe('photographyDepartmentService', () => {
       const contractId = 4;
       const data = { status: 'approved' };
       const mockResponse = { approved: true };
-      mock.onPost(`/photography-department/approve/${contractId}`).reply(200, mockResponse);
+      mock.onPatch(`/photography-department/approve/${contractId}`).reply(200, mockResponse);
 
       const result = await photographyDepartmentService.approve(contractId, data);
 
-      expect(mock.history.post.length).toBe(1);
-      expect(mock.history.post[0].data).toBe(JSON.stringify(data));
+      expect(mock.history.patch.length).toBe(1);
+      expect(mock.history.patch[0].data).toBe(JSON.stringify(data));
       expect(result).toEqual(mockResponse);
     });
 
     it('should throw on approve error', async () => {
       mock
-        .onPost('/photography-department/approve/1')
+        .onPatch('/photography-department/approve/1')
         .reply(403, createErrorResponse('Forbidden', 403));
 
       await expect(photographyDepartmentService.approve(1, {})).rejects.toThrow();

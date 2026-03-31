@@ -2,11 +2,10 @@ import { ref, computed, reactive, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import contractService from '@/services/contractService';
 import authService from '@/services/authService';
-import notificationService from '@/services/notificationService';
-import teamService from '@/services/teamService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
+import { useProjectManagementModals } from '@/composables/project/useProjectManagementModals';
 
 export function useProjectManagement() {
   const router = useRouter();
@@ -384,233 +383,26 @@ export function useProjectManagement() {
     }
   };
 
-  const onAssignTeam = project => {
-    activeMenuId.value = null;
-    projectForAssignTeam.value = project;
-    assignTeamSelectedId.value = '';
-    showAssignTeamModal.value = true;
-    loadAssignTeamData();
-  };
-
-  const loadAssignTeamData = async () => {
-    const project = projectForAssignTeam.value;
-    if (!project) return;
-    assignTeamLoading.value = true;
-    try {
-      // All teams: GET /project_management/teams/index
-      const allTeams = await teamService.getTeams();
-      assignTeamAvailable.value = Array.isArray(allTeams) ? allTeams : [];
-      // Assigned teams: GET /project_management/teams/index/:contractId
-      const assigned = await teamService.getProjectTeams(project.id);
-      assignTeamAssigned.value = Array.isArray(assigned) ? assigned : [];
-    } catch (error) {
-      logger.error('Error loading teams for assign modal:', error);
-      toast.error('فشل تحميل قائمة الفرق');
-    } finally {
-      assignTeamLoading.value = false;
-    }
-  };
-
-  const assignTeamSubmit = async () => {
-    const project = projectForAssignTeam.value;
-    if (!project || !assignTeamSelectedId.value) return;
-    assignTeamActionLoading.value = true;
-    try {
-      // POST /project_management/teams/add/:contract_id
-      await teamService.addTeamsToContract(project.id, [Number(assignTeamSelectedId.value)]);
-      toast.success('تم تعيين الفريق بنجاح');
-      assignTeamSelectedId.value = '';
-      await loadAssignTeamData();
-      await fetchProjects();
-    } catch (error) {
-      logger.error('Error assigning team:', error);
-      toast.error('حدث خطأ أثناء تعيين الفريق');
-    } finally {
-      assignTeamActionLoading.value = false;
-    }
-  };
-
-  const assignTeamRemove = async team => {
-    const project = projectForAssignTeam.value;
-    if (!project) return;
-    const teamId = team.id;
-    if (!teamId) return;
-    assignTeamActionLoading.value = true;
-    try {
-      // POST /project_management/teams/remove/:contract_id with body { team_id }
-      await teamService.removeTeamsFromContract(project.id, [teamId]);
-      toast.success('تم إزالة الفريق بنجاح');
-      await loadAssignTeamData();
-      await fetchProjects();
-    } catch (error) {
-      logger.error('Error removing team:', error);
-      toast.error('حدث خطأ أثناء إزالة الفريق');
-    } finally {
-      assignTeamActionLoading.value = false;
-    }
-  };
-
-  const closeAssignTeamModal = () => {
-    showAssignTeamModal.value = false;
-    projectForAssignTeam.value = null;
-    assignTeamAssigned.value = [];
-    assignTeamAvailable.value = [];
-    assignTeamSelectedId.value = '';
-  };
-
-  const openProjectDetails = async project => {
-    selectedProject.value = project;
-    showDetailsModal.value = true;
-    activeMenuId.value = null;
-
-    try {
-      let details = null;
-      if (isEditor.value) {
-        details = await contractService.getEditorContractById(project.id);
-      } else {
-        details = await contractService.getContractById(project.id);
-      }
-
-      if (details) {
-        logger.debug('Fetched Details:', details);
-        selectedProject.value = {
-          ...selectedProject.value,
-          ...details,
-          advertiser_number: details.advertiser_number || details.advertiser_section_url || null,
-          avgPrice: details.average_unit_price || details.avg_price || null,
-          description: details.description || details.project_description || null,
-          units: details.units || [],
-        };
-      }
-    } catch (e) {
-      logger.error('Failed to fetch detailed project info', e);
-    }
-  };
-
-  const closeDetailsModal = () => (showDetailsModal.value = false);
-
-  const openWorkspace = project => {
-    selectedProject.value = project;
-    workspaceForm.url = '';
-    showWorkspaceModal.value = true;
-    activeMenuId.value = null;
-  };
-
-  const closeWorkspaceModal = () => (showWorkspaceModal.value = false);
-
-  const submitWorkspaceLink = async () => {
-    if (!workspaceForm.url) {
-      toast.warning('الرجاء إدخال الرابط');
-      return;
-    }
-    logger.debug(
-      `Submitting workspace link for project ${selectedProject.value.id}:`,
-      workspaceForm
-    );
-    toast.success('تم إضافة الرابط بنجاح وإشعار الإدارة ومدير المشاريع.');
-    closeWorkspaceModal();
-  };
-
-  const openMediaModal = async project => {
-    selectedProject.value = project;
-    try {
-      const photoData = await contractService.getPhotography(project.id);
-      if (photoData && photoData.data) {
-        mediaForm.image_url = photoData.data.image_url || '';
-        mediaForm.video_url = photoData.data.video_url || '';
-        mediaForm.description = photoData.data.description || '';
-        mediaForm.isExisting = true;
-      } else {
-        mediaForm.image_url = '';
-        mediaForm.video_url = '';
-        mediaForm.description = '';
-        mediaForm.isExisting = false;
-      }
-    } catch (e) {
-      logger.error(e);
-      mediaForm.image_url = '';
-      mediaForm.video_url = '';
-      mediaForm.description = '';
-      mediaForm.isExisting = false;
-    }
-    showMediaModalState.value = true;
-    activeMenuId.value = null;
-  };
-
-  const closeMediaModalState = () => (showMediaModalState.value = false);
-
-  const submitMediaForm = async () => {
-    if (!selectedProject.value) return;
-    isMediaSaving.value = true;
-    try {
-      const payload = {
-        image_url: mediaForm.image_url,
-        video_url: mediaForm.video_url,
-        description: mediaForm.description,
-        status: 'pending',
-      };
-
-      if (mediaForm.isExisting) {
-        await contractService.updatePhotography(selectedProject.value.id, payload);
-        notificationService.addNotification(
-          'تم تحديث الصور من قسم التحرير وإرسالها للموافقة',
-          'success'
-        );
-      } else {
-        await contractService.storePhotography(selectedProject.value.id, payload);
-        notificationService.addNotification(
-          'تم رفع الصور من قسم التحرير وإرسالها للموافقة',
-          'success'
-        );
-        mediaForm.isExisting = true;
-      }
-      closeMediaModalState();
-    } catch (error) {
-      logger.error('Save failed:', error);
-      const msg = error.response?.data?.message || error.message;
-      if (msg && msg.includes('يجب أن يكون العقد لديه معلومات')) {
-        toast.warning(
-          'تنبيه: لا يمكن إضافة صور لهذا المشروع لأنه يفتقر إلى بيانات العقد الأساسية. يرجى إكمال بيانات المشروع أولاً (الطرف الثاني، المعلومات المالية) في صفحة التتبع.'
-        );
-      } else {
-        toast.error('فشل الحفظ: ' + msg);
-      }
-    } finally {
-      isMediaSaving.value = false;
-    }
-  };
-
-  const goToUnits = project => {
-    router.push({ name: 'ProjectTracker', params: { id: project.id }, query: { tab: 'units' } });
-  };
-
-  const getStatusClass = status => {
-    switch (status) {
-      case 'available':
-        return 'ok';
-      case 'pending':
-        return 'pending';
-      case 'notfound':
-        return 'missing';
-      default:
-        return '';
-    }
-  };
-
-  const timelineClass = daysLeft => {
-    if (daysLeft === null) return '';
-    if (daysLeft < 30) return 'timeline-red';
-    if (daysLeft < 90) return 'timeline-orange';
-    return 'timeline-green';
-  };
-
-  const timelineLabel = daysLeft => {
-    if (daysLeft === null) return 'المدة غير متاحة';
-    if (daysLeft < 0) return 'العقد منتهي';
-    if (daysLeft < 30) return `أحمر: ${daysLeft} يوم`;
-    if (daysLeft < 90) return `برتقالي: ${daysLeft} يوم`;
-    return `أخضر: ${daysLeft} يوم`;
-  };
+  const modalApi = useProjectManagementModals({
+    router,
+    isEditor,
+    fetchProjects,
+    activeMenuId,
+    showAssignTeamModal,
+    projectForAssignTeam,
+    assignTeamAssigned,
+    assignTeamAvailable,
+    assignTeamSelectedId,
+    assignTeamLoading,
+    assignTeamActionLoading,
+    showDetailsModal,
+    selectedProject,
+    showWorkspaceModal,
+    workspaceForm,
+    showMediaModalState,
+    mediaForm,
+    isMediaSaving,
+  });
 
   const handlePageChange = page => {
     currentPage.value = page;
@@ -663,7 +455,8 @@ export function useProjectManagement() {
     onArchiveProject,
     onMarkComplete,
     onDownloadContract,
-    onAssignTeam,
+    formatCurrency,
+    ...modalApi,
     showAssignTeamModal,
     projectForAssignTeam,
     assignTeamAssigned,
@@ -671,28 +464,12 @@ export function useProjectManagement() {
     assignTeamSelectedId,
     assignTeamLoading,
     assignTeamActionLoading,
-    assignTeamSubmit,
-    assignTeamRemove,
-    closeAssignTeamModal,
     showDetailsModal,
     selectedProject,
-    openProjectDetails,
-    closeDetailsModal,
     showWorkspaceModal,
     workspaceForm,
-    openWorkspace,
-    closeWorkspaceModal,
-    submitWorkspaceLink,
-    formatCurrency,
     showMediaModalState,
     mediaForm,
     isMediaSaving,
-    openMediaModal,
-    closeMediaModalState,
-    submitMediaForm,
-    getStatusClass,
-    goToUnits,
-    timelineClass,
-    timelineLabel,
   };
 }
