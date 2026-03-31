@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { createPinia } from 'pinia';
-import ContractsView from '../../src/views/ContractsView.vue';
+import ContractsView from '@/modules/contracts/views/ContractsView.vue';
 
 vi.mock('../../src/services/contractService', () => ({
   default: {

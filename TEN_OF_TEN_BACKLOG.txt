@@ -1,0 +1,24 @@
+Technical debt backlog toward 10/10 quality (post-refactor sweep March 2026)
+
+A) Files still over 500 lines (enforce gradually; eslint max-lines is warn)
+   - src/services/pdfService.js (~1127) — split: pdfFonts+reshape helpers vs document generators (preserve internal helper visibility or use a pdf/ folder with explicit imports).
+   - src/services/hrService.js (~997)
+   - src/services/salesService.js (~966) — registry extracted; consider 2–3 method modules with Object.assign onto one default export.
+   - src/services/contractService.js, creditService.js, accountingService.js, marketingService.js
+   - Large Vue SFCs: SoldUnitDetailView.vue, EditContractInfoModal.vue, UserManagement.vue, ContractFormView.vue, EditorView.vue, EditorProjectsView.vue, ReservationsView.vue, TasksView.vue, MarketingProjectsTab.vue — extract template sections/modals or move logic deeper into existing composables.
+
+B) Security / UX
+   - Audit every v-html / API-sourced HTML against sanitizer usage.
+   - Confirm token/storage strategy (secureStorage) against XSS and session fixation assumptions.
+
+C) Types & contracts
+   - Add JSDoc @typedef or migrate services to .ts for API response shapes.
+
+D) Tests
+   - Raise Vitest coverage on extracted composables (useMainLayout, split marketing tabs).
+
+E) Performance
+   - Lazy-load heavy modals/tabs with defineAsyncComponent where bundle analysis shows wins.
+
+F) Optional structure
+   - Git mv selected src/views/*.vue into src/modules/<domain>/views/ shells re-exporting current behavior; update mainChildren imports only after file-by-file QA.

@@ -1,0 +1,406 @@
+.btn-details,
+.btn-edit {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(39, 55, 77, 0.16);
+  color: var(--color-navy, #27374d);
+}
+
+.btn-details:hover,
+.btn-edit:hover {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: var(--color-gold, #b5a99a);
+  box-shadow: none;
+}
+
+.btn-confirm {
+  flex: 1 1 auto;
+  background: linear-gradient(135deg, var(--color-navy, #27374d), var(--color-navy-dark, #1a2636));
+  border: none;
+  color: var(--color-white, #fff);
+  box-shadow: 0 4px 14px rgba(39, 55, 77, 0.22);
+}
+
+.btn-confirm:hover {
+  box-shadow: 0 6px 18px rgba(39, 55, 77, 0.3);
+}
+
+.btn-cancel {
+  flex: 0 0 auto;
+  background: transparent;
+  border: none;
+  color: var(--color-error, #ef4444);
+}
+
+.btn-cancel:hover {
+  color: var(--color-navy-dark, #1a2636);
+  text-decoration: underline;
+}
+
+/* Detail Modal */
+.detail-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 38, 54, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.detail-modal {
+  background: var(--color-white, #fff);
+  border-radius: var(--radius-lg, 20px);
+  box-shadow: var(--shadow-xl, 0 20px 60px rgba(0, 0, 0, 0.15));
+  border: 1px solid rgba(181, 169, 154, 0.35);
+  max-width: 520px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.detail-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-medium-gray, #e2e8f0);
+  background: linear-gradient(180deg, var(--color-cream-gold-light, #f8f4ec) 0%, var(--color-white, #fff) 100%);
+}
+
+.detail-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-navy, #27374d);
+}
+
+.detail-modal-close {
+  background: var(--color-light-gray, #f8fafc);
+  border: 1px solid var(--color-medium-gray, #e2e8f0);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--color-dark-gray, #64748b);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail-modal-close:hover {
+  color: var(--color-navy, #27374d);
+  border-color: var(--color-gold, #b5a99a);
+}
+
+.detail-modal-body {
+  padding: 24px;
+}
+
+.detail-section {
+  margin-bottom: 20px;
+}
+
+.detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.detail-section h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-navy, #27374d);
+  margin: 0 0 10px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(181, 169, 154, 0.45);
+}
+
+.detail-section p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: var(--color-charcoal, #1e293b);
+  line-height: 1.5;
+}
+
+.empty-state {
+  text-align: center;
+  padding: clamp(48px, 8vw, 72px) 24px;
+  background: transparent;
+  border-radius: var(--radius-md, 14px);
+  border: 1px dashed rgba(39, 55, 77, 0.22);
+  box-shadow: none;
+}
+
+.empty-state svg {
+  width: 60px;
+  height: 60px;
+  color: var(--color-gold, #b5a99a);
+  opacity: 0.65;
+  margin-bottom: 16px;
+}
+
+.empty-state p {
+  color: var(--color-dark-gray, #64748b);
+  font-size: 15px;
+  margin: 0;
+}
+
+/* ── Responsive: Large Desktop ── */
+@media (min-width: 1200px) {
+  .reservations-list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .reservations-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Responsive: Tablet Landscape ── */
+@media (max-width: 992px) {
+  .reservations-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .page-title {
+    font-size: 24px;
+  }
+}
+
+/* ── Responsive: Tablet Portrait ── */
+@media (max-width: 768px) {
+  .filter-tabs {
+    gap: 6px;
+    padding: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    scrollbar-width: thin;
+  }
+  .tab-btn {
+    flex: 0 0 auto;
+    min-width: max-content;
+    white-space: nowrap;
+    font-size: 14px;
+  }
+  .reservations-list {
+    grid-template-columns: 1fr;
+  }
+  .card-body {
+    padding: 18px;
+    padding-inline-end: 18px;
+  }
+  .card-status-badge {
+    position: static;
+    display: inline-flex;
+    align-self: flex-start;
+    margin: 16px 18px 0;
+  }
+  .card-actions {
+    flex-direction: column;
+  }
+  .card-actions button {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+  .detail-modal {
+    max-width: 100%;
+    border-radius: 12px;
+  }
+  .detail-modal-body {
+    padding: 16px;
+  }
+}
+
+/* ── Responsive: Mobile ── */
+@media (max-width: 576px) {
+  .page-title {
+    font-size: 22px;
+  }
+  .page-subtitle {
+    font-size: 14px;
+  }
+  .filter-tabs {
+    gap: 6px;
+    padding: 6px;
+    margin-bottom: 16px;
+  }
+  .tab-btn {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+  .reservation-card {
+    border-radius: 10px;
+  }
+  .card-body {
+    padding: 16px;
+    padding-inline-end: 16px;
+  }
+  .res-line {
+    grid-template-columns: minmax(4.5rem, 36%) 1fr;
+    font-size: 13px;
+    padding: 6px 0;
+  }
+  .res-line--title .card-value {
+    font-size: 16px;
+  }
+  .card-actions button {
+    padding: 10px 14px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+  .detail-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .detail-modal {
+    max-width: 100%;
+    border-radius: 12px 12px 0 0;
+    max-height: 90vh;
+  }
+  .detail-modal-header {
+    padding: 16px;
+  }
+  .detail-modal-body {
+    padding: 16px;
+  }
+  .detail-section h4 {
+    font-size: 13px;
+  }
+  .detail-section p {
+    font-size: 13px;
+  }
+}
+
+/* ── Responsive: Extra Small Mobile ── */
+@media (max-width: 320px) {
+  .page-title {
+    font-size: 20px;
+  }
+  .page-subtitle {
+    font-size: 13px;
+  }
+  .tab-btn {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+  .tab-count {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+  .card-body {
+    padding: 12px;
+    padding-inline-end: 12px;
+  }
+  .res-line--title .card-value {
+    font-size: 15px;
+  }
+  .card-actions button {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .detail-modal-header h3 {
+    font-size: 16px;
+  }
+}
+
+/* ── Responsive: Full HD ── */
+@media (min-width: 1920px) {
+  .page-title {
+    font-size: 32px;
+  }
+  .page-subtitle {
+    font-size: 17px;
+  }
+  .reservations-list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .res-line--title .card-value {
+    font-size: 20px;
+  }
+  .res-line {
+    font-size: 15px;
+  }
+  .card-actions button {
+    font-size: 15px;
+  }
+  .detail-modal {
+    max-width: 600px;
+  }
+}
+
+/* ── Responsive: QHD ── */
+@media (min-width: 2560px) {
+  .page-title {
+    font-size: 38px;
+  }
+  .reservations-list {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px;
+  }
+  .reservation-card {
+    border-radius: 16px;
+  }
+  .card-body {
+    padding: 24px;
+    padding-inline-end: clamp(100px, 12vw, 140px);
+  }
+  .res-line--title .card-value {
+    font-size: 22px;
+  }
+  .tab-btn {
+    font-size: 17px;
+  }
+}
+
+/* ── Responsive: 4K ── */
+@media (min-width: 3840px) {
+  .page-title {
+    font-size: 48px;
+  }
+  .page-subtitle {
+    font-size: 20px;
+  }
+  .reservations-list {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+  }
+  .reservation-card {
+    border-radius: 20px;
+  }
+  .card-body {
+    padding: 28px;
+    padding-inline-end: clamp(120px, 10vw, 160px);
+  }
+  .res-line--title .card-value {
+    font-size: 24px;
+  }
+  .res-line {
+    font-size: 18px;
+  }
+  .card-actions button {
+    font-size: 18px;
+    padding: 14px 24px;
+  }
+  .tab-btn {
+    font-size: 20px;
+  }
+  .detail-modal {
+    max-width: 720px;
+  }
+  .detail-section h4 {
+    font-size: 18px;
+  }
+  .detail-section p {
+    font-size: 17px;
+  }
+}

@@ -127,6 +127,8 @@ describe('useProjectUnits', () => {
     contractService.getContractUnits.mockResolvedValue(mockUnits);
     const wrapper = mountComposable();
     await wrapper.vm.loadUnits();
-    expect(wrapper.vm.filteredUnits.length).toBe(2);
+    // default tab is "available" — mock list has one available + one sold
+    expect(wrapper.vm.filteredUnits.length).toBe(1);
+    expect(wrapper.vm.filteredUnits[0].status).toBe('available');
   });
 });

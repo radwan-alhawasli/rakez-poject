@@ -1,5 +1,5 @@
 /**
- * RBAC Utils Tests
+ * RBAC Utils Tests — توقعات مبنية على ROLE_MAP و normalizeRole في src/constants/roles.js و src/utils/rbac.js
  */
 
 import { describe, it, expect } from 'vitest';
@@ -21,8 +21,9 @@ describe('rbac', () => {
   describe('normalizeRole', () => {
     it('should return number for string role in ROLE_MAP (case-insensitive)', () => {
       expect(normalizeRole('admin')).toBe(1);
-      expect(normalizeRole('Sales')).toBe(5);
-      expect(normalizeRole('CREDIT')).toBe(6);
+      expect(normalizeRole('Sales')).toBe(6);
+      expect(normalizeRole('CREDIT')).toBe(9);
+      expect(normalizeRole('marketing')).toBe(5);
     });
 
     it('should parse numeric strings', () => {
@@ -82,11 +83,11 @@ describe('rbac', () => {
     });
 
     it('should return true for PM with is_manager', () => {
-      expect(isManager({ type: 3, is_manager: true })).toBe(true);
+      expect(isManager({ type: 2, is_manager: true })).toBe(true);
     });
 
     it('should return false for PM without is_manager', () => {
-      expect(isManager({ type: 3, is_manager: false })).toBe(false);
+      expect(isManager({ type: 2, is_manager: false })).toBe(false);
     });
 
     it('should return false for null user', () => {
@@ -100,27 +101,36 @@ describe('rbac', () => {
     });
 
     it('should return sales_leader for sales with is_leader', () => {
-      expect(getEffectiveRoleKey({ type: 5, is_leader: true })).toBe('sales_leader');
+      expect(getEffectiveRoleKey({ type: 6, is_leader: true })).toBe('sales_leader');
+    });
+
+    it('should return sales_leader for explicit sales_leader role', () => {
+      expect(getEffectiveRoleKey({ type: 7 })).toBe('sales_leader');
     });
 
     it('should return role key for normal role', () => {
       expect(getEffectiveRoleKey({ type: 1 })).toBe('admin');
-      expect(getEffectiveRoleKey({ type: 6 })).toBe('credit');
+      expect(getEffectiveRoleKey({ type: 6 })).toBe('sales');
+      expect(getEffectiveRoleKey({ type: 9 })).toBe('credit');
     });
   });
 
   describe('isSalesLeader', () => {
     it('should return true for sales with is_manager=true', () => {
-      expect(isSalesLeader({ type: 5, is_manager: true })).toBe(true);
+      expect(isSalesLeader({ type: 6, is_manager: true })).toBe(true);
     });
 
     it('should return true for sales with is_leader=true', () => {
-      expect(isSalesLeader({ type: 5, is_leader: true })).toBe(true);
+      expect(isSalesLeader({ type: 6, is_leader: true })).toBe(true);
+    });
+
+    it('should return true for sales_leader role type', () => {
+      expect(isSalesLeader({ type: 7 })).toBe(true);
     });
 
     it('should return false for sales without manager/leader flag', () => {
-      expect(isSalesLeader({ type: 5 })).toBe(false);
-      expect(isSalesLeader({ type: 5, is_manager: false })).toBe(false);
+      expect(isSalesLeader({ type: 6 })).toBe(false);
+      expect(isSalesLeader({ type: 6, is_manager: false })).toBe(false);
     });
 
     it('should return false for non-sales with is_manager=true', () => {
@@ -146,7 +156,7 @@ describe('rbac', () => {
 
     it('should merge leader permissions for sales leader even when API returns permissions', () => {
       const apiPerms = ['sales.dashboard.view', 'notifications.view'];
-      const user = { type: 5, is_manager: true, permissions: apiPerms };
+      const user = { type: 6, is_manager: true, permissions: apiPerms };
       const result = getUserPermissions(user);
       expect(result).toContain('sales.team.manage');
       expect(result).toContain('sales.tasks.manage');
@@ -157,7 +167,7 @@ describe('rbac', () => {
 
     it('should NOT merge leader permissions for regular sales with API permissions', () => {
       const apiPerms = ['sales.dashboard.view'];
-      const user = { type: 5, is_manager: false, permissions: apiPerms };
+      const user = { type: 6, is_manager: false, permissions: apiPerms };
       const result = getUserPermissions(user);
       expect(result).toEqual(apiPerms);
       expect(result).not.toContain('sales.team.manage');
@@ -232,11 +242,13 @@ describe('rbac', () => {
     });
 
     it('should return role-specific paths', () => {
-      expect(getDashboardPathForUser({ type: 0 })).toBe('/marketing/dashboard');
-      expect(getDashboardPathForUser({ type: 5 })).toBe('/sales/dashboard');
-      expect(getDashboardPathForUser({ type: 6 })).toBe('/credit/dashboard');
-      expect(getDashboardPathForUser({ type: 7 })).toBe('/accounting/dashboard');
-      expect(getDashboardPathForUser({ type: 4 })).toBe('/editor/dashboard');
+      expect(getDashboardPathForUser({ type: 5 })).toBe('/marketing/dashboard');
+      expect(getDashboardPathForUser({ type: 6 })).toBe('/sales/dashboard');
+      expect(getDashboardPathForUser({ type: 7 })).toBe('/sales/dashboard');
+      expect(getDashboardPathForUser({ type: 9 })).toBe('/credit/dashboard');
+      expect(getDashboardPathForUser({ type: 10 })).toBe('/accounting/dashboard');
+      expect(getDashboardPathForUser({ type: 3 })).toBe('/editor/dashboard');
+      expect(getDashboardPathForUser({ type: 4 })).toBe('/dashboard');
       expect(getDashboardPathForUser({ type: 8 })).toBe('/hr/dashboard');
     });
 
@@ -244,5 +256,4 @@ describe('rbac', () => {
       expect(getDashboardPathForUser({ type: 99 })).toBe('/dashboard');
     });
   });
-
 });

@@ -4,19 +4,20 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { defineComponent, h } from 'vue';
-import { useError } from '../../src/composables/useError';
+import { defineComponent, h, unref } from 'vue';
+import { useError } from '@/composables/useError';
 
-vi.mock('../../src/utils/errorHandler', () => ({
+vi.mock('@/utils/errorHandler', () => ({
   handleError: vi.fn(err => ({
     message: err?.message || 'Error',
     isExpected: false,
   })),
   retryWithBackoff: vi.fn(fn => fn()),
   getApiErrorMessage: vi.fn((err, fallback) => err?.message || fallback || 'Error'),
+  showApiError: vi.fn(),
 }));
 
-import { handleError } from '../../src/utils/errorHandler';
+import { handleError } from '@/utils/errorHandler';
 
 describe('useError', () => {
   beforeEach(() => {
@@ -32,8 +33,8 @@ describe('useError', () => {
       render: () => h('div'),
     });
     const wrapper = mount(TestComp);
-    expect(wrapper.vm.error).toBeDefined();
-    expect(wrapper.vm.isLoading).toBe(false);
+    expect(unref(wrapper.vm.error)).toBeDefined();
+    expect(unref(wrapper.vm.isLoading)).toBe(false);
     expect(typeof wrapper.vm.handle).toBe('function');
     expect(typeof wrapper.vm.clearError).toBe('function');
     expect(typeof wrapper.vm.execute).toBe('function');
@@ -51,7 +52,7 @@ describe('useError', () => {
     const err = new Error('Test error');
     wrapper.vm.handle(err);
     expect(handleError).toHaveBeenCalledWith(err, expect.any(Object));
-    expect(wrapper.vm.error).toBe(err);
+    expect(unref(wrapper.vm.error)).toBe(err);
   });
 
   it('should clear error when clearError called', () => {
@@ -63,9 +64,9 @@ describe('useError', () => {
     });
     const wrapper = mount(TestComp);
     wrapper.vm.handle(new Error('x'));
-    expect(wrapper.vm.error).not.toBeNull();
+    expect(unref(wrapper.vm.error)).not.toBeNull();
     wrapper.vm.clearError();
-    expect(wrapper.vm.error).toBeNull();
+    expect(unref(wrapper.vm.error)).toBeNull();
   });
 
   it('should execute fn and return result', async () => {
@@ -93,9 +94,9 @@ describe('useError', () => {
       resolvePromise = r;
     });
     const exec = wrapper.vm.execute(() => p, { showLoading: true });
-    expect(wrapper.vm.isLoading).toBe(true);
+    expect(unref(wrapper.vm.isLoading)).toBe(true);
     resolvePromise(1);
     await exec;
-    expect(wrapper.vm.isLoading).toBe(false);
+    expect(unref(wrapper.vm.isLoading)).toBe(false);
   });
 });

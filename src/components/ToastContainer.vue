@@ -2,7 +2,7 @@
   <div class="toast-container" aria-live="polite">
     <transition-group name="toast">
       <div v-for="t in toasts" :key="t.id" class="toast-item" :class="t.type" role="alert">
-        <span class="toast-icon" v-html="iconSvg(t.type)"></span>
+        <span class="toast-icon" v-html="safeToastIcon(t.type)"></span>
         <span class="toast-message">{{ t.message }}</span>
         <button type="button" class="toast-close" aria-label="إغلاق" @click="t.dismiss()">
           &times;
@@ -14,12 +14,13 @@
 
 <script>
 import { useToast } from '@/composables/useToast';
+import { sanitizeNavIconSvg } from '@/utils/safeHtml';
 
 export default {
   name: 'ToastContainer',
   setup() {
     const { toasts } = useToast();
-    const iconSvg = type => {
+    const iconSvgRaw = type => {
       const check =
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="20 6 9 17 4 12"></polyline></svg>';
       const cross =
@@ -31,7 +32,8 @@ export default {
       const map = { success: check, error: cross, warning: warn, info: infoIcon };
       return map[type] || infoIcon;
     };
-    return { toasts, iconSvg };
+    const safeToastIcon = type => sanitizeNavIconSvg(iconSvgRaw(type));
+    return { toasts, safeToastIcon };
   },
 };
 </script>

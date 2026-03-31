@@ -43,6 +43,7 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@shared': fileURLToPath(new URL('./src', import.meta.url)),
+      '@modules': fileURLToPath(new URL('./src/modules', import.meta.url)),
     },
   },
 });

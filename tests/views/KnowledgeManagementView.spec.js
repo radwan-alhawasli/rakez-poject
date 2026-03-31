@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { createPinia } from 'pinia';
-import KnowledgeManagementView from '../../src/views/KnowledgeManagementView.vue';
+import KnowledgeManagementView from '@/modules/knowledge/views/KnowledgeManagementView.vue';
 
 vi.mock('../../src/services/aiService', () => ({
   default: {

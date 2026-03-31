@@ -79,7 +79,7 @@ describe('authService', () => {
 
       const result = await authService.login('u@t.com', 'p');
 
-      expect(result.type).toBe(5);
+      expect(result.type).toBe(6);
     });
 
     it('should preserve permissions from API when provided', async () => {

@@ -1,0 +1,138 @@
+
+/* ── Responsive: Extra Small Mobile ── */
+@media (max-width: 320px) {
+  .page-title {
+    font-size: 20px;
+  }
+  .page-subtitle {
+    font-size: 13px;
+  }
+  .team-section {
+    padding: 10px;
+  }
+  .member-card {
+    padding: 10px;
+    gap: 8px;
+  }
+  .member-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  .member-name {
+    font-size: 13px;
+  }
+  .member-role {
+    font-size: 11px;
+  }
+  .teams-member-dialog {
+    padding: 16px;
+  }
+  .large-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+  .contact-actions {
+    flex-direction: column;
+  }
+}
+
+/* ── Responsive: Large Desktop ── */
+@media (min-width: 1200px) {
+  .members-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 22px;
+  }
+}
+
+/* ── Responsive: Full HD ── */
+@media (min-width: 1920px) {
+  .page-title {
+    font-size: 32px;
+  }
+  .page-subtitle {
+    font-size: 17px;
+  }
+  .team-section {
+    padding: 30px;
+  }
+  .member-card {
+    padding: 24px;
+  }
+  .member-avatar {
+    width: 68px;
+    height: 68px;
+    font-size: 28px;
+  }
+  .member-name {
+    font-size: 17px;
+  }
+  .teams-member-dialog {
+    max-width: 520px;
+  }
+}
+
+/* ── Responsive: QHD ── */
+@media (min-width: 2560px) {
+  .page-title {
+    font-size: 38px;
+  }
+  .team-section {
+    padding: 36px;
+    border-radius: 20px;
+  }
+  .member-card {
+    padding: 28px;
+    border-radius: 16px;
+  }
+  .member-avatar {
+    width: 76px;
+    height: 76px;
+    font-size: 32px;
+  }
+  .member-name {
+    font-size: 18px;
+  }
+  .view-btn {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+/* ── Responsive: 4K ── */
+@media (min-width: 3840px) {
+  .page-title {
+    font-size: 48px;
+  }
+  .page-subtitle {
+    font-size: 20px;
+  }
+  .team-section {
+    padding: 44px;
+    border-radius: 24px;
+  }
+  .member-card {
+    padding: 32px;
+    border-radius: 20px;
+  }
+  .member-avatar {
+    width: 88px;
+    height: 88px;
+    font-size: 38px;
+  }
+  .member-name {
+    font-size: 20px;
+  }
+  .member-role {
+    font-size: 15px;
+  }
+  .view-btn {
+    font-size: 16px;
+    padding: 12px;
+  }
+  .teams-member-dialog {
+    max-width: 600px;
+    padding: 36px;
+  }
+}

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- Documented exception: credit bookings hub (tabs + financing/title flows); extract to sub-composables in a follow-up pass. */
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import creditService from '@/services/creditService';

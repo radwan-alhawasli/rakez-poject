@@ -6,12 +6,12 @@
 
 export default {
   path: 'manager',
-  component: () => import('@/views/manager/ManagerLayout.vue'),
+  component: () => import('@/modules/manager/views/ManagerLayout.vue'),
   meta: { requiresManager: true },
   children: [
     { path: '', name: 'Manager', redirect: { name: 'ManagerEmployees' } },
-    { path: 'employees', name: 'ManagerEmployees', component: () => import('@/views/manager/ManagerEmployeesView.vue'), meta: { requiresManager: true } },
-    { path: 'employees/:id', name: 'ManagerEmployeeDetail', component: () => import('@/views/manager/ManagerEmployeeDetailView.vue'), meta: { requiresManager: true } },
-    { path: 'tasks', name: 'ManagerTasks', component: () => import('@/views/manager/ManagerTasksView.vue'), meta: { requiresManager: true } },
+    { path: 'employees', name: 'ManagerEmployees', component: () => import('@/modules/manager/views/ManagerEmployeesView.vue'), meta: { requiresManager: true } },
+    { path: 'employees/:id', name: 'ManagerEmployeeDetail', component: () => import('@/modules/manager/views/ManagerEmployeeDetailView.vue'), meta: { requiresManager: true } },
+    { path: 'tasks', name: 'ManagerTasks', component: () => import('@/modules/manager/views/ManagerTasksView.vue'), meta: { requiresManager: true } },
   ],
 };

@@ -1,0 +1,292 @@
+
+.sidebar .avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #B0A68A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 700;
+  border: 1px solid rgba(181, 169, 154, 0.5);
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.sidebar:hover .avatar {
+  transform: scale(1.08);
+  border-color: #B5A99A;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(181, 169, 154, 0.3);
+  border-radius: 12px;
+}
+
+.sidebar .logout-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  overflow: hidden;
+  margin: 0 auto;
+}
+.sidebar:hover .logout-btn {
+  width: 100%;
+  height: 44px;
+  padding: 0 15px;
+  justify-content: flex-start;
+  margin: 0;
+  border-radius: 12px;
+}
+.sidebar .logout-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3), 0 0 15px rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+  color: #ffffff;
+}
+.sidebar .logout-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar .logout-text {
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.4s ease;
+  font-weight: 600;
+  font-size: 13px;
+}
+.sidebar:hover .logout-text {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* =========================================
+   Structural elements
+   ========================================= */
+.sidebar .sidebar-header {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.05);
+}
+/* غلاف التمرير — عرض ثابت. التمرير الفعلي داخل SidebarScrollArea (شريط مخصص overlay) */
+.sidebar .sidebar-nav-outer {
+  width: 100%;
+}
+.sidebar .sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+/* إخفاء شريط التمرير المخصص عند طي اللوحة (rail) */
+.sidebar:not(:hover):not(.open) .sidebar-scroll-track {
+  opacity: 0;
+  pointer-events: none;
+}
+.sidebar .sidebar-footer {
+  padding: 18px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* =========================================
+   Responsive – 4K (3840 px +)
+   ========================================= */
+@media (min-width: 3840px) {
+  .sidebar .sidebar-logo-img { width: 48px; height: 48px; }
+  .sidebar .nav-icon-svg { width: 26px; height: 26px; }
+  .sidebar .nav-item { padding: 16px; }
+}
+
+/* 2K / QHD (2560 – 3839 px) */
+@media (min-width: 2560px) and (max-width: 3839px) {
+  .sidebar .sidebar-logo-img { width: 44px; height: 44px; }
+  .sidebar .nav-icon-svg { width: 24px; height: 24px; }
+}
+
+/* Tablet & Small Desktop (992 – 1199 px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .sidebar .nav-text,
+  .sidebar .user-info,
+  .sidebar .sidebar-logo-text,
+  .sidebar .logout-text {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .sidebar .logout-btn {
+    width: 100% !important;
+    padding: 0 15px !important;
+    justify-content: flex-start !important;
+    gap: 15px !important;
+  }
+  .sidebar .nav-item::after { display: none !important; }
+}
+
+/* Tablet Portrait (768 – 991 px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .sidebar .nav-text,
+  .sidebar .user-info,
+  .sidebar .sidebar-logo-text,
+  .sidebar .logout-text {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .sidebar .logout-btn {
+    width: 100% !important;
+    padding: 0 15px !important;
+    justify-content: flex-start !important;
+    gap: 15px !important;
+  }
+  .sidebar .nav-item { padding: 12px 14px; }
+  .sidebar .nav-item::after { display: none !important; }
+  .sidebar .sidebar-header { height: 80px; padding: 0 18px; }
+  .sidebar .sidebar-logo-img { width: 38px; height: 38px; }
+  .sidebar .sidebar-logo-text { font-size: 20px; }
+  .sidebar .sidebar-nav { padding: 20px 10px; }
+  .sidebar .sidebar-footer { padding: 20px 12px; }
+}
+
+/* Mobile Landscape (576 – 767 px) */
+@media (min-width: 576px) and (max-width: 767px) {
+  .sidebar .nav-text,
+  .sidebar .user-info,
+  .sidebar .sidebar-logo-text,
+  .sidebar .logout-text {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .sidebar .logout-btn {
+    width: 100% !important;
+    padding: 0 15px !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    height: 40px;
+  }
+  .sidebar .nav-item { padding: 12px 14px; border-radius: 12px; }
+  .sidebar .nav-icon-svg { width: 22px !important; height: 22px !important; }
+  .sidebar .nav-item::after { display: none !important; }
+  .sidebar .sidebar-header { height: 75px; padding: 0 16px; }
+  .sidebar .sidebar-logo-img { width: 36px; height: 36px; }
+  .sidebar .sidebar-logo-text { font-size: 18px; }
+  .sidebar .sidebar-nav { padding: 18px 8px; gap: 6px; }
+  .sidebar .sidebar-footer { padding: 18px 10px; }
+  .sidebar .avatar { width: 40px; height: 40px; }
+  .sidebar .user-name { font-size: 14px; }
+  .sidebar .user-email { font-size: 11px; }
+}
+
+/* Mobile Portrait (320 – 575 px) */
+@media (max-width: 575px) {
+  .sidebar .nav-text,
+  .sidebar .user-info,
+  .sidebar .sidebar-logo-text,
+  .sidebar .logout-text {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .sidebar .logout-btn {
+    width: 100% !important;
+    padding: 0 12px !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    height: 38px;
+    border-radius: 12px;
+  }
+  .sidebar .logout-icon { font-size: 16px; }
+  .sidebar .logout-text { font-size: 13px; }
+  .sidebar .nav-item { padding: 11px 12px; border-radius: 12px; font-size: 14px; }
+  .sidebar .nav-content { gap: 12px; }
+  .sidebar .nav-icon-svg { width: 20px !important; height: 20px !important; }
+  .sidebar .nav-text { font-size: 14px; }
+  .sidebar .nav-item::after { display: none !important; }
+  .sidebar .sidebar-header { height: 70px; padding: 0 14px; gap: 12px; }
+  .sidebar .sidebar-logo-img { width: 34px; height: 34px; border-radius: 10px; }
+  .sidebar .sidebar-logo-text { font-size: 17px; }
+  .sidebar .rakez-ar { font-size: 17px; }
+  .sidebar .rakez-en { font-size: 12px; }
+  .sidebar .sidebar-nav { padding: 16px 8px; gap: 5px; }
+  .sidebar .sidebar-footer { padding: 16px 10px; gap: 12px; }
+  .sidebar .user-profile { gap: 12px; }
+  .sidebar .avatar { width: 38px; height: 38px; border-radius: 12px; }
+  .sidebar .avatar-text { font-size: 16px; }
+  .sidebar .user-name { font-size: 13px; }
+  .sidebar .user-email { font-size: 10px; }
+}
+
+/* Extra Small (< 320 px) */
+@media (max-width: 319px) {
+  .sidebar .nav-item { padding: 10px; font-size: 13px; }
+  .sidebar .nav-icon-svg { width: 18px !important; height: 18px !important; }
+}
+
+/* Landscape Mode for Mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .sidebar .sidebar-nav { padding: 12px 8px; }
+  .sidebar .nav-item { padding: 8px 12px; }
+  .sidebar .sidebar-header { height: 60px; }
+  .sidebar .sidebar-footer { padding: 12px 10px; }
+}
+
+/* Compact rail refinements – very small screens */
+@media (max-width: 575px) {
+  .sidebar .sidebar-header {
+    height: 56px !important;
+    padding: 0 8px !important;
+    justify-content: center;
+  }
+  .sidebar .sidebar-logo-text { display: none !important; }
+  .sidebar .sidebar-logo-img {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 10px !important;
+  }
+  .sidebar .sidebar-nav {
+    padding: 12px 6px !important;
+    gap: 4px !important;
+  }
+  .sidebar .nav-item {
+    width: 40px !important;
+    height: 40px !important;
+    margin: 6px auto !important;
+  }
+  .sidebar .nav-icon-svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .sidebar .sidebar-footer {
+    padding: 10px 8px !important;
+    gap: 10px !important;
+  }
+  .sidebar .avatar {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 12px !important;
+  }
+  .sidebar .logout-btn {
+    width: 38px !important;
+    height: 38px !important;
+  }
+  .sidebar .sidebar-nav::-webkit-scrollbar { width: 2px; }
+  .sidebar .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); }
+}

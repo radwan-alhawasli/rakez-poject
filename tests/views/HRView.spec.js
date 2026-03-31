@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { createPinia } from 'pinia';
-import HRView from '../../src/views/HRView.vue';
+import HRView from '@/modules/hr/views/HRView.vue';
 
 vi.mock('../../src/services/authService', () => ({
   default: {

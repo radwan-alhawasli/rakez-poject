@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { createPinia } from 'pinia';
-import LoginView from '../../src/views/LoginView.vue';
+import LoginView from '@/modules/auth/views/LoginView.vue';
 
 vi.mock('../../src/utils/rbac', () => ({
   getDashboardPathForUser: vi.fn(() => '/dashboard'),

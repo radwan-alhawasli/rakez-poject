@@ -6,6 +6,13 @@
 import { vi } from 'vitest';
 import { config } from '@vue/test-utils';
 
+// jsdom: @unovis axis may call .node().getBBox() on non-SVG nodes — stub on Element
+if (typeof Element !== 'undefined' && typeof Element.prototype.getBBox !== 'function') {
+  Element.prototype.getBBox = function rakezTestGetBBox() {
+    return { x: 0, y: 0, width: 100, height: 24 };
+  };
+}
+
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

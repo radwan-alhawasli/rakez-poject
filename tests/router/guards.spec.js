@@ -24,6 +24,13 @@ vi.mock('@/services/notificationService', () => ({
   default: { addNotification: vi.fn() },
 }));
 
+vi.mock('@/layouts/MainLayout.vue', () => ({
+  default: {
+    name: 'MainLayoutStub',
+    template: '<router-view />',
+  },
+}));
+
 describe('Router guards', () => {
   let router;
 

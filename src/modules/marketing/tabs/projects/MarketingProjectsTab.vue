@@ -450,43 +450,12 @@
 <script setup>
 import ConfirmModal from '@/components/ConfirmModal.vue';
 import { useMarketingProjects } from '@/composables/marketing/useMarketingProjects';
-
-const platformLabelsAr = {
-  instagram: 'منصة انستغرام',
-  snapchat: 'منصة سناب',
-  tiktok: 'منصة تيك توك',
-  x: 'منصة تويتر X',
-  google_youtube: 'منصة جوجل (يوتيوب)',
-  other: 'منصات اخرى',
-  aqar: 'منصة عقار',
-};
-
-function devPlanCpmCpcSummary(devPlan) {
-  if (!devPlan) return '—';
-  const pcpm = devPlan.platform_cpm ?? devPlan.platformCpm;
-  if (pcpm && Object.keys(pcpm).length) return 'حسب المنصة';
-  const avgCpm = devPlan.average_cpm ?? devPlan.averageCpm;
-  const avgCpc = devPlan.average_cpc ?? devPlan.averageCpc;
-  if (avgCpm != null || avgCpc != null) return `${avgCpm ?? '—'} / ${avgCpc ?? '—'}`;
-  return '—';
-}
-
-function hasDevPlanPerPlatform(devPlan) {
-  if (!devPlan) return false;
-  const pcpm = devPlan.platform_cpm ?? devPlan.platformCpm ?? {};
-  const pcpc = devPlan.platform_cpc ?? devPlan.platformCpc ?? {};
-  return Object.keys(pcpm).length > 0 || Object.keys(pcpc).length > 0;
-}
-
-function devPlanPlatformValue(devPlan, key) {
-  if (!devPlan) return '';
-  const pcpm = devPlan.platform_cpm ?? devPlan.platformCpm ?? {};
-  const pcpc = devPlan.platform_cpc ?? devPlan.platformCpc ?? {};
-  const cpm = pcpm[key];
-  const cpc = pcpc[key];
-  if (cpm == null && cpc == null) return '';
-  return `CPM: ${cpm ?? '—'} | CPC: ${cpc ?? '—'}`;
-}
+import {
+  platformLabelsAr,
+  devPlanCpmCpcSummary,
+  hasDevPlanPerPlatform,
+  devPlanPlatformValue,
+} from '@/modules/marketing/tabs/projects/marketingProjectsTabHelpers.js';
 
 const {
   projects,
@@ -533,19 +502,4 @@ const {
 } = useMarketingProjects();
 </script>
 
-<style scoped>
-@media (max-width: 1200px) {
-  .projects-grid { grid-template-columns: repeat(2, 1fr); }
-  .details-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 768px) {
-  .projects-grid { grid-template-columns: 1fr; }
-  .details-grid { grid-template-columns: 1fr; }
-  .modal-content { margin: 10px; max-width: 100% !important; }
-}
-@media (max-width: 576px) {
-  .project-card { padding: 14px; }
-  .project-name { font-size: 15px; }
-  .table-responsive { margin: 0 -12px; }
-}
-</style>
+<style scoped src="./styles/MarketingProjectsTab.scoped.css"></style>

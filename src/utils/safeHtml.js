@@ -145,8 +145,8 @@ export function getDOMPurifyConfig() {
   };
 }
 
-/** Options for sanitizing markdown-derived HTML (AI assistant answers) */
-const MARKDOWN_SANITIZE_OPTIONS = {
+/** Options for sanitizing markdown-derived HTML (AI assistant answers). */
+export const RICH_CHAT_HTML_OPTIONS = {
   allowTags: [
     'p',
     'br',
@@ -183,10 +183,28 @@ export function sanitizeMarkdown(markdown) {
   try {
     const html = marked.parse(markdown);
     if (typeof html !== 'string') return '';
-    return sanitizeHtml(html, MARKDOWN_SANITIZE_OPTIONS);
+    return sanitizeHtml(html, RICH_CHAT_HTML_OPTIONS);
   } catch {
-    return sanitizeHtml(markdown, MARKDOWN_SANITIZE_OPTIONS);
+    return sanitizeHtml(markdown, RICH_CHAT_HTML_OPTIONS);
   }
+}
+
+/**
+ * Sanitize trusted inline SVG fragments (nav icons, toast icons) for injection inside a host SVG element.
+ * DOMPurify strips bare path/rect fragments in HTML context (empty result). Wrapping in an SVG
+ * namespace and USE_PROFILES.svg keeps geometry while blocking scripts/event handlers.
+ */
+export function sanitizeNavIconSvg(svgHtml) {
+  const raw = typeof svgHtml === 'string' ? svgHtml.trim() : '';
+  if (!raw) return '';
+  const wrapped = `<svg xmlns="http://www.w3.org/2000/svg">${raw}</svg>`;
+  const clean = DOMPurify.sanitize(wrapped, { USE_PROFILES: { svg: true } });
+  const openEnd = clean.indexOf('>');
+  const closeStart = clean.toLowerCase().lastIndexOf('</svg>');
+  if (openEnd === -1 || closeStart === -1 || closeStart <= openEnd) {
+    return '';
+  }
+  return clean.slice(openEnd + 1, closeStart);
 }
 
 export default {
@@ -196,4 +214,6 @@ export default {
   isSafeContent,
   safeText,
   getDOMPurifyConfig,
+  sanitizeNavIconSvg,
+  RICH_CHAT_HTML_OPTIONS,
 };

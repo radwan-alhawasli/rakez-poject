@@ -10,7 +10,7 @@ import { ref, nextTick, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import * as aiAssistantV2 from '@/services/aiAssistantV2';
 import aiService from '@/services/aiService';
-import { sanitizeMarkdown } from '@/utils/safeHtml';
+import { sanitizeHtml, sanitizeMarkdown, RICH_CHAT_HTML_OPTIONS } from '@/utils/safeHtml';
 import { backendRouteToVuePath } from '@/utils/routeMapper';
 import logger from '@/utils/logger';
 
@@ -189,7 +189,9 @@ export function useChatbot(currentRouteRef, options = {}) {
     messages.value.push({
       role: 'assistant',
       content: data.content || '',
-      contentHtml: data.contentHtml || sanitizeMarkdown(data.content || ''),
+      contentHtml: data.contentHtml
+        ? sanitizeHtml(data.contentHtml, RICH_CHAT_HTML_OPTIONS)
+        : sanitizeMarkdown(data.content || ''),
       sources: data.sources || [],
       links: data.links || [],
       followUpQuestions: data.followUpQuestions || [],

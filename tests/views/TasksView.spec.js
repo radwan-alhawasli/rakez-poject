@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { createPinia } from 'pinia';
-import TasksView from '../../src/views/TasksView.vue';
+import TasksView from '@/modules/app/views/TasksView.vue';
 
 vi.mock('../../src/services/taskService', () => ({
   default: {
