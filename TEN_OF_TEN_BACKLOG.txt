@@ -14,7 +14,7 @@ C) Types & contracts
    - CI gate: `npm run typecheck` (tsconfig.checkjs.json on src/api + src/services; strict checkJs with noImplicitAny + useUnknownInCatchVariables; see docs/TYPECHECK_SCOPE.md and src/utils/caughtError.js). Prefer JSDoc @typedef for new surface area. Full .ts migration remains optional for new code only.
 
 D) Tests
-   - Raise Vitest coverage on extracted composables (useMainLayout, split marketing tabs).
+   - Raise Vitest coverage on extracted composables (useMainLayout, split marketing tabs). Inventory + gate: docs/CRITICAL_TEST_COVERAGE.md; CI: `npm run test:coverage:critical` (vitest.coverage-critical.config.js).
 
 E) Performance
    - Bundle budgets: `npm run build:check-budget` + docs/PERFORMANCE_BUDGETS.md + scripts/performance-budgets.json (gzip limits per vendor chunk). Lazy-load heavy modals/tabs with defineAsyncComponent / dynamic import where analysis shows wins; align increases with budget updates.
