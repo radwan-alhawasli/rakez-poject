@@ -72,6 +72,18 @@ const errorMessages = {
 };
 
 /**
+ * Friendlier Arabic copy for known backend messages (e.g. tracker before contract completion).
+ * @param {string} msg
+ * @returns {string}
+ */
+function mapKnownApiUserMessage(msg) {
+  if (!msg || typeof msg !== 'string') return msg;
+  const t = msg.trim();
+  if (t.includes('بيانات الطرف الثاني غير موجودة')) return 'العقد غير مستكمل';
+  return t;
+}
+
+/**
  * Extract first validation error from Laravel-style errors object
  * @param {Object} errors - { field: ["msg"] } or { field: "msg" }
  * @returns {string|null}
@@ -101,7 +113,7 @@ export function getApiErrorMessage(error, fallback) {
     error?.message ||
     data?.message ||
     getFirstValidationMessage(data?.errors);
-  if (msg && typeof msg === 'string' && msg.trim()) return msg.trim();
+  if (msg && typeof msg === 'string' && msg.trim()) return mapKnownApiUserMessage(msg.trim());
   const status = error?.response?.status ?? error?.status;
   if (status === 401) return errorMessages[ErrorTypes.AUTHENTICATION].expired;
   if (status === 403) return errorMessages[ErrorTypes.AUTHORIZATION].default;
@@ -144,7 +156,7 @@ function getUserMessage(error, type = ErrorTypes.UNKNOWN) {
     if (apiMsg.includes('Network Error') || apiMsg.includes('Failed to fetch')) {
       return errorMessages[ErrorTypes.NETWORK].offline;
     }
-    return apiMsg.trim();
+    return mapKnownApiUserMessage(apiMsg.trim());
   }
 
   // Check status code
