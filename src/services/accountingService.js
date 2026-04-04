@@ -394,6 +394,7 @@ const accountingService = {
         external_name: d.external_name || d.employee_name,
         bank_account: d.bank_account,
       }));
+      /** @type {Record<string, any>} */
       const body = { distributions };
       if (data.bank_fees !== undefined && data.bank_fees !== null) {
         body.bank_fees = Number(data.bank_fees) || 0;
