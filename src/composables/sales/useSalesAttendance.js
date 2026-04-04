@@ -11,6 +11,7 @@ export function useSalesAttendance() {
 
   const attendanceRecords = shallowRef([]);
   const isLoadingAttendance = ref(false);
+  const attendanceLoadError = ref('');
   const attendancePage = ref(1);
   const attendancePerPage = ref(25);
   const showScheduleModal = ref(false);
@@ -31,6 +32,7 @@ export function useSalesAttendance() {
 
   const loadAttendance = async () => {
     isLoadingAttendance.value = true;
+    attendanceLoadError.value = '';
     try {
       const list = hasPermission('sales.attendance.manage')
         ? await salesService.getTeamAttendance()
@@ -47,8 +49,17 @@ export function useSalesAttendance() {
         hours_worked: r.hours_worked ?? r.work_hours ?? r.total_hours,
       }));
     } catch (error) {
-      logger.error('Error loading attendance:', error);
+      logger.error('[SalesAttendance] Error loading attendance:', error);
       attendanceRecords.value = [];
+      const status = error?.response?.status;
+      const msg = error?.response?.data?.message || error?.message;
+      if (status === 403) {
+        attendanceLoadError.value = 'ليس لديك صلاحية عرض سجلات الحضور.';
+      } else if (status === 401) {
+        attendanceLoadError.value = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
+      } else {
+        attendanceLoadError.value = msg ? `فشل تحميل البيانات: ${msg}` : 'فشل تحميل سجلات الحضور. تحقق من الاتصال.';
+      }
     } finally {
       isLoadingAttendance.value = false;
     }
@@ -127,6 +138,7 @@ export function useSalesAttendance() {
   return {
     attendanceRecords,
     isLoadingAttendance,
+    attendanceLoadError,
     paginatedAttendance,
     attendancePage,
     attendancePerPage,

@@ -50,6 +50,9 @@
 
 .loading-state,
 .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-top: 20px;
   padding: 36px 24px;
   text-align: center;
@@ -65,6 +68,45 @@
   margin: 12px 0 0 0;
   color: rgba(39, 55, 77, 0.65);
   font-size: 0.95rem;
+}
+
+.empty-icon {
+  width: 44px;
+  height: 44px;
+  color: var(--rakez-schedule-gold);
+  opacity: 0.7;
+}
+
+.empty-state.error-state {
+  border-color: rgba(185, 28, 28, 0.12);
+}
+
+.empty-state.error-state .empty-icon {
+  color: #b91c1c;
+  opacity: 0.8;
+}
+
+.empty-state.error-state p {
+  color: #b91c1c;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.btn-retry {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--rakez-schedule-gold) 0%, rgba(181, 169, 154, 0.8) 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-retry:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(177, 162, 143, 0.4);
 }
 
 .loading-state .spinner {

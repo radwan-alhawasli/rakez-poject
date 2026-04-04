@@ -13,6 +13,8 @@ export function useSalesTeam() {
   const teamProjects = shallowRef([]);
   const isLoadingTeam = ref(false);
   const isLoadingTeamProjects = ref(false);
+  const teamLoadError = ref('');
+  const teamProjectsLoadError = ref('');
   const teamSortByRecommendation = ref(false);
   const teamRecommendations = shallowRef([]);
   const isLoadingTeamRecommendations = ref(false);
@@ -43,10 +45,21 @@ export function useSalesTeam() {
 
   const loadTeamMembers = async (params = {}) => {
     isLoadingTeam.value = true;
+    teamLoadError.value = '';
     try {
       teamMembers.value = await salesService.getTeamMembers(params);
     } catch (error) {
-      logger.error('Error loading team members:', error);
+      logger.error('[SalesTeam] Error loading team members:', error);
+      teamMembers.value = [];
+      const status = error?.response?.status;
+      const msg = error?.response?.data?.message || error?.message;
+      if (status === 403) {
+        teamLoadError.value = 'ليس لديك صلاحية عرض أعضاء الفريق.';
+      } else if (status === 401) {
+        teamLoadError.value = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
+      } else {
+        teamLoadError.value = msg ? `فشل تحميل الفريق: ${msg}` : 'فشل تحميل أعضاء الفريق. تحقق من الاتصال.';
+      }
     } finally {
       isLoadingTeam.value = false;
     }
@@ -54,6 +67,7 @@ export function useSalesTeam() {
 
   const loadTeamProjects = async () => {
     isLoadingTeamProjects.value = true;
+    teamProjectsLoadError.value = '';
     try {
       const data = await salesService.getTeamProjects();
       const raw = data?.items ?? (Array.isArray(data) ? data : []);
@@ -65,7 +79,10 @@ export function useSalesTeam() {
           p.project_name ?? p.name ?? p.contract_name ?? `مشروع #${p.contract_id ?? p.id ?? ''}`,
       }));
     } catch (error) {
-      logger.error('Error loading team projects:', error);
+      logger.error('[SalesTeam] Error loading team projects:', error);
+      teamProjects.value = [];
+      const msg = error?.response?.data?.message || error?.message;
+      teamProjectsLoadError.value = msg ? `فشل تحميل المشاريع: ${msg}` : 'فشل تحميل مشاريع الفريق.';
     } finally {
       isLoadingTeamProjects.value = false;
     }
@@ -151,6 +168,10 @@ export function useSalesTeam() {
     memberToRemove.value = member;
   };
 
+  const cancelRemoveMember = () => {
+    memberToRemove.value = null;
+  };
+
   const doRemoveMember = async () => {
     if (!memberToRemove.value) return;
     memberRemoveLoading.value = true;
@@ -177,6 +198,8 @@ export function useSalesTeam() {
     isLoadingTeam,
     isLoadingTeamProjects,
     isLoadingTeamRecommendations,
+    teamLoadError,
+    teamProjectsLoadError,
     teamSortByRecommendation,
     memberRatingSaving,
     memberCommentEditId,
@@ -191,6 +214,7 @@ export function useSalesTeam() {
     cancelMemberComment,
     saveMemberComment,
     confirmRemoveMember,
+    cancelRemoveMember,
     doRemoveMember,
     hasPermission,
     formatCurrency,

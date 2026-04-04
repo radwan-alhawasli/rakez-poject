@@ -16,7 +16,23 @@
         <p>جاري تحميل المشاريع...</p>
       </div>
 
+      <div v-else-if="scheduleProjectsLoadError" class="empty-state error-state">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p>{{ scheduleProjectsLoadError }}</p>
+        <button type="button" class="btn-retry" @click="loadScheduleProjects()">إعادة المحاولة</button>
+      </div>
+
       <div v-else-if="scheduleProjects.length === 0" class="empty-state">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
         <p>لا توجد مشاريع معينة لفريقك حالياً.</p>
       </div>
 
@@ -237,6 +253,7 @@ import { useSalesSchedules } from '@/composables/sales/useSalesSchedules';
 const {
   showScheduleProjectList,
   selectedScheduleProject, scheduleProjects, isLoadingScheduleProjects,
+  scheduleProjectsLoadError,
   isLoadingScheduleDetail, scheduleMembers, scheduleDisplayDate,
   scheduleDisplayTime, scheduleViewDate, scheduleDisplayDayName,
   isSavingSchedules, emergencyContact, getAvatarColor,

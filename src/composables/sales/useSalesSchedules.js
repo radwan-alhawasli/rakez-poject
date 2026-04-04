@@ -12,6 +12,7 @@ export function useSalesSchedules() {
 
   const scheduleProjects = shallowRef([]);
   const isLoadingScheduleProjects = ref(false);
+  const scheduleProjectsLoadError = ref('');
   const selectedScheduleProject = ref(null);
   const scheduleMembers = ref([]);
   const isLoadingScheduleDetail = ref(false);
@@ -127,6 +128,7 @@ export function useSalesSchedules() {
 
   const loadScheduleProjects = async () => {
     isLoadingScheduleProjects.value = true;
+    scheduleProjectsLoadError.value = '';
     try {
       const data = await salesService.getTeamProjects();
       const raw = data?.items ?? (Array.isArray(data) ? data : []);
@@ -147,7 +149,10 @@ export function useSalesSchedules() {
       const projRaw = Array.isArray(list) ? list : [];
       scheduleProjects.value = normalizeProjects(projRaw);
     } catch (error) {
-      logger.error('Error loading schedule projects:', error);
+      logger.error('[SalesSchedules] Error loading schedule projects:', error);
+      scheduleProjects.value = [];
+      const msg = error?.response?.data?.message || error?.message;
+      scheduleProjectsLoadError.value = msg ? `فشل تحميل المشاريع: ${msg}` : 'فشل تحميل مشاريع الدوام. تحقق من الاتصال.';
     } finally {
       isLoadingScheduleProjects.value = false;
     }
@@ -355,6 +360,7 @@ export function useSalesSchedules() {
   return {
     scheduleProjects,
     isLoadingScheduleProjects,
+    scheduleProjectsLoadError,
     showScheduleProjectList,
     selectedScheduleProject,
     scheduleMembers,

@@ -1,5 +1,17 @@
 <template>
   <div class="team-tab">
+    <div class="team-header-bar">
+      <h2 class="team-page-title">
+        <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        الفريق
+      </h2>
+    </div>
+
     <div class="team-tabs">
       <button
         type="button"
@@ -30,6 +42,24 @@
       </div>
 
       <LoadingSpinner v-if="isLoadingTeam" :text="teamSortByRecommendation && isLoadingTeamRecommendations ? 'جاري تحميل التوصيات...' : ''" />
+
+      <div v-else-if="teamLoadError" class="empty-state error-state">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p>{{ teamLoadError }}</p>
+        <button type="button" class="btn-retry" @click="loadTeamMembers()">إعادة المحاولة</button>
+      </div>
+
+      <div v-else-if="teamMembersDisplay.length === 0" class="empty-state">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+        </svg>
+        <p>لا يوجد أعضاء في الفريق حالياً.</p>
+      </div>
 
       <div v-else class="team-members-grid">
         <div v-for="member in teamMembersDisplay" :key="member.id" class="member-card">
@@ -113,6 +143,25 @@
     <div v-show="activeTab === 'projects'" class="team-tab-panel">
       <h3 class="panel-title">مشاريع الفريق</h3>
       <LoadingSpinner v-if="isLoadingTeamProjects" />
+
+      <div v-else-if="teamProjectsLoadError" class="empty-state error-state">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p>{{ teamProjectsLoadError }}</p>
+        <button type="button" class="btn-retry" @click="loadTeamProjects()">إعادة المحاولة</button>
+      </div>
+
+      <div v-else-if="teamProjects.length === 0" class="empty-state">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
+        <p>لا توجد مشاريع معينة للفريق حالياً.</p>
+      </div>
+
       <div v-else class="team-projects-grid">
         <div v-for="project in teamProjects" :key="project.id" class="team-project-card">
           <h4>{{ project.project_name }}</h4>
@@ -156,6 +205,7 @@ const activeTab = ref('members');
 const {
   teamMembersDisplay, teamProjects, isLoadingTeam,
   isLoadingTeamProjects, isLoadingTeamRecommendations,
+  teamLoadError, teamProjectsLoadError,
   teamSortByRecommendation, memberToRemove, memberRemoveLoading,
   memberRatingSaving, memberCommentEditId, memberCommentDrafts,
   hasPermission, formatCurrency,
