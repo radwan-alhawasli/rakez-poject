@@ -28,7 +28,7 @@ const props = defineProps({
     <DialogContent
       :class="
         cn(
-          'app-modal-content fixed left-1/2 top-1/2 z-[1001] flex max-h-[85vh] w-[90%] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden border-0 bg-white p-0 shadow-[0_20px_50px_rgba(0,0,0,0.2)] outline-none duration-200 focus:outline-none data-[state=open]:opacity-100 data-[state=closed]:opacity-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 transition-opacity max-sm:w-full max-sm:max-w-[100vw] max-sm:h-[100dvh] max-sm:max-h-[100dvh] max-sm:rounded-none max-sm:top-0 max-sm:left-0 max-sm:translate-x-0 max-sm:translate-y-0',
+          'app-modal-content fixed left-1/2 top-1/2 z-[1001] flex max-h-[85vh] w-[90%] min-h-0 -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden border-0 bg-white p-0 shadow-[0_20px_50px_rgba(0,0,0,0.2)] outline-none duration-200 focus:outline-none data-[state=open]:opacity-100 data-[state=closed]:opacity-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 transition-opacity max-sm:w-full max-sm:max-w-[100vw] max-sm:h-[100dvh] max-sm:max-h-[100dvh] max-sm:rounded-none max-sm:top-0 max-sm:left-0 max-sm:translate-x-0 max-sm:translate-y-0',
           size === 'wide' ? 'max-w-4xl' : 'max-w-lg sm:max-w-lg',
           'rounded-[20px] sm:rounded-[24px]',
           props.class
@@ -52,6 +52,15 @@ const props = defineProps({
 .app-modal-overlay[data-state='open'],
 .app-modal-content[data-state='open'] {
   opacity: 1 !important;
+}
+
+/*
+ * Radix يقفل تمرير document.body فقط؛ التطبيق يمرّر المحتوى داخل main.main-content (overflow-auto).
+ * عند فتح AppModal، امنع تمرير الخلفية حتى تذهب عجلة الفأرة إلى .app-modal-body.
+ */
+body:has(.app-modal-overlay[data-state='open']) main.main-content {
+  overflow: hidden !important;
+  overscroll-behavior: none;
 }
 
 /* Full-screen modal on mobile — CSS fallback for Tailwind max-sm: classes */
