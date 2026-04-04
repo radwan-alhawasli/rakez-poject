@@ -231,7 +231,7 @@
             <div class="input-row grid-3">
               <div class="field-group">
                 <label>عدد الوحدات</label>
-                <input type="number" v-model="form.units_count" class="form-input" />
+                <input type="number" v-model.number="form.units_count" class="form-input" min="0" />
               </div>
               <div class="field-group">
                 <label>نوع الوحدة</label>
@@ -254,13 +254,25 @@
                 <input type="text" v-model="form.district" class="form-input" />
               </div>
               <div class="field-group">
-                <label>المساحة (إجمالي القيمة)</label>
-                <input type="number" v-model="form.total_units_value" class="form-input" />
+                <label>إجمالي قيمة الوحدات</label>
+                <input type="number" v-model.number="form.total_units_value" class="form-input" min="0" />
               </div>
               <div class="field-group">
                 <label>المدينة</label>
                 <input type="text" v-model="form.city" class="form-input" :class="{ 'input-error': getFieldError('city') }" />
                 <span v-if="getFieldError('city')" class="field-error">{{ getFieldError('city') }}</span>
+              </div>
+            </div>
+
+            <div class="input-row grid-3">
+              <div class="field-group">
+                <label>متوسط سعر الوحدات</label>
+                <input
+                  type="text"
+                  :value="averageUnitPriceDisplay"
+                  class="form-input readonly"
+                  readonly
+                />
               </div>
             </div>
 

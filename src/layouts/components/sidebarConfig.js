@@ -221,6 +221,7 @@ const accountingItems = [
   { ...COMMON_ITEMS.notifications, to: '/accounting/notifications', hasBadge: true },
   { ...COMMON_ITEMS.tasks },
   { to: '/accounting/sold-units', label: 'الوحدات المباعة', tooltip: 'الوحدات المباعة', icon: ICONS.projects },
+  { to: '/accounting/deposits', label: 'العربون', tooltip: 'تأكيد وإرجاع العربون', icon: ICONS.calendar, permission: 'accounting.deposits.view' },
   { to: '/accounting/salaries', label: 'الرواتب وتوزيع العمولات', tooltip: 'الرواتب وتوزيع العمولات', icon: ICONS.teams },
   { to: '/developers', label: 'عرض المطورين', tooltip: 'عرض المطورين', icon: ICONS.teams },
   COMMON_ITEMS.exclusiveRequest,

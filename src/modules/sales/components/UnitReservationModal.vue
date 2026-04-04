@@ -17,7 +17,34 @@
 
       <!-- ── Scrollable body ── -->
       <div class="rsv-body">
-        <form @submit.prevent="onSubmit">
+        <div v-if="bookingSuccessActive" class="rsv-success-panel" role="status">
+          <div class="rsv-success-icon" aria-hidden="true">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+          </div>
+          <h3 class="rsv-success-title">تم تسجيل الحجز بنجاح</h3>
+          <p class="rsv-success-text">
+            يمكنك الآن إصدار سند الحجز كملف PDF يحتوي على تفاصيل الحجز والعميل والوحدة.
+          </p>
+          <p v-if="createdReservationId == null || createdReservationId === ''" class="rsv-success-hint">
+            لم يُرجع الخادم رقم الحجز؛ سيتم عند الطلب بناء السند من بيانات النموذج.
+          </p>
+          <div class="rsv-success-actions">
+            <button
+              type="button"
+              class="rsv-submit"
+              :disabled="isVoucherDownloading"
+              @click="$emit('issue-voucher')"
+            >
+              {{ isVoucherDownloading ? 'جاري التحميل...' : 'إصدار سند كملف' }}
+            </button>
+            <button type="button" class="rsv-btn-secondary" @click="$emit('dismiss-success')">إغلاق</button>
+          </div>
+        </div>
+
+        <form v-else @submit.prevent="onSubmit">
 
           <!-- ── Property info card (3 أعمدة كالمرجع) ── -->
           <div class="rsv-info-card">
@@ -239,8 +266,12 @@ export default {
     lookups: { type: Object, default: () => ({}) },
     formData: { type: Object, default: () => ({}) },
     isSubmitting: { type: Boolean, default: false },
+    /** بعد نجاح إنشاء الحجز — عرض رسالة وزر السند */
+    bookingSuccessActive: { type: Boolean, default: false },
+    createdReservationId: { type: [String, Number], default: null },
+    isVoucherDownloading: { type: Boolean, default: false },
   },
-  emits: ['close', 'submit'],
+  emits: ['close', 'submit', 'issue-voucher', 'dismiss-success'],
   setup(props, { emit }) {
     const titleId = 'unit-reservation-modal-title';
 

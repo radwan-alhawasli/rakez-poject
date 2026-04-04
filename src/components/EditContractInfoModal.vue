@@ -202,18 +202,35 @@
               <input v-model="form.district" type="text" class="form-input" />
             </div>
             <div class="field-group">
-              <label>المساحة (إجمالي القيمة)</label>
-              <input v-model.number="form.total_units_value" type="number" class="form-input" />
+              <label>إجمالي قيمة الوحدات</label>
+              <input v-model.number="form.total_units_value" type="number" class="form-input" min="0" />
             </div>
             <div class="field-group">
               <label>المدينة</label>
               <input v-model="form.city" type="text" class="form-input" />
             </div>
           </div>
+          <div class="input-row grid-3">
+            <div class="field-group">
+              <label>متوسط سعر الوحدات</label>
+              <input type="text" :value="averageUnitPriceDisplay" class="form-input readonly" readonly />
+            </div>
+          </div>
           <div class="input-row">
             <div class="field-group full">
               <label>الوصف</label>
               <textarea v-model="form.notes" class="form-input text-area" placeholder="أدخل ملاحظاتك هنا..."></textarea>
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="field-group full">
+              <label>رابط صورة المشروع (اختياري)</label>
+              <input
+                v-model="form.project_image_url"
+                type="url"
+                class="form-input"
+                placeholder="https://example.com/image.jpg"
+              />
             </div>
           </div>
           <div class="input-row">
@@ -312,6 +329,7 @@ const form = reactive({
   total_units_value: 0,
   city: '',
   notes: '',
+  project_image_url: '',
   project_site_url: '',
 });
 
@@ -325,6 +343,13 @@ const commissionPercentDisplay = computed(() => {
   const p = form.commission_percent;
   if (p === '' || p == null) return '—';
   return `${String(p).trim()} %`;
+});
+
+const averageUnitPriceDisplay = computed(() => {
+  const count = Number(form.units_count) || 0;
+  const total = Number(form.total_units_value) || 0;
+  if (count <= 0) return '0';
+  return Math.round(total / count).toLocaleString('en-US');
 });
 
 /** تحويل أي تاريخ من الـ API إلى YYYY-MM-DD لعرضه في input type="date". يدعم ISO وUnix وـ DD-MM-YYYY. */
@@ -544,6 +569,18 @@ function mapApiToForm(data) {
     proj.project_link,
     info.project_site_url,
   );
+  form.project_image_url = pickStr(
+    d.project_image_url,
+    d.image,
+    d.image_url,
+    d.main_image,
+    d.cover_image,
+    proj.project_image_url,
+    proj.image,
+    info.project_image_url,
+    data.project_image_url,
+    data.image,
+  );
 
   const unitsList =
     (Array.isArray(data.units) && data.units) ||
@@ -640,6 +677,14 @@ function mergeSalesProjectDetailsIntoForm(project) {
       p.website ??
       p.site_url ??
       p.project_url,
+  );
+  setIfEmpty(
+    'project_image_url',
+    p.project_image_url ??
+      p.image ??
+      p.image_url ??
+      p.main_image ??
+      p.cover_image,
   );
 
   const unitsArr = p.units ?? p.project_units ?? p.contract_units ?? p.data?.units;
@@ -799,6 +844,7 @@ async function submit() {
       agency_date: toApiDate(form.agency_date) || form.agency_date,
       avg_property_value: String(form.avg_property_value || ''),
       release_date: toApiDate(form.release_date) || form.release_date,
+      project_image_url: form.project_image_url || undefined,
       project_site_url: form.project_site_url || undefined,
     };
     await contractService.updateContractInfo(props.contractId, payload);

@@ -377,3 +377,5 @@ function removePersuasionRow(idx) {
   persuasionRows.value = persuasionRows.value.filter((_, i) => i !== idx);
 }
 </script>
+
+<style scoped src="./styles/SoldUnitDetailDistributions.scoped.css"></style>

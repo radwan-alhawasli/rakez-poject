@@ -57,6 +57,11 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
   const showReservationModal = ref(false);
   const selectedUnit = ref(null);
   const isSubmitting = ref(false);
+  /** بعد نجاح POST الحجز — لعرض واجهة النجاح وتنزيل السند */
+  const createdReservationId = ref(null);
+  /** نسخة من آخر payload ناجح لمسار PDF الاحتياطي */
+  const lastReservationPayload = ref(null);
+  const isVoucherDownloading = ref(false);
   const reservationLookups = ref(null);
   const reservationContextRef = ref(null);
   const reservationLookupsForModal = computed(() => {
@@ -367,8 +372,146 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     }
   };
 
+  /**
+   * @param {any} response - axios response من createReservation
+   * @returns {string|number|null}
+   */
+  const pickReservationIdFromCreateResponse = response => {
+    const d = response?.data?.data ?? response?.data;
+    if (d == null) return null;
+    if (typeof d === 'object') {
+      const id = d.id ?? d.reservation_id;
+      if (id != null && id !== '') return id;
+      const inner = d.data;
+      if (inner && typeof inner === 'object') {
+        const i2 = inner.id ?? inner.reservation_id;
+        if (i2 != null && i2 !== '') return i2;
+      }
+    }
+    return null;
+  };
+
+  const closeReservationModal = () => {
+    createdReservationId.value = null;
+    lastReservationPayload.value = null;
+    showReservationModal.value = false;
+  };
+
+  const resetReservationFormFields = () => {
+    reservationForm.client_name = '';
+    reservationForm.client_mobile = '';
+    reservationForm.client_nationality = 'Saudi';
+    reservationForm.client_iban = '';
+    reservationForm.down_payment_amount = 0;
+    reservationForm.negotiation_notes = '';
+  };
+
+  /** تنزيل سند: API ثم voucher-data ثم توليد من البيانات المحلية */
+  const downloadReservationVoucherAfterCreate = async () => {
+    const rid = createdReservationId.value;
+    if (isVoucherDownloading.value) return;
+    isVoucherDownloading.value = true;
+    try {
+      if (rid != null && rid !== '') {
+        try {
+          const blob = await salesService.downloadVoucher(rid);
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `sond-hajz-${rid}.pdf`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+          notificationService.addNotification('تم تنزيل السند', 'success');
+          return;
+        } catch (apiErr) {
+          logger.warn('Voucher API download failed, trying fallbacks', apiErr);
+        }
+        try {
+          const { getReservationVoucherData } = await import('@/services/pdfApi');
+          const { generateReservationVoucherPdf } = await import('@/services/pdfService');
+          const data = await getReservationVoucherData(rid);
+          if (data?.reservation != null) {
+            const pdfBytes = await generateReservationVoucherPdf(
+              data.reservation,
+              data.project ?? {},
+              data.unit ?? {},
+              data.employee ?? {}
+            );
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sond-hajz-${rid}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+            notificationService.addNotification('تم تنزيل السند', 'success');
+            return;
+          }
+        } catch (e) {
+          logger.warn('Voucher data fallback failed', e);
+        }
+      }
+
+      const payload = lastReservationPayload.value;
+      if (!payload || typeof payload !== 'object') {
+        notificationService.addNotification('لا توجد بيانات كافية لإصدار السند', 'error');
+        return;
+      }
+      const { generateReservationVoucherPdf } = await import('@/services/pdfService');
+      const ctx = reservationContextRef.value && typeof reservationContextRef.value === 'object'
+        ? reservationContextRef.value
+        : {};
+      const unit = ctx.unit ?? selectedUnit.value ?? {};
+      const contract =
+        typeof ctx.contract === 'object' && ctx.contract
+          ? ctx.contract
+          : typeof ctx.project === 'object' && ctx.project
+            ? ctx.project
+            : {};
+      const marketer = ctx.marketer || ctx.employee || {};
+      const reservationData = {
+        ...payload,
+        id: rid ?? payload.id ?? '—',
+      };
+      const project = {
+        name: contract.project_name || contract.name || contract.contract_name,
+        city: contract.city || unit.city,
+        district: contract.district || unit.district,
+        developer_name: contract.developer_name,
+      };
+      const unitPdf = {
+        number: unit.unit_number ?? unit.id,
+        unit_number: unit.unit_number,
+        type: unit.unit_type ?? unit.type,
+        area: unit.area_m2 ?? unit.area,
+        floor: unit.floor,
+        price: unit.total_price ?? unit.price,
+      };
+      const employee = {
+        name: marketer.name ?? marketer.full_name ?? ctx.employee_name,
+        team: marketer.team_name ?? marketer.team ?? ctx.marketer_team,
+      };
+      const pdfBytes = await generateReservationVoucherPdf(reservationData, project, unitPdf, employee);
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sond-hajz-${rid ?? 'local'}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      notificationService.addNotification('تم إصدار السند (من بيانات النموذج)', 'success');
+    } catch (e) {
+      logger.error('downloadReservationVoucherAfterCreate', e);
+      notificationService.addNotification(getApiErrorMessage(e, 'فشل إصدار السند'), 'error');
+    } finally {
+      isVoucherDownloading.value = false;
+    }
+  };
+
   // Reservation functions
   const openReserveModal = async (unit) => {
+    createdReservationId.value = null;
+    lastReservationPayload.value = null;
     selectedUnit.value = unit;
     reservationForm.contract_id = projectId;
     reservationForm.contract_unit_id = unit.id;
@@ -425,21 +568,41 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
   const submitReservationPayload = async (payload) => {
     isSubmitting.value = true;
     try {
-      await salesService.createReservation(payload);
+      const response = await salesService.createReservation(payload);
+      lastReservationPayload.value = { ...payload };
+      const rid = pickReservationIdFromCreateResponse(response);
+      createdReservationId.value = rid != null && rid !== '' ? rid : null;
       notificationService.addNotification('تم الحجز بنجاح', 'success');
-      showReservationModal.value = false;
-      reservationForm.client_name = '';
-      reservationForm.client_mobile = '';
-      reservationForm.client_nationality = 'Saudi';
-      reservationForm.client_iban = '';
-      reservationForm.down_payment_amount = 0;
-      reservationForm.negotiation_notes = '';
-      loadUnits();
+      await loadUnits();
+      if (createdReservationId.value == null) {
+        notificationService.addNotification(
+          'تنبيه: لم يُرجع الخادم رقم الحجز؛ سيتم إصدار السند من بيانات النموذج عند الطلب.',
+          'warning'
+        );
+      }
     } catch (e) {
       logger.error(e);
       notificationService.addNotification(getApiErrorMessage(e, 'فشل الحجز'), 'error');
     } finally {
       isSubmitting.value = false;
+    }
+  };
+
+  const isReservationSuccessView = computed(
+    () => lastReservationPayload.value != null && typeof lastReservationPayload.value === 'object'
+  );
+
+  const dismissReservationSuccess = () => {
+    resetReservationFormFields();
+    closeReservationModal();
+  };
+
+  /** إغلاق المودال: بعد النجاح يمسح الحالة ويعيد التعيين؛ أثناء التعبئة يغلق فقط */
+  const handleReservationModalClose = () => {
+    if (lastReservationPayload.value != null) {
+      dismissReservationSuccess();
+    } else {
+      closeReservationModal();
     }
   };
 
@@ -498,6 +661,9 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     showReservationModal,
     selectedUnit,
     isSubmitting,
+    createdReservationId,
+    isReservationSuccessView,
+    isVoucherDownloading,
     reservationContextRef,
     reservationLookupsForModal,
     reservationForm,
@@ -521,6 +687,10 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     handleCsvUpload,
     openReserveModal,
     submitReservationPayload,
+    dismissReservationSuccess,
+    downloadReservationVoucherAfterCreate,
+    closeReservationModal,
+    handleReservationModalClose,
     openWaitingListModal,
     closeWaitingListModal,
     submitWaitingList,

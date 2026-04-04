@@ -46,6 +46,7 @@
 ### 3.3 PUT `/accounting/commissions/:id/distributions`
 
 - **Body:** `{ distributions: [{ type, user_id?, percentage, external_name?, bank_account? }] }`.
+- **اختياري (الفرونت يرسلها مع «حفظ التوزيعات» إن وُجدت في الباك):** `bank_fees` (رقم)، `commission_source` (`owner` | `buyer`). إن تجاهلها الباك لا يؤثر على حقل `distributions`.
 - **أنواع `type` المعتمدة في الفرونت:**  
   `lead_generation`, `persuasion`, `closing`, `team_leader`, `assistant_pm`, `project_manager`, `owner`, `sales_manager`, `projects_department`, `management`, `ceo`, `external_marketer`, `other`.
 

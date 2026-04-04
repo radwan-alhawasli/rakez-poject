@@ -36,10 +36,6 @@
             <input v-model="form.district" type="text" class="form-input" placeholder="مثال: الحمراء" />
           </div>
           <div class="field-group">
-            <label>المساحة (إجمالي القيمة)</label>
-            <input v-model.number="form.total_units_value" type="number" class="form-input" placeholder="0" />
-          </div>
-          <div class="field-group">
             <label>السعي من</label>
             <select v-model="form.commission_from" class="form-input">
               <option value="">اختر الطرف</option>
@@ -111,6 +107,16 @@
             </tbody>
           </table>
         </div>
+        <div class="units-summary-row">
+          <div class="field-group">
+            <label>إجمالي قيمة الوحدات</label>
+            <input type="text" class="form-input readonly" readonly :value="totalUnitsValueFormatted" />
+          </div>
+          <div class="field-group">
+            <label>متوسط سعر الوحدات</label>
+            <input type="text" class="form-input readonly" readonly :value="averageUnitPriceFormatted" />
+          </div>
+        </div>
       </section>
 
     </form>
@@ -136,7 +142,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted } from 'vue';
+import { ref, reactive, computed, watch, onMounted } from 'vue';
 import AppModal from '@/components/AppModal.vue';
 import Button from '@/components/ui/Button.vue';
 import { LABEL_CANCEL, LABEL_SAVING } from '@/constants/actions';
@@ -171,6 +177,24 @@ const form = reactive({
   project_site_url: '',
   units: [{ type: 'شقة', count: 0, price: 0 }],
 });
+
+const unitsTotalValue = computed(() =>
+  form.units.reduce((sum, u) => sum + (Number(u.count) || 0) * (Number(u.price) || 0), 0),
+);
+const unitsTotalCount = computed(() =>
+  form.units.reduce((sum, u) => sum + (Number(u.count) || 0), 0),
+);
+const averageUnitPriceFromUnits = computed(() => {
+  const c = unitsTotalCount.value;
+  if (c <= 0) return 0;
+  return Math.round(unitsTotalValue.value / c);
+});
+const totalUnitsValueFormatted = computed(() =>
+  unitsTotalValue.value > 0 ? unitsTotalValue.value.toLocaleString('en-US') : '0',
+);
+const averageUnitPriceFormatted = computed(() =>
+  averageUnitPriceFromUnits.value.toLocaleString('en-US'),
+);
 
 function mapApiToForm(data) {
   if (!data || typeof data !== 'object') return;
@@ -345,6 +369,17 @@ watch(() => props.contractId, fetchDetails);
 .form-input:focus {
   outline: none;
   border-color: var(--color-primary, #b1a28f);
+}
+.form-input.readonly {
+  background: var(--color-light-gray, #f1f5f9);
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+.units-summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
 .btn-add-unit {

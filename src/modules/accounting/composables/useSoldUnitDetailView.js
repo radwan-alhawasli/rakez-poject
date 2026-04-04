@@ -108,12 +108,42 @@ export function useSoldUnitDetailView(props, { emit }) {
       commissionForm.final_selling_price ??
       0
   );
-  const commissionStatus = computed(
+  const COMMISSION_STATUS_LABELS = {
+    pending: 'معلق',
+    approved: 'معتمد',
+    paid: 'مدفوع',
+    rejected: 'مرفوض',
+  };
+
+  const normalizeCommissionStatus = s => {
+    if (s === null || s === undefined || s === '') return null;
+    return String(s).toLowerCase().trim();
+  };
+
+  const commissionStatusRaw = computed(
     () =>
-      props.unit?.commission_status ||
-      props.unit?.status ||
-      (commissionSummary.value ? 'Approved' : null)
+      props.unit?.commission_status ??
+      props.unit?.status ??
+      commissionSummary.value?.commission_status ??
+      null
   );
+
+  const commissionStatusLabel = computed(() => {
+    const raw = commissionStatusRaw.value;
+    if (raw === null || raw === undefined || raw === '') return null;
+    const key = normalizeCommissionStatus(raw);
+    if (key && COMMISSION_STATUS_LABELS[key]) return COMMISSION_STATUS_LABELS[key];
+    return String(raw);
+  });
+
+  const commissionStatusBadgeClass = computed(() => {
+    const key = normalizeCommissionStatus(commissionStatusRaw.value);
+    if (key === 'approved') return 'status-badge--approved';
+    if (key === 'pending') return 'status-badge--pending';
+    if (key === 'paid') return 'status-badge--paid';
+    if (key === 'rejected') return 'status-badge--rejected';
+    return 'status-badge--neutral';
+  });
 
   const totalDistPct = computed(() => {
     return distributions.value.reduce((sum, d) => sum + (parseFloat(d.percentage) || 0), 0);
@@ -289,7 +319,11 @@ export function useSoldUnitDetailView(props, { emit }) {
     if (!commissionId.value) return;
     isSaving.value = true;
     try {
-      await accountingService.updateDistributions(commissionId.value, { distributions: dists });
+      await accountingService.updateDistributions(commissionId.value, {
+        distributions: dists,
+        bank_fees: Number(commissionForm.bank_fees) || 0,
+        commission_source: commissionForm.commission_source || 'owner',
+      });
       toast.success('تم تحديث التوزيعات بنجاح');
       loadCommissionSummary();
     } catch (e) {
@@ -356,7 +390,8 @@ export function useSoldUnitDetailView(props, { emit }) {
     managementPct,
     hasCommission,
     finalPrice,
-    commissionStatus,
+    commissionStatusLabel,
+    commissionStatusBadgeClass,
     totalDistPct,
     companyAmount,
     isSaving,

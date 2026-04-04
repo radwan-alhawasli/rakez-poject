@@ -361,7 +361,7 @@ const accountingService = {
    * Types: lead_generation, persuasion, closing, team_leader, sales_manager, project_manager, external_marketer, other
    * For external_marketer/other: external_name, bank_account
    * @param {number|string} commissionId - Commission ID
-   * @param {any} data - { distributions: [...] }
+   * @param {any} data - { distributions: [...], bank_fees?, commission_source? } — الحقول الاختيارية تُرسل إن وُجدت (دعم الباك اختياري).
    * @returns {Promise<Object>} Updated distributions
    */
   async updateDistributions(commissionId, data) {
@@ -394,9 +394,16 @@ const accountingService = {
         external_name: d.external_name || d.employee_name,
         bank_account: d.bank_account,
       }));
+      const body = { distributions };
+      if (data.bank_fees !== undefined && data.bank_fees !== null) {
+        body.bank_fees = Number(data.bank_fees) || 0;
+      }
+      if (data.commission_source === 'owner' || data.commission_source === 'buyer') {
+        body.commission_source = data.commission_source;
+      }
       const response = await apiClient.put(
         `/accounting/commissions/${commissionId}/distributions`,
-        { distributions }
+        body
       );
       return response.data?.data || response.data || {};
     } catch (error) {

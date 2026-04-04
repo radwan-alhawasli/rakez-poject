@@ -34,7 +34,12 @@
         <div class="price-badge">
           <span class="price-label">سعر البيع النهائي</span>
           <span class="price-value">{{ formatCurrency(finalPrice) }}</span>
-          <span v-if="commissionStatus" class="status-badge approved">{{ commissionStatus }}</span>
+          <span
+            v-if="commissionStatusLabel"
+            class="status-badge"
+            :class="commissionStatusBadgeClass"
+            >{{ commissionStatusLabel }}</span
+          >
         </div>
         <div class="editable-fields">
           <div class="field-group field-group-readonly">

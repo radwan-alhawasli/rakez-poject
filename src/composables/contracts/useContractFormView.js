@@ -18,7 +18,7 @@ export function useContractFormView() {
     if (raw == null || raw === '') return null;
     return String(raw);
   });
-  const { validate, getFieldError, clearErrors } = useValidation(contractInfoSchema);
+  const { validate, getFieldError, clearErrors, errors } = useValidation(contractInfoSchema);
 
   const form = reactive({
     phone: '',
@@ -63,6 +63,23 @@ export function useContractFormView() {
     if (p === '' || p == null) return '—';
     return `${String(p).trim()} %`;
   });
+
+  const averageUnitPriceDisplay = computed(() => {
+    const count = Number(form.units_count) || 0;
+    const total = Number(form.total_units_value) || 0;
+    if (count <= 0) return '0';
+    return Math.round(total / count).toLocaleString('en-US');
+  });
+
+  watch(
+    () => [form.total_units_value, form.units_count],
+    () => {
+      const count = Number(form.units_count) || 0;
+      const total = Number(form.total_units_value) || 0;
+      form.average_unit_price = count > 0 ? Math.round(total / count) : 0;
+    },
+    { immediate: true }
+  );
 
   const fetchContractDetails = async () => {
     const id = requestId.value;
@@ -178,10 +195,15 @@ export function useContractFormView() {
       gregorian_date: form.gregorian_date,
       agreement_duration_days: String(form.agreement_duration_days || ''),
       commission_percent: form.commission_percent,
+      commission_from: form.commission_from,
       project_name: form.project_name,
       city: form.city,
     };
-    if (!validate(dataToValidate)) return;
+    if (!validate(dataToValidate)) {
+      const firstErr = Object.values(errors).flat()[0];
+      toast.error(firstErr || 'يرجى ملء جميع الحقول المطلوبة');
+      return;
+    }
 
     isSaving.value = true;
     try {
@@ -215,8 +237,8 @@ export function useContractFormView() {
         };
 
         await contractService.storeContractInfo(requestId.value, payload);
-
-        router.push({ name: 'MyRequests', query: { contract_saved: '1' } });
+        toast.success('تم حفظ العقد بنجاح');
+        showDownloadModal.value = true;
       } else {
         const createPayload = {
           project_name: form.project_name,
@@ -284,6 +306,7 @@ export function useContractFormView() {
     form,
     commissionFromLabel,
     commissionPercentDisplay,
+    averageUnitPriceDisplay,
     isSaving,
     isDownloading,
     showDownloadModal,

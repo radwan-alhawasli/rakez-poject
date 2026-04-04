@@ -297,8 +297,13 @@
       :lookups="reservationLookupsForModal"
       :form-data="reservationForm"
       :is-submitting="isSubmitting"
-      @close="showReservationModal = false"
+      :booking-success-active="isReservationSuccessView"
+      :created-reservation-id="createdReservationId"
+      :is-voucher-downloading="isVoucherDownloading"
+      @close="handleReservationModalClose"
       @submit="submitReservationPayload"
+      @issue-voucher="downloadReservationVoucherAfterCreate"
+      @dismiss-success="dismissReservationSuccess"
     />
 
     <!-- Waiting List Modal -->
@@ -380,6 +385,9 @@ const {
   showReservationModal,
   selectedUnit,
   isSubmitting,
+  createdReservationId,
+  isReservationSuccessView,
+  isVoucherDownloading,
   reservationContextRef,
   reservationLookupsForModal,
   reservationForm,
@@ -403,6 +411,9 @@ const {
   handleCsvUpload,
   openReserveModal,
   submitReservationPayload,
+  dismissReservationSuccess,
+  downloadReservationVoucherAfterCreate,
+  handleReservationModalClose,
   openWaitingListModal,
   closeWaitingListModal,
   submitWaitingList,

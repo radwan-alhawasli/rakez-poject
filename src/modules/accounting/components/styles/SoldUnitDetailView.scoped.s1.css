@@ -4,14 +4,21 @@
 
 .detail-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--color-medium-gray);
 }
 
+.header-content {
+  flex: 1;
+  min-width: 0;
+}
+
 .back-btn {
+  flex-shrink: 0;
+  align-self: center;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -39,8 +46,11 @@
 
 .page-subtitle {
   font-size: 14px;
-  color: var(--color-dark-gray);
-  margin: 4px 0 0;
+  line-height: 1.55;
+  color: var(--color-charcoal);
+  margin: 10px 0 0;
+  max-width: 40rem;
+  opacity: 0.92;
 }
 
 .unit-info-bar {
@@ -96,9 +106,29 @@
   font-weight: 600;
 }
 
-.status-badge.approved {
+.status-badge--approved {
   background: #dcfce7;
   color: #166534;
+}
+
+.status-badge--pending {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.status-badge--paid {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-badge--rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-badge--neutral {
+  background: #f1f5f9;
+  color: #475569;
 }
 
 .editable-fields {
@@ -171,153 +201,4 @@
 
 .form-actions {
   margin-top: 20px;
-}
-
-.distribution-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-bottom: 28px;
-}
-
-@media (max-width: 900px) {
-  .distribution-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.distribution-panel {
-  background: var(--color-light-gray);
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid var(--color-medium-gray);
-}
-
-.panel-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--color-navy);
-  margin: 0 0 16px;
-}
-
-.marketer-section {
-  margin-bottom: 20px;
-}
-
-.subsection-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-dark-gray);
-  margin: 0 0 10px;
-}
-
-.distribution-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.distribution-row .form-input {
-  flex: 1;
-  min-width: 0;
-}
-
-.distribution-row .input-pct {
-  width: 80px;
-}
-
-.calc-amount {
-  font-weight: 600;
-  color: var(--color-navy);
-  min-width: 100px;
-  text-align: left;
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  color: var(--color-dark-gray);
-  font-size: 20px;
-  cursor: pointer;
-  padding: 0 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-icon svg {
-  width: 16px;
-  height: 16px;
-}
-
-.btn-icon.delete {
-  color: var(--color-dark-gray);
-}
-
-.btn-icon.delete:hover {
-  color: #dc2626;
-}
-
-.subsection-icon {
-  margin-left: 6px;
-  font-size: 1em;
-}
-
-.btn-add {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: 2px dashed var(--color-medium-gray);
-  border-radius: 10px;
-  background: white;
-  color: var(--color-dark-gray);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-add:hover {
-  border-color: var(--color-gold);
-  color: var(--color-gold);
-}
-
-.management-field {
-  margin-bottom: 16px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  color: var(--color-charcoal);
-  cursor: pointer;
-}
-
-.external-fields {
-  margin-bottom: 16px;
-  padding: 12px;
-  background: white;
-  border-radius: 10px;
-}
-
-.management-percentages {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.mgmt-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.mgmt-row label {
-  font-size: 14px;
-  color: var(--color-charcoal);
-  font-weight: 500;
 }

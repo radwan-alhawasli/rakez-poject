@@ -61,7 +61,7 @@
     <div v-else class="tasks-grid">
       <div v-for="task in currentTasks" :key="task.id" class="task-card">
         <div class="task-header">
-          <h3 class="task-title">{{ task.task_name || task.name || task.title }}</h3>
+          <h3 class="task-title">{{ task.title || task.task_name || task.name }}</h3>
           <span class="status-badge" :class="task.status">{{ getStatusLabel(task.status) }}</span>
         </div>
 
@@ -76,6 +76,8 @@
             طلبتها من آخرين
           </span>
         </div>
+
+        <p v-if="task.description" class="task-description">{{ task.description }}</p>
 
         <div class="task-details">
           <p v-if="task.section_label || task.section_key">
@@ -157,8 +159,12 @@
         <h3>إضافة مهمة جديدة</h3>
         <form @submit.prevent="createTask">
           <div class="form-group">
-            <label>اسم المهمة</label>
-            <input v-model="taskForm.task_name" required class="form-input" />
+            <label>عنوان المهمة</label>
+            <input v-model="taskForm.title" required class="form-input" />
+          </div>
+          <div class="form-group">
+            <label>وصف المهمة</label>
+            <textarea v-model="taskForm.description" class="form-input" rows="3" placeholder="وصف تفصيلي للمهمة (اختياري)"></textarea>
           </div>
           <div class="form-group">
             <label>القسم</label>

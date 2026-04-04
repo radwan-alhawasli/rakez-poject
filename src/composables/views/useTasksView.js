@@ -43,12 +43,11 @@ export function useTasksView() {
   const showCreateModal = ref(false);
   const isCreating = ref(false);
   const taskForm = reactive({
-    task_name: '',
+    title: '',
+    description: '',
     section_key: '',
-    team_id: '',
     due_at: '',
     assigned_to: '',
-    status: 'in_progress',
   });
 
   const showReasonModal = ref(false);
@@ -293,24 +292,22 @@ export function useTasksView() {
       const due_at_formatted = taskForm.due_at ? taskForm.due_at.replace('T', ' ') + ':00' : null;
 
       await taskService.createTask({
-        task_name: taskForm.task_name,
+        title: taskForm.title,
+        description: taskForm.description,
         section: taskForm.section_key,
         assigned_to: taskForm.assigned_to,
         due_at: due_at_formatted,
-        status: taskForm.status,
-        ...(taskForm.team_id && { team_id: taskForm.team_id }),
       });
 
       notificationService.addNotification('تم إنشاء المهمة بنجاح', 'success');
       showCreateModal.value = false;
 
       Object.assign(taskForm, {
-        task_name: '',
+        title: '',
+        description: '',
         section_key: '',
-        team_id: '',
         due_at: '',
         assigned_to: '',
-        status: 'in_progress',
       });
 
       loadAssignedTasks(1);

@@ -1,4 +1,12 @@
 
+.task-description {
+  font-size: 0.88rem;
+  color: var(--text-muted, #666);
+  margin: 0 0 10px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
 .task-details p {
   margin: 4px 0;
 }

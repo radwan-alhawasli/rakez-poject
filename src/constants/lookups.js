@@ -40,10 +40,9 @@ export const LEAD_SOURCES = [
 
 /** Unit types for exclusive project request (value, label) */
 export const UNIT_TYPES = [
-  { value: 'apartment', label: 'شقة' },
-  { value: 'villa', label: 'فيلا' },
-  { value: 'land', label: 'أرض' },
-  { value: 'shop', label: 'محل' },
-  { value: 'office', label: 'مكتب' },
-  { value: 'other', label: 'أخرى' },
+  { value: 'apartments', label: 'شقق' },
+  { value: 'villas', label: 'فلل' },
+  { value: 'townhouse', label: 'تاون هاوس' },
+  { value: 'penthouse', label: 'بنت هاوس' },
+  { value: 'lands', label: 'أراضي' },
 ];
