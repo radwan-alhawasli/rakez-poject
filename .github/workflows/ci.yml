@@ -93,21 +93,24 @@ jobs:
     name: Live API smoke (optional)
     runs-on: ubuntu-latest
     needs: quality
-    if: ${{ secrets.STAGING_API_BASE_URL != '' }}
     steps:
       - name: Checkout
+        if: ${{ secrets.STAGING_API_BASE_URL != '' }}
         uses: actions/checkout@v4
 
       - name: Setup Node.js
+        if: ${{ secrets.STAGING_API_BASE_URL != '' }}
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
 
       - name: Install dependencies
+        if: ${{ secrets.STAGING_API_BASE_URL != '' }}
         run: npm ci
 
       - name: API integration tests
+        if: ${{ secrets.STAGING_API_BASE_URL != '' }}
         env:
           VITE_APP_API_BASE_URL: ${{ secrets.STAGING_API_BASE_URL }}
           INTEGRATION_API_BASE_URL: ${{ secrets.STAGING_API_BASE_URL }}

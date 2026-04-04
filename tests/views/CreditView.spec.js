@@ -52,7 +52,6 @@ describe('CreditView', () => {
         { path: '/credit/notifications', name: 'CreditNotifications', component: CreditView },
         { path: '/credit/title-transfer', name: 'CreditTitleTransfer', component: CreditView },
         { path: '/credit/sold-projects', name: 'CreditSoldProjects', component: CreditView },
-        { path: '/credit/claim-files', name: 'CreditClaimFiles', component: CreditView },
       ],
     });
     await router.push('/credit');
@@ -68,7 +67,6 @@ describe('CreditView', () => {
           CreditFinancingTab: { template: '<div>Financing</div>' },
           CreditTitleTransferTab: { template: '<div>Title Transfer</div>' },
           CreditSoldProjectsTab: { template: '<div>Sold Projects</div>' },
-          CreditClaimFilesTab: { template: '<div>Claim Files</div>' },
         },
       },
     });

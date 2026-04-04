@@ -98,8 +98,6 @@ describe('SalesViewExtended', () => {
           SalesPaymentPlansTab: { template: '<div>Payment Plans</div>' },
           SalesProjectSchedulesTab: { template: '<div>Schedules</div>' },
           SalesSoldUnitsTab: { template: '<div>Sold Units</div>' },
-          SalesDepositsTab: { template: '<div>Deposits</div>' },
-          SalesAnalyticsTab: { template: '<div>Analytics</div>' },
         },
       },
     });

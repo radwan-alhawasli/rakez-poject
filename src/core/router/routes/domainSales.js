@@ -27,7 +27,5 @@ export default {
     { path: 'project-schedules', name: 'SalesProjectSchedules', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_PROJECT_SCHEDULES_MANAGE] } },
     { path: 'project-schedules/:projectId', name: 'SalesProjectScheduleDetail', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_PROJECT_SCHEDULES_MANAGE] } },
     { path: 'sold-units', name: 'SalesSoldUnits', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_SOLD_UNITS_VIEW] } },
-    { path: 'deposits', name: 'SalesDeposits', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_DEPOSITS_VIEW] } },
-    { path: 'analytics', name: 'SalesAnalytics', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_ANALYTICS_VIEW] } },
   ],
 };

@@ -55,8 +55,8 @@ describe('useSalesRouting', () => {
 
   it('switches tab by pushing mapped route name', () => {
     const wrapper = mountComposable();
-    wrapper.vm.switchTab('analytics');
-    expect(mockRouter.push).toHaveBeenCalledWith({ name: 'SalesAnalytics' });
+    wrapper.vm.switchTab('sold-units');
+    expect(mockRouter.push).toHaveBeenCalledWith({ name: 'SalesSoldUnits' });
   });
 
   it('maps every defined tab id to a route for navigation', () => {

@@ -17,8 +17,6 @@
       <SalesPaymentPlansTab v-else-if="activeTab === 'payment-plans'" />
       <SalesProjectSchedulesTab v-else-if="activeTab === 'project-schedules'" />
       <SalesSoldUnitsTab v-else-if="activeTab === 'sold-units'" />
-      <SalesDepositsTab v-else-if="activeTab === 'deposits'" />
-      <SalesAnalyticsTab v-else-if="activeTab === 'analytics'" />
     </div>
   </div>
 </template>
@@ -55,12 +53,6 @@ const SalesProjectSchedulesTab = defineAsyncComponent(() =>
 const SalesSoldUnitsTab = defineAsyncComponent(() =>
   import('@/modules/sales/tabs/sold-units/SalesSoldUnitsTab.vue')
 );
-const SalesDepositsTab = defineAsyncComponent(() =>
-  import('@/modules/sales/tabs/deposits/SalesDepositsTab.vue')
-);
-const SalesAnalyticsTab = defineAsyncComponent(() =>
-  import('@/modules/sales/tabs/analytics/SalesAnalyticsTab.vue')
-);
 const SalesUnitSearchTab = defineAsyncComponent(() =>
   import('@/modules/sales/tabs/unit-search/SalesUnitSearchTab.vue')
 );
@@ -79,8 +71,6 @@ export default {
     SalesPaymentPlansTab,
     SalesProjectSchedulesTab,
     SalesSoldUnitsTab,
-    SalesDepositsTab,
-    SalesAnalyticsTab,
     SalesUnitSearchTab,
   },
   setup() {

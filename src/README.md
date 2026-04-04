@@ -7,7 +7,7 @@
 | **api** | عميل HTTP الموحد (مثل `apiClient.js`) — إرفاق التوكن، CSRF، ومعالجة الاستجابة. |
 | **core** | تهيئة التطبيق: `router` (Vue Router مُقسّم إلى وحدات)، `i18n`، `config`، `directives`، `plugins`. |
 
-**هيكل الراوتر (core/router):** مسارات منظمة حسب النطاق — `config.js` (ثوابت المسارات)، `guards.js` (حراسة التنقل)، `routes/` (public، mainChildren، domainHr، domainMarketing، domainSales، domainCredit، domainAccounting، domainCommissionDeposits، domainEditor). نقطة الدخول: `core/router/index.js`.
+**هيكل الراوتر (core/router):** مسارات منظمة حسب النطاق — `config.js` (ثوابت المسارات)، `guards.js` (حراسة التنقل)، `routes/` (public، mainChildren، domainHr، domainMarketing، domainSales، domainCredit، domainAccounting، domainEditor، domainInventory، domainManager). نقطة الدخول: `core/router/index.js`.
 | **services** | طبقة استدعاء الـ API: كل خدمة تتواصل مع الخلفية وتستخدم `handleServiceError` للمعالجة الموحدة. |
 | **composables** | منطق قابل لإعادة الاستخدام حسب النطاق (مثل `accounting`، `sales`، `credit`، `editor`). |
 | **views** | صفحات/شاشات التطبيق (مكونات تُعرض عبر الـ router). |

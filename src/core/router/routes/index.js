@@ -10,7 +10,6 @@ import domainMarketing from './domainMarketing';
 import domainSales from './domainSales';
 import domainCredit from './domainCredit';
 import domainAccounting from './domainAccounting';
-import domainCommissionDeposits from './domainCommissionDeposits';
 import domainEditor from './domainEditor';
 import domainInventory from './domainInventory';
 import domainManager from './domainManager';
@@ -22,7 +21,6 @@ const mainLayoutChildren = [
   domainSales,
   domainCredit,
   domainAccounting,
-  domainCommissionDeposits,
   domainEditor,
   domainInventory,
   domainManager,

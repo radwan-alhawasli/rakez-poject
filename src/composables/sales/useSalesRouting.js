@@ -19,8 +19,6 @@ const TAB_ROUTE_ENTRIES = Object.freeze([
   ['SalesProjectScheduleDetail', 'project-schedules'],
   ['SalesUnitSearch', 'unit-search'],
   ['SalesSoldUnits', 'sold-units'],
-  ['SalesDeposits', 'deposits'],
-  ['SalesAnalytics', 'analytics'],
 ]);
 
 const TAB_ROUTE_MAP = Object.freeze(Object.fromEntries(TAB_ROUTE_ENTRIES));
@@ -117,18 +115,6 @@ const ALL_TABS = [
     label: 'Sold Units',
     icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline><path d="M9 3H5a2 2 0 0 0-2 2v4m0 0h18M3 9v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9"></path>',
     requiredPermission: PERMISSIONS.SALES_SOLD_UNITS_VIEW,
-  },
-  {
-    id: 'deposits',
-    label: 'Deposits',
-    icon: '<line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>',
-    requiredPermission: PERMISSIONS.SALES_DEPOSITS_VIEW,
-  },
-  {
-    id: 'analytics',
-    label: 'Analytics',
-    icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>',
-    requiredPermission: PERMISSIONS.SALES_ANALYTICS_VIEW,
   },
 ];
 

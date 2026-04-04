@@ -17,12 +17,6 @@ export default [
   { path: 'ai-assistant', name: 'AiAssistant', component: () => import('@/modules/app/views/AiAssistantView.vue') },
   { path: 'chat', name: 'Chat', component: () => import('@/modules/app/views/ChatView.vue') },
   {
-    path: 'knowledge-management',
-    name: 'KnowledgeManagement',
-    component: () => import('@/modules/knowledge/views/KnowledgeManagementView.vue'),
-    meta: { permissions: [PERMISSIONS.MANAGE_AI_KNOWLEDGE] },
-  },
-  {
     path: 'project-management',
     name: 'ProjectManagement',
     component: () => import('@/modules/projects/views/ProjectManagementView.vue'),
@@ -63,12 +57,6 @@ export default [
     name: 'Users',
     component: () => import('@/modules/hr/views/UsersView.vue'),
     meta: { roles: [ROLE_ADMIN, ROLE_HR], permissions: [PERMISSIONS.HR_USERS_CREATE] },
-  },
-  {
-    path: 'agents',
-    name: 'Agents',
-    component: () => import('@/modules/hr/views/AgentsView.vue'),
-    meta: { roles: [ROLE_ADMIN], permissions: [PERMISSIONS.AGENTS_MANAGE] },
   },
   { path: 'exclusive-request', name: 'ExclusiveRequest', component: () => import('@/modules/projects/views/ExclusiveProjectView.vue') },
   { path: 'my-requests', name: 'MyRequests', component: () => import('@/modules/projects/views/MyRequestsView.vue') },

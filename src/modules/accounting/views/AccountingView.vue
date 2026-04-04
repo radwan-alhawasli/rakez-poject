@@ -4,7 +4,6 @@
       <AccountingDashboardTab v-if="activeTab === 'dashboard'" />
       <AccountingNotificationsTab v-else-if="activeTab === 'notifications'" />
       <AccountingSoldUnitsTab v-else-if="activeTab === 'sold-units'" />
-      <AccountingDepositsTab v-else-if="activeTab === 'deposits'" />
       <AccountingSalariesTab v-else-if="activeTab === 'salaries'" />
     </div>
   </div>
@@ -24,9 +23,6 @@ const AccountingNotificationsTab = defineAsyncComponent(() =>
 const AccountingSoldUnitsTab = defineAsyncComponent(() =>
   import('@/modules/accounting/tabs/sold-units/AccountingSoldUnitsTab.vue')
 );
-const AccountingDepositsTab = defineAsyncComponent(() =>
-  import('@/modules/accounting/tabs/deposits/AccountingDepositsTab.vue')
-);
 const AccountingSalariesTab = defineAsyncComponent(() =>
   import('@/modules/accounting/tabs/salaries/AccountingSalariesTab.vue')
 );
@@ -38,7 +34,6 @@ const activeTab = computed(() => {
   if (name === 'AccountingDashboard') return 'dashboard';
   if (name === 'AccountingNotifications') return 'notifications';
   if (name === 'AccountingSoldUnits') return 'sold-units';
-  if (name === 'AccountingDeposits') return 'deposits';
   if (name === 'AccountingSalaries') return 'salaries';
   return 'dashboard';
 });

@@ -15,7 +15,6 @@ export default {
     { path: 'dashboard', name: 'AccountingDashboard', component: () => import('@/modules/accounting/views/AccountingView.vue'), meta: { permissions: [PERMISSIONS.ACCOUNTING_DASHBOARD_VIEW] } },
     { path: 'notifications', name: 'AccountingNotifications', component: () => import('@/modules/accounting/views/AccountingView.vue'), meta: { permissions: [PERMISSIONS.ACCOUNTING_NOTIFICATIONS_VIEW] } },
     { path: 'sold-units', name: 'AccountingSoldUnits', component: () => import('@/modules/accounting/views/AccountingView.vue'), meta: { permissions: [PERMISSIONS.ACCOUNTING_SOLD_UNITS_VIEW] } },
-    { path: 'deposits', name: 'AccountingDeposits', component: () => import('@/modules/accounting/views/AccountingView.vue'), meta: { permissions: [PERMISSIONS.ACCOUNTING_DEPOSITS_VIEW] } },
     { path: 'salaries', name: 'AccountingSalaries', component: () => import('@/modules/accounting/views/AccountingView.vue'), meta: { permissions: [PERMISSIONS.ACCOUNTING_SALARIES_VIEW] } },
   ],
 };

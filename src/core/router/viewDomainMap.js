@@ -25,9 +25,9 @@ export const VIEW_DOMAIN_MAP = {
   ],
   contracts: ['ContractsView'],
   sales: ['ReservationsView', 'CancelledReservationsView'],
-  hr: ['UsersView', 'AgentsView', 'TeamsView', 'TeamManagementView'],
+  hr: ['UsersView', 'TeamsView', 'TeamManagementView'],
   inventory: ['InventoryView'],
-  accounting: ['CommissionDepositsView'],
+  accounting: ['AccountingView'],
   editor: ['ImageApprovalView'],
   manager: [
     'ManagerLayout',

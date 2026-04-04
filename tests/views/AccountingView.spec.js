@@ -71,7 +71,6 @@ describe('AccountingView', () => {
           },
           AccountingNotificationsTab: true,
           AccountingSoldUnitsTab: true,
-          AccountingDepositsTab: true,
           AccountingSalariesTab: true,
         },
       },
