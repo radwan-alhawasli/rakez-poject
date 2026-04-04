@@ -36,6 +36,19 @@
   height: 18px;
 }
 
+.welcome-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--color-gold, #b5a99a);
+  flex-shrink: 0;
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -46,6 +59,19 @@
   text-align: center;
 }
 
+.empty-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--color-gold, #b5a99a);
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+.empty-state.error-state .empty-icon {
+  color: #b91c1c;
+  opacity: 0.8;
+}
+
 .empty-state.error-state {
   color: #b91c1c;
 }
@@ -53,6 +79,7 @@
 .empty-state.error-state p {
   color: inherit;
   margin-bottom: 12px;
+  font-weight: 500;
 }
 
 .empty-state .btn-add {
@@ -67,12 +94,22 @@
 
 .target-card {
   position: relative;
-  background: var(--color-white);
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.92) 0%,
+    rgba(248, 250, 252, 0.88) 50%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
   border: 1px solid rgba(39, 55, 77, 0.1);
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 12px rgba(39, 55, 77, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 4px 16px rgba(39, 55, 77, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.04);
   overflow: visible;
 }
 
@@ -83,33 +120,44 @@
   right: 0;
   left: 0;
   height: 4px;
-  background: var(--color-navy, #27374D);
-  opacity: 0.9;
-  border-radius: 16px 16px 0 0;
+  background: linear-gradient(90deg, var(--color-navy-dark, #1a2636) 0%, var(--color-navy, #27374D) 50%, var(--color-gold, #b5a99a) 100%);
+  opacity: 1;
+  border-radius: 18px 18px 0 0;
   transition: background 0.3s ease;
 }
 
 /* ===== بطاقة الهدف المنجز ===== */
 .target-card-completed {
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 40%, #f8fafc 100%);
-  border-color: rgba(5, 150, 105, 0.25);
-  box-shadow: 0 2px 12px rgba(5, 150, 105, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03);
+  background: linear-gradient(
+    165deg,
+    rgba(236, 253, 245, 0.95) 0%,
+    rgba(240, 253, 244, 0.9) 40%,
+    rgba(248, 250, 252, 0.92) 100%
+  );
+  border-color: rgba(5, 150, 105, 0.2);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 4px 16px rgba(5, 150, 105, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .target-card-completed::before {
   height: 5px;
-  background: linear-gradient(90deg, #10b981, #059669, #047857);
+  background: linear-gradient(90deg, #10b981 0%, #059669 50%, #047857 100%);
   opacity: 1;
 }
 
 .target-card-completed:hover {
-  border-color: rgba(5, 150, 105, 0.35);
-  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-color: rgba(5, 150, 105, 0.3);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 10px 28px rgba(5, 150, 105, 0.14),
+    0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .target-card-completed .target-footer {
-  background: rgba(236, 253, 245, 0.7);
-  border-color: rgba(5, 150, 105, 0.1);
+  background: rgba(236, 253, 245, 0.65);
+  border-color: rgba(5, 150, 105, 0.08);
 }
 
 .completed-badge {
@@ -247,7 +295,9 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -255,9 +305,17 @@
 }
 
 .assign-modal {
-  background: var(--color-white);
-  border-radius: 14px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(248, 250, 252, 0.96) 100%
+  );
+  border: 1px solid rgba(39, 55, 77, 0.08);
+  border-radius: 18px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 24px 56px rgba(15, 23, 42, 0.22),
+    0 8px 24px rgba(0, 0, 0, 0.08);
   max-width: 420px;
   width: 100%;
   max-height: 85vh;
@@ -269,15 +327,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 20px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 20px 22px;
+  border-bottom: 1px solid rgba(39, 55, 77, 0.08);
+  background: rgba(248, 250, 252, 0.6);
 }
 
 .assign-modal-header h3 {
   margin: 0;
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 800;
   color: var(--color-navy);
+  letter-spacing: -0.01em;
 }
 
 .assign-close {

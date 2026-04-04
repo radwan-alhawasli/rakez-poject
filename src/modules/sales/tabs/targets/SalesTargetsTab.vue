@@ -2,7 +2,14 @@
   <div class="targets-tab">
     <div class="welcome-header">
       <div class="header-content">
-        <h1 class="welcome-title">{{ isSalesLeaderView ? 'أهداف الفريق' : 'أهدافي' }}</h1>
+        <h1 class="welcome-title">
+          <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="2"></circle>
+          </svg>
+          {{ isSalesLeaderView ? 'أهداف الفريق' : 'أهدافي' }}
+        </h1>
         <p class="welcome-subtitle">{{ isSalesLeaderView ? 'متابعة أهداف الفريق والأداء المحدد للمبيعات.' : 'متابعة الأهداف التي أسندها مدير الفريق لك وما تم تكليفه لك.' }}</p>
       </div>
       <button v-if="hasPermission('sales.team.manage')" @click="openCreateTargetModalClick" class="btn-add">
@@ -17,11 +24,21 @@
     <LoadingSpinner v-if="isLoadingTargets" text="جاري تحميل الأهداف..." />
 
     <div v-else-if="targetsLoadError" class="empty-state error-state">
+      <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
       <p>{{ targetsLoadError }}</p>
       <button type="button" class="btn-add" @click="loadTargets()">إعادة المحاولة</button>
     </div>
 
     <div v-else-if="displayTargets.length === 0" class="empty-state">
+      <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <circle cx="12" cy="12" r="6"></circle>
+        <circle cx="12" cy="12" r="2"></circle>
+      </svg>
       <p>لا توجد أهداف محددة للعرض حالياً.</p>
     </div>
 

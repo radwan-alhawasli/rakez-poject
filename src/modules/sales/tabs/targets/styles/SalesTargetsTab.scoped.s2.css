@@ -35,17 +35,19 @@
 .create-target-form .form-select,
 .create-target-form .form-input {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  padding: 10px 14px;
+  border: 1px solid rgba(39, 55, 77, 0.12);
+  border-radius: 10px;
   font-size: 0.9375rem;
-  background: var(--color-white);
+  background: rgba(255, 255, 255, 0.88);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .create-target-form .form-select:focus,
 .create-target-form .form-input:focus {
   outline: none;
-  border-color: var(--color-navy);
+  border-color: var(--color-gold, #b5a99a);
+  box-shadow: 0 0 0 2px rgba(181, 169, 154, 0.2);
 }
 
 .create-target-form .checkbox-row,
@@ -161,22 +163,25 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  padding: 16px 20px;
-  border-top: 1px solid #e5e7eb;
+  padding: 18px 22px;
+  border-top: 1px solid rgba(39, 55, 77, 0.06);
+  background: rgba(248, 250, 252, 0.5);
 }
 
 .btn-secondary {
-  padding: 10px 18px;
-  border: 1px solid var(--color-medium-gray);
-  background: var(--color-white);
+  padding: 10px 20px;
+  border: 1px solid rgba(39, 55, 77, 0.14);
+  background: rgba(255, 255, 255, 0.8);
   color: var(--color-navy);
-  border-radius: 8px;
-  font-weight: 500;
+  border-radius: 10px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-  background: #f8fafc;
+  background: rgba(248, 250, 252, 0.95);
+  border-color: rgba(39, 55, 77, 0.2);
 }
 
 .target-card-clickable {
@@ -184,15 +189,21 @@
 }
 
 .target-card-clickable:hover {
-  border-color: rgba(181, 169, 154, 0.4);
-  box-shadow: 0 12px 28px rgba(39, 55, 77, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  border-color: rgba(181, 169, 154, 0.35);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 14px 32px rgba(39, 55, 77, 0.13),
+    0 4px 12px rgba(0, 0, 0, 0.05);
   transform: translateY(-4px);
 }
 
 .target-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(39, 55, 77, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
-  border-color: rgba(39, 55, 77, 0.15);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 10px 28px rgba(39, 55, 77, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  border-color: rgba(39, 55, 77, 0.14);
 }
 
 .target-header {
@@ -237,27 +248,32 @@
   flex-direction: column;
   align-items: flex-end;
   flex-shrink: 0;
-  padding: 5px 9px;
-  background: rgba(39, 55, 77, 0.06);
-  border-radius: 8px;
-  border: 1px solid rgba(39, 55, 77, 0.08);
+  padding: 8px 12px;
+  background: linear-gradient(
+    145deg,
+    rgba(39, 55, 77, 0.06) 0%,
+    rgba(181, 169, 154, 0.08) 100%
+  );
+  border-radius: 10px;
+  border: 1px solid rgba(39, 55, 77, 0.06);
 }
 
 .target-value {
   font-size: 0.95rem;
   font-weight: 800;
-  color: #047857;
+  color: var(--color-navy, #27374D);
   line-height: 1.2;
   letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .target-value-label {
   font-size: 0.6rem;
-  color: #64748b;
-  margin-top: 1px;
-  font-weight: 600;
+  color: var(--color-gold-dark, #9a8d7d);
+  margin-top: 2px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
 }
 
 .target-progress {
@@ -268,27 +284,38 @@
 
 .progress-bar {
   width: 100%;
-  height: 12px;
-  background: rgba(39, 55, 77, 0.08);
-  border-radius: 999px;
+  height: 10px;
+  background: rgba(39, 55, 77, 0.06);
+  border: 1px solid rgba(39, 55, 77, 0.04);
+  border-radius: 9999px;
   overflow: hidden;
   margin-bottom: 10px;
 }
 
 .progress-fill {
   height: 100%;
-  border-radius: 999px;
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 9999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .progress-fill:not(.completed) {
-  background: linear-gradient(90deg, #34d399 0%, #059669 100%);
-  box-shadow: 0 0 12px rgba(4, 120, 87, 0.35);
+  background: linear-gradient(90deg, var(--color-gold, #b5a99a) 0%, var(--color-gold-dark, #9a8d7d) 100%);
+  box-shadow: 0 0 10px rgba(154, 141, 125, 0.4);
 }
 
 .progress-fill.completed {
   background: linear-gradient(90deg, #10b981 0%, #047857 100%);
-  box-shadow: 0 0 12px rgba(4, 120, 87, 0.3);
+  box-shadow: 0 0 10px rgba(4, 120, 87, 0.3);
+}
+
+.progress-fill.in-progress {
+  background: linear-gradient(90deg, var(--color-navy, #27374D) 0%, rgba(39, 55, 77, 0.7) 100%);
+  box-shadow: 0 0 10px rgba(39, 55, 77, 0.3);
+}
+
+.progress-fill.on-track {
+  background: linear-gradient(90deg, var(--color-gold, #b5a99a) 0%, #059669 100%);
+  box-shadow: 0 0 10px rgba(5, 150, 105, 0.3);
 }
 
 .progress-text {
@@ -312,10 +339,15 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  padding: 16px 22px 22px;
+  padding: 16px 22px 20px;
   padding-inline-end: 54px;
-  border-top: 1px solid rgba(39, 55, 77, 0.08);
-  background: rgba(248, 250, 252, 0.8);
+  border-top: 1px solid rgba(39, 55, 77, 0.06);
+  background: linear-gradient(
+    180deg,
+    rgba(248, 250, 252, 0.6) 0%,
+    rgba(241, 245, 249, 0.5) 100%
+  );
+  border-radius: 0 0 18px 18px;
 }
 
 .target-footer-left {
@@ -342,36 +374,37 @@
 }
 
 .target-status {
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 0.75rem;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  font-size: 0.73rem;
   font-weight: 700;
   flex-shrink: 0;
   letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .target-status.completed {
-  background: #d1fae5;
+  background: rgba(5, 150, 105, 0.1);
   color: #065f46;
-  border: 1px solid rgba(5, 150, 105, 0.25);
+  border: 1px solid rgba(5, 150, 105, 0.2);
 }
 
 .target-status.on-track {
-  background: #dbeafe;
-  color: #1e40af;
-  border: 1px solid rgba(30, 64, 175, 0.2);
+  background: rgba(39, 55, 77, 0.08);
+  color: var(--color-navy, #27374D);
+  border: 1px solid rgba(39, 55, 77, 0.12);
 }
 
 .target-status.in-progress {
-  background: #fef9c3;
-  color: #a16207;
-  border: 1px solid rgba(161, 98, 7, 0.2);
+  background: rgba(181, 169, 154, 0.15);
+  color: var(--color-gold-dark, #7a6f60);
+  border: 1px solid rgba(181, 169, 154, 0.25);
 }
 
 .target-status.at-risk {
-  background: #fef2f2;
+  background: rgba(185, 28, 28, 0.08);
   color: #b91c1c;
-  border: 1px solid rgba(185, 28, 28, 0.2);
+  border: 1px solid rgba(185, 28, 28, 0.15);
 }
 
 @media (max-width: 768px) {

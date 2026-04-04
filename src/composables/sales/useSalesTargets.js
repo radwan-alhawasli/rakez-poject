@@ -29,9 +29,11 @@ export function useSalesTargets() {
     isLoadingTargets.value = true;
     try {
       const raw = await salesService.getMyTargets();
+      logger.info('[SalesTargets] API response:', { type: typeof raw, isArray: Array.isArray(raw), length: Array.isArray(raw) ? raw.length : 'N/A' });
       targets.value = Array.isArray(raw) ? raw : [];
     } catch (error) {
-      logger.error('Error loading targets:', error);
+      logger.error('[SalesTargets] Error loading targets:', error);
+      logger.error('[SalesTargets] Response status:', error?.response?.status, 'data:', error?.response?.data);
       targets.value = [];
       const msg = error?.response?.data?.message || error?.message;
       const status = error?.response?.status;
@@ -39,6 +41,10 @@ export function useSalesTargets() {
         targetsLoadError.value = 'ليس لديك صلاحية عرض الأهداف (sales.targets.view).';
       } else if (status === 401) {
         targetsLoadError.value = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
+      } else if (status === 404) {
+        targetsLoadError.value = 'خدمة الأهداف غير متوفرة حالياً. تأكد من تحديث النظام.';
+      } else if (status >= 500) {
+        targetsLoadError.value = 'خطأ في الخادم. حاول مرة أخرى لاحقاً.';
       } else {
         targetsLoadError.value = msg
           ? `فشل تحميل الأهداف: ${msg}`

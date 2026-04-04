@@ -204,14 +204,18 @@ export const salesServiceCoreMethods = {
    * @returns {Promise<unknown[]>} List of targets (SalesTargetItem: units[], marketer_id, marketer_name, contract_id, etc.)
    */
   async getMyTargets(params = {}) {
-    const response = await apiClient.get('/sales/targets/my', { params });
-    const { items } = extractPaginatedData(response, []);
-    if (Array.isArray(items) && items.length > 0) return items;
-    const data = response?.data ?? response;
-    if (Array.isArray(data)) return data;
-    if (data && Array.isArray(data.data)) return data.data;
-    if (data && Array.isArray(data.targets)) return data.targets;
-    return Array.isArray(items) ? items : [];
+    try {
+      const response = await apiClient.get('/sales/targets/my', { params });
+      const { items } = extractPaginatedData(response, []);
+      if (Array.isArray(items) && items.length > 0) return items;
+      const data = response?.data ?? response;
+      if (Array.isArray(data)) return data;
+      if (data && Array.isArray(data.data)) return data.data;
+      if (data && Array.isArray(data.targets)) return data.targets;
+      return Array.isArray(items) ? items : [];
+    } catch (error) {
+      return handleServiceError(error, 'Fetch my targets', 'get', []);
+    }
   },
 
   /**
