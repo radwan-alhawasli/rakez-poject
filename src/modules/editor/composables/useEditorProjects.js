@@ -66,7 +66,25 @@ export function useEditorProjects() {
     const list = [...contracts.value];
     const idx = list.findIndex(c => Number(c.id) === Number(contractId));
     if (idx === -1) return;
-    list[idx] = { ...list[idx], ...data };
+    const prev = list[idx];
+    const next = { ...prev, ...data };
+    const hadMontage =
+      prev.has_montage_data == 1 ||
+      prev.has_montage == 1 ||
+      prev.has_montage === true;
+    const hadPhoto =
+      prev.has_photography_data == 1 ||
+      prev.has_photography == 1 ||
+      prev.has_photography === true;
+    if (hadMontage && !('has_montage_data' in data) && !('has_montage' in data)) {
+      next.has_montage_data = prev.has_montage_data;
+      next.has_montage = prev.has_montage;
+    }
+    if (hadPhoto && !('has_photography_data' in data) && !('has_photography' in data)) {
+      next.has_photography_data = prev.has_photography_data;
+      next.has_photography = prev.has_photography;
+    }
+    list[idx] = next;
     contracts.value = list;
   }
 
@@ -159,14 +177,26 @@ export function useEditorProjects() {
       }
     }
     await fetchMontage(contractId);
-    await fetchContracts();
     mergeMontageShowIntoContract(contractId, montageData.value || {});
     // If backend didn't set flags in list, optimistically mark so project appears in "after montage"
     const id = Number(contractId);
-    const stillBefore = contracts.value.find(c => Number(c.id) === id && !isAfterMontage(c));
-    if (stillBefore) {
-      stillBefore.has_photography_data = 1;
-      stillBefore.has_montage_data = 1;
+    const list = [...contracts.value];
+    const idx = list.findIndex(c => Number(c.id) === id);
+    if (idx !== -1 && !isAfterMontage(list[idx])) {
+      list[idx] = {
+        ...list[idx],
+        has_photography_data: 1,
+        has_montage_data: 1,
+        has_photography: 1,
+        has_montage: 1,
+      };
+      contracts.value = list;
+    }
+    try {
+      const fresh = await editorService.getContractById(contractId);
+      mergeContractDetail(contractId, fresh || {});
+    } catch (_) {
+      /* keep optimistic row */
     }
   }
 

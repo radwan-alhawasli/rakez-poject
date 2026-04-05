@@ -137,6 +137,83 @@ export const deleteTeam = async id => {
 };
 
 /**
+ * Sales users not assigned to a PM team (picker for "add member")
+ * GET /project_management/teams/sales-without-team
+ * @returns {Promise<unknown[]>}
+ */
+export const getSalesWithoutTeam = async () => {
+  try {
+    const response = await apiClient.get('/project_management/teams/sales-without-team');
+    const { items } = extractPaginatedData(response, []);
+    if (Array.isArray(items) && items.length) return items;
+    const data = response.data?.data ?? response.data;
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.data)) return data.data;
+    if (Array.isArray(data?.users)) return data.users;
+    if (Array.isArray(data?.items)) return data.items;
+    if (Array.isArray(data?.members)) return data.members;
+    return [];
+  } catch (error) {
+    return handleServiceError(error, 'Fetch sales without team', 'get', []);
+  }
+};
+
+/**
+ * List team members (project management)
+ * GET /project_management/teams/members/:teamId
+ * @param {number|string} teamId
+ * @returns {Promise<unknown[]>}
+ */
+export const getProjectManagementTeamMembers = async teamId => {
+  try {
+    const response = await apiClient.get(`/project_management/teams/members/${teamId}`);
+    const data = response.data?.data ?? response.data;
+    const raw =
+      data?.members ??
+      data?.users ??
+      data?.items ??
+      (Array.isArray(data) ? data : []);
+    return Array.isArray(raw) ? raw : [];
+  } catch (error) {
+    return handleServiceError(error, `Fetch PM team ${teamId} members`, 'get', []);
+  }
+};
+
+/**
+ * Add sales member to team (project management)
+ * POST /project_management/teams/members/:teamId — body: { user_id: string|number }
+ * @param {number|string} teamId
+ * @param {number|string} userId
+ */
+export const addProjectManagementTeamMember = async (teamId, userId) => {
+  try {
+    const response = await apiClient.post(`/project_management/teams/members/${teamId}`, {
+      user_id: userId != null ? String(userId) : '',
+    });
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    return handleServiceError(error, `Add member to PM team ${teamId}`, 'post');
+  }
+};
+
+/**
+ * Remove member from team (project management)
+ * DELETE /project_management/teams/members/:teamId/:userId
+ * @param {number|string} teamId
+ * @param {number|string} userId
+ */
+export const removeProjectManagementTeamMember = async (teamId, userId) => {
+  try {
+    const response = await apiClient.delete(
+      `/project_management/teams/members/${teamId}/${userId}`
+    );
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    return handleServiceError(error, `Remove member from PM team ${teamId}`, 'delete');
+  }
+};
+
+/**
  * Get contracts assigned to a specific team
  * GET /project_management/teams/contracts/:id
  * @param {number|string} id - Team ID
@@ -407,6 +484,10 @@ export default {
   updateTeam,
   getTeamById,
   deleteTeam,
+  getSalesWithoutTeam,
+  getProjectManagementTeamMembers,
+  addProjectManagementTeamMember,
+  removeProjectManagementTeamMember,
   getTeamContracts,
   getTeamContractLocations,
   addTeamsToContract,

@@ -49,14 +49,25 @@ export function useEditorProjectsView() {
     units: false,
   });
 
+  function isMontageApiRejected(m) {
+    if (!m || typeof m !== 'object') return false;
+    if (m.approved === '0' || m.approved === 0 || m.approved === false) return true;
+    const st = String(m.status ?? '').toLowerCase();
+    if (st === 'rejected' || st.includes('مرفوض') || st.includes('رفض')) return true;
+    if (st.includes('reject') || st.includes('refus')) return true;
+    return false;
+  }
+
   const montageRejectionNote = computed(() => {
     const m = montageData.value || {};
+    if (!isMontageApiRejected(m)) return '';
     const t = m.rejection_reason ?? m.comment;
     return t && String(t).trim() ? String(t).trim() : '';
   });
 
   const seeMoreMontageRejection = computed(() => {
     const m = seeMoreMontage.value || {};
+    if (!isMontageApiRejected(m)) return '';
     const t = m.rejection_reason ?? m.comment;
     return t && String(t).trim() ? String(t).trim() : '';
   });
@@ -352,7 +363,6 @@ export function useEditorProjectsView() {
         payload,
         montageData.value && Object.keys(montageData.value).length > 0
       );
-      await fetchContracts();
       toast.success('تم الحفظ. تم نقل المشروع إلى "بعد المونتاج".');
       closeDetail();
       activeTab.value = 'after';
@@ -390,7 +400,10 @@ export function useEditorProjectsView() {
   }
 
   async function doReject() {
-    if (!rejectTargetId.value || !rejectReason.value.trim()) return;
+    if (!rejectTargetId.value || !rejectReason.value.trim()) {
+      toast.warning('يرجى كتابة سبب الرفض');
+      return;
+    }
     try {
       const rid = rejectTargetId.value;
       await approveMontage(rid, 'rejected', rejectReason.value.trim());

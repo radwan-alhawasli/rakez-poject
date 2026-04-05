@@ -153,12 +153,32 @@ export const contractServiceUnitsMethods = {
   /**
    * اعتماد صور المشروع (للمدير is_manager)
    * PATCH {{base_url}}/photography-department/approve/:contract_id
-   * Payload: { status: 'approved' | 'rejected', rejection_reason?: string }
-    * @param {any} id
+   * Body (API): { approved: "1" | "0", comment?: string } — يدعم أيضاً الشكل القديم status / rejection_reason.
+   * @param {any} id
+   * @param {any} payload
    */
   async approvePhotography(id, payload = {}) {
     try {
-      const response = await apiClient.patch(`/photography-department/approve/${id}`, payload);
+      /** @type {Record<string, string>} */
+      let body = {};
+      if (payload.approved !== undefined && payload.approved !== null) {
+        body.approved = String(payload.approved);
+        if (payload.comment != null && String(payload.comment).trim() !== '') {
+          body.comment = String(payload.comment).trim();
+        }
+      } else if (payload.status === 'approved') {
+        body = { approved: '1' };
+      } else if (payload.status === 'rejected') {
+        const c = String(payload.rejection_reason ?? payload.comment ?? '').trim();
+        body = { approved: '0', comment: c };
+      } else {
+        body =
+          typeof payload === 'object' && payload !== null
+            ? { ...payload }
+            : {};
+        if (body.approved != null) body.approved = String(body.approved);
+      }
+      const response = await apiClient.patch(`/photography-department/approve/${id}`, body);
       return response.data;
     } catch (error) {
       return handleServiceError(error, 'Approve photography', 'patch');

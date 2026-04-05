@@ -51,12 +51,21 @@
           </div>
         </div>
 
-        <!-- Rejection Reason Warning -->
+        <!-- تفاصيل الرفض (لموظف إدارة المشاريع / المطور) -->
         <div
-          v-if="photographyForm.status === 'rejected' && photographyForm.rejection_reason"
-          class="alert-box error mt-4 bg-red-100 p-2.5 rounded-sm text-red-800"
+          v-if="photographyForm.status === 'rejected'"
+          class="photography-rejection-details"
+          role="region"
+          aria-label="تفاصيل رفض التصوير"
         >
-          <strong>سبب الرفض:</strong> {{ photographyForm.rejection_reason }}
+          <h4 class="photography-rejection-title">تفاصيل الرفض من إدارة المشاريع</h4>
+          <p v-if="photographyForm.rejection_reason" class="photography-rejection-body">
+            {{ photographyForm.rejection_reason }}
+          </p>
+          <p v-else class="photography-rejection-body muted">لم يُذكر نص للرفض. يمكنك تعديل الروابط وإعادة الإرسال للمراجعة.</p>
+          <p v-if="!isManager" class="photography-rejection-hint">
+            بعد تحديث البيانات والضغط على «حفظ وإرسال للموافقة» يعود الطلب إلى <strong>قيد المراجعة</strong>.
+          </p>
         </div>
       </div>
 
@@ -401,6 +410,38 @@ onMounted(() => {
     padding: 24px;
   }
 }
+.photography-rejection-details {
+  margin-top: 1.25rem;
+  padding: 1rem 1.15rem;
+  border-radius: 10px;
+  border: 1px solid #fecaca;
+  background: linear-gradient(180deg, #fff5f5 0%, #fef2f2 100%);
+  box-shadow: 0 1px 3px rgba(153, 27, 27, 0.08);
+}
+.photography-rejection-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #991b1b;
+}
+.photography-rejection-body {
+  margin: 0 0 0.65rem 0;
+  color: #7f1d1d;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.photography-rejection-body.muted {
+  color: #9a3412;
+  font-style: italic;
+}
+.photography-rejection-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #9a3412;
+  line-height: 1.45;
+}
+
 @media (max-width: 576px) {
   .stage-content-area {
     padding: 16px;

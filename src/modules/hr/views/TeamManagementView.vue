@@ -75,11 +75,18 @@
             </td>
             <td data-label="الإجراءات">
               <div class="actions">
-                <button class="action-btn add-members" @click="openAddMembersModal(team)" title="اضافة اعضاء للتيم">
+                <button class="action-btn add-members" @click="openAddMembersModal(team)" title="إضافة مندوب مبيعات للفريق">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="8.5" cy="7" r="4"></circle>
                     <line x1="20" y1="8" x2="20" y2="14"></line>
+                    <line x1="23" y1="11" x2="17" y2="11"></line>
+                  </svg>
+                </button>
+                <button class="action-btn remove-members" @click="openRemoveMembersModal(team)" title="إزالة عضو من الفريق">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
                     <line x1="23" y1="11" x2="17" y2="11"></line>
                   </svg>
                 </button>
@@ -180,23 +187,93 @@
       </div>
     </div>
 
-    <!-- Add Members Modal -->
-    <div v-if="showAddMembersModal" class="modal-overlay" @click.self="showAddMembersModal = false">
+    <!-- Add sales members: list from GET .../sales-without-team, add via POST .../members/:teamId -->
+    <div v-if="showAddMembersModal" class="modal-overlay" @click.self="closeAddMembersModal">
       <div class="modal-content add-members-modal">
         <div class="modal-header">
-          <h3>اضافة اعضاء للتيم: {{ addMembersTeam?.name }}</h3>
-          <button class="close-btn" @click="showAddMembersModal = false">&times;</button>
+          <h3>إضافة مندوب مبيعات: {{ addMembersTeam?.name }}</h3>
+          <button class="close-btn" @click="closeAddMembersModal">&times;</button>
         </div>
         <div class="modal-body">
           <div v-if="addMembersLoading" class="loading-state"><div class="spinner"></div><p>جاري التحميل...</p></div>
           <template v-else>
-            <div v-if="availableMarketers.length === 0" class="empty-inline">لا يوجد موظفون متاحون للإضافة (الجميع معينون بالفعل أو لا توجد بيانات).</div>
+            <p v-if="availableSalesWithoutTeam.length" class="add-members-hint">قائمة مندوبي المبيعات غير المرتبطين بفريق (من إدارة المشاريع).</p>
+            <div v-if="availableSalesWithoutTeam.length" class="add-members-search-wrap">
+              <input
+                v-model="addMembersSearch"
+                type="search"
+                class="form-input"
+                placeholder="بحث بالاسم أو البريد..."
+                autocomplete="off"
+              />
+            </div>
+            <div v-if="filteredSalesWithoutTeam.length === 0 && availableSalesWithoutTeam.length" class="empty-inline">لا توجد نتائج مطابقة للبحث.</div>
+            <div v-else-if="availableSalesWithoutTeam.length === 0" class="empty-inline">لا يوجد مندوبو مبيعات بلا فريق حالياً.</div>
             <ul v-else class="add-members-list">
-              <li v-for="emp in availableMarketers" :key="emp.id" class="add-member-row">
-                <span class="add-member-name">{{ emp.name || emp.full_name || emp.email }}</span>
-                <button type="button" class="btn-add-one" @click="addMemberToTeam(emp.id)">إضافة</button>
+              <li v-for="emp in filteredSalesWithoutTeam" :key="salesRowKey(emp)" class="add-member-row">
+                <span class="add-member-name">{{ emp.name || emp.full_name || emp.user?.name || emp.email || '—' }}</span>
+                <button type="button" class="btn-add-one" @click="addMemberToTeam(emp)">إضافة</button>
               </li>
             </ul>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Remove: list from GET .../members/:teamId, delete via DELETE .../members/:teamId/:userId -->
+    <div v-if="showRemoveMembersModal" class="modal-overlay" @click.self="closeRemoveMembersModal">
+      <div class="modal-content add-members-modal">
+        <div class="modal-header">
+          <h3>إزالة عضو من الفريق: {{ removeMembersTeam?.name }}</h3>
+          <button class="close-btn" @click="closeRemoveMembersModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div v-if="removeMembersLoading" class="loading-state"><div class="spinner"></div><p>جاري التحميل...</p></div>
+          <template v-else>
+            <div v-if="removeMembersList.length === 0" class="empty-inline">لا يوجد أعضاء في هذا الفريق.</div>
+            <template v-else>
+              <p class="add-members-hint">اختر عضواً ثم اضغط «إزالة من الفريق».</p>
+              <div class="add-members-search-wrap">
+                <input
+                  v-model="removeMembersSearch"
+                  type="search"
+                  class="form-input"
+                  placeholder="بحث بالاسم أو البريد..."
+                  autocomplete="off"
+                />
+              </div>
+              <div v-if="filteredRemoveMembersList.length === 0" class="empty-inline">لا توجد نتائج مطابقة للبحث.</div>
+              <ul v-else class="add-members-list remove-members-select-list" role="radiogroup" aria-label="أعضاء الفريق">
+                <li
+                  v-for="member in filteredRemoveMembersList"
+                  :key="memberRowKey(member)"
+                  class="add-member-row remove-member-select-row"
+                  :class="{ 'is-selected': selectedRemoveUserId === memberUserId(member) }"
+                  @click="selectedRemoveUserId = memberUserId(member)"
+                >
+                  <input
+                    v-model="selectedRemoveUserId"
+                    class="remove-member-radio"
+                    type="radio"
+                    :value="memberUserId(member)"
+                    :name="'pm-remove-' + (removeMembersTeam?.id ?? '')"
+                    @click.stop
+                  />
+                  <span class="add-member-name">{{ member.name || member.full_name || member.user?.name || member.email || '—' }}</span>
+                </li>
+              </ul>
+              <div class="remove-members-modal-footer">
+                <button type="button" class="btn-secondary" @click="closeRemoveMembersModal">إلغاء</button>
+                <button
+                  type="button"
+                  class="btn-primary"
+                  :disabled="!selectedRemoveUserId || removeMembersDeleting"
+                  @click="confirmRemoveSelectedFromTeam"
+                >
+                  {{ removeMembersDeleting ? 'جاري الإزالة...' : 'إزالة من الفريق' }}
+                </button>
+              </div>
+            </template>
           </template>
         </div>
       </div>
@@ -215,10 +292,9 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
 import teamService from '@/services/teamService';
-import hrService from '@/services/hrService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
@@ -248,8 +324,47 @@ export default {
 
     const showAddMembersModal = ref(false);
     const addMembersTeam = ref(null);
-    const availableMarketers = ref([]);
+    const availableSalesWithoutTeam = ref([]);
+    const addMembersSearch = ref('');
     const addMembersLoading = ref(false);
+
+    const showRemoveMembersModal = ref(false);
+    const removeMembersTeam = ref(null);
+    const removeMembersList = ref([]);
+    const removeMembersLoading = ref(false);
+    const removeMembersSearch = ref('');
+    const selectedRemoveUserId = ref('');
+    const removeMembersDeleting = ref(false);
+
+    /** Stable user id for PM team APIs (POST/DELETE members). */
+    const memberUserId = m => {
+      if (m == null) return '';
+      const v = m.user_id ?? m.id ?? m.user?.id;
+      return v != null && v !== '' ? String(v) : '';
+    };
+
+    const memberRowKey = m => memberUserId(m) || `m-${JSON.stringify(m).slice(0, 40)}`;
+    const salesRowKey = e => String(memberUserId(e) || e.email || JSON.stringify(e).slice(0, 30));
+
+    const filteredSalesWithoutTeam = computed(() => {
+      const q = addMembersSearch.value.trim().toLowerCase();
+      const list = availableSalesWithoutTeam.value;
+      if (!q) return list;
+      return list.filter(e => {
+        const n = String(e.name || e.full_name || e.user?.name || e.email || '').toLowerCase();
+        return n.includes(q);
+      });
+    });
+
+    const filteredRemoveMembersList = computed(() => {
+      const q = removeMembersSearch.value.trim().toLowerCase();
+      const list = removeMembersList.value;
+      if (!q) return list;
+      return list.filter(m => {
+        const n = String(m.name || m.full_name || m.user?.name || m.email || '').toLowerCase();
+        return n.includes(q);
+      });
+    });
 
     const fetchTeams = async (search = '') => {
       isLoading.value = true;
@@ -312,7 +427,7 @@ export default {
       isLoadingDetail.value = true;
       try {
         const [members, contracts] = await Promise.allSettled([
-          hrService.getHRTeamMembers(team.id),
+          teamService.getProjectManagementTeamMembers(team.id),
           teamService.getTeamContracts(team.id),
         ]);
         const raw = members.status === 'fulfilled' ? (Array.isArray(members.value) ? members.value : []) : [];
@@ -326,50 +441,122 @@ export default {
       }
     };
 
+    const closeAddMembersModal = () => {
+      showAddMembersModal.value = false;
+      addMembersTeam.value = null;
+      availableSalesWithoutTeam.value = [];
+      addMembersSearch.value = '';
+    };
+
     const openAddMembersModal = async team => {
       addMembersTeam.value = team;
       showAddMembersModal.value = true;
-      availableMarketers.value = [];
+      availableSalesWithoutTeam.value = [];
+      addMembersSearch.value = '';
       addMembersLoading.value = true;
       try {
-        const [employeesRes, currentRes] = await Promise.allSettled([
-          hrService.getEmployees({ per_page: 200 }),
-          hrService.getHRTeamMembers(team.id),
-        ]);
-        const employees = employeesRes.status === 'fulfilled' ? (employeesRes.value?.items ?? employeesRes.value?.data ?? (Array.isArray(employeesRes.value) ? employeesRes.value : []) ?? []) : [];
-        const list = Array.isArray(employees) ? employees : [];
-        const current = currentRes.status === 'fulfilled' ? (Array.isArray(currentRes.value) ? currentRes.value : []) : [];
-        const currentIds = new Set(current.map(m => m.user_id ?? m.id).filter(Boolean));
-        availableMarketers.value = list.filter(e => !currentIds.has(e.id));
+        const list = await teamService.getSalesWithoutTeam();
+        availableSalesWithoutTeam.value = Array.isArray(list) ? list : [];
+        if (availableSalesWithoutTeam.value.length === 0) {
+          toast.warning('لا يوجد مندوبو مبيعات بلا فريق أو فشل التحميل.');
+        }
       } catch (err) {
-        logger.error('Error loading employees for add members:', err);
-        toast.error('فشل تحميل قائمة الموظفين');
+        logger.error('Error loading sales without team:', err);
+        toast.error('فشل تحميل قائمة المندوبين');
       } finally {
         addMembersLoading.value = false;
       }
     };
 
-    const addMemberToTeam = async userId => {
+    const addMemberToTeam = async emp => {
       const team = addMembersTeam.value;
+      const userId = memberUserId(emp);
       if (!team || !userId) return;
       try {
-        await hrService.assignTeamMember(team.id, { user_id: userId });
+        await teamService.addProjectManagementTeamMember(team.id, userId);
         toast.success('تم إضافة العضو إلى الفريق');
-        availableMarketers.value = availableMarketers.value.filter(e => e.id !== userId);
+        availableSalesWithoutTeam.value = availableSalesWithoutTeam.value.filter(
+          e => memberUserId(e) !== userId
+        );
         if (showDetailModal.value && detailTeam.value?.id === team.id) {
-          const members = await hrService.getHRTeamMembers(team.id);
+          const members = await teamService.getProjectManagementTeamMembers(team.id);
           detailMembers.value = Array.isArray(members) ? members : [];
         }
+        fetchTeams(searchQuery.value);
       } catch (err) {
         logger.error('Error assigning member:', err);
         toast.error('فشل إضافة العضو: ' + (err.response?.data?.message || err.message));
       }
     };
 
+    const closeRemoveMembersModal = () => {
+      showRemoveMembersModal.value = false;
+      removeMembersTeam.value = null;
+      removeMembersList.value = [];
+      removeMembersSearch.value = '';
+      selectedRemoveUserId.value = '';
+      removeMembersDeleting.value = false;
+    };
+
+    const openRemoveMembersModal = async team => {
+      removeMembersTeam.value = team;
+      showRemoveMembersModal.value = true;
+      removeMembersList.value = [];
+      removeMembersSearch.value = '';
+      selectedRemoveUserId.value = '';
+      removeMembersLoading.value = true;
+      try {
+        const list = await teamService.getProjectManagementTeamMembers(team.id);
+        removeMembersList.value = Array.isArray(list) ? list : [];
+      } catch (err) {
+        logger.error('Error loading PM team members:', err);
+        toast.error('فشل تحميل أعضاء الفريق');
+        removeMembersList.value = [];
+      } finally {
+        removeMembersLoading.value = false;
+      }
+    };
+
+    const confirmRemoveSelectedFromTeam = () => {
+      const team = removeMembersTeam.value;
+      const userId = selectedRemoveUserId.value;
+      if (!team || !userId) return;
+      const member = removeMembersList.value.find(m => memberUserId(m) === userId);
+      const name = member
+        ? member.name || member.full_name || member.user?.name || 'هذا العضو'
+        : 'هذا العضو';
+      confirmModalConfig.value = {
+        title: 'تأكيد إزالة العضو',
+        message: `هل تريد إزالة «${name}» من الفريق؟`,
+        type: 'danger',
+        confirmText: 'حذف',
+        resolve: async () => {
+          removeMembersDeleting.value = true;
+          try {
+            await teamService.removeProjectManagementTeamMember(team.id, userId);
+            toast.success('تم إزالة العضو من الفريق');
+            removeMembersList.value = removeMembersList.value.filter(m => memberUserId(m) !== userId);
+            selectedRemoveUserId.value = '';
+            if (showDetailModal.value && detailTeam.value?.id === team.id) {
+              detailMembers.value = detailMembers.value.filter(m => memberUserId(m) !== userId);
+            }
+            fetchTeams(searchQuery.value);
+          } catch (err) {
+            logger.error('Error removing member:', err);
+            toast.error('فشل إزالة العضو: ' + (err.response?.data?.message || err.message));
+          } finally {
+            removeMembersDeleting.value = false;
+          }
+        },
+      };
+      showConfirmModal.value = true;
+    };
+
     const confirmRemoveMember = member => {
       const team = detailTeam.value;
       if (!team) return;
-      const userId = member.user_id ?? member.id;
+      const userId = memberUserId(member);
+      if (!userId) return;
       const name = member.name || member.full_name || member.user?.name || 'هذا العضو';
       confirmModalConfig.value = {
         title: 'حذف مسوق',
@@ -378,9 +565,13 @@ export default {
         confirmText: 'حذف',
         resolve: async () => {
           try {
-            await hrService.removeTeamMember(team.id, userId);
+            await teamService.removeProjectManagementTeamMember(team.id, userId);
             toast.success('تم إزالة العضو من الفريق');
-            detailMembers.value = detailMembers.value.filter(m => (m.user_id ?? m.id) !== userId);
+            detailMembers.value = detailMembers.value.filter(m => memberUserId(m) !== userId);
+            if (showRemoveMembersModal.value && removeMembersTeam.value?.id === team.id) {
+              removeMembersList.value = removeMembersList.value.filter(m => memberUserId(m) !== userId);
+            }
+            fetchTeams(searchQuery.value);
           } catch (err) {
             logger.error('Error removing member:', err);
             toast.error('فشل إزالة العضو: ' + (err.response?.data?.message || err.message));
@@ -431,8 +622,14 @@ export default {
       openCreateModal, openEditModal, closeModal, saveTeam,
       showDetailModal, detailTeam, detailMembers, detailContracts, isLoadingDetail,
       viewTeamDetails, confirmDelete, showConfirmModal, confirmModalConfig, onConfirmModalConfirm,
-      showAddMembersModal, addMembersTeam, availableMarketers, addMembersLoading,
-      openAddMembersModal, addMemberToTeam, confirmRemoveMember,
+      showAddMembersModal, addMembersTeam, availableSalesWithoutTeam, addMembersSearch,
+      filteredSalesWithoutTeam, addMembersLoading,
+      openAddMembersModal, closeAddMembersModal, addMemberToTeam, salesRowKey,
+      showRemoveMembersModal, removeMembersTeam, removeMembersList, removeMembersLoading,
+      removeMembersSearch, filteredRemoveMembersList, selectedRemoveUserId, removeMembersDeleting,
+      openRemoveMembersModal, closeRemoveMembersModal, confirmRemoveSelectedFromTeam,
+      memberUserId, memberRowKey,
+      confirmRemoveMember,
       formatDate, chipColor,
     };
   },

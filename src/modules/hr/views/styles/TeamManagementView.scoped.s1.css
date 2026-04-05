@@ -242,6 +242,12 @@
   background: #f0fdf4;
 }
 
+.action-btn.remove-members:hover {
+  border-color: #f97316;
+  color: #ea580c;
+  background: #fff7ed;
+}
+
 /* Modals */
 .modal-overlay {
   position: fixed;
@@ -307,6 +313,48 @@
 }
 .btn-add-one:hover {
   background: #8c7851;
+}
+
+.remove-members-select-list {
+  margin-bottom: 16px;
+}
+
+.remove-member-select-row {
+  cursor: pointer;
+  align-items: center;
+  gap: 10px;
+}
+
+.remove-member-select-row.is-selected {
+  background: #f1f5f9;
+  border-radius: 8px;
+}
+
+.remove-member-radio {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: #2563eb;
+}
+
+.remove-members-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 8px;
+}
+
+.add-members-hint {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.add-members-search-wrap {
+  margin-bottom: 14px;
 }
 
 .modal-header {

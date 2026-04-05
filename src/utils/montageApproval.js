@@ -71,6 +71,19 @@ export function buildContractPatchFromMontageShow(raw) {
     patch.montage_status = 'rejected';
     patch.approval_status = 'rejected';
     patch.montage_approval_status = 'rejected';
+  } else {
+    const stLow = statusStr.toLowerCase();
+    const looksPending =
+      !statusStr ||
+      stLow.includes('pending') ||
+      stLow.includes('review') ||
+      stLow.includes('انتظار') ||
+      stLow.includes('مراجعة');
+    if (looksPending || (approvedIn == null && !statusStr)) {
+      patch.montage_status = 'pending';
+      patch.approval_status = 'pending';
+      patch.montage_approval_status = 'pending';
+    }
   }
   return patch;
 }

@@ -93,10 +93,11 @@
             <p><strong>الوصف:</strong> <span :class="{ 'value-null': !displayDetail.description }">{{ displayDetail.description ?? '—' }}</span></p>
             <p><strong>الوحدات المتاحة:</strong> <span :class="{ 'value-null': displayDetail.available_units == null }">{{ displayDetail.available_units !== undefined && displayDetail.available_units !== null ? displayDetail.available_units : '—' }}</span></p>
           </div>
-          <!-- Rejection / manager comment (for editor to see) -->
-          <div v-if="montageRejectionNote" class="rejection-section">
-            <h4>ملاحظة المدير (الرفض)</h4>
-            <p class="rejection-text">{{ montageRejectionNote }}</p>
+          <!-- سبب رفض المونتاج (يظهر عند الرفض فقط) -->
+          <div v-if="montageRejectionNote" class="rejection-details-panel" role="region" aria-label="تفاصيل رفض المونتاج">
+            <h4 class="rejection-details-panel__title">تفاصيل رفض المونتاج</h4>
+            <p class="rejection-details-panel__body">{{ montageRejectionNote }}</p>
+            <p class="rejection-details-panel__hint">عند تحديث الروابط أو الوصف والضغط على «تحديث» يُعاد إرسال العمل لـ <strong>قيد المراجعة</strong> بعد اعتماد الخادم.</p>
           </div>
           <!-- Montage form: images, videos, description -->
           <div class="montage-form-section">
@@ -187,9 +188,9 @@
               </div>
             </div>
           </div>
-          <div v-if="seeMoreMontageRejection" class="rejection-section">
-            <h4>ملاحظة المدير (الرفض)</h4>
-            <p class="rejection-text">{{ seeMoreMontageRejection }}</p>
+          <div v-if="seeMoreMontageRejection" class="rejection-details-panel" role="region" aria-label="تفاصيل رفض المونتاج">
+            <h4 class="rejection-details-panel__title">تفاصيل رفض المونتاج</h4>
+            <p class="rejection-details-panel__body">{{ seeMoreMontageRejection }}</p>
           </div>
           <div v-if="seeMoreMontageStatusLine" class="see-more-montage-status">
             <p><strong>حالة اعتماد المونتاج:</strong> {{ seeMoreMontageStatusLine }}</p>

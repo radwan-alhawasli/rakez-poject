@@ -128,12 +128,13 @@
                 <label>نسبة السعي (%)</label>
                 <input
                   type="number"
-                  v-model.number="form.commission_percentage"
+                  v-model="commissionPercentInput"
                   class="form-input"
                   min="0"
                   max="100"
-                  step="0.5"
-                  placeholder="0"
+                  step="any"
+                  inputmode="decimal"
+                  placeholder="مثال: 2.5 أو 2.25"
                 />
               </div>
               <div class="field-group">
@@ -245,7 +246,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import contractService from '@/services/contractService';
 import notificationService from '@/services/notificationService';
 import logger from '@/utils/logger';
@@ -273,12 +274,37 @@ const form = reactive({
   note: '',
   city: '',
   neighborhood: '',
-  commission_percentage: 0,
+  commission_percentage: null,
   commission_from: 'owner',
   unit_rows: [{ id: nextUnitRowId++, unit_type: '', units_count: 0, avg_unit_price: 0 }],
 });
 
 const unitTypeOptions = UNIT_TYPES;
+
+/** ربط حر لنسبة السعي (كسور عشرية) دون تقييد v-model.number */
+const commissionPercentInput = ref('0');
+watch(
+  () => form.commission_percentage,
+  v => {
+    if (v === null || v === undefined || v === '') {
+      if (commissionPercentInput.value === '') return;
+      commissionPercentInput.value = '0';
+      return;
+    }
+    const s = String(v).replace(',', '.');
+    if (s !== commissionPercentInput.value) commissionPercentInput.value = s;
+  },
+  { immediate: true }
+);
+watch(commissionPercentInput, raw => {
+  const t = String(raw ?? '').trim().replace(',', '.');
+  if (t === '') {
+    form.commission_percentage = null;
+    return;
+  }
+  const n = parseFloat(t);
+  form.commission_percentage = Number.isFinite(n) ? n : null;
+});
 
 const rowSubtotal = row => {
   const count = Number(row.units_count) || 0;
@@ -364,8 +390,9 @@ const resetForm = () => {
   form.note = '';
   form.city = '';
   form.neighborhood = '';
-  form.commission_percentage = 0;
+  form.commission_percentage = null;
   form.commission_from = 'owner';
+  commissionPercentInput.value = '0';
   form.unit_rows = [{ id: nextUnitRowId++, unit_type: '', units_count: 0, avg_unit_price: 0 }];
 };
 
@@ -405,7 +432,7 @@ const handleSubmit = async () => {
         };
       });
 
-    const pctNum = Number(form.commission_percentage);
+    const pctNum = parseFloat(String(commissionPercentInput.value || '0').replace(',', '.'));
     const pctValid = Number.isFinite(pctNum) ? pctNum : 0;
     const payload = {
       project_name: form.project_name?.trim() || '',
