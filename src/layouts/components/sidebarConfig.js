@@ -86,6 +86,7 @@ const adminItems = [
   // قسم الموارد البشرية
   { to: '/hr/dashboard', label: 'لوحة الموارد البشرية', tooltip: 'لوحة الموارد البشرية', icon: ICONS.dashboard },
   { to: '/hr/teams', label: 'فرق الموارد البشرية', tooltip: 'فرق الموارد البشرية', icon: ICONS.teams },
+  { to: '/hr/team-performance', label: 'أداء الفِرق', tooltip: 'أداء الفِرق', icon: ICONS.analytics },
   { to: '/hr/employee-performance', label: 'أداء المسوقين', tooltip: 'أداء المسوقين', icon: ICONS.pie },
   { to: '/hr/users', label: 'مستخدمو الموارد البشرية', tooltip: 'مستخدمي الموارد البشرية', icon: ICONS.users },
   { to: '/hr/reports', label: 'تقارير الموارد البشرية', tooltip: 'تقارير الموارد البشرية', icon: ICONS.contracts },
@@ -193,6 +194,7 @@ const hrItems = [
   { ...COMMON_ITEMS.notifications, permission: 'notifications.view', hasBadge: true },
   { ...COMMON_ITEMS.tasks },
   { to: '/hr/teams', label: 'إدارة الفرق', tooltip: 'إدارة الفرق', icon: ICONS.teams, permission: 'hr.teams.manage' },
+  { to: '/hr/team-performance', label: 'أداء الفِرق', tooltip: 'أداء الفِرق', icon: ICONS.analytics, permission: 'hr.performance.view' },
   { to: '/hr/employee-performance', label: 'أداء المسوقين', tooltip: 'أداء المسوقين', icon: ICONS.pie, permission: 'hr.performance.view' },
   { to: '/hr/users', label: 'إدارة المستخدمين', tooltip: 'إدارة المستخدمين', icon: ICONS.users, permission: 'hr.users.create' },
   { to: '/hr/reports', label: 'التقارير', tooltip: 'التقارير', icon: ICONS.contracts, permission: 'hr.reports.view' },
