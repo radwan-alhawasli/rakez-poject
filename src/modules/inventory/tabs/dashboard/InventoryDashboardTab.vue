@@ -1,6 +1,11 @@
 <template>
-  <div class="inventory-dashboard-tab rakez-erp-dashboard">
-    <DashboardWelcomeHeader greeting-name="المخزون" subtitle="نظرة عامة على المشاريع والعقود والوحدات." />
+  <div class="inventory-dashboard-tab rakez-erp-dashboard rakez-kpi-dashboard">
+    <DashboardWelcomeHeader
+      greeting-name="المخزون"
+      subtitle="نظرة عامة على المشاريع والعقود والوحدات."
+      english-title="Welcome Back, Inventory"
+      english-subtitle="Projects, contracts, and units overview"
+    />
 
     <div v-if="isLoading" class="loading-state">
       <div class="spinner"></div>

@@ -1,6 +1,11 @@
 <template>
-  <div class="credit-dashboard rakez-erp-dashboard">
-    <DashboardWelcomeHeader greeting-name="الائتمان" subtitle="المؤشرات الرئيسية لإدارة الائتمان والتمويل." />
+  <div class="credit-dashboard rakez-erp-dashboard rakez-kpi-dashboard">
+    <DashboardWelcomeHeader
+      greeting-name="الائتمان"
+      subtitle="المؤشرات الرئيسية لإدارة الائتمان والتمويل."
+      english-title="Welcome Back, Credit"
+      english-subtitle="Credit and financing management overview"
+    />
 
     <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
     <div class="rakez-widget-grid rakez-widget-grid--dense">

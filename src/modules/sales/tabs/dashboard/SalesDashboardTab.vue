@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-tab rakez-erp-dashboard">
+  <div class="dashboard-tab rakez-erp-dashboard rakez-kpi-dashboard">
     <DashboardWelcomeHeader />
     <DashboardPrimaryKpis
       :dashboard-data="dashboardData"

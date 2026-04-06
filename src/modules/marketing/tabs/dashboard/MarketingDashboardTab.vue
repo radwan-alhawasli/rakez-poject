@@ -1,11 +1,16 @@
 <template>
-  <div class="marketing-dashboard rakez-erp-dashboard">
+  <div class="marketing-dashboard rakez-erp-dashboard rakez-kpi-dashboard">
     <div v-if="isLoading" class="loading-state">
       <div class="spinner"></div>
       <p>جاري تحميل لوحة المعلومات...</p>
     </div>
     <div v-else>
-      <DashboardWelcomeHeader greeting-name="التسويق" subtitle="إليك ملخص أداء التسويق اليوم" />
+      <DashboardWelcomeHeader
+        greeting-name="التسويق"
+        subtitle="إليك ملخص أداء التسويق اليوم"
+        english-title="Welcome Back, Marketing"
+        english-subtitle="Today’s marketing performance summary"
+      />
 
       <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
       <div class="rakez-widget-grid rakez-widget-grid--dense">

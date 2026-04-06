@@ -1,12 +1,17 @@
 <template>
-  <div class="editor-dashboard-view dashboard-view rakez-erp-dashboard">
+  <div class="editor-dashboard-view dashboard-view rakez-erp-dashboard rakez-kpi-dashboard">
     <div v-if="isLoading" class="loading-state">
       <div class="spinner"></div>
       <p>جاري التحميل...</p>
     </div>
 
     <template v-else>
-      <DashboardWelcomeHeader greeting-name="قسم المونتاج" subtitle="عرض المشاريع حسب الحالة (غير جاهزة / جاهزة للتسويق)." />
+      <DashboardWelcomeHeader
+        greeting-name="قسم المونتاج"
+        subtitle="عرض المشاريع حسب الحالة (غير جاهزة / جاهزة للتسويق)."
+        english-title="Welcome Back, Post-Production"
+        english-subtitle="Projects by readiness status"
+      />
 
       <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
       <div class="rakez-widget-grid rakez-widget-grid--dense">

@@ -110,15 +110,4 @@ const activeTab = computed(() => {
   }
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(177, 162, 143, 0.05);
-  border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #b1a28f 0%, #8c7851 100%);
-  border-radius: 10px;
-}
 </style>

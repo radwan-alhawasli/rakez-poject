@@ -124,6 +124,14 @@
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  /* No visible rail/thumb — keeps wheel/touch scroll (gold bar looked like a UI defect) */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.main-content::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 /* Overlay: شفاف + تغبيش زجاجي — الصورة تظهر أوضح مع قراءة معقولة للنص */
 .main-content::before {

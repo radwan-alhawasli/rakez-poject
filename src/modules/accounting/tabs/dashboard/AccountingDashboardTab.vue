@@ -1,6 +1,11 @@
 <template>
-  <div class="accounting-dashboard rakez-erp-dashboard">
-    <DashboardWelcomeHeader greeting-name="المحاسبة" subtitle="المؤشرات الرئيسية للمحاسبة والمالية." />
+  <div class="accounting-dashboard rakez-erp-dashboard rakez-kpi-dashboard">
+    <DashboardWelcomeHeader
+      greeting-name="المحاسبة"
+      subtitle="المؤشرات الرئيسية للمحاسبة والمالية."
+      english-title="Welcome Back, Accounting"
+      english-subtitle="Key financial and accounting indicators"
+    />
 
     <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
     <div class="rakez-widget-grid rakez-widget-grid--dense">

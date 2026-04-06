@@ -371,3 +371,362 @@
   color: #1e3a5f;
   font-weight: 700;
 }
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #94a3b8;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #475569;
+  font-size: 14px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #b1a28f;
+}
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 16px;
+  margin-top: 8px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn-secondary {
+  padding: 10px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  color: #64748b;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(161, 139, 92, 0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Detail modal sections */
+.detail-section {
+  margin-bottom: 24px;
+}
+
+.detail-section h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.empty-inline {
+  color: #94a3b8;
+  font-size: 13px;
+  padding: 8px 0;
+}
+
+.members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.member-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+.member-chip-info {
+  flex: 1;
+  min-width: 0;
+}
+.btn-delete-member {
+  margin-right: auto;
+  padding: 6px 12px;
+  font-size: 12px;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-delete-member:hover {
+  background: #fee2e2;
+}
+
+.member-chip-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.chip-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: #1e293b;
+  display: block;
+}
+
+.chip-role {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.contracts-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.contract-chip {
+  padding: 6px 14px;
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Loading / Empty */
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #64748b;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f1f5f9;
+  border-top-color: #b1a28f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================
+   RESPONSIVE
+   ============================ */
+@media (max-width: 992px) {
+  .team-management-view {
+    padding: 16px 20px;
+  }
+  .search-container {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .team-mgmt-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .data-table-container {
+    border-radius: 12px;
+  }
+  .detail-modal {
+    max-width: 100%;
+    max-height: 90vh;
+  }
+  .members-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .team-management-view {
+    padding: 12px 14px;
+  }
+  .add-btn {
+    padding: 10px 18px;
+    font-size: 13px;
+    width: 100%;
+    justify-content: center;
+  }
+  .modal-content {
+    border-radius: 12px;
+  }
+  .modal-overlay {
+    padding: 10px;
+  }
+  .actions {
+    gap: 4px;
+  }
+  .action-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+  }
+  .data-table-container {
+    border-radius: 10px;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── Responsive: Extra Small Mobile ── */
+@media (max-width: 320px) {
+  .team-management-view {
+    padding: 10px;
+  }
+  .add-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+  .search-input {
+    font-size: 13px;
+    padding: 10px 12px 10px 38px;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 14px 10px;
+    font-size: 12px;
+  }
+  .team-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+  .team-name-text {
+    font-size: 13px;
+  }
+  .action-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .modal-header h3 {
+    font-size: 16px;
+  }
+  .modal-body {
+    padding: 16px;
+  }
+}
+
+/* ── Responsive: Large Desktop ── */
+@media (min-width: 1200px) {
+  .data-table th,
+  .data-table td {
+    padding: 22px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .team-management-view {
+    padding: 28px 40px;
+  }
+  .data-table th, .data-table td {
+    padding: 24px;
+  }
+  .team-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .data-table th, .data-table td {
+    padding: 28px;
+    font-size: 16px;
+  }
+  .team-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 22px;
+  }
+}
+
+@media (min-width: 3840px) {
+  .team-management-view {
+    padding: 40px 60px;
+  }
+  .data-table th, .data-table td {
+    padding: 32px;
+    font-size: 18px;
+  }
+  .team-avatar {
+    width: 64px;
+    height: 64px;
+    font-size: 26px;
+  }
+  .action-btn {
+    width: 46px;
+    height: 46px;
+  }
+}

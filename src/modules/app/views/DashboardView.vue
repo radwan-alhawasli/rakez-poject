@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-view rakez-erp-dashboard">
+  <div class="dashboard-view rakez-erp-dashboard rakez-kpi-dashboard">
     <!-- Loading State -->
     <div v-if="isLoading" class="loading-state">
       <div class="spinner"></div>
@@ -13,7 +13,12 @@
     </div>
 
     <template v-else>
-      <DashboardWelcomeHeader :user-name="userName" subtitle="إدارة المشاريع والموافقات." />
+      <DashboardWelcomeHeader
+        :user-name="userName"
+        subtitle="إدارة المشاريع والموافقات."
+        english-title="Welcome Back"
+        english-subtitle="Projects and approvals management"
+      />
 
       <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
       <div class="rakez-widget-grid rakez-widget-grid--dense dashboard-main-grid">

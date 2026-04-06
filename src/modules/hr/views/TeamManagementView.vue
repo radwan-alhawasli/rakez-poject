@@ -30,89 +30,87 @@
         <div class="spinner"></div>
         <p>جاري تحميل البيانات...</p>
       </div>
-
       <div v-else-if="teams.length === 0" class="empty-state">
         <p>لا يوجد فرق لعرضها حالياً.</p>
         <button class="add-btn small" @click="openCreateModal">إنشاء فريق جديد</button>
       </div>
-
       <div v-else class="table-responsive">
-      <table class="data-table table-mobile-stacked">
-        <thead>
-          <tr>
-            <th>الفريق</th>
-            <th>عدد الأعضاء</th>
-            <th>القائد</th>
-            <th>المشاريع المعينة</th>
-            <th>تاريخ الإنشاء</th>
-            <th>الحالة</th>
-            <th>الإجراءات</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="team in teams" :key="team.id">
-            <td data-label="الفريق">
-              <div class="team-cell">
-                <div class="team-avatar">{{ (team.name || '?').charAt(0) }}</div>
-                <div class="team-details">
-                  <div class="team-name-text">{{ team.name }}</div>
-                  <div class="team-desc-text">{{ team.description || 'لا يوجد وصف' }}</div>
+        <table class="data-table table-mobile-stacked">
+          <thead>
+            <tr>
+              <th>الفريق</th>
+              <th>عدد الأعضاء</th>
+              <th>القائد</th>
+              <th>المشاريع المعينة</th>
+              <th>تاريخ الإنشاء</th>
+              <th>الحالة</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="team in teams" :key="team.id">
+              <td data-label="الفريق">
+                <div class="team-cell">
+                  <div class="team-avatar">{{ (team.name || '?').charAt(0) }}</div>
+                  <div class="team-details">
+                    <div class="team-name-text">{{ team.name }}</div>
+                    <div class="team-desc-text">{{ team.description || 'لا يوجد وصف' }}</div>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td data-label="عدد الأعضاء">
-              <span class="count-badge">{{ team.members_count ?? team.members?.length ?? 0 }}</span>
-            </td>
-            <td data-label="القائد">{{ team.leader_name || team.leader?.name || '—' }}</td>
-            <td data-label="المشاريع المعينة">
-              <span class="count-badge projects">{{ team.contracts_count ?? team.projects_count ?? 0 }}</span>
-            </td>
-            <td data-label="تاريخ الإنشاء" class="date-cell">{{ formatDate(team.created_at) }}</td>
-            <td data-label="الحالة">
-              <span class="status-badge" :class="team.is_active === false ? 'disabled' : 'active'">
-                {{ team.is_active === false ? 'غير فعال' : 'فعال' }}
-              </span>
-            </td>
-            <td data-label="الإجراءات">
-              <div class="actions">
-                <button class="action-btn add-members" @click="openAddMembersModal(team)" title="إضافة مندوب مبيعات للفريق">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="8.5" cy="7" r="4"></circle>
-                    <line x1="20" y1="8" x2="20" y2="14"></line>
-                    <line x1="23" y1="11" x2="17" y2="11"></line>
-                  </svg>
-                </button>
-                <button class="action-btn remove-members" @click="openRemoveMembersModal(team)" title="إزالة عضو من الفريق">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="8.5" cy="7" r="4"></circle>
-                    <line x1="23" y1="11" x2="17" y2="11"></line>
-                  </svg>
-                </button>
-                <button class="action-btn view" @click="viewTeamDetails(team)" title="عرض التفاصيل">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                </button>
-                <button class="action-btn edit" @click="openEditModal(team)" title="تعديل">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                  </svg>
-                </button>
-                <button class="action-btn delete" @click="confirmDelete(team)" title="حذف">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </td>
+              <td data-label="عدد الأعضاء">
+                <span class="count-badge">{{ team.members_count ?? team.members?.length ?? 0 }}</span>
+              </td>
+              <td data-label="القائد">{{ team.leader_name || team.leader?.name || '—' }}</td>
+              <td data-label="المشاريع المعينة">
+                <span class="count-badge projects">{{ team.contracts_count ?? team.projects_count ?? 0 }}</span>
+              </td>
+              <td data-label="تاريخ الإنشاء" class="date-cell">{{ formatDate(team.created_at) }}</td>
+              <td data-label="الحالة">
+                <span class="status-badge" :class="team.is_active === false ? 'disabled' : 'active'">
+                  {{ team.is_active === false ? 'غير فعال' : 'فعال' }}
+                </span>
+              </td>
+              <td data-label="الإجراءات">
+                <div class="actions">
+                  <button class="action-btn add-members" @click="openAddMembersModal(team)" title="إضافة مندوب مبيعات للفريق">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="8.5" cy="7" r="4"></circle>
+                      <line x1="20" y1="8" x2="20" y2="14"></line>
+                      <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                  </button>
+                  <button class="action-btn remove-members" @click="openRemoveMembersModal(team)" title="إزالة عضو من الفريق">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="8.5" cy="7" r="4"></circle>
+                      <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                  </button>
+                  <button class="action-btn view" @click="viewTeamDetails(team)" title="عرض التفاصيل">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                  <button class="action-btn edit" @click="openEditModal(team)" title="تعديل">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                  </button>
+                  <button class="action-btn delete" @click="confirmDelete(team)" title="حذف">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -161,8 +159,8 @@
               <h4>الأعضاء ({{ detailMembers.length }})</h4>
               <div v-if="detailMembers.length === 0" class="empty-inline">لا يوجد أعضاء</div>
               <div v-else class="members-grid">
-                <div v-for="member in detailMembers" :key="member.user_id ?? member.id" class="member-chip">
-                  <div class="member-chip-avatar" :style="{ background: chipColor(member.user_id ?? member.id) }">
+                <div v-for="member in detailMembers" :key="memberRowKey(member)" class="member-chip">
+                  <div class="member-chip-avatar" :style="{ background: chipColor(memberUserId(member)) }">
                     {{ (member.name || member.full_name || member.user?.name || '?').charAt(0) }}
                   </div>
                   <div class="member-chip-info">
@@ -187,7 +185,7 @@
       </div>
     </div>
 
-    <!-- Add sales members: list from GET .../sales-without-team, add via POST .../members/:teamId -->
+    <!-- Add sales members -->
     <div v-if="showAddMembersModal" class="modal-overlay" @click.self="closeAddMembersModal">
       <div class="modal-content add-members-modal">
         <div class="modal-header">
@@ -199,13 +197,7 @@
           <template v-else>
             <p v-if="availableSalesWithoutTeam.length" class="add-members-hint">قائمة مندوبي المبيعات غير المرتبطين بفريق (من إدارة المشاريع).</p>
             <div v-if="availableSalesWithoutTeam.length" class="add-members-search-wrap">
-              <input
-                v-model="addMembersSearch"
-                type="search"
-                class="form-input"
-                placeholder="بحث بالاسم أو البريد..."
-                autocomplete="off"
-              />
+              <input v-model="addMembersSearch" type="search" class="form-input" placeholder="بحث بالاسم أو البريد..." autocomplete="off" />
             </div>
             <div v-if="filteredSalesWithoutTeam.length === 0 && availableSalesWithoutTeam.length" class="empty-inline">لا توجد نتائج مطابقة للبحث.</div>
             <div v-else-if="availableSalesWithoutTeam.length === 0" class="empty-inline">لا يوجد مندوبو مبيعات بلا فريق حالياً.</div>
@@ -220,7 +212,7 @@
       </div>
     </div>
 
-    <!-- Remove: list from GET .../members/:teamId, delete via DELETE .../members/:teamId/:userId -->
+    <!-- Remove members -->
     <div v-if="showRemoveMembersModal" class="modal-overlay" @click.self="closeRemoveMembersModal">
       <div class="modal-content add-members-modal">
         <div class="modal-header">
@@ -234,42 +226,18 @@
             <template v-else>
               <p class="add-members-hint">اختر عضواً ثم اضغط «إزالة من الفريق».</p>
               <div class="add-members-search-wrap">
-                <input
-                  v-model="removeMembersSearch"
-                  type="search"
-                  class="form-input"
-                  placeholder="بحث بالاسم أو البريد..."
-                  autocomplete="off"
-                />
+                <input v-model="removeMembersSearch" type="search" class="form-input" placeholder="بحث بالاسم أو البريد..." autocomplete="off" />
               </div>
               <div v-if="filteredRemoveMembersList.length === 0" class="empty-inline">لا توجد نتائج مطابقة للبحث.</div>
               <ul v-else class="add-members-list remove-members-select-list" role="radiogroup" aria-label="أعضاء الفريق">
-                <li
-                  v-for="member in filteredRemoveMembersList"
-                  :key="memberRowKey(member)"
-                  class="add-member-row remove-member-select-row"
-                  :class="{ 'is-selected': selectedRemoveUserId === memberUserId(member) }"
-                  @click="selectedRemoveUserId = memberUserId(member)"
-                >
-                  <input
-                    v-model="selectedRemoveUserId"
-                    class="remove-member-radio"
-                    type="radio"
-                    :value="memberUserId(member)"
-                    :name="'pm-remove-' + (removeMembersTeam?.id ?? '')"
-                    @click.stop
-                  />
+                <li v-for="member in filteredRemoveMembersList" :key="memberRowKey(member)" class="add-member-row remove-member-select-row" :class="{ 'is-selected': selectedRemoveUserId === memberUserId(member) }" @click="selectedRemoveUserId = memberUserId(member)">
+                  <input v-model="selectedRemoveUserId" class="remove-member-radio" type="radio" :value="memberUserId(member)" :name="'pm-remove-' + (removeMembersTeam?.id ?? '')" @click.stop />
                   <span class="add-member-name">{{ member.name || member.full_name || member.user?.name || member.email || '—' }}</span>
                 </li>
               </ul>
               <div class="remove-members-modal-footer">
                 <button type="button" class="btn-secondary" @click="closeRemoveMembersModal">إلغاء</button>
-                <button
-                  type="button"
-                  class="btn-primary"
-                  :disabled="!selectedRemoveUserId || removeMembersDeleting"
-                  @click="confirmRemoveSelectedFromTeam"
-                >
+                <button type="button" class="btn-primary" :disabled="!selectedRemoveUserId || removeMembersDeleting" @click="confirmRemoveSelectedFromTeam">
                   {{ removeMembersDeleting ? 'جاري الإزالة...' : 'إزالة من الفريق' }}
                 </button>
               </div>
@@ -279,25 +247,18 @@
       </div>
     </div>
 
-    <ConfirmModal
-      v-if="showConfirmModal"
-      :title="confirmModalConfig.title"
-      :message="confirmModalConfig.message"
-      :type="confirmModalConfig.type"
-      :confirm-text="confirmModalConfig.confirmText"
-      @confirm="onConfirmModalConfirm"
-      @close="showConfirmModal = false"
-    />
+    <ConfirmModal v-if="showConfirmModal" :title="confirmModalConfig.title" :message="confirmModalConfig.message" :type="confirmModalConfig.type" :confirm-text="confirmModalConfig.confirmText" @confirm="onConfirmModalConfirm" @close="showConfirmModal = false" />
   </div>
 </template>
 
 <script>
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
 import teamService from '@/services/teamService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
+import { useTeamMembers } from '@/modules/hr/composables/useTeamMembers';
 
 export default {
   name: 'TeamManagementView',
@@ -307,64 +268,17 @@ export default {
     const isLoading = ref(false);
     const searchQuery = ref('');
     let searchTimeout = null;
-
     const showModal = ref(false);
     const isEditing = ref(false);
     const isSaving = ref(false);
     const teamForm = reactive({ id: null, name: '', description: '' });
-
     const showDetailModal = ref(false);
     const detailTeam = ref(null);
     const detailMembers = ref([]);
     const detailContracts = ref([]);
     const isLoadingDetail = ref(false);
-
     const showConfirmModal = ref(false);
     const confirmModalConfig = ref({ title: '', message: '', type: 'warning', confirmText: 'تأكيد', resolve: null });
-
-    const showAddMembersModal = ref(false);
-    const addMembersTeam = ref(null);
-    const availableSalesWithoutTeam = ref([]);
-    const addMembersSearch = ref('');
-    const addMembersLoading = ref(false);
-
-    const showRemoveMembersModal = ref(false);
-    const removeMembersTeam = ref(null);
-    const removeMembersList = ref([]);
-    const removeMembersLoading = ref(false);
-    const removeMembersSearch = ref('');
-    const selectedRemoveUserId = ref('');
-    const removeMembersDeleting = ref(false);
-
-    /** Stable user id for PM team APIs (POST/DELETE members). */
-    const memberUserId = m => {
-      if (m == null) return '';
-      const v = m.user_id ?? m.id ?? m.user?.id;
-      return v != null && v !== '' ? String(v) : '';
-    };
-
-    const memberRowKey = m => memberUserId(m) || `m-${JSON.stringify(m).slice(0, 40)}`;
-    const salesRowKey = e => String(memberUserId(e) || e.email || JSON.stringify(e).slice(0, 30));
-
-    const filteredSalesWithoutTeam = computed(() => {
-      const q = addMembersSearch.value.trim().toLowerCase();
-      const list = availableSalesWithoutTeam.value;
-      if (!q) return list;
-      return list.filter(e => {
-        const n = String(e.name || e.full_name || e.user?.name || e.email || '').toLowerCase();
-        return n.includes(q);
-      });
-    });
-
-    const filteredRemoveMembersList = computed(() => {
-      const q = removeMembersSearch.value.trim().toLowerCase();
-      const list = removeMembersList.value;
-      if (!q) return list;
-      return list.filter(m => {
-        const n = String(m.name || m.full_name || m.user?.name || m.email || '').toLowerCase();
-        return n.includes(q);
-      });
-    });
 
     const fetchTeams = async (search = '') => {
       isLoading.value = true;
@@ -378,6 +292,14 @@ export default {
         isLoading.value = false;
       }
     };
+
+    const {
+      showAddMembersModal, addMembersTeam, availableSalesWithoutTeam, addMembersSearch, addMembersLoading,
+      showRemoveMembersModal, removeMembersTeam, removeMembersList, removeMembersLoading, removeMembersSearch,
+      selectedRemoveUserId, removeMembersDeleting, memberUserId, memberRowKey, salesRowKey,
+      filteredSalesWithoutTeam, filteredRemoveMembersList, openAddMembersModal, closeAddMembersModal,
+      addMemberToTeam, openRemoveMembersModal, closeRemoveMembersModal
+    } = useTeamMembers(() => fetchTeams(searchQuery.value));
 
     const debouncedSearch = () => {
       clearTimeout(searchTimeout);
@@ -430,8 +352,7 @@ export default {
           teamService.getProjectManagementTeamMembers(team.id),
           teamService.getTeamContracts(team.id),
         ]);
-        const raw = members.status === 'fulfilled' ? (Array.isArray(members.value) ? members.value : []) : [];
-        detailMembers.value = raw;
+        detailMembers.value = members.status === 'fulfilled' ? (Array.isArray(members.value) ? members.value : []) : [];
         const cRaw = contracts.status === 'fulfilled' ? contracts.value : [];
         detailContracts.value = Array.isArray(cRaw) ? cRaw : cRaw?.items ?? [];
       } catch (error) {
@@ -441,90 +362,12 @@ export default {
       }
     };
 
-    const closeAddMembersModal = () => {
-      showAddMembersModal.value = false;
-      addMembersTeam.value = null;
-      availableSalesWithoutTeam.value = [];
-      addMembersSearch.value = '';
-    };
-
-    const openAddMembersModal = async team => {
-      addMembersTeam.value = team;
-      showAddMembersModal.value = true;
-      availableSalesWithoutTeam.value = [];
-      addMembersSearch.value = '';
-      addMembersLoading.value = true;
-      try {
-        const list = await teamService.getSalesWithoutTeam();
-        availableSalesWithoutTeam.value = Array.isArray(list) ? list : [];
-        if (availableSalesWithoutTeam.value.length === 0) {
-          toast.warning('لا يوجد مندوبو مبيعات بلا فريق أو فشل التحميل.');
-        }
-      } catch (err) {
-        logger.error('Error loading sales without team:', err);
-        toast.error('فشل تحميل قائمة المندوبين');
-      } finally {
-        addMembersLoading.value = false;
-      }
-    };
-
-    const addMemberToTeam = async emp => {
-      const team = addMembersTeam.value;
-      const userId = memberUserId(emp);
-      if (!team || !userId) return;
-      try {
-        await teamService.addProjectManagementTeamMember(team.id, userId);
-        toast.success('تم إضافة العضو إلى الفريق');
-        availableSalesWithoutTeam.value = availableSalesWithoutTeam.value.filter(
-          e => memberUserId(e) !== userId
-        );
-        if (showDetailModal.value && detailTeam.value?.id === team.id) {
-          const members = await teamService.getProjectManagementTeamMembers(team.id);
-          detailMembers.value = Array.isArray(members) ? members : [];
-        }
-        fetchTeams(searchQuery.value);
-      } catch (err) {
-        logger.error('Error assigning member:', err);
-        toast.error('فشل إضافة العضو: ' + (err.response?.data?.message || err.message));
-      }
-    };
-
-    const closeRemoveMembersModal = () => {
-      showRemoveMembersModal.value = false;
-      removeMembersTeam.value = null;
-      removeMembersList.value = [];
-      removeMembersSearch.value = '';
-      selectedRemoveUserId.value = '';
-      removeMembersDeleting.value = false;
-    };
-
-    const openRemoveMembersModal = async team => {
-      removeMembersTeam.value = team;
-      showRemoveMembersModal.value = true;
-      removeMembersList.value = [];
-      removeMembersSearch.value = '';
-      selectedRemoveUserId.value = '';
-      removeMembersLoading.value = true;
-      try {
-        const list = await teamService.getProjectManagementTeamMembers(team.id);
-        removeMembersList.value = Array.isArray(list) ? list : [];
-      } catch (err) {
-        logger.error('Error loading PM team members:', err);
-        toast.error('فشل تحميل أعضاء الفريق');
-        removeMembersList.value = [];
-      } finally {
-        removeMembersLoading.value = false;
-      }
-    };
-
     const confirmRemoveSelectedFromTeam = () => {
       const team = removeMembersTeam.value;
       const userId = selectedRemoveUserId.value;
       if (!team || !userId) return;
       const member = removeMembersList.value.find(m => memberUserId(m) === userId);
-      const name = member
-        ? member.name || member.full_name || member.user?.name || 'هذا العضو'
-        : 'هذا العضو';
+      const name = member ? member.name || member.full_name || member.user?.name || 'هذا العضو' : 'هذا العضو';
       confirmModalConfig.value = {
         title: 'تأكيد إزالة العضو',
         message: `هل تريد إزالة «${name}» من الفريق؟`,
@@ -554,9 +397,8 @@ export default {
 
     const confirmRemoveMember = member => {
       const team = detailTeam.value;
-      if (!team) return;
       const userId = memberUserId(member);
-      if (!userId) return;
+      if (!team || !userId) return;
       const name = member.name || member.full_name || member.user?.name || 'هذا العضو';
       confirmModalConfig.value = {
         title: 'حذف مسوق',
@@ -594,8 +436,7 @@ export default {
             fetchTeams(searchQuery.value);
           } catch (error) {
             logger.error('Error deleting team:', error);
-            const msg = error?.response?.data?.message || error?.message || 'حدث خطأ أثناء الحذف';
-            toast.error(msg);
+            toast.error(error?.response?.data?.message || error?.message || 'حدث خطأ أثناء الحذف');
           }
         },
       };
@@ -608,7 +449,6 @@ export default {
     };
 
     const { formatDateISO: formatDate } = useFormatters();
-
     const chipColor = id => {
       const colors = ['#2ecc71', '#3498db', '#9b59b6', '#e67e22', '#1abc9c', '#e74c3c', '#f39c12'];
       return colors[(id || 0) % colors.length];
@@ -617,24 +457,18 @@ export default {
     onMounted(() => fetchTeams());
 
     return {
-      teams, isLoading, searchQuery, debouncedSearch,
-      showModal, isEditing, isSaving, teamForm,
-      openCreateModal, openEditModal, closeModal, saveTeam,
-      showDetailModal, detailTeam, detailMembers, detailContracts, isLoadingDetail,
-      viewTeamDetails, confirmDelete, showConfirmModal, confirmModalConfig, onConfirmModalConfirm,
-      showAddMembersModal, addMembersTeam, availableSalesWithoutTeam, addMembersSearch,
-      filteredSalesWithoutTeam, addMembersLoading,
-      openAddMembersModal, closeAddMembersModal, addMemberToTeam, salesRowKey,
-      showRemoveMembersModal, removeMembersTeam, removeMembersList, removeMembersLoading,
+      teams, isLoading, searchQuery, debouncedSearch, showModal, isEditing, isSaving, teamForm,
+      openCreateModal, openEditModal, closeModal, saveTeam, showDetailModal, detailTeam, detailMembers,
+      detailContracts, isLoadingDetail, viewTeamDetails, confirmDelete, showConfirmModal, confirmModalConfig,
+      onConfirmModalConfirm, showAddMembersModal, addMembersTeam, availableSalesWithoutTeam, addMembersSearch,
+      filteredSalesWithoutTeam, addMembersLoading, openAddMembersModal, closeAddMembersModal, addMemberToTeam,
+      salesRowKey, showRemoveMembersModal, removeMembersTeam, removeMembersList, removeMembersLoading,
       removeMembersSearch, filteredRemoveMembersList, selectedRemoveUserId, removeMembersDeleting,
-      openRemoveMembersModal, closeRemoveMembersModal, confirmRemoveSelectedFromTeam,
-      memberUserId, memberRowKey,
-      confirmRemoveMember,
-      formatDate, chipColor,
+      openRemoveMembersModal, closeRemoveMembersModal, confirmRemoveSelectedFromTeam, memberUserId,
+      memberRowKey, confirmRemoveMember, formatDate, chipColor,
     };
   },
 };
 </script>
 
-<style scoped src="./styles/TeamManagementView.scoped.s1.css"></style>
-<style scoped src="./styles/TeamManagementView.scoped.s2.css"></style>
+<style scoped src="./styles/TeamManagementView.scoped.css"></style>
