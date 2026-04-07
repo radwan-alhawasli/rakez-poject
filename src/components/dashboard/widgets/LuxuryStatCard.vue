@@ -41,9 +41,8 @@ const displayValue = computed(() => {
 <style scoped>
 .luxury-stat-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  /* Opaque-tinted surface instead of backdrop-filter (avoids full-area compositing on layout resize) */
+  background: rgba(255, 255, 255, 0.09);
   border-radius: 24px;
   border: 1px solid rgba(181, 169, 154, 0.15);
   box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);

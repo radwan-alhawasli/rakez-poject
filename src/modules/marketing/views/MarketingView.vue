@@ -3,6 +3,7 @@
     <div class="tab-content custom-scrollbar">
       <MarketingDashboardTab v-if="activeTab === 'dashboard'" />
       <MarketingProjectsTab v-else-if="activeTab === 'projects'" />
+      <MarketingTeamsTab v-else-if="activeTab === 'teams'" />
       <MarketingDeveloperPlanTab v-else-if="activeTab === 'developer-plan' || activeTab === 'plans'" />
       <MarketingEmployeePlansTab v-else-if="activeTab === 'employee-plans'" />
       <MarketingTasksTab v-else-if="activeTab === 'tasks'" />
@@ -24,6 +25,9 @@ const MarketingDashboardTab = defineAsyncComponent(() =>
 );
 const MarketingProjectsTab = defineAsyncComponent(() =>
   import('@/modules/marketing/tabs/projects/MarketingProjectsTab.vue')
+);
+const MarketingTeamsTab = defineAsyncComponent(() =>
+  import('@/modules/marketing/tabs/teams/MarketingTeamsTab.vue')
 );
 const MarketingDeveloperPlanTab = defineAsyncComponent(() =>
   import('@/modules/marketing/tabs/developer-plan/MarketingDeveloperPlanTab.vue')
@@ -52,6 +56,7 @@ const route = useRoute();
 const VALID_TABS = [
   'dashboard',
   'projects',
+  'teams',
   'tasks',
   'leads',
   'expected-sales',

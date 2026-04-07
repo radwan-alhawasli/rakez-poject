@@ -250,6 +250,23 @@
                   <span class="detail-label">نسبة العمولة</span>
                   <span class="detail-value number">{{ Number(selectedProjectDetails.commission_percentage ?? 0) + '%' }}</span>
                 </div>
+                <div class="detail-item detail-item--stacked">
+                  <span class="detail-label">نسبة التسويق</span>
+                  <input
+                    v-model="uiOnlyMarketingPercent"
+                    type="number"
+                    class="form-input marketing-percent-ui-input"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    inputmode="decimal"
+                    placeholder="مثال: 10"
+                    aria-describedby="marketing-percent-ui-hint"
+                  />
+                  <p id="marketing-percent-ui-hint" class="detail-ui-only-hint">
+                    للملاحظات المحلية فقط — غير مربوط بالخادم (API)
+                  </p>
+                </div>
                 <div class="detail-item">
                   <span class="detail-label">قيمة الوحدات المتاحة</span>
                   <span class="detail-value number">{{ formatCurrency(selectedProjectDetails.available_units_value ?? 0) }}</span>
@@ -294,63 +311,16 @@
                 </div>
               </div>
 
-              <div class="overview-section" style="margin-top: 18px">
+              <div class="overview-section marketing-teams-teaser" style="margin-top: 18px">
                 <div class="section-header" style="margin-bottom: 14px">
-                  <h3 class="section-title-chart">إدارة فرق التسويق</h3>
-                  <p class="section-desc">تعيين الصلاحيات للفرق المسؤولة عن هذا المشروع.</p>
+                  <h3 class="section-title-chart">
+                    <button type="button" class="teams-page-link" @click="goToMarketingTeamsPage">إدارة فرق التسويق</button>
+                  </h3>
+                  <p class="section-desc">صفحة مخصصة لتعيين الفرق وعرض المسوّقين والمسوق الأعلى تقييماً.</p>
                 </div>
                 <div class="detail-item" style="margin-bottom: 12px">
                   <span class="detail-label">الموظف المقترح للتواصل</span>
                   <span class="detail-value">{{ getRecommendedEmployee(selectedProjectDetails) }}</span>
-                </div>
-                <div class="add-team-card-luxury" style="background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0">
-                  <div class="add-team-form" style="display: flex; gap: 10px; align-items: center">
-                    <div style="flex: 1; position: relative">
-                      <select v-model="selectedTeamIdToAdd" class="luxury-select" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px">
-                        <option value="" disabled selected>اختر فريقاً للإضافة...</option>
-                        <option v-for="team in availableTeams" :key="team.id" :value="team.id">{{ team.name }}</option>
-                      </select>
-                    </div>
-                    <button class="btn-primary" @click="assignTeamToProject" :disabled="!selectedTeamIdToAdd || isTeamActionLoading" style="white-space: nowrap">
-                      {{ isTeamActionLoading ? 'جاري...' : 'إضافة +' }}
-                    </button>
-                  </div>
-                </div>
-                <div v-if="(selectedProjectDetails.marketing_project?.teams || []).length === 0" style="color: #64748b; text-align: center; padding: 20px">
-                  لا توجد فرق معينة حالياً.
-                </div>
-                <div v-else class="teams-grid-luxury" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px">
-                  <div v-for="t in selectedProjectDetails.marketing_project.teams" :key="t.id" class="team-card-mini" style="background: white; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; gap: 5px; position: relative">
-                    <div style="display: flex; justify-content: space-between; align-items: start">
-                      <span class="team-name" style="font-weight: bold; color: #1e3a5f">{{ t.name || t.user?.name || 'Team #' + t.id }}</span>
-                      <button @click="removeTeamFromProject(t)" class="btn-icon-mini" title="إزالة" :disabled="isTeamActionLoading" style="background: none; border: none; color: #ef4444; cursor: pointer">
-                        <span style="font-size: 16px">×</span>
-                      </button>
-                    </div>
-                    <span class="team-role" style="font-size: 12px; color: #64748b">{{ t.description || 'فريق تسويق' }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="overview-section" style="margin-top: 18px">
-                <div class="section-header" style="margin-bottom: 14px">
-                  <h3 class="section-title-chart">خطة المطور</h3>
-                  <p class="section-desc">تعرض الحقول المتاحة من developer_plan.</p>
-                </div>
-                <div v-if="!selectedProjectDetails.developer_plan" style="color: #64748b">لا توجد خطة مطور.</div>
-                <div v-else style="margin-top: 10px">
-                  <div class="details-grid">
-                    <div class="detail-item"><span class="detail-label">قيمة التسويق</span><span class="detail-value number">{{ formatCurrency(selectedProjectDetails.developer_plan.marketing_value || 0) }}</span></div>
-                    <div class="detail-item"><span class="detail-label">CPM / CPC</span><span class="detail-value number">{{ devPlanCpmCpcSummary(selectedProjectDetails.developer_plan) }}</span></div>
-                    <div class="detail-item"><span class="detail-label">Expected Impressions</span><span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_impressions || 0) }}</span></div>
-                    <div class="detail-item"><span class="detail-label">Expected Clicks</span><span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_clicks || 0) }}</span></div>
-                  </div>
-                  <div v-if="hasDevPlanPerPlatform(selectedProjectDetails.developer_plan)" class="details-grid" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color, #e2e8f0)">
-                    <div class="detail-item" style="grid-column: 1 / -1"><span class="detail-label">CPM و CPC حسب المنصة</span></div>
-                    <template v-for="(label, key) in platformLabelsAr" :key="key">
-                      <div class="detail-item" v-if="devPlanPlatformValue(selectedProjectDetails.developer_plan, key)"><span class="detail-label">{{ label }}</span><span class="detail-value">{{ devPlanPlatformValue(selectedProjectDetails.developer_plan, key) }}</span></div>
-                    </template>
-                  </div>
                 </div>
               </div>
 
@@ -434,28 +404,11 @@
       </div>
     </div>
 
-    <!-- Confirm Modal -->
-    <ConfirmModal
-      v-if="showConfirmModal"
-      :title="confirmModalConfig.title"
-      :message="confirmModalConfig.message"
-      :type="confirmModalConfig.type"
-      :confirm-text="confirmModalConfig.confirmText"
-      @confirm="onConfirmModalConfirm"
-      @close="showConfirmModal = false"
-    />
   </div>
 </template>
 
 <script setup>
-import ConfirmModal from '@/components/ConfirmModal.vue';
 import { useMarketingProjects } from '@/composables/marketing/useMarketingProjects';
-import {
-  platformLabelsAr,
-  devPlanCpmCpcSummary,
-  hasDevPlanPerPlatform,
-  devPlanPlatformValue,
-} from '@/modules/marketing/tabs/projects/marketingProjectsTabHelpers.js';
 
 const {
   projects,
@@ -466,21 +419,15 @@ const {
   isLoadingProjectDetails,
   showUnitsTable,
   isLoadingUnits,
-  availableTeams,
-  selectedTeamIdToAdd,
-  isTeamActionLoading,
   showProjectDetailsModal,
   showCalculateBudgetModal,
   showPlanUnavailableModal,
   planUnavailableProject,
-  showConfirmModal,
-  confirmModalConfig,
+  uiOnlyMarketingPercent,
   budgetForm,
   budgetResult,
   viewProjectDetails,
-  assignTeamToProject,
-  removeTeamFromProject,
-  onConfirmModalConfirm,
+  goToMarketingTeamsPage,
   goToUnits,
   goToPhotography,
   viewProjectPlan,

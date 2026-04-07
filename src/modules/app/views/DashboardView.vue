@@ -70,29 +70,39 @@
       </div>
 
       <h3 class="rakez-dashboard-section-title">لوحة المؤشرات</h3>
-      <div class="rakez-widget-grid dashboard-widgets-bottom">
-        <DarkWidgetShell title="توزيع المشاريع" :subtitle="`جاهز للتسويق ${readinessPct}%`">
-          <DonutKpiWidget
-            :segments="projectReadinessSplit"
-            :height="200"
-            :central-label="readinessPct + '%'"
-            central-sub-label="جاهز للتسويق"
-          />
-        </DarkWidgetShell>
-        <DarkWidgetShell title="تفصيل الجاهزية" subtitle="عدد المشاريع حسب الحالة">
-          <ProgressBreakdownWidget :rows="projectReadinessSplit" value-type="number" />
-          <p class="dashboard-portfolio-note">إجمالي قيمة الوحدات (تقديري): {{ formatCurrencyAr(totalPortfolioValue) }}</p>
-        </DarkWidgetShell>
-        <DarkWidgetShell class="rakez-widget-span-2" title="مؤشرات سريعة" subtitle="وحدات ومشاريع">
-          <DashboardMetricsBarChart :series="mainBarSeries" :height="240" />
-        </DarkWidgetShell>
-      </div>
+      <Suspense>
+        <template #default>
+          <div class="rakez-widget-grid dashboard-widgets-bottom">
+            <DarkWidgetShell title="توزيع المشاريع" :subtitle="`جاهز للتسويق ${readinessPct}%`">
+              <DonutKpiWidget
+                :segments="projectReadinessSplit"
+                :height="200"
+                :central-label="readinessPct + '%'"
+                central-sub-label="جاهز للتسويق"
+              />
+            </DarkWidgetShell>
+            <DarkWidgetShell title="تفصيل الجاهزية" subtitle="عدد المشاريع حسب الحالة">
+              <ProgressBreakdownWidget :rows="projectReadinessSplit" value-type="number" />
+              <p class="dashboard-portfolio-note">إجمالي قيمة الوحدات (تقديري): {{ formatCurrencyAr(totalPortfolioValue) }}</p>
+            </DarkWidgetShell>
+            <DarkWidgetShell class="rakez-widget-span-2" title="مؤشرات سريعة" subtitle="وحدات ومشاريع">
+              <DashboardMetricsBarChart :series="mainBarSeries" :height="240" />
+            </DarkWidgetShell>
+          </div>
+        </template>
+        <template #fallback>
+          <div class="dashboard-charts-fallback loading-state" role="status" aria-live="polite">
+            <div class="spinner"></div>
+            <p>جاري تحميل المخططات...</p>
+          </div>
+        </template>
+      </Suspense>
     </template>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, defineAsyncComponent } from 'vue';
 import { useRouter } from 'vue-router';
 import authService from '@/services/authService';
 import contractService from '@/services/contractService';
@@ -100,11 +110,68 @@ import logger from '@/utils/logger';
 import { useFormatters } from '@/composables/useFormatters';
 import LuxuryStatCard from '@/components/dashboard/widgets/LuxuryStatCard.vue';
 import DarkWidgetShell from '@/components/dashboard/widgets/DarkWidgetShell.vue';
-import DonutKpiWidget from '@/components/dashboard/widgets/DonutKpiWidget.vue';
-import ProgressBreakdownWidget from '@/components/dashboard/widgets/ProgressBreakdownWidget.vue';
-import DashboardMetricsBarChart from '@/components/dashboard/DashboardMetricsBarChart.vue';
 import DashboardWelcomeHeader from '@/components/dashboard/DashboardWelcomeHeader.vue';
 import DashboardStatIcon from '@/components/dashboard/DashboardStatIcon.vue';
+
+const DonutKpiWidget = defineAsyncComponent(() =>
+  import('@/components/dashboard/widgets/DonutKpiWidget.vue')
+);
+const ProgressBreakdownWidget = defineAsyncComponent(() =>
+  import('@/components/dashboard/widgets/ProgressBreakdownWidget.vue')
+);
+const DashboardMetricsBarChart = defineAsyncComponent(() =>
+  import('@/components/dashboard/DashboardMetricsBarChart.vue')
+);
+
+const DASHBOARD_AGG_CHUNK = 40;
+
+function scheduleYield(cb) {
+  if (typeof requestIdleCallback !== 'undefined') {
+    requestIdleCallback(cb, { timeout: 200 });
+  } else {
+    setTimeout(cb, 0);
+  }
+}
+
+/**
+ * Aggregate readiness and unit sums without blocking the main thread on large lists.
+ * @param {unknown[]} projects
+ * @returns {Promise<{ readyCount: number; valueSum: number; unitsSum: number }>}
+ */
+function aggregateProjectDashboardMetrics(projects) {
+  return new Promise(resolve => {
+    let i = 0;
+    let readyCount = 0;
+    let valueSum = 0;
+    let unitsSum = 0;
+    const n = projects.length;
+
+    const runChunk = () => {
+      const end = Math.min(i + DASHBOARD_AGG_CHUNK, n);
+      for (; i < end; i++) {
+        const p = projects[i];
+        if (p.status === 'Approved' || (p.units && p.units.length > 0)) readyCount++;
+        const units = p.units;
+        if (units && Array.isArray(units)) {
+          for (let j = 0; j < units.length; j++) {
+            const u = units[j];
+            const count = parseInt(u.count, 10) || 1;
+            const price = parseFloat(u.price) || 0;
+            unitsSum += count;
+            valueSum += price * count;
+          }
+        }
+      }
+      if (i < n) {
+        scheduleYield(runChunk);
+      } else {
+        resolve({ readyCount, valueSum, unitsSum });
+      }
+    };
+
+    runChunk();
+  });
+}
 
 const router = useRouter();
 const user = ref(authService.getCurrentUser());
@@ -161,26 +228,9 @@ const fetchData = async () => {
 
     totalProjects.value = projects.length;
 
-    const readyCount = projects.filter(
-      p => p.status === 'Approved' || (p.units && p.units.length > 0)
-    ).length;
+    const { readyCount, valueSum, unitsSum } = await aggregateProjectDashboardMetrics(projects);
     readyProjects.value = readyCount;
     notReadyProjects.value = Math.max(0, projects.length - readyCount);
-
-    let valueSum = 0;
-    let unitsSum = 0;
-
-    projects.forEach(p => {
-      if (p.units && Array.isArray(p.units)) {
-        p.units.forEach(u => {
-          const count = parseInt(u.count) || 1;
-          const price = parseFloat(u.price) || 0;
-          unitsSum += count;
-          valueSum += price * count;
-        });
-      }
-    });
-
     availableUnits.value = unitsSum;
     totalPortfolioValue.value = valueSum;
   } catch (e) {

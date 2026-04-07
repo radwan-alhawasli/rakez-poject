@@ -31,6 +31,7 @@ class MarketingStrategy extends RoleStrategy {
       '/marketing',
       '/marketing/dashboard',
       '/marketing/projects',
+      '/marketing/teams',
       '/marketing/tasks',
       '/marketing/leads',
       '/marketing/plans',

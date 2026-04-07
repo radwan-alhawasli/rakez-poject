@@ -30,6 +30,37 @@ describe('marketingNormalizers', () => {
       const out = normalizeMarketingDashboard({ total_leads: '50' });
       expect(out.total_leads).toBe(50);
     });
+
+    it('should map number_of_available_units to available_units_count', () => {
+      const out = normalizeMarketingDashboard({ number_of_available_units: 17 });
+      expect(out.available_units_count).toBe(17);
+    });
+
+    it('should prefer number_of_available_units over available_units_count', () => {
+      const out = normalizeMarketingDashboard({
+        number_of_available_units: 3,
+        available_units_count: 99,
+      });
+      expect(out.available_units_count).toBe(3);
+    });
+
+    it('should map number_of_deposits to daily_deposits_count', () => {
+      const out = normalizeMarketingDashboard({ number_of_deposits: 12 });
+      expect(out.daily_deposits_count).toBe(12);
+    });
+
+    it('should prefer number_of_deposits over daily_deposits_count', () => {
+      const out = normalizeMarketingDashboard({
+        number_of_deposits: 2,
+        daily_deposits_count: 50,
+      });
+      expect(out.daily_deposits_count).toBe(2);
+    });
+
+    it('should map count_of_deposits to daily_deposits_count', () => {
+      const out = normalizeMarketingDashboard({ count_of_deposits: 8 });
+      expect(out.daily_deposits_count).toBe(8);
+    });
   });
 
   describe('normalizeProjectDetails', () => {

@@ -14,6 +14,7 @@ export default {
     { path: '', name: 'Marketing', redirect: { name: 'MarketingDashboard' } },
     { path: 'dashboard', name: 'MarketingDashboard', component: () => import('@/modules/marketing/views/MarketingView.vue'), meta: { permissions: [PERMISSIONS.MARKETING_DASHBOARD_VIEW] } },
     { path: 'projects', name: 'MarketingProjects', component: () => import('@/modules/marketing/views/MarketingView.vue'), meta: { permissions: [PERMISSIONS.MARKETING_PROJECTS_VIEW] } },
+    { path: 'teams', name: 'MarketingTeams', component: () => import('@/modules/marketing/views/MarketingView.vue'), meta: { permissions: [PERMISSIONS.MARKETING_PROJECTS_VIEW] } },
     { path: 'tasks', name: 'MarketingTasks', component: () => import('@/modules/marketing/views/MarketingView.vue'), meta: { permissions: [PERMISSIONS.MARKETING_TASKS_VIEW] } },
     { path: 'leads', name: 'MarketingLeads', component: () => import('@/modules/marketing/views/MarketingView.vue'), meta: { permissions: [PERMISSIONS.MARKETING_TEAMS_VIEW] } },
     { path: 'expected-sales', name: 'MarketingExpectedSales', component: () => import('@/modules/marketing/views/MarketingView.vue'), meta: { permissions: [PERMISSIONS.MARKETING_REPORTS_VIEW] } },

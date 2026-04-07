@@ -46,7 +46,7 @@ test.describe('Reservations Page', () => {
   test('should load the reservations page at /reservations', async ({ page }) => {
     await page.goto('/reservations');
     await expect(page.locator('.reservations-page, .my-reservations')).toBeVisible();
-    await expect(page.locator('.page-title')).toContainText('حجوزاتي');
+    await expect(page.locator('.welcome-title')).toContainText('حجوزاتي');
   });
 
   test('should display filter tabs for active, cancelled, waiting, and negotiations', async ({ page }) => {
@@ -101,7 +101,7 @@ test.describe('Reservations Page', () => {
 
   test('should have page subtitle describing purpose', async ({ page }) => {
     await page.goto('/reservations');
-    await expect(page.locator('.page-subtitle')).toContainText('عرض جميع الوحدات التي قمت بحجزها');
+    await expect(page.locator('.welcome-subtitle')).toContainText('عرض جميع الوحدات التي قمت بحجزها');
   });
 
   test('should keep active tab highlighted by default', async ({ page }) => {

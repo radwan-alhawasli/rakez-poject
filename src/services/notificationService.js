@@ -13,6 +13,8 @@ const unreadCount = ref(0);
 let pusher = null;
 /** @type {any[]} */
 let channels = [];
+/** Pusher subscribe/bind must run once per connection; avoids duplicate handlers when init() is called again. */
+let realtimeSubscriptionsReady = false;
 
 /**
  * @param {any} error
@@ -42,56 +44,53 @@ const notificationService = {
   },
 
   /**
-   * Initialize notifications and WebSocket listeners
+   * Subscribe to Pusher channels once per session (idempotent).
+   * Call after createPusher; safe to call multiple times from init().
    */
-  async init() {
-    if (!authService.isAuthenticated()) return;
+  ensureRealtimeSubscriptions() {
+    if (!authService.isAuthenticated() || realtimeSubscriptionsReady) return;
 
     const user = authService.getCurrentUser();
     const token = authService.getToken();
 
-    // 1. Fetch existing notifications
-    await this.fetchAll();
-
-    // 2. Setup Pusher only when key is configured (avoids ws://... failed when Reverb not running or wrong port)
     if (!pusher) {
       pusher = createPusher(token ?? '');
     }
     if (!pusher) return;
 
-    // Subscribe to Public
     const publicChannel = pusher.subscribe('public-notifications');
-    /**
-     * @param {any} data
-     */
     publicChannel.bind('public.notification', /** @param {any} data */ data => {
       this.addReceivedNotification(data, 'public');
     });
     channels.push(publicChannel);
 
-    // Subscribe to User Private
     if (user && user.id) {
       const userChannel = pusher.subscribe(`private-user-notifications.${user.id}`);
-      /**
-       * @param {any} data
-       */
       userChannel.bind('user.notification', /** @param {any} data */ data => {
         this.addReceivedNotification(data, 'private');
       });
       channels.push(userChannel);
     }
 
-    // Subscribe to Admin Private
     if (user && user.type === ROLE_ADMIN) {
       const adminChannel = pusher.subscribe('private-admin-notifications');
-      /**
-       * @param {any} data
-       */
       adminChannel.bind('admin.notification', /** @param {any} data */ data => {
         this.addReceivedNotification(data, 'admin');
       });
       channels.push(adminChannel);
     }
+
+    realtimeSubscriptionsReady = true;
+  },
+
+  /**
+   * Initialize notifications: fetch from API + realtime (each idempotent where noted).
+   */
+  async init() {
+    if (!authService.isAuthenticated()) return;
+
+    await this.fetchAll();
+    this.ensureRealtimeSubscriptions();
   },
 
   /**
@@ -375,6 +374,7 @@ const notificationService = {
       pusher = null;
       channels = [];
     }
+    realtimeSubscriptionsReady = false;
   },
 
   // --- Missing Endpoints ---

@@ -290,3 +290,25 @@
     background: rgba(255, 255, 255, 0.08);
   }
 }
+
+/* Sidebar / shell motion: respect OS “reduce motion” */
+@media (prefers-reduced-motion: reduce) {
+  :deep(.sidebar),
+  :deep(.sidebar.sidebar-component) {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    animation: none !important;
+  }
+
+  :deep(.main-wrapper) {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+
+  .top-header,
+  .footer {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    animation: none !important;
+  }
+}

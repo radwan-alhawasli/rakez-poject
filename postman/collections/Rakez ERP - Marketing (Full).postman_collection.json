@@ -84,7 +84,7 @@
               "host": ["{{base_url}}"],
               "path": ["marketing", "dashboard"]
             },
-            "description": "Returns KPIs: total_leads, available_units_value, available_units_count, daily_task_achievement_rate, daily_deposits_count, deposit_cost, total_expected_bookings, total_expected_booking_value, deposit_value_per_booking."
+            "description": "Returns KPIs: total_leads, available_units_value, number_of_available_units (preferred; legacy: available_units_count, units_available_count), daily_task_achievement_rate, number_of_deposits (preferred; also count_of_deposits, daily_deposits_count, deposits_count_daily, deposits_count), deposit_cost (average when derived), total_expected_bookings, total_expected_booking_value, deposit_value_per_booking."
           }
         }
       ]

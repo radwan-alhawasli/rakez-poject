@@ -83,6 +83,8 @@ const xTickFormat = (i) => normalizedSeries.value[i]?.label ?? '';
   border: none;
   border-radius: 12px;
   box-sizing: border-box;
+  contain: layout style;
+  isolation: isolate;
 }
 
 .dashboard-metrics-bar-chart :deep(.vis-xy-container) {

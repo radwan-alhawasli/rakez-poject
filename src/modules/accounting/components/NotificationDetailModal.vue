@@ -122,7 +122,11 @@ export default {
 .detail-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  padding: 8px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(181, 169, 154, 0.1);
 }
 
 .detail-row {
@@ -130,23 +134,30 @@ export default {
   flex-wrap: wrap;
   gap: 8px;
   align-items: flex-start;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(181, 169, 154, 0.06);
 }
 
 .detail-label {
-  font-weight: 600;
-  color: var(--color-dark-gray);
+  font-weight: 700;
+  color: var(--color-gold, #b5a99a);
   min-width: 100px;
+  font-size: 0.875rem;
 }
 
 .detail-value {
-  color: var(--color-charcoal);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
 }
 
 .detail-message {
   margin: 0;
-  color: var(--color-charcoal);
-  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.7;
   flex: 1;
+  font-size: 0.9rem;
 }
 
 .message-row {
@@ -161,9 +172,10 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px;
-  background: var(--color-light-gray);
-  border-radius: 10px;
+  padding: 14px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 12px;
+  border: 1px solid rgba(181, 169, 154, 0.08);
 }
 
 .data-item {
@@ -173,29 +185,31 @@ export default {
 
 .data-key {
   font-weight: 600;
-  color: var(--color-dark-gray);
+  color: var(--color-gold, #b5a99a);
   min-width: 120px;
+  font-size: 0.85rem;
 }
 
 .data-val {
-  color: var(--color-charcoal);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.85rem;
 }
 
 .status-tag {
-  padding: 4px 12px;
+  padding: 4px 14px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 0.8rem;
   font-weight: 600;
 }
 
 .status-tag.excellent {
-  background: #dcfce7;
-  color: #166534;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
 }
 
 .status-tag.good {
-  background: #fef3c7;
-  color: #92400e;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
 }
 
 .modal-footer {
@@ -204,49 +218,50 @@ export default {
   justify-content: flex-end;
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid var(--color-medium-gray);
+  border-top: 1px solid rgba(181, 169, 154, 0.12);
 }
 
 .btn-primary {
-  padding: 10px 20px;
+  padding: 10px 22px;
   border: none;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--color-gold, #b5a99a) 0%, var(--color-gold-dark, #8c7851) 100%);
   color: white;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(181, 169, 154, 0.25);
 }
 
 .btn-primary:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-secondary {
-  padding: 10px 20px;
-  border: 2px solid var(--color-medium-gray);
-  border-radius: 10px;
-  background: white;
-  color: var(--color-dark-gray);
+  padding: 10px 22px;
+  border: 1px solid rgba(181, 169, 154, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.7);
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s;
 }
 
 .btn-secondary:hover {
-  border-color: var(--color-medium-gray);
-  background: var(--color-light-gray);
+  border-color: rgba(181, 169, 154, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
 }
 
-/* Tablet responsive */
 @media (max-width: 768px) {
-  .modal-overlay {
-    padding: 12px;
-  }
-  .modal-container {
-    width: 95%;
-    max-width: 95vw;
-    padding: 20px;
-  }
   .modal-footer {
     flex-direction: column;
   }
@@ -256,22 +271,7 @@ export default {
   }
 }
 
-/* Mobile full-screen */
 @media (max-width: 575px) {
-  .modal-overlay {
-    padding: 8px;
-  }
-  .modal-container {
-    width: 100%;
-    max-width: 100vw;
-    max-height: 100vh;
-    overflow-y: auto;
-    border-radius: 16px;
-    padding: 16px;
-  }
-  .modal-title {
-    font-size: 18px;
-  }
   .detail-row {
     flex-direction: column;
   }

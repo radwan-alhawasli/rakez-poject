@@ -48,7 +48,6 @@
   box-shadow: 0 8px 30px -8px rgba(30, 58, 95, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
   position: relative;
   overflow: hidden;
-  backdrop-filter: blur(10px);
 }
 
 .stat-card::before {
@@ -193,7 +192,6 @@
   box-shadow: 0 12px 40px -10px rgba(30, 58, 95, 0.12), 0 4px 16px rgba(0, 0, 0, 0.06);
   position: relative;
   overflow: hidden;
-  backdrop-filter: blur(10px);
 }
 
 .overview-section::before {

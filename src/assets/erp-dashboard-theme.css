@@ -42,9 +42,10 @@
   /* Height follows content only — avoid stacking with main-content / .hr-view min-heights */
   min-height: 0;
   position: relative;
-  /* Clip ::after glow (inset: -100%) so it cannot inflate ancestor scroll height */
   border-radius: 24px;
   overflow: hidden;
+  /* Limit layout work propagating to ancestors when chrome (sidebar) resizes main width */
+  contain: layout style;
 }
 
 .rakez-kpi-dashboard.rakez-erp-dashboard {
@@ -56,6 +57,7 @@
   position: absolute;
   inset: 0;
   border-radius: 24px;
+  /* Frosted panel: tint + blur confined to this box only (no oversized ::after / no animation). */
   background: rgba(10, 15, 25, 0.6);
   backdrop-filter: blur(15px) saturate(160%);
   -webkit-backdrop-filter: blur(15px) saturate(160%);
@@ -64,45 +66,18 @@
   border: 1px solid rgba(181, 169, 154, 0.1);
 }
 
-.rakez-kpi-dashboard::after {
-  content: "";
-  position: absolute;
-  inset: -100%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0%,
-    transparent 20%,
-    rgba(181, 169, 154, 0.08) 25%,
-    rgba(255, 255, 255, 0.15) 26%,
-    rgba(181, 169, 154, 0.08) 27%,
-    transparent 35%,
-    transparent 65%,
-    rgba(181, 169, 154, 0.08) 75%,
-    rgba(255, 255, 255, 0.15) 76%,
-    rgba(181, 169, 154, 0.08) 77%,
-    transparent 85%,
-    transparent 100%
-  );
-  animation: rakez-kpi-dashboard-bg-rotate 25s linear infinite;
-  z-index: -2;
-  pointer-events: none;
-  filter: blur(100px);
-}
-
-@keyframes rakez-kpi-dashboard-bg-rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .rakez-kpi-dashboard::after {
-    animation: none;
+  .rakez-kpi-dashboard::before {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(10, 15, 25, 0.82);
   }
 }
+
+/*
+ * No ::after: the old layer used inset:-100%, blur(100px), and infinite rotate — too heavy for GPU
+ * when the sidebar resizes the main column. Shell glass effect lives on ::before only.
+ */
 
 /* Section titles — dark glass strip (inside immersive shell) */
 .rakez-kpi-dashboard .rakez-dashboard-section-title {
@@ -125,9 +100,7 @@
 
 /* Stat cards — glass + gold accent (article + section beat Vue scoped) */
 .rakez-kpi-dashboard article.luxury-stat-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.09);
   border: 1px solid rgba(181, 169, 154, 0.2);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
   border-radius: 20px;
@@ -149,9 +122,7 @@
 
 /* Dark widget panels — depth + corner glow */
 .rakez-kpi-dashboard section.dark-widget-shell {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(15, 23, 42, 0.82);
   border: 1px solid rgba(181, 169, 154, 0.12);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
   border-radius: 24px;
@@ -214,8 +185,6 @@
     rgba(250, 246, 238, 0.86) 45%,
     rgba(255, 255, 255, 0.78) 100%
   );
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.65) inset,
     0 8px 24px -16px rgba(15, 23, 42, 0.12);
@@ -224,6 +193,302 @@
 /* مسافة بين صف البطاقات وعنوان القسم التالي (لا تلتصق اللوحات بالعنوان) */
 .rakez-widget-grid + .rakez-dashboard-section-title {
   margin-top: clamp(28px, 4vw, 44px);
+}
+
+/* --------------------------------------------------------------------------
+   Notifications — KPI-style card list, filters, empty state
+   -------------------------------------------------------------------------- */
+
+/* Filter bar */
+.rakez-notification-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(181, 169, 154, 0.12);
+}
+
+.rakez-notification-filters select {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(181, 169, 154, 0.2);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  padding: 8px 32px 8px 14px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.25s, background 0.25s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23b5a99a' stroke-width='2'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 12px center;
+}
+
+.rakez-notification-filters select:focus {
+  outline: none;
+  border-color: var(--color-gold, #b5a99a);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.rakez-notification-filters select option {
+  background: #1a2636;
+  color: #e2e8f0;
+}
+
+.rakez-notification-filters .btn-mark-all {
+  margin-inline-start: auto;
+  padding: 8px 20px;
+  border: 1px solid rgba(181, 169, 154, 0.25);
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(181, 169, 154, 0.15) 0%, rgba(181, 169, 154, 0.06) 100%);
+  color: var(--color-gold, #b5a99a);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.rakez-notification-filters .btn-mark-all:hover {
+  background: linear-gradient(135deg, rgba(181, 169, 154, 0.25) 0%, rgba(181, 169, 154, 0.12) 100%);
+  border-color: var(--color-gold, #b5a99a);
+  transform: translateY(-1px);
+}
+
+.rakez-notification-filters .btn-mark-all:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Card grid */
+.rakez-notifications-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Individual notification card */
+.rakez-notification-card {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(181, 169, 154, 0.1);
+  transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  cursor: pointer;
+}
+
+.rakez-notification-card:hover {
+  background: rgba(181, 169, 154, 0.07);
+  border-color: rgba(181, 169, 154, 0.28);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+}
+
+/* Unread accent */
+.rakez-notification-card--unread {
+  border-inline-end: 3px solid var(--color-gold, #b5a99a);
+  background: rgba(181, 169, 154, 0.04);
+}
+
+.rakez-notification-card--unread:hover {
+  background: rgba(181, 169, 154, 0.1);
+}
+
+/* Icon circle */
+.rakez-notification-card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  background: rgba(181, 169, 154, 0.1);
+  border: 1px solid rgba(181, 169, 154, 0.12);
+  color: var(--color-gold, #b5a99a);
+}
+
+.rakez-notification-card__icon--success { background: rgba(16, 185, 129, 0.12); color: #34d399; border-color: rgba(16, 185, 129, 0.2); }
+.rakez-notification-card__icon--warning { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border-color: rgba(245, 158, 11, 0.2); }
+.rakez-notification-card__icon--error   { background: rgba(239, 68, 68, 0.12); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
+.rakez-notification-card__icon--info    { background: rgba(59, 130, 246, 0.12); color: #60a5fa; border-color: rgba(59, 130, 246, 0.2); }
+
+/* Body */
+.rakez-notification-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.rakez-notification-card__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rakez-notification-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rakez-notification-card__type-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 8px;
+  background: rgba(181, 169, 154, 0.12);
+  color: var(--color-gold, #b5a99a);
+  border: 1px solid rgba(181, 169, 154, 0.15);
+}
+
+.rakez-notification-card__date {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.rakez-notification-card__status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 8px;
+}
+
+.rakez-notification-card__status--read {
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+}
+
+.rakez-notification-card__status--unread {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+}
+
+/* Actions column */
+.rakez-notification-card__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.rakez-notification-card__actions button {
+  padding: 7px 14px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(181, 169, 154, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  transition: all 0.25s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.rakez-notification-card__actions button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.rakez-notification-card__actions button:hover {
+  background: rgba(181, 169, 154, 0.12);
+  border-color: var(--color-gold, #b5a99a);
+  color: var(--color-gold, #b5a99a);
+  transform: translateY(-1px);
+}
+
+/* Empty state */
+.rakez-notification-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  gap: 16px;
+}
+
+.rakez-notification-empty__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(181, 169, 154, 0.08);
+  border: 1px solid rgba(181, 169, 154, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gold, #b5a99a);
+  font-size: 1.5rem;
+  opacity: 0.7;
+}
+
+.rakez-notification-empty__text {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Responsive: stack card on small screens */
+@media (max-width: 640px) {
+  .rakez-notification-card {
+    grid-template-columns: 40px 1fr;
+    gap: 10px;
+  }
+  .rakez-notification-card__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+  .rakez-notification-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .rakez-notification-filters .btn-mark-all {
+    margin-inline-start: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   AppModal dark glass skin — when opened from a KPI dashboard context
+   -------------------------------------------------------------------------- */
+body:has(.rakez-kpi-dashboard) .app-modal-content {
+  background: linear-gradient(160deg, #1a2636 0%, #0f172a 100%) !important;
+  border: 1px solid rgba(181, 169, 154, 0.12);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+body:has(.rakez-kpi-dashboard) .app-modal-header {
+  border-color: rgba(181, 169, 154, 0.12) !important;
+}
+
+body:has(.rakez-kpi-dashboard) .app-modal-title {
+  color: var(--color-gold, #b5a99a) !important;
+}
+
+body:has(.rakez-kpi-dashboard) .app-modal-subtitle {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+body:has(.rakez-kpi-dashboard) .app-modal-footer {
+  border-color: rgba(181, 169, 154, 0.12) !important;
 }
 
 /* --------------------------------------------------------------------------

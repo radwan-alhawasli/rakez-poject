@@ -123,7 +123,8 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  /* scroll: fixed attachment repaints the whole viewport on every layout tick (e.g. sidebar expand) */
+  background-attachment: scroll;
   /* No visible rail/thumb — keeps wheel/touch scroll (gold bar looked like a UI defect) */
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -133,7 +134,7 @@
   width: 0;
   height: 0;
 }
-/* Overlay: شفاف + تغبيش زجاجي — الصورة تظهر أوضح مع قراءة معقولة للنص */
+/* Overlay: تدرج خفيف + تغبيش خفيف للخلفية (أخف من blur(6px) السابق) */
 .main-content::before {
   content: '';
   position: absolute;
@@ -144,10 +145,17 @@
     rgba(250, 248, 245, 0.1) 45%,
     rgba(255, 255, 255, 0.12) 100%
   );
-  backdrop-filter: blur(6px) saturate(1.02);
-  -webkit-backdrop-filter: blur(6px) saturate(1.02);
+  backdrop-filter: blur(4px) saturate(1.05);
+  -webkit-backdrop-filter: blur(4px) saturate(1.05);
   pointer-events: none;
   z-index: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main-content::before {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 .main-content > * {
   position: relative;
@@ -156,7 +164,8 @@
 
 /* Header extends full width behind sidebar; padding keeps content clear */
 .top-header {
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: padding 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    box-shadow 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .logo-text-main {
@@ -173,7 +182,7 @@
   align-items: center;
   justify-content: center;
   margin-right: 80px;
-  transition: margin-right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: margin-right 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 :deep(.sidebar):hover ~ .footer {

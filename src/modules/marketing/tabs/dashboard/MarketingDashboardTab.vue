@@ -15,7 +15,7 @@
       <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
       <div class="rakez-widget-grid rakez-widget-grid--dense">
         <LuxuryStatCard
-          label="العملاء المحتملون"
+          label="عدد lead"
           :value="formatCompact(dashboardMetrics.total_leads)"
           description="إجمالي العملاء المحتملين"
         >
@@ -24,30 +24,21 @@
           </template>
         </LuxuryStatCard>
         <LuxuryStatCard
-          label="قيمة الوحدات المتاحة"
-          :value="formatCurrencyCompact(dashboardMetrics.available_units_value)"
-          :description="`${formatNumber(dashboardMetrics.available_units_count)} وحدة متاحة`"
+          label="عدد الوحدات المتاحة"
+          :value="formatCompact(dashboardMetrics.available_units_count)"
+          :description="`القيمة الإجمالية: ${formatCurrencyCompact(dashboardMetrics.available_units_value)}`"
         >
           <template #icon>
             <DashboardStatIcon name="grid" />
           </template>
         </LuxuryStatCard>
         <LuxuryStatCard
-          label="نسبة إنجاز المهام"
-          :value="`${dashboardMetrics.daily_task_achievement_rate}%`"
-          description="معدل الإنجاز اليومي"
+          label="عدد العربون"
+          :value="formatCompact(numberOfDeposits)"
+          description="عربونات اليوم"
         >
           <template #icon>
-            <DashboardStatIcon name="check" />
-          </template>
-        </LuxuryStatCard>
-        <LuxuryStatCard
-          label="تكلفة العربون"
-          :value="formatCurrencyCompact(depositCostDisplay)"
-          :description="`${formatNumber(dashboardMetrics.daily_deposits_count)} عربون يومي`"
-        >
-          <template #icon>
-            <DashboardStatIcon name="dollar" />
+            <DashboardStatIcon name="chartBars" />
           </template>
         </LuxuryStatCard>
       </div>
@@ -111,8 +102,8 @@ import DashboardStatIcon from '@/components/dashboard/DashboardStatIcon.vue';
 const {
   dashboardMetrics,
   isLoadingDashboard: isLoading,
+  numberOfDeposits,
   depositCostDisplay,
-  formatNumber,
 } = useMarketingDashboard();
 const { formatCompact, formatCurrencyCompact } = useFormatters();
 
@@ -120,9 +111,8 @@ const marketingCountsSeries = computed(() => {
   const m = dashboardMetrics;
   return [
     { label: 'عملاء محتملون', value: Number(m.total_leads) || 0 },
-    { label: 'وحدات (عدد)', value: Number(m.available_units_count) || 0 },
-    { label: 'إنجاز مهام %', value: Number(m.daily_task_achievement_rate) || 0 },
-    { label: 'عربون (عدد)', value: Number(m.daily_deposits_count) || 0 },
+    { label: 'عدد الوحدات المتاحة', value: Number(m.available_units_count) || 0 },
+    { label: 'عدد العربون', value: numberOfDeposits.value },
     { label: 'حجوزات متوقعة', value: Number(m.total_expected_bookings) || 0 },
   ];
 });
@@ -134,7 +124,7 @@ const marketingValuesSeries = computed(() => {
     { label: 'قيمة وحدات', value: Number(m.available_units_value) || 0 },
     { label: 'حجوزات متوقعة', value: Number(m.total_expected_booking_value) || 0 },
     { label: 'إنفاق يومي', value: Number(m.total_daily_spend) || 0 },
-    { label: 'تكلفة عربون', value: dep },
+    { label: 'متوسط تكلفة العربون', value: dep },
   ];
 });
 

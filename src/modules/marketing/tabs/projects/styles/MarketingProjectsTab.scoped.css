@@ -1,3 +1,44 @@
+.detail-item--stacked {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  text-align: right;
+}
+
+.detail-item--stacked .detail-label {
+  margin-bottom: 8px;
+}
+
+.marketing-percent-ui-input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.detail-ui-only-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.teams-page-link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-weight: 700;
+  color: #1e3a5f;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.teams-page-link:hover {
+  color: #2563eb;
+}
+
 @media (max-width: 1200px) {
   .projects-grid {
     grid-template-columns: repeat(2, 1fr);

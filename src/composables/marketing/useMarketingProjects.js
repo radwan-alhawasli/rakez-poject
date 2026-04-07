@@ -2,7 +2,6 @@ import { ref, reactive, computed, shallowRef, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import marketingService from '@/services/marketingService';
 import contractService from '@/services/contractService';
-import teamService from '@/services/teamService';
 import notificationService from '@/services/notificationService';
 import logger from '@/utils/logger';
 import { useFormatters } from '@/composables/useFormatters';
@@ -52,24 +51,13 @@ export function useMarketingProjects() {
     return list;
   });
 
-  // Team management
-  const availableTeams = ref([]);
-  const selectedTeamIdToAdd = ref('');
-  const isTeamActionLoading = ref(false);
-
   // Modals
   const showProjectDetailsModal = ref(false);
   const showCalculateBudgetModal = ref(false);
   const showPlanUnavailableModal = ref(false);
   const planUnavailableProject = ref(null);
-  const showConfirmModal = ref(false);
-  const confirmModalConfig = ref({
-    title: '',
-    message: '',
-    type: 'warning',
-    confirmText: 'تأكيد',
-    resolve: null,
-  });
+  /** حقل واجهة فقط في مودال التفاصيل — لا يُحفظ ولا يُرسل لأي API */
+  const uiOnlyMarketingPercent = ref('');
 
   // Budget form
   const budgetForm = reactive({
@@ -129,69 +117,33 @@ export function useMarketingProjects() {
     }
   };
 
-  const loadAvailableTeams = async () => {
-    try {
-      const allTeams = await teamService.getTeams();
-      availableTeams.value = allTeams;
-    } catch (error) {
-      logger.error('Error loading teams:', error);
-    }
-  };
-
   const viewProjectDetails = async project => {
+    uiOnlyMarketingPercent.value = '';
     showProjectDetailsModal.value = true;
     showUnitsTable.value = false;
     isLoadingUnits.value = false;
     await loadProjectDetails(project);
-    loadAvailableTeams();
   };
 
-  const assignTeamToProject = async () => {
-    if (!selectedTeamIdToAdd.value || !selectedProjectDetails.value) return;
-    const projectId = selectedProjectDetails.value.id;
-    isTeamActionLoading.value = true;
-    try {
-      await teamService.addTeamsToContract(projectId, [selectedTeamIdToAdd.value]);
-      notificationService.addNotification('تم إضافة الفريق للمشروع بنجاح', 'success');
-      selectedTeamIdToAdd.value = '';
-      loadProjectDetails(selectedProjectDetails.value);
-    } catch (error) {
-      logger.error('Error adding team:', error);
-      toast.error('تعذر إضافة الفريق');
-    } finally {
-      isTeamActionLoading.value = false;
-    }
-  };
-
-  const removeTeamFromProject = team => {
-    const projectId = selectedProjectDetails.value.id;
-    const teamId = team.id;
-    confirmModalConfig.value = {
-      title: 'إزالة الفريق',
-      message: 'هل أنت متأكد من إزالة هذا الفريق؟',
-      type: 'danger',
-      confirmText: 'إزالة',
-      resolve: async () => {
-        isTeamActionLoading.value = true;
-        try {
-          await teamService.removeTeamsFromContract(projectId, [teamId]);
-          notificationService.addNotification('تم إزالة الفريق بنجاح', 'success');
-          loadProjectDetails(selectedProjectDetails.value);
-        } catch (error) {
-          logger.error('Error removing team:', error);
-          toast.error('تعذر إزالة الفريق');
-        } finally {
-          isTeamActionLoading.value = false;
-        }
-      },
-    };
-    showConfirmModal.value = true;
-  };
-
-  const onConfirmModalConfirm = async () => {
-    const fn = confirmModalConfig.value.resolve;
-    if (fn) await fn();
-    showConfirmModal.value = false;
+  const goToMarketingTeamsPage = () => {
+    const d = selectedProjectDetails.value;
+    if (!d) return;
+    const contractIdRaw = d.marketing_project?.contract_id ?? d.contract_id ?? '';
+    const marketingProjectIdRaw = d.id ?? d.marketing_project_id ?? '';
+    const contractId = contractIdRaw != null && contractIdRaw !== '' ? String(contractIdRaw) : '';
+    const marketingProjectId =
+      marketingProjectIdRaw != null && marketingProjectIdRaw !== '' ? String(marketingProjectIdRaw) : '';
+    if (!contractId && !marketingProjectId) return;
+    router
+      .push({
+        name: 'MarketingTeams',
+        query: {
+          ...(contractId ? { contractId } : {}),
+          ...(marketingProjectId ? { marketingProjectId } : {}),
+        },
+      })
+      .catch(() => {});
+    showProjectDetailsModal.value = false;
   };
 
   const goToUnits = async project_id => {
@@ -357,24 +309,18 @@ export function useMarketingProjects() {
     showUnitsTable,
     isLoadingUnits,
     recommendedEmployeeByProjectId,
-    availableTeams,
-    selectedTeamIdToAdd,
-    isTeamActionLoading,
     showProjectDetailsModal,
     showCalculateBudgetModal,
     showPlanUnavailableModal,
     planUnavailableProject,
-    showConfirmModal,
-    confirmModalConfig,
+    uiOnlyMarketingPercent,
     budgetForm,
     budgetResult,
     isSubmitting,
     loadProjects,
     loadProjectDetails,
     viewProjectDetails,
-    assignTeamToProject,
-    removeTeamFromProject,
-    onConfirmModalConfirm,
+    goToMarketingTeamsPage,
     goToUnits,
     goToPhotography,
     managePlan,
