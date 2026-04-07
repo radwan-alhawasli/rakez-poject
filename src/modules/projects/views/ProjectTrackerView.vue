@@ -136,6 +136,7 @@ import contractService from '@/services/contractService';
 import salesService from '@/services/salesService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
+import { isProjectProgressFullyCompleted } from '@/utils/projectProgressSteps';
 import { toast } from '@/composables/useToast';
 import ProjectProgressTab from '@/components/project/ProjectProgressTab.vue';
 import ProjectUnitsTab from '@/components/project/ProjectUnitsTab.vue';
@@ -185,10 +186,7 @@ const selectUnitsTab = () => {
   activeTab.value = 'units';
 };
 
-const checkTrackerCompletion = (progress) => {
-  if (!progress?.steps || !Array.isArray(progress.steps)) return false;
-  return progress.steps.every(s => s.completed);
-};
+const checkTrackerCompletion = progress => isProjectProgressFullyCompleted(progress);
 
 const onTrackerCompleted = () => {
   isTrackerCompleted.value = true;
@@ -282,12 +280,19 @@ const fetchProject = async () => {
       const trackerData = await contractService.getSecondPartyData(id);
       if (trackerData?.data) {
         const stageKeys = [
-          'real_estate_papers_url', 'plans_equipment_docs_url', 'project_logo_url',
-          'completion_certificate_url', 'prices_units_url', 'marketing_license_url',
+          'real_estate_papers_url',
+          'plans_equipment_docs_url',
+          'project_logo_url',
+          'prices_units_url',
+          'marketing_license_url',
           'advertiser_section_url',
         ];
         const allCompleted = stageKeys.every(k => !!trackerData.data[k]);
-        if (allCompleted) isTrackerCompleted.value = true;
+        const hasProgressSteps =
+          Array.isArray(projectProgress.value?.steps) && projectProgress.value.steps.length > 0;
+        if (allCompleted && !hasProgressSteps) {
+          isTrackerCompleted.value = true;
+        }
       }
     } catch (_) { /* restricted access */ }
   } catch (e) {

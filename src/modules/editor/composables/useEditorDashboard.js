@@ -1,26 +1,23 @@
 /**
- * Editor dashboard: same layout as Project Management.
- * Data from GET /editor/contracts/index; filter by has_photography_data / has_montage_data (both === 1 → after montage).
+ * Editor dashboard: KPIs قبل/بعد المونتاج.
+ * نفس منطق useEditorProjects: أعلام الباكند أو ثلاثي صورة+فيديو+وصف (contractHasCompleteMontageTriplet).
  */
 
 import { ref, computed } from 'vue';
 import editorService from '@/services/editorService';
+import { contractHasCompleteMontageTriplet } from '@/utils/editorMontageCard';
 
 export function useEditorDashboard() {
   const searchQuery = ref('');
   const isLoading = ref(true);
   const allContracts = ref([]);
 
-  // API: has_photography_data, has_montage_data (both === 1). Support legacy has_photography/has_montage.
-  // When backend does not set flags, treat as after montage if contract has image_url and description from API.
   const isAfterMontage = c => {
     const hasFlags =
       (c.has_photography_data == 1 || c.has_photography == 1 || c.has_photography === true) &&
       (c.has_montage_data == 1 || c.has_montage == 1 || c.has_montage === true);
     if (hasFlags) return true;
-    const hasImage = !!(c.image_url && String(c.image_url).trim());
-    const hasDesc = !!(c.description && String(c.description).trim());
-    return hasImage && hasDesc;
+    return contractHasCompleteMontageTriplet(c);
   };
 
   const notReady = computed(() =>

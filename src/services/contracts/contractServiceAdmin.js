@@ -77,17 +77,19 @@ export const contractServiceAdminMethods = {
   },
 
   /**
-   * تحديد عقد كمكتمل
-   * PATCH /contracts/:id/complete
-    * @param {any} contractId
+   * تحديد عقد كمكتمل (جاهز للتسويق) — يحفظ عبر نفس مسار تحديث الحالة المستخدم بعد إكمال المسار.
+   * ملاحظة: مسار PATCH /contracts/:id/complete غير مُعرَّف على api.rakez.com.sa (404)، لذلك نعتمد
+   * PATCH /contracts/update-status/:id مع { status: 'approved' }.
+   * @param {any} contractId
    */
   async markContractComplete(contractId) {
-    try {
-      const response = await apiClient.patch(`/contracts/${contractId}/complete`);
-      return response.data;
-    } catch (error) {
-      return handleServiceError(error, 'Mark contract complete', 'patch');
+    const id = contractId != null ? String(contractId).trim() : '';
+    if (!id) {
+      const err = new Error('معرف العقد مطلوب');
+      err.response = { status: 400, data: { message: 'معرف العقد مطلوب' } };
+      throw err;
     }
+    return this.updateContractStatusProjectManager(id, 'approved');
   },
 
   /**

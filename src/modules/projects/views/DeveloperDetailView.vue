@@ -46,6 +46,10 @@
         </div>
 
         <div class="card-body">
+          <div v-if="developer.role" class="info-row">
+            <span class="label">الصفة:</span>
+            <span class="value">{{ developer.role }}</span>
+          </div>
           <div class="info-row">
             <span class="label">الممثل:</span>
             <span class="value">{{ developer.representative || '-' }}</span>
@@ -146,8 +150,19 @@ export default {
     };
 
     const loadDeveloperById = async () => {
-      const id = route.params.id;
-      if (!id) return;
+      const rawParam = route.params.id;
+      if (!rawParam) return;
+      const id = decodeURIComponent(String(rawParam));
+      const looksLikeEmail = id.includes('@');
+
+      if (looksLikeEmail) {
+        developer.value = normalizeDeveloper({
+          second_party_email: id,
+          second_party_name: '—',
+        });
+        return;
+      }
+
       try {
         const raw = await contractService.getDeveloperDetail(id);
         if (raw && typeof raw === 'object') {

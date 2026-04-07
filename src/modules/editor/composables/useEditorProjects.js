@@ -6,6 +6,7 @@
 import { ref, computed } from 'vue';
 import editorService from '@/services/editorService';
 import { buildContractPatchFromMontageShow } from '@/utils/montageApproval';
+import { contractHasCompleteMontageTriplet } from '@/utils/editorMontageCard';
 
 export function useEditorProjects() {
   const contracts = ref([]);
@@ -19,24 +20,13 @@ export function useEditorProjects() {
   /** Map contractId -> true/false for manager: has montage links (from montage-department/show) */
   const montageHasLinksMap = ref({});
 
-  // API: has_photography_data, has_montage_data (both === 1 → after montage). Support legacy has_photography/has_montage.
-  // When backend does not set flags, treat as after montage if contract has image_url and description from API,
-  // or if montage_department alone has any link/text (links-only path).
+  // بعد المونتاج: إما أعلام الباكند (تصوير + مونتاج) أو اكتمال ثلاثي: صورة + فيديو + وصف (من show العقد أو المونتاج).
   const isAfterMontage = c => {
     const hasFlags =
       (c.has_photography_data == 1 || c.has_photography == 1 || c.has_photography === true) &&
       (c.has_montage_data == 1 || c.has_montage == 1 || c.has_montage === true);
     if (hasFlags) return true;
-    const mont = c.montage_department;
-    if (mont && typeof mont === 'object') {
-      const mi = mont.image_url && String(mont.image_url).trim();
-      const mv = mont.video_url && String(mont.video_url).trim();
-      const md = mont.description && String(mont.description).trim();
-      if (mi || mv || md) return true;
-    }
-    const hasImage = !!(c.image_url && String(c.image_url).trim());
-    const hasDesc = !!(c.description && String(c.description).trim());
-    return hasImage && hasDesc;
+    return contractHasCompleteMontageTriplet(c);
   };
 
   const beforeMontage = computed(() =>
@@ -116,16 +106,35 @@ export function useEditorProjects() {
   async function preloadDetails() {
     const list = contracts.value;
     if (!list.length) return;
-    await Promise.all(
-      list.map(async (c) => {
+    const concurrency = Math.min(6, list.length);
+    let cursor = 0;
+    async function worker() {
+      while (true) {
+        const i = cursor++;
+        if (i >= list.length) break;
+        const c = list[i];
         try {
-          const data = await editorService.getContractById(c.id);
-          mergeContractDetail(c.id, data);
+          const [showRes, montRes] = await Promise.allSettled([
+            editorService.getContractById(c.id),
+            editorService.getMontage(c.id),
+          ]);
+          if (showRes.status === 'fulfilled' && showRes.value && typeof showRes.value === 'object') {
+            mergeContractDetail(c.id, showRes.value);
+          }
+          if (
+            montRes.status === 'fulfilled' &&
+            montRes.value &&
+            typeof montRes.value === 'object' &&
+            Object.keys(montRes.value).length
+          ) {
+            mergeMontageShowIntoContract(c.id, montRes.value);
+          }
         } catch (_) {
-          // Ignore preloading error for individual items
+          /* skip */
         }
-      })
-    );
+      }
+    }
+    await Promise.all(Array.from({ length: concurrency }, () => worker()));
   }
 
   async function fetchDetail(id) {
@@ -271,13 +280,10 @@ export function useEditorProjects() {
         try {
           const data = await editorService.getMontage(id);
           mergeMontageShowIntoContract(id, data);
-          const has =
-            !!(data?.image_url && String(data.image_url).trim()) ||
-            !!(data?.video_url && String(data.video_url).trim()) ||
-            !!(data?.description && String(data.description).trim());
-          map[id] = has;
+          const row = contracts.value.find(c => Number(c.id) === Number(id));
+          map[id] = row ? contractHasCompleteMontageTriplet(row) : false;
         } catch (_) {
-          map[id] = false; // Default to false if fetch fails
+          map[id] = false;
         }
       })
     );
@@ -304,6 +310,7 @@ export function useEditorProjects() {
     montageHasLinksMap,
     fetchMontageLinksForProjects,
     mergeContractDetail,
+    mergeMontageShowIntoContract,
     preloadDetails,
   };
 }

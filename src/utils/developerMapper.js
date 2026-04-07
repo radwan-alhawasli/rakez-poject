@@ -32,6 +32,7 @@ export function normalizeDeveloper(d, options = {}) {
       phone: '-',
       location: '-',
       projectCount: options.projectCount ?? 0,
+      role: '',
     };
   }
 
@@ -47,10 +48,21 @@ export function normalizeDeveloper(d, options = {}) {
   const location = d.city ?? d.location ?? d.second_party_address ?? d.address ?? '-';
   const email = d.email ?? d.second_party_email ?? '';
 
-  const projectCount = options.projectCount ?? d.project_count ?? d.projects_count ?? 0;
+  const projectCount =
+    options.projectCount ??
+    d.contracts_count ??
+    d.project_count ??
+    d.projects_count ??
+    0;
 
   const normalized = {
-    id: d.id ?? d.second_party_id ?? d.developer_number ?? null,
+    id:
+      d.id ??
+      d.second_party_id ??
+      (d.developer_number != null && String(d.developer_number).trim() !== ''
+        ? String(d.developer_number).trim()
+        : null) ??
+      (email.trim() !== '' ? email.trim() : null),
     developer_number: d.developer_number != null ? String(d.developer_number) : undefined,
     name,
     email,
@@ -59,6 +71,7 @@ export function normalizeDeveloper(d, options = {}) {
     phone,
     location,
     projectCount: Number(projectCount) || 0,
+    role: d.second_party_role != null && String(d.second_party_role).trim() !== '' ? String(d.second_party_role).trim() : '',
   };
   if (Array.isArray(d.projects)) {
     normalized.projects = d.projects;

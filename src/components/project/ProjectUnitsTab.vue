@@ -9,17 +9,6 @@
         </div>
         <div class="units-btns">
           <button
-            v-if="!isSalesUser"
-            class="btn-units-primary"
-            @click="showAddUnitModal = true"
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            إضافة وحدة يدوياً
-          </button>
-          <button
             v-if="!isSalesUser && !isProjectManager"
             class="btn-units-outline"
             @click="downloadContractForProject"
@@ -46,38 +35,6 @@
             {{ csvUploading ? 'جاري الرفع...' : 'رفع CSV للوحدات' }}
           </button>
         </div>
-      </div>
-      <div class="units-filter-tabs" role="tablist" aria-label="تصفية الوحدات حسب الحالة">
-        <button
-          type="button"
-          role="tab"
-          class="units-filter-tab"
-          :class="{ active: unitsFilterTab === 'available' }"
-          :aria-selected="unitsFilterTab === 'available'"
-          @click="unitsFilterTab = 'available'"
-        >
-          متاح
-        </button>
-        <button
-          type="button"
-          role="tab"
-          class="units-filter-tab"
-          :class="{ active: unitsFilterTab === 'sold' }"
-          :aria-selected="unitsFilterTab === 'sold'"
-          @click="unitsFilterTab = 'sold'"
-        >
-          مباع
-        </button>
-        <button
-          type="button"
-          role="tab"
-          class="units-filter-tab"
-          :class="{ active: unitsFilterTab === 'reserved' }"
-          :aria-selected="unitsFilterTab === 'reserved'"
-          @click="unitsFilterTab = 'reserved'"
-        >
-          محجوز
-        </button>
       </div>
     </div>
 
@@ -374,7 +331,6 @@ const {
   unitCountFromApi,
   projectSalesSummary,
   unitsLoading,
-  unitsFilterTab,
   filteredUnits,
   showAddUnitModal,
   isEditingUnit,
@@ -434,12 +390,7 @@ const displayUnitCount = computed(() => {
   return units.value.length;
 });
 
-function resetUnitsFilterToAvailable() {
-  unitsFilterTab.value = 'available';
-}
-
 onMounted(() => {
-  resetUnitsFilterToAvailable();
   loadUnits();
 });
 
@@ -447,7 +398,6 @@ watch(
   () => props.projectId,
   (id, prev) => {
     if (id === prev) return;
-    resetUnitsFilterToAvailable();
     loadUnits();
   },
 );

@@ -53,7 +53,11 @@ const managerService = {
     try {
       const response = await apiClient.get(`/manager/employees/${employeeId}/reviews`, { params });
       const data = response.data?.data ?? response.data;
-      return Array.isArray(data) ? data : [];
+      if (Array.isArray(data)) return data;
+      const { items } = extractPaginatedData(response, []);
+      if (Array.isArray(items) && items.length) return items;
+      if (data && typeof data === 'object' && Array.isArray(data.reviews)) return data.reviews;
+      return [];
     } catch (error) {
       logger.error(`Error fetching reviews for employee ${employeeId}:`, error);
       return handleServiceError(error, 'Manager reviews', 'get', []);
@@ -84,7 +88,11 @@ const managerService = {
    */
   async createReview(employeeId, data) {
     try {
-      const response = await apiClient.post(`/manager/employees/${employeeId}/reviews`, data);
+      const body = {
+        rating: Number(data.rating),
+        comment: data.comment != null ? String(data.comment).trim() : '',
+      };
+      const response = await apiClient.post(`/manager/employees/${employeeId}/reviews`, body);
       return response.data?.data ?? response.data ?? {};
     } catch (error) {
       logger.error('Error creating review:', error);

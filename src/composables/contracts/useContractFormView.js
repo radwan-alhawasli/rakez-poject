@@ -1,4 +1,4 @@
-import { ref, reactive, computed, watch } from 'vue';
+import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import contractService from '@/services/contractService';
 import { downloadFilledContract } from '@/services/pdfService';
@@ -6,6 +6,7 @@ import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { contractInfoSchema } from '@/validation/schemas';
 import { useValidation } from '@/composables/useValidation';
+import { useCitiesDistrictsLookups } from '@/composables/useCitiesDistrictsLookups';
 
 export function useContractFormView() {
   const router = useRouter();
@@ -42,8 +43,12 @@ export function useContractFormView() {
     second_party_signatory: '',
     second_party_role: '',
     city: '',
+    city_id: '',
     project_name: '',
     district: '',
+    district_id: '',
+    /** POST /contracts/store: n | e | s | w */
+    side: '',
     units_count: 0,
     unit_type: '',
     total_units_value: 0,
@@ -81,6 +86,53 @@ export function useContractFormView() {
     { immediate: true }
   );
 
+  const { cities, districts, loading: locationsLoading, load: loadLocationLookups, districtsForCityId } =
+    useCitiesDistrictsLookups();
+
+  const filteredDistricts = computed(() => districtsForCityId(form.city_id));
+
+  /** عند تغيير المدينة يدوياً: إفراغ الحي فقط (وليس عند أول تحميل من الـ API). */
+  watch(
+    () => form.city_id,
+    (id, prev) => {
+      const prevStr = prev != null && prev !== '' ? String(prev) : '';
+      const idStr = id != null && id !== '' ? String(id) : '';
+      if (prevStr !== '' && idStr !== prevStr) {
+        form.district_id = '';
+        form.district = '';
+      }
+      const c = cities.value.find(x => String(x.id) === String(id));
+      if (c) form.city = c.name;
+    }
+  );
+
+  watch(
+    () => form.district_id,
+    id => {
+      const d = filteredDistricts.value.find(x => String(x.id) === String(id));
+      if (d) form.district = d.name;
+    }
+  );
+
+  /** بعد جلب المدن/الأحياء: ربط الأسماء بالمعرّفات القادمة من العقد. */
+  watch([cities, districts], () => {
+    if (form.city_id) {
+      const c = cities.value.find(x => String(x.id) === String(form.city_id));
+      if (c) form.city = c.name;
+    }
+    if (form.district_id) {
+      const d = districtsForCityId(form.city_id).find(x => String(x.id) === String(form.district_id));
+      if (d) form.district = d.name;
+    }
+  });
+
+  onMounted(() => {
+    loadLocationLookups().catch(err => {
+      logger.error('Failed to load cities/districts', err);
+      toast.error('تعذر تحميل قائمة المدن والأحياء');
+    });
+  });
+
   const fetchContractDetails = async () => {
     const id = requestId.value;
     if (!id) return;
@@ -88,8 +140,14 @@ export function useContractFormView() {
       const data = await contractService.getContractById(id);
       if (data) {
         form.city = data.city || form.city;
+        if (data.city_id != null && data.city_id !== '') {
+          form.city_id = String(data.city_id);
+        }
         form.project_name = data.project_name || form.project_name;
         form.district = data.district || form.district;
+        if (data.district_id != null && data.district_id !== '') {
+          form.district_id = String(data.district_id);
+        }
 
         if (data.units && Array.isArray(data.units) && data.units.length > 0) {
           const firstUnit = data.units[0];
@@ -205,6 +263,21 @@ export function useContractFormView() {
       return;
     }
 
+    if (!requestId.value) {
+      if (!form.city_id) {
+        toast.error('يرجى اختيار المدينة');
+        return;
+      }
+      if (!form.district_id) {
+        toast.error('يرجى اختيار الحي');
+        return;
+      }
+      if (!form.side) {
+        toast.error('يرجى اختيار اتجاه المشروع');
+        return;
+      }
+    }
+
     isSaving.value = true;
     try {
       if (requestId.value) {
@@ -241,13 +314,16 @@ export function useContractFormView() {
         showDownloadModal.value = true;
       } else {
         const createPayload = {
+          side: form.side,
           project_name: form.project_name,
           developer_name: form.second_party_name,
           developer_number: form.second_party_cr_number,
           city: form.city,
+          city_id: String(form.city_id),
           district: form.district,
+          district_id: String(form.district_id),
           note: form.notes,
-          commission_percent: Number(form.commission_percent) || 0,
+          commission_percent: String(form.commission_percent ?? '').trim() || '0',
           commission_from: form.commission_from,
           units: form.units_count
             ? [{ type: form.unit_type || 'شقة', count: form.units_count, price: form.average_unit_price || 0 }]
@@ -304,6 +380,9 @@ export function useContractFormView() {
 
   return {
     form,
+    cities,
+    filteredDistricts,
+    locationsLoading,
     commissionFromLabel,
     commissionPercentDisplay,
     averageUnitPriceDisplay,

@@ -103,7 +103,7 @@ export const contractServiceMarketerMethods = {
   /**
    * إنشاء عقد / مشروع حصري
    * Endpoint: POST {{base_url}}/contracts/store (apiClient baseURL from appConfig)
-   * Payload: project_name, developer_name, developer_number, city, district,
+   * Payload: project_name, developer_name, developer_number, city, city_id, district, district_id,
    *          developer_requiment?, project_image_url?, note?, units[{type,count,price}],
    *          commission_percent (أو commission_percentage — يُطبَّع تلقائياً), commission_from?,
    *          is_exclusive?, type? (مثلاً Exclusive لمشروع حصري)

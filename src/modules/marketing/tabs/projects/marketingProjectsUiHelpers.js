@@ -1,5 +1,7 @@
 /** Pure UI helpers for marketing projects list/cards (used by useMarketingProjects). */
 
+import { computeAgreementTimeline } from '@/utils/agreementTimeline.js';
+
 export function getStatusClass(status) {
   const s = String(status || '').toLowerCase();
   const statusMap = {
@@ -26,17 +28,17 @@ export function getStatusText(status) {
 
 export function contractTimelineDaysLeft(project) {
   if (!project) return null;
-  const candidates = [
-    project.contract_end_date,
-    project.end_date,
-    project.agreement_end_date,
-    project.marketing_project?.contract_end_date,
-  ];
-  const endDateRaw = candidates.find(Boolean);
-  if (!endDateRaw) return null;
-  const endDate = new Date(endDateRaw);
-  if (Number.isNaN(endDate.getTime())) return null;
-  return Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  const m = project.marketing_project;
+  const source =
+    m && typeof m === 'object'
+      ? {
+          ...m,
+          ...project,
+          marketing_project: undefined,
+        }
+      : project;
+  const { daysLeft } = computeAgreementTimeline(source);
+  return daysLeft;
 }
 
 export function durationStatusClass(daysLeft) {

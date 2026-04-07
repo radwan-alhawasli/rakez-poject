@@ -85,6 +85,11 @@
 <script setup>
 import { computed } from 'vue';
 import { isMontageDecisionFinal } from '@/utils/montageApproval';
+import {
+  getMontageTripletFromContract,
+  contractHasCompleteMontageTriplet,
+  pickTrim,
+} from '@/utils/editorMontageCard';
 
 const props = defineProps({
   project: { type: Object, required: true },
@@ -100,34 +105,25 @@ const props = defineProps({
 
 defineEmits(['add-links', 'see-more', 'approve', 'reject']);
 
+const montageTriplet = computed(() => getMontageTripletFromContract(props.project));
+
 const advertiserNumber = computed(() => {
   const p = props.project;
-  const second = p?.second_party_data;
-  return second?.advertiser_section_url ?? p?.advertiser_number ?? p?.publisher_number ?? p?.publisherNumber;
-});
-const photographyLink = computed(() => {
-  const p = props.project;
-  const photo = p?.photography_department;
-  return photo?.image_url ?? p?.photography_link ?? p?.photography_url ?? p?.photographyLink ?? p?.image_url;
-});
-const videoLink = computed(() => {
-  const p = props.project;
-  const photo = p?.photography_department;
-  const mont = p?.montage_department;
-  return (
-    photo?.video_url ??
-    mont?.video_url ??
-    p?.montage_video_url ??
-    p?.video_url ??
-    p?.montage_video_link ??
-    ''
+  const second =
+    p?.second_party_data && typeof p.second_party_data === 'object' ? p.second_party_data : {};
+  return pickTrim(
+    second.advertiser_number ??
+      second.publisher_number ??
+      second.advertiser_section_url ??
+      p?.advertiser_number ??
+      p?.publisher_number ??
+      p?.publisherNumber ??
+      p?.advertiser_section_url
   );
 });
-const description = computed(() => {
-  const p = props.project;
-  const photo = p?.photography_department;
-  return photo?.description ?? p?.description ?? p?.desc;
-});
+const photographyLink = computed(() => montageTriplet.value.image);
+const videoLink = computed(() => montageTriplet.value.video);
+const description = computed(() => montageTriplet.value.description);
 const availableUnits = computed(() => {
   const p = props.project;
   const units = p?.contract_units ?? p?.units;
@@ -138,23 +134,7 @@ const availableUnits = computed(() => {
 /** True if project has montage links for manager to approve/reject; use prop if provided, else derive from project */
 const hasLinks = computed(() => {
   if (props.hasLinks === true || props.hasLinks === false) return props.hasLinks;
-  const p = props.project;
-  const photo = p?.photography_department;
-  const mont = p?.montage_department;
-  const image =
-    photo?.image_url ??
-    mont?.image_url ??
-    p?.montage_image_url ??
-    p?.image_url ??
-    p?.montage_image_link;
-  const video =
-    photo?.video_url ??
-    mont?.video_url ??
-    p?.montage_video_url ??
-    p?.video_url ??
-    p?.montage_video_link;
-  const desc = photo?.description ?? mont?.description ?? p?.montage_description ?? p?.description;
-  return !!(image && String(image).trim()) || !!(video && String(video).trim()) || !!(desc && String(desc).trim());
+  return contractHasCompleteMontageTriplet(props.project);
 });
 
 /** Rejection comment from manager — visible to all editors */
@@ -220,11 +200,14 @@ const descriptionLabel = computed(() => {
 });
 
 function isNull(v) {
-  return v === null || v === undefined || v === '';
+  if (v === null || v === undefined || v === '') return true;
+  const s = String(v).trim();
+  if (s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined') return true;
+  return false;
 }
 
 function displayValue(v) {
-  if (v === null || v === undefined || v === '') return 'null';
+  if (isNull(v)) return '—';
   return String(v);
 }
 </script>

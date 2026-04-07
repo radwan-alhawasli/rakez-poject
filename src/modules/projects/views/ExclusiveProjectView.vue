@@ -78,16 +78,24 @@
               </div>
               <div class="field-group">
                 <label>المدينة</label>
-                <input type="text" v-model="form.city" class="form-input" placeholder="المدينة" />
+                <select v-model="form.city_id" class="form-input" :disabled="citiesLoading">
+                  <option value="">{{ citiesLoading ? 'جاري التحميل...' : 'اختر المدينة' }}</option>
+                  <option v-for="c in cities" :key="c.id" :value="String(c.id)">{{ c.name }}</option>
+                </select>
               </div>
               <div class="field-group">
                 <label>الحي</label>
-                <input
-                  type="text"
-                  v-model="form.neighborhood"
-                  class="form-input"
-                  placeholder="الحي"
-                />
+                <select v-model="form.district_id" class="form-input" :disabled="citiesLoading || !form.city_id">
+                  <option value="">{{ !form.city_id ? 'اختر المدينة أولاً' : 'اختر الحي' }}</option>
+                  <option v-for="d in filteredDistricts" :key="d.id" :value="String(d.id)">{{ d.name }}</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label>الاتجاه</label>
+                <select v-model="form.side" class="form-input" required>
+                  <option value="">اختر الاتجاه</option>
+                  <option v-for="opt in sideOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                </select>
               </div>
             </div>
             <div class="input-row">
@@ -257,11 +265,20 @@ import { UNIT_TYPES } from '@/constants/lookups';
 import secureStorage from '@/utils/secureStorage';
 import { usePermissions } from '@/composables/usePermissions';
 import { PERMISSIONS } from '@/constants/permissions';
+import { useCitiesDistrictsLookups } from '@/composables/useCitiesDistrictsLookups';
 
 const { hasPermission } = usePermissions();
 const isLoading = ref(false);
 const developers = ref([]);
 const showSuccessConfirm = ref(false);
+
+/** يُرسل للـ API كـ side: n | e | s | w */
+const sideOptions = [
+  { value: 'n', label: 'شمال' },
+  { value: 'e', label: 'شرق' },
+  { value: 's', label: 'جنوب' },
+  { value: 'w', label: 'غرب' },
+];
 
 let nextUnitRowId = 1;
 const form = reactive({
@@ -269,15 +286,45 @@ const form = reactive({
   developer_name: '',
   developer_cr_number: '',
   project_name: '',
+  side: '',
   project_location_url: '',
   developer_requiment: '',
   note: '',
   city: '',
+  city_id: '',
   neighborhood: '',
+  district_id: '',
   commission_percentage: null,
   commission_from: 'owner',
   unit_rows: [{ id: nextUnitRowId++, unit_type: '', units_count: 0, avg_unit_price: 0 }],
 });
+
+const { cities, loading: citiesLoading, load: loadCitiesDistricts, districtsForCityId } =
+  useCitiesDistrictsLookups();
+
+const filteredDistricts = computed(() => districtsForCityId(form.city_id));
+
+watch(
+  () => form.city_id,
+  (id, prev) => {
+    const prevStr = prev != null && prev !== '' ? String(prev) : '';
+    const idStr = id != null && id !== '' ? String(id) : '';
+    if (prevStr !== '' && idStr !== prevStr) {
+      form.district_id = '';
+      form.neighborhood = '';
+    }
+    const c = cities.value.find(x => String(x.id) === String(id));
+    if (c) form.city = c.name;
+  }
+);
+
+watch(
+  () => form.district_id,
+  id => {
+    const d = filteredDistricts.value.find(x => String(x.id) === String(id));
+    if (d) form.neighborhood = d.name;
+  }
+);
 
 const unitTypeOptions = UNIT_TYPES;
 
@@ -339,13 +386,24 @@ const removeUnitRow = index => {
 
 const loadDevelopers = async () => {
   try {
-    // نفس مصدر "عرض المطورين" في قسم المحاسبة: GET /developers
-    const { data } = await contractService.getDevelopersList({ per_page: 100, page: 1 });
-    let list = Array.isArray(data) ? data : [];
+    let list = [];
+    // المصدر الموثوق: GET /second-party-data/second-parties (لا يعتمد على علاقة units في العقد)
+    try {
+      const secondParties = await contractService.getDevelopers();
+      if (Array.isArray(secondParties) && secondParties.length > 0) {
+        list = secondParties;
+      }
+    } catch (e) {
+      logger.warn('getDevelopers (second-parties) failed', e);
+    }
+    // احتياطي: GET /developers (المحاسبة) — قد يفشل إذا كان الخادم يحمّل علاقة units معطوبة
     if (list.length === 0) {
-      // احتياطي: قائمة الطرف الثاني (قد تكون متاحة لبعض الأدوار إذا كان /developers محجوباً)
-      const fallback = await contractService.getDevelopers();
-      list = Array.isArray(fallback) ? fallback : [];
+      try {
+        const { data } = await contractService.getDevelopersList({ per_page: 100, page: 1 });
+        list = Array.isArray(data) ? data : [];
+      } catch (e) {
+        logger.warn('getDevelopersList (/developers) failed', e);
+      }
     }
     developers.value = list.map(d => normalizeDeveloper(d));
   } catch (error) {
@@ -375,6 +433,10 @@ const onDeveloperSelect = () => {
 };
 
 onMounted(() => {
+  loadCitiesDistricts().catch(err => {
+    logger.error('Failed to load cities/districts', err);
+    toast.error('تعذر تحميل قائمة المدن والأحياء');
+  });
   if (hasPermission(PERMISSIONS.DEVELOPERS_LIST_VIEW)) {
     loadDevelopers();
   }
@@ -385,11 +447,14 @@ const resetForm = () => {
   form.developer_name = '';
   form.developer_cr_number = '';
   form.project_name = '';
+  form.side = '';
   form.project_location_url = '';
   form.developer_requiment = '';
   form.note = '';
   form.city = '';
+  form.city_id = '';
   form.neighborhood = '';
+  form.district_id = '';
   form.commission_percentage = null;
   form.commission_from = 'owner';
   commissionPercentInput.value = '0';
@@ -407,6 +472,18 @@ const handleSubmit = async () => {
   }
   if (!form.developer_id && !form.developer_name?.trim()) {
     toast.error('يرجى اختيار مطور أو إدخال اسم المطور');
+    return;
+  }
+  if (!form.city_id) {
+    toast.error('يرجى اختيار المدينة');
+    return;
+  }
+  if (!form.district_id) {
+    toast.error('يرجى اختيار الحي');
+    return;
+  }
+  if (!form.side) {
+    toast.error('يرجى اختيار اتجاه المشروع');
     return;
   }
   isLoading.value = true;
@@ -435,11 +512,14 @@ const handleSubmit = async () => {
     const pctNum = parseFloat(String(commissionPercentInput.value || '0').replace(',', '.'));
     const pctValid = Number.isFinite(pctNum) ? pctNum : 0;
     const payload = {
+      side: form.side,
       project_name: form.project_name?.trim() || '',
       developer_name: developerName,
       developer_number: developerNumber,
       city: form.city?.trim() || '',
+      city_id: String(form.city_id),
       district: form.neighborhood?.trim() || '',
+      district_id: String(form.district_id),
       developer_requiment: form.developer_requiment?.trim() || undefined,
       project_image_url: form.project_location_url?.trim() || undefined,
       note: form.note?.trim() || undefined,

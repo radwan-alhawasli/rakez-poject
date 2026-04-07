@@ -1,4 +1,5 @@
 import apiClient from '@/api/apiClient';
+import logger from '@/utils/logger';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
 
@@ -474,6 +475,138 @@ export const getTeamStats = async (teamId, params = {}) => {
   }
 };
 
+// --- Project Management: Reservations (متتبع المشروع / إدارة المشاريع) ---
+
+/**
+ * List reservations
+ * GET /project_management/reservations
+ * @param {Record<string, unknown>} [params]
+ * @returns {Promise<unknown[]>}
+ */
+export const getProjectManagementReservations = async (params = {}) => {
+  try {
+    const response = await apiClient.get('/project_management/reservations', { params });
+    const data = response.data?.data ?? response.data;
+    if (Array.isArray(data)) return data;
+    const { items } = extractPaginatedData(response, []);
+    if (Array.isArray(items) && items.length) return items;
+    if (data && typeof data === 'object' && Array.isArray(data.items)) return data.items;
+    return [];
+  } catch (error) {
+    return handleServiceError(error, 'PM reservations list', 'get', []);
+  }
+};
+
+/**
+ * Reservation context for a unit (lookups + snapshot)
+ * GET /project_management/units/:unitId/reservation-context
+ * @param {number|string} unitId
+ */
+export const getProjectManagementUnitReservationContext = async unitId => {
+  try {
+    const response = await apiClient.get(`/project_management/units/${unitId}/reservation-context`);
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    logger.error(`PM reservation context ${unitId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Create reservation
+ * POST /project_management/reservations
+ * @param {Record<string, unknown>} body
+ */
+export const createProjectManagementReservation = async body => {
+  try {
+    const response = await apiClient.post('/project_management/reservations', body);
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    logger.error('PM create reservation:', error);
+    throw error;
+  }
+};
+
+/**
+ * Confirm reservation
+ * POST /project_management/reservations/:id/confirm
+ */
+export const confirmProjectManagementReservation = async (reservationId, data = {}) => {
+  try {
+    const response = await apiClient.post(
+      `/project_management/reservations/${reservationId}/confirm`,
+      data
+    );
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    logger.error(`PM confirm reservation ${reservationId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Cancel reservation
+ * POST /project_management/reservations/:id/cancel
+ */
+export const cancelProjectManagementReservation = async (reservationId, data = {}) => {
+  try {
+    const response = await apiClient.post(
+      `/project_management/reservations/${reservationId}/cancel`,
+      data
+    );
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    logger.error(`PM cancel reservation ${reservationId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Log reservation action
+ * POST /project_management/reservations/:id/actions
+ */
+export const logProjectManagementReservationAction = async (reservationId, data) => {
+  try {
+    const response = await apiClient.post(
+      `/project_management/reservations/${reservationId}/actions`,
+      data
+    );
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    logger.error(`PM reservation action ${reservationId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Download voucher PDF
+ * GET /project_management/reservations/:id/voucher
+ */
+export const downloadProjectManagementReservationVoucher = async reservationId => {
+  const response = await apiClient.get(`/project_management/reservations/${reservationId}/voucher`, {
+    responseType: 'blob',
+  });
+  const data = response?.data;
+  if (data instanceof Blob) return data;
+  throw new Error('Expected blob for PM reservation voucher');
+};
+
+/**
+ * Voucher payload for client PDF fallback
+ * GET /project_management/reservations/:id/voucher-data
+ */
+export const getProjectManagementReservationVoucherData = async reservationId => {
+  try {
+    const response = await apiClient.get(
+      `/project_management/reservations/${reservationId}/voucher-data`
+    );
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    logger.error(`PM voucher-data ${reservationId}:`, error);
+    throw error;
+  }
+};
+
 export default {
   // Project Management Dashboard
   getProjectManagementDashboard,
@@ -504,4 +637,12 @@ export default {
   getTeamPerformance,
   getTeamMembers,
   getTeamStats,
+  getProjectManagementReservations,
+  getProjectManagementUnitReservationContext,
+  createProjectManagementReservation,
+  confirmProjectManagementReservation,
+  cancelProjectManagementReservation,
+  logProjectManagementReservationAction,
+  downloadProjectManagementReservationVoucher,
+  getProjectManagementReservationVoucherData,
 };
