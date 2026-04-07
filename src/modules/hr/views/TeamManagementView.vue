@@ -366,11 +366,31 @@ export default {
       });
     });
 
+    const resolveTeamMembersCount = async team => {
+      const existingCount = Number(
+        team?.members_count ??
+        team?.members?.length ??
+        team?.project_management_members_count ??
+        team?.pm_members_count
+      );
+      if (Number.isFinite(existingCount) && existingCount > 0) {
+        return { ...team, members_count: existingCount };
+      }
+      try {
+        const members = await teamService.getProjectManagementTeamMembers(team.id);
+        return { ...team, members_count: Array.isArray(members) ? members.length : 0 };
+      } catch (error) {
+        logger.warn('Error resolving team members count:', error);
+        return { ...team, members_count: 0 };
+      }
+    };
+
     const fetchTeams = async (search = '') => {
       isLoading.value = true;
       try {
         const data = await teamService.getTeams(search);
-        teams.value = Array.isArray(data) ? data : data?.items ?? [];
+        const rawTeams = Array.isArray(data) ? data : data?.items ?? [];
+        teams.value = await Promise.all(rawTeams.map(resolveTeamMembersCount));
       } catch (error) {
         logger.error('Error fetching teams:', error);
         toast.error('حدث خطأ أثناء جلب البيانات');

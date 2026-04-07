@@ -45,7 +45,7 @@ defineProps({
   open: { type: Boolean, default: false },
   title: { type: String, default: '' },
   subtitle: { type: String, default: '' },
-  size: { type: String, default: 'default' }, // 'default' | 'wide'
+  size: { type: String, default: 'default' }, // 'default' | 'wide' | 'xl'
   hideClose: { type: Boolean, default: false },
 })
 

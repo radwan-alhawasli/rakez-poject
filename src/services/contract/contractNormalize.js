@@ -58,6 +58,12 @@ export function normalizeContractWritePayload(raw) {
       price: Number(u.price) || 0,
     }));
   }
+  if (out.city_id != null && out.city_id !== '') {
+    out.city_id = String(out.city_id);
+  }
+  if (out.district_id != null && out.district_id !== '') {
+    out.district_id = String(out.district_id);
+  }
   return out;
 }
 

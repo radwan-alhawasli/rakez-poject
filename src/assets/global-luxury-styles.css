@@ -22,13 +22,13 @@ input[type="number"], input[type="tel"] {
   font-variant-numeric: lining-nums !important;
 }
 
-/* Hide number input spinners (Chrome, Safari, Firefox) */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
+/* Hide number spinners only inside project progress tracker (رقم المعلن / إلخ) */
+.project-progress-tracker input[type="number"]::-webkit-outer-spin-button,
+.project-progress-tracker input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-input[type="number"] {
+.project-progress-tracker input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }

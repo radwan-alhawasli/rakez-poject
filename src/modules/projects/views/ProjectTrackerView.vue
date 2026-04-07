@@ -282,12 +282,20 @@ const fetchProject = async () => {
       const trackerData = await contractService.getSecondPartyData(id);
       if (trackerData?.data) {
         const stageKeys = [
-          'real_estate_papers_url', 'plans_equipment_docs_url', 'project_logo_url',
-          'completion_certificate_url', 'prices_units_url', 'marketing_license_url',
+          'real_estate_papers_url',
+          'plans_equipment_docs_url',
+          'project_logo_url',
+          'marketing_license_url',
+          'prices_units_url',
+          'completion_certificate_url',
           'advertiser_section_url',
         ];
         const allCompleted = stageKeys.every(k => !!trackerData.data[k]);
-        if (allCompleted) isTrackerCompleted.value = true;
+        const hasProgressSteps =
+          Array.isArray(projectProgress.value?.steps) && projectProgress.value.steps.length > 0;
+        if (allCompleted && !hasProgressSteps) {
+          isTrackerCompleted.value = true;
+        }
       }
     } catch (_) { /* restricted access */ }
   } catch (e) {

@@ -6,29 +6,32 @@
     </div>
 
     <template v-else>
-      <DashboardWelcomeHeader greeting-name="قسم المونتاج" subtitle="عرض المشاريع حسب الحالة (غير جاهزة / جاهزة للتسويق)." />
+      <DashboardWelcomeHeader
+        greeting-name="قسم المونتاج"
+        subtitle="عدد المشاريع قبل المونتاج وبعده (نفس تصنيف صفحة المشاريع)."
+      />
 
       <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
       <div class="rakez-widget-grid rakez-widget-grid--dense">
         <LuxuryStatCard
           clickable
-          label="مشاريع التسويق (إجمالي)"
+          label="مشاريع بعد المونتاج"
           :value="formatCompact(readyCount)"
-          description="اضغط لعرض المشاريع"
-          @click="goAfterMontage"
+          description="تصوير ومونتاج مكتملان — اضغط للقائمة"
+          @click="goProjectsTab('after')"
         >
-          <template #icon>
-            <DashboardStatIcon name="clipboard" />
-          </template>
-        </LuxuryStatCard>
-
-        <LuxuryStatCard label="المشاريع الجاهزة" :value="formatCompact(readyCount)" description="مشاريع مكتملة تحتوي على وحدات">
           <template #icon>
             <DashboardStatIcon name="successCircle" />
           </template>
         </LuxuryStatCard>
 
-        <LuxuryStatCard label="المشاريع غير الجاهزة" :value="formatCompact(notReadyCount)" description="لم يكتمل المتتبع (Tracker)">
+        <LuxuryStatCard
+          clickable
+          label="مشاريع قبل المونتاج"
+          :value="formatCompact(notReadyCount)"
+          description="بانتظار إكمال التصوير أو المونتاج — اضغط للقائمة"
+          @click="goProjectsTab('before')"
+        >
           <template #icon>
             <DashboardStatIcon name="warningCircle" />
           </template>
@@ -37,7 +40,7 @@
 
       <h3 class="rakez-dashboard-section-title">لوحة المؤشرات</h3>
       <div class="rakez-widget-grid">
-        <DarkWidgetShell title="جاهزة مقابل غير جاهزة" subtitle="من بيانات العقود المحمّلة">
+        <DarkWidgetShell title="بعد المونتاج مقابل قبله" subtitle="من قائمة محرر العقود">
           <DonutKpiWidget :segments="editorDonutSegments" :height="200" central-sub-label="مشاريع" />
         </DarkWidgetShell>
         <DarkWidgetShell class="rakez-widget-span-2" title="مقارنة سريعة" subtitle="مخطط أعمدة">
@@ -67,16 +70,17 @@ const { formatCompact } = useFormatters();
 const { isLoading, notReadyCount, readyCount, fetchContracts } = useEditorDashboard();
 
 const editorChartSeries = computed(() => [
-  { label: 'جاهزة للتسويق', value: Number(readyCount.value) || 0 },
-  { label: 'غير جاهزة', value: Number(notReadyCount.value) || 0 },
+  { label: 'بعد المونتاج', value: Number(readyCount.value) || 0 },
+  { label: 'قبل المونتاج', value: Number(notReadyCount.value) || 0 },
 ]);
 
 const editorDonutSegments = computed(() =>
   editorProjectSegments(readyCount.value, notReadyCount.value)
 );
 
-function goAfterMontage() {
-  router.push({ name: 'EditorProjects', query: { tab: 'after' } });
+/** @param {'before' | 'after'} tab */
+function goProjectsTab(tab) {
+  router.push({ name: 'EditorProjects', query: { tab } });
 }
 
 onMounted(() => fetchContracts());

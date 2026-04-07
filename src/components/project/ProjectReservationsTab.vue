@@ -30,28 +30,24 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="res in projectReservations" :key="res.id">
-            <td data-label="رقم الحجز">#{{ res.id }}</td>
+          <tr v-for="res in projectReservations" :key="reservationRowId(res)">
+            <td data-label="رقم الحجز">#{{ reservationRowId(res) }}</td>
             <td data-label="العميل">{{ res.client_name }}</td>
             <td data-label="الوحدة">{{ res.unit_number || '—' }}</td>
             <td data-label="المبلغ">{{ formatCurrency(res.down_payment_amount) }}</td>
             <td data-label="الحالة">
-              <span class="status-badge" :class="res.status">{{
-                res.status === 'confirmed'
-                  ? 'مؤكد'
-                  : res.status === 'cancelled'
-                  ? 'ملغي'
-                  : 'معلق'
+              <span class="status-badge" :class="String(res.status || '').toLowerCase().replace(/[^a-z0-9_-]/g, '_')">{{
+                reservationStatusLabel(res.status)
               }}</span>
             </td>
             <td data-label="التاريخ">{{ res.contract_date }}</td>
             <td data-label="إجراءات">
               <RowActions>
-                <button class="btn-sm" @click="downloadVoucher(res.id)">⬇</button>
+                <button class="btn-sm" @click="downloadVoucher(reservationRowId(res))">⬇</button>
                 <button
-                  v-if="res.status === 'pending'"
+                  v-if="statusAllowsConfirm(res.status)"
                   class="btn-sm success"
-                  @click="confirmReservation(res.id)"
+                  @click="confirmReservation(reservationRowId(res))"
                   aria-label="تأكيد الحجز"
                 >
                   <svg
@@ -66,8 +62,9 @@
                   </svg>
                 </button>
                 <template #menu>
-                  <DropdownMenuItem @click="downloadVoucher(res.id)">تحميل الإيصال</DropdownMenuItem>
-                  <DropdownMenuItem v-if="res.status === 'pending'" @click="confirmReservation(res.id)">تأكيد الحجز</DropdownMenuItem>
+                  <DropdownMenuItem @click="downloadVoucher(reservationRowId(res))">تحميل الإيصال</DropdownMenuItem>
+                  <DropdownMenuItem v-if="statusAllowsConfirm(res.status)" @click="confirmReservation(reservationRowId(res))">تأكيد الحجز</DropdownMenuItem>
+                  <DropdownMenuItem v-if="statusAllowsCancel(res.status)" @click="cancelReservation(reservationRowId(res))">إلغاء الحجز</DropdownMenuItem>
                 </template>
               </RowActions>
             </td>
@@ -100,6 +97,20 @@ const props = defineProps({
   projectId: { type: [String, Number], required: true },
 });
 
+function reservationStatusLabel(status) {
+  const s = String(status || '').toLowerCase();
+  const map = {
+    confirmed: 'مؤكد',
+    cancelled: 'ملغي',
+    canceled: 'ملغي',
+    pending: 'معلق',
+    under_negotiation: 'تحت التفاوض',
+    negotiation: 'تفاوض',
+    awaiting_confirmation: 'بانتظار التأكيد',
+  };
+  return map[s] || status || '—';
+}
+
 const {
   projectReservations,
   reservationsLoading,
@@ -109,7 +120,11 @@ const {
   onConfirmModalConfirm,
   loadReservations,
   confirmReservation,
+  cancelReservation,
   downloadVoucher,
+  reservationRowId,
+  statusAllowsConfirm,
+  statusAllowsCancel,
 } = useProjectReservations(props.projectId);
 
 onMounted(() => {
@@ -175,6 +190,15 @@ onMounted(() => {
 .status-badge.cancelled {
   background: #fee2e2;
   color: #dc2626;
+}
+.status-badge.under_negotiation,
+.status-badge.negotiation {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+.status-badge.awaiting_confirmation {
+  background: #fef9c3;
+  color: #854d0e;
 }
 .btn-sm {
   background: #f1f5f9;

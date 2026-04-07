@@ -1,5 +1,5 @@
 <template>
-  <div class="tab-content">
+  <div class="tab-content project-progress-tracker">
     <div v-if="isLoading" class="loading-state">
       <div class="spinner"></div>
     </div>
@@ -89,7 +89,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
 import Stepper from '@/components/ui/Stepper.vue';
 import { useProjectProgress } from '@/composables/project/useProjectProgress';
 
@@ -115,6 +115,14 @@ const {
 onMounted(() => {
   loadProgress(props.projectProgress);
 });
+
+watch(
+  () => props.projectProgress,
+  pp => {
+    if (pp?.steps?.length) loadProgress(pp);
+  },
+  { deep: true }
+);
 </script>
 
 <style scoped>

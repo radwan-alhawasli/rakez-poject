@@ -138,8 +138,8 @@ export function inventoryProjectSegments(available, totalProjects, ready, notRea
 
 export function editorProjectSegments(ready, notReady) {
   return [
-    { label: 'جاهزة للتسويق', value: Number(ready) || 0 },
-    { label: 'غير جاهزة', value: Number(notReady) || 0 },
+    { label: 'بعد المونتاج', value: Number(ready) || 0 },
+    { label: 'قبل المونتاج', value: Number(notReady) || 0 },
   ];
 }
 

@@ -53,9 +53,50 @@
           <p>لا توجد مشاريع بعد المونتاج.</p>
         </div>
         <template v-else>
-          <div class="cards-grid">
+          <div class="tabs-row tabs-row-sub" role="tablist" aria-label="تصفية حالة المونتاج">
+            <button
+              type="button"
+              :class="['tab-btn', { active: afterStatusFilter === 'all' }]"
+              role="tab"
+              :aria-selected="afterStatusFilter === 'all'"
+              @click="afterStatusFilter = 'all'"
+            >
+              الكل ({{ afterMontageCounts.all }})
+            </button>
+            <button
+              type="button"
+              :class="['tab-btn', { active: afterStatusFilter === 'pending' }]"
+              role="tab"
+              :aria-selected="afterStatusFilter === 'pending'"
+              @click="afterStatusFilter = 'pending'"
+            >
+              قيد المراجعة ({{ afterMontageCounts.pending }})
+            </button>
+            <button
+              type="button"
+              :class="['tab-btn', { active: afterStatusFilter === 'approved' }]"
+              role="tab"
+              :aria-selected="afterStatusFilter === 'approved'"
+              @click="afterStatusFilter = 'approved'"
+            >
+              معتمد ({{ afterMontageCounts.approved }})
+            </button>
+            <button
+              type="button"
+              :class="['tab-btn', { active: afterStatusFilter === 'rejected' }]"
+              role="tab"
+              :aria-selected="afterStatusFilter === 'rejected'"
+              @click="afterStatusFilter = 'rejected'"
+            >
+              مرفوض ({{ afterMontageCounts.rejected }})
+            </button>
+          </div>
+          <div v-if="filteredAfterMontage.length === 0" class="empty-state empty-state-filtered">
+            <p>لا توجد مشاريع ضمن التصفية المحددة.</p>
+          </div>
+          <div v-else class="cards-grid">
             <EditorProjectCard
-              v-for="p in afterMontage"
+              v-for="p in filteredAfterMontage"
               :key="p.id"
               :project="p"
               :is-manager="isManager"
@@ -221,6 +262,9 @@ const {
   isLoading,
   beforeMontage,
   afterMontage,
+  afterStatusFilter,
+  filteredAfterMontage,
+  afterMontageCounts,
   detail,
   detailLoading,
   montageData,

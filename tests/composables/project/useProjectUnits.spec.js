@@ -88,7 +88,6 @@ describe('useProjectUnits', () => {
     const wrapper = mountComposable();
     expect(wrapper.vm.units).toEqual([]);
     expect(wrapper.vm.unitsLoading).toBe(false);
-    expect(wrapper.vm.unitsFilterTab).toBe('available');
     expect(wrapper.vm.showAddUnitModal).toBe(false);
     expect(wrapper.vm.isEditingUnit).toBe(false);
   });
@@ -119,7 +118,7 @@ describe('useProjectUnits', () => {
     expect(wrapper.vm.unitsLoading).toBe(false);
   });
 
-  it('should compute filteredUnits based on filter tab', async () => {
+  it('should expose all loaded units in filteredUnits', async () => {
     const mockUnits = [
       { id: 1, unit_number: '101', status: 'available', price: 100000 },
       { id: 2, unit_number: '102', status: 'sold', price: 200000 },
@@ -127,8 +126,6 @@ describe('useProjectUnits', () => {
     contractService.getContractUnits.mockResolvedValue(mockUnits);
     const wrapper = mountComposable();
     await wrapper.vm.loadUnits();
-    // default tab is "available" — mock list has one available + one sold
-    expect(wrapper.vm.filteredUnits.length).toBe(1);
-    expect(wrapper.vm.filteredUnits[0].status).toBe('available');
+    expect(wrapper.vm.filteredUnits).toEqual(mockUnits);
   });
 });

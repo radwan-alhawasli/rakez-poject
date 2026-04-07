@@ -25,13 +25,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
   const unitCountFromApi = ref(null);
   const projectSalesSummary = ref(null);
   const unitsLoading = ref(false);
-  const unitsFilterTab = ref('available');
-  const filteredUnits = computed(() => {
-    const list = Array.isArray(units.value) ? units.value : [];
-    const tab = unitsFilterTab.value;
-    if (tab === 'all') return list;
-    return list.filter(u => (u.status || '').toLowerCase() === tab);
-  });
+  const filteredUnits = computed(() => (Array.isArray(units.value) ? units.value : []));
 
   const showAddUnitModal = ref(false);
   const isEditingUnit = ref(false);
@@ -314,7 +308,12 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     }
   };
 
-  const reservation = useProjectUnitReservation(projectId, { loadUnits });
+  const pmUser = authService.getCurrentUser();
+  const usePmReservationApi = !(pmUser && pmUser.type == 6);
+  const reservation = useProjectUnitReservation(projectId, {
+    loadUnits,
+    useProjectManagementApi: usePmReservationApi,
+  });
   const waitingList = useProjectUnitWaitingList(projectId);
 
   return {
@@ -322,7 +321,6 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     unitCountFromApi,
     projectSalesSummary,
     unitsLoading,
-    unitsFilterTab,
     filteredUnits,
     showAddUnitModal,
     isEditingUnit,

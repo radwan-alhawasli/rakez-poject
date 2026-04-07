@@ -6,6 +6,49 @@ import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 import { useProjectManagementModals } from '@/composables/project/useProjectManagementModals';
+import { getApiErrorMessage } from '@/utils/errorHandler';
+import {
+  computeAgreementTimeline,
+  agreementRemainingPercent,
+} from '@/utils/agreementTimeline.js';
+
+/** عرض متتبع الاتفاقية: أيام متبقية + لون الشريط + نسبة العد التنازلي */
+function contractTimelineDisplay(source) {
+  const { daysLeft, totalDays } = computeAgreementTimeline(source);
+  const daysLeftVal = daysLeft;
+  const contractRemainingLabel =
+    daysLeftVal === null ? '—' : daysLeftVal < 0 ? 'منتهي' : `${daysLeftVal} يوم`;
+  const contractColor =
+    daysLeftVal === null
+      ? 'gray'
+      : daysLeftVal < 0
+        ? 'red'
+        : daysLeftVal <= 7
+          ? 'red'
+          : daysLeftVal <= 30
+            ? 'yellow'
+            : 'green';
+  const contractDurationPercent =
+    daysLeftVal != null && daysLeftVal < 0
+      ? 100
+      : agreementRemainingPercent(daysLeftVal, totalDays);
+  return { daysLeftVal, contractRemainingLabel, contractColor, contractDurationPercent };
+}
+
+function isArchivedProject(p) {
+  return p.status === 'Refused' || p.status === 'Rejected';
+}
+
+/** تبويب «جاهزة للتسويق»: معتمد أو مُعلَم جاهزاً (من الـ API) + وجود وحدات؛ لا يشمل المؤرشف. */
+function isReadyForMarketingTab(p) {
+  if (isArchivedProject(p)) return false;
+  const hasUnits = Array.isArray(p.units) && p.units.length > 0;
+  return hasUnits && p.is_ready_for_marketing === true;
+}
+
+function isNotReadyTab(p) {
+  return !isArchivedProject(p) && !isReadyForMarketingTab(p);
+}
 
 export function useProjectManagement() {
   const router = useRouter();
@@ -113,11 +156,8 @@ export function useProjectManagement() {
               .toLowerCase()
               .includes('sold')
         ).length;
-        const daysLeftVal = (() => {
-          const d = new Date(p.contract_end_date || p.end_date || p.agreement_end_date || 0);
-          if (Number.isNaN(d.getTime())) return null;
-          return Math.ceil((d.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-        })();
+        const timeline = contractTimelineDisplay(p);
+        const { daysLeftVal, contractRemainingLabel, contractColor, contractDurationPercent } = timeline;
         const isExclusive = p.type === 'Exclusive' || p.is_exclusive;
         const unitType = p.unit_type || (units[0] && units[0].unit_type) || 'Apartment';
         const descLine = isExclusive
@@ -133,25 +173,6 @@ export function useProjectManagement() {
             : p.setup_progress != null
               ? Number(p.setup_progress)
               : 0;
-        const contractRemainingLabel =
-          daysLeftVal === null ? '—' : daysLeftVal < 0 ? 'منتهي' : `${daysLeftVal} يوم`;
-        const contractColor =
-          daysLeftVal === null
-            ? 'gray'
-            : daysLeftVal < 0
-              ? 'red'
-              : daysLeftVal <= 7
-                ? 'red'
-                : daysLeftVal <= 30
-                  ? 'yellow'
-                  : 'green';
-        const contractDurationPercent =
-          daysLeftVal === null
-            ? 0
-            : daysLeftVal < 0
-              ? 100
-              : Math.min(100, Math.max(0, Math.round((1 - daysLeftVal / 365) * 100)));
-
         const unitPrices = units.map(u => Number(u.price) || 0).filter(Boolean);
         const priceMin = p.price_min ?? p.min_price ?? (unitPrices.length ? Math.min(...unitPrices) : null);
         const priceMax = p.price_max ?? p.max_price ?? (unitPrices.length ? Math.max(...unitPrices) : null);
@@ -174,7 +195,14 @@ export function useProjectManagement() {
         const bedroomsMax = p.bedrooms_max ?? (units[0] && units[0].bedrooms);
         const bedroomsRange =
           bedroomsMin != null && bedroomsMax != null ? `${bedroomsMin} - ${bedroomsMax}` : bedroomsMax != null ? `${bedroomsMax}` : bedroomsMin != null ? `${bedroomsMin}` : '—';
-        const rakezStatusLabel = p.status === 'Approved' ? 'متاح' : (p.status === 'Rejected' || p.status === 'Refused' ? 'مؤرشف' : (p.statusLabel || p.status || '—'));
+        const isReadyFlag =
+          p.is_ready === true ||
+          p.is_ready === 1 ||
+          String(p.is_ready || '').toLowerCase() === 'true' ||
+          p.ready_for_marketing === true ||
+          p.ready_for_marketing === 1 ||
+          String(p.ready_for_marketing || '').toLowerCase() === 'true';
+        const rakezStatusLabel = p.status === 'Approved' || isReadyFlag ? 'متاح' : (p.status === 'Rejected' || p.status === 'Refused' ? 'مؤرشف' : (p.statusLabel || p.status || '—'));
         const propertyTypeLabel = (p.unit_type_label_ar && String(p.unit_type_label_ar).trim()) || unitType || (totalUnits ? 'وحدات' : 'مشروع');
 
         const photo = p.photography_department;
@@ -203,12 +231,13 @@ export function useProjectManagement() {
             ).trim()}`.replace(/^,\s*|,\s*$/g, '') || '—',
           image: imageStr || null,
           hasImage: !!imageStr,
-          statusLabel: p.status === 'Approved' ? 'Active' : p.status,
-          statusClass: p.status === 'Approved' ? 'active' : 'pending',
+          statusLabel: p.status === 'Approved' || isReadyFlag ? 'Active' : p.status,
+          statusClass: p.status === 'Approved' || isReadyFlag ? 'active' : 'pending',
           units,
           advertiser_number: p.advertiser_number,
           assignee: p.marketer,
           status: p.status,
+          is_ready_for_marketing: p.status === 'Approved' || isReadyFlag,
           description: p.description || p.details || '',
           descriptionLine: descLine,
           setupProgress: setupProgressVal,
@@ -234,6 +263,11 @@ export function useProjectManagement() {
             .filter(u => String(u.status || '').toLowerCase() === 'available' || !u.status)
             .reduce((acc, u) => acc + (Number(u.price) || 0), 0),
           endDate: p.contract_end_date || p.end_date || p.agreement_end_date || null,
+          agreement_duration_days: p.agreement_duration_days ?? null,
+          created_at: p.created_at ?? null,
+          release_date: p.release_date ?? null,
+          info: p.info ?? null,
+          second_party_data: p.second_party_data ?? null,
           daysLeft: daysLeftVal,
           contractRemainingLabel,
           contractColor,
@@ -261,6 +295,9 @@ export function useProjectManagement() {
           const contractId = proj.contract_id ?? proj.id;
           try {
             const detail = await getContract(contractId);
+            if (!detail) {
+              return proj;
+            }
             const pp = detail?.project_progress;
             const detailImage =
               detail?.project_image_url ?? detail?.image ?? detail?.image_url ?? detail?.main_image ?? '';
@@ -268,10 +305,47 @@ export function useProjectManagement() {
               typeof detailImage === 'string' && detailImage.trim() ? detailImage.trim() : '';
             const hasImageFromDetail = !!detailImageStr;
 
+            const timelineFromDetail = contractTimelineDisplay({
+              ...proj,
+              contract_end_date: detail?.contract_end_date ?? proj.endDate,
+              end_date: detail?.end_date,
+              agreement_end_date: detail?.agreement_end_date,
+              release_date: detail?.release_date,
+              agreement_duration_days:
+                detail?.agreement_duration_days ?? proj.agreement_duration_days,
+              created_at: detail?.created_at ?? proj.created_at,
+              contract_start_date: detail?.contract_start_date,
+              agreement_start_date: detail?.agreement_start_date,
+              info: detail?.info,
+              second_party_data: detail?.second_party_data,
+            });
+
             if (!pp) {
-              return hasImageFromDetail && !proj.hasImage
-                ? { ...proj, image: detailImageStr, hasImage: true }
-                : { ...proj };
+              const base =
+                hasImageFromDetail && !proj.hasImage
+                  ? { ...proj, image: detailImageStr, hasImage: true }
+                  : { ...proj };
+              return {
+                ...base,
+                ...timelineFromDetail,
+                daysLeft: timelineFromDetail.daysLeftVal,
+                contractRemainingLabel: timelineFromDetail.contractRemainingLabel,
+                contractColor: timelineFromDetail.contractColor,
+                contractDurationPercent: timelineFromDetail.contractDurationPercent,
+                agreement_duration_days:
+                  detail?.agreement_duration_days ?? proj.agreement_duration_days,
+                endDate:
+                  detail?.contract_end_date ||
+                  detail?.end_date ||
+                  detail?.agreement_end_date ||
+                  proj.endDate,
+                timelinePillLabel:
+                  timelineFromDetail.daysLeftVal === null
+                    ? '—'
+                    : timelineFromDetail.daysLeftVal < 0
+                      ? 'انتهت المهلة'
+                      : `خلال ${timelineFromDetail.daysLeftVal} أيام`,
+              };
             }
 
             const steps = Array.isArray(pp.steps) ? pp.steps : [];
@@ -285,6 +359,24 @@ export function useProjectManagement() {
             return {
               ...proj,
               setupProgress: setupProgressVal,
+              ...timelineFromDetail,
+              daysLeft: timelineFromDetail.daysLeftVal,
+              contractRemainingLabel: timelineFromDetail.contractRemainingLabel,
+              contractColor: timelineFromDetail.contractColor,
+              contractDurationPercent: timelineFromDetail.contractDurationPercent,
+              agreement_duration_days:
+                detail?.agreement_duration_days ?? proj.agreement_duration_days,
+              endDate:
+                detail?.contract_end_date ||
+                detail?.end_date ||
+                detail?.agreement_end_date ||
+                proj.endDate,
+              timelinePillLabel:
+                timelineFromDetail.daysLeftVal === null
+                  ? '—'
+                  : timelineFromDetail.daysLeftVal < 0
+                    ? 'انتهت المهلة'
+                    : `خلال ${timelineFromDetail.daysLeftVal} أيام`,
               ...(hasImageFromDetail && !proj.hasImage ? { image: detailImageStr, hasImage: true } : {}),
             };
           } catch (e) {
@@ -307,11 +399,9 @@ export function useProjectManagement() {
     if (activeTab.value === 'all_projects') {
       filtered = filtered.filter(p => p.status !== 'Rejected' && p.status !== 'Refused');
     } else if (activeTab.value === 'ready') {
-      filtered = filtered.filter(p => p.status === 'Approved' && p.units && p.units.length > 0);
+      filtered = filtered.filter(isReadyForMarketingTab);
     } else if (activeTab.value === 'not_ready') {
-      filtered = filtered.filter(
-        p => p.status !== 'Approved' || !p.units || p.units.length === 0
-      );
+      filtered = filtered.filter(isNotReadyTab);
     } else if (activeTab.value === 'archive') {
       filtered = filtered.filter(p => p.status === 'Refused' || p.status === 'Rejected');
     }
@@ -326,15 +416,8 @@ export function useProjectManagement() {
     return filtered;
   });
 
-  const notReadyCount = computed(
-    () =>
-      projects.value.filter(p => p.status !== 'Approved' || !p.units || p.units.length === 0)
-        .length
-  );
-  const readyCount = computed(
-    () =>
-      projects.value.filter(p => p.status === 'Approved' && p.units && p.units.length > 0).length
-  );
+  const notReadyCount = computed(() => projects.value.filter(isNotReadyTab).length);
+  const readyCount = computed(() => projects.value.filter(isReadyForMarketingTab).length);
   const archiveCount = computed(
     () => projects.value.filter(p => p.status === 'Refused' || p.status === 'Rejected').length
   );
@@ -364,9 +447,23 @@ export function useProjectManagement() {
     }
   };
 
-  const onMarkComplete = () => {
+  const onMarkComplete = async project => {
     activeMenuId.value = null;
-    toast.info('تحديد كمكتمل: سيتم ربطها بالـ API عند التوفر.');
+    const id = project?.contract_id ?? project?.id;
+    if (id == null || String(id).trim() === '') {
+      toast.error('تعذر تحديد المشروع');
+      return;
+    }
+    try {
+      await contractService.markContractComplete(id);
+      toast.success('تم تحديد المشروع كمكتمل ويظهر ضمن «جاهزة للتسويق»');
+      if (!isEditor.value) {
+        activeTab.value = 'ready';
+      }
+      await fetchProjects();
+    } catch (e) {
+      toast.error(getApiErrorMessage(e, 'تعذر تحديث حالة المشروع'));
+    }
   };
 
   const onDownloadContract = async project => {

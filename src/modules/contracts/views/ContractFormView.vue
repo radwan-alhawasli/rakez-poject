@@ -250,17 +250,42 @@
 
             <div class="input-row grid-3">
               <div class="field-group">
+                <label>المدينة</label>
+                <select
+                  v-model="form.city_id"
+                  class="form-input"
+                  :disabled="locationsLoading"
+                  :class="{ 'input-error': getFieldError('city') }"
+                >
+                  <option value="">{{ locationsLoading ? 'جاري التحميل...' : 'اختر المدينة' }}</option>
+                  <option v-for="c in cities" :key="c.id" :value="String(c.id)">{{ c.name }}</option>
+                </select>
+                <span v-if="getFieldError('city')" class="field-error">{{ getFieldError('city') }}</span>
+              </div>
+              <div class="field-group">
                 <label>الحي</label>
-                <input type="text" v-model="form.district" class="form-input" />
+                <select
+                  v-model="form.district_id"
+                  class="form-input"
+                  :disabled="locationsLoading || !form.city_id"
+                >
+                  <option value="">{{ !form.city_id ? 'اختر المدينة أولاً' : 'اختر الحي' }}</option>
+                  <option v-for="d in filteredDistricts" :key="d.id" :value="String(d.id)">{{ d.name }}</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label>الاتجاه</label>
+                <select v-model="form.side" class="form-input">
+                  <option value="">اختر الاتجاه</option>
+                  <option value="n">شمال</option>
+                  <option value="e">شرق</option>
+                  <option value="s">جنوب</option>
+                  <option value="w">غرب</option>
+                </select>
               </div>
               <div class="field-group">
                 <label>إجمالي قيمة الوحدات</label>
                 <input type="number" v-model.number="form.total_units_value" class="form-input" min="0" />
-              </div>
-              <div class="field-group">
-                <label>المدينة</label>
-                <input type="text" v-model="form.city" class="form-input" :class="{ 'input-error': getFieldError('city') }" />
-                <span v-if="getFieldError('city')" class="field-error">{{ getFieldError('city') }}</span>
               </div>
             </div>
 

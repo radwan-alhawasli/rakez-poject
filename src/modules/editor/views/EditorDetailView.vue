@@ -170,6 +170,7 @@ const FIELD_LABELS = {
   real_estate_papers_url: 'أوراق العقار',
   plans_equipment_docs_url: 'مخططات والمعدات',
   project_logo_url: 'شعار المشروع',
+  completion_certificate_url: 'شهادة الإتمام والضمانات',
   prices_units_url: 'أسعار الوحدات',
   marketing_license_url: 'رخصة التسويق',
   advertiser_section_url: 'قسم المعلن',

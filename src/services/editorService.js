@@ -1,5 +1,6 @@
 import apiClient from '@/api/apiClient';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
+import { normalizeEditorContractShow } from '@/utils/editorContractShowNormalize';
 
 /**
  * Editor Department Service
@@ -48,7 +49,8 @@ const editorService = {
   async getContractById(contractId) {
     try {
       const response = await apiClient.get(`/editor/contracts/show/${contractId}`);
-      return response.data?.data || response.data || {};
+      const raw = response.data?.data ?? response.data ?? {};
+      return normalizeEditorContractShow(raw);
     } catch (error) {
       return handleServiceError(error, 'Fetch editor contract by id', 'get', {});
     }

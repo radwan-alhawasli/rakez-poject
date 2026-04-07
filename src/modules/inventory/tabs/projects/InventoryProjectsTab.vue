@@ -5,56 +5,17 @@
       <p class="welcome-subtitle">عرض مواقع المشاريع من واجهة المخزون — اضغط على الدبوس لعرض التفاصيل والوحدات.</p>
     </div>
 
-    <div class="filters-grid">
-      <div class="filter-group">
-        <label>الحالة</label>
-        <select v-model="filters.status" class="filter-select">
-          <option value="">الكل</option>
-          <option value="pending">قيد الانتظار</option>
-          <option value="approved">معتمد</option>
-          <option value="completed">مكتمل</option>
-          <option value="active">نشط</option>
-          <option value="rejected">مرفوض</option>
+    <div class="inventory-project-filter-bar">
+      <div class="filter-group filter-group-project">
+        <label for="inventory-project-select">المشروع</label>
+        <select
+          id="inventory-project-select"
+          v-model="selectedProjectName"
+          class="filter-select filter-select-project"
+        >
+          <option value="">كل المشاريع</option>
+          <option v-for="name in projectNameOptions" :key="name" :value="name">{{ name }}</option>
         </select>
-      </div>
-      <div class="filter-group">
-        <label>معرّف المستخدم</label>
-        <input v-model="filters.user_id" type="text" class="filter-input" placeholder="اختياري" />
-      </div>
-      <div class="filter-group">
-        <label>المدينة</label>
-        <select v-model="filters.city" class="filter-select">
-          <option value="">الكل</option>
-          <option v-for="c in cityOptions" :key="c" :value="c">{{ c }}</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>الحي</label>
-        <input v-model="filters.district" type="text" class="filter-input" placeholder="اختياري" />
-      </div>
-      <div class="filter-group filter-span-2">
-        <label>اسم المشروع</label>
-        <input v-model="filters.project_name" type="text" class="filter-input" placeholder="بحث..." />
-      </div>
-      <div class="filter-group">
-        <label>تصوير</label>
-        <select v-model="filters.has_photography" class="filter-select">
-          <option value="">الكل</option>
-          <option value="1">يوجد</option>
-          <option value="0">لا يوجد</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>مونتاج</label>
-        <select v-model="filters.has_montage" class="filter-select">
-          <option value="">الكل</option>
-          <option value="1">يوجد</option>
-          <option value="0">لا يوجد</option>
-        </select>
-      </div>
-      <div class="filter-group filter-actions">
-        <label class="filter-label-spacer">&nbsp;</label>
-        <button type="button" class="btn-search" @click="applyFilters">تطبيق الفلاتر</button>
       </div>
     </div>
 
@@ -63,13 +24,21 @@
       <p>جاري تحميل المواقع...</p>
     </div>
 
+    <div v-else-if="locations.length === 0" class="empty-state">
+      <p>لا توجد مشاريع للعرض على الخريطة.</p>
+    </div>
+
+    <div v-else-if="filteredLocations.length === 0" class="empty-state">
+      <p>لا يوجد مشروع بهذا الاسم في القائمة المحمّلة.</p>
+    </div>
+
     <div v-else class="map-container">
       <div
-        v-if="locations.length && !hasMappablePins"
+        v-if="filteredLocations.length && !hasMappablePins"
         class="map-coords-warning"
         role="status"
       >
-        تم جلب {{ locations.length }} مشروعاً، لكن لا توجد إحداثيات صالحة (lat/lng) في البيانات — لن تظهر دبابيس حتى يوفّر الـ API حقول الإحداثيات.
+        تم جلب {{ filteredLocations.length }} مشروعاً{{ selectedProjectName ? ' (بعد التصفية)' : '' }}، لكن لا توجد إحداثيات صالحة (lat/lng) في البيانات — لن تظهر دبابيس حتى يوفّر الـ API حقول الإحداثيات.
       </div>
       <div ref="mapRef" class="map-inner"></div>
 
@@ -107,15 +76,11 @@
         </div>
       </div>
     </div>
-
-    <div v-if="!isLoading && locations.length === 0" class="empty-state">
-      <p>لا توجد مشاريع تطابق الفلاتر أو لا توجد إحداثيات لعرضها.</p>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import inventoryService from '@/services/inventoryService';
 import { toast } from '@/composables/useToast';
 import L from 'leaflet';
@@ -137,19 +102,13 @@ const selectedLocation = ref(null);
 const projectDetail = ref(null);
 const detailLoading = ref(false);
 
-const filters = reactive({
-  status: '',
-  user_id: '',
-  city: '',
-  district: '',
-  project_name: '',
-  has_photography: '',
-  has_montage: '',
-});
+/** إطار تقريبي للرياض الكبرى — عند عدم وجود دبابيس أو عند التحميل الأول */
+const RIYADH_METRO_BOUNDS = [
+  [24.38, 46.38],
+  [25.05, 47.1],
+];
 
-const cityOptions = ref([]);
-
-const RIYADH_CENTER = [24.7136, 46.6753];
+const selectedProjectName = ref('');
 
 const activeContractId = computed(() => {
   const loc = selectedLocation.value;
@@ -267,42 +226,28 @@ function getLatLng(loc) {
   return null;
 }
 
-const hasMappablePins = computed(() => locations.value.some(l => getLatLng(l)));
-
-function buildLocationsParams() {
-  const p = { per_page: 200 };
-  if (filters.status) p.status = filters.status;
-  const uid = String(filters.user_id || '').trim();
-  if (uid) p.user_id = uid;
-  if (filters.city) p.city = filters.city;
-  const dist = String(filters.district || '').trim();
-  if (dist) p.district = dist;
-  const pn = String(filters.project_name || '').trim();
-  if (pn) p.project_name = pn;
-  if (filters.has_photography === '1' || filters.has_photography === '0') {
-    p.has_photography = filters.has_photography;
-  }
-  if (filters.has_montage === '1' || filters.has_montage === '0') {
-    p.has_montage = filters.has_montage;
-  }
-  return p;
-}
-
-function collectCityOptions(arr) {
+const projectNameOptions = computed(() => {
   const set = new Set();
-  (arr || []).forEach(l => {
-    if (l.city) set.add(l.city);
+  locations.value.forEach(l => {
+    const n = String(l.project_name ?? l.name ?? '').trim();
+    if (n) set.add(n);
   });
-  cityOptions.value = [...set].sort();
-}
+  return [...set].sort((a, b) => a.localeCompare(b, 'ar'));
+});
+
+const filteredLocations = computed(() => {
+  const q = selectedProjectName.value.trim();
+  if (!q) return locations.value;
+  return locations.value.filter(l => String(l.project_name ?? l.name ?? '').trim() === q);
+});
+
+const hasMappablePins = computed(() => filteredLocations.value.some(l => getLatLng(l)));
 
 async function fetchLocations() {
   isLoading.value = true;
   try {
-    const params = buildLocationsParams();
-    const arr = await inventoryService.getContractsLocations(params);
+    const arr = await inventoryService.getContractsLocations({ per_page: 500 });
     locations.value = Array.isArray(arr) ? arr : [];
-    collectCityOptions(locations.value);
   } catch (e) {
     locations.value = [];
     toast.error(e?.message || 'فشل تحميل مواقع المشاريع');
@@ -325,10 +270,11 @@ async function syncMapAfterLoad() {
 
 function initMap() {
   if (!mapRef.value || mapInstance.value) return;
-  mapInstance.value = L.map(mapRef.value).setView(RIYADH_CENTER, 10);
+  mapInstance.value = L.map(mapRef.value, { zoomControl: true });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap',
   }).addTo(mapInstance.value);
+  mapInstance.value.fitBounds(RIYADH_METRO_BOUNDS, { padding: [20, 20], maxZoom: 12 });
 }
 
 function updateMarkers() {
@@ -340,7 +286,7 @@ function updateMarkers() {
   const layer = L.layerGroup();
   const valid = [];
 
-  locations.value.forEach(loc => {
+  filteredLocations.value.forEach(loc => {
     const coords = getLatLng(loc);
     if (!coords) return;
     valid.push(coords);
@@ -359,7 +305,7 @@ function updateMarkers() {
     const bounds = L.latLngBounds(valid);
     mapInstance.value.fitBounds(bounds, { padding: [48, 48], maxZoom: 12 });
   } else {
-    mapInstance.value.setView(RIYADH_CENTER, 10);
+    mapInstance.value.fitBounds(RIYADH_METRO_BOUNDS, { padding: [28, 28], maxZoom: 12 });
   }
 }
 
@@ -387,10 +333,15 @@ function closeCard() {
   projectDetail.value = null;
 }
 
-async function applyFilters() {
-  await fetchLocations();
-  await syncMapAfterLoad();
-}
+watch(
+  filteredLocations,
+  async () => {
+    closeCard();
+    await nextTick();
+    if (mapInstance.value) updateMarkers();
+  },
+  { deep: true },
+);
 
 onMounted(async () => {
   await fetchLocations();

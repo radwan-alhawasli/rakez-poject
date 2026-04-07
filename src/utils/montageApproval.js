@@ -52,8 +52,16 @@ export function buildContractPatchFromMontageShow(raw) {
     ...nested,
     status: statusRaw ?? nested.status,
     approved: approved ?? nested.approved,
-    image_url: raw.image_url ?? nested.image_url,
-    video_url: raw.video_url ?? nested.video_url,
+    image_url:
+      raw.image_url ??
+      raw.image_link ??
+      nested.image_url ??
+      nested.image_link,
+    video_url:
+      raw.video_url ??
+      raw.video_link ??
+      nested.video_url ??
+      nested.video_link,
     description: raw.description ?? nested.description,
   };
   if (comment != null && String(comment).trim()) {

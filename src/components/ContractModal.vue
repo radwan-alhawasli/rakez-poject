@@ -1,6 +1,7 @@
 <template>
   <AppModal
     :open="true"
+    size="xl"
     subtitle="مراجعة كاملة لبيانات السجل قبل الموافقة أو الرفض."
     @update:open="(v) => { if (v === false) closeModal() }"
   >
@@ -18,26 +19,43 @@
         </span>
       </div>
     </template>
-    <div class="modal-content">
-        <!-- بيانات المطور -->
-        <section class="details-section">
+    <div class="modal-content contract-acceptance-body">
+      <div class="contract-detail-panels">
+        <!-- بيانات المطور / الطرف الثاني -->
+        <section class="details-section detail-panel">
           <div class="section-header">
             <div class="section-bar"></div>
             <h3 class="section-title">بيانات المطور</h3>
           </div>
           <div class="details-list">
             <div class="detail-row">
-              <span class="detail-label">الاسم:</span>
+              <span class="detail-label">الاسم</span>
               <span class="detail-value">{{ contractDetails.name }}</span>
+            </div>
+            <div v-if="contractDetails.developerRole" class="detail-row">
+              <span class="detail-label">الصفة</span>
+              <span class="detail-value">{{ contractDetails.developerRole }}</span>
+            </div>
+            <div v-if="contractDetails.secondPartyCr" class="detail-row">
+              <span class="detail-label">السجل التجاري</span>
+              <span class="detail-value detail-value-mono">{{ contractDetails.secondPartyCr }}</span>
+            </div>
+            <div v-if="contractDetails.secondPartyEmail" class="detail-row">
+              <span class="detail-label">البريد</span>
+              <span class="detail-value detail-value-mono">{{ contractDetails.secondPartyEmail }}</span>
+            </div>
+            <div v-if="contractDetails.secondPartyPhone" class="detail-row">
+              <span class="detail-label">الهاتف</span>
+              <span class="detail-value detail-value-mono">{{ contractDetails.secondPartyPhone }}</span>
             </div>
           </div>
         </section>
 
-        <!-- المشاريع -->
-        <section class="details-section">
+        <!-- المشروع -->
+        <section class="details-section detail-panel">
           <div class="section-header">
             <div class="section-bar"></div>
-            <h3 class="section-title">المشاريع</h3>
+            <h3 class="section-title">المشروع</h3>
           </div>
           <div v-if="contractDetails.projectImageUrl" class="contract-modal-project-image-wrap">
             <img
@@ -52,52 +70,46 @@
           </div>
           <div class="details-list">
             <div class="detail-row">
-              <span class="detail-label">اسم المشروع:</span>
+              <span class="detail-label">اسم المشروع</span>
               <span class="detail-value">{{ contractDetails.projectName }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">نوع الوحدات:</span>
+              <span class="detail-label">نوع الوحدات</span>
               <span class="detail-value">{{ contractDetails.unitType }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">عدد الوحدات:</span>
+              <span class="detail-label">عدد الوحدات</span>
               <span class="detail-value">{{ contractDetails.unitCount }}</span>
             </div>
             <div v-if="contractDetails.totalPrice" class="detail-row">
-              <span class="detail-label">إجمالي السعر:</span>
-              <span class="detail-value">{{ contractDetails.totalPrice }}</span>
+              <span class="detail-label">إجمالي السعر</span>
+              <span class="detail-value highlight">{{ contractDetails.totalPrice }}</span>
             </div>
           </div>
         </section>
+      </div>
 
-        <!-- تفاصيل التسويق -->
-        <section class="details-section">
-          <div class="section-header">
-            <div class="section-bar"></div>
-            <h3 class="section-title">تفاصيل التسويق</h3>
+      <!-- تفاصيل التسويق -->
+      <section class="details-section detail-panel detail-panel--wide">
+        <div class="section-header">
+          <div class="section-bar"></div>
+          <h3 class="section-title">تفاصيل التسويق</h3>
+        </div>
+        <div class="details-list details-list--cols">
+          <div class="detail-row">
+            <span class="detail-label">المسوق (جلب)</span>
+            <span class="detail-value">{{ contractDetails.marketer }}</span>
           </div>
-          <div class="details-list">
-            <div class="detail-row">
-              <span class="detail-label">المسوقون (جلب):</span>
-              <span class="detail-value">{{ contractDetails.marketer }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">نسبة السعي:</span>
-              <span class="detail-value">{{ contractDetails.commissionPercent || '—' }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">السعي من:</span>
-              <span class="detail-value">{{ contractDetails.commissionFrom || '—' }}</span>
-            </div>
+          <div class="detail-row">
+            <span class="detail-label">نسبة السعي</span>
+            <span class="detail-value">{{ contractDetails.commissionPercent || '—' }}</span>
           </div>
-        </section>
-
-        <!-- معلومات إضافية (مخفية مؤقتاً لتطابق الصورة، يمكن إظهارها عند الحاجة أو نقلها) -->
-        <!-- 
-        <div class="info-grid">
-          ...
-        </div> 
-        -->
+          <div class="detail-row">
+            <span class="detail-label">السعي من</span>
+            <span class="detail-value">{{ contractDetails.commissionFrom || '—' }}</span>
+          </div>
+        </div>
+      </section>
     </div>
     <template #footer>
       <div class="modal-footer-action flex flex-col gap-3">
@@ -201,6 +213,8 @@ export default {
     // بيانات تفاصيل العقد المحددة - ربط صحيح مع API
     const contractDetails = computed(() => {
       const c = props.contract || {};
+      const sp =
+        c.second_party_data && typeof c.second_party_data === 'object' ? c.second_party_data : {};
 
       // حساب عدد الوحدات ونوعها من units array إذا كان موجوداً
       let unitType = 'N/A';
@@ -272,9 +286,26 @@ export default {
         (c.image && String(c.image).trim()) ||
         '';
 
+      const secondPartyCr =
+        sp.second_party_cr_number ??
+        c.second_party_cr_number ??
+        (c.developer_number != null ? String(c.developer_number) : '');
+      const secondPartyEmail = (sp.second_party_email ?? c.second_party_email ?? '').toString().trim();
+      const secondPartyPhone = (sp.second_party_phone ?? c.second_party_phone ?? '').toString().trim();
+      const developerRole = (sp.second_party_role ?? c.second_party_role ?? '').toString().trim();
+
       return {
-        // بيانات المطور - الاسم هو اسم المطور (developer_name)
-        name: c.developer_name || c.developer || 'غير محدد',
+        // بيانات المطور — مسطّحة أو من second_party_data
+        name:
+          c.developer_name ||
+          c.developer ||
+          sp.second_party_name ||
+          c.second_party_name ||
+          'غير محدد',
+        developerRole,
+        secondPartyCr: secondPartyCr || '',
+        secondPartyEmail,
+        secondPartyPhone,
 
         // بيانات المشروع - من API الحقول الصحيحة (unit_count, total_price, project_image_url)
         projectName: c.project_name || 'غير محدد',

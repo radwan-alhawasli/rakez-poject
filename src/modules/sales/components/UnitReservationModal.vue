@@ -325,7 +325,7 @@ export default {
         ...(typeof ctx.contract === 'object' && ctx.contract ? ctx.contract : {}),
         ...(typeof ctx.project === 'object' && ctx.project ? ctx.project : {}),
       };
-      const marketer = ctx.marketer || ctx.employee || {};
+      const marketer = ctx.marketer || ctx.employee || ctx.marketing_employee || {};
       const district = unit.district || project.district || ctx.district || '—';
       const unitType = unit.unit_type || unit.type || '—';
       const projectName = project.project_name || project.name || project.contract_name || '—';
