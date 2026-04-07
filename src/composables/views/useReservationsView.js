@@ -4,9 +4,26 @@ import { useFormatters } from '@/composables/useFormatters';
 import salesService from '@/services/salesService';
 import { usePermissions } from '@/composables/usePermissions';
 import logger from '@/utils/logger';
+import authService from '@/services/authService';
+import {
+  getProjectManagementReservations,
+  confirmProjectManagementReservation,
+  cancelProjectManagementReservation,
+  downloadProjectManagementReservationVoucher,
+  getProjectManagementReservationVoucherData,
+} from '@/services/teamService';
+
+/** إدارة المشاريع (2) أو المدير (1): قائمة الحجوزات من project_management وليس sales/mine */
+function usePmReservationsApi() {
+  const u = authService.getCurrentUser();
+  const t = Number(u?.type);
+  return t === 1 || t === 2;
+}
 
 export function useReservationsView() {
   const { hasPermission } = usePermissions();
+
+  const isPmReservationsList = computed(() => usePmReservationsApi());
 
   const activeTab = ref('active');
   const isLoading = ref(false);
@@ -24,19 +41,30 @@ export function useReservationsView() {
   const waitingList = ref([]);
   const negotiations = ref([]);
 
-  const canConfirm = computed(() => hasPermission('sales.reservations.confirm'));
+  const canConfirm = computed(
+    () => isPmReservationsList.value || hasPermission('sales.reservations.confirm')
+  );
   const canConvert = computed(() => hasPermission('sales.waiting_list.convert'));
-  const canApproveNeg = computed(() => hasPermission('sales.negotiation.approve'));
+  const canApproveNeg = computed(
+    () => isPmReservationsList.value || hasPermission('sales.negotiation.approve')
+  );
 
   const activeCounts = computed(() => ({
-    active: reservations.value.filter(r => r.status !== 'cancelled' && r.status !== 'rejected').length,
-    cancelled: reservations.value.filter(r => r.status === 'cancelled' || r.status === 'rejected').length,
+    active: reservations.value.filter(
+      r =>
+        r.status !== 'cancelled' &&
+        r.status !== 'canceled' &&
+        r.status !== 'rejected'
+    ).length,
+    cancelled: reservations.value.filter(
+      r => r.status === 'cancelled' || r.status === 'canceled' || r.status === 'rejected'
+    ).length,
     waiting: waitingList.value.length,
     negotiations: negotiations.value.length,
   }));
 
   const filteredReservations = computed(() => {
-    const cancelledStatuses = ['cancelled', 'rejected'];
+    const cancelledStatuses = ['cancelled', 'canceled', 'rejected'];
     if (activeTab.value === 'cancelled') {
       return reservations.value
         .filter(r => cancelledStatuses.includes(r.status))
@@ -49,20 +77,30 @@ export function useReservationsView() {
 
   const loadReservations = async () => {
     try {
-      const result = await salesService.getReservations({
-        mine: true,
-        include_cancelled: true,
-        per_page: 100,
-      });
-      const items = result?.items || result?.data || result || [];
-      reservations.value = Array.isArray(items) ? items : [];
+      if (isPmReservationsList.value) {
+        const items = await getProjectManagementReservations({ per_page: 500 });
+        reservations.value = Array.isArray(items) ? items : [];
+      } else {
+        const result = await salesService.getReservations({
+          mine: true,
+          include_cancelled: true,
+          per_page: 100,
+        });
+        const items = result?.items || result?.data || result || [];
+        reservations.value = Array.isArray(items) ? items : [];
+      }
     } catch (e) {
       logger.error('Error loading reservations:', e);
       reservations.value = [];
+      toast.error('تعذر تحميل قائمة الحجوزات');
     }
   };
 
   const loadWaitingList = async () => {
+    if (isPmReservationsList.value) {
+      waitingList.value = [];
+      return;
+    }
     try {
       const items = await salesService.getWaitingList({ per_page: 100 });
       waitingList.value = Array.isArray(items) ? items : [];
@@ -73,6 +111,15 @@ export function useReservationsView() {
   };
 
   const loadNegotiations = async () => {
+    if (isPmReservationsList.value) {
+      const list = reservations.value;
+      negotiations.value = list.filter(r => {
+        const t = String(r.reservation_type || '').toLowerCase();
+        const s = String(r.status || '').toLowerCase();
+        return t === 'negotiation' || t.includes('negotiation') || s === 'under_negotiation';
+      });
+      return;
+    }
     try {
       const result = await salesService.getReservations({ status: 'under_negotiation', per_page: 100 });
       const items = result?.items || result?.data || result || [];
@@ -90,8 +137,13 @@ export function useReservationsView() {
 
   const loadAll = async () => {
     isLoading.value = true;
-    await Promise.all([loadReservations(), loadWaitingList(), loadNegotiations()]);
-    isLoading.value = false;
+    try {
+      await loadReservations();
+      await loadWaitingList();
+      await loadNegotiations();
+    } finally {
+      isLoading.value = false;
+    }
   };
 
   const switchTab = tab => {
@@ -108,11 +160,23 @@ export function useReservationsView() {
       pending: 'قيد الانتظار',
       waiting: 'انتظار',
       cancelled: 'ملغي',
+      canceled: 'ملغي',
       rejected: 'مرفوض',
       sold: 'مباع',
     };
     return labels[status] || status;
   };
+
+  /** يظهر زر التأكيد (مطابق لتبويب حجوزات المشروع) */
+  function reservationNeedsConfirm(reservation) {
+    const s = String(reservation?.status || '').toLowerCase();
+    return (
+      s === 'pending' ||
+      s === 'under_negotiation' ||
+      s === 'negotiation' ||
+      s === 'awaiting_confirmation'
+    );
+  }
 
   const openDetails = item => {
     detailItem.value = item;
@@ -121,6 +185,45 @@ export function useReservationsView() {
   const downloadVoucher = async reservation => {
     try {
       const id = reservation.reservation_id || reservation.id;
+      if (isPmReservationsList.value && id != null) {
+        try {
+          const blob = await downloadProjectManagementReservationVoucher(id);
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `voucher-${id}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
+          toast.success('تم تنزيل السند');
+          return;
+        } catch (pmErr) {
+          logger.warn('PM voucher blob failed, trying voucher-data', pmErr);
+        }
+        try {
+          const { generateReservationVoucherPdf } = await import('@/services/pdfService');
+          const vd = await getProjectManagementReservationVoucherData(id);
+          if (vd?.reservation != null) {
+            const pdfBytes = await generateReservationVoucherPdf(
+              vd.reservation,
+              vd.project ?? {},
+              vd.unit ?? {},
+              vd.employee ?? {}
+            );
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `voucher-${id}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success('تم تنزيل السند');
+            return;
+          }
+        } catch (e) {
+          logger.warn('PM voucher-data failed', e);
+        }
+      }
+
       const { generateReservationVoucherPdf } = await import('@/services/pdfService');
       let reservationData;
       let project;
@@ -188,9 +291,13 @@ export function useReservationsView() {
       confirmText: 'تأكيد',
       resolve: async () => {
         try {
-          await salesService.confirmReservation(id);
+          if (isPmReservationsList.value) {
+            await confirmProjectManagementReservation(id, { notes: '' });
+          } else {
+            await salesService.confirmReservation(id);
+          }
           toast.success('تم تأكيد الحجز بنجاح');
-          await loadReservations();
+          await loadAll();
         } catch (e) {
           logger.error('Error confirming reservation:', e);
           toast.error('حدث خطأ أثناء تأكيد الحجز');
@@ -209,11 +316,18 @@ export function useReservationsView() {
       confirmText: 'إلغاء الحجز',
       resolve: async () => {
         try {
-          await salesService.cancelReservation(id, {
-            cancellation_reason: 'تم الإلغاء من قبل المستخدم',
-          });
+          if (isPmReservationsList.value) {
+            await cancelProjectManagementReservation(id, {
+              reason: 'تم الإلغاء من واجهة إدارة المشاريع',
+              notes: '',
+            });
+          } else {
+            await salesService.cancelReservation(id, {
+              cancellation_reason: 'تم الإلغاء من قبل المستخدم',
+            });
+          }
           toast.success('تم إلغاء الحجز');
-          await loadReservations();
+          await loadAll();
         } catch (e) {
           logger.error('Error cancelling reservation:', e);
           toast.error('حدث خطأ أثناء إلغاء الحجز');
@@ -275,9 +389,13 @@ export function useReservationsView() {
       confirmText: 'قبول',
       resolve: async () => {
         try {
-          await salesService.approveNegotiation(id);
+          if (isPmReservationsList.value) {
+            await confirmProjectManagementReservation(id, { notes: 'قبول التفاوض' });
+          } else {
+            await salesService.approveNegotiation(id);
+          }
           toast.success('تم قبول التفاوض');
-          await loadNegotiations();
+          await loadAll();
         } catch (e) {
           logger.error('Error approving negotiation:', e);
           toast.error('حدث خطأ أثناء القبول');
@@ -296,9 +414,16 @@ export function useReservationsView() {
       confirmText: 'رفض',
       resolve: async () => {
         try {
-          await salesService.rejectNegotiation(id);
+          if (isPmReservationsList.value) {
+            await cancelProjectManagementReservation(id, {
+              reason: 'رفض التفاوض',
+              notes: '',
+            });
+          } else {
+            await salesService.rejectNegotiation(id);
+          }
           toast.success('تم رفض التفاوض');
-          await loadNegotiations();
+          await loadAll();
         } catch (e) {
           logger.error('Error rejecting negotiation:', e);
           toast.error('حدث خطأ أثناء الرفض');
@@ -319,6 +444,7 @@ export function useReservationsView() {
   return {
     activeTab,
     isLoading,
+    isPmReservationsList,
     detailItem,
     showConfirmModal,
     confirmModalConfig,
@@ -334,6 +460,7 @@ export function useReservationsView() {
     formatDate,
     formatCurrency,
     getStatusLabel,
+    reservationNeedsConfirm,
     openDetails,
     downloadVoucher,
     confirmRes,

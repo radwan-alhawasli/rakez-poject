@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router';
 import contractService from '@/services/contractService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
+import { normalizeProjectProgressSteps } from '@/utils/projectProgressSteps';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 import { useProjectManagementModals } from '@/composables/project/useProjectManagementModals';
@@ -165,8 +166,13 @@ export function useProjectManagement() {
           : (p.description || p.details || '').split('\n')[0] ||
             (totalUnits ? `${totalUnits} وحدة` : '');
         const pp = p.project_progress;
-        const totalSteps = pp?.total_count ?? pp?.steps?.length ?? 7;
-        const completedSteps = pp?.completed_count ?? (Array.isArray(pp?.steps) ? pp.steps.filter(s => s.completed).length : 0);
+        const normSteps = normalizeProjectProgressSteps(pp?.steps);
+        const totalSteps =
+          normSteps.length > 0 ? normSteps.length : (pp?.total_count ?? pp?.steps?.length ?? 6);
+        const completedSteps =
+          normSteps.length > 0
+            ? normSteps.filter(s => s.completed).length
+            : (pp?.completed_count ?? (Array.isArray(pp?.steps) ? pp.steps.filter(s => s.completed).length : 0));
         const setupProgressVal =
           totalSteps > 0
             ? Math.round((completedSteps / totalSteps) * 100)
@@ -349,10 +355,12 @@ export function useProjectManagement() {
             }
 
             const steps = Array.isArray(pp.steps) ? pp.steps : [];
-            const totalSteps = steps.length > 0 ? steps.length : (pp.total_count ?? 0);
+            const normSteps = normalizeProjectProgressSteps(steps);
+            const totalSteps =
+              normSteps.length > 0 ? normSteps.length : (pp.total_count ?? 6);
             const completedSteps =
-              steps.length > 0
-                ? steps.filter(s => s.completed === true).length
+              normSteps.length > 0
+                ? normSteps.filter(s => s.completed === true).length
                 : (pp.completed_count ?? 0);
             const setupProgressVal =
               totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;

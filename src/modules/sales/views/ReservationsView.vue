@@ -2,7 +2,13 @@
   <div class="reservations-page my-reservations">
     <div class="welcome-header">
       <h1 class="welcome-title">حجوزاتي</h1>
-      <p class="welcome-subtitle">عرض جميع الوحدات التي قمت بحجزها وتتبع حالتها.</p>
+      <p class="welcome-subtitle">
+        {{
+          isPmReservationsList
+            ? 'عرض جميع حجوزات الوحدات عبر نظام إدارة المشاريع (قائمة موحّدة، تأكيد، إلغاء، سند).'
+            : 'عرض جميع الوحدات التي قمت بحجزها وتتبع حالتها.'
+        }}
+      </p>
     </div>
 
     <div class="filter-tabs">
@@ -103,7 +109,7 @@
                 تحميل السند
               </button>
               <button
-                v-if="reservation.status === 'under_negotiation' && canConfirm"
+                v-if="reservationNeedsConfirm(reservation) && canConfirm"
                 type="button"
                 class="btn-confirm"
                 @click="confirmRes(reservation)"
@@ -114,7 +120,11 @@
                 تأكيد
               </button>
               <button
-                v-if="reservation.status !== 'cancelled' && reservation.status !== 'rejected'"
+                v-if="
+                  reservation.status !== 'cancelled' &&
+                  reservation.status !== 'canceled' &&
+                  reservation.status !== 'rejected'
+                "
                 type="button"
                 class="btn-cancel"
                 @click="cancelRes(reservation)"
@@ -294,6 +304,7 @@ import { useReservationsView } from '@/composables/views/useReservationsView';
 const {
   activeTab,
   isLoading,
+  isPmReservationsList,
   detailItem,
   showConfirmModal,
   confirmModalConfig,
@@ -308,6 +319,7 @@ const {
   formatDate,
   formatCurrency,
   getStatusLabel,
+  reservationNeedsConfirm,
   openDetails,
   downloadVoucher,
   confirmRes,

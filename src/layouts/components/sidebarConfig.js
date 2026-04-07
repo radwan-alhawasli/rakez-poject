@@ -123,7 +123,7 @@ const pmItems = [
   { to: '/image-approval', label: 'الموافقة على الصور', tooltip: 'الموافقة على الصور', icon: ICONS.image, showIf: 'isManager' },
   { to: '/team-management', label: 'إدارة الفرق', tooltip: 'إدارة الفرق', icon: ICONS.teams },
   { to: '/developers', label: 'المطورون', tooltip: 'المطورون', icon: ICONS.teams },
-  { to: '/reservations', label: 'الحجوزات', tooltip: 'الحجوزات', icon: ICONS.check },
+  { to: '/reservations', label: 'حجوزاتي', tooltip: 'حجوزاتي — إدارة المشاريع', icon: ICONS.check },
   COMMON_ITEMS.myRequests,
   COMMON_ITEMS.exclusiveRequest,
   COMMON_ITEMS.aiAssistant,
