@@ -656,5 +656,4 @@ export default {
 };
 </script>
 
-<style scoped src="./styles/TeamManagementView.scoped.s1.css"></style>
-<style scoped src="./styles/TeamManagementView.scoped.s2.css"></style>
+<style scoped src="./styles/TeamManagementView.scoped.css"></style>

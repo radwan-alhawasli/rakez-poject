@@ -153,13 +153,11 @@ const developerItems = [
   COMMON_ITEMS.profile,
 ];
 
-/** التسويق (دور 5) */
+/** التسويق (دور 5) — بدون «طلباتي» و«طلب مشروع حصري» (مخصص لأدوار أخرى) */
 const marketingItems = [
   { to: '/marketing/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard, permission: 'marketing.dashboard.view' },
   COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications, hasBadge: true },
-  COMMON_ITEMS.myRequests,
-  COMMON_ITEMS.exclusiveRequest,
   { to: '/marketing/projects', label: 'مشاريع التسويق', tooltip: 'مشاريع التسويق', icon: ICONS.market, permission: 'marketing.projects.view' },
   { to: '/marketing/developer-plan', label: 'خطة المطور', tooltip: 'خطة المطور', icon: ICONS.calendar, permission: 'marketing.plans.create' },
   { to: '/marketing/employee-plans', label: 'خطط الموظفين', tooltip: 'خطط الموظفين', icon: ICONS.teams, permission: 'marketing.plans.create' },

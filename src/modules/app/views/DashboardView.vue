@@ -13,6 +13,7 @@
     </div>
 
     <template v-else>
+      <div class="kpi-dashboard-grid">
       <DashboardWelcomeHeader
         :user-name="userName"
         subtitle="إدارة المشاريع والموافقات."
@@ -20,8 +21,7 @@
         english-subtitle="Projects and approvals management"
       />
 
-      <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
-      <div class="rakez-widget-grid rakez-widget-grid--dense dashboard-main-grid">
+      <div class="kpi-top-row dashboard-main-grid">
         <LuxuryStatCard
           label="الوحدات المتاحة"
           :value="formatCompact(availableUnits)"
@@ -69,11 +69,10 @@
         </LuxuryStatCard>
       </div>
 
-      <h3 class="rakez-dashboard-section-title">لوحة المؤشرات</h3>
       <Suspense>
         <template #default>
-          <div class="rakez-widget-grid dashboard-widgets-bottom">
-            <DarkWidgetShell title="توزيع المشاريع" :subtitle="`جاهز للتسويق ${readinessPct}%`">
+          <div class="kpi-main-grid dashboard-widgets-bottom">
+            <DarkWidgetShell class="kpi-span-4" title="توزيع المشاريع" :subtitle="`جاهز للتسويق ${readinessPct}%`">
               <DonutKpiWidget
                 :segments="projectReadinessSplit"
                 :height="200"
@@ -81,11 +80,11 @@
                 central-sub-label="جاهز للتسويق"
               />
             </DarkWidgetShell>
-            <DarkWidgetShell title="تفصيل الجاهزية" subtitle="عدد المشاريع حسب الحالة">
+            <DarkWidgetShell class="kpi-span-4" title="تفصيل الجاهزية" subtitle="عدد المشاريع حسب الحالة">
               <ProgressBreakdownWidget :rows="projectReadinessSplit" value-type="number" />
               <p class="dashboard-portfolio-note">إجمالي قيمة الوحدات (تقديري): {{ formatCurrencyAr(totalPortfolioValue) }}</p>
             </DarkWidgetShell>
-            <DarkWidgetShell class="rakez-widget-span-2" title="مؤشرات سريعة" subtitle="وحدات ومشاريع">
+            <DarkWidgetShell class="kpi-span-4" title="مؤشرات سريعة" subtitle="وحدات ومشاريع">
               <DashboardMetricsBarChart :series="mainBarSeries" :height="240" />
             </DarkWidgetShell>
           </div>
@@ -97,6 +96,7 @@
           </div>
         </template>
       </Suspense>
+      </div>
     </template>
   </div>
 </template>

@@ -27,7 +27,9 @@ defineProps({
 
 <style scoped>
 .dark-widget-shell {
-  background: rgba(15, 23, 42, 0.82);
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(18px) saturate(165%);
+  -webkit-backdrop-filter: blur(18px) saturate(165%);
   border-radius: 24px;
   border: 1px solid rgba(181, 169, 154, 0.15);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05);

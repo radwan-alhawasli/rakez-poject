@@ -7,19 +7,13 @@ vi.mock('@/services/marketingService', () => ({
     getProjects: vi.fn(),
     getUsers: vi.fn(),
     getEmployeePlans: vi.fn(),
-    autoGenerateEmployeePlan: vi.fn(),
     suggestEmployeePlan: vi.fn(),
     createEmployeePlan: vi.fn(),
-    exportEmployeePlansByProject: vi.fn(),
   },
 }));
 
 vi.mock('@/services/notificationService', () => ({
   default: { addNotification: vi.fn() },
-}));
-
-vi.mock('@/services/pdfService', () => ({
-  generatePlatformDistributionPdf: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
 }));
 
 vi.mock('@/utils/logger', () => ({
@@ -50,8 +44,6 @@ async function mountEmployeePlans() {
       },
     ],
   });
-  marketingService.getUsers.mockResolvedValue([{ id: 1, type: 5, name: 'Emp' }]);
-
   const Comp = defineComponent({
     setup() {
       return useMarketingEmployeePlans();
@@ -62,7 +54,6 @@ async function mountEmployeePlans() {
   await flushPromises();
   await vi.waitFor(() => {
     expect(wrapper.vm.projects.length).toBeGreaterThan(0);
-    expect(wrapper.vm.marketingEmployees.length).toBeGreaterThan(0);
   });
   return wrapper;
 }
@@ -72,10 +63,10 @@ describe('useMarketingEmployeePlans', () => {
     vi.clearAllMocks();
   });
 
-  it('loads projects and marketing employees on mount', async () => {
+  it('loads projects on mount', async () => {
     const wrapper = await mountEmployeePlans();
     expect(wrapper.vm.projects.length).toBe(1);
-    expect(wrapper.vm.marketingEmployees.length).toBe(1);
+    expect(marketingService.getUsers).not.toHaveBeenCalled();
   });
 
   it('platformDistributionSum is 100 by default', async () => {
@@ -99,18 +90,4 @@ describe('useMarketingEmployeePlans', () => {
     expect(wrapper.vm.employeePlans).toEqual([]);
   });
 
-  it('autoGenerateEmployeePlan warns without project', async () => {
-    const wrapper = await mountEmployeePlans();
-    wrapper.vm.employeePlansProjectId = '';
-    await wrapper.vm.autoGenerateEmployeePlan();
-    expect(toast.warning).toHaveBeenCalled();
-  });
-
-  it('autoGenerateEmployeePlan calls service when project set', async () => {
-    marketingService.autoGenerateEmployeePlan.mockResolvedValue({});
-    const wrapper = await mountEmployeePlans();
-    wrapper.vm.employeePlansProjectId = '10';
-    await wrapper.vm.autoGenerateEmployeePlan();
-    expect(marketingService.autoGenerateEmployeePlan).toHaveBeenCalled();
-  });
 });

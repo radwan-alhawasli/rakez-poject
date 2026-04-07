@@ -1,12 +1,15 @@
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import marketingService from '@/services/marketingService';
+import authService from '@/services/authService';
 import notificationService from '@/services/notificationService';
-import { generatePlatformDistributionPdf } from '@/services/pdfService';
 import logger from '@/utils/logger';
+import { getCaughtMessage } from '@/utils/caughtError';
 import { useFormatters } from '@/composables/useFormatters';
 import { toast } from '@/composables/useToast';
 
 export function useMarketingEmployeePlans() {
+  const route = useRoute();
   const { formatNumber } = useFormatters();
   const formatCurrency = formatNumber;
 
@@ -14,13 +17,10 @@ export function useMarketingEmployeePlans() {
 
   const projects = ref([]);
   const isLoadingProjects = ref(false);
-  const marketingEmployees = ref([]);
-  const isLoadingEmployees = ref(false);
   const employeePlansProjectId = ref('');
   const employeePlans = ref([]);
   const isLoadingEmployeePlans = ref(false);
   const isSubmitting = ref(false);
-  const employeePlanGenerateForm = reactive({ user_id: '' });
 
   const platformDistribution = reactive({
     instagram: 25,
@@ -134,23 +134,6 @@ export function useMarketingEmployeePlans() {
     }
   };
 
-  const loadEmployees = async () => {
-    isLoadingEmployees.value = true;
-    try {
-      const data = await marketingService.getUsers();
-      const normalizedEmployees = Array.isArray(data) ? data : data?.items || [];
-      marketingEmployees.value = normalizedEmployees.filter(
-        e =>
-          String(e.type) === '5' || e.type === 5 || String(e.type).toLowerCase() === 'marketing'
-      );
-    } catch (error) {
-      logger.error('Error loading employees:', error);
-      marketingEmployees.value = [];
-    } finally {
-      isLoadingEmployees.value = false;
-    }
-  };
-
   const loadEmployeePlans = async () => {
     if (!employeePlansProjectId.value) {
       employeePlans.value = [];
@@ -165,32 +148,6 @@ export function useMarketingEmployeePlans() {
       employeePlans.value = [];
     } finally {
       isLoadingEmployeePlans.value = false;
-    }
-  };
-
-  const autoGenerateEmployeePlan = async () => {
-    if (!employeePlansProjectId.value) {
-      toast.warning('اختر مشروعاً');
-      return;
-    }
-    try {
-      isSubmitting.value = true;
-      const rawMarketingPercent = Number(budgetForm.marketing_percent) || MARKETING_PERCENT_FIXED;
-      const payload = {
-        marketing_project_id: Number(employeePlansProjectId.value),
-        marketing_percent: rawMarketingPercent,
-        strategy: 'ai',
-      };
-      if (employeePlanGenerateForm.user_id) payload.user_id = Number(employeePlanGenerateForm.user_id);
-      const response = await marketingService.autoGenerateEmployeePlan(payload);
-      if (response?.breakdown) budgetDistributionResult.value = response.breakdown;
-      notificationService.addNotification('تم إنشاء خطة الموظف تلقائياً', 'success');
-      await loadEmployeePlans();
-    } catch (error) {
-      logger.error('Error auto-generating employee plan:', error);
-      toast.error('حدث خطأ أثناء إنشاء خطة الموظف');
-    } finally {
-      isSubmitting.value = false;
     }
   };
 
@@ -251,13 +208,77 @@ export function useMarketingEmployeePlans() {
     return true;
   };
 
-  const toApiPlatformKeys = dist => {
-    const map = { instagram: 'Meta', google_youtube: 'YouTube', other: 'Other', aqar: 'Aqar' };
-    const out = {};
-    for (const [k, v] of Object.entries(dist)) {
-      out[map[k] || (k.charAt(0).toUpperCase() + k.slice(1))] = v;
+  /**
+   * شكل المنصات المتوقّع من الباكند (Postman / MARKETING): TikTok, Meta, Snapchat, YouTube, LinkedIn, X.
+   * other + aqar من الواجهة يُدمجان في LinkedIn حتى يبقى المجموع 100%.
+   */
+  const buildEmployeePlanPlatformDistributionForApi = dist => ({
+    Meta: Number(dist.instagram) || 0,
+    Snapchat: Number(dist.snapchat) || 0,
+    TikTok: Number(dist.tiktok) || 0,
+    X: Number(dist.x) || 0,
+    YouTube: Number(dist.google_youtube) || 0,
+    LinkedIn: (Number(dist.other) || 0) + (Number(dist.aqar) || 0),
+  });
+
+  const CAMPAIGN_DISTRIBUTION_KEYS = ['Direct Communication', 'Hand Raise', 'Impression', 'Sales'];
+
+  const UI_PLATFORM_TO_CAMPAIGN_BLOCK = {
+    instagram: 'Instagram',
+    snapchat: 'Snapchat',
+    tiktok: 'TikTok',
+    x: 'X',
+    google_youtube: 'Google/YouTube',
+    other: 'Other',
+    aqar: 'Aqar',
+  };
+
+  /** متوسط مرجّح لنسب الحملات لأن الـ API يتوقع campaign_distribution مسطحاً وليس حسب المنصة فقط. */
+  const buildFlatCampaignDistributionForApi = (platformDist, byPlatform) => {
+    const out = Object.fromEntries(CAMPAIGN_DISTRIBUTION_KEYS.map(k => [k, 0]));
+    for (const [uiKey, pct] of Object.entries(platformDist)) {
+      const w = (Number(pct) || 0) / 100;
+      if (w <= 0) continue;
+      const blockKey = UI_PLATFORM_TO_CAMPAIGN_BLOCK[uiKey];
+      const row = blockKey && byPlatform[blockKey];
+      if (!row) continue;
+      for (const c of CAMPAIGN_DISTRIBUTION_KEYS) {
+        out[c] += w * (Number(row[c]) || 0);
+      }
+    }
+    for (const c of CAMPAIGN_DISTRIBUTION_KEYS) {
+      out[c] = Math.round(out[c] * 100) / 100;
+    }
+    const sum = CAMPAIGN_DISTRIBUTION_KEYS.reduce((a, c) => a + out[c], 0);
+    if (sum > 0 && Math.abs(sum - 100) > 0.05) {
+      const f = 100 / sum;
+      for (const c of CAMPAIGN_DISTRIBUTION_KEYS) {
+        out[c] = Math.round(out[c] * f * 100) / 100;
+      }
     }
     return out;
+  };
+
+  /** الباكند يتطلب غالباً user_id — نربط الخطة بالمستخدم الحالي من الجلسة. */
+  const resolveEmployeePlanUserId = () => {
+    const u = authService.getCurrentUser();
+    const raw = u?.id ?? u?.user_id;
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+
+  const employeePlanSaveErrorMessage = error => {
+    const data = error?.response?.data;
+    if (data && typeof data === 'object' && data.errors && typeof data.errors === 'object') {
+      const lines = [];
+      for (const [field, msgs] of Object.entries(data.errors)) {
+        if (Array.isArray(msgs)) lines.push(...msgs.map(m => `${field}: ${m}`));
+        else if (msgs != null) lines.push(`${field}: ${msgs}`);
+      }
+      if (lines.length) return lines.join(' — ');
+    }
+    const m = getCaughtMessage(error);
+    return m && m !== '{}' ? m : '';
   };
 
   const applyManualEmployeePlan = async () => {
@@ -266,23 +287,40 @@ export function useMarketingEmployeePlans() {
       return;
     }
     if (!validateDistributions()) return;
+    const marketingProjectId = Number(employeePlansProjectId.value);
+    if (!Number.isFinite(marketingProjectId) || marketingProjectId <= 0) {
+      toast.warning('معرّف المشروع غير صالح');
+      return;
+    }
+    const userId = resolveEmployeePlanUserId();
+    if (userId == null) {
+      toast.warning('تعذر تحديد المستخدم الحالي. أعد تسجيل الدخول ثم أعد المحاولة.');
+      return;
+    }
+
     try {
       isSubmitting.value = true;
       const rawMarketingPercent = Number(budgetForm.marketing_percent) || MARKETING_PERCENT_FIXED;
+      const platform_distribution = buildEmployeePlanPlatformDistributionForApi(platformDistribution);
+      const campaign_distribution = buildFlatCampaignDistributionForApi(
+        platformDistribution,
+        campaignDistributionByPlatform
+      );
       const payload = {
-        marketing_project_id: Number(employeePlansProjectId.value),
+        marketing_project_id: marketingProjectId,
+        user_id: userId,
         marketing_percent: rawMarketingPercent,
-        platform_distribution: toApiPlatformKeys(platformDistribution),
-        campaign_distribution_by_platform: JSON.parse(JSON.stringify(campaignDistributionByPlatform)),
+        platform_distribution,
+        campaign_distribution,
       };
-      if (employeePlanGenerateForm.user_id) payload.user_id = Number(employeePlanGenerateForm.user_id);
       const response = await marketingService.createEmployeePlan(payload);
       if (response?.breakdown) budgetDistributionResult.value = response.breakdown;
       notificationService.addNotification('تم حفظ خطة الموظف مع التوزيعات', 'success');
       await loadEmployeePlans();
     } catch (error) {
       logger.error('Error saving employee distribution:', error);
-      toast.error('تعذر حفظ خطة الموظف بالتوزيعات');
+      const detail = employeePlanSaveErrorMessage(error);
+      toast.error(detail ? `${detail}` : 'تعذر حفظ خطة الموظف بالتوزيعات');
     } finally {
       isSubmitting.value = false;
     }
@@ -301,140 +339,20 @@ export function useMarketingEmployeePlans() {
     return new Intl.DateTimeFormat('en-GB').format(date);
   };
 
-  const exportEmployeePlansExcel = async () => {
-    const projectId = employeePlansProjectId.value;
-    if (projectId) {
-      const blob = await marketingService.exportEmployeePlansByProject(projectId, 'csv');
-      if (blob && blob.size > 0) {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `employee_plans_${new Date().toISOString().split('T')[0]}.csv`;
-        link.click();
-        return;
-      }
-    }
-    const headers = ['الموظف', 'قيمة التسويق', 'قيمة العمولة', 'توزيع المنصات', 'توزيع الحملات', 'التاريخ'];
-    const rows = [headers];
-    employeePlans.value.forEach(plan => {
-      rows.push([
-        plan.user?.name || plan.user_name || `User #${plan.user_id ?? '—'}`,
-        String(plan.marketing_value ?? 0),
-        String(plan.commission_value ?? 0),
-        formatDistribution(plan.platform_distribution),
-        formatDistribution(plan.campaign_distribution),
-        formatDate(plan.created_at),
-      ]);
-    });
-    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `employee_plans_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-  };
-
-  const exportEmployeePlansPdf = async () => {
-    try {
-      const projectId = employeePlansProjectId.value;
-      if (projectId) {
-        try {
-          const { getEmployeePlansPdfData } = await import('@/services/pdfApi');
-          const { buildDocumentPdf } = await import('@/services/pdfService');
-          const data = await getEmployeePlansPdfData(projectId);
-          if (data?.title != null && Array.isArray(data?.sections)) {
-            const pdfBytes = await buildDocumentPdf({
-              title: data.title,
-              subtitle: data.subtitle ?? `Date: ${new Date().toISOString().slice(0, 10)}`,
-              sections: data.sections,
-              footer: data.footer,
-            });
-            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `employee_plans_${new Date().toISOString().split('T')[0]}.pdf`;
-            link.click();
-            URL.revokeObjectURL(link.href);
-            return;
-          }
-        } catch (_) { /* try backend blob or local */ }
-        const blob = await marketingService.exportEmployeePlansByProject(projectId, 'pdf');
-        if (blob && blob.size > 0) {
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = `employee_plans_${new Date().toISOString().split('T')[0]}.pdf`;
-          link.click();
-          return;
-        }
-      }
-      const { getPdfDeps, loadArabicFontBytes, reshapeArabic } = await import('@/services/pdfService');
-      const { PDFDocument, rgb, fontkit } = await getPdfDeps();
-      const pdfDoc = await PDFDocument.create();
-      pdfDoc.registerFontkit(fontkit);
-      const fontBytes = await loadArabicFontBytes();
-      const font = await pdfDoc.embedFont(fontBytes);
-      const page = pdfDoc.addPage([595, 842]);
-      let y = 800;
-      const draw = (text, size = 12) => {
-        page.drawText(reshapeArabic(String(text)), {
-          x: 40,
-          y,
-          size,
-          font,
-          color: rgb(0.1, 0.2, 0.3),
-        });
-        y -= size + 8;
-      };
-      draw('خطط الموظفين / Employee Marketing Plans', 16);
-      draw(`Date: ${new Date().toISOString().slice(0, 10)}`);
-      employeePlans.value.slice(0, 25).forEach(plan => {
-        const name = plan.user?.name || plan.user_name || `User #${plan.user_id ?? '—'}`;
-        draw(`${name} | ${plan.marketing_value ?? 0} SAR | ${formatDistribution(plan.platform_distribution)}`);
-      });
-      const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `employee_plans_${new Date().toISOString().split('T')[0]}.pdf`;
-      link.click();
-    } catch (error) {
-      logger.error('Error exporting employee plans PDF:', error);
-      toast.error('تعذر تصدير PDF');
-    }
-  };
-
-  const exportWeeklyPlanPdf = async () => {
-    const projectId = employeePlansProjectId.value;
-    if (!projectId) {
-      toast.warning('اختر مشروعاً');
-      return;
-    }
-    try {
-      const table = platformBreakdownTable.value;
-      const distribution = {
-        rows: (table?.rows ?? []).map((r) => ({
-          platform_ar: r.platform,
-          clicks: r.clicks ?? 0,
-          impressions: r.views ?? 0,
-        })),
-        total_clicks: table?.totalClicks ?? 0,
-        total_impressions: table?.totalViews ?? 0,
-      };
-      const pdfBytes = await generatePlatformDistributionPdf(distribution);
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `خطة_اسبوعية_${new Date().toISOString().split('T')[0]}.pdf`;
-      link.click();
-      URL.revokeObjectURL(link.href);
-    } catch (error) {
-      logger.error('Error exporting weekly plan PDF:', error);
-      toast.error('تعذر تصدير خطة اسبوعية PDF');
-    }
-  };
+  watch(
+    () => [route.name, route.query?.projectId],
+    () => {
+      if (route.name !== 'MarketingEmployeePlans') return;
+      const pid = route.query?.projectId;
+      if (pid == null || pid === '') return;
+      employeePlansProjectId.value = String(pid);
+      loadEmployeePlans();
+    },
+    { immediate: true }
+  );
 
   onMounted(() => {
     loadProjects();
-    loadEmployees();
   });
 
   return {
@@ -442,8 +360,6 @@ export function useMarketingEmployeePlans() {
     isLoadingEmployeePlans,
     employeePlansProjectId,
     projects,
-    marketingEmployees,
-    employeePlanGenerateForm,
     employeePlanBudgetSummary,
     platformDistribution,
     campaignDistributionByPlatform,
@@ -454,14 +370,11 @@ export function useMarketingEmployeePlans() {
     isSuggestingAiPlan,
     aiSuggestionRationale,
     formatCurrency,
+    formatNumber,
     formatDate,
     formatDistribution,
     loadEmployeePlans,
-    autoGenerateEmployeePlan,
     applyManualEmployeePlan,
     suggestAiPlan,
-    exportEmployeePlansExcel,
-    exportEmployeePlansPdf,
-    exportWeeklyPlanPdf,
   };
 }

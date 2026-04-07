@@ -70,3 +70,61 @@
     margin: 0 -12px;
   }
 }
+
+.project-plans-modal {
+  max-width: min(720px, 96vw);
+}
+
+.project-plans-modal-body {
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+}
+
+.project-plans-section {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(30, 58, 95, 0.1);
+}
+
+.project-plans-section:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.project-plans-section-title {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.project-plans-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.loading-state--inline {
+  padding: 16px 0;
+  min-height: auto;
+}
+
+.loading-state--inline .spinner {
+  width: 28px;
+  height: 28px;
+}
+
+.project-plans-employee-table-wrap {
+  margin-top: 8px;
+  max-height: 240px;
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.project-plans-modal-footer {
+  flex-wrap: wrap;
+  gap: 8px;
+}

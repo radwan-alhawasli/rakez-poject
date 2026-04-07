@@ -4,7 +4,7 @@
       <div class="spinner"></div>
       <p>جاري تحميل لوحة المعلومات...</p>
     </div>
-    <div v-else>
+    <div v-else class="kpi-dashboard-grid">
       <DashboardWelcomeHeader
         greeting-name="التسويق"
         subtitle="إليك ملخص أداء التسويق اليوم"
@@ -12,8 +12,7 @@
         english-subtitle="Today’s marketing performance summary"
       />
 
-      <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
-      <div class="rakez-widget-grid rakez-widget-grid--dense">
+      <div class="kpi-top-row">
         <LuxuryStatCard
           label="عدد lead"
           :value="formatCompact(dashboardMetrics.total_leads)"
@@ -43,8 +42,7 @@
         </LuxuryStatCard>
       </div>
 
-      <h3 class="rakez-dashboard-section-title">مؤشرات إضافية</h3>
-      <div class="rakez-widget-grid rakez-widget-grid--dense">
+      <div class="kpi-top-row">
         <LuxuryStatCard
           label="الحجوزات المتوقعة"
           :value="formatCompact(dashboardMetrics.total_expected_bookings)"
@@ -62,12 +60,11 @@
         />
       </div>
 
-      <h3 class="rakez-dashboard-section-title">لوحة المؤشرات</h3>
-      <div class="rakez-widget-grid">
-        <DarkWidgetShell title="توزيع أعداد التسويق" subtitle="عملاء، حجوزات، عربونات">
+      <div class="kpi-main-grid">
+        <DarkWidgetShell class="kpi-span-3" title="توزيع أعداد التسويق" subtitle="عملاء، حجوزات، عربونات">
           <DonutKpiWidget :segments="marketingDonutSegments" :height="200" central-sub-label="أعداد" />
         </DarkWidgetShell>
-        <DarkWidgetShell title="قيم متوقعة مقابل إنفاق" subtitle="من نفس واجهة الـ API">
+        <DarkWidgetShell class="kpi-span-3" title="قيم متوقعة مقابل إنفاق" subtitle="من نفس واجهة الـ API">
           <DualTileKpiWidget
             left-label="قيمة حجوزات متوقعة"
             :left-value="formatCurrencyCompact(dashboardMetrics.total_expected_booking_value)"
@@ -75,10 +72,10 @@
             :right-value="formatCurrencyCompact(dashboardMetrics.total_daily_spend)"
           />
         </DarkWidgetShell>
-        <DarkWidgetShell class="rakez-widget-span-2" title="أعداد ونِسَب" subtitle="مخطط أعمدة">
+        <DarkWidgetShell class="kpi-span-6" title="أعداد ونِسَب" subtitle="مخطط أعمدة">
           <DashboardMetricsBarChart :series="marketingCountsSeries" :height="240" />
         </DarkWidgetShell>
-        <DarkWidgetShell class="rakez-widget-span-2" title="قيم مالية" subtitle="نفس مقياس المحور الرأسي">
+        <DarkWidgetShell class="kpi-span-6" title="قيم مالية" subtitle="نفس مقياس المحور الرأسي">
           <DashboardMetricsBarChart :series="marketingValuesSeries" :height="240" />
         </DarkWidgetShell>
       </div>

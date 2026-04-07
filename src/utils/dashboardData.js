@@ -119,11 +119,11 @@ export function accountingProgressRows(m) {
 export function hrProgressRows(m) {
   if (!m) return [];
   return [
-    { label: 'موظفون', value: Number(m.totalEmployees) || 0 },
+    { label: 'متوسط بيع الفريق (شهري)', value: Number(m.avgTeamMonthlySales) || 0 },
     { label: 'وحدات (إجمالي)', value: Number(m.totalUnits) || 0 },
     { label: 'موظفو مبيعات', value: Number(m.salesEmployeesCount) || 0 },
-    { label: 'وحدات مباعة', value: Number(m.soldUnits) || 0 },
-    { label: 'متوسط مبيع/موظف', value: Number(m.avgEmployeeSales) || 0 },
+    { label: 'الموظفون الحاليون', value: Number(m.currentEmployeesCount) || 0 },
+    { label: 'متوسط تحقيق الأهداف', value: Number(m.avgEmployeeSales) || 0 },
   ];
 }
 

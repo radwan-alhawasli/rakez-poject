@@ -18,8 +18,8 @@
     </div>
 
     <template v-else>
-      <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
-      <div class="rakez-widget-grid rakez-widget-grid--dense">
+      <div class="kpi-dashboard-grid">
+      <div class="kpi-top-row">
         <LuxuryStatCard
           label="الوحدات المتاحة"
           :value="formatCompact(availableUnits)"
@@ -67,14 +67,14 @@
         </LuxuryStatCard>
       </div>
 
-      <h3 class="rakez-dashboard-section-title">لوحة المؤشرات</h3>
-      <div class="rakez-widget-grid">
-        <DarkWidgetShell title="توزيع المخزون والمشاريع" subtitle="من نظرة الوكالة">
+      <div class="kpi-main-grid">
+        <DarkWidgetShell class="kpi-span-4" title="توزيع المخزون والمشاريع" subtitle="من نظرة الوكالة">
           <DonutKpiWidget :segments="inventoryDonutSegments" :height="200" central-sub-label="إجمالي الأعداد" />
         </DarkWidgetShell>
-        <DarkWidgetShell class="rakez-widget-span-2" title="نظرة عامة على المشاريع" subtitle="مؤشرات من نظرة الوكالة وفهرس العقود">
+        <DarkWidgetShell class="kpi-span-8" title="نظرة عامة على المشاريع" subtitle="مؤشرات من نظرة الوكالة وفهرس العقود">
           <DashboardMetricsBarChart :series="inventoryChartSeries" :height="260" />
         </DarkWidgetShell>
+      </div>
       </div>
     </template>
   </div>

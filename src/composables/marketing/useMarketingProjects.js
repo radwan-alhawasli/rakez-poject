@@ -20,7 +20,7 @@ import {
 export function useMarketingProjects() {
   const router = useRouter();
   const { hasPermission } = usePermissions();
-  const { formatNumber } = useFormatters();
+  const { formatNumber, formatDate } = useFormatters();
   const formatCurrency = formatNumber;
 
   const MARKETING_PERCENT_FIXED = 10;
@@ -54,8 +54,14 @@ export function useMarketingProjects() {
   // Modals
   const showProjectDetailsModal = ref(false);
   const showCalculateBudgetModal = ref(false);
-  const showPlanUnavailableModal = ref(false);
-  const planUnavailableProject = ref(null);
+  /** مودال «الخطة»: خطة المطور/المرفق + خطط الموظفين */
+  const showProjectPlansModal = ref(false);
+  const projectPlansModalProject = ref(null);
+  const projectPlansModalLoading = ref(false);
+  const projectPlansModalPlanUrl = ref('');
+  const projectPlansModalHasDeveloperPlan = ref(false);
+  const projectPlansModalDeveloperPlan = ref(null);
+  const projectPlansModalEmployeePlans = ref([]);
   /** حقل واجهة فقط في مودال التفاصيل — لا يُحفظ ولا يُرسل لأي API */
   const uiOnlyMarketingPercent = ref('');
 
@@ -180,46 +186,120 @@ export function useMarketingProjects() {
     }).catch(() => {});
   };
 
-  const viewProjectPlan = async project => {
+  const resolveProjectPlanAttachmentUrl = project => {
     const raw = project?.project_plans || project?.marketing_project?.project_plans || project?.plan_url || '';
-    const planUrl = typeof raw === 'string' && raw.trim() ? (raw.startsWith('http') ? raw : `${window.location.origin}${raw.startsWith('/') ? raw : '/' + raw}`) : '';
-    if (planUrl) {
-      window.open(planUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
-    const contractId = project?.marketing_project?.contract_id ?? project?.contract_id ?? project?.contractId ?? project?.id;
-    if (contractId) {
-      try {
-        const plan = await marketingService.getDeveloperPlan(contractId);
-        if (plan?.raw_plan || plan?.rawPlan || (plan && Object.keys(plan).length > 0)) {
-          router.push({
-            name: 'MarketingPlans',
-            query: {
-              sub: 'developer',
-              projectId: String(project.id ?? project.marketing_project_id),
-              contractId: String(project?.marketing_project?.contract_id ?? project?.contract_id ?? project?.contractId ?? contractId ?? ''),
-              marketingValue: String(project?.marketing_value ?? project?.marketingValue ?? plan?.raw_plan?.marketing_value ?? ''),
-            },
-          }).catch(() => {});
-          return;
-        }
-      } catch (e) {
-        logger.debug('No developer plan for project', contractId, e);
-      }
-    }
-    planUnavailableProject.value = project;
-    showPlanUnavailableModal.value = true;
+    if (typeof raw !== 'string' || !raw.trim()) return '';
+    const u = raw.trim();
+    return u.startsWith('http') ? u : `${window.location.origin}${u.startsWith('/') ? u : `/${u}`}`;
   };
 
-  const closePlanUnavailableModal = () => {
-    showPlanUnavailableModal.value = false;
-    planUnavailableProject.value = null;
+  const developerPlanLooksPresent = plan => {
+    if (!plan || typeof plan !== 'object') return false;
+    if (plan.raw_plan || plan.rawPlan) return true;
+    return Boolean(
+      plan.id ??
+        plan.contract_id ??
+        plan.average_cpm ??
+        plan.averageCpm ??
+        plan.marketing_value ??
+        plan.marketingValue
+    );
   };
 
-  const goToManagePlanFromModal = () => {
-    const p = planUnavailableProject.value;
-    closePlanUnavailableModal();
+  const viewProjectPlan = async project => {
+    if (!project) return;
+    projectPlansModalProject.value = project;
+    projectPlansModalPlanUrl.value = resolveProjectPlanAttachmentUrl(project);
+    projectPlansModalHasDeveloperPlan.value = false;
+    projectPlansModalDeveloperPlan.value = null;
+    projectPlansModalEmployeePlans.value = [];
+    showProjectPlansModal.value = true;
+    projectPlansModalLoading.value = true;
+
+    const contractId =
+      project?.marketing_project?.contract_id ?? project?.contract_id ?? project?.contractId ?? project?.id;
+    const marketingProjectId = project?.id ?? project?.marketing_project_id;
+
+    const devTask = contractId
+      ? marketingService.getDeveloperPlan(contractId).catch(e => {
+          logger.debug('No developer plan for project', contractId, e);
+          return null;
+        })
+      : Promise.resolve(null);
+
+    const epTask =
+      marketingProjectId != null && marketingProjectId !== ''
+        ? marketingService.getEmployeePlans(marketingProjectId).catch(e => {
+            logger.error('Error loading employee plans for project plans modal', e);
+            return { items: [] };
+          })
+        : Promise.resolve({ items: [] });
+
+    const [plan, epRes] = await Promise.all([devTask, epTask]);
+
+    if (plan && developerPlanLooksPresent(plan)) {
+      projectPlansModalDeveloperPlan.value = plan;
+      projectPlansModalHasDeveloperPlan.value = true;
+    }
+
+    projectPlansModalEmployeePlans.value = epRes?.items ?? (Array.isArray(epRes) ? epRes : []);
+
+    projectPlansModalLoading.value = false;
+  };
+
+  const closeProjectPlansModal = () => {
+    showProjectPlansModal.value = false;
+    projectPlansModalProject.value = null;
+    projectPlansModalLoading.value = false;
+    projectPlansModalPlanUrl.value = '';
+    projectPlansModalHasDeveloperPlan.value = false;
+    projectPlansModalDeveloperPlan.value = null;
+    projectPlansModalEmployeePlans.value = [];
+  };
+
+  const openProjectPlanAttachment = () => {
+    const u = projectPlansModalPlanUrl.value;
+    if (u) window.open(u, '_blank', 'noopener,noreferrer');
+  };
+
+  const goToDeveloperPlanEditorFromModal = () => {
+    const project = projectPlansModalProject.value;
+    const plan = projectPlansModalDeveloperPlan.value;
+    if (!project) return;
+    const cid =
+      project?.marketing_project?.contract_id ?? project?.contract_id ?? project?.contractId ?? project?.id;
+    closeProjectPlansModal();
+    router
+      .push({
+        name: 'MarketingPlans',
+        query: {
+          sub: 'developer',
+          projectId: String(project.id ?? project.marketing_project_id),
+          contractId: String(cid ?? ''),
+          marketingValue: String(
+            project?.marketing_value ??
+              project?.marketingValue ??
+              plan?.raw_plan?.marketing_value ??
+              plan?.rawPlan?.marketing_value ??
+              ''
+          ),
+        },
+      })
+      .catch(() => {});
+  };
+
+  const goToManageDeveloperPlanFromPlansModal = () => {
+    const p = projectPlansModalProject.value;
+    closeProjectPlansModal();
     if (p?.id) managePlan(p.id);
+  };
+
+  const goToEmployeePlansManagementFromModal = () => {
+    const p = projectPlansModalProject.value;
+    const id = p?.id ?? p?.marketing_project_id;
+    closeProjectPlansModal();
+    if (id == null || id === '') return;
+    router.push({ name: 'MarketingEmployeePlans', query: { projectId: String(id) } }).catch(() => {});
   };
 
   // Budget calculation
@@ -311,8 +391,12 @@ export function useMarketingProjects() {
     recommendedEmployeeByProjectId,
     showProjectDetailsModal,
     showCalculateBudgetModal,
-    showPlanUnavailableModal,
-    planUnavailableProject,
+    showProjectPlansModal,
+    projectPlansModalProject,
+    projectPlansModalLoading,
+    projectPlansModalPlanUrl,
+    projectPlansModalHasDeveloperPlan,
+    projectPlansModalEmployeePlans,
     uiOnlyMarketingPercent,
     budgetForm,
     budgetResult,
@@ -325,8 +409,12 @@ export function useMarketingProjects() {
     goToPhotography,
     managePlan,
     viewProjectPlan,
-    closePlanUnavailableModal,
-    goToManagePlanFromModal,
+    closeProjectPlansModal,
+    openProjectPlanAttachment,
+    goToDeveloperPlanEditorFromModal,
+    goToManageDeveloperPlanFromPlansModal,
+    goToEmployeePlansManagementFromModal,
+    formatDate,
     onBudgetProjectChange,
     openCalculateBudgetModal,
     calculateBudget,

@@ -66,18 +66,195 @@
   border: 1px solid rgba(181, 169, 154, 0.1);
 }
 
+/* Ambient glow: static only (no animation — avoids prior GPU cost of rotate + blur(100px) on huge box) */
+.rakez-kpi-dashboard::after {
+  content: "";
+  position: absolute;
+  inset: -45%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    transparent 22%,
+    rgba(181, 169, 154, 0.07) 26%,
+    rgba(255, 255, 255, 0.1) 28%,
+    rgba(181, 169, 154, 0.07) 30%,
+    transparent 38%,
+    transparent 62%,
+    rgba(181, 169, 154, 0.06) 74%,
+    rgba(255, 255, 255, 0.09) 76%,
+    rgba(181, 169, 154, 0.06) 78%,
+    transparent 88%,
+    transparent 100%
+  );
+  z-index: -2;
+  pointer-events: none;
+  filter: blur(72px);
+  opacity: 0.45;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rakez-kpi-dashboard::before {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     background: rgba(10, 15, 25, 0.82);
   }
+  .rakez-kpi-dashboard::after {
+    display: none;
+  }
 }
 
-/*
- * No ::after: the old layer used inset:-100%, blur(100px), and infinite rotate — too heavy for GPU
- * when the sidebar resizes the main column. Shell glass effect lives on ::before only.
- */
+/* --------------------------------------------------------------------------
+   KPI dashboard layout — shared (HR-style): top stat row + 12-col main grid
+   -------------------------------------------------------------------------- */
+.rakez-kpi-dashboard .kpi-dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rakez-kpi-dashboard .kpi-top-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.rakez-kpi-dashboard .kpi-main-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: auto;
+  gap: 24px;
+  align-items: stretch;
+}
+
+/* HR-specific cell spans (لوحة الموارد البشرية) */
+.rakez-kpi-dashboard .kpi-goal-progress {
+  grid-column: span 3;
+}
+
+.rakez-kpi-dashboard .kpi-distribution {
+  grid-column: span 6;
+}
+
+.rakez-kpi-dashboard .kpi-trend {
+  grid-column: span 3;
+}
+
+.rakez-kpi-dashboard .kpi-profile {
+  grid-column: span 3;
+}
+
+.rakez-kpi-dashboard .kpi-summary {
+  grid-column: span 6;
+}
+
+.rakez-kpi-dashboard .kpi-top-performers {
+  grid-column: span 3;
+}
+
+/* Generic spans لباقي الأقسام */
+.rakez-kpi-dashboard .kpi-span-3 {
+  grid-column: span 3;
+}
+
+.rakez-kpi-dashboard .kpi-span-4 {
+  grid-column: span 4;
+}
+
+.rakez-kpi-dashboard .kpi-span-6 {
+  grid-column: span 6;
+}
+
+.rakez-kpi-dashboard .kpi-span-8 {
+  grid-column: span 8;
+}
+
+.rakez-kpi-dashboard .kpi-span-9 {
+  grid-column: span 9;
+}
+
+.rakez-kpi-dashboard .kpi-span-12 {
+  grid-column: span 12;
+}
+
+.rakez-kpi-dashboard .goal-footer {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rakez-kpi-dashboard .goal-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.rakez-kpi-dashboard .goal-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.rakez-kpi-dashboard .goal-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.rakez-kpi-dashboard .goal-change {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.rakez-kpi-dashboard .goal-change.positive {
+  color: #4ade80;
+}
+
+@media (max-width: 1200px) {
+  .rakez-kpi-dashboard .kpi-goal-progress,
+  .rakez-kpi-dashboard .kpi-trend,
+  .rakez-kpi-dashboard .kpi-profile,
+  .rakez-kpi-dashboard .kpi-top-performers {
+    grid-column: span 6;
+  }
+
+  .rakez-kpi-dashboard .kpi-distribution,
+  .rakez-kpi-dashboard .kpi-summary {
+    grid-column: span 12;
+  }
+
+  .rakez-kpi-dashboard .kpi-span-3,
+  .rakez-kpi-dashboard .kpi-span-4 {
+    grid-column: span 6;
+  }
+
+  .rakez-kpi-dashboard .kpi-span-6,
+  .rakez-kpi-dashboard .kpi-span-8,
+  .rakez-kpi-dashboard .kpi-span-9 {
+    grid-column: span 12;
+  }
+}
+
+@media (max-width: 768px) {
+  .rakez-kpi-dashboard .kpi-goal-progress,
+  .rakez-kpi-dashboard .kpi-trend,
+  .rakez-kpi-dashboard .kpi-profile,
+  .rakez-kpi-dashboard .kpi-top-performers,
+  .rakez-kpi-dashboard .kpi-distribution,
+  .rakez-kpi-dashboard .kpi-summary {
+    grid-column: span 12;
+  }
+
+  .rakez-kpi-dashboard .kpi-span-3,
+  .rakez-kpi-dashboard .kpi-span-4,
+  .rakez-kpi-dashboard .kpi-span-6,
+  .rakez-kpi-dashboard .kpi-span-8,
+  .rakez-kpi-dashboard .kpi-span-9,
+  .rakez-kpi-dashboard .kpi-span-12 {
+    grid-column: span 12;
+  }
+}
 
 /* Section titles — dark glass strip (inside immersive shell) */
 .rakez-kpi-dashboard .rakez-dashboard-section-title {
@@ -100,7 +277,9 @@
 
 /* Stat cards — glass + gold accent (article + section beat Vue scoped) */
 .rakez-kpi-dashboard article.luxury-stat-card {
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
   border: 1px solid rgba(181, 169, 154, 0.2);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
   border-radius: 20px;
@@ -122,7 +301,9 @@
 
 /* Dark widget panels — depth + corner glow */
 .rakez-kpi-dashboard section.dark-widget-shell {
-  background: rgba(15, 23, 42, 0.82);
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
   border: 1px solid rgba(181, 169, 154, 0.12);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
   border-radius: 24px;
@@ -185,6 +366,8 @@
     rgba(250, 246, 238, 0.86) 45%,
     rgba(255, 255, 255, 0.78) 100%
   );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.65) inset,
     0 8px 24px -16px rgba(15, 23, 42, 0.12);
@@ -208,7 +391,9 @@
   margin-bottom: 20px;
   padding: 14px 18px;
   border-radius: 16px;
-  background: rgba(15, 23, 42, 0.82);
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
   border: 1px solid rgba(181, 169, 154, 0.12);
 }
 
@@ -279,7 +464,9 @@
   align-items: center;
   padding: 18px 20px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
   border: 1px solid rgba(181, 169, 154, 0.1);
   transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;

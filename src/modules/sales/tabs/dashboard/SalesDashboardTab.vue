@@ -1,5 +1,6 @@
 <template>
   <div class="dashboard-tab rakez-erp-dashboard rakez-kpi-dashboard">
+    <div class="kpi-dashboard-grid">
     <DashboardWelcomeHeader />
     <DashboardPrimaryKpis
       :dashboard-data="dashboardData"
@@ -7,14 +8,18 @@
     />
 
     <template v-if="dashboardData && !isLoadingDashboard">
-      <h3 class="rakez-dashboard-section-title">لوحة المؤشرات</h3>
-      <div class="rakez-widget-grid">
-        <DarkWidgetShell title="توزيع الوحدات والحجوزات" subtitle="من لوحة المبيعات الحالية">
+      <div class="kpi-main-grid">
+        <DarkWidgetShell
+          :class="areaPoints.length >= 2 ? 'kpi-span-4' : 'kpi-span-12'"
+          title="توزيع الوحدات والحجوزات"
+          subtitle="من لوحة المبيعات الحالية"
+        >
           <DonutKpiWidget :segments="salesDonutSegments" :height="200" central-sub-label="إجمالي الأعداد" />
         </DarkWidgetShell>
 
         <DarkWidgetShell
           v-if="areaPoints.length >= 2"
+          class="kpi-span-8"
           title="اتجاه (تحليلات المبيعات)"
           subtitle="من /sales/analytics/dashboard عند توفر سلسلة"
         >
@@ -23,7 +28,7 @@
 
         <DarkWidgetShell
           v-if="taskItems.length"
-          class="rakez-widget-span-2"
+          class="kpi-span-12"
           title="مهام قادمة"
           subtitle="للمديرين — من /manager/tasks"
           :show-decorative-controls="true"
@@ -31,11 +36,12 @@
           <TaskListWidget :items="taskItems" empty-message="لا توجد مهام" />
         </DarkWidgetShell>
 
-        <DarkWidgetShell class="rakez-widget-span-2" title="مخطط المؤشرات" subtitle="أعمدة مجمّعة من نفس بيانات اللوحة">
+        <DarkWidgetShell class="kpi-span-12" title="مخطط المؤشرات" subtitle="أعمدة مجمّعة من نفس بيانات اللوحة">
           <DashboardMetricsBarChart :series="salesChartSeries" :height="260" />
         </DarkWidgetShell>
       </div>
     </template>
+    </div>
   </div>
 </template>
 

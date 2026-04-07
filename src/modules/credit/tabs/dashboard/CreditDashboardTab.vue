@@ -1,5 +1,6 @@
 <template>
   <div class="credit-dashboard rakez-erp-dashboard rakez-kpi-dashboard">
+    <div class="kpi-dashboard-grid">
     <DashboardWelcomeHeader
       greeting-name="الائتمان"
       subtitle="المؤشرات الرئيسية لإدارة الائتمان والتمويل."
@@ -7,8 +8,7 @@
       english-subtitle="Credit and financing management overview"
     />
 
-    <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
-    <div class="rakez-widget-grid rakez-widget-grid--dense">
+    <div class="kpi-top-row">
       <LuxuryStatCard label="الحجوزات المؤكدة" :value="formatCompact(dashboardMetrics.confirmedBookings || 0)" description="إجمالي الحجوزات المؤكدة">
         <template #icon>
           <DashboardStatIcon name="clipboard" />
@@ -41,14 +41,14 @@
       </LuxuryStatCard>
     </div>
 
-    <h3 class="rakez-dashboard-section-title">لوحة المؤشرات</h3>
-    <div class="rakez-widget-grid">
-      <DarkWidgetShell title="توزيع حالات الائتمان" subtitle="من لوحة الائتمان">
+    <div class="kpi-main-grid">
+      <DarkWidgetShell class="kpi-span-4" title="توزيع حالات الائتمان" subtitle="من لوحة الائتمان">
         <DonutKpiWidget :segments="creditKpiSeries" :height="200" central-sub-label="إجمالي الأعداد" />
       </DarkWidgetShell>
-      <DarkWidgetShell class="rakez-widget-span-2" title="نظرة عامة على العمليات" subtitle="أعمدة من نفس المؤشرات">
+      <DarkWidgetShell class="kpi-span-8" title="نظرة عامة على العمليات" subtitle="أعمدة من نفس المؤشرات">
         <DashboardMetricsBarChart :series="creditKpiSeries" :height="260" />
       </DarkWidgetShell>
+    </div>
     </div>
   </div>
 </template>
