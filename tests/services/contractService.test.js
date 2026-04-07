@@ -164,8 +164,8 @@ describe('contractService', () => {
 
   describe('updateContractStatusProjectManager', () => {
     it('patches PM endpoint', async () => {
-      mock.onPatch('/contracts/update-status/1').reply(200, { data: { status: 'approved' } });
-      const result = await contractService.updateContractStatusProjectManager(1, 'approved');
+      mock.onPatch('/contracts/update-status/1').reply(200, { data: { status: 'ready' } });
+      const result = await contractService.updateContractStatusProjectManager(1, 'ready');
       expect(mock.history.patch.length).toBe(1);
       expect(mock.history.patch[0].url).toContain('/contracts/update-status/1');
       expect(result).toBeDefined();
@@ -174,7 +174,7 @@ describe('contractService', () => {
     it('handles error', async () => {
       mock.onPatch('/contracts/update-status/1').reply(403, createErrorResponse('Forbidden', 403));
       await expect(
-        contractService.updateContractStatusProjectManager(1, 'approved')
+        contractService.updateContractStatusProjectManager(1, 'ready')
       ).rejects.toThrow();
     });
   });

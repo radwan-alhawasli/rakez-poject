@@ -1,5 +1,5 @@
 /* eslint-disable max-lines -- Documented exception: credit bookings hub (tabs + financing/title flows); extract to sub-composables in a follow-up pass. */
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import creditService from '@/services/creditService';
 import logger from '@/utils/logger';
@@ -27,7 +27,6 @@ export function useCreditBookings() {
   const waitingBookings = ref([]);
   const soldBookings = ref([]);
   const rejectedBookings = ref([]);
-  const allBookings = ref([]);
 
   const selectedBooking = ref(null);
   const selectedFinancingTracker = ref(null);
@@ -55,73 +54,56 @@ export function useCreditBookings() {
   const { formatDate: _fmtDate } = useFormatters();
   const formatDate = dateStr => (!dateStr ? 'غير محدد' : _fmtDate(dateStr));
 
+  /** تواريخ الجدول: YYYY-MM-DD بدون انحراف تقويم/منطقة زمنية */
+  const formatBookingListDate = dateStr => {
+    if (dateStr == null || dateStr === '') return 'غير محدد';
+    const s = String(dateStr).trim();
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+    if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+    return _fmtDate(dateStr);
+  };
+
   // ── Sub-tab routing ──
 
   const bookingsSubTab = computed(() => {
     if (route.name !== 'CreditBookings') return 'confirmed';
-    const t = route.query.tab || 'all';
-    const allowed = ['all', 'confirmed', 'negotiation', 'waiting', 'sold', 'rejected'];
-    return allowed.includes(t) ? t : 'all';
+    let t = route.query.tab || 'confirmed';
+    if (t === 'all') t = 'confirmed';
+    const allowed = ['confirmed', 'negotiation', 'waiting', 'sold', 'rejected'];
+    return allowed.includes(t) ? t : 'confirmed';
   });
+
+  watch(
+    () => [route.name, route.query.tab],
+    () => {
+      if (route.name === 'CreditBookings' && route.query.tab === 'all') {
+        router.replace({ name: 'CreditBookings', query: { ...route.query, tab: 'confirmed' } });
+      }
+    },
+    { immediate: true },
+  );
+
+  const hasBookingRowActions = computed(() =>
+    ['confirmed', 'negotiation', 'waiting'].includes(bookingsSubTab.value),
+  );
 
   const setBookingsSubTab = tab => {
     router.push({ name: 'CreditBookings', query: { ...route.query, tab } });
   };
 
-  // ── Booking status helpers ──
-
-  const bookingStatus = booking => {
-    const s = String(booking.credit_status ?? booking.status ?? '')
-      .toLowerCase()
-      .trim();
-    return s;
-  };
-
-  const matchesTab = (booking, tab) => {
-    const s = bookingStatus(booking);
-    if (tab === 'rejected')
-      return (
-        s === 'cancelled' ||
-        s === 'rejected' ||
-        s === 'canceled' ||
-        s.includes('ملغ') ||
-        s.includes('مرفوض') ||
-        s.includes('cancelled') ||
-        s.includes('rejected')
-      );
-    if (tab === 'confirmed')
-      return (
-        s === 'confirmed' ||
-        s.includes('مؤكد') ||
-        s.includes('confirmed') ||
-        s.includes('approved')
-      );
-    if (tab === 'negotiation')
-      return s === 'negotiation' || s.includes('تفاوض') || s.includes('negotiation');
-    if (tab === 'waiting')
-      return s === 'waiting' || s.includes('انتظار') || s.includes('waiting') || s === 'pending';
-    if (tab === 'sold') return s === 'sold' || s.includes('مباع') || s.includes('sold');
-    if (tab === 'all') return true;
-    return true;
-  };
-
   const currentBookingsList = computed(() => {
     const tab = bookingsSubTab.value;
-    let raw = [];
-    if (tab === 'all') raw = allBookings.value;
-    else if (tab === 'confirmed') raw = confirmedBookings.value;
-    else if (tab === 'negotiation') raw = negotiationBookings.value;
-    else if (tab === 'waiting') raw = waitingBookings.value;
-    else if (tab === 'sold') raw = soldBookings.value;
-    else if (tab === 'rejected') raw = rejectedBookings.value;
-    if (tab === 'all') return raw.filter(b => matchesTab(b, tab));
-    return raw;
+    if (tab === 'confirmed') return confirmedBookings.value;
+    if (tab === 'negotiation') return negotiationBookings.value;
+    if (tab === 'waiting') return waitingBookings.value;
+    if (tab === 'sold') return soldBookings.value;
+    if (tab === 'rejected') return rejectedBookings.value;
+    return confirmedBookings.value;
   });
 
   const emptyBookingsMessage = computed(() => {
     const tab = bookingsSubTab.value;
     const messages = {
-      all: 'لا توجد حجوزات',
       confirmed: 'لا توجد حجوزات مؤكدة',
       negotiation: 'لا توجد حجوزات قيد التفاوض',
       waiting: 'لا توجد حجوزات منتظرة',
@@ -165,11 +147,20 @@ export function useCreditBookings() {
 
   const normalizeBookingForModal = raw => {
     if (!raw) return null;
+    const snap = raw.snapshot && typeof raw.snapshot === 'object' ? raw.snapshot : {};
+    const sp = snap.project && typeof snap.project === 'object' ? snap.project : {};
+    const su = snap.unit && typeof snap.unit === 'object' ? snap.unit : {};
+    const sc = snap.client && typeof snap.client === 'object' ? snap.client : {};
+    const spay = snap.payment && typeof snap.payment === 'object' ? snap.payment : {};
+    const sem = snap.employee && typeof snap.employee === 'object' ? snap.employee : {};
     const p = raw.project ?? {};
     const u = raw.unit ?? raw.contractUnit ?? {};
     const c = raw.client ?? {};
     const f = raw.financial ?? {};
     const m = raw.marketing ?? {};
+    const cu = raw.contract_unit && typeof raw.contract_unit === 'object' ? raw.contract_unit : {};
+    const mk = raw.marketing_employee && typeof raw.marketing_employee === 'object' ? raw.marketing_employee : {};
+    const ct = raw.contract && typeof raw.contract === 'object' ? raw.contract : {};
     const bookingId = raw.id ?? raw.reservation_id;
     const fallback = 'غير محدد';
     const fallbackMarketing = 'غير معين';
@@ -177,52 +168,86 @@ export function useCreditBookings() {
       ...raw,
       id: bookingId ?? raw.id ?? raw.reservation_id,
       reservation_id: raw.reservation_id ?? bookingId,
-      project_name: p && p.name != null && p.name !== '' ? p.name : raw.project_name || fallback,
-      unit_number: u.number ?? raw.unit_number,
-      district: p.district != null && p.district !== '' ? p.district : raw.district ?? '',
-      city: p.city != null && p.city !== '' ? p.city : raw.city ?? '',
-      area: u.area ?? raw.area,
-      unit_type: u.type ?? raw.unit_type,
+      project_name:
+        raw.project_name ||
+        (sp.name != null && sp.name !== '' ? sp.name : null) ||
+        ct.project_name ||
+        (p.name != null && p.name !== '' ? p.name : null) ||
+        fallback,
+      unit_number:
+        su.number ??
+        u.number ??
+        cu.unit_number ??
+        raw.unit_number,
+      district:
+        (sp.district != null && sp.district !== '' ? sp.district : null) ??
+        (p.district != null && p.district !== '' ? p.district : raw.district ?? ''),
+      city:
+        (sp.city != null && sp.city !== '' ? sp.city : null) ??
+        (p.city != null && p.city !== '' ? p.city : raw.city ?? ''),
+      area: su.area ?? u.area ?? cu.area ?? raw.area,
+      unit_type: su.type ?? u.type ?? cu.unit_type ?? raw.unit_type,
       property_type:
         p.property_type != null && p.property_type !== ''
           ? p.property_type
           : raw.property_type ?? '',
-      property_value: p.unit_value ?? u.price ?? f?.unit_value ?? raw.property_value,
+      property_value:
+        su.price ??
+        p.unit_value ??
+        u.price ??
+        cu.price ??
+        f?.unit_value ??
+        raw.property_value,
       customer_name:
-        c && c.name != null && c.name !== ''
-          ? c.name
-          : raw.customer_name || raw.client_name || fallback,
-      customer_phone: c.mobile ?? c.phone ?? raw.customer_phone,
+        raw.client_name ||
+        (sc.name != null && sc.name !== '' ? sc.name : null) ||
+        (c.name != null && c.name !== '' ? c.name : null) ||
+        raw.customer_name ||
+        fallback,
+      customer_phone: sc.mobile ?? c.mobile ?? c.phone ?? raw.customer_phone,
       customer_email: c.email ?? raw.customer_email,
-      nationality: c.nationality ?? raw.nationality,
-      iban: c.iban ?? raw.iban,
-      deposit_amount: f.down_payment_amount ?? raw.deposit_amount,
-      deposit_date: f.down_payment_date ?? raw.deposit_date,
-      commission_source: f.commission_payer ?? f.commission_source ?? raw.commission_source,
-      payment_method: f.payment_method ?? raw.payment_method,
-      purchase_mechanism: f.purchase_mechanism ?? m.purchase_mechanism ?? raw.purchase_mechanism,
+      nationality: sc.nationality ?? c.nationality ?? raw.nationality ?? raw.client_nationality,
+      iban: sc.iban ?? c.iban ?? raw.client_iban ?? raw.iban,
+      deposit_amount:
+        raw.down_payment_amount ?? spay.amount ?? f.down_payment_amount ?? raw.deposit_amount,
+      deposit_date: raw.booking_date ?? f.down_payment_date ?? raw.deposit_date ?? raw.contract_date,
+      commission_source:
+        raw.commission_payer ?? f.commission_payer ?? f.commission_source ?? raw.commission_source,
+      payment_method: raw.payment_method ?? spay.method ?? f.payment_method,
+      purchase_mechanism:
+        raw.purchase_mechanism ?? spay.mechanism ?? f.purchase_mechanism ?? m.purchase_mechanism,
       purchase_mechanism_label_ar:
         m.purchase_mechanism_label_ar != null && m.purchase_mechanism_label_ar !== ''
           ? m.purchase_mechanism_label_ar
           : raw.purchase_mechanism_label_ar ?? fallback,
       team_name:
-        m.team_name != null && m.team_name !== ''
-          ? m.team_name
-          : raw.team_name ?? fallbackMarketing,
+        (mk.team && typeof mk.team === 'object' && mk.team.name) ||
+        (sem.team && typeof sem.team === 'object' && sem.team.name) ||
+        (typeof sem.team === 'string' && sem.team.trim() ? sem.team : null) ||
+        (m.team_name != null && m.team_name !== '' ? m.team_name : null) ||
+        raw.team_name ||
+        fallbackMarketing,
       project_team:
         m.project_team != null && m.project_team !== ''
           ? m.project_team
-          : raw.project_team ?? m.team_name ?? fallbackMarketing,
+          : raw.project_team ??
+            (mk.team && typeof mk.team === 'object' ? mk.team.name : null) ??
+            fallbackMarketing,
       seller_team:
         m.seller_team != null && m.seller_team !== ''
           ? m.seller_team
-          : raw.seller_team ?? m.team_name ?? fallbackMarketing,
+          : raw.seller_team ??
+            (mk.team && typeof mk.team === 'object' ? mk.team.name : null) ??
+            fallbackMarketing,
       marketer_name:
-        m.marketer_name != null && m.marketer_name !== ''
-          ? m.marketer_name
-          : raw.marketer_name ?? fallbackMarketing,
+        mk.name ||
+        sem.name ||
+        (m.marketer_name != null && m.marketer_name !== '' ? m.marketer_name : null) ||
+        raw.marketer_name ||
+        fallbackMarketing,
       credit_procedure_steps: raw.credit_procedure_steps ?? null,
       created_at: raw.created_at,
+      credit_status_label_ar: raw.credit_status_label_ar ?? null,
     };
   };
 
@@ -259,25 +284,6 @@ export function useCreditBookings() {
   });
 
   // ── Load functions ──
-
-  const loadAllBookings = async () => {
-    isLoading.value = true;
-    try {
-      const data = await creditService.getAllBookings({
-        page: currentPage.value,
-        per_page: perPage.value,
-      });
-      const raw = data?.items ?? (Array.isArray(data) ? data : []);
-      allBookings.value = raw.map(normalizeBookingListItem);
-      totalItems.value = data?.total ?? allBookings.value.length;
-    } catch (error) {
-      logger.error('Error loading all bookings:', error);
-      allBookings.value = [];
-      totalItems.value = 0;
-    } finally {
-      isLoading.value = false;
-    }
-  };
 
   const loadConfirmedBookings = async () => {
     isLoading.value = true;
@@ -386,7 +392,6 @@ export function useCreditBookings() {
 
   const loadBookingsForCurrentTab = async () => {
     const tab = bookingsSubTab.value;
-    if (tab === 'all') { loadAllBookings(); return; }
     if (tab === 'confirmed') loadConfirmedBookings();
     else if (tab === 'negotiation') loadNegotiationBookings();
     else if (tab === 'waiting') loadWaitingBookings();
@@ -421,15 +426,17 @@ export function useCreditBookings() {
     selectedFinancingTracker.value = null;
     try {
       const full = await creditService.getBookingById(bookingId);
-      selectedBooking.value = normalizeBookingForModal(full) || { ...booking, id: bookingId };
-      if (full && full.financing !== undefined) {
+      const payload = full?.data && typeof full.data === 'object' ? full.data : full;
+      selectedBooking.value =
+        normalizeBookingForModal(payload) || { ...booking, id: bookingId };
+      if (payload && payload.financing !== undefined) {
         selectedFinancingTracker.value = {
-          financing: full.financing,
-          progress_summary: full.progress_summary,
-          current_stage: full.current_stage,
-          remaining_days: full.remaining_days,
-          all_completed: full.all_completed,
-          booking_id: full.id ?? full.reservation_id,
+          financing: payload.financing,
+          progress_summary: payload.progress_summary,
+          current_stage: payload.current_stage,
+          remaining_days: payload.remaining_days,
+          all_completed: payload.all_completed,
+          booking_id: payload.id ?? payload.reservation_id,
         };
       } else {
         selectedFinancingTracker.value = null;
@@ -740,6 +747,8 @@ export function useCreditBookings() {
     formatDate,
     getBookingStatusClass,
     getBookingStatusLabel,
+    hasBookingRowActions,
+    formatBookingListDate,
     loadBookingsForCurrentTab,
     viewBookingDetail,
     clearSelectedBooking,

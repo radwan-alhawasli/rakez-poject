@@ -10,6 +10,10 @@ import {
   normalizeContractShowResponse,
 } from '@/services/contract/contractNormalize.js';
 import { getCaughtStatus, toThrowable } from '@/utils/caughtError';
+import {
+  extractSecondPartyShowRow,
+  hasSecondPartyTrackerRecord,
+} from '@/utils/projectProgressSteps';
 
 export const contractServiceMarketerMethods = {
   // --- Marketer / User Endpoints ---
@@ -216,9 +220,23 @@ export const contractServiceMarketerMethods = {
   },
 
   /**
+   * متتبع الطرف الثاني: إن وُجد سجل (show) يُستخدم PUT /second-party-data/update/:id، وإلا POST .../store/:id
+   * @param {string|number} contractId - معرف العقد كما في المثال store/2 و update/1
+   * @param {Record<string, unknown>} payload - عادةً الست حقول من buildSecondPartyTrackerPayload
+   */
+  async saveSecondPartyTracker(contractId, payload) {
+    const snap = await this.getSecondPartyData(contractId);
+    const row = extractSecondPartyShowRow(snap);
+    if (hasSecondPartyTrackerRecord(row)) {
+      return this.updateSecondPartyData(contractId, payload);
+    }
+    return this.storeSecondPartyData(contractId, payload);
+  },
+
+  /**
    * جلب بيانات الطرف الثاني (المتتبع)
    * GET /second-party-data/show/:id
-    * @param {any} id
+   * @param {any} id
    */
   async getSecondPartyData(id) {
     try {

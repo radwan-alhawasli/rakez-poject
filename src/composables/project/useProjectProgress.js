@@ -3,7 +3,13 @@ import contractService from '@/services/contractService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { showApiError } from '@/utils/errorHandler';
-import { normalizeProjectProgressSteps } from '@/utils/projectProgressSteps';
+import {
+  normalizeProjectProgressSteps,
+  isStepMarkedComplete,
+  isSecondPartyTrackerComplete,
+  buildSecondPartyTrackerPayload,
+  extractSecondPartyShowRow,
+} from '@/utils/projectProgressSteps';
 
 /**
  * @param {string|number} projectId - Contract/project ID
@@ -47,7 +53,10 @@ export function useProjectProgress(projectId, options = {}) {
 
   const selectStage = (index) => { activeStageIndex.value = index; };
 
-  const applyProjectProgress = projectProgress => {
+  /**
+   * @param {{ skipActiveStageUpdate?: boolean }} [opts]
+   */
+  const applyProjectProgress = (projectProgress, opts = {}) => {
     const normalized = normalizeProjectProgressSteps(projectProgress?.steps);
     if (!normalized.length) return;
     normalized.forEach(step => {
@@ -55,9 +64,11 @@ export function useProjectProgress(projectId, options = {}) {
       const idx = Number.isFinite(n) && n > 0 ? n - 1 : -1;
       if (idx < 0 || !stages[idx]) return;
       stages[idx].name = step.label_ar || stages[idx].name;
-      stages[idx].status = step.completed ? 'completed' : 'pending';
-      stages[idx].completedAt = step.completed ? stages[idx].completedAt || 'تم' : null;
+      const done = isStepMarkedComplete(step);
+      stages[idx].status = done ? 'completed' : 'pending';
+      stages[idx].completedAt = done ? stages[idx].completedAt || 'تم' : null;
     });
+    if (opts.skipActiveStageUpdate) return;
     const firstPending = stages.findIndex(s => s.status === 'pending');
     activeStageIndex.value = firstPending !== -1 ? firstPending : stages.length - 1;
   };
@@ -72,7 +83,7 @@ export function useProjectProgress(projectId, options = {}) {
       let secondParty = null;
       try {
         const trackerData = await contractService.getSecondPartyData(projectId);
-        secondParty = trackerData?.data;
+        secondParty = extractSecondPartyShowRow(trackerData);
       } catch (_) {
         /* وصول مقيد */
       }
@@ -95,6 +106,21 @@ export function useProjectProgress(projectId, options = {}) {
         projectProgress?.steps && Array.isArray(projectProgress.steps) && projectProgress.steps.length > 0;
       if (hasSteps) {
         applyProjectProgress(projectProgress);
+        stages.forEach(stage => {
+          const fromSp =
+            secondParty && typeof secondParty === 'object' && stage.apiKey
+              ? secondParty[stage.apiKey]
+              : null;
+          const hasVal =
+            (stage.value != null && String(stage.value).trim() !== '') ||
+            (fromSp != null && String(fromSp).trim() !== '');
+          if (hasVal && stage.status === 'pending') {
+            stage.status = 'completed';
+            stage.completedAt = stage.completedAt || 'تم';
+          }
+        });
+        const firstPending = stages.findIndex(s => s.status === 'pending');
+        activeStageIndex.value = firstPending !== -1 ? firstPending : stages.length - 1;
       } else {
         stages.forEach(stage => {
           if (stage.apiKey && stage.value) {
@@ -122,53 +148,82 @@ export function useProjectProgress(projectId, options = {}) {
       return;
     }
     try {
-      const payload = {};
-      stages.forEach(stage => {
-        if (stage.apiKey) payload[stage.apiKey] = stage.value || null;
-      });
-      const stageEntryDates = {};
-      stages.forEach(stage => {
-        if (stage.apiKey && stage.entryDate) stageEntryDates[stage.apiKey] = stage.entryDate;
-      });
-      if (Object.keys(stageEntryDates).length) payload.stage_entry_dates = stageEntryDates;
-      if (projectLinkUrl.value) payload.project_link_url = projectLinkUrl.value;
-
-      try {
-        await contractService.storeSecondPartyData(projectId, payload);
-      } catch {
-        await contractService.updateSecondPartyData(projectId, payload);
-      }
+      const payload = buildSecondPartyTrackerPayload(stages);
+      await contractService.saveSecondPartyTracker(projectId, payload);
 
       const savedIndex = activeStageIndex.value;
+      const savedApiKey = stages[savedIndex]?.apiKey;
+
       let freshProgress = null;
+      let secondPartyAfter = null;
       try {
-        const contract = await contractService.getContractById(projectId);
+        const [contract, spRes] = await Promise.all([
+          contractService.getContractById(projectId),
+          contractService.getSecondPartyData(projectId).catch(() => null),
+        ]);
         freshProgress = contract?.project_progress ?? null;
+        secondPartyAfter = extractSecondPartyShowRow(spRes);
       } catch (e) {
-        logger.warn('Could not refresh project_progress after tracker save:', e);
+        logger.warn('Could not refresh contract/second-party after tracker save:', e);
       }
 
+      const applySecondPartyToStages = d => {
+        if (!d || typeof d !== 'object') return;
+        projectLinkUrl.value = d.project_link_url || d.project_link || projectLinkUrl.value;
+        stages.forEach(stage => {
+          if (stage.apiKey && d[stage.apiKey] != null && String(d[stage.apiKey]).trim() !== '') {
+            stage.value = d[stage.apiKey];
+            if (d.stage_entry_dates?.[stage.apiKey]) stage.entryDate = d.stage_entry_dates[stage.apiKey];
+          }
+        });
+        const marketing = stages.find(s => s.apiKey === 'marketing_license_url');
+        if (marketing && !marketing.value && d.completion_certificate_url) {
+          marketing.value = d.completion_certificate_url;
+        }
+      };
+      applySecondPartyToStages(secondPartyAfter);
+
+      const fieldPersisted =
+        savedApiKey &&
+        secondPartyAfter &&
+        secondPartyAfter[savedApiKey] != null &&
+        String(secondPartyAfter[savedApiKey]).trim() !== '';
+
       if (freshProgress?.steps?.length) {
-        applyProjectProgress(freshProgress);
+        applyProjectProgress(freshProgress, { skipActiveStageUpdate: true });
+        stages.forEach(stage => {
+          const v = stage.value;
+          if (v != null && String(v).trim() !== '' && stage.status === 'pending') {
+            stage.status = 'completed';
+            stage.completedAt = stage.completedAt || new Date().toLocaleDateString('ar-SA');
+          }
+        });
         const norm = normalizeProjectProgressSteps(freshProgress.steps);
         const step = norm.find(s => Number(s.step_number) === savedIndex + 1);
-        if (!step?.completed) {
+        const serverSaysDone = isStepMarkedComplete(step);
+
+        if (!serverSaysDone && !fieldPersisted) {
           toast.warning(
-            'تم حفظ البيانات، لكن الخادم لم يعتمد اكتمال هذه المرحلة بعد. تحقق من البيانات أو حدّث الصفحة.',
+            'تم حفظ الطلب، لكن لم يُؤكَّد حفظ هذه المرحلة من الخادم. حدّث الصفحة أو تحقق من الاتصال.',
           );
           return;
         }
-        const allDone = norm.length > 0 && norm.every(s => s.completed);
+
+        const allDoneFromProgress = norm.length > 0 && norm.every(s => isStepMarkedComplete(s));
+        const allDone = allDoneFromProgress || isSecondPartyTrackerComplete(secondPartyAfter);
+        const firstPending = stages.findIndex(s => s.status === 'pending');
+        activeStageIndex.value = firstPending !== -1 ? firstPending : stages.length - 1;
+
         if (allDone) {
           try {
-            await contractService.updateContractStatusProjectManager(projectId, 'approved');
+            await contractService.updateContractStatusProjectManager(projectId, 'ready');
             onTrackerFullyCompleted?.(projectId);
             toast.success('تهانينا! تم إكمال المتتبع، يمكنك الآن إدارة الوحدات.');
           } catch (err) {
             logger.warn('Tracker completed but contract status update failed:', err);
             showApiError(
               err,
-              'تم حفظ جميع مراحل المتتبع لكن تحديث حالة العقد فشل (الحالة يجب أن تكون: جاهز أو مرفوض).',
+              'تم حفظ جميع مراحل المتتبع لكن تحديث حالة العقد فشل. يقبل الخادم الحالة: ready أو rejected (جاهز / مرفوض).',
             );
           }
         } else {
@@ -182,7 +237,7 @@ export function useProjectProgress(projectId, options = {}) {
       const allCompleted = stages.every(s => s.status === 'completed');
       if (allCompleted) {
         try {
-          await contractService.updateContractStatusProjectManager(projectId, 'approved');
+          await contractService.updateContractStatusProjectManager(projectId, 'ready');
           onTrackerFullyCompleted?.(projectId);
           toast.success('تهانينا! تم إكمال المتتبع، يمكنك الآن إدارة الوحدات.');
         } catch (err) {
@@ -201,12 +256,11 @@ export function useProjectProgress(projectId, options = {}) {
   const updateProjectLink = async () => {
     if (!projectId) return;
     try {
-      const payload = { project_link_url: projectLinkUrl.value };
-      try {
-        await contractService.updateSecondPartyData(projectId, payload);
-      } catch {
-        await contractService.storeSecondPartyData(projectId, payload);
-      }
+      const payload = {
+        ...buildSecondPartyTrackerPayload(stages),
+        project_link_url: projectLinkUrl.value,
+      };
+      await contractService.saveSecondPartyTracker(projectId, payload);
       toast.success('تم تحديث رابط المشروع');
     } catch (error) {
       logger.error('Failed to update project link:', error);

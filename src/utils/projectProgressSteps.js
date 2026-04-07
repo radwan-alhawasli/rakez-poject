@@ -1,3 +1,65 @@
+/** Keys saved via second-party-data (same order as UI tracker). */
+export const TRACKER_SECOND_PARTY_KEYS = [
+  'real_estate_papers_url',
+  'plans_equipment_docs_url',
+  'project_logo_url',
+  'prices_units_url',
+  'marketing_license_url',
+  'advertiser_section_url',
+];
+
+/**
+ * Response body from GET /second-party-data/show/:id may be `{ data: row }` or the row itself.
+ * @param {unknown} snap
+ * @returns {Record<string, unknown>|null}
+ */
+export function extractSecondPartyShowRow(snap) {
+  if (snap == null || typeof snap !== 'object') return null;
+  const d = /** @type {{ data?: unknown }} */ (snap).data;
+  if (d != null && typeof d === 'object' && !Array.isArray(d)) return /** @type {Record<string, unknown>} */ (d);
+  return /** @type {Record<string, unknown>} */ (snap);
+}
+
+/** True if a row already exists → use PUT /second-party-data/update/:id, else POST .../store/:id */
+export function hasSecondPartyTrackerRecord(row) {
+  if (!row || typeof row !== 'object') return false;
+  if (row.id != null && String(row.id).trim() !== '') return true;
+  if (row.second_party_data_id != null && String(row.second_party_data_id).trim() !== '') return true;
+  return TRACKER_SECOND_PARTY_KEYS.some(k => {
+    const v = row[k];
+    return v != null && String(v).trim() !== '';
+  });
+}
+
+/**
+ * Body for POST store / PUT update (matches API: six fields only).
+ * @param {Array<{ apiKey?: string, value?: unknown }>} stages
+ */
+export function buildSecondPartyTrackerPayload(stages) {
+  const out = /** @type {Record<string, string | null>} */ ({});
+  TRACKER_SECOND_PARTY_KEYS.forEach(key => {
+    const stage = stages.find(s => s.apiKey === key);
+    const raw = stage?.value;
+    out[key] = raw != null && String(raw).trim() !== '' ? String(raw).trim() : null;
+  });
+  return out;
+}
+
+/**
+ * Laravel / JSON sometimes sends completed as 1 or "1" instead of true.
+ * @param {{ completed?: unknown }|null|undefined} step
+ */
+export function isStepMarkedComplete(step) {
+  if (!step || step.completed == null) return false;
+  const c = step.completed;
+  if (c === true || c === 1) return true;
+  if (typeof c === 'string') {
+    const t = c.trim().toLowerCase();
+    return t === '1' || t === 'true' || t === 'yes';
+  }
+  return false;
+}
+
 /**
  * Normalize `project_progress.steps` from the API to six UI stages aligned with
  * second-party fields: papers → plans → logo → prices → marketing license → advertiser.
@@ -21,7 +83,8 @@ export function normalizeProjectProgressSteps(steps) {
       {
         step_number: 5,
         label_ar: 'شهادة اتمام و ضمانات',
-        completed: !!(by[4]?.completed && by[6]?.completed),
+        // خطوتان قديمتان (4 و6) أصبحتا حقلاً واحداً — يكفي إكمال إحداهما
+        completed: isStepMarkedComplete(by[4]) || isStepMarkedComplete(by[6]),
       },
       by[7] ? { ...by[7], step_number: 6 } : null,
     ].filter(Boolean);
@@ -35,5 +98,66 @@ export function normalizeProjectProgressSteps(steps) {
  */
 export function isProjectProgressFullyCompleted(progress) {
   const norm = normalizeProjectProgressSteps(progress?.steps);
-  return norm.length > 0 && norm.every(s => s.completed);
+  return norm.length > 0 && norm.every(s => isStepMarkedComplete(s));
+}
+
+/** مراحل «تقدم الإعداد» في البطاقة — دائماً 6 (كل مرحلة ≈ 16.67%). */
+export const TRACKER_STAGE_COUNT = 6;
+
+/**
+ * عدد الحقول المملوءة من الستة على `second_party_data` (أو كائن مماثل).
+ * @param {Record<string, unknown>|null|undefined} row
+ */
+export function countFilledSecondPartyTrackerFields(row) {
+  if (!row || typeof row !== 'object') return 0;
+  return TRACKER_SECOND_PARTY_KEYS.filter(
+    k => row[k] != null && String(row[k]).trim() !== '',
+  ).length;
+}
+
+/**
+ * نسبة «تقدم الإعداد» 0–100 للبطاقات: المقام ثابت = 6.
+ * يأخذ الأعلى بين: خطوات `project_progress` المطبّعة، وحقول الطرف الثاني، ثم `completed_count` احتياطياً.
+ * @param {Record<string, unknown>|null|undefined} contractLike
+ */
+export function computeSetupProgressPercentSixStages(contractLike) {
+  if (!contractLike || typeof contractLike !== 'object') return 0;
+
+  const norm = normalizeProjectProgressSteps(contractLike.project_progress?.steps);
+  let completed = norm.length > 0 ? norm.filter(s => isStepMarkedComplete(s)).length : 0;
+
+  const sp =
+    contractLike.second_party_data != null && typeof contractLike.second_party_data === 'object'
+      ? contractLike.second_party_data
+      : contractLike.second_party != null && typeof contractLike.second_party === 'object'
+        ? contractLike.second_party
+        : null;
+  if (sp) completed = Math.max(completed, countFilledSecondPartyTrackerFields(sp));
+
+  const pp = contractLike.project_progress;
+  if (
+    completed === 0 &&
+    pp &&
+    pp.completed_count != null &&
+    Number.isFinite(Number(pp.completed_count))
+  ) {
+    completed = Math.max(
+      completed,
+      Math.min(TRACKER_STAGE_COUNT, Number(pp.completed_count)),
+    );
+  }
+
+  completed = Math.min(TRACKER_STAGE_COUNT, completed);
+  return Math.round((completed / TRACKER_STAGE_COUNT) * 100);
+}
+
+/**
+ * @param {Record<string, unknown>|null|undefined} data - second-party show payload (.data)
+ */
+export function isSecondPartyTrackerComplete(data) {
+  if (!data || typeof data !== 'object') return false;
+  return TRACKER_SECOND_PARTY_KEYS.every(k => {
+    const v = data[k];
+    return v != null && String(v).trim() !== '';
+  });
 }

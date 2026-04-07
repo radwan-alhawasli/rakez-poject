@@ -136,7 +136,7 @@ import contractService from '@/services/contractService';
 import salesService from '@/services/salesService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
-import { isProjectProgressFullyCompleted } from '@/utils/projectProgressSteps';
+import { extractSecondPartyShowRow, isProjectProgressFullyCompleted } from '@/utils/projectProgressSteps';
 import { toast } from '@/composables/useToast';
 import ProjectProgressTab from '@/components/project/ProjectProgressTab.vue';
 import ProjectUnitsTab from '@/components/project/ProjectUnitsTab.vue';
@@ -278,7 +278,8 @@ const fetchProject = async () => {
 
     try {
       const trackerData = await contractService.getSecondPartyData(id);
-      if (trackerData?.data) {
+      const spRow = extractSecondPartyShowRow(trackerData);
+      if (spRow) {
         const stageKeys = [
           'real_estate_papers_url',
           'plans_equipment_docs_url',
@@ -287,7 +288,7 @@ const fetchProject = async () => {
           'marketing_license_url',
           'advertiser_section_url',
         ];
-        const allCompleted = stageKeys.every(k => !!trackerData.data[k]);
+        const allCompleted = stageKeys.every(k => !!spRow[k]);
         const hasProgressSteps =
           Array.isArray(projectProgress.value?.steps) && projectProgress.value.steps.length > 0;
         if (allCompleted && !hasProgressSteps) {

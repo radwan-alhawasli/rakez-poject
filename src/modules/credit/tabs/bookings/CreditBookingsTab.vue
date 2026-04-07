@@ -10,13 +10,6 @@
       <div class="credit-bookings-six-tabs">
         <button
           type="button"
-          :class="['btn-tab-booking', { active: bookingsSubTab === 'all' }]"
-          @click="setBookingsSubTab('all')"
-        >
-          الكل
-        </button>
-        <button
-          type="button"
           :class="['btn-tab-booking', { active: bookingsSubTab === 'confirmed' }]"
           @click="setBookingsSubTab('confirmed')"
         >
@@ -107,15 +100,22 @@
               <td data-label="رقم الحجز">{{ booking.id }}</td>
               <td data-label="اسم العميل">{{ booking.client_name ?? booking.customer_name }}</td>
               <td data-label="المشروع">{{ booking.project_name }}</td>
-              <td data-label="تاريخ الحجز">{{ formatDate(booking.booking_date ?? booking.created_at) }}</td>
+              <td data-label="تاريخ الحجز">{{
+                formatBookingListDate(booking.booking_date ?? booking.created_at)
+              }}</td>
               <td data-label="الحالة">
                 <span class="status-tag" :class="getBookingStatusClass(booking)">{{
                   getBookingStatusLabel(booking)
                 }}</span>
               </td>
               <td data-label="الإجراءات">
-                <RowActions>
-                  <button class="btn-action edit" @click="viewBookingDetail(booking)">
+                <RowActions v-if="hasBookingRowActions">
+                  <button
+                    v-if="bookingsSubTab === 'confirmed'"
+                    type="button"
+                    class="btn-action edit"
+                    @click="viewBookingDetail(booking)"
+                  >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                       <circle cx="12" cy="12" r="3"></circle>
@@ -124,6 +124,7 @@
                   </button>
                   <button
                     v-if="bookingsSubTab === 'negotiation'"
+                    type="button"
                     class="btn-action edit"
                     @click="openNegotiationUpdate(booking)"
                   >
@@ -131,17 +132,28 @@
                   </button>
                   <button
                     v-if="bookingsSubTab === 'waiting'"
+                    type="button"
                     class="btn-action edit"
                     @click="openProcessWaiting(booking)"
                   >
                     معالجة
                   </button>
                   <template #menu>
-                    <DropdownMenuItem @click="viewBookingDetail(booking)">عرض التفاصيل</DropdownMenuItem>
-                    <DropdownMenuItem v-if="bookingsSubTab === 'negotiation'" @click="openNegotiationUpdate(booking)">تحديث</DropdownMenuItem>
-                    <DropdownMenuItem v-if="bookingsSubTab === 'waiting'" @click="openProcessWaiting(booking)">معالجة</DropdownMenuItem>
+                    <DropdownMenuItem
+                      v-if="bookingsSubTab === 'confirmed'"
+                      @click="viewBookingDetail(booking)"
+                    >عرض التفاصيل</DropdownMenuItem>
+                    <DropdownMenuItem
+                      v-if="bookingsSubTab === 'negotiation'"
+                      @click="openNegotiationUpdate(booking)"
+                    >تحديث</DropdownMenuItem>
+                    <DropdownMenuItem
+                      v-if="bookingsSubTab === 'waiting'"
+                      @click="openProcessWaiting(booking)"
+                    >معالجة</DropdownMenuItem>
                   </template>
                 </RowActions>
+                <span v-else class="credit-bookings-no-actions">—</span>
               </td>
             </tr>
             <tr v-if="currentBookingsList.length === 0 && !isLoading">
@@ -318,6 +330,8 @@ const {
   formatDate,
   getBookingStatusClass,
   getBookingStatusLabel,
+  hasBookingRowActions,
+  formatBookingListDate,
   loadBookingsForCurrentTab,
   viewBookingDetail,
   clearSelectedBooking,

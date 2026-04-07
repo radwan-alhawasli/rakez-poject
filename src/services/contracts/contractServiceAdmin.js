@@ -79,7 +79,7 @@ export const contractServiceAdminMethods = {
   /**
    * تحديد عقد كمكتمل (جاهز للتسويق) — يحفظ عبر نفس مسار تحديث الحالة المستخدم بعد إكمال المسار.
    * ملاحظة: مسار PATCH /contracts/:id/complete غير مُعرَّف على api.rakez.com.sa (404)، لذلك نعتمد
-   * PATCH /contracts/update-status/:id مع { status: 'approved' }.
+   * PATCH /contracts/update-status/:id مع { status: 'ready' } (Laravel: in:ready,rejected).
    * @param {any} contractId
    */
   async markContractComplete(contractId) {
@@ -89,7 +89,7 @@ export const contractServiceAdminMethods = {
       err.response = { status: 400, data: { message: 'معرف العقد مطلوب' } };
       throw err;
     }
-    return this.updateContractStatusProjectManager(id, 'approved');
+    return this.updateContractStatusProjectManager(id, 'ready');
   },
 
   /**
@@ -108,9 +108,9 @@ export const contractServiceAdminMethods = {
 
   /**
    * تحديث حالة العقد (لمدير المشاريع)
-   * PATCH /contracts/update-status/:id
-    * @param {any} contractId
-    * @param {any} status
+   * PATCH /contracts/update-status/:id — Body: { status: 'ready' | 'rejected' }
+   * @param {any} contractId
+   * @param {any} status
    */
   async updateContractStatusProjectManager(contractId, status) {
     try {

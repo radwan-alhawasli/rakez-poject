@@ -3,7 +3,7 @@ import { useRouter } from 'vue-router';
 import contractService from '@/services/contractService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
-import { normalizeProjectProgressSteps } from '@/utils/projectProgressSteps';
+import { computeSetupProgressPercentSixStages } from '@/utils/projectProgressSteps';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 import { useProjectManagementModals } from '@/composables/project/useProjectManagementModals';
@@ -165,20 +165,7 @@ export function useProjectManagement() {
           ? `طلب مشروع حصري. ${p.total_units || totalUnits || 100} وحدة من نوع ${unitType}.`
           : (p.description || p.details || '').split('\n')[0] ||
             (totalUnits ? `${totalUnits} وحدة` : '');
-        const pp = p.project_progress;
-        const normSteps = normalizeProjectProgressSteps(pp?.steps);
-        const totalSteps =
-          normSteps.length > 0 ? normSteps.length : (pp?.total_count ?? pp?.steps?.length ?? 6);
-        const completedSteps =
-          normSteps.length > 0
-            ? normSteps.filter(s => s.completed).length
-            : (pp?.completed_count ?? (Array.isArray(pp?.steps) ? pp.steps.filter(s => s.completed).length : 0));
-        const setupProgressVal =
-          totalSteps > 0
-            ? Math.round((completedSteps / totalSteps) * 100)
-            : p.setup_progress != null
-              ? Number(p.setup_progress)
-              : 0;
+        const setupProgressVal = computeSetupProgressPercentSixStages(p);
         const unitPrices = units.map(u => Number(u.price) || 0).filter(Boolean);
         const priceMin = p.price_min ?? p.min_price ?? (unitPrices.length ? Math.min(...unitPrices) : null);
         const priceMax = p.price_max ?? p.max_price ?? (unitPrices.length ? Math.max(...unitPrices) : null);
@@ -294,7 +281,7 @@ export function useProjectManagement() {
         };
       });
 
-      // تقدم الإعداد: من GET contracts/show/{{contract_id}} → data.project_progress.steps
+      // تقدم الإعداد: دائماً من 6 مراحل (يُعاد حسابه بعد show بدمج second_party_data)
       const getContract = isEditor.value ? contractService.getEditorContractById : contractService.getContractById;
       const enriched = await Promise.all(
         mapped.map(async (proj) => {
@@ -326,6 +313,13 @@ export function useProjectManagement() {
               second_party_data: detail?.second_party_data,
             });
 
+            const mergedForSetup = {
+              ...proj,
+              project_progress: detail?.project_progress ?? proj.project_progress,
+              second_party_data: detail?.second_party_data ?? proj.second_party_data,
+            };
+            const setupProgressVal = computeSetupProgressPercentSixStages(mergedForSetup);
+
             if (!pp) {
               const base =
                 hasImageFromDetail && !proj.hasImage
@@ -333,6 +327,7 @@ export function useProjectManagement() {
                   : { ...proj };
               return {
                 ...base,
+                setupProgress: setupProgressVal,
                 ...timelineFromDetail,
                 daysLeft: timelineFromDetail.daysLeftVal,
                 contractRemainingLabel: timelineFromDetail.contractRemainingLabel,
@@ -354,16 +349,6 @@ export function useProjectManagement() {
               };
             }
 
-            const steps = Array.isArray(pp.steps) ? pp.steps : [];
-            const normSteps = normalizeProjectProgressSteps(steps);
-            const totalSteps =
-              normSteps.length > 0 ? normSteps.length : (pp.total_count ?? 6);
-            const completedSteps =
-              normSteps.length > 0
-                ? normSteps.filter(s => s.completed === true).length
-                : (pp.completed_count ?? 0);
-            const setupProgressVal =
-              totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
             return {
               ...proj,
               setupProgress: setupProgressVal,

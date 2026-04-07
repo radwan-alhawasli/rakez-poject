@@ -78,15 +78,18 @@ function coalesceToPoints(c) {
 /**
  * @param {Record<string, unknown>} metrics - credit dashboardMetrics reactive object
  */
+/** أعداد الحجوزات من GET /credit/dashboard (الدونات والأعمدة) */
 export function creditBookingSegments(metrics) {
   if (!metrics) return [];
   return [
     { label: 'مؤكدة', value: Number(metrics.confirmedBookings) || 0 },
-    { label: 'مفاوضات', value: Number(metrics.pendingNegotiations) || 0 },
-    { label: 'منتظرة', value: Number(metrics.waitingBookings) || 0 },
-    { label: 'تمويل', value: Number(metrics.activeFinancing) || 0 },
-    { label: 'نقل ملكية', value: Number(metrics.titleTransfers) || 0 },
-    { label: 'مطالبات', value: Number(metrics.pendingClaims) || 0 },
+    { label: 'تفاوض', value: Number(metrics.pendingNegotiations) || 0 },
+    { label: 'انتظار', value: Number(metrics.waitingBookings) || 0 },
+    { label: 'تحتاج مراجعة', value: Number(metrics.requiresReview) || 0 },
+    {
+      label: 'مرفوضة + عربون',
+      value: Number(metrics.rejectedWithDownPayment) || 0,
+    },
   ];
 }
 

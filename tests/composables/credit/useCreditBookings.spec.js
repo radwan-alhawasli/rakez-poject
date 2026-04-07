@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 
-const mockRoute = { name: 'CreditBookings', query: { tab: 'all' }, params: {} };
+const mockRoute = { name: 'CreditBookings', query: { tab: 'confirmed' }, params: {} };
 const mockRouter = { push: vi.fn() };
 
 vi.mock('vue-router', () => ({
@@ -12,7 +12,6 @@ vi.mock('vue-router', () => ({
 
 vi.mock('@/services/creditService', () => ({
   default: {
-    getAllBookings: vi.fn(),
     getConfirmedBookings: vi.fn(),
     getNegotiationBookings: vi.fn(),
     getWaitingBookings: vi.fn(),
@@ -73,7 +72,7 @@ describe('useCreditBookings', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockRoute.name = 'CreditBookings';
-    mockRoute.query = { tab: 'all' };
+    mockRoute.query = { tab: 'confirmed' };
   });
 
   it('should have correct initial state', () => {
@@ -85,21 +84,19 @@ describe('useCreditBookings', () => {
     expect(wrapper.vm.totalItems).toBe(0);
   });
 
-  it('should load all bookings when tab is all', async () => {
-    const mockItems = [
-      { id: 1, customer_name: 'أحمد', credit_status: 'confirmed' },
-      { id: 2, customer_name: 'خالد', credit_status: 'negotiation' },
-    ];
-    creditService.getAllBookings.mockResolvedValue({ items: mockItems, total: 2 });
+  it('should load confirmed bookings by default (GET /credit/bookings/confirmed)', async () => {
+    const mockItems = [{ id: 1, customer_name: 'أحمد', credit_status: 'confirmed' }];
+    creditService.getConfirmedBookings.mockResolvedValue({ items: mockItems, total: 1 });
     const wrapper = mountComposable();
     await wrapper.vm.loadBookingsForCurrentTab();
-    expect(creditService.getAllBookings).toHaveBeenCalled();
+    expect(creditService.getConfirmedBookings).toHaveBeenCalled();
   });
 
-  it('should load confirmed bookings when tab is confirmed', async () => {
-    mockRoute.query = { tab: 'confirmed' };
+  it('should map legacy tab=all to confirmed and load confirmed', async () => {
+    mockRoute.query = { tab: 'all' };
     creditService.getConfirmedBookings.mockResolvedValue({ items: [], total: 0 });
     const wrapper = mountComposable();
+    expect(wrapper.vm.bookingsSubTab).toBe('confirmed');
     await wrapper.vm.loadBookingsForCurrentTab();
     expect(creditService.getConfirmedBookings).toHaveBeenCalled();
   });
@@ -140,7 +137,7 @@ describe('useCreditBookings', () => {
   });
 
   it('should handle error in loadBookingsForCurrentTab', async () => {
-    creditService.getAllBookings.mockRejectedValue(new Error('Network'));
+    creditService.getConfirmedBookings.mockRejectedValue(new Error('Network'));
     const wrapper = mountComposable();
     wrapper.vm.loadBookingsForCurrentTab();
     await vi.waitFor(() => {
@@ -155,14 +152,14 @@ describe('useCreditBookings', () => {
   });
 
   it('should handle pagination with handlePageChange', async () => {
-    creditService.getAllBookings.mockResolvedValue({ items: [], total: 0 });
+    creditService.getConfirmedBookings.mockResolvedValue({ items: [], total: 0 });
     const wrapper = mountComposable();
     wrapper.vm.handlePageChange(3);
     expect(wrapper.vm.currentPage).toBe(3);
   });
 
   it('should handle pagination with handlePerPageChange', async () => {
-    creditService.getAllBookings.mockResolvedValue({ items: [], total: 0 });
+    creditService.getConfirmedBookings.mockResolvedValue({ items: [], total: 0 });
     const wrapper = mountComposable();
     wrapper.vm.handlePerPageChange(50);
     expect(wrapper.vm.perPage).toBe(50);

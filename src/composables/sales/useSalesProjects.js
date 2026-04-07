@@ -5,6 +5,7 @@ import authService from '@/services/authService';
 import { isSalesLeader } from '@/utils/rbac';
 import { useFormatters } from '@/composables/useFormatters';
 import logger from '@/utils/logger';
+import { computeSetupProgressPercentSixStages } from '@/utils/projectProgressSteps';
 
 export function useSalesProjects() {
   const router = useRouter();
@@ -119,8 +120,9 @@ export function useSalesProjects() {
           p.is_ready === true || p.is_ready === 1 ||
           (['approved', 'ready', 'ready_for_marketing', 'completed', 'active'].includes(contractStatus) &&
             (total > 0 || (p.available_units ?? 0) >= 0));
-        const setupProgressVal =
-          isReadyForMarketing ? 100 : p.setup_progress != null ? Number(p.setup_progress) : 0;
+        const setupProgressVal = isReadyForMarketing
+          ? 100
+          : computeSetupProgressPercentSixStages(p);
 
         const rakezStatusLabel =
           (p.status_badge_ar && String(p.status_badge_ar).trim()) ||

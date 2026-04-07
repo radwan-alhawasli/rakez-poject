@@ -275,6 +275,8 @@ export default {
 
     const statusLabel = computed(() => {
       const b = props.booking;
+      if (b?.credit_status_label_ar && String(b.credit_status_label_ar).trim())
+        return b.credit_status_label_ar;
       const status = b?.credit_status ?? b?.status ?? 'approved';
       const map = {
         approved: 'Approved',
