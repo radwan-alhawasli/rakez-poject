@@ -12,6 +12,7 @@ vi.mock('../../src/services/notificationService', () => ({
   default: {
     state: { value: [] },
     init: vi.fn(),
+    fetchAll: vi.fn().mockResolvedValue(undefined),
     markAsRead: vi.fn().mockResolvedValue(undefined),
     markAllAsRead: vi.fn().mockResolvedValue(undefined),
   },
@@ -41,13 +42,15 @@ describe('NotificationsView', () => {
   it('renders notification list container', async () => {
     const wrapper = await createWrapper();
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('.management-view').exists()).toBe(true);
-    expect(wrapper.find('.metrics-table-container').exists()).toBe(true);
+    expect(wrapper.find('.rakez-erp-dashboard').exists()).toBe(true);
+    expect(wrapper.find('.rakez-widget-grid').exists()).toBe(true);
   });
 
   it('displays the notifications title', async () => {
     const wrapper = await createWrapper();
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('.section-title').text()).not.toBe('');
+    const titles = wrapper.findAll('.rakez-dashboard-section-title');
+    expect(titles.length).toBeGreaterThan(0);
+    expect(titles[0].text()).toContain('ملخص');
   });
 });

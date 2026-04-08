@@ -6,6 +6,7 @@ vi.mock('@/services/salesService', () => ({
   default: {
     getDashboard: vi.fn(),
     getProjects: vi.fn(),
+    getWaitingListCount: vi.fn().mockResolvedValue(0),
   },
 }));
 

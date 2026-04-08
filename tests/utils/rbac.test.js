@@ -16,6 +16,7 @@ import {
   canAccessRoute,
   getDashboardPathForUser,
 } from '../../src/utils/rbac';
+import { SALES_BASE_PERMISSIONS } from '../../src/constants/permissions';
 
 describe('rbac', () => {
   describe('normalizeRole', () => {
@@ -165,11 +166,12 @@ describe('rbac', () => {
       expect(result).toContain('notifications.view');
     });
 
-    it('should NOT merge leader permissions for regular sales with API permissions', () => {
+    it('should merge SALES_BASE_PERMISSIONS with API permissions for regular sales (non-leader)', () => {
       const apiPerms = ['sales.dashboard.view'];
       const user = { type: 6, is_manager: false, permissions: apiPerms };
       const result = getUserPermissions(user);
-      expect(result).toEqual(apiPerms);
+      expect(result).toEqual([...new Set([...apiPerms, ...SALES_BASE_PERMISSIONS])]);
+      expect(result).toContain('sales.dashboard.view');
       expect(result).not.toContain('sales.team.manage');
     });
   });

@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 
 const mockRoute = { name: 'CreditBookings', query: { tab: 'confirmed' }, params: {} };
-const mockRouter = { push: vi.fn() };
+const mockRouter = { push: vi.fn(), replace: vi.fn() };
 
 vi.mock('vue-router', () => ({
   useRoute: () => mockRoute,

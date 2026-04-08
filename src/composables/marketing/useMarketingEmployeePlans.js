@@ -340,10 +340,10 @@ export function useMarketingEmployeePlans() {
   };
 
   watch(
-    () => [route.name, route.query?.projectId],
+    () => [route?.name, route?.query?.projectId],
     () => {
-      if (route.name !== 'MarketingEmployeePlans') return;
-      const pid = route.query?.projectId;
+      if (route?.name !== 'MarketingEmployeePlans') return;
+      const pid = route?.query?.projectId;
       if (pid == null || pid === '') return;
       employeePlansProjectId.value = String(pid);
       loadEmployeePlans();
