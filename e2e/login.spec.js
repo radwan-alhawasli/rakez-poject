@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Login Page', () => {
   test('should display login form', async ({ page }) => {
     await page.goto('/login');
-    await expect(page.locator('form, .login-container, .login-form')).toBeVisible();
+    await expect(page.locator('form, .login-container, .login-form').first()).toBeVisible();
   });
 
   test('should show validation on empty submit', async ({ page }) => {

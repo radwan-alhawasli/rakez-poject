@@ -38,7 +38,7 @@ async function seedAuth(page, userOverrides = {}) {
 test.describe('Auth Flow', () => {
   test('should display the login form at /login', async ({ page }) => {
     await page.goto('/login');
-    await expect(page.locator('.login-container, .login-wrapper')).toBeVisible();
+    await expect(page.locator('.login-container, .login-wrapper').first()).toBeVisible();
     await expect(page.locator('form.login-form')).toBeVisible();
     await expect(page.locator('input#email')).toBeVisible();
     await expect(page.locator('input#password')).toBeVisible();
@@ -56,7 +56,7 @@ test.describe('Auth Flow', () => {
   });
 
   test('should redirect authenticated sales user to /sales/dashboard', async ({ page }) => {
-    await seedAuth(page, { type: 5, name: 'Sales User', email: 'sales@rakez.com' });
+    await seedAuth(page, { type: 6, name: 'Sales User', email: 'sales@rakez.com' });
     await page.goto('/login');
     await page.waitForURL(/sales\/dashboard/);
     await expect(page).toHaveURL(/sales\/dashboard/);
@@ -68,16 +68,42 @@ test.describe('Auth Flow', () => {
   });
 
   test('should redirect unauthenticated user to /login from nested protected route', async ({ page }) => {
-    await page.goto('/accounting/commissions');
+    await page.goto('/accounting/sold-units');
     await expect(page).toHaveURL(/login/);
   });
 
   test('should clear session and redirect to /login on logout', async ({ page }) => {
-    await seedAuth(page);
+    // Do not use seedAuth() here: its addInitScript runs before every navigation and would
+    // re-inject a fake session after we clear storage. Seed once via evaluate instead.
+    const now = Date.now();
+    const thirtyMin = 30 * 60 * 1000;
+    const user = {
+      id: 1,
+      name: 'Test Admin',
+      email: 'admin@rakez.com',
+      type: 1,
+      permissions: [],
+      is_leader: false,
+      is_manager: false,
+    };
+    await page.goto('/login');
+    await page.evaluate(
+      ({ user: u, now: t, thirtyMin: d }) => {
+        const tokenPayload = JSON.stringify({
+          value: 'fake-jwt-token',
+          expiration: t + d,
+          timestamp: t,
+        });
+        localStorage.setItem('authToken', tokenPayload);
+        localStorage.setItem('userInfo', JSON.stringify(u));
+        localStorage.setItem('sessionTimeout', String(t + d));
+        localStorage.setItem('lastActivity', String(t));
+      },
+      { user, now, thirtyMin },
+    );
     await page.goto('/dashboard');
     await page.waitForURL(/dashboard/);
 
-    // Simulate logout by clearing storage and navigating
     await page.evaluate(() => {
       localStorage.removeItem('authToken');
       localStorage.removeItem('userInfo');
@@ -88,7 +114,6 @@ test.describe('Auth Flow', () => {
     await page.goto('/dashboard');
     await expect(page).toHaveURL(/login/);
 
-    // Verify storage is clear
     const token = await page.evaluate(() => localStorage.getItem('authToken'));
     expect(token).toBeNull();
   });

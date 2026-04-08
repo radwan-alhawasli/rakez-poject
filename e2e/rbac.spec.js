@@ -78,7 +78,7 @@ test.describe('RBAC – Admin access', () => {
 test.describe('RBAC – Non-admin denied from /users', () => {
   test('sales user is redirected away from /users', async ({ page }) => {
     await seedAuth(page, {
-      type: 5, // ROLE_SALES
+      type: 6, // ROLE_SALES
       name: 'Sales Agent',
       email: 'sales@rakez.com',
       permissions: [
@@ -94,7 +94,7 @@ test.describe('RBAC – Non-admin denied from /users', () => {
 
   test('marketing user is redirected away from /users', async ({ page }) => {
     await seedAuth(page, {
-      type: 0, // ROLE_MARKETING
+      type: 5, // ROLE_MARKETING
       name: 'Marketing User',
       email: 'marketing@rakez.com',
       permissions: [
@@ -114,7 +114,7 @@ test.describe('RBAC – Non-admin denied from /users', () => {
 test.describe('RBAC – Sales user access', () => {
   test('sales user can access /sales/dashboard', async ({ page }) => {
     await seedAuth(page, {
-      type: 5,
+      type: 6,
       name: 'Sales Agent',
       email: 'sales@rakez.com',
       permissions: [
@@ -130,7 +130,7 @@ test.describe('RBAC – Sales user access', () => {
 
   test('sales user cannot access /accounting/dashboard', async ({ page }) => {
     await seedAuth(page, {
-      type: 5,
+      type: 6,
       name: 'Sales Agent',
       email: 'sales@rakez.com',
       permissions: [
@@ -146,7 +146,7 @@ test.describe('RBAC – Sales user access', () => {
 
   test('sales user cannot access /hr/dashboard', async ({ page }) => {
     await seedAuth(page, {
-      type: 5,
+      type: 6,
       name: 'Sales Agent',
       email: 'sales@rakez.com',
       permissions: [
@@ -165,7 +165,7 @@ test.describe('RBAC – Sales user access', () => {
 test.describe('RBAC – Marketing user access', () => {
   test('marketing user can access /marketing/dashboard', async ({ page }) => {
     await seedAuth(page, {
-      type: 0, // ROLE_MARKETING
+      type: 5, // ROLE_MARKETING
       name: 'Marketing Employee',
       email: 'marketing@rakez.com',
       permissions: [
@@ -182,7 +182,7 @@ test.describe('RBAC – Marketing user access', () => {
 
   test('marketing user cannot access /sales/dashboard', async ({ page }) => {
     await seedAuth(page, {
-      type: 0,
+      type: 5,
       name: 'Marketing Employee',
       email: 'marketing@rakez.com',
       permissions: [
@@ -194,16 +194,16 @@ test.describe('RBAC – Marketing user access', () => {
     expect(page.url()).not.toContain('/sales');
   });
 
-  test('marketing user cannot access /accounting/commissions', async ({ page }) => {
+  test('marketing user cannot access /accounting/sold-units', async ({ page }) => {
     await seedAuth(page, {
-      type: 0,
+      type: 5,
       name: 'Marketing Employee',
       email: 'marketing@rakez.com',
       permissions: [
         'marketing.dashboard.view',
       ],
     });
-    await page.goto('/accounting/commissions');
+    await page.goto('/accounting/sold-units');
     await page.waitForURL(/marketing\/dashboard|dashboard/);
     expect(page.url()).not.toContain('/accounting');
   });
@@ -215,12 +215,12 @@ test.describe('RBAC – Marketing user access', () => {
 test.describe('RBAC – Accounting user access', () => {
   test('accounting user can access /accounting/dashboard', async ({ page }) => {
     await seedAuth(page, {
-      type: 7, // ROLE_ACCOUNTING
+      type: 10, // ROLE_ACCOUNTING
       name: 'Accountant',
       email: 'accounting@rakez.com',
       permissions: [
         'accounting.dashboard.view',
-        'accounting.commissions.approve',
+        'accounting.sold-units.view',
       ],
     });
     await page.goto('/accounting/dashboard');
@@ -230,7 +230,7 @@ test.describe('RBAC – Accounting user access', () => {
 
   test('accounting user cannot access /project-management', async ({ page }) => {
     await seedAuth(page, {
-      type: 7,
+      type: 10,
       name: 'Accountant',
       email: 'accounting@rakez.com',
       permissions: [

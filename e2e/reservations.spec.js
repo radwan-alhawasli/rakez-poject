@@ -11,7 +11,7 @@ async function seedAuth(page, userOverrides = {}) {
     id: 1,
     name: 'Sales Agent',
     email: 'sales@rakez.com',
-    type: 5, // ROLE_SALES
+    type: 6, // ROLE_SALES
     permissions: [
       'sales.dashboard.view',
       'sales.reservations.view',

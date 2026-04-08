@@ -327,7 +327,6 @@ const {
   isProcessing,
   showConfirmModal,
   confirmModalConfig,
-  formatDate,
   getBookingStatusClass,
   getBookingStatusLabel,
   hasBookingRowActions,

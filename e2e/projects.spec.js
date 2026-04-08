@@ -11,7 +11,7 @@ async function seedAuth(page, userOverrides = {}) {
     id: 3,
     name: 'PM Manager',
     email: 'pm@rakez.com',
-    type: 3, // ROLE_PROJECT_MANAGEMENT
+    type: 2, // ROLE_PROJECT_MANAGEMENT
     permissions: [
       'projects.view',
       'projects.create',
