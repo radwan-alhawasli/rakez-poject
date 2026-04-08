@@ -6,6 +6,64 @@ import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { showApiError, getApiErrorMessage } from '@/utils/errorHandler';
 import { useFormatters } from '@/composables/useFormatters';
+import {
+  CREDIT_FINANCING_STAGE_LABELS,
+  recordAfterAdvance,
+} from '@/utils/creditFinancingStages';
+
+function stripEmptyPayload(obj) {
+  const out = {};
+  Object.entries(obj || {}).forEach(([k, v]) => {
+    if (v === undefined || v === null) return;
+    const s = typeof v === 'string' ? v.trim() : v;
+    if (s === '') return;
+    out[k] = typeof v === 'string' ? v.trim() : v;
+  });
+  return out;
+}
+
+/** دمج استجابة GET /financing مع حقول العرض إن وُجدت في GET /bookings/:id */
+function buildFinancingTrackerState(financingGet, bookingPayload, bookingId) {
+  const fromFin = financingGet && typeof financingGet === 'object' ? financingGet : {};
+  const fromBook = bookingPayload && typeof bookingPayload === 'object' ? bookingPayload : {};
+  const financing = fromFin.financing ?? fromBook.financing;
+  const stages = fromFin.stages ?? fromBook.stages ?? fromBook.financing?.stages;
+  const merged = {
+    ...fromFin,
+    financing,
+    stages,
+    progress_summary: fromFin.progress_summary ?? fromBook.progress_summary,
+    current_stage: fromFin.current_stage ?? fromBook.current_stage,
+    remaining_days: fromFin.remaining_days ?? fromBook.remaining_days,
+    all_completed: fromFin.all_completed ?? fromBook.all_completed,
+    completed_stages: fromFin.completed_stages ?? fromBook.completed_stages,
+    delay_days: fromFin.delay_days ?? fromBook.delay_days,
+    booking_id: fromFin.booking_id ?? fromBook.id ?? fromBook.reservation_id ?? bookingId,
+  };
+  const hasSignal =
+    merged.financing != null ||
+    merged.all_completed === true ||
+    (Array.isArray(merged.stages) && merged.stages.length > 0) ||
+    typeof merged.current_stage === 'number' ||
+    (typeof merged.completed_stages === 'number' && merged.completed_stages > 0);
+  return hasSignal ? merged : null;
+}
+
+function countCompletedStages(tracker, booking) {
+  const t = tracker;
+  const b = booking;
+  if (t?.all_completed) return 6;
+  if (typeof t?.completed_stages === 'number') return Math.min(6, t.completed_stages);
+  const steps = b?.credit_procedure_steps;
+  if (Array.isArray(steps) && steps.length > 0) {
+    return steps.filter(s => s.status === 'completed' || s.status === 'done' || s.completed).length;
+  }
+  const stages = t?.stages ?? [];
+  if (Array.isArray(stages) && stages.length > 0) {
+    return stages.filter(s => s?.completed || s?.done || s?.status === 'completed').length;
+  }
+  return 0;
+}
 
 export function useCreditBookings() {
   const route = useRoute();
@@ -39,6 +97,16 @@ export function useCreditBookings() {
   const rejectFinancingReason = ref('');
   const rejectFinancingError = ref('');
   const isRejectingFinancing = ref(false);
+  const showEditFinancingStageModal = ref(false);
+  const editFinancingStageNumber = ref(1);
+  const editFinancingForm = ref({
+    bank_name: '',
+    client_salary: '',
+    employment_type: '',
+    appraiser_name: '',
+    notes: '',
+  });
+  const isSavingFinancingStage = ref(false);
   const isSavingNegotiation = ref(false);
   const isProcessing = ref(false);
 
@@ -247,40 +315,37 @@ export function useCreditBookings() {
         fallbackMarketing,
       credit_procedure_steps: raw.credit_procedure_steps ?? null,
       created_at: raw.created_at,
+      confirmed_at: raw.confirmed_at ?? raw.booking_date ?? null,
       credit_status_label_ar: raw.credit_status_label_ar ?? null,
+      title_transfer: raw.title_transfer && typeof raw.title_transfer === 'object' ? raw.title_transfer : null,
+      title_transfer_id: raw.title_transfer?.id ?? raw.title_transfer_id ?? null,
     };
   };
 
   // ── Tracker / advance stage ──
 
-  const TRACKER_LABELS = [
-    'رفع الطلب للبنك',
-    'صدور التقييم',
-    'زيارة المقيم للمشروع',
-    'إجراءات بنكية وعقود',
-    'تنفيذ العقود',
-    'فتره التجهيز قبل الافراغ',
-  ];
-
   const advanceCompletedCount = computed(() => {
+    const t = selectedFinancingTracker.value;
+    if (t?.all_completed) return 6;
     const steps = selectedBooking.value?.credit_procedure_steps;
     if (Array.isArray(steps) && steps.length > 0) {
-      return steps.filter(s => s.status === 'completed' || s.status === 'done' || s.completed)
-        .length;
+      return Math.min(
+        6,
+        steps.filter(s => s.status === 'completed' || s.status === 'done' || s.completed).length
+      );
     }
-    const t = selectedFinancingTracker.value;
     const stages = t?.stages ?? [];
     const completed = t?.completed_stages;
-    if (typeof completed === 'number') return completed;
-    return stages.filter(s => s?.completed || s?.done).length;
+    if (typeof completed === 'number') return Math.min(6, completed);
+    return Math.min(6, stages.filter(s => s?.completed || s?.done).length);
   });
 
   const nextStageLabel = computed(() => {
     const steps = selectedBooking.value?.credit_procedure_steps;
     const n = advanceCompletedCount.value;
     if (Array.isArray(steps) && steps[n])
-      return steps[n].label_ar || steps[n].label || TRACKER_LABELS[n] || '';
-    return TRACKER_LABELS[n] || '';
+      return steps[n].label_ar || steps[n].label || CREDIT_FINANCING_STAGE_LABELS[n] || '';
+    return CREDIT_FINANCING_STAGE_LABELS[n] || '';
   });
 
   // ── Load functions ──
@@ -399,6 +464,22 @@ export function useCreditBookings() {
     else if (tab === 'rejected') loadRejectedBookings();
   };
 
+  /**
+   * تبويبات الحجوزات تغيّر فقط ?tab= مع بقاء المسار /credit/bookings؛ MainLayout يستخدم key=route.path
+   * فلا يتغيّر المسار ولا يُعاد إنشاء التبويب — يجب جلب القائمة عند تغيير ?tab=.
+   * immediate: أول تحميل بدل onMounted في التبويب فقط (تجنّب جلب مزدوج).
+   */
+  watch(
+    () => (route.name === 'CreditBookings' ? bookingsSubTab.value : null),
+    (tab, prevTab) => {
+      if (tab == null) return;
+      if (prevTab === tab) return;
+      currentPage.value = 1;
+      loadBookingsForCurrentTab();
+    },
+    { immediate: true },
+  );
+
   // ── Pagination ──
 
   const handlePageChange = page => {
@@ -417,6 +498,22 @@ export function useCreditBookings() {
   const selectedBookingId = () =>
     selectedBooking.value?.id ?? selectedBooking.value?.reservation_id;
 
+  const refreshBookingDetail = async () => {
+    const bookingId = selectedBookingId();
+    if (!bookingId) return;
+    try {
+      const [full, financingTracker] = await Promise.all([
+        creditService.getBookingById(bookingId),
+        creditService.getFinancingTracker(bookingId).catch(() => null),
+      ]);
+      const payload = full?.data && typeof full.data === 'object' ? full.data : full;
+      selectedBooking.value = normalizeBookingForModal(payload) || selectedBooking.value;
+      selectedFinancingTracker.value = buildFinancingTrackerState(financingTracker, payload, bookingId);
+    } catch (e) {
+      logger.error('refreshBookingDetail:', e);
+    }
+  };
+
   const viewBookingDetail = async booking => {
     const bookingId = booking?.id ?? booking?.reservation_id ?? booking?.booking_id;
     if (!bookingId) {
@@ -425,24 +522,16 @@ export function useCreditBookings() {
     }
     selectedFinancingTracker.value = null;
     try {
-      const full = await creditService.getBookingById(bookingId);
+      const [full, financingTracker] = await Promise.all([
+        creditService.getBookingById(bookingId),
+        creditService.getFinancingTracker(bookingId).catch(() => null),
+      ]);
       const payload = full?.data && typeof full.data === 'object' ? full.data : full;
-      selectedBooking.value =
-        normalizeBookingForModal(payload) || { ...booking, id: bookingId };
-      if (payload && payload.financing !== undefined) {
-        selectedFinancingTracker.value = {
-          financing: payload.financing,
-          progress_summary: payload.progress_summary,
-          current_stage: payload.current_stage,
-          remaining_days: payload.remaining_days,
-          all_completed: payload.all_completed,
-          booking_id: payload.id ?? payload.reservation_id,
-        };
-      } else {
-        selectedFinancingTracker.value = null;
-      }
+      selectedBooking.value = normalizeBookingForModal(payload) || { ...booking, id: bookingId };
+      selectedFinancingTracker.value = buildFinancingTrackerState(financingTracker, payload, bookingId);
     } catch {
       selectedBooking.value = { ...booking, id: bookingId, reservation_id: bookingId };
+      selectedFinancingTracker.value = null;
     }
   };
 
@@ -456,23 +545,20 @@ export function useCreditBookings() {
   const onBookingEvacuation = async () => {
     const bookingId = selectedBookingId();
     if (!bookingId) return;
+    const tid =
+      selectedBooking.value?.title_transfer?.id ?? selectedBooking.value?.title_transfer_id;
+    if (!tid) {
+      toast.warning('لا يوجد طلب نقل ملكية. ابدأ إجراءات نقل الملكية أولاً.');
+      return;
+    }
     try {
-      const pending = await creditService.getPendingTitleTransfers();
-      const items = pending?.items ?? (Array.isArray(pending) ? pending : []);
-      const transfer =
-        items.find(t => (t.booking_id ?? t.reservation_id) === bookingId) ?? items[0];
-      if (transfer?.id) {
-        await creditService.completeTitleTransfer(transfer.id, {});
-        toast.success('تم تسجيل الإفراغ بنجاح');
-      } else {
-        await creditService.initializeTitleTransfer(bookingId);
-        toast.success('تم بدء إجراء نقل الملكية. حدد موعد الإفراغ إن لزم.');
-      }
+      await creditService.completeTitleTransfer(tid, {});
+      toast.success('تم تسجيل الإفراغ بنجاح');
       clearSelectedBooking();
       loadBookingsForCurrentTab();
     } catch (e) {
       logger.error('Evacuation error:', e);
-      toast.error('حدث خطأ أثناء تنفيذ الإفراغ');
+      showApiError(e, 'حدث خطأ أثناء تنفيذ الإفراغ');
     }
   };
 
@@ -501,18 +587,89 @@ export function useCreditBookings() {
     showConfirmModal.value = true;
   };
 
+  const closeEditFinancingStageModal = () => {
+    showEditFinancingStageModal.value = false;
+    isSavingFinancingStage.value = false;
+  };
+
+  const onSubmitEditFinancingStage = async () => {
+    const bookingId = selectedBookingId();
+    if (!bookingId) return;
+    const n = Number(editFinancingStageNumber.value);
+    if (n < 1 || n > 6) {
+      toast.warning('اختر مرحلة بين 1 و 6');
+      return;
+    }
+    const f = editFinancingForm.value;
+    let payload = {};
+    if (n === 1) {
+      const bank_name = f.bank_name?.trim();
+      if (!bank_name) {
+        toast.warning('اسم البنك مطلوب للمرحلة الأولى');
+        return;
+      }
+      payload = {
+        bank_name,
+        client_salary: f.client_salary,
+        employment_type: f.employment_type,
+      };
+    } else if (n === 4) {
+      payload = { appraiser_name: f.appraiser_name, notes: f.notes };
+    } else {
+      payload = { notes: f.notes };
+    }
+    const body = stripEmptyPayload(payload);
+    if (Object.keys(body).length === 0) {
+      toast.warning('أدخل بيانات لتحديث هذه المرحلة');
+      return;
+    }
+    isSavingFinancingStage.value = true;
+    try {
+      await creditService.completeFinancingStage(bookingId, n, body);
+      toast.success('تم حفظ تعديل المرحلة');
+      closeEditFinancingStageModal();
+      await refreshBookingDetail();
+    } catch (e) {
+      logger.error('Edit financing stage error:', e);
+      showApiError(e, 'حدث خطأ أثناء حفظ المرحلة');
+    } finally {
+      isSavingFinancingStage.value = false;
+    }
+  };
+
   const onBookingEdit = () => {
-    openNegotiationUpdate(selectedBooking.value);
+    if (!selectedBookingId()) {
+      toast.warning('لا يوجد حجز للتعديل');
+      return;
+    }
+    editFinancingStageNumber.value = 1;
+    editFinancingForm.value = {
+      bank_name: '',
+      client_salary: '',
+      employment_type: '',
+      appraiser_name: '',
+      notes: '',
+    };
+    showEditFinancingStageModal.value = true;
   };
 
   const onBookingSchedule = async () => {
     const bookingId = selectedBookingId();
     if (!bookingId) return;
     try {
-      let transferId = selectedBooking.value?.title_transfer_id;
+      let transferId =
+        selectedBooking.value?.title_transfer?.id ?? selectedBooking.value?.title_transfer_id;
       if (!transferId) {
         const res = await creditService.initializeTitleTransfer(bookingId);
-        transferId = res?.id ?? res?.data?.id;
+        const tt = res?.title_transfer ?? res?.data?.title_transfer ?? res;
+        transferId = tt?.id ?? res?.id ?? res?.data?.id;
+        if (tt?.id || transferId) {
+          selectedBooking.value = {
+            ...selectedBooking.value,
+            title_transfer: tt || { id: transferId },
+            title_transfer_id: transferId,
+          };
+        }
       }
       if (transferId) {
         pendingScheduleTransferId.value = transferId;
@@ -526,6 +683,43 @@ export function useCreditBookings() {
     }
   };
 
+  const onStartTitleTransfer = async () => {
+    const bookingId = selectedBookingId();
+    if (!bookingId) return;
+    try {
+      const res = await creditService.initializeTitleTransfer(bookingId);
+      const tt = res?.title_transfer ?? res?.data?.title_transfer ?? res;
+      const id = tt?.id ?? res?.id ?? res?.data?.id;
+      selectedBooking.value = {
+        ...selectedBooking.value,
+        title_transfer: tt || (id ? { id } : null),
+        title_transfer_id: id ?? selectedBooking.value?.title_transfer_id,
+      };
+      toast.success('تم بدء إجراءات نقل الملكية');
+      await refreshBookingDetail();
+    } catch (e) {
+      logger.error('Start title transfer error:', e);
+      showApiError(e, 'حدث خطأ أثناء بدء نقل الملكية');
+    }
+  };
+
+  const onUnscheduleTitleTransfer = async () => {
+    const tid =
+      selectedBooking.value?.title_transfer?.id ?? selectedBooking.value?.title_transfer_id;
+    if (!tid) {
+      toast.warning('لا يوجد طلب نقل ملكية');
+      return;
+    }
+    try {
+      await creditService.unscheduleTitleTransfer(tid);
+      toast.success('تم إلغاء موعد الإفراغ');
+      await refreshBookingDetail();
+    } catch (e) {
+      logger.error('Unschedule title transfer error:', e);
+      showApiError(e, 'حدث خطأ أثناء إلغاء الموعد');
+    }
+  };
+
   const confirmScheduleDate = async () => {
     const date = scheduleDateInput.value;
     if (!date) {
@@ -535,8 +729,7 @@ export function useCreditBookings() {
     try {
       await creditService.scheduleTitleTransfer(pendingScheduleTransferId.value, { scheduled_date: date });
       toast.success('تم تحديد موعد الإفراغ');
-      const tracker = await creditService.getFinancingTracker(pendingScheduleBookingId.value);
-      selectedFinancingTracker.value = tracker;
+      await refreshBookingDetail();
     } catch (e) {
       logger.error('Confirm schedule date error:', e);
       toast.error('حدث خطأ أثناء تحديد الموعد');
@@ -593,8 +786,9 @@ export function useCreditBookings() {
     isAdvancing.value = true;
     try {
       await creditService.advanceFinancing(bookingId, {});
-      const updated = await creditService.getFinancingTracker(bookingId);
-      selectedFinancingTracker.value = updated;
+      await refreshBookingDetail();
+      const done = countCompletedStages(selectedFinancingTracker.value, selectedBooking.value);
+      recordAfterAdvance(bookingId, done, selectedBooking.value);
       showAdvanceConfirmModal.value = false;
       toast.success('تمت المرحلة بنجاح');
     } catch (e) {
@@ -635,8 +829,14 @@ export function useCreditBookings() {
     try {
       await creditService.rejectFinancing(bookingId, { reason });
       toast.success('تم رفض التمويل');
-      const updated = await creditService.getFinancingTracker(bookingId);
-      selectedFinancingTracker.value = updated;
+      if (selectedBooking.value) {
+        selectedBooking.value = {
+          ...selectedBooking.value,
+          credit_status: 'rejected',
+          credit_status_label_ar: 'مرفوض التمويل',
+        };
+      }
+      await refreshBookingDetail();
       closeRejectFinancingModal();
     } catch (e) {
       logger.error('Reject financing error:', e);
@@ -737,6 +937,10 @@ export function useCreditBookings() {
     isAdvancing,
     nextStageLabel,
     showRejectFinancingModal,
+    showEditFinancingStageModal,
+    editFinancingStageNumber,
+    editFinancingForm,
+    isSavingFinancingStage,
     rejectFinancingReason,
     rejectFinancingError,
     isRejectingFinancing,
@@ -755,7 +959,12 @@ export function useCreditBookings() {
     onBookingEvacuation,
     onBookingDelete,
     onBookingEdit,
+    onSubmitEditFinancingStage,
+    closeEditFinancingStageModal,
     onBookingSchedule,
+    onStartTitleTransfer,
+    onUnscheduleTitleTransfer,
+    refreshBookingDetail,
     showScheduleDateModal,
     scheduleDateInput,
     confirmScheduleDate,

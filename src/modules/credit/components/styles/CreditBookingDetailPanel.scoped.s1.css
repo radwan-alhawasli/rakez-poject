@@ -80,6 +80,11 @@
   background: #dcfce7;
   color: var(--color-success);
 }
+.status-badge.rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
 .status-badge.delay {
   background: #dc2626;
   color: #fff;
@@ -173,8 +178,29 @@
 }
 .tracker-step {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
+}
+.step-text-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.step-due-line {
+  font-size: 11px;
+  color: var(--color-dark-gray);
+  line-height: 1.35;
+  max-width: 200px;
+}
+.step-due-line.due-overdue {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fecaca;
+  color: #991b1b;
+  font-weight: 600;
+  font-size: 11px;
 }
 .step-delay-badge {
   font-size: 12px;
@@ -241,6 +267,24 @@
 .btn-next-stage:hover {
   background: #7d5e53;
 }
+.btn-start-title-transfer {
+  padding: 10px 24px;
+  background: var(--color-navy);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+.btn-start-title-transfer:hover {
+  opacity: 0.92;
+}
+.btn-unschedule {
+  border-color: #b45309;
+  color: #b45309;
+  background: #fffbeb;
+}
 .tracker-reject-wrap {
   margin-top: 12px;
   display: flex;
@@ -257,6 +301,11 @@
 }
 .btn-reject-financing:hover {
   background: #b91c1c;
+}
+.btn-reject-financing--active {
+  box-shadow: 0 0 0 2px #dc2626;
+  background: #fef2f2;
+  color: #991b1b;
 }
 
 .detail-cards {
