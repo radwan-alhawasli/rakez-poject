@@ -14,15 +14,31 @@ export const TRACKER_SECOND_PARTY_KEYS = [
 ];
 
 /**
- * Response body from GET /second-party-data/show/:id may be `{ data: row }` or the row itself.
+ * Response body from GET /second-party-data/show/:id may be `{ data: row }`, `{ data: { data: row } }`, or the row itself.
  * @param {unknown} snap
  * @returns {Record<string, unknown>|null}
  */
 export function extractSecondPartyShowRow(snap) {
   if (snap == null || typeof snap !== 'object') return null;
-  const d = /** @type {{ data?: unknown }} */ (snap).data;
-  if (d != null && typeof d === 'object' && !Array.isArray(d)) return /** @type {Record<string, unknown>} */ (d);
-  return /** @type {Record<string, unknown>} */ (snap);
+
+  const hasTrackerKeys = obj =>
+    obj != null &&
+    typeof obj === 'object' &&
+    !Array.isArray(obj) &&
+    TRACKER_SECOND_PARTY_KEYS.some(k => Object.prototype.hasOwnProperty.call(obj, k));
+
+  const asRow = o => (hasTrackerKeys(o) ? /** @type {Record<string, unknown>} */ (o) : null);
+
+  const d1 =
+    'data' in snap && snap.data != null && typeof snap.data === 'object' && !Array.isArray(snap.data)
+      ? snap.data
+      : null;
+  const d2 =
+    d1 && 'data' in d1 && d1.data != null && typeof d1.data === 'object' && !Array.isArray(d1.data)
+      ? d1.data
+      : null;
+
+  return asRow(d2) || asRow(d1) || asRow(snap);
 }
 
 /** True if a row already exists → use PUT /second-party-data/update/:id, else POST .../store/:id */
@@ -134,14 +150,47 @@ export function isProjectProgressFullyCompleted(progress) {
 export const TRACKER_STAGE_COUNT = 6;
 
 /**
+ * قيمة مرحلة واحدة مملوءة (يستبعد 0 و false والنص الفارغ؛ يقبل أرقام المعلن غير الصفرية).
+ * @param {unknown} value
+ */
+export function isSecondPartyFieldFilled(value) {
+  if (value == null) return false;
+  if (typeof value === 'boolean') return value === true;
+  if (typeof value === 'number') {
+    if (Number.isNaN(value)) return false;
+    return value !== 0;
+  }
+  if (typeof value === 'string') return value.trim() !== '';
+  return false;
+}
+
+/**
+ * مرحلة شهادة الإتمام: قد يُرسل الخادم marketing_license_url أو completion_certificate_url.
+ * @param {Record<string, unknown>|null|undefined} data
+ */
+function isMarketingLicenseStageFilled(data) {
+  if (!data || typeof data !== 'object') return false;
+  return (
+    isSecondPartyFieldFilled(data.marketing_license_url) ||
+    isSecondPartyFieldFilled(data.completion_certificate_url)
+  );
+}
+
+/**
  * عدد الحقول المملوءة من الستة على `second_party_data` (أو كائن مماثل).
  * @param {Record<string, unknown>|null|undefined} row
  */
 export function countFilledSecondPartyTrackerFields(row) {
   if (!row || typeof row !== 'object') return 0;
-  return TRACKER_SECOND_PARTY_KEYS.filter(
-    k => row[k] != null && String(row[k]).trim() !== '',
-  ).length;
+  let n = 0;
+  for (const k of TRACKER_SECOND_PARTY_KEYS) {
+    if (k === 'marketing_license_url') {
+      if (isMarketingLicenseStageFilled(row)) n += 1;
+    } else if (isSecondPartyFieldFilled(row[k])) {
+      n += 1;
+    }
+  }
+  return n;
 }
 
 /**
@@ -186,12 +235,27 @@ export function computeSetupProgressPercentSixStages(contractLike) {
 }
 
 /**
- * @param {Record<string, unknown>|null|undefined} data - second-party show payload (.data)
+ * الست مراحل المتتبع (GET /second-party-data/show/:id) مكتملة.
+ * @param {Record<string, unknown>|null|undefined} data - صف الطرف الثاني بعد extractSecondPartyShowRow
  */
 export function isSecondPartyTrackerComplete(data) {
   if (!data || typeof data !== 'object') return false;
-  return TRACKER_SECOND_PARTY_KEYS.every(k => {
-    const v = data[k];
-    return v != null && String(v).trim() !== '';
-  });
+  for (const k of TRACKER_SECOND_PARTY_KEYS) {
+    if (k === 'marketing_license_url') {
+      if (!isMarketingLicenseStageFilled(data)) return false;
+    } else if (!isSecondPartyFieldFilled(data[k])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * استجابة GET /second-party-data/show/:id — هل المتتبع مكتمل (الست حقول).
+ * @param {unknown} apiResponse - جسم الاستجابة الخام من الـ API
+ */
+export function isSecondPartyTrackerShowResponseComplete(apiResponse) {
+  const row = extractSecondPartyShowRow(apiResponse);
+  if (!row) return false;
+  return isSecondPartyTrackerComplete(row);
 }

@@ -3,7 +3,10 @@ import { useRouter } from 'vue-router';
 import contractService from '@/services/contractService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
-import { computeSetupProgressPercentSixStages } from '@/utils/projectProgressSteps';
+import {
+  computeSetupProgressPercentSixStages,
+  isSecondPartyTrackerShowResponseComplete,
+} from '@/utils/projectProgressSteps';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 import { useProjectManagementModals } from '@/composables/project/useProjectManagementModals';
@@ -412,8 +415,16 @@ export function useProjectManagement() {
       return;
     }
     try {
+      // GET /second-party-data/show/:id — يجب أن تكون الست مراحل (الحقول الستة) مكتملة
+      const trackerSnap = await contractService.getSecondPartyData(id);
+      if (!isSecondPartyTrackerShowResponseComplete(trackerSnap)) {
+        toast.warning(
+          'يجب إكمال الست مراحل في متتبع الطرف الثاني (جميع الحقول المطلوبة) قبل تحديد المشروع كمكتمل'
+        );
+        return;
+      }
       await contractService.markContractComplete(id);
-      toast.success('تم تحديد المشروع كمكتمل ويظهر ضمن «جاهزة للتسويق»');
+      toast.success('تم تحديد المشروع كمكتمل ويظهر ضمن «مشاريع جاهزة للتسويق»');
       if (!isEditor.value) {
         activeTab.value = 'ready';
       }

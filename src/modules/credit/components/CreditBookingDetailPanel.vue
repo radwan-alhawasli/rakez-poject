@@ -268,11 +268,14 @@
 </template>
 
 <script>
+/* eslint-disable max-lines -- legacy panel; split deferred */
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useFormatters } from '@/composables/useFormatters';
 import {
-  CREDIT_FINANCING_STAGE_LABELS,
   formatStageDueLine,
+  getTrackerLabels,
+  getTrackerStageCount,
+  isCashReservation,
   isStageOverdue,
 } from '@/utils/creditFinancingStages';
 
@@ -385,20 +388,28 @@ export default {
       return v != null && String(v).trim() ? v : 'غير معين';
     });
 
+    const trackerStageCount = computed(() => getTrackerStageCount(props.booking || {}));
+
     const rawCompletedCount = computed(() => {
       tick.value;
       const b = props.booking;
       const ft = props.financingTracker;
-      if (ft?.all_completed) return 6;
-      if (typeof ft?.completed_stages === 'number') return Math.min(6, ft.completed_stages);
+      const sc = getTrackerStageCount(b || {});
+      if (ft?.all_completed) return sc;
+      if (typeof ft?.completed_stages === 'number') return Math.min(sc, ft.completed_stages);
       const steps = b?.credit_procedure_steps;
       if (Array.isArray(steps) && steps.length > 0) {
-        return steps.filter(s => s.status === 'completed' || s.status === 'done' || s.completed)
-          .length;
+        return Math.min(
+          sc,
+          steps.filter(s => s.status === 'completed' || s.status === 'done' || s.completed).length
+        );
       }
       const stages = ft?.stages ?? [];
       if (Array.isArray(stages) && stages.length > 0) {
-        return stages.filter(s => s?.completed || s?.done || s?.status === 'completed').length;
+        return Math.min(
+          sc,
+          stages.filter(s => s?.completed || s?.done || s?.status === 'completed').length
+        );
       }
       return 0;
     });
@@ -417,18 +428,21 @@ export default {
 
     const currentStepIndex = computed(() => {
       const n = rawCompletedCount.value;
-      if (n >= CREDIT_FINANCING_STAGE_LABELS.length) return -1;
+      const sc = trackerStageCount.value;
+      if (n >= sc) return -1;
       return n;
     });
 
     const currentStepLabel = computed(() => {
       const i = currentStepIndex.value;
       if (i < 0) return '';
-      const steps = props.booking?.credit_procedure_steps;
+      const b = props.booking;
+      const labels = getTrackerLabels(b || {});
+      const steps = b?.credit_procedure_steps;
       if (Array.isArray(steps) && steps[i]) {
-        return steps[i].label_ar || CREDIT_FINANCING_STAGE_LABELS[i];
+        return steps[i].label_ar || labels[i];
       }
-      return CREDIT_FINANCING_STAGE_LABELS[i] || '';
+      return labels[i] || '';
     });
 
     const trackerSteps = computed(() => {
@@ -436,7 +450,7 @@ export default {
       const b = props.booking;
       const ft = props.financingTracker;
       const bookingId = b?.id ?? b?.reservation_id;
-      const labels = CREDIT_FINANCING_STAGE_LABELS;
+      const labels = getTrackerLabels(b || {});
       const n = rawCompletedCount.value;
       const apiSteps = b?.credit_procedure_steps;
       const stages = ft?.stages;
@@ -487,7 +501,9 @@ export default {
     });
 
     const allStepsDone = computed(
-      () => props.financingTracker?.all_completed === true || rawCompletedCount.value >= 6
+      () =>
+        props.financingTracker?.all_completed === true ||
+        rawCompletedCount.value >= trackerStageCount.value
     );
 
     const canAdvanceStage = computed(
@@ -506,7 +522,10 @@ export default {
     );
 
     const showRejectFinancingBtn = computed(
-      () => financingStarted.value && !isFinancingRejected.value
+      () =>
+        financingStarted.value &&
+        !isFinancingRejected.value &&
+        !isCashReservation(props.booking || {})
     );
 
     const hasTitleTransfer = computed(

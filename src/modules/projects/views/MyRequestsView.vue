@@ -5,7 +5,12 @@
       <div class="header-content">
         <h1 class="welcome-title">طلباتي الحصرية</h1>
         <p class="welcome-subtitle">
-          تتبع حالة طلبات المشاريع الحصرية التي قدمتها وأكمل العقود المعتمدة.
+          <template v-if="showsAllTeamRequests">
+            عرض جميع طلبات المشاريع الحصرية (صلاحية مدير أو مشرف).
+          </template>
+          <template v-else>
+            تتبع حالة طلبات المشاريع الحصرية التي قدمتها وأكمل العقود المعتمدة.
+          </template>
         </p>
       </div>
     </div>
@@ -87,12 +92,14 @@
 </template>
 
 <script>
-import { ref, onMounted, onActivated, watch } from 'vue';
+import { ref, computed, onMounted, onActivated, watch } from 'vue';
 import EditContractInfoModal from '@/components/EditContractInfoModal.vue';
 import { useRouter, useRoute } from 'vue-router';
 import contractService from '@/services/contractService';
+import authService from '@/services/authService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
+import { userSeesAllMyRequests } from '@/utils/myRequestsScope';
 
 export default {
   name: 'MyRequestsView',
@@ -106,6 +113,8 @@ export default {
     const editingContractId = ref(null);
     const editingContractData = ref(null);
 
+    const showsAllTeamRequests = computed(() => userSeesAllMyRequests(authService.getCurrentUser()));
+
     /**
      * استكمال العقد يختلف عن اعتماد الطلب: المعتمد قد لا يكون قد أكمل نموذج الاستكمال بعد.
      * لا نستخدم commission_percent كدليل على الاكتمال لأنه يُرسل مع طلب المشروع الحصري الأولي.
@@ -114,7 +123,12 @@ export default {
     const fetchRequests = async () => {
       isLoading.value = true;
       try {
-        const { items } = await contractService.getContracts({ page: 1, per_page: 500 });
+        const me = authService.getCurrentUser();
+        const params = { page: 1, per_page: 500 };
+        if (!userSeesAllMyRequests(me) && me?.id != null && String(me.id).trim() !== '') {
+          params.user_id = me.id;
+        }
+        const { items } = await contractService.getContracts(params);
         const data = items ?? [];
 
         // 1. Filter out rejected contracts initially if needed, or keep all
@@ -250,6 +264,7 @@ export default {
     return {
       requests,
       isLoading,
+      showsAllTeamRequests,
       showEditModal,
       editingContractId,
       editingContractData,

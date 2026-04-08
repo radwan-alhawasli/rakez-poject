@@ -9,6 +9,7 @@ import {
   isSecondPartyTrackerComplete,
   buildSecondPartyTrackerPayload,
   extractSecondPartyShowRow,
+  isSecondPartyFieldFilled,
 } from '@/utils/projectProgressSteps';
 
 /**
@@ -91,13 +92,13 @@ export function useProjectProgress(projectId, options = {}) {
         const d = secondParty;
         projectLinkUrl.value = d.project_link_url || d.project_link || '';
         stages.forEach(stage => {
-          if (stage.apiKey && d[stage.apiKey]) {
+          if (stage.apiKey && d[stage.apiKey] != null && String(d[stage.apiKey]).trim() !== '') {
             stage.value = d[stage.apiKey];
             if (d.stage_entry_dates?.[stage.apiKey]) stage.entryDate = d.stage_entry_dates[stage.apiKey];
           }
         });
         const marketing = stages.find(s => s.apiKey === 'marketing_license_url');
-        if (marketing && !marketing.value && d.completion_certificate_url) {
+        if (marketing && !isSecondPartyFieldFilled(marketing.value) && d.completion_certificate_url) {
           marketing.value = d.completion_certificate_url;
         }
       }
@@ -105,25 +106,23 @@ export function useProjectProgress(projectId, options = {}) {
       const hasSteps =
         projectProgress?.steps && Array.isArray(projectProgress.steps) && projectProgress.steps.length > 0;
       if (hasSteps) {
+        // اكتمال المرحلة من project_progress.steps فقط — لا نفرض «مكتمل» من وجود رابط في second-party
         applyProjectProgress(projectProgress);
-        stages.forEach(stage => {
-          const fromSp =
-            secondParty && typeof secondParty === 'object' && stage.apiKey
-              ? secondParty[stage.apiKey]
-              : null;
-          const hasVal =
-            (stage.value != null && String(stage.value).trim() !== '') ||
-            (fromSp != null && String(fromSp).trim() !== '');
-          if (hasVal && stage.status === 'pending') {
-            stage.status = 'completed';
-            stage.completedAt = stage.completedAt || 'تم';
-          }
-        });
         const firstPending = stages.findIndex(s => s.status === 'pending');
         activeStageIndex.value = firstPending !== -1 ? firstPending : stages.length - 1;
       } else {
+        // لا يوجد project_progress.steps — نستنتج الاكتمال من حقول second-party فقط
         stages.forEach(stage => {
-          if (stage.apiKey && stage.value) {
+          if (!stage.apiKey) return;
+          if (stage.apiKey === 'marketing_license_url' && secondParty && typeof secondParty === 'object') {
+            if (
+              isSecondPartyFieldFilled(stage.value) ||
+              isSecondPartyFieldFilled(secondParty.completion_certificate_url)
+            ) {
+              stage.status = 'completed';
+              stage.completedAt = stage.completedAt || 'تم';
+            }
+          } else if (isSecondPartyFieldFilled(stage.value)) {
             stage.status = 'completed';
             stage.completedAt = stage.completedAt || 'تم';
           }
@@ -191,13 +190,6 @@ export function useProjectProgress(projectId, options = {}) {
 
       if (freshProgress?.steps?.length) {
         applyProjectProgress(freshProgress, { skipActiveStageUpdate: true });
-        stages.forEach(stage => {
-          const v = stage.value;
-          if (v != null && String(v).trim() !== '' && stage.status === 'pending') {
-            stage.status = 'completed';
-            stage.completedAt = stage.completedAt || new Date().toLocaleDateString('ar-SA');
-          }
-        });
         const norm = normalizeProjectProgressSteps(freshProgress.steps);
         const step = norm.find(s => Number(s.step_number) === savedIndex + 1);
         const serverSaysDone = isStepMarkedComplete(step);

@@ -8,6 +8,12 @@ export const CREDIT_FINANCING_STAGE_LABELS = [
   'تجهيز قبل الافراغ',
 ];
 
+/** حجز كاش: مرحلتان فقط (بدون مسار بنكي) */
+export const CREDIT_CASH_STAGE_LABELS = [
+  'تواصل مع العميل',
+  'فتره التجهيز قبل الافراغ',
+];
+
 const LIMIT_DAYS_FIRST_FIVE = [2, 3, 3, 2, 5];
 
 /**
@@ -19,11 +25,32 @@ export function getPurchaseMechanismKey(booking) {
   return 'supported_bank';
 }
 
+/** آلية الشراء كاش (لا يُعرض مسار الائتمان البنكي الكامل) */
+export function isCashReservation(booking) {
+  const p = String(booking?.purchase_mechanism ?? '').toLowerCase();
+  return p === 'cash' || p === 'كاش';
+}
+
+/** عدد مراحل التتبع في الواجهة: 2 لكاش، 6 لغيره */
+export function getTrackerStageCount(booking) {
+  return isCashReservation(booking) ? CREDIT_CASH_STAGE_LABELS.length : CREDIT_FINANCING_STAGE_LABELS.length;
+}
+
+export function getTrackerLabels(booking) {
+  return isCashReservation(booking) ? CREDIT_CASH_STAGE_LABELS : CREDIT_FINANCING_STAGE_LABELS;
+}
+
 /**
- * عدد أيام المهلة لكل مرحلة (المرحلة الأخيرة تعتمد على نوع البنك).
- * @param {number} stageIndex 0..5
+ * عدد أيام المهلة لكل مرحلة (المرحلة الأخيرة في مسار البنك تعتمد على نوع البنك).
+ * كاش: المرحلة 0 = يومان، المرحلة 1 = خمسة أيام.
+ * @param {number} stageIndex فهرس ضمن المسار الحالي (0..1 لكاش، 0..5 للبنك)
  */
 export function getStageDayLimit(stageIndex, booking) {
+  if (isCashReservation(booking)) {
+    if (stageIndex === 0) return 2;
+    if (stageIndex === 1) return 5;
+    return 5;
+  }
   const mech = getPurchaseMechanismKey(booking);
   if (stageIndex < 5) return LIMIT_DAYS_FIRST_FIVE[stageIndex] ?? 2;
   return mech === 'unsupported_bank' ? 10 : 5;
@@ -60,13 +87,14 @@ export function getStageStartTimes(bookingId, booking) {
 /**
  * بعد نجاح advance: نسجّل وقت دخول المرحلة النشطة الحالية (index = عدد المكتمل).
  * @param {string|number} bookingId
- * @param {number} completedStagesAfter - عدد المراحل المكتملة بعد الاستجابة (0..6)
+ * @param {number} completedStagesAfter - عدد المراحل المكتملة بعد الاستجابة
  */
 export function recordAfterAdvance(bookingId, completedStagesAfter, booking) {
   if (bookingId == null) return;
   const now = new Date().toISOString();
   const starts = [...getStageStartTimes(bookingId, booking)];
-  const activeIndex = Math.min(6, Math.max(0, completedStagesAfter));
+  const cap = getTrackerStageCount(booking);
+  const activeIndex = Math.min(cap, Math.max(0, completedStagesAfter));
   while (starts.length <= activeIndex) {
     starts.push(now);
   }

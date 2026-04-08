@@ -21,7 +21,7 @@ export const contractServiceMarketerMethods = {
   /**
    * جلب قائمة العقود بنفس تفاصيل GET /contracts/show (notes, project_progress, project_name, ...)
    * GET /contracts/index — يدعم التصفح بالصفحات (page, per_page)
-   * @param {any} filters - Optional: page (1-based), per_page (default 15), status, etc.
+   * @param {any} filters - Optional: page (1-based), per_page (default 15), status, user_id (تصفية طلبات مستخدم — طلباتي للموظفين), إلخ.
    * @returns {Promise<{ items: unknown[], total: number }>} items normalized, total from API
    */
   async getContracts(filters = {}) {

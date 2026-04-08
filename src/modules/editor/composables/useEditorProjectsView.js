@@ -205,21 +205,19 @@ export function useEditorProjectsView() {
     { immediate: true }
   );
 
-  watch(activeTab, t => {
-    if (t === 'after' && isManager.value && afterMontage.value.length) {
-      fetchMontageLinksForProjects(afterMontage.value.map(p => p.id));
-    }
-  });
-
-  watch(
-    afterMontage,
-    list => {
-      if (activeTab.value === 'after' && isManager.value && list.length) {
-        fetchMontageLinksForProjects(list.map(p => p.id));
-      }
-    },
-    { deep: true }
+  /** مفتاح ثابت لقائمة «بعد المونتاج» — بدون deep watch لتجنب حلقة: دمج المونتاج → تحديث العقود → إعادة جلب لكل المعرفات */
+  const afterMontageIdsKey = computed(() =>
+    afterMontage.value
+      .map(p => p.id)
+      .filter(id => id != null && String(id).trim() !== '')
+      .sort((a, b) => Number(a) - Number(b))
+      .join(',')
   );
+
+  watch([activeTab, afterMontageIdsKey, isManager], ([tab, idsKey, mgr]) => {
+    if (tab !== 'after' || !mgr || !idsKey) return;
+    fetchMontageLinksForProjects(afterMontage.value.map(p => p.id));
+  });
 
   watch(
     selectedProject,

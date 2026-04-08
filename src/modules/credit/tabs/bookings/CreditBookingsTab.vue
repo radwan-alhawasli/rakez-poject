@@ -298,18 +298,32 @@
       <template #default>
         <div class="credit-edit-stage-modal">
           <p class="credit-edit-stage-hint">
-            يتم الحفظ عبر API تحديث المرحلة (PATCH). للمرحلة 1: اسم البنك مطلوب؛ للمرحلة 4: اسم
-            المقيم أو ملاحظات.
+            <template v-if="isCashBooking">حجز كاش: مرحلتان فقط — يتم الحفظ عبر PATCH للمرحلة المختارة.</template>
+            <template v-else>
+              يتم الحفظ عبر API تحديث المرحلة (PATCH). للمرحلة 1: اسم البنك مطلوب؛ للمرحلة 4: اسم المقيم أو
+              ملاحظات.
+            </template>
           </p>
           <div class="form-group">
             <label class="form-label">المرحلة</label>
             <select v-model.number="editFinancingStageNumber" class="form-input">
-              <option v-for="idx in [1, 2, 3, 4, 5, 6]" :key="idx" :value="idx">
-                {{ idx }}. {{ CREDIT_FINANCING_STAGE_LABELS[idx - 1] }}
+              <option v-for="idx in editStageNumbers" :key="idx" :value="idx">
+                {{ idx }}. {{ editStageLabels[idx - 1] }}
               </option>
             </select>
           </div>
-          <template v-if="editFinancingStageNumber === 1">
+          <template v-if="isCashBooking">
+            <div class="form-group">
+              <label class="form-label">ملاحظات</label>
+              <textarea
+                v-model="editFinancingForm.notes"
+                class="form-input"
+                rows="3"
+                placeholder="تفاصيل التحديث لهذه المرحلة"
+              />
+            </div>
+          </template>
+          <template v-else-if="editFinancingStageNumber === 1">
             <div class="form-group">
               <label class="form-label">اسم البنك <span class="credit-req">*</span></label>
               <input
@@ -400,8 +414,9 @@ import AppModal from '@/components/AppModal.vue';
 import MobileFilterSheet from '@/components/MobileFilterSheet.vue';
 import RowActions from '@/components/RowActions.vue';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { computed } from 'vue';
 import { useCreditBookings } from '@/composables/credit/useCreditBookings';
-import { CREDIT_FINANCING_STAGE_LABELS } from '@/utils/creditFinancingStages';
+import { getTrackerLabels, getTrackerStageCount, isCashReservation } from '@/utils/creditFinancingStages';
 
 const {
   isLoading,
@@ -465,6 +480,13 @@ const {
   handlePageChange,
   handlePerPageChange,
 } = useCreditBookings();
+
+const isCashBooking = computed(() => isCashReservation(selectedBooking.value || {}));
+const editStageNumbers = computed(() => {
+  const n = getTrackerStageCount(selectedBooking.value || {});
+  return Array.from({ length: n }, (_, i) => i + 1);
+});
+const editStageLabels = computed(() => getTrackerLabels(selectedBooking.value || {}));
 
 const onSearch = value => {
   searchQuery.value = value;

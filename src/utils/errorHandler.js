@@ -80,6 +80,9 @@ function mapKnownApiUserMessage(msg) {
   if (!msg || typeof msg !== 'string') return msg;
   const t = msg.trim();
   if (t.includes('بيانات الطرف الثاني غير موجودة')) return 'العقد غير مستكمل';
+  if (t.includes('يمكن فقط تحديث العقود الموافق عليها')) {
+    return 'يمكن تحويل المشروع إلى جاهز للتسويق فقط بعد موافقة الإدارة على العقد (حالة: معتمد).';
+  }
   return t;
 }
 

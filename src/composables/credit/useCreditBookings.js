@@ -7,7 +7,9 @@ import { toast } from '@/composables/useToast';
 import { showApiError, getApiErrorMessage } from '@/utils/errorHandler';
 import { useFormatters } from '@/composables/useFormatters';
 import {
-  CREDIT_FINANCING_STAGE_LABELS,
+  getTrackerLabels,
+  getTrackerStageCount,
+  isCashReservation,
   recordAfterAdvance,
 } from '@/utils/creditFinancingStages';
 
@@ -50,17 +52,24 @@ function buildFinancingTrackerState(financingGet, bookingPayload, bookingId) {
 }
 
 function countCompletedStages(tracker, booking) {
+  const cap = getTrackerStageCount(booking || {});
   const t = tracker;
   const b = booking;
-  if (t?.all_completed) return 6;
-  if (typeof t?.completed_stages === 'number') return Math.min(6, t.completed_stages);
+  if (t?.all_completed) return cap;
+  if (typeof t?.completed_stages === 'number') return Math.min(cap, t.completed_stages);
   const steps = b?.credit_procedure_steps;
   if (Array.isArray(steps) && steps.length > 0) {
-    return steps.filter(s => s.status === 'completed' || s.status === 'done' || s.completed).length;
+    return Math.min(
+      cap,
+      steps.filter(s => s.status === 'completed' || s.status === 'done' || s.completed).length
+    );
   }
   const stages = t?.stages ?? [];
   if (Array.isArray(stages) && stages.length > 0) {
-    return stages.filter(s => s?.completed || s?.done || s?.status === 'completed').length;
+    return Math.min(
+      cap,
+      stages.filter(s => s?.completed || s?.done || s?.status === 'completed').length
+    );
   }
   return 0;
 }
@@ -325,27 +334,32 @@ export function useCreditBookings() {
   // ── Tracker / advance stage ──
 
   const advanceCompletedCount = computed(() => {
+    const b = selectedBooking.value;
+    const cap = getTrackerStageCount(b || {});
     const t = selectedFinancingTracker.value;
-    if (t?.all_completed) return 6;
-    const steps = selectedBooking.value?.credit_procedure_steps;
+    if (t?.all_completed) return cap;
+    const steps = b?.credit_procedure_steps;
     if (Array.isArray(steps) && steps.length > 0) {
       return Math.min(
-        6,
+        cap,
         steps.filter(s => s.status === 'completed' || s.status === 'done' || s.completed).length
       );
     }
     const stages = t?.stages ?? [];
     const completed = t?.completed_stages;
-    if (typeof completed === 'number') return Math.min(6, completed);
-    return Math.min(6, stages.filter(s => s?.completed || s?.done).length);
+    if (typeof completed === 'number') return Math.min(cap, completed);
+    return Math.min(cap, stages.filter(s => s?.completed || s?.done).length);
   });
 
   const nextStageLabel = computed(() => {
-    const steps = selectedBooking.value?.credit_procedure_steps;
+    const b = selectedBooking.value;
+    const labels = getTrackerLabels(b || {});
+    const steps = b?.credit_procedure_steps;
     const n = advanceCompletedCount.value;
+    if (n >= labels.length) return '';
     if (Array.isArray(steps) && steps[n])
-      return steps[n].label_ar || steps[n].label || CREDIT_FINANCING_STAGE_LABELS[n] || '';
-    return CREDIT_FINANCING_STAGE_LABELS[n] || '';
+      return steps[n].label_ar || steps[n].label || labels[n] || '';
+    return labels[n] || '';
   });
 
   // ── Load functions ──
@@ -595,14 +609,18 @@ export function useCreditBookings() {
   const onSubmitEditFinancingStage = async () => {
     const bookingId = selectedBookingId();
     if (!bookingId) return;
+    const b = selectedBooking.value;
+    const maxSt = getTrackerStageCount(b || {});
     const n = Number(editFinancingStageNumber.value);
-    if (n < 1 || n > 6) {
-      toast.warning('اختر مرحلة بين 1 و 6');
+    if (n < 1 || n > maxSt) {
+      toast.warning(`اختر مرحلة بين 1 و ${maxSt}`);
       return;
     }
     const f = editFinancingForm.value;
     let payload = {};
-    if (n === 1) {
+    if (isCashReservation(b)) {
+      payload = { notes: f.notes };
+    } else if (n === 1) {
       const bank_name = f.bank_name?.trim();
       if (!bank_name) {
         toast.warning('اسم البنك مطلوب للمرحلة الأولى');

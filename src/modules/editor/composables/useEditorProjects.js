@@ -19,6 +19,8 @@ export function useEditorProjects() {
   const teamsLoading = ref(false);
   /** Map contractId -> true/false for manager: has montage links (from montage-department/show) */
   const montageHasLinksMap = ref({});
+  /** يمنع تداخل طلبات متوازية لنفس الدفعة (يحدّث عند كل استدعاء جديد) */
+  let montageLinksFetchGeneration = 0;
 
   // بعد المونتاج: إما أعلام الباكند (تصوير + مونتاج) أو اكتمال ثلاثي: صورة + فيديو + وصف (من show العقد أو المونتاج).
   const isAfterMontage = c => {
@@ -274,11 +276,15 @@ export function useEditorProjects() {
    */
   async function fetchMontageLinksForProjects(contractIds) {
     const ids = Array.isArray(contractIds) ? contractIds : [];
+    if (!ids.length) return;
+    const generation = ++montageLinksFetchGeneration;
     const map = { ...montageHasLinksMap.value };
     await Promise.all(
       ids.map(async id => {
+        if (generation !== montageLinksFetchGeneration) return;
         try {
           const data = await editorService.getMontage(id);
+          if (generation !== montageLinksFetchGeneration) return;
           mergeMontageShowIntoContract(id, data);
           const row = contracts.value.find(c => Number(c.id) === Number(id));
           map[id] = row ? contractHasCompleteMontageTriplet(row) : false;
@@ -287,6 +293,7 @@ export function useEditorProjects() {
         }
       })
     );
+    if (generation !== montageLinksFetchGeneration) return;
     montageHasLinksMap.value = map;
   }
 
