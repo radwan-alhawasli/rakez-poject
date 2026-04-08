@@ -1,7 +1,3 @@
-/**
- * Accounting notifications list is paginated; unread/read figures shown next to the list
- * reflect the current page only unless the API adds aggregate fields (then map them in UI).
- */
 import { ref } from 'vue';
 import accountingService from '@/services/accountingService';
 import logger from '@/utils/logger';
