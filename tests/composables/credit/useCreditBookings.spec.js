@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 
 const mockRoute = { name: 'CreditBookings', query: { tab: 'confirmed' }, params: {} };
@@ -75,8 +75,11 @@ describe('useCreditBookings', () => {
     mockRoute.query = { tab: 'confirmed' };
   });
 
-  it('should have correct initial state', () => {
+  it('should have correct initial state', async () => {
+    creditService.getConfirmedBookings.mockResolvedValue({ items: [], total: 0 });
     const wrapper = mountComposable();
+    // immediate watch loads confirmed tab; isLoading is true until the request settles
+    await flushPromises();
     expect(wrapper.vm.isLoading).toBe(false);
     expect(wrapper.vm.selectedBooking).toBeNull();
     expect(wrapper.vm.currentPage).toBe(1);
