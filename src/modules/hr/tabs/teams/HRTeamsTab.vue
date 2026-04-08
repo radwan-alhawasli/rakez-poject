@@ -1,20 +1,25 @@
 <template>
   <div class="hr-teams-view">
-    <div class="section-header-compact section-header-compact--row">
+    <div class="section-header-compact section-header-compact--row hr-teams-hero">
       <div class="section-header-text">
         <h2 class="section-title">إدارة الفرق</h2>
         <p class="section-subtitle">إدارة وتوزيع المسوقين والمشاريع على مستوى الأفرقة.</p>
       </div>
       <div class="header-actions">
-        <div class="search-box-mini">
+        <div class="search-box-mini search-box-mini--hero">
+          <svg class="search-box-mini__icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <circle cx="11" cy="11" r="8" fill="none" stroke="currentColor" stroke-width="2" />
+            <path d="m21 21-4.35-4.35" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
           <input
             v-model="teamSearchQuery"
             type="text"
             placeholder="بحث عن فريق..."
             class="search-input-mini"
+            autocomplete="off"
           />
         </div>
-        <button type="button" class="btn-primary" @click="openAddTeamModal">
+        <button type="button" class="btn-primary hr-teams-add-btn" @click="openAddTeamModal">
           <span class="plus-icon">+</span> إضافة فريق جديد
         </button>
       </div>
@@ -69,7 +74,14 @@
               +{{ team.members.length - 5 }}
             </div>
             <div v-else-if="!team.members || team.members.length === 0" class="no-members-hint">
-              <span class="no-members-icon">👥</span>
+              <span class="no-members-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </span>
               <span>لا يوجد مسوقين</span>
             </div>
           </div>

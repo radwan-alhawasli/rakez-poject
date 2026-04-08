@@ -46,6 +46,9 @@ const notificationService = {
   /**
    * Subscribe to Pusher channels once per session (idempotent).
    * Call after createPusher; safe to call multiple times from init().
+   *
+   * Security: `private-*` channels must be authorized by the backend (e.g. Laravel
+   * `/broadcasting/auth`); client-side role checks here are not sufficient on their own.
    */
   ensureRealtimeSubscriptions() {
     if (!authService.isAuthenticated() || realtimeSubscriptionsReady) return;

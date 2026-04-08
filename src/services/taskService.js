@@ -9,7 +9,7 @@ import { extractPaginatedData } from '@/utils/paginationUtils';
 export default {
   /**
    * Create a new task
-   * @param {any} taskData - The task details (task_name, team_id, due_at, assigned_to, status, etc.)
+   * @param {any} taskData - The task details (task_name, section, due_at, assigned_to, optional description)
    * @returns {Promise<Object>} The created task data
    */
   async createTask(taskData) {

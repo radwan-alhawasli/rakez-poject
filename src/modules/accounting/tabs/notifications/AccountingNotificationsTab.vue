@@ -12,10 +12,18 @@
       <LuxuryStatCard label="إجمالي الإشعارات" :value="totalItems">
         <template #icon><DashboardStatIcon name="clipboard" /></template>
       </LuxuryStatCard>
-      <LuxuryStatCard label="غير مقروءة" :value="unreadCount">
+      <LuxuryStatCard
+        label="غير مقروءة"
+        :value="unreadCount"
+        description="في الصفحة الحالية (القائمة مقسّمة)"
+      >
         <template #icon><DashboardStatIcon name="alert" /></template>
       </LuxuryStatCard>
-      <LuxuryStatCard label="مقروءة" :value="readCount">
+      <LuxuryStatCard
+        label="مقروءة"
+        :value="readCount"
+        description="في الصفحة الحالية (القائمة مقسّمة)"
+      >
         <template #icon><DashboardStatIcon name="check" /></template>
       </LuxuryStatCard>
     </div>

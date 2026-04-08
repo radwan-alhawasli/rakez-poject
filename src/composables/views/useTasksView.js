@@ -1,10 +1,9 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import taskService from '@/services/taskService';
 import notificationService from '@/services/notificationService';
-import teamService from '@/services/teamService';
-import userService from '@/services/userService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
+import { getCaughtMessage } from '@/utils/caughtError';
 
 export function useTasksView() {
   const currentUser = authService.getCurrentUser();
@@ -20,9 +19,6 @@ export function useTasksView() {
   const requestedPage = ref(1);
   const assignedTotalPages = ref(1);
   const requestedTotalPages = ref(1);
-
-  const teams = ref([]);
-  const users = ref([]);
 
   const TASK_SECTIONS_FALLBACK = [
     { key: 'marketing', label: 'قسم التسويق' },
@@ -78,44 +74,6 @@ export function useTasksView() {
     loadCurrentTab(1);
   };
 
-  const extractDropdownDataFromTasks = () => {
-    const uniqueTeams = new Map();
-    const uniqueUsers = new Map();
-
-    if (currentUser) {
-      uniqueUsers.set(currentUser.id, currentUser.name);
-      if (currentUser.team_id) {
-        uniqueTeams.set(currentUser.team_id, `فريق ${currentUser.team_id}`);
-      }
-    }
-
-    const allTasks = [...assignedTasks.value, ...requestedTasks.value];
-    allTasks.forEach(task => {
-      if (task.team_id) {
-        uniqueTeams.set(task.team_id, task.team_name || task.team?.name || `فريق ${task.team_id}`);
-      }
-      if (task.assigned_to) {
-        uniqueUsers.set(
-          task.assigned_to,
-          task.assignee_name || task.assignee?.name || `موظف ${task.assigned_to}`
-        );
-      }
-      if (task.created_by) {
-        uniqueUsers.set(task.created_by, task.creator_name || `موظف ${task.created_by}`);
-      }
-    });
-
-    teams.value.forEach(team => {
-      if (team.id) uniqueTeams.set(team.id, team.name);
-    });
-    users.value.forEach(user => {
-      if (user.id) uniqueUsers.set(user.id, user.name);
-    });
-
-    teams.value = Array.from(uniqueTeams.entries()).map(([id, name]) => ({ id, name }));
-    users.value = Array.from(uniqueUsers.entries()).map(([id, name]) => ({ id, name }));
-  };
-
   const fetchSectionUsers = async sectionKey => {
     if (!sectionKey) {
       sectionUsers.value = [];
@@ -168,22 +126,6 @@ export function useTasksView() {
     }
   };
 
-  const fetchDropdownData = async () => {
-    try {
-      const [teamsData, usersData] = await Promise.all([
-        teamService.getTeams().catch(() => []),
-        userService.getEmployees({ per_page: 100 }).catch(() => ({ items: [] })),
-      ]);
-
-      teams.value = Array.isArray(teamsData) ? teamsData : teamsData.items || [];
-      users.value = usersData?.items || [];
-
-      extractDropdownDataFromTasks();
-    } catch (e) {
-      logger.error('Failed to load teams or users for dropdowns', e);
-    }
-  };
-
   const loadAssignedTasks = async (page = 1) => {
     try {
       isLoading.value = true;
@@ -200,8 +142,6 @@ export function useTasksView() {
       assignedTasks.value = data.items || [];
       assignedTotal.value = data.total || 0;
       assignedTotalPages.value = Math.ceil(assignedTotal.value / itemsPerPage.value) || 1;
-
-      extractDropdownDataFromTasks();
     } catch (err) {
       logger.error('Failed to load assigned tasks', err);
       error.value = 'حدث خطأ في تحميل المهام';
@@ -226,8 +166,6 @@ export function useTasksView() {
       requestedTasks.value = data.items || [];
       requestedTotal.value = data.total || 0;
       requestedTotalPages.value = Math.ceil(requestedTotal.value / itemsPerPage.value) || 1;
-
-      extractDropdownDataFromTasks();
     } catch (err) {
       logger.error('Failed to load requested tasks', err);
       error.value = 'حدث خطأ في تحميل المهام';
@@ -291,13 +229,29 @@ export function useTasksView() {
       isCreating.value = true;
       const due_at_formatted = taskForm.due_at ? taskForm.due_at.replace('T', ' ') + ':00' : null;
 
-      await taskService.createTask({
-        title: taskForm.title,
-        description: taskForm.description,
+      const assignedToNum = Number(taskForm.assigned_to);
+      if (
+        taskForm.assigned_to === '' ||
+        taskForm.assigned_to === null ||
+        Number.isNaN(assignedToNum) ||
+        assignedToNum < 1
+      ) {
+        notificationService.addNotification('الرجاء اختيار الموظف المسؤول', 'error');
+        return;
+      }
+
+      const payload = {
+        task_name: taskForm.title.trim(),
         section: taskForm.section_key,
-        assigned_to: taskForm.assigned_to,
         due_at: due_at_formatted,
-      });
+        assigned_to: assignedToNum,
+      };
+      const desc = taskForm.description?.trim();
+      if (desc) {
+        payload.description = desc;
+      }
+
+      await taskService.createTask(payload);
 
       notificationService.addNotification('تم إنشاء المهمة بنجاح', 'success');
       showCreateModal.value = false;
@@ -314,6 +268,7 @@ export function useTasksView() {
       loadRequestedTasks(1);
     } catch (e) {
       logger.error('Failed to create task', e);
+      notificationService.addNotification(getCaughtMessage(e) || 'فشل إنشاء المهمة', 'error');
     } finally {
       isCreating.value = false;
     }
@@ -321,16 +276,17 @@ export function useTasksView() {
 
   const updateStatus = async (taskId, status, reason = null) => {
     try {
-      const data = { status };
-      if (reason) {
-        data.cannot_complete_reason = reason;
-      }
+      const data = {
+        status,
+        cannot_complete_reason: reason != null && String(reason).trim() !== '' ? reason : null,
+      };
 
       await taskService.updateTaskStatus(taskId, data);
       notificationService.addNotification('تم تحديث حالة المهمة', 'success');
       loadCurrentTab(currentPage.value);
     } catch (e) {
       logger.error(`Failed to update task ${taskId}`, e);
+      notificationService.addNotification(getCaughtMessage(e) || 'فشل تحديث حالة المهمة', 'error');
     }
   };
 
@@ -360,7 +316,6 @@ export function useTasksView() {
     loadAssignedTasks();
     loadInitialCounts();
     loadTaskSections();
-    fetchDropdownData();
   });
 
   return {

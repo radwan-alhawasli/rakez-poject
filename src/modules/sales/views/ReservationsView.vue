@@ -1,8 +1,8 @@
 <template>
   <div class="reservations-page my-reservations">
     <div class="welcome-header">
-      <h1 class="welcome-title">حجوزاتي</h1>
-      <p class="welcome-subtitle">
+      <h1 class="welcome-title" data-testid="e2e-welcome-title">حجوزاتي</h1>
+      <p class="welcome-subtitle" data-testid="e2e-welcome-subtitle">
         {{
           isPmReservationsList
             ? 'عرض جميع حجوزات الوحدات عبر نظام إدارة المشاريع (قائمة موحّدة، تأكيد، إلغاء، سند).'

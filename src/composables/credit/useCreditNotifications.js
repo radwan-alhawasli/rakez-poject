@@ -1,3 +1,6 @@
+/**
+ * Credit notifications list is paginated; unread/read KPIs beside the list are per current page.
+ */
 import { ref } from 'vue';
 import creditService from '@/services/creditService';
 import logger from '@/utils/logger';

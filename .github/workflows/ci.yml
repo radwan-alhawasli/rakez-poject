@@ -1,3 +1,4 @@
+# Local parity: run `npm run quality` before pushing (same checks as the quality job minus Playwright).
 name: CI
 
 on:
