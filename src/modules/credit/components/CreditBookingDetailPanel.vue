@@ -23,7 +23,7 @@
         </button>
         <template v-if="currentStepLabel">{{ currentStepLabel }}</template>
         <span v-if="delayDays > 0" class="status-badge delay">متأخر {{ delayDays }} يوم</span>
-        <span class="status-badge approved">{{ statusLabel }}</span>
+        <span class="status-badge" :class="statusBadgeClass">{{ statusLabel }}</span>
         <span class="summary-date">{{
           formatDate(booking.deposit_date || booking.created_at)
         }}</span>
@@ -78,6 +78,14 @@
         </svg>
         تحديد موعد الإفراغ
       </button>
+      <button
+        v-if="titleTransferScheduled"
+        type="button"
+        class="btn-action btn-unschedule"
+        @click="$emit('unschedule-title-transfer')"
+      >
+        إلغاء موعد الإفراغ
+      </button>
       <button type="button" class="btn-action btn-cancel" @click="$emit('cancel')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path
@@ -107,9 +115,13 @@
                 <polyline points="20 6 9 17 4 12"></polyline></svg
               ><span v-else>{{ i + 1 }}</span>
             </div>
-            <span class="step-label">{{ step.label }}</span>
+            <div class="step-text-col">
+              <span class="step-label">{{ step.label }}</span>
+              <span class="step-due-line" :class="{ 'due-overdue': step.isOverdue }">{{
+                step.dueLine
+              }}</span>
+            </div>
           </div>
-          <span v-if="step.delayed" class="step-delay-badge">متأخر {{ delayDays }} يوم</span>
         </div>
       </div>
       <div v-if="!allStepsDone && canAdvanceStage" class="tracker-next-wrap">
@@ -117,10 +129,19 @@
           الانتقال للمرحلة التالية
         </button>
       </div>
+      <div
+        v-if="allStepsDone && !hasTitleTransfer && !isFinancingRejected"
+        class="tracker-next-wrap"
+      >
+        <button type="button" class="btn-start-title-transfer" @click="$emit('start-title-transfer')">
+          بدء اجرائات نقل الملكيه
+        </button>
+      </div>
       <div v-if="showRejectFinancingBtn" class="tracker-reject-wrap">
         <button
           type="button"
           class="btn-action btn-reject-financing"
+          :class="{ 'btn-reject-financing--active': rejectModalOpen }"
           @click="$emit('reject-financing')"
         >
           رفض التمويل
@@ -198,6 +219,10 @@
         </h4>
         <div class="detail-card-body">
           <div class="detail-row">
+            <span class="detail-key">المدينة :</span
+            ><span class="detail-val">{{ booking.city ?? '—' }}</span>
+          </div>
+          <div class="detail-row">
             <span class="detail-key">الحي :</span
             ><span class="detail-val">{{ booking.district ?? booking.area ?? '—' }}</span>
           </div>
@@ -243,27 +268,45 @@
 </template>
 
 <script>
-import { computed } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useFormatters } from '@/composables/useFormatters';
-
-const TRACKER_LABELS = [
-  'رفع الطلب للبنك',
-  'صدور التقييم',
-  'زيارة المقيم للمشروع',
-  'إجراءات بنكية وعقود',
-  'تنفيذ العقود',
-  'فتره التجهيز قبل الافراغ',
-];
+import {
+  CREDIT_FINANCING_STAGE_LABELS,
+  formatStageDueLine,
+  isStageOverdue,
+} from '@/utils/creditFinancingStages';
 
 export default {
   name: 'CreditBookingDetailPanel',
   props: {
     booking: { type: Object, default: null },
     financingTracker: { type: Object, default: null },
+    /** نافذة رفض التمويل مفتوحة — تمييز الزر */
+    rejectModalOpen: { type: Boolean, default: false },
   },
-  emits: ['evacuation', 'delete', 'edit', 'schedule', 'cancel', 'next-stage', 'reject-financing'],
+  emits: [
+    'evacuation',
+    'delete',
+    'edit',
+    'schedule',
+    'cancel',
+    'next-stage',
+    'reject-financing',
+    'start-title-transfer',
+    'unschedule-title-transfer',
+  ],
   setup(props) {
     const { formatCurrencyAr: formatCurrency, formatDate } = useFormatters();
+    const tick = ref(0);
+    let tickTimer;
+    onMounted(() => {
+      tickTimer = setInterval(() => {
+        tick.value += 1;
+      }, 60000);
+    });
+    onUnmounted(() => {
+      if (tickTimer) clearInterval(tickTimer);
+    });
 
     const summaryTitle = computed(() => {
       const b = props.booking;
@@ -273,8 +316,32 @@ export default {
       return `وحدة: ${unit} / مشروع: ${project}`;
     });
 
+    const isFinancingRejected = computed(() => {
+      const b = props.booking;
+      if (!b) return false;
+      const labelAr = b.credit_status_label_ar && String(b.credit_status_label_ar).trim();
+      if (labelAr && (labelAr.includes('مرفوض') || labelAr.includes('رفض'))) return true;
+      const s = String(b.credit_status ?? b.status ?? '').toLowerCase();
+      return (
+        s.includes('reject') ||
+        s.includes('financing_reject') ||
+        s === 'rejected' ||
+        b.financing_rejected === true
+      );
+    });
+
+    const statusBadgeClass = computed(() =>
+      isFinancingRejected.value ? 'rejected' : 'approved'
+    );
+
     const statusLabel = computed(() => {
       const b = props.booking;
+      if (isFinancingRejected.value) {
+        if (b?.credit_status_label_ar && String(b.credit_status_label_ar).trim()) {
+          return b.credit_status_label_ar;
+        }
+        return 'مرفوض التمويل';
+      }
       if (b?.credit_status_label_ar && String(b.credit_status_label_ar).trim())
         return b.credit_status_label_ar;
       const status = b?.credit_status ?? b?.status ?? 'approved';
@@ -318,17 +385,21 @@ export default {
       return v != null && String(v).trim() ? v : 'غير معين';
     });
 
-    // Use API credit_procedure_steps (key, label_ar, status, date) when present; else financingTracker
-    const completedCount = computed(() => {
-      const steps = props.booking?.credit_procedure_steps;
+    const rawCompletedCount = computed(() => {
+      tick.value;
+      const b = props.booking;
+      const ft = props.financingTracker;
+      if (ft?.all_completed) return 6;
+      if (typeof ft?.completed_stages === 'number') return Math.min(6, ft.completed_stages);
+      const steps = b?.credit_procedure_steps;
       if (Array.isArray(steps) && steps.length > 0) {
         return steps.filter(s => s.status === 'completed' || s.status === 'done' || s.completed)
           .length;
       }
-      const stages = props.financingTracker?.stages ?? [];
-      const completed = props.financingTracker?.completed_stages;
-      if (typeof completed === 'number') return completed;
-      if (Array.isArray(stages)) return stages.filter(s => s.completed || s.done).length;
+      const stages = ft?.stages ?? [];
+      if (Array.isArray(stages) && stages.length > 0) {
+        return stages.filter(s => s?.completed || s?.done || s?.status === 'completed').length;
+      }
       return 0;
     });
 
@@ -345,8 +416,8 @@ export default {
     });
 
     const currentStepIndex = computed(() => {
-      const n = completedCount.value;
-      if (n >= TRACKER_LABELS.length) return -1;
+      const n = rawCompletedCount.value;
+      if (n >= CREDIT_FINANCING_STAGE_LABELS.length) return -1;
       return n;
     });
 
@@ -354,37 +425,99 @@ export default {
       const i = currentStepIndex.value;
       if (i < 0) return '';
       const steps = props.booking?.credit_procedure_steps;
-      if (Array.isArray(steps) && steps[i]) return steps[i].label_ar || TRACKER_LABELS[i];
-      return TRACKER_LABELS[i] || '';
+      if (Array.isArray(steps) && steps[i]) {
+        return steps[i].label_ar || CREDIT_FINANCING_STAGE_LABELS[i];
+      }
+      return CREDIT_FINANCING_STAGE_LABELS[i] || '';
     });
 
     const trackerSteps = computed(() => {
-      const apiSteps = props.booking?.credit_procedure_steps;
-      if (Array.isArray(apiSteps) && apiSteps.length >= 6) {
-        return apiSteps.slice(0, 6).map((s, i) => {
-          const done = s.status === 'completed' || s.status === 'done' || s.completed === true;
-          const delay = Number(s.delay_days ?? s.delay ?? 0);
-          return {
-            label: s.label_ar || TRACKER_LABELS[i],
-            done,
-            delayed: !done && delay > 0,
-          };
+      tick.value;
+      const b = props.booking;
+      const ft = props.financingTracker;
+      const bookingId = b?.id ?? b?.reservation_id;
+      const labels = CREDIT_FINANCING_STAGE_LABELS;
+      const n = rawCompletedCount.value;
+      const apiSteps = b?.credit_procedure_steps;
+      const stages = ft?.stages;
+
+      return labels.map((label, i) => {
+        let done = false;
+        let apiDue = null;
+        let apiCompletedAt = null;
+        if (Array.isArray(apiSteps) && apiSteps[i]) {
+          const s = apiSteps[i];
+          done = s.status === 'completed' || s.status === 'done' || s.completed === true;
+          apiDue = s.due_date ?? s.due_at;
+          apiCompletedAt = s.completed_at ?? s.date;
+        } else if (Array.isArray(stages) && stages[i]) {
+          const s = stages[i];
+          done = !!(s.completed || s.done || s.status === 'completed');
+          apiDue = s.due_date;
+          apiCompletedAt = s.completed_at;
+        } else {
+          done = i < n;
+        }
+        if (ft?.all_completed) done = true;
+
+        const dueLine = formatStageDueLine({
+          stageIndex: i,
+          done,
+          booking: b,
+          bookingId,
+          apiDueDate: apiDue,
+          apiCompletedAt,
         });
-      }
-      const num = completedCount.value;
-      return TRACKER_LABELS.map((label, i) => ({
-        label,
-        done: i < num,
-        delayed: i === num && delayDays.value > 0,
-      }));
+        const overdue = !done &&
+          isStageOverdue({
+            stageIndex: i,
+            done,
+            booking: b,
+            bookingId,
+            apiDueDate: apiDue,
+            apiCompletedAt,
+          });
+        return {
+          label: (Array.isArray(apiSteps) && apiSteps[i]?.label_ar) || label,
+          done,
+          dueLine,
+          isOverdue: overdue,
+        };
+      });
     });
 
-    const allStepsDone = computed(() => trackerSteps.value.every(s => s.done));
+    const allStepsDone = computed(
+      () => props.financingTracker?.all_completed === true || rawCompletedCount.value >= 6
+    );
 
-    const canAdvanceStage = computed(() => currentStepIndex.value >= 0 && !allStepsDone.value);
+    const canAdvanceStage = computed(
+      () => !allStepsDone.value && !isFinancingRejected.value
+    );
 
-    /* API is booking-centric: no tracker_id. Show reject when financing has started (data.financing present). */
-    const showRejectFinancingBtn = computed(() => !!props.financingTracker?.financing);
+    const financingStarted = computed(
+      () =>
+        !!(
+          props.financingTracker?.financing ||
+          props.financingTracker?.current_stage != null ||
+          (Array.isArray(props.financingTracker?.stages) &&
+            props.financingTracker.stages.length > 0) ||
+          rawCompletedCount.value > 0
+        )
+    );
+
+    const showRejectFinancingBtn = computed(
+      () => financingStarted.value && !isFinancingRejected.value
+    );
+
+    const hasTitleTransfer = computed(
+      () => !!(props.booking?.title_transfer?.id || props.booking?.title_transfer_id)
+    );
+
+    const titleTransferScheduled = computed(() => {
+      const tt = props.booking?.title_transfer;
+      if (!tt) return false;
+      return !!(tt.scheduled_date || tt.scheduled_at || String(tt.status || '').includes('schedule'));
+    });
 
     const showEvacuationBtn = computed(() => {
       const s = props.booking?.credit_status ?? props.booking?.status;
@@ -394,6 +527,8 @@ export default {
     return {
       summaryTitle,
       statusLabel,
+      statusBadgeClass,
+      isFinancingRejected,
       paymentMethodLabel,
       purchaseMechanismLabel,
       projectTeamLabel,
@@ -402,6 +537,8 @@ export default {
       allStepsDone,
       showEvacuationBtn,
       showRejectFinancingBtn,
+      hasTitleTransfer,
+      titleTransferScheduled,
       currentStepLabel,
       delayDays,
       canAdvanceStage,
