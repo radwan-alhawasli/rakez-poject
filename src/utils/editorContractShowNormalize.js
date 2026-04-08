@@ -16,8 +16,11 @@ export function normalizeEditorContractShow(raw) {
     o = { ...cd, ...o };
   }
 
-  if (o.data && typeof o.data === 'object' && !o.id && o.data.id != null) {
-    o = { ...o.data, ...o };
+  if (o.data && typeof o.data === 'object' && !o.id) {
+    const nested = /** @type {Record<string, unknown>} */ (o.data);
+    if (nested.id != null) {
+      o = { ...nested, ...o };
+    }
   }
 
   return o;

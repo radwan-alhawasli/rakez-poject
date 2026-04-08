@@ -129,7 +129,7 @@
         :employees="employees"
         :commission-summary="commissionSummary"
         :distributions="distributions"
-        v-model:commission-form="commissionForm"
+        :commission-form="commissionForm"
         v-model:lead-gen-rows="leadGenRows"
         v-model:persuasion-rows="persuasionRows"
         v-model:closing-rows="closingRows"

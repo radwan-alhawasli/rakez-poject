@@ -327,7 +327,6 @@
 
 <script setup>
 const hasExternalBroker = defineModel('hasExternalBroker', { type: Boolean, required: true });
-const commissionForm = defineModel('commissionForm', { type: Object, required: true });
 const leadGenRows = defineModel('leadGenRows', { type: Array, required: true });
 const persuasionRows = defineModel('persuasionRows', { type: Array, required: true });
 const closingRows = defineModel('closingRows', { type: Array, required: true });
@@ -335,6 +334,7 @@ const externalMarketer = defineModel('externalMarketer', { type: Object, require
 const managementPct = defineModel('managementPct', { type: Object, required: true });
 
 defineProps({
+  commissionForm: { type: Object, required: true },
   employees: { type: Array, default: () => [] },
   commissionSummary: { type: Object, default: null },
   distributions: { type: Array, default: () => [] },

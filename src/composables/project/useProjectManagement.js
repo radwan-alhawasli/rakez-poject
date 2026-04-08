@@ -1,4 +1,4 @@
-import { ref, computed, reactive, onMounted, watch } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import contractService from '@/services/contractService';
 import authService from '@/services/authService';
@@ -9,47 +9,11 @@ import { useFormatters } from '@/composables/useFormatters';
 import { useProjectManagementModals } from '@/composables/project/useProjectManagementModals';
 import { getApiErrorMessage } from '@/utils/errorHandler';
 import {
-  computeAgreementTimeline,
-  agreementRemainingPercent,
-} from '@/utils/agreementTimeline.js';
-
-/** عرض متتبع الاتفاقية: أيام متبقية + لون الشريط + نسبة العد التنازلي */
-function contractTimelineDisplay(source) {
-  const { daysLeft, totalDays } = computeAgreementTimeline(source);
-  const daysLeftVal = daysLeft;
-  const contractRemainingLabel =
-    daysLeftVal === null ? '—' : daysLeftVal < 0 ? 'منتهي' : `${daysLeftVal} يوم`;
-  const contractColor =
-    daysLeftVal === null
-      ? 'gray'
-      : daysLeftVal < 0
-        ? 'red'
-        : daysLeftVal <= 7
-          ? 'red'
-          : daysLeftVal <= 30
-            ? 'yellow'
-            : 'green';
-  const contractDurationPercent =
-    daysLeftVal != null && daysLeftVal < 0
-      ? 100
-      : agreementRemainingPercent(daysLeftVal, totalDays);
-  return { daysLeftVal, contractRemainingLabel, contractColor, contractDurationPercent };
-}
-
-function isArchivedProject(p) {
-  return p.status === 'Refused' || p.status === 'Rejected';
-}
-
-/** تبويب «جاهزة للتسويق»: معتمد أو مُعلَم جاهزاً (من الـ API) + وجود وحدات؛ لا يشمل المؤرشف. */
-function isReadyForMarketingTab(p) {
-  if (isArchivedProject(p)) return false;
-  const hasUnits = Array.isArray(p.units) && p.units.length > 0;
-  return hasUnits && p.is_ready_for_marketing === true;
-}
-
-function isNotReadyTab(p) {
-  return !isArchivedProject(p) && !isReadyForMarketingTab(p);
-}
+  contractTimelineDisplay,
+  isReadyForMarketingTab,
+  isNotReadyTab,
+} from '@/composables/project/useProjectManagementHelpers';
+import { useProjectManagementLifecycle } from '@/composables/project/useProjectManagementLifecycle';
 
 export function useProjectManagement() {
   const router = useRouter();
@@ -521,20 +485,7 @@ export function useProjectManagement() {
     fetchProjects();
   };
 
-  // When user types in search, refetch so results come from all pages (search mode)
-  let searchDebounce = null;
-  watch(searchQuery, () => {
-    if (searchDebounce) clearTimeout(searchDebounce);
-    searchDebounce = setTimeout(() => {
-      if (!isEditor.value) {
-        if ((searchQuery.value || '').trim()) currentPage.value = 1;
-        fetchProjects();
-      }
-      searchDebounce = null;
-    }, 350);
-  });
-
-  onMounted(fetchProjects);
+  useProjectManagementLifecycle({ searchQuery, isEditor, currentPage, fetchProjects });
 
   return {
     activeTab,

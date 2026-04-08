@@ -99,6 +99,8 @@ export const removeTeamMember = async (teamId, userId) => {
 
 /**
  * Unwrap list payload from GET /hr/marketers/performance (array or { marketers|items|data }).
+ * @param {import('axios').AxiosResponse} response
+ * @returns {unknown[]}
  */
 function extractMarketerPerformanceList(response) {
   const raw = response?.data?.data ?? response?.data;

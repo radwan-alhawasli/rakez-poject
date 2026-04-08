@@ -266,6 +266,7 @@ import secureStorage from '@/utils/secureStorage';
 import { usePermissions } from '@/composables/usePermissions';
 import { PERMISSIONS } from '@/constants/permissions';
 import { useCitiesDistrictsLookups } from '@/composables/useCitiesDistrictsLookups';
+import { buildExclusiveContractPayload } from '@/modules/projects/views/exclusiveProjectPayload.js';
 
 const { hasPermission } = usePermissions();
 const isLoading = ref(false);
@@ -488,47 +489,12 @@ const handleSubmit = async () => {
   }
   isLoading.value = true;
   try {
-    // POST {{base_url}}/contracts/store — بنية مطابقة للـ API مع نسبة السعي ومصدر السعي
-    const developerName =
-      form.developer_name?.trim() ||
-      (form.developer_id && developers.value.find(d => String(d.id) === String(form.developer_id))?.name) ||
-      '';
-    const developerNumber =
-      form.developer_cr_number?.trim() ||
-      (form.developer_id && developers.value.find(d => String(d.id) === String(form.developer_id))?.commercialRecord) ||
-      '';
-
-    const units = form.unit_rows
-      .filter(r => r.unit_type || (Number(r.units_count) || 0) > 0)
-      .map(r => {
-        const label = unitTypeOptions.find(opt => opt.value === r.unit_type)?.label || r.unit_type || '';
-        return {
-          type: label,
-          count: Number(r.units_count) || 0,
-          price: Number(r.avg_unit_price) || 0,
-        };
-      });
-
-    const pctNum = parseFloat(String(commissionPercentInput.value || '0').replace(',', '.'));
-    const pctValid = Number.isFinite(pctNum) ? pctNum : 0;
-    const payload = {
-      side: form.side,
-      project_name: form.project_name?.trim() || '',
-      developer_name: developerName,
-      developer_number: developerNumber,
-      city: form.city?.trim() || '',
-      city_id: String(form.city_id),
-      district: form.neighborhood?.trim() || '',
-      district_id: String(form.district_id),
-      developer_requiment: form.developer_requiment?.trim() || undefined,
-      project_image_url: form.project_location_url?.trim() || undefined,
-      note: form.note?.trim() || undefined,
-      units,
-      // الباكند يقرأ commission_percent غالباً؛ contractService.createContract يضيفه أيضاً إن وُجد commission_percentage فقط
-      commission_percent: String(pctValid),
-      commission_percentage: pctValid,
-      commission_from: form.commission_from || 'owner',
-    };
+    const payload = buildExclusiveContractPayload({
+      form,
+      developers: developers.value,
+      commissionPercentInput: commissionPercentInput.value,
+      unitTypeOptions,
+    });
 
     await contractService.createContract(payload);
 

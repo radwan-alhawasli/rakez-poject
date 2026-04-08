@@ -136,8 +136,8 @@
         <div class="target-header">
           <div class="target-info">
             <h3 class="target-project-name">{{ target.project_name || 'هدف مبيعات' }}</h3>
-            <p class="target-marketer">{{ getTargetAssigneeLine(target) }}</p>
-            <p class="target-marketer target-assigned-units">{{ getAssignedUnitsLine(target) }}</p>
+            <p class="target-marketer">{{ getTargetAssigneeLine(target, isSalesLeaderView) }}</p>
+            <p class="target-marketer target-assigned-units">{{ getAssignedUnitsLine(target, isSalesLeaderView) }}</p>
           </div>
           <div class="target-value-block">
             <span class="target-value">{{ formatCurrency(target.target_value) }}</span>
@@ -236,70 +236,27 @@
       </div>
     </div>
 
-    <!-- نافذة إضافة مسوقين للمشروع -->
-    <div v-if="assignTarget" class="assign-overlay" @click.self="closeAssignMarketers">
-      <div class="assign-modal">
-        <div class="assign-modal-header">
-          <h3>إضافة مسوقين للمشروع</h3>
-          <button type="button" class="assign-close" aria-label="إغلاق" @click="closeAssignMarketers">&times;</button>
-        </div>
-        <p class="assign-project-name">{{ assignTarget.project_name || 'هدف مبيعات' }}</p>
-        <div class="assign-marketers-list">
-          <label v-for="m in teamMembersList" :key="m.id" class="assign-marketer-row">
-            <input type="checkbox" :value="m.id" v-model="selectedMarketerIds" />
-            <span>{{ m.name }}</span>
-          </label>
-        </div>
-        <p v-if="teamMembersList.length === 0 && !loadingTeamMembers" class="assign-empty">لا يوجد مسوقون في الفريق.</p>
-        <p v-if="loadingTeamMembers" class="assign-loading">جاري تحميل المسوقين...</p>
-        <div class="assign-modal-actions">
-          <button type="button" class="btn-secondary" @click="closeAssignMarketers">إلغاء</button>
-          <button type="button" class="btn-add" :disabled="selectedMarketerIds.length === 0 || assignSaving" @click="saveAssignMarketers">
-            {{ assignSaving ? 'جاري الحفظ...' : `حفظ (${selectedMarketerIds.length})` }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <SalesTargetsAssignMarketersModal
+      v-if="assignTarget"
+      v-model:selected-marketer-ids="selectedMarketerIds"
+      :project-name="assignTarget.project_name || 'هدف مبيعات'"
+      :team-members-list="teamMembersList"
+      :loading-team-members="loadingTeamMembers"
+      :assign-saving="assignSaving"
+      @close="closeAssignMarketers"
+      @save="saveAssignMarketers"
+    />
 
-    <!-- مودال الوحدات المعينة + المسؤول (عند الضغط على بطاقة الهدف) -->
-    <div v-if="showUnitsModal" class="assign-overlay" @click.self="closeUnitsModal">
-      <div class="units-modal assign-modal">
-        <div class="assign-modal-header">
-          <h3>وحداتي المعينة</h3>
-          <button type="button" class="assign-close" aria-label="إغلاق" @click="closeUnitsModal">&times;</button>
-        </div>
-        <p class="assign-project-name">{{ unitsModalProjectName }}</p>
-        <LoadingSpinner v-if="unitsModalLoading" text="جاري تحميل الوحدات المعينة..." />
-        <div v-else-if="unitsModalError" class="units-modal-error">
-          <p>{{ unitsModalError }}</p>
-        </div>
-        <div v-else-if="unitsModalUnfilteredCount === 0" class="units-modal-empty">
-          <p>لا توجد أهداف أو وحدات مرتبطة بهذا المشروع في استجابة الخادم.</p>
-        </div>
-        <div v-else-if="filteredUnitsModalRows.length === 0" class="units-modal-empty">
-          <p>لا توجد وحدات معينة في هذا المشروع ضمن البيانات المعروضة.</p>
-        </div>
-        <div v-else class="units-modal-table-wrap">
-          <table class="units-modal-table">
-            <thead>
-              <tr>
-                <th>رقم الوحدة</th>
-                <th v-if="isSalesLeaderView">موظف المبيعات (المستلم)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(row, idx) in filteredUnitsModalRows" :key="(row.unit_id != null ? String(row.unit_id) : 'u') + '-' + idx">
-                <td>{{ row.unit_number }}</td>
-                <td v-if="isSalesLeaderView">{{ row.marketer_name }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="assign-modal-actions">
-          <button type="button" class="btn-secondary" @click="closeUnitsModal">إغلاق</button>
-        </div>
-      </div>
-    </div>
+    <SalesTargetsUnitsModal
+      v-if="showUnitsModal"
+      :project-name="unitsModalProjectName"
+      :loading="unitsModalLoading"
+      :error="unitsModalError"
+      :unfiltered-count="unitsModalUnfilteredCount"
+      :rows="filteredUnitsModalRows"
+      :is-sales-leader-view="isSalesLeaderView"
+      @close="closeUnitsModal"
+    />
   </div>
 </template>
 
@@ -307,7 +264,15 @@
 import { ref, computed, onMounted, onUnmounted, watch, inject, unref } from 'vue';
 import { useRoute } from 'vue-router';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import { useSalesTargets, normalizeSalesTargetItem, getSalesTargetPatchId } from '@/composables/sales/useSalesTargets';
+import SalesTargetsAssignMarketersModal from '@/modules/sales/tabs/targets/SalesTargetsAssignMarketersModal.vue';
+import SalesTargetsUnitsModal from '@/modules/sales/tabs/targets/SalesTargetsUnitsModal.vue';
+import { useSalesTargets, normalizeSalesTargetItem } from '@/composables/sales/useSalesTargets';
+import {
+  getTargetStableId,
+  getTargetAssigneeLine,
+  getAssignedUnitsLine,
+  isTargetCompleted,
+} from '@/modules/sales/tabs/targets/salesTargetsTabDisplay.js';
 import { useSalesTeam } from '@/composables/sales/useSalesTeam';
 import authService from '@/services/authService';
 import salesService from '@/services/salesService';
@@ -390,15 +355,6 @@ const displayTargets = computed(() => {
   return list.filter((t) => Number(t.marketer_id) === currentUserId.value);
 });
 
-/** مفتاح Vue فريد لكل بطاقة + مطابقة قائمة الخيارات (لوحات منفصلة) */
-function getTargetStableId(target, index = 0) {
-  const rawId = getSalesTargetPatchId(target);
-  const idPart = rawId != null && rawId !== '' ? String(rawId) : 'noid';
-  const c = target?.contract_id ?? '';
-  const m = target?.marketer_id ?? '';
-  return `${idPart}-${c}-${m}-i${index}`;
-}
-
 function canUpdateTarget(target) {
   if (!target) return false;
   const isManager = isSalesLeaderView.value || hasPermission('sales.team.manage');
@@ -407,28 +363,6 @@ function canUpdateTarget(target) {
   if (!hasPermission('sales.targets.update')) return false;
   if (currentUserId.value == null) return false;
   return Number(target.marketer_id) === currentUserId.value;
-}
-
-function getTargetAssigneeLine(target) {
-  if (isSalesLeaderView.value) return target.marketer_name || '—';
-  return target.assigned_by ? `أُسند لك من: ${target.assigned_by}` : 'أُسند لك هذا الهدف';
-}
-
-function getAssignedUnitsLine(target) {
-  const units = Array.isArray(target?.units) ? target.units : [];
-  const prefix = isSalesLeaderView.value ? 'نطاق الهدف' : 'المسند لك';
-  if (units.length > 0) {
-    const unitNumbers = units.map((unit) => unit?.unit_number).filter(Boolean);
-    if (unitNumbers.length > 0) return `${prefix}: ${unitNumbers.join('، ')}`;
-  }
-  if (target?.unit_number) return `${prefix}: ${target.unit_number}`;
-  return `${prefix}: كامل المشروع`;
-}
-
-function isTargetCompleted(target) {
-  const status = String(target?.status || '').toLowerCase();
-  const label = String(target?.status_label_ar || '').trim();
-  return status === 'completed' || status === 'achieved' || status === 'done' || label === 'منجز';
 }
 
 /**

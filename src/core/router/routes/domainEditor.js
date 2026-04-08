@@ -3,12 +3,12 @@
  * @module core/router/routes/domainEditor
  */
 
-import { ROLE_EDITOR } from '@/constants/roles';
+import { ROLE_ADMIN, ROLE_EDITOR } from '@/constants/roles';
 
 export default {
   path: 'editor',
   component: () => import('@/layouts/EditorLayout.vue'),
-  meta: { roles: [ROLE_EDITOR] },
+  meta: { roles: [ROLE_ADMIN, ROLE_EDITOR] },
   children: [
     { path: '', name: 'Editor', redirect: { name: 'EditorDashboard' } },
     { path: 'dashboard', name: 'EditorDashboard', component: () => import('@/modules/editor/views/EditorDashboardView.vue') },
