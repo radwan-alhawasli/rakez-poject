@@ -6,7 +6,7 @@
         <p class="section-subtitle">مراجعة واعتماد وتتبع طلبات الحجز المقدمة من المسوقين.</p>
       </div>
     </div>
-    <MobileFilterSheet>
+    <MobileFilterSheet v-if="!(selectedBooking && selectedBookingId())">
       <div class="credit-bookings-six-tabs">
         <button
           type="button"
@@ -57,13 +57,16 @@
       <CreditBookingDetailPanel
         :booking="selectedBooking"
         :financing-tracker="selectedFinancingTracker"
+        :reject-modal-open="showRejectFinancingModal"
         @evacuation="onBookingEvacuation"
         @delete="onBookingDelete"
         @edit="onBookingEdit"
         @schedule="onBookingSchedule"
+        @unschedule-title-transfer="onUnscheduleTitleTransfer"
         @cancel="onBookingCancel"
         @next-stage="onBookingNextStage"
         @reject-financing="onBookingRejectFinancing"
+        @start-title-transfer="onStartTitleTransfer"
       />
     </div>
     <template v-else>
@@ -285,11 +288,109 @@
         </div>
       </template>
     </AppModal>
+
+    <AppModal
+      v-if="showEditFinancingStageModal"
+      :open="true"
+      title="تعديل مرحلة التمويل"
+      @update:open="(v) => { if (v === false) closeEditFinancingStageModal() }"
+    >
+      <template #default>
+        <div class="credit-edit-stage-modal">
+          <p class="credit-edit-stage-hint">
+            يتم الحفظ عبر API تحديث المرحلة (PATCH). للمرحلة 1: اسم البنك مطلوب؛ للمرحلة 4: اسم
+            المقيم أو ملاحظات.
+          </p>
+          <div class="form-group">
+            <label class="form-label">المرحلة</label>
+            <select v-model.number="editFinancingStageNumber" class="form-input">
+              <option v-for="idx in [1, 2, 3, 4, 5, 6]" :key="idx" :value="idx">
+                {{ idx }}. {{ CREDIT_FINANCING_STAGE_LABELS[idx - 1] }}
+              </option>
+            </select>
+          </div>
+          <template v-if="editFinancingStageNumber === 1">
+            <div class="form-group">
+              <label class="form-label">اسم البنك <span class="credit-req">*</span></label>
+              <input
+                v-model="editFinancingForm.bank_name"
+                type="text"
+                class="form-input"
+                placeholder="اسم البنك"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">راتب العميل</label>
+              <input
+                v-model="editFinancingForm.client_salary"
+                type="text"
+                class="form-input"
+                placeholder="اختياري"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">نوع التوظيف</label>
+              <input
+                v-model="editFinancingForm.employment_type"
+                type="text"
+                class="form-input"
+                placeholder="اختياري"
+              />
+            </div>
+          </template>
+          <template v-else-if="editFinancingStageNumber === 4">
+            <div class="form-group">
+              <label class="form-label">اسم المقيم</label>
+              <input
+                v-model="editFinancingForm.appraiser_name"
+                type="text"
+                class="form-input"
+                placeholder="اسم المقيم"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">ملاحظات</label>
+              <textarea
+                v-model="editFinancingForm.notes"
+                class="form-input"
+                rows="2"
+                placeholder="اختياري"
+              />
+            </div>
+          </template>
+          <template v-else>
+            <div class="form-group">
+              <label class="form-label">ملاحظات / تفاصيل التحديث</label>
+              <textarea
+                v-model="editFinancingForm.notes"
+                class="form-input"
+                rows="2"
+                placeholder="أدخل البيانات المطلوبة لهذه المرحلة"
+              />
+            </div>
+          </template>
+        </div>
+      </template>
+      <template #footer>
+        <div class="modal-footer">
+          <button class="btn-secondary" type="button" @click="closeEditFinancingStageModal">
+            إلغاء
+          </button>
+          <button
+            class="btn-primary"
+            type="button"
+            :disabled="isSavingFinancingStage"
+            @click="onSubmitEditFinancingStage"
+          >
+            {{ isSavingFinancingStage ? 'جاري الحفظ...' : 'حفظ' }}
+          </button>
+        </div>
+      </template>
+    </AppModal>
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
 import Pagination from '@/components/Pagination.vue';
 import CreditBookingDetailPanel from '@/modules/credit/components/CreditBookingDetailPanel.vue';
 import NegotiationUpdateModal from '@/modules/credit/components/NegotiationUpdateModal.vue';
@@ -300,6 +401,7 @@ import MobileFilterSheet from '@/components/MobileFilterSheet.vue';
 import RowActions from '@/components/RowActions.vue';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useCreditBookings } from '@/composables/credit/useCreditBookings';
+import { CREDIT_FINANCING_STAGE_LABELS } from '@/utils/creditFinancingStages';
 
 const {
   isLoading,
@@ -320,6 +422,10 @@ const {
   isAdvancing,
   nextStageLabel,
   showRejectFinancingModal,
+  showEditFinancingStageModal,
+  editFinancingStageNumber,
+  editFinancingForm,
+  isSavingFinancingStage,
   rejectFinancingReason,
   rejectFinancingError,
   isRejectingFinancing,
@@ -337,7 +443,11 @@ const {
   onBookingEvacuation,
   onBookingDelete,
   onBookingEdit,
+  onSubmitEditFinancingStage,
+  closeEditFinancingStageModal,
   onBookingSchedule,
+  onStartTitleTransfer,
+  onUnscheduleTitleTransfer,
   showScheduleDateModal,
   scheduleDateInput,
   confirmScheduleDate,
@@ -361,7 +471,16 @@ const onSearch = value => {
   loadBookingsForCurrentTab();
 };
 
-onMounted(() => {
-  loadBookingsForCurrentTab();
-});
 </script>
+
+<style scoped>
+.credit-edit-stage-hint {
+  font-size: 13px;
+  color: var(--color-dark-gray);
+  margin: 0 0 12px 0;
+  line-height: 1.45;
+}
+.credit-req {
+  color: #b91c1c;
+}
+</style>
