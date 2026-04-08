@@ -4,13 +4,18 @@ import { useFormatters } from '@/composables/useFormatters';
 import salesService from '@/services/salesService';
 import { usePermissions } from '@/composables/usePermissions';
 import logger from '@/utils/logger';
+import { normalizeVoucherDataPayload } from '@/utils/reservationVoucherNormalize';
+import {
+  blobFromVoucherAssetDescriptor,
+  guessVoucherFilename,
+  pickVoucherAssetDescriptor,
+} from '@/utils/reservationVoucherAsset';
 import authService from '@/services/authService';
 import {
   getProjectManagementReservations,
   confirmProjectManagementReservation,
   cancelProjectManagementReservation,
-  downloadProjectManagementReservationVoucher,
-  getProjectManagementReservationVoucherData,
+  fetchProjectManagementReservationVoucherDataBlob,
 } from '@/services/teamService';
 
 /** إدارة المشاريع (2) أو المدير (1): قائمة الحجوزات من project_management وليس sales/mine */
@@ -182,49 +187,94 @@ export function useReservationsView() {
     detailItem.value = item;
   };
 
+  const downloadingReservationId = ref(null);
+
+  const isDownloadingReservation = rid =>
+    downloadingReservationId.value != null &&
+    String(downloadingReservationId.value) === String(rid);
+
+  /** @param {Uint8Array|ArrayBuffer} pdfBytes */
+  function triggerPdfDownloadFromBytes(pdfBytes, filename) {
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /** @param {Blob} blob */
+  function triggerPdfDownloadFromBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /**
+   * مسار إدارة المشاريع: GET .../voucher-data فقط (blob) — صورة/PDF أو JSON فيه رابط/صورة.
+   */
+  const downloadPmVoucherFromDataEndpoint = async id => {
+    const { blob, contentType } = await fetchProjectManagementReservationVoucherDataBlob(id);
+    const ct = (contentType || blob.type || '').toLowerCase();
+    const ab = await blob.arrayBuffer();
+
+    const handleJsonText = async rawText => {
+      let payload;
+      try {
+        payload = JSON.parse(rawText);
+      } catch {
+        toast.error('تعذر قراءة بيانات السند');
+        return;
+      }
+      const data = payload?.data ?? payload;
+      const obj = data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+      const asset = pickVoucherAssetDescriptor(obj);
+      if (asset) {
+        const b = await blobFromVoucherAssetDescriptor(asset);
+        triggerPdfDownloadFromBlob(b, guessVoucherFilename(id, b));
+        toast.success('تم تنزيل السند');
+        return;
+      }
+      toast.error('لا يوجد ملف سند أو رابط في الاستجابة');
+    };
+
+    if (ct.includes('json') || ct.includes('text/plain')) {
+      await handleJsonText(new TextDecoder().decode(ab));
+      return;
+    }
+
+    const head = new TextDecoder('utf-8', { fatal: false }).decode(
+      ab.slice(0, Math.min(256, ab.byteLength))
+    );
+    if (head.trimStart().startsWith('{')) {
+      await handleJsonText(new TextDecoder().decode(ab));
+      return;
+    }
+
+    const outBlob = new Blob([ab], { type: blob.type || 'application/octet-stream' });
+    triggerPdfDownloadFromBlob(outBlob, guessVoucherFilename(id, outBlob));
+    toast.success('تم تنزيل السند');
+  };
+
   const downloadVoucher = async reservation => {
+    const id = reservation.reservation_id || reservation.id;
+    if (id == null || id === '') {
+      toast.error('تعذر تحديد الحجز');
+      return;
+    }
+    downloadingReservationId.value = id;
     try {
-      const id = reservation.reservation_id || reservation.id;
-      if (isPmReservationsList.value && id != null) {
-        try {
-          const blob = await downloadProjectManagementReservationVoucher(id);
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `voucher-${id}.pdf`;
-          a.click();
-          URL.revokeObjectURL(url);
-          toast.success('تم تنزيل السند');
-          return;
-        } catch (pmErr) {
-          logger.warn('PM voucher blob failed, trying voucher-data', pmErr);
-        }
-        try {
-          const { generateReservationVoucherPdf } = await import('@/services/pdfService');
-          const vd = await getProjectManagementReservationVoucherData(id);
-          if (vd?.reservation != null) {
-            const pdfBytes = await generateReservationVoucherPdf(
-              vd.reservation,
-              vd.project ?? {},
-              vd.unit ?? {},
-              vd.employee ?? {}
-            );
-            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `voucher-${id}.pdf`;
-            a.click();
-            URL.revokeObjectURL(url);
-            toast.success('تم تنزيل السند');
-            return;
-          }
-        } catch (e) {
-          logger.warn('PM voucher-data failed', e);
-        }
+      if (isPmReservationsList.value) {
+        await downloadPmVoucherFromDataEndpoint(id);
+        return;
       }
 
       const { generateReservationVoucherPdf } = await import('@/services/pdfService');
+
       let reservationData;
       let project;
       let unit;
@@ -232,15 +282,28 @@ export function useReservationsView() {
       try {
         const { getReservationVoucherData } = await import('@/services/pdfApi');
         const data = await getReservationVoucherData(id);
-        if (data?.reservation != null) {
-          reservationData = data.reservation;
-          project = data.project ?? {};
-          unit = data.unit ?? {};
-          employee = data.employee ?? {};
+        const n = normalizeVoucherDataPayload(data);
+        if (n?.reservation != null) {
+          reservationData = n.reservation;
+          project = n.project ?? {};
+          unit = n.unit ?? {};
+          employee = n.employee ?? {};
         }
       } catch (_) {
         // Fallback when helper endpoint is unavailable.
       }
+
+      if (reservationData == null) {
+        try {
+          const blob = await salesService.downloadVoucher(id);
+          triggerPdfDownloadFromBlob(blob, guessVoucherFilename(id, blob));
+          toast.success('تم تنزيل السند');
+          return;
+        } catch (_) {
+          // Continue to detail + client PDF.
+        }
+      }
+
       if (reservationData == null) {
         let detail = reservation;
         try {
@@ -269,16 +332,13 @@ export function useReservationsView() {
         };
       }
       const pdfBytes = await generateReservationVoucherPdf(reservationData, project, unit, employee);
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `voucher-${id}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
+      triggerPdfDownloadFromBytes(pdfBytes, `voucher-${id}.pdf`);
+      toast.success('تم تنزيل السند');
     } catch (e) {
       logger.error('Error downloading voucher:', e);
       toast.error('حدث خطأ أثناء تحميل السند');
+    } finally {
+      downloadingReservationId.value = null;
     }
   };
 
@@ -463,6 +523,7 @@ export function useReservationsView() {
     reservationNeedsConfirm,
     openDetails,
     downloadVoucher,
+    isDownloadingReservation,
     confirmRes,
     cancelRes,
     convertWaiting,

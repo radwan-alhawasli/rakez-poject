@@ -26,7 +26,7 @@
           </thead>
           <tbody>
             <tr v-for="(row, idx) in rows" :key="(row.unit_id != null ? String(row.unit_id) : 'u') + '-' + idx">
-              <td>{{ row.unit_number }}</td>
+              <td>{{ row.unit_number != null && String(row.unit_number).trim() !== '' ? row.unit_number : '—' }}</td>
               <td v-if="isSalesLeaderView">{{ row.marketer_name }}</td>
             </tr>
           </tbody>

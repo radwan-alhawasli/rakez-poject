@@ -104,6 +104,7 @@
               <button
                 type="button"
                 class="btn-edit"
+                :disabled="isDownloadingReservation(reservation.reservation_id || reservation.id)"
                 @click="downloadVoucher(reservation)"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -111,7 +112,11 @@
                   <polyline points="7 10 12 15 17 10"></polyline>
                   <line x1="12" y1="15" x2="12" y2="3"></line>
                 </svg>
-                تحميل السند
+                {{
+                  isDownloadingReservation(reservation.reservation_id || reservation.id)
+                    ? 'جاري التحميل...'
+                    : 'تحميل السند'
+                }}
               </button>
               <button
                 v-if="reservationNeedsConfirm(reservation) && canConfirm"
@@ -255,6 +260,23 @@
                 عرض التفاصيل
               </button>
               <button
+                type="button"
+                class="btn-edit"
+                :disabled="isDownloadingReservation(neg.reservation_id || neg.id)"
+                @click="downloadVoucher(neg)"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                {{
+                  isDownloadingReservation(neg.reservation_id || neg.id)
+                    ? 'جاري التحميل...'
+                    : 'تحميل السند'
+                }}
+              </button>
+              <button
                 v-if="canApproveNeg"
                 type="button"
                 class="btn-confirm"
@@ -327,6 +349,7 @@ const {
   reservationNeedsConfirm,
   openDetails,
   downloadVoucher,
+  isDownloadingReservation,
   confirmRes,
   cancelRes,
   convertWaiting,

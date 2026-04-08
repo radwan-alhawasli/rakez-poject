@@ -415,13 +415,20 @@ async function openUnitsModal(target) {
   try {
     const data = await salesService.getTargetsByProject(contractId);
     const list = Array.isArray(data) ? data : [];
+    const pickUnitLabel = (t, u) => {
+      const raw =
+        (u && (u.unit_number ?? u.unit_no ?? u.number)) ??
+        (t && (t.unit_number ?? t.unit_no ?? t.number));
+      const s = raw != null && raw !== '' ? String(raw).trim() : '';
+      return s || '—';
+    };
     const rows = list.map(normalizeSalesTargetItem).flatMap((t) => {
       const units = Array.isArray(t.units) ? t.units : [];
       if (units.length === 0) {
         return [
           {
             unit_id: t.contract_unit_id ?? t.unit_id ?? t.target_id ?? t.id,
-            unit_number: t.unit_number ?? '—',
+            unit_number: pickUnitLabel(t, null),
             marketer_id: t.marketer_id,
             marketer_name: t.marketer_name ?? '—',
           },
@@ -429,7 +436,7 @@ async function openUnitsModal(target) {
       }
       return units.map((u) => ({
         unit_id: u.unit_id ?? u.id ?? u.contract_unit_id,
-        unit_number: u.unit_number ?? u.unit_no ?? u.number ?? '—',
+        unit_number: pickUnitLabel(t, u),
         marketer_id: t.marketer_id,
         marketer_name: t.marketer_name ?? '—',
       }));

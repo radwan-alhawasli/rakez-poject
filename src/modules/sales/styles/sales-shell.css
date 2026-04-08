@@ -1119,16 +1119,14 @@
   height: 18px;
 }
 
-.sales-view .my-reservations-pm .btn-details
-
+.sales-view .my-reservations-pm .btn-details,
 .sales-view .my-reservations-pm .btn-edit {
   background: var(--color-white);
   border: 1px solid var(--color-medium-gray);
   color: #475569;
 }
 
-.sales-view .my-reservations-pm .btn-details:hover
-
+.sales-view .my-reservations-pm .btn-details:hover,
 .sales-view .my-reservations-pm .btn-edit:hover {
   border-color: var(--color-gold);
   color: var(--color-gold);

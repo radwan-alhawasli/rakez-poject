@@ -1,8 +1,9 @@
 /**
- * PDF Data API — Backend returns JSON only; frontend builds the PDF.
- * All endpoints return application/json. See docs/PDF_DATA_SHAPES.md for response shapes.
+ * PDF Data API — Most endpoints return JSON for client-side PDF generation.
+ * See docs/PDF_DATA_SHAPES.md for JSON shapes. Some endpoints return PDF blobs (e.g. fill-data/pdf).
  */
 import apiClient from '@/api/apiClient';
+import { ensurePdfBlob } from '@/services/hr/hrPdfBlob';
 
 /**
  * @param {any} response
@@ -21,6 +22,32 @@ function extractData(response) {
 export async function getContractFillData(contractId) {
   const response = await apiClient.get(`/contracts/${contractId}/fill-data`);
   return extractData(response);
+}
+
+/**
+ * Completed exclusive contract PDF from server (filled template).
+ * GET /api/contracts/:id/fill-data/pdf
+ * @param {string|number} contractId
+ * @returns {Promise<{ blob: Blob, filename?: string }>}
+ */
+export async function downloadContractFillDataPdf(contractId) {
+  const id = contractId != null ? String(contractId).trim() : '';
+  if (!id) {
+    const err = new Error('معرف العقد مطلوب');
+    throw err;
+  }
+  const response = await apiClient.get(`/contracts/${id}/fill-data/pdf`, {
+    responseType: 'blob',
+    headers: { Accept: 'application/pdf' },
+  });
+  const blob = await ensurePdfBlob(response);
+  let filename;
+  const contentDisposition = response?.headers?.['content-disposition'];
+  if (contentDisposition) {
+    const match = contentDisposition.match(/filename="?([^";]+)"?/);
+    if (match) filename = match[1].trim();
+  }
+  return { blob, filename };
 }
 
 /**
