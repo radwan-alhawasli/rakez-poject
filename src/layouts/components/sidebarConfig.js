@@ -67,6 +67,7 @@ const adminItems = [
   { to: '/developers', label: 'المطورون', tooltip: 'المطورون', icon: ICONS.teams },
   { to: '/team-management', label: 'إدارة الفرق', tooltip: 'إدارة الفرق', icon: ICONS.teamCheck },
   { to: '/users', label: 'إدارة المستخدمين', tooltip: 'إدارة المستخدمين', icon: ICONS.users },
+  { to: '/admin/locations', label: 'المدن والأحياء', tooltip: 'إدارة المدن والأحياء', icon: ICONS.target },
   { ...COMMON_ITEMS.tasks },
   { to: '/contract-form', label: 'إحضار المشاريع', tooltip: 'إحضار المشاريع', icon: ICONS.edit },
   { to: '/reservations', label: 'الحجوزات', tooltip: 'الحجوزات', icon: ICONS.check },

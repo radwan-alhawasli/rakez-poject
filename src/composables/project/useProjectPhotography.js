@@ -10,6 +10,8 @@ export function useProjectPhotography(projectId) {
   const isEditingPending = ref(false);
   const showRejectModal = ref(false);
   const rejectReasonInput = ref('');
+  /** نافذة لعرض سبب الرفض فقط (زر واضح بجانب الشارة) */
+  const showRejectionReasonModal = ref(false);
 
   const photographyForm = reactive({
     image_url: '',
@@ -137,9 +139,8 @@ export function useProjectPhotography(projectId) {
       resolve: async () => {
         try {
           await contractService.approvePhotography(projectId, { approved: '1' });
-          photographyForm.status = 'approved';
-          photographyForm.rejection_reason = null;
           toast.success('تم قبول الصور بنجاح');
+          await loadPhotography();
         } catch (error) {
           logger.error('Approval error:', error);
           showApiError(error, 'حدث خطأ أثناء قبول الصور');
@@ -165,15 +166,22 @@ export function useProjectPhotography(projectId) {
         approved: '0',
         comment: reason,
       });
-      photographyForm.status = 'rejected';
-      photographyForm.rejection_reason = reason;
       showRejectModal.value = false;
       toast.success('تم رفض الصور');
+      await loadPhotography();
     } catch (error) {
       logger.error(error);
       showApiError(error, 'حدث خطأ أثناء رفض الصور');
     }
   };
+
+  function openRejectionReasonModal() {
+    showRejectionReasonModal.value = true;
+  }
+
+  function closeRejectionReasonModal() {
+    showRejectionReasonModal.value = false;
+  }
 
   return {
     isLoading,
@@ -182,6 +190,9 @@ export function useProjectPhotography(projectId) {
     isEditingPending,
     showRejectModal,
     rejectReasonInput,
+    showRejectionReasonModal,
+    openRejectionReasonModal,
+    closeRejectionReasonModal,
     showConfirmModal,
     confirmModalConfig,
     onConfirmModalConfirm,

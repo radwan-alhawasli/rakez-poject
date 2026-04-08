@@ -1,0 +1,137 @@
+import apiClient from '@/api/apiClient';
+import { handleServiceError } from '@/utils/serviceErrorHandler';
+import { extractPaginatedData } from '@/utils/paginationUtils';
+
+/**
+ * Normalize list responses from GET /admin/cities and GET /admin/districts.
+ * @param {import('axios').AxiosResponse} response
+ * @returns {unknown[]}
+ */
+function listFromResponse(response) {
+  const { items } = extractPaginatedData(response, []);
+  if (Array.isArray(items) && items.length) return items;
+  const raw = response?.data;
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw?.data)) return raw.data;
+  return [];
+}
+
+/**
+ * Normalize single-resource responses.
+ * @param {import('axios').AxiosResponse} response
+ * @returns {unknown}
+ */
+function oneFromResponse(response) {
+  const raw = response?.data;
+  if (raw && typeof raw === 'object' && 'data' in raw && raw.data != null) return raw.data;
+  return raw;
+}
+
+// ——— Cities: POST/GET /admin/cities, GET/PUT/DELETE /admin/cities/:id ———
+
+export async function listAdminCities() {
+  try {
+    const r = await apiClient.get('/admin/cities');
+    return listFromResponse(r);
+  } catch (error) {
+    return handleServiceError(error, 'List admin cities', 'get', []);
+  }
+}
+
+export async function createAdminCity(payload) {
+  try {
+    const r = await apiClient.post('/admin/cities', payload);
+    return r.data;
+  } catch (error) {
+    return handleServiceError(error, 'Create city', 'post', null);
+  }
+}
+
+export async function getAdminCity(cityId) {
+  try {
+    const r = await apiClient.get(`/admin/cities/${cityId}`);
+    return oneFromResponse(r);
+  } catch (error) {
+    return handleServiceError(error, 'Get city', 'get', null);
+  }
+}
+
+export async function updateAdminCity(cityId, payload) {
+  try {
+    const r = await apiClient.put(`/admin/cities/${cityId}`, payload);
+    return r.data;
+  } catch (error) {
+    return handleServiceError(error, 'Update city', 'put', null);
+  }
+}
+
+export async function deleteAdminCity(cityId) {
+  try {
+    const r = await apiClient.delete(`/admin/cities/${cityId}`);
+    return r.data;
+  } catch (error) {
+    return handleServiceError(error, 'Delete city', 'delete', null);
+  }
+}
+
+// ——— Districts: POST/GET /admin/districts, GET/PATCH/DELETE /admin/districts/:id ———
+
+export async function listAdminDistricts() {
+  try {
+    const r = await apiClient.get('/admin/districts');
+    return listFromResponse(r);
+  } catch (error) {
+    return handleServiceError(error, 'List admin districts', 'get', []);
+  }
+}
+
+export async function createAdminDistrict(payload) {
+  try {
+    const r = await apiClient.post('/admin/districts', payload);
+    return r.data;
+  } catch (error) {
+    return handleServiceError(error, 'Create district', 'post', null);
+  }
+}
+
+export async function getAdminDistrict(districtId) {
+  try {
+    const r = await apiClient.get(`/admin/districts/${districtId}`);
+    return oneFromResponse(r);
+  } catch (error) {
+    return handleServiceError(error, 'Get district', 'get', null);
+  }
+}
+
+export async function updateAdminDistrict(districtId, payload) {
+  try {
+    const r = await apiClient.patch(`/admin/districts/${districtId}`, payload);
+    return r.data;
+  } catch (error) {
+    return handleServiceError(error, 'Update district', 'patch', null);
+  }
+}
+
+export async function deleteAdminDistrict(districtId) {
+  try {
+    const r = await apiClient.delete(`/admin/districts/${districtId}`);
+    return r.data;
+  } catch (error) {
+    return handleServiceError(error, 'Delete district', 'delete', null);
+  }
+}
+
+const adminLocationsService = {
+  listAdminCities,
+  createAdminCity,
+  getAdminCity,
+  updateAdminCity,
+  deleteAdminCity,
+  listAdminDistricts,
+  createAdminDistrict,
+  getAdminDistrict,
+  updateAdminDistrict,
+  deleteAdminDistrict,
+};
+
+export default adminLocationsService;

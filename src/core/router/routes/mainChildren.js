@@ -58,6 +58,12 @@ export default [
     component: () => import('@/modules/hr/views/UsersView.vue'),
     meta: { roles: [ROLE_ADMIN, ROLE_HR], permissions: [PERMISSIONS.HR_USERS_CREATE] },
   },
+  {
+    path: 'admin/locations',
+    name: 'AdminLocations',
+    component: () => import('@/modules/admin/views/AdminLocationsView.vue'),
+    meta: { roles: [ROLE_ADMIN] },
+  },
   { path: 'exclusive-request', name: 'ExclusiveRequest', component: () => import('@/modules/projects/views/ExclusiveProjectView.vue') },
   { path: 'my-requests', name: 'MyRequests', component: () => import('@/modules/projects/views/MyRequestsView.vue') },
   {

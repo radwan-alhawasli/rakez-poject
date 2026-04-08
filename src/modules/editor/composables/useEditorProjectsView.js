@@ -1,4 +1,5 @@
 import { ref, computed, watch, onMounted } from 'vue';
+import { watchDebounced } from '@vueuse/core';
 import { useRoute, useRouter } from 'vue-router';
 import authService from '@/services/authService';
 import { useEditorProjects } from '@/modules/editor/composables/useEditorProjects';
@@ -219,14 +220,14 @@ export function useEditorProjectsView() {
     fetchMontageLinksForProjects(afterMontage.value.map(p => p.id));
   });
 
-  watch(
+  watchDebounced(
     selectedProject,
     async p => {
       if (!p) return;
       montageForm.value = { image_url: '', video_url: '', description: '' };
       await Promise.all([fetchDetail(p.id), fetchMontage(p.id)]);
     },
-    { flush: 'post' }
+    { debounce: 60, flush: 'post' }
   );
 
   function applyMontageFormFromDetail() {
@@ -247,14 +248,18 @@ export function useEditorProjectsView() {
     applyMontageFormFromDetail();
   }, { deep: true });
 
-  watch(
+  watch(seeMoreProject, p => {
+    if (!p?.id) {
+      seeMoreDetail.value = null;
+      seeMoreMontage.value = null;
+      seeMoreLoading.value = false;
+    }
+  });
+
+  watchDebounced(
     seeMoreProject,
     async p => {
-      if (!p?.id) {
-        seeMoreDetail.value = null;
-        seeMoreMontage.value = null;
-        return;
-      }
+      if (!p?.id) return;
       seeMoreLoading.value = true;
       seeMoreDetail.value = null;
       seeMoreMontage.value = null;
@@ -283,7 +288,7 @@ export function useEditorProjectsView() {
         seeMoreLoading.value = false;
       }
     },
-    { flush: 'post' }
+    { debounce: 80, flush: 'post' }
   );
 
   watch(activeTab, t => {

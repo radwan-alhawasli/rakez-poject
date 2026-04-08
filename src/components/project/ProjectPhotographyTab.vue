@@ -29,6 +29,15 @@
             }}
           </span>
 
+          <button
+            v-if="photographyForm.status === 'rejected'"
+            type="button"
+            class="btn-rejection-reason"
+            @click="openRejectionReasonModal"
+          >
+            عرض سبب الرفض
+          </button>
+
           <div
             v-if="photographyForm.updated_at"
             class="update-info-badge text-gray-500 text-[13px]"
@@ -183,6 +192,19 @@
         </form>
       </div>
 
+      <!-- Read-only: سبب الرفض -->
+      <div v-if="showRejectionReasonModal" class="modal-overlay" @click.self="closeRejectionReasonModal">
+        <div class="modal-content">
+          <h3>سبب الرفض</h3>
+          <p class="photography-rejection-body read-only-modal-body">
+            {{ photographyForm.rejection_reason || 'لم يُذكر نص للرفض.' }}
+          </p>
+          <div class="modal-actions">
+            <button type="button" class="btn-text" @click="closeRejectionReasonModal">إغلاق</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Rejection Modal -->
       <div v-if="showRejectModal" class="modal-overlay">
         <div class="modal-content">
@@ -237,6 +259,9 @@ const {
   isEditingPending,
   showRejectModal,
   rejectReasonInput,
+  showRejectionReasonModal,
+  openRejectionReasonModal,
+  closeRejectionReasonModal,
   showConfirmModal,
   confirmModalConfig,
   onConfirmModalConfirm,
@@ -311,6 +336,23 @@ onMounted(() => {
 .status-badge.rejected {
   background: #fee2e2;
   color: #dc2626;
+}
+.btn-rejection-reason {
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid #fecaca;
+  background: #fff;
+  color: #991b1b;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+.btn-rejection-reason:hover {
+  background: #fef2f2;
+}
+.read-only-modal-body {
+  margin: 0 0 1rem;
+  min-height: 3rem;
 }
 .form-grid {
   display: grid;

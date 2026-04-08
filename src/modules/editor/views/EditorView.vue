@@ -625,28 +625,25 @@ export default {
       }
     };
 
+    /** تحميل واحد لكل تغيير (تبويب + عقد) يقلل الطلبات المزدوجة وعدم اتساق الواجهة */
+    function runEditorTabDataLoads() {
+      const tab = activeTab.value;
+      const id = selectedContractId.value;
+      if (tab === 'contracts') loadContracts();
+      else if (tab === 'developers') loadDevelopers();
+      if (!id) return;
+      if (tab === 'second-party') loadSecondParty();
+      else if (tab === 'units') loadUnits();
+      else if (tab === 'montage') loadMontage();
+      else if (tab === 'photography') loadPhotography();
+      else if (tab === 'boards') loadBoards();
+    }
+
     watch(
-      activeTab,
-      newTab => {
-        if (newTab === 'contracts') loadContracts();
-        if (newTab === 'developers') loadDevelopers();
-        if (newTab === 'second-party') loadSecondParty();
-        if (newTab === 'units') loadUnits();
-        if (newTab === 'montage') loadMontage();
-        if (newTab === 'photography') loadPhotography();
-        if (newTab === 'boards') loadBoards();
-      },
+      () => [activeTab.value, selectedContractId.value],
+      () => runEditorTabDataLoads(),
       { immediate: true }
     );
-
-    watch(selectedContractId, () => {
-      const tab = activeTab.value;
-      if (tab === 'second-party') loadSecondParty();
-      if (tab === 'units') loadUnits();
-      if (tab === 'montage') loadMontage();
-      if (tab === 'photography') loadPhotography();
-      if (tab === 'boards') loadBoards();
-    });
 
     return {
       activeTab,
