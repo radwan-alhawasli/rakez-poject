@@ -8,41 +8,13 @@ import { extractPaginatedData } from '@/utils/paginationUtils';
  */
 export default {
   /**
-   * Build POST /tasks body to match API contract (task_name, section, due_at, assigned_to).
-   * Accepts legacy shape with `title` instead of `task_name`.
-   * @param {any} taskData
-   * @returns {Record<string, unknown>}
-   */
-  _buildCreateTaskPayload(taskData) {
-    const task_name = taskData.task_name ?? taskData.title;
-    const body = {
-      task_name: typeof task_name === 'string' ? task_name.trim() : String(task_name ?? '').trim(),
-      section: taskData.section,
-      due_at: taskData.due_at ?? null,
-    };
-    const rawAssignee = taskData.assigned_to;
-    if (rawAssignee !== '' && rawAssignee != null) {
-      const n = Number(rawAssignee);
-      if (!Number.isNaN(n)) {
-        body.assigned_to = n;
-      }
-    }
-    const desc = taskData.description;
-    if (typeof desc === 'string' && desc.trim() !== '') {
-      body.description = desc.trim();
-    }
-    return body;
-  },
-
-  /**
    * Create a new task
-   * @param {any} taskData - The task details (task_name or title, section, due_at, assigned_to, optional description)
+   * @param {any} taskData - The task details (task_name, section, due_at, assigned_to, optional description)
    * @returns {Promise<Object>} The created task data
    */
   async createTask(taskData) {
     try {
-      const payload = this._buildCreateTaskPayload(taskData);
-      const response = await apiClient.post('/tasks', payload);
+      const response = await apiClient.post('/tasks', taskData);
       return response.data?.data || response.data;
     } catch (error) {
       return handleServiceError(error, 'Create task', 'post');

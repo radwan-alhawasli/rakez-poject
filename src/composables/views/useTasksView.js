@@ -229,13 +229,29 @@ export function useTasksView() {
       isCreating.value = true;
       const due_at_formatted = taskForm.due_at ? taskForm.due_at.replace('T', ' ') + ':00' : null;
 
-      await taskService.createTask({
-        title: taskForm.title,
-        description: taskForm.description,
+      const assignedToNum = Number(taskForm.assigned_to);
+      if (
+        taskForm.assigned_to === '' ||
+        taskForm.assigned_to === null ||
+        Number.isNaN(assignedToNum) ||
+        assignedToNum < 1
+      ) {
+        notificationService.addNotification('الرجاء اختيار الموظف المسؤول', 'error');
+        return;
+      }
+
+      const payload = {
+        task_name: taskForm.title.trim(),
         section: taskForm.section_key,
-        assigned_to: taskForm.assigned_to,
         due_at: due_at_formatted,
-      });
+        assigned_to: assignedToNum,
+      };
+      const desc = taskForm.description?.trim();
+      if (desc) {
+        payload.description = desc;
+      }
+
+      await taskService.createTask(payload);
 
       notificationService.addNotification('تم إنشاء المهمة بنجاح', 'success');
       showCreateModal.value = false;
@@ -252,11 +268,7 @@ export function useTasksView() {
       loadRequestedTasks(1);
     } catch (e) {
       logger.error('Failed to create task', e);
-      const msg = getCaughtMessage(e);
-      notificationService.addNotification(
-        msg && msg !== '{}' ? msg : 'تعذر إنشاء المهمة. تحقق من البيانات والصلاحيات.',
-        'error'
-      );
+      notificationService.addNotification(getCaughtMessage(e) || 'فشل إنشاء المهمة', 'error');
     } finally {
       isCreating.value = false;
     }
@@ -264,16 +276,17 @@ export function useTasksView() {
 
   const updateStatus = async (taskId, status, reason = null) => {
     try {
-      const data = { status };
-      if (reason) {
-        data.cannot_complete_reason = reason;
-      }
+      const data = {
+        status,
+        cannot_complete_reason: reason != null && String(reason).trim() !== '' ? reason : null,
+      };
 
       await taskService.updateTaskStatus(taskId, data);
       notificationService.addNotification('تم تحديث حالة المهمة', 'success');
       loadCurrentTab(currentPage.value);
     } catch (e) {
       logger.error(`Failed to update task ${taskId}`, e);
+      notificationService.addNotification(getCaughtMessage(e) || 'فشل تحديث حالة المهمة', 'error');
     }
   };
 
