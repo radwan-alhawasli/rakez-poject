@@ -1,33 +1,20 @@
 <template>
   <div>
-    <div class="welcome-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px">
+    <div class="welcome-header">
       <div class="header-content">
         <h1 class="welcome-title">خطط الموظفين</h1>
         <p class="welcome-subtitle">إعداد وتوزيع خطط التسويق على الموظفين</p>
       </div>
-      <div style="display: flex; gap: 8px">
-        <button class="btn-secondary" @click="exportEmployeePlansExcel">Excel</button>
-        <button class="btn-secondary" @click="exportEmployeePlansPdf">PDF</button>
-        <button class="btn-secondary" @click="exportWeeklyPlanPdf" :disabled="!employeePlansProjectId">خطة أسبوعية PDF</button>
-      </div>
     </div>
 
     <div class="overview-section" style="margin-bottom: 24px">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px">
+      <div style="max-width: 420px; margin-bottom: 20px">
         <div class="form-group">
           <label>المشروع <span class="required">*</span></label>
           <select v-model="employeePlansProjectId" @change="loadEmployeePlans" class="form-input">
             <option value="">-- اختر مشروعاً --</option>
             <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.project_name || p.name || 'Project #' + p.id }}</option>
           </select>
-        </div>
-        <div class="form-group">
-          <label>الموظف (اختياري)</label>
-          <select v-model="employeePlanGenerateForm.user_id" class="form-input">
-            <option value="">— أنا (المستخدم الحالي) —</option>
-            <option v-for="e in marketingEmployees" :key="e.id" :value="e.id">{{ e.name || e.full_name || 'Employee #' + e.id }}</option>
-          </select>
-          <p class="form-hint" style="margin: 4px 0 0; font-size: 0.8rem; color: #64748b">يكفي اختيار المشروع. إن لم تختر موظفاً ستُربط الخطة بك.</p>
         </div>
       </div>
 
@@ -70,9 +57,6 @@
       </div>
 
       <div style="display: flex; gap: 12px; flex-wrap: wrap">
-        <button class="btn-primary" @click="autoGenerateEmployeePlan" :disabled="isSubmitting || !employeePlansProjectId">
-          {{ isSubmitting ? 'جاري الإنشاء...' : 'إنشاء تلقائي (AI)' }}
-        </button>
         <button class="btn-secondary" @click="applyManualEmployeePlan" :disabled="isSubmitting || !employeePlansProjectId">
           تطبيق يدوي
         </button>
@@ -164,8 +148,6 @@ const {
   isLoadingEmployeePlans,
   employeePlansProjectId,
   projects,
-  marketingEmployees,
-  employeePlanGenerateForm,
   employeePlanBudgetSummary,
   platformDistribution,
   campaignDistributionByPlatform,
@@ -175,15 +157,12 @@ const {
   isSuggestingAiPlan,
   aiSuggestionRationale,
   formatCurrency,
+  formatNumber,
   formatDate,
   formatDistribution,
   loadEmployeePlans,
-  autoGenerateEmployeePlan,
   applyManualEmployeePlan,
   suggestAiPlan,
-  exportEmployeePlansExcel,
-  exportEmployeePlansPdf,
-  exportWeeklyPlanPdf,
   platformBreakdownTable,
 } = useMarketingEmployeePlans();
 

@@ -40,9 +40,17 @@ export function useSalesAttendance() {
       const raw = Array.isArray(list) ? list : [];
       attendanceRecords.value = raw.map(r => ({
         id: r.id ?? r.schedule_id ?? r.attendance_id,
+        schedule_id: r.schedule_id ?? r.id ?? null,
+        user_id: r.user_id ?? null,
+        user_name: r.user_name ?? r.employee_name ?? r.marketer_name ?? r.name ?? '—',
         employee_name: r.employee_name ?? r.user_name ?? r.marketer_name ?? r.name ?? '—',
+        project_id: r.project_id ?? r.contract_id ?? null,
         project_name: r.project_name ?? r.contract_name ?? r.project?.name ?? '—',
+        project_location: r.project_location != null && String(r.project_location).trim() !== '' ? String(r.project_location).trim() : '',
         date: r.date ?? r.schedule_date ?? r.attendance_date,
+        schedule_date: r.schedule_date ?? r.date ?? r.attendance_date,
+        day_of_week: r.day_of_week != null && String(r.day_of_week).trim() !== '' ? String(r.day_of_week).trim() : '',
+        day_name_ar: r.day_name_ar != null && String(r.day_name_ar).trim() !== '' ? String(r.day_name_ar).trim() : '',
         check_in_time: r.check_in_time ?? r.start_time ?? r.check_in,
         check_out_time: r.check_out_time ?? r.end_time ?? r.check_out,
         status: r.status ?? r.attendance_status,

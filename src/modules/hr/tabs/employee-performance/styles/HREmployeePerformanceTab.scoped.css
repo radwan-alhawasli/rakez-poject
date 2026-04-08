@@ -1,0 +1,303 @@
+/* يوحّد المظهر مع تبويب أداء الفرق — هوية Rakez */
+@import '../../team-performance/styles/HRPerformanceTab.scoped.css';
+
+.hr-performance-shell__mono {
+  font-family: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
+  font-size: 0.9em;
+  font-weight: 700;
+  color: rgba(248, 250, 252, 0.95);
+}
+
+/* حقل بحث نصي بجانب القوائم */
+.hr-performance-field--grow {
+  flex: 1 1 200px;
+  min-width: 160px;
+}
+
+.hr-performance-field__input--text {
+  cursor: text;
+  min-width: 0;
+  width: 100%;
+}
+
+.hr-performance-field__input--text::placeholder {
+  color: rgba(226, 232, 240, 0.45);
+}
+
+/* صف يوضح معاملات الطلب المرتبطة بـ GET /hr/marketers/performance */
+.hr-performance-query-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  padding: 14px 24px 12px;
+  border-bottom: 1px solid rgba(181, 169, 154, 0.18);
+  background: linear-gradient(180deg, rgba(39, 55, 77, 0.04) 0%, transparent 100%);
+}
+
+.hr-performance-query-summary__label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #475569;
+  letter-spacing: 0.02em;
+}
+
+.hr-performance-query-summary__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.hr-performance-query-summary__hint {
+  margin-inline-start: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+@media (max-width: 768px) {
+  .hr-performance-query-summary__hint {
+    margin-inline-start: 0;
+    width: 100%;
+  }
+}
+
+.hr-performance-chip {
+  font-family: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.75);
+  color: #1e293b;
+  border: 1px solid rgba(181, 169, 154, 0.35);
+  box-shadow: 0 1px 2px rgba(39, 55, 77, 0.06);
+}
+
+.hr-performance-chip em {
+  font-style: normal;
+  font-weight: 800;
+  color: #27374d;
+}
+
+/* صف المسوق: أفاتار + هوية من بيانات الـ API */
+.hr-performance-table__user {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: min(440px, 100%);
+}
+
+.hr-performance-table__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(145deg, #c4b5a2 0%, #8f8274 100%);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 8px rgba(39, 55, 77, 0.12);
+}
+
+.hr-performance-table__user-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+}
+
+.hr-performance-table__name {
+  font-weight: 800;
+  font-size: 15px;
+  color: #1e293b;
+  line-height: 1.3;
+}
+
+.hr-performance-table__meta {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.hr-performance-table__meta--placeholder {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.hr-performance-table__meta--phone {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+}
+
+.hr-performance-table__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.hr-performance-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(181, 169, 154, 0.38);
+  background: rgba(39, 55, 77, 0.04);
+  color: #334155;
+  line-height: 1.2;
+  max-width: 100%;
+}
+
+.hr-performance-pill--team {
+  background: rgba(39, 55, 77, 0.06);
+  color: #1e293b;
+}
+
+.hr-performance-pill--role {
+  background: rgba(181, 169, 154, 0.22);
+  color: #3d3830;
+  border-color: rgba(181, 169, 154, 0.45);
+}
+
+.hr-performance-pill--mgr {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.28);
+}
+
+.hr-performance-pill--on {
+  background: rgba(16, 185, 129, 0.1);
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.22);
+}
+
+.hr-performance-pill--off {
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+/* شارات الودائع / التحذيرات */
+.hr-performance-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  cursor: help;
+}
+
+.hr-performance-badge--deposits {
+  background: linear-gradient(180deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+  border: 1px solid rgba(30, 64, 175, 0.2);
+}
+
+.hr-performance-badge--warnings {
+  background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%);
+  color: #b45309;
+  border: 1px solid rgba(180, 83, 9, 0.22);
+}
+
+.hr-performance-empty--error .hr-performance-empty__title {
+  color: #b91c1c;
+}
+
+@media (max-width: 900px) {
+  .hr-performance-shell__controls .hr-performance-field--grow {
+    flex: 1 1 100%;
+  }
+}
+
+html.dark .hr-performance-query-summary {
+  border-bottom-color: #334155;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.5) 0%, transparent 100%);
+}
+
+html.dark .hr-performance-query-summary__label {
+  color: #94a3b8;
+}
+
+html.dark .hr-performance-query-summary__hint {
+  color: #94a3b8;
+}
+
+html.dark .hr-performance-chip {
+  background: rgba(30, 41, 59, 0.85);
+  color: #e2e8f0;
+  border-color: #475569;
+}
+
+html.dark .hr-performance-chip em {
+  color: #c4b5a2;
+}
+
+html.dark .hr-performance-table__name {
+  color: #e2e8f0;
+}
+
+html.dark .hr-performance-table__meta {
+  color: #94a3b8;
+}
+
+html.dark .hr-performance-table__meta--placeholder {
+  color: #64748b;
+}
+
+html.dark .hr-performance-pill {
+  background: rgba(51, 65, 85, 0.45);
+  color: #cbd5e1;
+  border-color: #475569;
+}
+
+html.dark .hr-performance-pill--team {
+  background: rgba(51, 65, 85, 0.55);
+  color: #e2e8f0;
+}
+
+html.dark .hr-performance-pill--role {
+  background: rgba(196, 181, 162, 0.12);
+  color: #c4b5a2;
+  border-color: rgba(196, 181, 162, 0.28);
+}
+
+html.dark .hr-performance-pill--mgr {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+}
+
+html.dark .hr-performance-pill--on {
+  color: #6ee7b7;
+}
+
+html.dark .hr-performance-pill--off {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+}
+
+html.dark .hr-performance-badge--deposits {
+  background: rgba(30, 58, 138, 0.35);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+html.dark .hr-performance-badge--warnings {
+  background: rgba(180, 83, 9, 0.25);
+  color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.35);
+}

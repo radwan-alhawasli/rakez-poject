@@ -1,79 +1,57 @@
 <template>
-  <div class="management-view">
-    <div class="section-header-compact notifications-header">
-      <div>
-        <h2 class="section-title">الإشعارات</h2>
-        <p class="section-subtitle">
-          استقبال إشعارات: حجز تفاوض جديد، الموافقة أو الرفض على السعر، تأكيد العربون، انتقال
-          الحجز إلى مؤكد، انتهاء مهلة أي إجراء، اكتمال الإفراغ.
-        </p>
-      </div>
-      <div class="notifications-header-controls">
-        <button
-          class="btn-primary"
-          :disabled="isLoading"
-          @click="markAllCreditNotificationsRead"
-        >
-          تعيين الكل كمقروء
-        </button>
-      </div>
+  <div class="rakez-erp-dashboard rakez-kpi-dashboard">
+    <DashboardWelcomeHeader
+      greeting-name="قسم الائتمان"
+      subtitle="استقبال إشعارات التفاوض والحجز والإفراغ."
+      english-title="Credit Notifications"
+      english-subtitle="Negotiation, reservation & transfer alerts"
+    />
+
+    <h3 class="rakez-dashboard-section-title">ملخص الإشعارات</h3>
+    <div class="rakez-widget-grid rakez-widget-grid--dense">
+      <LuxuryStatCard label="إجمالي الإشعارات" :value="totalItems">
+        <template #icon><DashboardStatIcon name="clipboard" /></template>
+      </LuxuryStatCard>
+      <LuxuryStatCard label="غير مقروءة" :value="unreadCount">
+        <template #icon><DashboardStatIcon name="alert" /></template>
+      </LuxuryStatCard>
+      <LuxuryStatCard label="مقروءة" :value="readCount">
+        <template #icon><DashboardStatIcon name="check" /></template>
+      </LuxuryStatCard>
     </div>
-    <div class="metrics-table-container table-responsive">
-      <table class="metrics-table table-mobile-stacked">
-        <thead>
-          <tr>
-            <th>العنوان</th>
-            <th>النوع</th>
-            <th>التاريخ</th>
-            <th>الحالة</th>
-            <th>الإجراءات</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="n in creditNotifications" :key="n.id">
-            <td data-label="العنوان">{{ n.title || n.message || 'إشعار' }}</td>
-            <td data-label="النوع">{{ getNotificationTypeLabel(n.type_label || n.type) }}</td>
-            <td data-label="التاريخ">{{ formatDate(n.created_at || n.date) }}</td>
-            <td data-label="الحالة">
-              <span class="status-tag" :class="n.read ? 'excellent' : 'good'">
-                {{ n.read ? 'مقروء' : 'غير مقروء' }}
-              </span>
-            </td>
-            <td data-label="الإجراءات">
-              <div class="notification-actions">
-                <button
-                  class="btn-action view"
-                  @click="viewNotificationDetail(n)"
-                  title="عرض التفاصيل"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                  عرض التفاصيل
-                </button>
-                <button
-                  v-if="!n.read"
-                  type="button"
-                  class="btn-action edit"
-                  @click="markCreditNotificationRead(n.id)"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                  تعيين كمقروء
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr v-if="creditNotifications.length === 0 && !isLoading">
-            <td colspan="5" data-label="" style="text-align: center; padding: 40px; color: #94a3b8">
-              لا توجد إشعارات
-            </td>
-          </tr>
-        </tbody>
-      </table>
+
+    <h3 class="rakez-dashboard-section-title">قائمة الإشعارات</h3>
+
+    <div class="rakez-notification-filters">
+      <button class="btn-mark-all" :disabled="isLoading" @click="markAllCreditNotificationsRead">تعيين الكل كمقروء</button>
     </div>
+
+    <div v-if="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>جاري التحميل...</p>
+    </div>
+
+    <template v-else>
+      <div v-if="creditNotifications.length === 0" class="rakez-notification-empty">
+        <div class="rakez-notification-empty__icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </div>
+        <p class="rakez-notification-empty__text">لا توجد إشعارات</p>
+      </div>
+
+      <div v-else class="rakez-notifications-grid">
+        <NotificationCard
+          v-for="n in creditNotifications"
+          :key="n.id"
+          :notification="n"
+          :type-label="getNotificationTypeLabel(n.type_label || n.type)"
+          :date-formatted="formatDate(n.created_at || n.date)"
+          @view="viewNotificationDetail"
+          @mark-read="markCreditNotificationRead"
+        />
+      </div>
+    </template>
+
     <Pagination
       v-if="totalItems > 0"
       :current-page="currentPage"
@@ -95,6 +73,10 @@
 
 <script setup>
 import { computed, onMounted } from 'vue';
+import DashboardWelcomeHeader from '@/components/dashboard/DashboardWelcomeHeader.vue';
+import LuxuryStatCard from '@/components/dashboard/widgets/LuxuryStatCard.vue';
+import DashboardStatIcon from '@/components/dashboard/DashboardStatIcon.vue';
+import NotificationCard from '@/components/notifications/NotificationCard.vue';
 import Pagination from '@/components/Pagination.vue';
 import NotificationDetailModal from '@/modules/accounting/components/NotificationDetailModal.vue';
 import { useCreditNotifications } from '@/composables/credit/useCreditNotifications';
@@ -124,6 +106,9 @@ const selectedNotificationForModal = computed(() => {
   if (!s) return null;
   return { ...s, time: s.created_at || s.date };
 });
+
+const unreadCount = computed(() => creditNotifications.value.filter(n => !n.read).length);
+const readCount = computed(() => creditNotifications.value.filter(n => n.read).length);
 
 onMounted(() => {
   loadCreditNotifications();

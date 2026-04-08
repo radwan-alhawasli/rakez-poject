@@ -13,6 +13,8 @@ const unreadCount = ref(0);
 let pusher = null;
 /** @type {any[]} */
 let channels = [];
+/** Pusher subscribe/bind must run once per connection; avoids duplicate handlers when init() is called again. */
+let realtimeSubscriptionsReady = false;
 
 /**
  * @param {any} error
@@ -42,56 +44,53 @@ const notificationService = {
   },
 
   /**
-   * Initialize notifications and WebSocket listeners
+   * Subscribe to Pusher channels once per session (idempotent).
+   * Call after createPusher; safe to call multiple times from init().
    */
-  async init() {
-    if (!authService.isAuthenticated()) return;
+  ensureRealtimeSubscriptions() {
+    if (!authService.isAuthenticated() || realtimeSubscriptionsReady) return;
 
     const user = authService.getCurrentUser();
     const token = authService.getToken();
 
-    // 1. Fetch existing notifications
-    await this.fetchAll();
-
-    // 2. Setup Pusher only when key is configured (avoids ws://... failed when Reverb not running or wrong port)
     if (!pusher) {
       pusher = createPusher(token ?? '');
     }
     if (!pusher) return;
 
-    // Subscribe to Public
     const publicChannel = pusher.subscribe('public-notifications');
-    /**
-     * @param {any} data
-     */
     publicChannel.bind('public.notification', /** @param {any} data */ data => {
       this.addReceivedNotification(data, 'public');
     });
     channels.push(publicChannel);
 
-    // Subscribe to User Private
     if (user && user.id) {
       const userChannel = pusher.subscribe(`private-user-notifications.${user.id}`);
-      /**
-       * @param {any} data
-       */
       userChannel.bind('user.notification', /** @param {any} data */ data => {
         this.addReceivedNotification(data, 'private');
       });
       channels.push(userChannel);
     }
 
-    // Subscribe to Admin Private
     if (user && user.type === ROLE_ADMIN) {
       const adminChannel = pusher.subscribe('private-admin-notifications');
-      /**
-       * @param {any} data
-       */
       adminChannel.bind('admin.notification', /** @param {any} data */ data => {
         this.addReceivedNotification(data, 'admin');
       });
       channels.push(adminChannel);
     }
+
+    realtimeSubscriptionsReady = true;
+  },
+
+  /**
+   * Initialize notifications: fetch from API + realtime (each idempotent where noted).
+   */
+  async init() {
+    if (!authService.isAuthenticated()) return;
+
+    await this.fetchAll();
+    this.ensureRealtimeSubscriptions();
   },
 
   /**
@@ -273,7 +272,7 @@ const notificationService = {
 
   /**
    * Mark notification as read
-   * API: PATCH /notifications/:id/read (shared); POST /accounting/notifications/:id/read (accounting); POST /credit/notifications/:id/read (credit)
+   * API: PATCH /user/notifications/:id/read (shared); POST /accounting/notifications/:id/read (accounting); POST /credit/notifications/:id/read (credit)
    * @param {number|string} id - Notification ID
    * @returns {Promise<void>}
    */
@@ -295,7 +294,7 @@ const notificationService = {
     } else if (isCredit) {
       promise = apiClient.post(`/credit/notifications/${id}/read`);
     } else {
-      promise = apiClient.patch(`/notifications/${id}/read`);
+      promise = apiClient.patch(`/user/notifications/${id}/read`);
     }
     try {
       await promise;
@@ -318,7 +317,7 @@ const notificationService = {
 
   /**
    * Mark all notifications as read
-   * API: PATCH /notifications/mark-all-read (shared); POST /accounting/notifications/read-all (accounting); POST /credit/notifications/read-all (credit)
+   * API: PATCH /user/notifications/mark-all-read (shared); POST /accounting/notifications/read-all (accounting); POST /credit/notifications/read-all (credit)
    * @returns {Promise<void>}
    */
   async markAllAsRead() {
@@ -339,7 +338,7 @@ const notificationService = {
       } else if (isCredit) {
         await apiClient.post('/credit/notifications/read-all');
       } else {
-        await apiClient.patch('/notifications/mark-all-read');
+        await apiClient.patch('/user/notifications/mark-all-read');
       }
       notifications.value.forEach(n => {
         n.read = true;
@@ -375,6 +374,7 @@ const notificationService = {
       pusher = null;
       channels = [];
     }
+    realtimeSubscriptionsReady = false;
   },
 
   // --- Missing Endpoints ---
@@ -398,13 +398,13 @@ const notificationService = {
 
   /**
    * Mark notification as read (alternative endpoint)
-   * PATCH /notifications/:id/read (per API collection)
+   * PATCH /user/notifications/:id/read (per API collection)
    * @param {number|string} id - Notification ID
    * @returns {Promise<Object>} Response
    */
   async markNotificationAsRead(id) {
     try {
-      const response = await apiClient.patch(`/notifications/${id}/read`);
+      const response = await apiClient.patch(`/user/notifications/${id}/read`);
       return response.data?.data || response.data || {};
     } catch (error) {
       logger.error(`Error marking notification ${id} as read:`, error);
@@ -414,12 +414,12 @@ const notificationService = {
 
   /**
    * Mark all notifications as read (alternative endpoint)
-   * PATCH /notifications/mark-all-read (per API collection)
+   * PATCH /user/notifications/mark-all-read (per API collection)
    * @returns {Promise<Object>} Response
    */
   async markAllNotificationsAsRead() {
     try {
-      const response = await apiClient.patch('/notifications/mark-all-read');
+      const response = await apiClient.patch('/user/notifications/mark-all-read');
       return response.data?.data || response.data || {};
     } catch (error) {
       logger.error('Error marking all notifications as read:', error);

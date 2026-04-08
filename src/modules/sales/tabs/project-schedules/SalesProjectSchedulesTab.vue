@@ -105,6 +105,7 @@
         </div>
 
         <div
+          ref="scheduleDetailRef"
           class="schedule-detail-layout"
           :class="{ 'schedule-form--saving': isSavingSchedules }"
         >
@@ -256,7 +257,7 @@ const {
   scheduleProjectsLoadError,
   isLoadingScheduleDetail, scheduleMembers, scheduleDisplayDate,
   scheduleDisplayTime, scheduleViewDate, scheduleDisplayDayName,
-  isSavingSchedules, emergencyContact, getAvatarColor,
+  isSavingSchedules, emergencyContact, scheduleDetailRef, getAvatarColor,
   loadScheduleProjects, openProjectSchedule, backToList,
   loadScheduleForSelectedDate, toggleScheduleMember,
   updateMemberScheduleTime, saveAllSchedules,

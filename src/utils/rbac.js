@@ -140,6 +140,15 @@ export function getUserPermissions(user) {
       const leaderPerms = [...SALES_BASE_PERMISSIONS, ...SALES_LEADER_EXTRA_PERMISSIONS];
       return [...new Set([...user.permissions, ...leaderPerms])];
     }
+    // مبيعات / قائد مبيعات (نوع الدور): دمج مع الحزمة الأساسية حتى لا تُحذف صلاحيات مثل sales.targets.update
+    // عندما يعيد الخادم قائمة permissions ناقصة عن الواقع المطلوب للواجهة
+    const role = normalizeRole(user.type);
+    if (role === ROLE_SALES) {
+      return [...new Set([...user.permissions, ...SALES_BASE_PERMISSIONS])];
+    }
+    if (role === ROLE_SALES_LEADER) {
+      return [...new Set([...user.permissions, ...SALES_BASE_PERMISSIONS, ...SALES_LEADER_EXTRA_PERMISSIONS])];
+    }
     return user.permissions;
   }
   const bootstrapKey = getEffectiveRoleKey(user);

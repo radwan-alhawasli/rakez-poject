@@ -36,6 +36,52 @@
           </button>
         </div>
       </div>
+
+      <!-- المبيعات/قائد المبيعات: يظهر الفلتر دائماً (حتى أثناء التحميل أو بلا وحدات). غيرهم: فقط عند وجود وحدات -->
+      <div
+        v-if="isSalesUser || (!unitsLoading && units.length > 0)"
+        class="units-filter-tabs"
+        :class="{ 'units-filter-tabs--loading': unitsLoading && isSalesUser }"
+        role="tablist"
+        :aria-label="isSalesUser ? 'تصفية الوحدات: متاح، محجوز، مباع' : 'تصفية الوحدات حسب الحالة'"
+      >
+        <button
+          v-for="opt in unitFilterTabOptions"
+          :key="String(opt.value)"
+          type="button"
+          role="tab"
+          :aria-selected="unitStatusFilter === opt.value"
+          class="units-filter-tab"
+          :class="{ active: unitStatusFilter === opt.value }"
+          :disabled="unitsLoading && isSalesUser"
+          @click="unitStatusFilter = opt.value"
+        >
+          {{ opt.label }}
+          <span class="units-filter-count">{{ unitFilterCounts[opt.value] }}</span>
+        </button>
+      </div>
+
+      <div
+        v-if="isSalesUser"
+        class="units-sort-row"
+      >
+        <label class="units-sort-label" for="units-sort-select">فرز الوحدات</label>
+        <select
+          id="units-sort-select"
+          v-model="unitsSortOrder"
+          class="units-sort-select"
+          :disabled="unitsLoading"
+          aria-label="ترتيب عرض الوحدات بعد التصفية"
+        >
+          <option
+            v-for="opt in projectUnitsSortOptions"
+            :key="opt.value"
+            :value="opt.value"
+          >
+            {{ opt.label }}
+          </option>
+        </select>
+      </div>
     </div>
 
     <div v-if="unitsLoading" class="units-loading">جاري تحميل الوحدات...</div>
@@ -48,12 +94,16 @@
         <span v-if="projectSalesSummary.total_units > 0"> (الإجمالي {{ projectSalesSummary.total_units }} وحدة<span v-if="projectSalesSummary.sold_units_percent != null"> — {{ projectSalesSummary.sold_units_percent }}% مبيعات</span>)</span>.
       </p>
     </div>
+    <div v-else-if="filteredSortedUnits.length === 0" class="empty-state-tab">
+      <p>لا توجد وحدات تطابق التصفية المختارة.</p>
+      <button type="button" class="btn-units-outline" @click="unitStatusFilter = 'all'">عرض كل الوحدات</button>
+    </div>
     <div
       v-else
       class="units-cards-grid"
-      :class="{ 'units-cards-grid--single': filteredUnits.length === 1 }"
+      :class="{ 'units-cards-grid--single': filteredSortedUnits.length === 1 }"
     >
-      <div v-for="unit in filteredUnits" :key="unit.id" class="unit-card">
+      <div v-for="unit in filteredSortedUnits" :key="unit.id" class="unit-card">
         <div class="unit-card-top">
           <span class="unit-status-pill" :class="unit.status">{{
             unit.status === 'available'
@@ -331,7 +381,13 @@ const {
   unitCountFromApi,
   projectSalesSummary,
   unitsLoading,
-  filteredUnits,
+  unitStatusFilter,
+  unitsSortOrder,
+  unitFilterCounts,
+  projectUnitsFilterOptions,
+  projectUnitsSalesFilterOptions,
+  projectUnitsSortOptions,
+  filteredSortedUnits,
   showAddUnitModal,
   isEditingUnit,
   unitForm,
@@ -390,6 +446,11 @@ const displayUnitCount = computed(() => {
   return units.value.length;
 });
 
+/** تبويبات التصفية: للمبيعات/قائد المبيعات — متاح، محجوز، مباع (+ التفاوض) */
+const unitFilterTabOptions = computed(() =>
+  props.isSalesUser ? projectUnitsSalesFilterOptions : projectUnitsFilterOptions
+);
+
 onMounted(() => {
   loadUnits();
 });
@@ -398,6 +459,8 @@ watch(
   () => props.projectId,
   (id, prev) => {
     if (id === prev) return;
+    unitStatusFilter.value = 'all';
+    unitsSortOrder.value = 'default';
     loadUnits();
   },
 );

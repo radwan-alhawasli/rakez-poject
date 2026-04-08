@@ -3,8 +3,7 @@
     <LoadingSpinner v-if="isLoading" text="جاري تحميل البيانات..." />
 
     <div v-else-if="dashboardData" class="dashboard-kpis">
-      <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
-      <div class="rakez-widget-grid rakez-widget-grid--dense">
+      <div class="kpi-top-row">
         <LuxuryStatCard
           label="عدد الوحدات المحجوزة"
           :value="formatCompact(dashboardData.reserved_units ?? 0)"
@@ -54,6 +53,16 @@
             <DashboardStatIcon name="leads" />
           </template>
         </LuxuryStatCard>
+
+        <LuxuryStatCard
+          label="عدد حجوزات الانتظار"
+          :value="formatCompact(waitingListCount)"
+          description="طلبات في قائمة الانتظار"
+        >
+          <template #icon>
+            <DashboardStatIcon name="clock" />
+          </template>
+        </LuxuryStatCard>
       </div>
     </div>
   </div>
@@ -68,6 +77,8 @@ import { useFormatters } from '@/composables/useFormatters';
 
 const props = defineProps({
   dashboardData: { type: Object, default: null },
+  /** من GET /sales/waiting-list (إجمالي العناصر) */
+  waitingListCount: { type: Number, default: 0 },
   isLoading: { type: Boolean, default: false },
 });
 
@@ -88,7 +99,6 @@ const negotiationCount = computed(() => {
 
 <style scoped>
 .dashboard-kpis {
-  margin-top: 8px;
-  margin-bottom: clamp(28px, 4vw, 44px);
+  margin: 0;
 }
 </style>

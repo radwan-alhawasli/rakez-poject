@@ -1,43 +1,74 @@
 <template>
   <div class="tasks-view">
-    <div class="welcome-header">
-      <div class="header-flex-container">
+    <div class="welcome-header tasks-view-header">
+      <div class="header-content">
         <h1 class="welcome-title">إدارة المهام</h1>
-        <button class="btn-primary" @click="showCreateModal = true">إضافة مهمة</button>
+        <p class="welcome-subtitle">
+          متابعة المهام المكلّف بها والمهام التي طلبتها من الأقسام والفرق.
+        </p>
       </div>
-    </div>
-
-    <!-- Tabs -->
-    <div class="tabs-container">
       <button
-        class="tab-btn"
-        :class="{ active: activeTab === 'assigned' }"
-        @click="switchTab('assigned')"
+        v-if="canCreateTasks"
+        type="button"
+        class="tasks-add-btn"
+        @click="showCreateModal = true"
       >
-        <span class="tab-icon">📋</span>
-        مهام مطلوبة مني
-        <span v-if="assignedTotal > 0" class="tab-count">{{ assignedTotal }}</span>
-      </button>
-      <button
-        class="tab-btn"
-        :class="{ active: activeTab === 'requested' }"
-        @click="switchTab('requested')"
-      >
-        <span class="tab-icon">📤</span>
-        مهام طلبتها من الآخرين
-        <span v-if="requestedTotal > 0" class="tab-count">{{ requestedTotal }}</span>
+        <svg class="tasks-add-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        <span>إضافة مهمة</span>
       </button>
     </div>
 
-    <!-- Filters -->
-    <div class="filters">
-      <select v-model="filterStatus" @change="loadCurrentTab(1)" class="form-input">
-        <option value="">جميع الحالات</option>
-        <option value="in_progress">قيد التنفيذ</option>
-        <option value="completed">مكتملة</option>
-        <option value="could_not_complete">لم تكتمل</option>
-      </select>
-    </div>
+    <section class="tasks-controls" aria-label="تصفية المهام والتبويبات">
+      <div class="tabs-container">
+        <button
+          class="tab-btn"
+          :class="{ active: activeTab === 'assigned' }"
+          @click="switchTab('assigned')"
+        >
+          <span class="tab-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+              <rect x="9" y="3" width="6" height="4" rx="1" />
+              <path d="M9 12h6M9 16h6" />
+            </svg>
+          </span>
+          مهام مطلوبة مني
+          <span v-if="assignedTotal > 0" class="tab-count">{{ assignedTotal }}</span>
+        </button>
+        <button
+          class="tab-btn"
+          :class="{ active: activeTab === 'requested' }"
+          @click="switchTab('requested')"
+        >
+          <span class="tab-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+              <path d="M22 2 11 13" />
+              <path d="M22 2 15 22 11 13 2 9 22 2z" />
+            </svg>
+          </span>
+          مهام طلبتها من الآخرين
+          <span v-if="requestedTotal > 0" class="tab-count">{{ requestedTotal }}</span>
+        </button>
+      </div>
+
+      <div class="filters">
+        <label class="filters-label" for="tasks-status-filter">الحالة</label>
+        <select
+          id="tasks-status-filter"
+          v-model="filterStatus"
+          @change="loadCurrentTab(1)"
+          class="form-input"
+        >
+          <option value="">جميع الحالات</option>
+          <option value="in_progress">قيد التنفيذ</option>
+          <option value="completed">مكتملة</option>
+          <option value="could_not_complete">لم تكتمل</option>
+        </select>
+      </div>
+    </section>
 
     <!-- Loading -->
     <div v-if="isLoading" class="loading-state">
@@ -68,11 +99,19 @@
         <!-- Origin Badge -->
         <div class="task-origin">
           <span v-if="activeTab === 'assigned'" class="origin-badge assigned-badge">
-            <span class="origin-icon">⬇️</span>
+            <span class="origin-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M19 12l-7 7-7-7" />
+              </svg>
+            </span>
             مطلوبة مني
           </span>
           <span v-else class="origin-badge requested-badge">
-            <span class="origin-icon">⬆️</span>
+            <span class="origin-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 19V5M5 12l7-7 7 7" />
+              </svg>
+            </span>
             طلبتها من آخرين
           </span>
         </div>
@@ -85,10 +124,18 @@
             {{ task.section_label || getSectionLabel(task.section_key) }}
           </p>
           <p v-if="task.due_at || task.due_date">
-            <strong>تاريخ الاستحقاق:</strong> {{ formatDate(task.due_at || task.due_date) }}
+            <strong>تاريخ الاستحقاق:</strong>
+            <time
+              class="task-datetime"
+              :datetime="taskDateAttr(task.due_at || task.due_date)"
+              dir="ltr"
+              >{{ formatDate(task.due_at || task.due_date) }}</time>
           </p>
           <p v-if="task.created_at">
-            <strong>تاريخ الإنشاء:</strong> {{ formatDate(task.created_at) }}
+            <strong>تاريخ الإنشاء:</strong>
+            <time class="task-datetime" :datetime="taskDateAttr(task.created_at)" dir="ltr">{{
+              formatDate(task.created_at)
+            }}</time>
           </p>
           <p v-if="task.team_id || task.team?.name || task.team_name">
             <strong>الفريق:</strong> {{ task.team_name || task.team?.name || task.team_id }}
@@ -235,7 +282,13 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { useTasksView } from '@/composables/views/useTasksView';
+import { usePermissions } from '@/composables/usePermissions';
+import { PERMISSIONS } from '@/constants/permissions/permissionKeys';
+
+const { hasPermission } = usePermissions();
+const canCreateTasks = computed(() => hasPermission(PERMISSIONS.TASKS_CREATE));
 
 const {
   currentUser,
@@ -261,6 +314,7 @@ const {
   getStatusLabel,
   getSectionLabel,
   formatDate,
+  taskDateAttr,
   createTask,
   updateStatus,
   openReasonModal,

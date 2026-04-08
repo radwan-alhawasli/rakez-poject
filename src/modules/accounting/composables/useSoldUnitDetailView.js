@@ -3,43 +3,14 @@ import accountingService from '@/services/accountingService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
+import {
+  pickFinalSalePriceFromUnit,
+  pickCommissionPercentForSoldUnit,
+  pickCommissionSourceForSoldUnit,
+} from '@/utils/accountingSoldUnitFields';
 
-/**
- * نسبة السعي من بيانات العقد (contract / contract_infos)، وليس من حقول طلب مشروع حصري فقط.
- */
-export function pickCommissionPercentFromContract(unit) {
-  if (!unit || typeof unit !== 'object') return null;
-  const nested =
-    unit.contract ??
-    unit.reservation?.contract ??
-    unit.contract_unit?.contract ??
-    unit.contract_info ??
-    (Array.isArray(unit.contract_infos) ? unit.contract_infos[0] : unit.contract_infos);
-  const c = nested && typeof nested === 'object' ? nested : null;
-  const raw =
-    c?.commission_percent ??
-    c?.commission_percentage ??
-    unit.contract_commission_percent ??
-    unit.contract_commission_percentage ??
-    null;
-  if (raw === '' || raw == null) return null;
-  const n = Number(raw);
-  return Number.isFinite(n) ? n : null;
-}
-
-export function pickCommissionSourceFromContract(unit) {
-  if (!unit || typeof unit !== 'object') return null;
-  const nested =
-    unit.contract ??
-    unit.reservation?.contract ??
-    unit.contract_unit?.contract ??
-    unit.contract_info ??
-    (Array.isArray(unit.contract_infos) ? unit.contract_infos[0] : unit.contract_infos);
-  const c = nested && typeof nested === 'object' ? nested : null;
-  const src = c?.commission_from ?? c?.commission_source ?? null;
-  if (src === 'owner' || src === 'buyer') return src;
-  return null;
-}
+export { pickCommissionPercentForSoldUnit as pickCommissionPercentFromContract } from '@/utils/accountingSoldUnitFields';
+export { pickCommissionSourceForSoldUnit as pickCommissionSourceFromContract } from '@/utils/accountingSoldUnitFields';
 
 const COMMISSION_TYPE_LABELS = {
   lead_generation: 'عمولة الجلب',
@@ -90,7 +61,7 @@ export function useSoldUnitDetailView(props, { emit }) {
     bank_fees: 0,
   });
 
-  const contractCommissionPercent = computed(() => pickCommissionPercentFromContract(props.unit));
+  const contractCommissionPercent = computed(() => pickCommissionPercentForSoldUnit(props.unit));
   const commissionPercentDisplay = computed(() => {
     const v = contractCommissionPercent.value;
     if (v == null) return '—';
@@ -99,15 +70,22 @@ export function useSoldUnitDetailView(props, { emit }) {
     return `${n}%`;
   });
 
+  /** عرض فقط — القيمة من API (تبقى في commissionForm للإرسال) */
+  const commissionSourceDisplay = computed(() => {
+    const s = commissionForm.commission_source;
+    if (s === 'owner') return 'المالك';
+    if (s === 'buyer') return 'المشتري';
+    return '—';
+  });
+
   const commissionId = computed(() => props.unit?.commission_id ?? props.unit?.commission?.id);
   const hasCommission = computed(() => !!commissionId.value);
-  const finalPrice = computed(
-    () =>
-      props.unit?.final_sale_price ??
-      props.unit?.total_value ??
-      commissionForm.final_selling_price ??
-      0
-  );
+  const finalPrice = computed(() => {
+    const fromUnit = pickFinalSalePriceFromUnit(props.unit);
+    if (fromUnit != null) return fromUnit;
+    const fromForm = Number(commissionForm.final_selling_price);
+    return Number.isFinite(fromForm) ? fromForm : 0;
+  });
   const COMMISSION_STATUS_LABELS = {
     pending: 'معلق',
     approved: 'معتمد',
@@ -242,13 +220,12 @@ export function useSoldUnitDetailView(props, { emit }) {
     if (!props.unit) return;
     commissionForm.contract_unit_id =
       props.unit.contract_unit_id || props.unit.unit_id || props.unit.id;
-    commissionForm.final_selling_price =
-      props.unit.final_sale_price ?? props.unit.total_value ?? 0;
-    const pct = pickCommissionPercentFromContract(props.unit);
+    const price = pickFinalSalePriceFromUnit(props.unit);
+    commissionForm.final_selling_price = price != null ? price : 0;
+    const pct = pickCommissionPercentForSoldUnit(props.unit);
     commissionForm.commission_percentage = pct != null ? pct : 0;
-    const srcContract = pickCommissionSourceFromContract(props.unit);
-    commissionForm.commission_source =
-      srcContract || props.unit.commission_source || 'owner';
+    const srcResolved = pickCommissionSourceForSoldUnit(props.unit);
+    commissionForm.commission_source = srcResolved || props.unit.commission_source || 'owner';
     commissionForm.team_responsible = props.unit.team_name || '';
   };
 
@@ -382,6 +359,7 @@ export function useSoldUnitDetailView(props, { emit }) {
     distributions,
     commissionForm,
     commissionPercentDisplay,
+    commissionSourceDisplay,
     leadGenRows,
     persuasionRows,
     closingRows,

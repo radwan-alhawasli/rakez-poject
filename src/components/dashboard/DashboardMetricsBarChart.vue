@@ -1,7 +1,7 @@
 <template>
   <div
-    class="dashboard-metrics-bar-chart chart-placeholder"
-    :style="{ minHeight: `${Math.max(height, 200)}px` }"
+    class="dashboard-metrics-bar-chart"
+    :style="{ minHeight: `${Math.max(height, 160)}px` }"
   >
     <VisXYContainer
       v-if="normalizedSeries.length > 0"
@@ -71,18 +71,31 @@ const xTickFormat = (i) => normalizedSeries.value[i]?.label ?? '';
 </script>
 
 <style scoped>
+/* No global .chart-placeholder — keeps chart flush with dark/glass panels */
 .dashboard-metrics-bar-chart {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  box-sizing: border-box;
+  contain: layout style;
+  isolation: isolate;
+}
+
+.dashboard-metrics-bar-chart :deep(.vis-xy-container) {
+  background: transparent;
 }
 
 .chart-empty {
   margin: 0;
-  padding: 24px;
-  font-size: 14px;
-  color: var(--color-dark-gray, #64748b);
+  padding: 16px;
+  font-size: 0.875rem;
+  color: rgba(148, 163, 184, 0.95);
   text-align: center;
 }
 </style>

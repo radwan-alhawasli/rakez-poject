@@ -11,7 +11,7 @@
               <td data-label="اسم المشروع">{{ unit.project_name || 'غير محدد' }}</td>
               <td data-label="رقم الوحدة">{{ unit.unit_number || unit.reservation_id || unit.id }}</td>
               <td data-label="نوع الوحدة">{{ unit.unit_type || '—' }}</td>
-              <td data-label="سعر البيع النهائي">{{ formatCurrency(unit.final_sale_price || unit.total_value) }}</td>
+              <td data-label="سعر البيع النهائي">{{ formatCurrency(pickFinalSalePriceFromUnit(unit) ?? 0) }}</td>
               <td data-label="السعي">{{ unit.commission_source === 'owner' ? 'من المالك' : unit.commission_source === 'buyer' ? 'من المشتري' : '—' }}</td>
               <td data-label="نسبة السعي">{{ unit.commission_percentage ? unit.commission_percentage + '%' : '—' }}</td>
               <td data-label="الفريق">{{ unit.team_name || '—' }}</td>
@@ -31,6 +31,7 @@ import { onMounted } from 'vue';
 import Pagination from '@/components/Pagination.vue';
 import SoldUnitDetailView from '@/modules/accounting/components/SoldUnitDetailView.vue';
 import { useAccountingSoldUnits } from '@/composables/accounting/useAccountingSoldUnits';
+import { pickFinalSalePriceFromUnit } from '@/utils/accountingSoldUnitFields';
 
 const {
   isLoading,

@@ -1,6 +1,11 @@
 <template>
   <div class="reservations-page my-reservations">
-    <div class="welcome-header">
+    <div class="welcome-header reservations-hero">
+      <div class="reservations-brand-line" aria-hidden="true">
+        <span class="brand-ar">راكز العقارية</span>
+        <span class="brand-sep">|</span>
+        <span class="brand-en">Rakez Real Estate</span>
+      </div>
       <h1 class="welcome-title">حجوزاتي</h1>
       <p class="welcome-subtitle">
         {{

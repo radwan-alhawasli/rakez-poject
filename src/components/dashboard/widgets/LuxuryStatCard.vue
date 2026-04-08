@@ -41,16 +41,15 @@ const displayValue = computed(() => {
 <style scoped>
 .luxury-stat-card {
   position: relative;
-  background: linear-gradient(135deg, var(--color-white, #fff) 0%, var(--color-off-white, #fdfbf7) 100%);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px) saturate(170%);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
   border-radius: 24px;
-  border: 1px solid rgba(177, 162, 143, 0.12);
-  box-shadow: 0 8px 30px -8px rgba(30, 58, 95, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(181, 169, 154, 0.15);
+  box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
   overflow: hidden;
   min-height: 120px;
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    border-color 0.2s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .luxury-stat-card--clickable {
@@ -58,15 +57,17 @@ const displayValue = computed(() => {
 }
 
 .luxury-stat-card:hover {
-  border-color: rgba(177, 162, 143, 0.35);
-  transform: translateY(-3px);
-  box-shadow: 0 16px 40px -12px rgba(177, 162, 143, 0.18), 0 6px 16px rgba(30, 58, 95, 0.08);
+  background: rgba(181, 169, 154, 0.08);
+  transform: translateY(-8px) scale(1.02);
+  border-color: var(--color-gold, #b5a99a);
+  box-shadow: 0 20px 60px rgba(181, 169, 154, 0.15);
 }
 
 .luxury-stat-card__accent {
-  height: 4px;
+  height: 3px;
   width: 100%;
-  background: linear-gradient(90deg, var(--color-navy-dark, #1a2636), var(--color-navy, #27374d));
+  background: linear-gradient(90deg, transparent, var(--color-gold, #b5a99a), transparent);
+  opacity: 0.6;
 }
 
 .luxury-stat-card__inner {
@@ -87,18 +88,19 @@ const displayValue = computed(() => {
 }
 
 .luxury-stat-card__label {
-  font-size: 0.8125rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-dark-gray, #64748b);
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.02em;
   line-height: 1.35;
 }
 
 .luxury-stat-card__value {
-  font-size: clamp(1.5rem, 3vw, 2.1rem);
-  font-weight: 800;
-  color: var(--color-charcoal, #1e293b);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+  font-weight: 900;
+  color: var(--color-gold, #b5a99a);
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.01em;
   direction: ltr;
   unicode-bidi: embed;
   white-space: nowrap;
@@ -108,25 +110,28 @@ const displayValue = computed(() => {
 
 .luxury-stat-card__desc {
   font-size: 0.75rem;
-  color: var(--color-dark-gray, #64748b);
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
   line-height: 1.35;
 }
 
 .luxury-stat-card__icon {
-  width: 52px;
-  height: 52px;
-  min-width: 52px;
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 30% 30%, rgba(177, 162, 143, 0.2), rgba(39, 55, 77, 0.06));
+  background: radial-gradient(circle at center, rgba(181, 169, 154, 0.15) 0%, transparent 70%);
+  border: 1px solid rgba(181, 169, 154, 0.1);
   color: var(--color-gold, #b5a99a);
   flex-shrink: 0;
+  filter: drop-shadow(0 0 10px rgba(181, 169, 154, 0.3));
 }
 
 .luxury-stat-card__icon :deep(svg) {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
 }
 </style>

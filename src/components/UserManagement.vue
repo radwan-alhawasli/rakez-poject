@@ -1,5 +1,5 @@
 <template>
-  <div class="user-management">
+  <div class="user-management rakez-user-management" dir="rtl">
     <!-- Header -->
     <div class="section-header">
       <div class="header-content">

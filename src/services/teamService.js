@@ -516,6 +516,7 @@ export const getProjectManagementUnitReservationContext = async unitId => {
  * Create reservation
  * POST /project_management/reservations
  * @param {Record<string, unknown>} body
+ * @returns {Promise<Record<string, unknown>>}
  */
 export const createProjectManagementReservation = async body => {
   try {
@@ -530,8 +531,14 @@ export const createProjectManagementReservation = async body => {
 /**
  * Confirm reservation
  * POST /project_management/reservations/:id/confirm
+ * @param {string|number} reservationId
+ * @param {Record<string, unknown>} [data]
+ * @returns {Promise<Record<string, unknown>>}
  */
-export const confirmProjectManagementReservation = async (reservationId, data = {}) => {
+export const confirmProjectManagementReservation = async (
+  reservationId,
+  data = {}
+) => {
   try {
     const response = await apiClient.post(
       `/project_management/reservations/${reservationId}/confirm`,
@@ -547,6 +554,9 @@ export const confirmProjectManagementReservation = async (reservationId, data = 
 /**
  * Cancel reservation
  * POST /project_management/reservations/:id/cancel
+ * @param {string|number} reservationId
+ * @param {Record<string, unknown>} [data]
+ * @returns {Promise<Record<string, unknown>>}
  */
 export const cancelProjectManagementReservation = async (reservationId, data = {}) => {
   try {
@@ -564,6 +574,9 @@ export const cancelProjectManagementReservation = async (reservationId, data = {
 /**
  * Log reservation action
  * POST /project_management/reservations/:id/actions
+ * @param {string|number} reservationId
+ * @param {Record<string, unknown>} data
+ * @returns {Promise<Record<string, unknown>>}
  */
 export const logProjectManagementReservationAction = async (reservationId, data) => {
   try {
@@ -581,6 +594,8 @@ export const logProjectManagementReservationAction = async (reservationId, data)
 /**
  * Download voucher PDF
  * GET /project_management/reservations/:id/voucher
+ * @param {string|number} reservationId
+ * @returns {Promise<Blob>}
  */
 export const downloadProjectManagementReservationVoucher = async reservationId => {
   const response = await apiClient.get(`/project_management/reservations/${reservationId}/voucher`, {
@@ -594,6 +609,8 @@ export const downloadProjectManagementReservationVoucher = async reservationId =
 /**
  * Voucher payload for client PDF fallback
  * GET /project_management/reservations/:id/voucher-data
+ * @param {string|number} reservationId
+ * @returns {Promise<Record<string, unknown>>}
  */
 export const getProjectManagementReservationVoucherData = async reservationId => {
   try {

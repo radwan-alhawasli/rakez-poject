@@ -50,7 +50,7 @@
             <span class="detail-value number">{{ formatCurrency(project.average_unit_price ?? 0) }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">العمولة</span>
+            <span class="detail-label">نسبة السعي</span>
             <span class="detail-value number">{{ Number(project.commission_percentage ?? 0) }}%</span>
           </div>
           <div class="detail-row">
@@ -73,116 +73,16 @@
       </div>
     </div>
 
-    <!-- Calculate Budget Modal -->
-    <div
-      v-if="showCalculateBudgetModal"
-      class="modal-overlay"
-      @click.self="showCalculateBudgetModal = false"
-    >
-      <div class="modal-content luxury-modal animate-scale-in">
-        <div class="modal-header">
-          <h3 class="modal-title">حساب الميزانية التسويقية</h3>
-          <button class="modal-close" @click="showCalculateBudgetModal = false">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label>المشروع <span class="required">*</span></label>
-            <select
-              v-model="budgetForm.project_id"
-              class="form-input"
-              @change="onBudgetProjectChange"
-              required
-            >
-              <option value="">-- اختر مشروعاً --</option>
-              <option v-for="p in projects" :key="p.id" :value="p.id">
-                {{ p.project_name || p.name || 'Project #' + p.id }}
-              </option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>رقم العقد <span class="required">*</span></label>
-            <input
-              type="number"
-              v-model="budgetForm.contract_id"
-              class="form-input"
-              placeholder="يتم جلبه تلقائياً"
-              disabled
-            />
-          </div>
-          <div class="form-group">
-            <label>سعر الوحدة المتوقع <span class="required">*</span></label>
-            <input
-              type="number"
-              v-model="budgetForm.unit_price"
-              class="form-input"
-              placeholder="يتم جلبه تلقائياً"
-              disabled
-            />
-          </div>
-          <div class="form-group">
-            <label>نسبة العمولة % (من العقد)</label>
-            <input
-              type="number"
-              v-model="budgetForm.commission_percent"
-              class="form-input"
-              placeholder="يتم جلبها تلقائياً"
-              disabled
-            />
-          </div>
-          <div class="form-group">
-            <label>نسبة التسويق المستقطعة % <span class="required">*</span></label>
-            <input
-              type="number"
-              step="0.01"
-              v-model="budgetForm.marketing_percent"
-              class="form-input"
-              placeholder="أدخل نسبة التسويق من العمولة"
-            />
-          </div>
-          <div class="form-group">
-            <label>مدة العقد (بالأيام)</label>
-            <input type="number" v-model="budgetForm.contract_duration_days" class="form-input" />
-          </div>
-          <div class="form-group">
-            <label>مدة العقد (بالأشهر)</label>
-            <input type="number" v-model="budgetForm.contract_duration_months" class="form-input" />
-          </div>
-          <div v-if="budgetResult" class="details-grid">
-            <div class="detail-item">
-              <span class="detail-label">Commission Value</span
-              ><span class="detail-value number">{{
-                formatCurrency(budgetResult.commission_value || 0)
-              }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Marketing Value</span
-              ><span class="detail-value number">{{
-                formatCurrency(budgetResult.marketing_value || 0)
-              }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Daily Budget</span
-              ><span class="detail-value number">{{
-                formatCurrency(budgetResult.daily_budget || 0)
-              }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Monthly Budget</span
-              ><span class="detail-value number">{{
-                formatCurrency(budgetResult.monthly_budget || 0)
-              }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn-secondary" @click="showCalculateBudgetModal = false">إلغاء</button>
-          <button class="btn-primary" @click="calculateBudget">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-left: 8px"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            حساب
-          </button>
-        </div>
-      </div>
-    </div>
+    <MarketingCalculateBudgetModal
+      :show="showCalculateBudgetModal"
+      v-model:budget-form="budgetForm"
+      :budget-result="budgetResult"
+      :projects="projects"
+      :format-currency="formatCurrency"
+      @close="showCalculateBudgetModal = false"
+      @calculate="calculateBudget"
+      @budget-project-change="onBudgetProjectChange"
+    />
 
     <!-- Project Details Modal -->
     <div
@@ -222,11 +122,11 @@
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">الموقع</span>
-                  <span class="detail-value">{{ selectedProjectDetails.location || selectedProjectDetails.city || '—' }}</span>
+                  <span class="detail-value">{{ formatProjectLocationRow(selectedProjectDetails) }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">المدينة / الحي</span>
-                  <span class="detail-value">{{ [selectedProjectDetails.city, selectedProjectDetails.district].filter(Boolean).join(' / ') || '—' }}</span>
+                  <span class="detail-value">{{ formatCityDistrictRow(selectedProjectDetails) }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">الحالة</span>
@@ -247,8 +147,25 @@
                   <span class="detail-value number">{{ formatCurrency(selectedProjectDetails.average_unit_price ?? 0) }}</span>
                 </div>
                 <div class="detail-item">
-                  <span class="detail-label">نسبة العمولة</span>
+                  <span class="detail-label">نسبة السعي</span>
                   <span class="detail-value number">{{ Number(selectedProjectDetails.commission_percentage ?? 0) + '%' }}</span>
+                </div>
+                <div class="detail-item detail-item--stacked">
+                  <span class="detail-label">نسبة التسويق</span>
+                  <input
+                    v-model="uiOnlyMarketingPercent"
+                    type="number"
+                    class="form-input marketing-percent-ui-input"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    inputmode="decimal"
+                    placeholder="مثال: 10"
+                    aria-describedby="marketing-percent-ui-hint"
+                  />
+                  <p id="marketing-percent-ui-hint" class="detail-ui-only-hint">
+                    للملاحظات المحلية فقط — غير مربوط بالخادم (API)
+                  </p>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">قيمة الوحدات المتاحة</span>
@@ -294,63 +211,16 @@
                 </div>
               </div>
 
-              <div class="overview-section" style="margin-top: 18px">
+              <div class="overview-section marketing-teams-teaser" style="margin-top: 18px">
                 <div class="section-header" style="margin-bottom: 14px">
-                  <h3 class="section-title-chart">إدارة فرق التسويق</h3>
-                  <p class="section-desc">تعيين الصلاحيات للفرق المسؤولة عن هذا المشروع.</p>
+                  <h3 class="section-title-chart">
+                    <button type="button" class="teams-page-link" @click="goToMarketingTeamsPage">إدارة فرق التسويق</button>
+                  </h3>
+                  <p class="section-desc">صفحة مخصصة لتعيين الفرق وعرض المسوّقين والمسوق الأعلى تقييماً.</p>
                 </div>
                 <div class="detail-item" style="margin-bottom: 12px">
                   <span class="detail-label">الموظف المقترح للتواصل</span>
                   <span class="detail-value">{{ getRecommendedEmployee(selectedProjectDetails) }}</span>
-                </div>
-                <div class="add-team-card-luxury" style="background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0">
-                  <div class="add-team-form" style="display: flex; gap: 10px; align-items: center">
-                    <div style="flex: 1; position: relative">
-                      <select v-model="selectedTeamIdToAdd" class="luxury-select" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px">
-                        <option value="" disabled selected>اختر فريقاً للإضافة...</option>
-                        <option v-for="team in availableTeams" :key="team.id" :value="team.id">{{ team.name }}</option>
-                      </select>
-                    </div>
-                    <button class="btn-primary" @click="assignTeamToProject" :disabled="!selectedTeamIdToAdd || isTeamActionLoading" style="white-space: nowrap">
-                      {{ isTeamActionLoading ? 'جاري...' : 'إضافة +' }}
-                    </button>
-                  </div>
-                </div>
-                <div v-if="(selectedProjectDetails.marketing_project?.teams || []).length === 0" style="color: #64748b; text-align: center; padding: 20px">
-                  لا توجد فرق معينة حالياً.
-                </div>
-                <div v-else class="teams-grid-luxury" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px">
-                  <div v-for="t in selectedProjectDetails.marketing_project.teams" :key="t.id" class="team-card-mini" style="background: white; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; gap: 5px; position: relative">
-                    <div style="display: flex; justify-content: space-between; align-items: start">
-                      <span class="team-name" style="font-weight: bold; color: #1e3a5f">{{ t.name || t.user?.name || 'Team #' + t.id }}</span>
-                      <button @click="removeTeamFromProject(t)" class="btn-icon-mini" title="إزالة" :disabled="isTeamActionLoading" style="background: none; border: none; color: #ef4444; cursor: pointer">
-                        <span style="font-size: 16px">×</span>
-                      </button>
-                    </div>
-                    <span class="team-role" style="font-size: 12px; color: #64748b">{{ t.description || 'فريق تسويق' }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="overview-section" style="margin-top: 18px">
-                <div class="section-header" style="margin-bottom: 14px">
-                  <h3 class="section-title-chart">خطة المطور</h3>
-                  <p class="section-desc">تعرض الحقول المتاحة من developer_plan.</p>
-                </div>
-                <div v-if="!selectedProjectDetails.developer_plan" style="color: #64748b">لا توجد خطة مطور.</div>
-                <div v-else style="margin-top: 10px">
-                  <div class="details-grid">
-                    <div class="detail-item"><span class="detail-label">قيمة التسويق</span><span class="detail-value number">{{ formatCurrency(selectedProjectDetails.developer_plan.marketing_value || 0) }}</span></div>
-                    <div class="detail-item"><span class="detail-label">CPM / CPC</span><span class="detail-value number">{{ devPlanCpmCpcSummary(selectedProjectDetails.developer_plan) }}</span></div>
-                    <div class="detail-item"><span class="detail-label">Expected Impressions</span><span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_impressions || 0) }}</span></div>
-                    <div class="detail-item"><span class="detail-label">Expected Clicks</span><span class="detail-value number">{{ formatNumber(selectedProjectDetails.developer_plan.expected_clicks || 0) }}</span></div>
-                  </div>
-                  <div v-if="hasDevPlanPerPlatform(selectedProjectDetails.developer_plan)" class="details-grid" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color, #e2e8f0)">
-                    <div class="detail-item" style="grid-column: 1 / -1"><span class="detail-label">CPM و CPC حسب المنصة</span></div>
-                    <template v-for="(label, key) in platformLabelsAr" :key="key">
-                      <div class="detail-item" v-if="devPlanPlatformValue(selectedProjectDetails.developer_plan, key)"><span class="detail-label">{{ label }}</span><span class="detail-value">{{ devPlanPlatformValue(selectedProjectDetails.developer_plan, key) }}</span></div>
-                    </template>
-                  </div>
                 </div>
               </div>
 
@@ -411,51 +281,102 @@
       </div>
     </div>
 
-    <!-- Plan Unavailable Modal -->
-    <div v-if="showPlanUnavailableModal" class="modal-overlay" @click.self="closePlanUnavailableModal">
-      <div class="modal-content luxury-modal animate-scale-in" style="max-width: 420px">
+    <!-- خطط المشروع: مرفق + خطة مطور + خطط موظفين -->
+    <div v-if="showProjectPlansModal" class="modal-overlay" @click.self="closeProjectPlansModal">
+      <div class="modal-content luxury-modal animate-scale-in project-plans-modal">
         <div class="modal-header">
-          <h3 class="modal-title">عرض خطة المشروع</h3>
-          <button type="button" class="modal-close" @click="closePlanUnavailableModal">×</button>
+          <h3 class="modal-title">خطط المشروع</h3>
+          <button type="button" class="modal-close" @click="closeProjectPlansModal">×</button>
         </div>
-        <div class="modal-body">
-          <p class="modal-message">
-            لا توجد خطة مرفقة لهذا المشروع حالياً.
-            <template v-if="planUnavailableProject?.project_name || planUnavailableProject?.name">
-              ({{ planUnavailableProject.project_name || planUnavailableProject.name }})
-            </template>
+        <div class="modal-body project-plans-modal-body">
+          <p v-if="projectPlansModalProject?.project_name || projectPlansModalProject?.name" class="modal-message" style="margin-top: 0">
+            {{ projectPlansModalProject.project_name || projectPlansModalProject.name }}
           </p>
-          <p class="modal-message sub">يمكنك إعداد الخطة من تبويب «خطة المطور» ثم اختيار المشروع.</p>
+
+          <section class="project-plans-section">
+            <h4 class="project-plans-section-title">خطة المطور والمرفقات</h4>
+            <div v-if="projectPlansModalPlanUrl" class="project-plans-actions">
+              <button type="button" class="btn-primary" @click="openProjectPlanAttachment">فتح المرفق في تبويب جديد</button>
+            </div>
+            <p v-if="projectPlansModalHasDeveloperPlan" class="modal-message sub" style="margin: 8px 0">
+              يوجد سجل خطة مطور مرتبط بالعقد.
+            </p>
+            <div v-if="projectPlansModalHasDeveloperPlan" class="project-plans-actions">
+              <button type="button" class="btn-secondary" @click="goToDeveloperPlanEditorFromModal">عرض وتعديل خطة المطور</button>
+            </div>
+            <p
+              v-if="!projectPlansModalPlanUrl && !projectPlansModalHasDeveloperPlan"
+              class="modal-message sub"
+            >
+              لا يوجد مرفق خطة ولا سجل خطة مطور لهذا المشروع حالياً.
+            </p>
+          </section>
+
+          <section class="project-plans-section">
+            <h4 class="project-plans-section-title">خطط الموظفين</h4>
+            <div v-if="projectPlansModalLoading" class="loading-state loading-state--inline">
+              <div class="spinner"></div>
+              <p>جاري تحميل خطط الموظفين...</p>
+            </div>
+            <template v-else-if="projectPlansModalEmployeePlans.length > 0">
+              <div class="table-wrapper table-responsive project-plans-employee-table-wrap">
+                <table class="luxury-table table-mobile-stacked" style="font-size: 0.9rem">
+                  <thead>
+                    <tr>
+                      <th>الموظف</th>
+                      <th>قيمة التسويق</th>
+                      <th>قيمة العمولة</th>
+                      <th>توزيع المنصات</th>
+                      <th>التاريخ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="ep in projectPlansModalEmployeePlans" :key="ep.id" class="hover-row">
+                      <td data-label="الموظف">{{ ep.user?.name || ep.user_name || 'User #' + (ep.user_id ?? '—') }}</td>
+                      <td data-label="قيمة التسويق" class="number">{{ formatCurrency(ep.marketing_value || 0) }}</td>
+                      <td data-label="قيمة العمولة" class="number">{{ formatCurrency(ep.commission_value || 0) }}</td>
+                      <td data-label="توزيع المنصات">{{ formatDistribution(ep.platform_distribution) }}</td>
+                      <td data-label="التاريخ">{{ formatDate(ep.created_at) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </template>
+            <p v-else class="modal-message sub">لا توجد خطط موظفين مسجّلة لهذا المشروع.</p>
+          </section>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" @click="closePlanUnavailableModal">إغلاق</button>
-          <button v-if="hasPermission('marketing.plans.create')" type="button" class="btn-primary" @click="goToManagePlanFromModal">الانتقال لإعداد الخطة</button>
+        <div class="modal-footer project-plans-modal-footer">
+          <button type="button" class="btn-secondary" @click="closeProjectPlansModal">إغلاق</button>
+          <button
+            v-if="hasPermission('marketing.plans.create')"
+            type="button"
+            class="btn-secondary"
+            @click="goToEmployeePlansManagementFromModal"
+          >
+            إدارة خطط الموظفين
+          </button>
+          <button
+            v-if="hasPermission('marketing.plans.create') && !projectPlansModalHasDeveloperPlan && !projectPlansModalPlanUrl"
+            type="button"
+            class="btn-primary"
+            @click="goToManageDeveloperPlanFromPlansModal"
+          >
+            الانتقال لإعداد خطة المطور
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Confirm Modal -->
-    <ConfirmModal
-      v-if="showConfirmModal"
-      :title="confirmModalConfig.title"
-      :message="confirmModalConfig.message"
-      :type="confirmModalConfig.type"
-      :confirm-text="confirmModalConfig.confirmText"
-      @confirm="onConfirmModalConfirm"
-      @close="showConfirmModal = false"
-    />
   </div>
 </template>
 
 <script setup>
-import ConfirmModal from '@/components/ConfirmModal.vue';
 import { useMarketingProjects } from '@/composables/marketing/useMarketingProjects';
 import {
-  platformLabelsAr,
-  devPlanCpmCpcSummary,
-  hasDevPlanPerPlatform,
-  devPlanPlatformValue,
+  formatProjectLocationRow,
+  formatCityDistrictRow,
 } from '@/modules/marketing/tabs/projects/marketingProjectsTabHelpers.js';
+import MarketingCalculateBudgetModal from '@/modules/marketing/tabs/projects/MarketingCalculateBudgetModal.vue';
 
 const {
   projects,
@@ -466,26 +387,28 @@ const {
   isLoadingProjectDetails,
   showUnitsTable,
   isLoadingUnits,
-  availableTeams,
-  selectedTeamIdToAdd,
-  isTeamActionLoading,
   showProjectDetailsModal,
   showCalculateBudgetModal,
-  showPlanUnavailableModal,
-  planUnavailableProject,
-  showConfirmModal,
-  confirmModalConfig,
+  showProjectPlansModal,
+  projectPlansModalProject,
+  projectPlansModalLoading,
+  projectPlansModalPlanUrl,
+  projectPlansModalHasDeveloperPlan,
+  projectPlansModalEmployeePlans,
+  uiOnlyMarketingPercent,
   budgetForm,
   budgetResult,
   viewProjectDetails,
-  assignTeamToProject,
-  removeTeamFromProject,
-  onConfirmModalConfirm,
+  goToMarketingTeamsPage,
   goToUnits,
   goToPhotography,
   viewProjectPlan,
-  closePlanUnavailableModal,
-  goToManagePlanFromModal,
+  closeProjectPlansModal,
+  openProjectPlanAttachment,
+  goToDeveloperPlanEditorFromModal,
+  goToManageDeveloperPlanFromPlansModal,
+  goToEmployeePlansManagementFromModal,
+  formatDate,
   onBudgetProjectChange,
   openCalculateBudgetModal,
   calculateBudget,
@@ -497,7 +420,6 @@ const {
   getRecommendedEmployee,
   formatDistribution,
   formatCurrency,
-  formatNumber,
   hasPermission,
 } = useMarketingProjects();
 </script>

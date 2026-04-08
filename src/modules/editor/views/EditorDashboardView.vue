@@ -1,18 +1,18 @@
 <template>
-  <div class="editor-dashboard-view dashboard-view rakez-erp-dashboard">
+  <div class="editor-dashboard-view dashboard-view rakez-erp-dashboard rakez-kpi-dashboard">
     <div v-if="isLoading" class="loading-state">
       <div class="spinner"></div>
       <p>جاري التحميل...</p>
     </div>
 
     <template v-else>
+      <div class="kpi-dashboard-grid">
       <DashboardWelcomeHeader
         greeting-name="قسم المونتاج"
         subtitle="عدد المشاريع قبل المونتاج وبعده (نفس تصنيف صفحة المشاريع)."
       />
 
-      <h3 class="rakez-dashboard-section-title">المؤشرات الرئيسية</h3>
-      <div class="rakez-widget-grid rakez-widget-grid--dense">
+      <div class="kpi-top-row">
         <LuxuryStatCard
           clickable
           label="مشاريع بعد المونتاج"
@@ -38,14 +38,14 @@
         </LuxuryStatCard>
       </div>
 
-      <h3 class="rakez-dashboard-section-title">لوحة المؤشرات</h3>
-      <div class="rakez-widget-grid">
-        <DarkWidgetShell title="بعد المونتاج مقابل قبله" subtitle="من قائمة محرر العقود">
+      <div class="kpi-main-grid">
+        <DarkWidgetShell class="kpi-span-4" title="بعد المونتاج مقابل قبله" subtitle="من قائمة محرر العقود">
           <DonutKpiWidget :segments="editorDonutSegments" :height="200" central-sub-label="مشاريع" />
         </DarkWidgetShell>
-        <DarkWidgetShell class="rakez-widget-span-2" title="مقارنة سريعة" subtitle="مخطط أعمدة">
+        <DarkWidgetShell class="kpi-span-8" title="مقارنة سريعة" subtitle="مخطط أعمدة">
           <DashboardMetricsBarChart :series="editorChartSeries" :height="240" />
         </DarkWidgetShell>
+      </div>
       </div>
     </template>
   </div>
@@ -89,9 +89,7 @@ onMounted(() => fetchContracts());
 <style scoped>
 .editor-dashboard-view {
   direction: rtl;
-  padding: 20px 30px;
-  min-height: 100vh;
-  background: #f8fafc;
+  min-height: 0;
 }
 
 .loading-state {

@@ -45,6 +45,28 @@
   color: #B5A99A;
 }
 
+/* عناوين أقسام (قائمة الإدمن) — تظهر النص عند توسيع الشريط */
+.sidebar .nav-section-label {
+  display: none;
+  width: 100%;
+  padding: 14px 16px 6px;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(181, 169, 154, 0.55);
+  border-top: 1px solid rgba(181, 169, 154, 0.2);
+  pointer-events: none;
+}
+.sidebar:hover .nav-section-label {
+  display: block;
+}
+.sidebar .nav-section-label:first-child {
+  border-top: none;
+  padding-top: 8px;
+}
+
 .sidebar .nav-item {
   display: flex;
   align-items: center;

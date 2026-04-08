@@ -11,15 +11,36 @@ const toNumber = (value, fallback = 0) => {
  */
 const toArray = value => (Array.isArray(value) ? value : []);
 
-/** @param {any} [raw] */
+/**
+ * Marketing dashboard KPI payload.
+ * Preferred count field from API: `number_of_available_units` (عدد الوحدات المتاحة).
+ * Legacy alias: `available_units_count`.
+ * Preferred deposits count: `number_of_deposits` (عدد العربون اليومي).
+ * Also accepted: `count_of_deposits`, `number_of_daily_deposits`, `daily_deposits_count`, `deposits_count_daily`, `deposits_count`.
+ * @param {any} [raw]
+ */
 export const normalizeMarketingDashboard = raw => {
   raw = raw ?? {};
+  const availableUnitsCount = toNumber(
+    raw.number_of_available_units ??
+      raw.available_units_count ??
+      raw.units_available_count ??
+      raw.count_available_units
+  );
+  const dailyDepositsCount = toNumber(
+    raw.number_of_deposits ??
+      raw.count_of_deposits ??
+      raw.number_of_daily_deposits ??
+      raw.daily_deposits_count ??
+      raw.deposits_count_daily ??
+      raw.deposits_count
+  );
   return {
     total_leads: toNumber(raw.total_leads),
     available_units_value: toNumber(raw.available_units_value),
-    available_units_count: toNumber(raw.available_units_count),
+    available_units_count: availableUnitsCount,
     daily_task_achievement_rate: toNumber(raw.daily_task_achievement_rate),
-    daily_deposits_count: toNumber(raw.daily_deposits_count),
+    daily_deposits_count: dailyDepositsCount,
     deposit_cost: toNumber(raw.deposit_cost),
     total_expected_bookings: toNumber(raw.total_expected_bookings),
     total_expected_booking_value: toNumber(raw.total_expected_booking_value),

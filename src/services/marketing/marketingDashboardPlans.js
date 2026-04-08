@@ -261,18 +261,6 @@ export default {
     }
   },
 
-  /**
-   * @param {any} payload
-   */
-  async autoGenerateEmployeePlan(payload) {
-    try {
-      const response = await apiClient.post('/marketing/employee-plans/auto-generate', payload);
-      return unwrap(response, {});
-    } catch (error) {
-      return handleServiceError(error, 'Auto-generate employee plan', 'post');
-    }
-  },
-
   async getExpectedSales(params = {}) {
     try {
       const response = await apiClient.get('/marketing/expected-sales', { params });

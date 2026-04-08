@@ -15,8 +15,16 @@
     </SidebarHeader>
   
     <SidebarContent>
-      <template v-for="(item, idx) in visibleNavItems" :key="item.to + '-' + idx">
+      <template v-for="(item, idx) in visibleNavItems" :key="navItemKey(item, idx)">
+        <div
+          v-if="item.type === 'section'"
+          class="nav-section-label"
+          role="presentation"
+        >
+          {{ item.label }}
+        </div>
         <router-link
+          v-else
           :to="item.to"
           class="nav-item"
           active-class="active"
@@ -108,10 +116,20 @@ const props = defineProps({
 
 defineEmits(['logout']);
 
+function navItemKey(item, idx) {
+  if (item.type === 'section') {
+    return `section-${idx}-${item.label}`;
+  }
+  return `${item.to}-${idx}`;
+}
+
 /** الحصول على قائمة العناصر المرئية حسب الدور والصلاحيات */
 const visibleNavItems = computed(() => {
   const items = getNavItemsForRole(props.userRole);
   return items.filter(item => {
+    if (item.type === 'section') {
+      return true;
+    }
     // فحص الصلاحية
     if (item.permission && !props.hasPermission(item.permission)) {
       return false;

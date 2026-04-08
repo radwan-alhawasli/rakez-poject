@@ -72,6 +72,11 @@ const legendRows = computed(() => chartSegments.value);
 </script>
 
 <style scoped>
+.donut-kpi-widget {
+  contain: layout style;
+  isolation: isolate;
+}
+
 .donut-kpi-widget__empty {
   margin: 0;
   padding: 20px;

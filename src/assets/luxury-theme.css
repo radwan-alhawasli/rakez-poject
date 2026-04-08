@@ -1061,16 +1061,7 @@ html.dark .search-input-mini {
   color: #e2e8f0;
 }
 
-/* ---- Scrollbar ---- */
-html.dark .custom-scrollbar::-webkit-scrollbar-track {
-  background: #0f172a;
-}
-html.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155;
-}
-html.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
+/* ---- Scrollbar: .custom-scrollbar uses hidden track (see global-luxury-styles) ---- */
 
 /* ---- Hardcoded light backgrounds used across components ---- */
 html.dark .section-header-compact {

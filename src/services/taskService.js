@@ -14,7 +14,16 @@ export default {
    */
   async createTask(taskData) {
     try {
-      const response = await apiClient.post('/tasks', taskData);
+      const body = { ...(taskData && typeof taskData === 'object' ? taskData : {}) };
+      if (body.task_name == null && body.title != null) {
+        body.task_name = body.title;
+        delete body.title;
+      }
+      if (body.assigned_to !== undefined && body.assigned_to !== null && body.assigned_to !== '') {
+        const n = Number.parseInt(String(body.assigned_to), 10);
+        if (Number.isFinite(n)) body.assigned_to = n;
+      }
+      const response = await apiClient.post('/tasks', body);
       return response.data?.data || response.data;
     } catch (error) {
       return handleServiceError(error, 'Create task', 'post');

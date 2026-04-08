@@ -13,7 +13,7 @@ const { isMobile, openMobile, hovered } = useSidebar();
   <div
     :class="
       cn(
-        'main-wrapper flex min-h-0 flex-1 flex-col transition-[margin] duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]',
+        'main-wrapper flex min-h-0 flex-1 flex-col transition-[margin] duration-200 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]',
         !isMobile && hovered && 'sidebar-inset-expanded',
         isMobile && openMobile && 'sidebar-inset-mobile-open sidebar-open',
         props.class
