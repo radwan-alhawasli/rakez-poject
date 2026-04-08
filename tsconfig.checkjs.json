@@ -26,7 +26,8 @@
     "src/vite-env.d.ts",
     "src/shims-checkjs.d.ts",
     "src/api/**/*.js",
-    "src/services/**/*.js"
+    "src/services/**/*.js",
+    "src/utils/projectProgressSteps.js"
   ],
   "exclude": ["node_modules", "dist"]
 }

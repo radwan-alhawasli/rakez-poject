@@ -1,3 +1,8 @@
+/**
+ * @typedef {{ step_number: number, completed?: boolean, label_ar?: string }} NormalizedProgressStep
+ * @typedef {{ steps?: Array<{ step_number?: number, completed?: boolean, label_ar?: string }>, completed_count?: number }} ProjectProgressShape
+ */
+
 /** Keys saved via second-party-data (same order as UI tracker). */
 export const TRACKER_SECOND_PARTY_KEYS = [
   'real_estate_papers_url',
@@ -21,7 +26,9 @@ export function extractSecondPartyShowRow(snap) {
 }
 
 /** True if a row already exists → use PUT /second-party-data/update/:id, else POST .../store/:id */
-export function hasSecondPartyTrackerRecord(row) {
+export function hasSecondPartyTrackerRecord(
+  /** @type {Record<string, unknown>|null|undefined} */ row
+) {
   if (!row || typeof row !== 'object') return false;
   if (row.id != null && String(row.id).trim() !== '') return true;
   if (row.second_party_data_id != null && String(row.second_party_data_id).trim() !== '') return true;
@@ -68,33 +75,55 @@ export function isStepMarkedComplete(step) {
  * 6 warranties, 7 advertiser → UI step 5 is completed only when both old 4 and 6 are done.
  *
  * @param {Array<{ step_number?: number, completed?: boolean, label_ar?: string }>|undefined|null} steps
- * @returns {Array<{ step_number: number, completed?: boolean, label_ar?: string }>}
+ * @returns {NormalizedProgressStep[]}
  */
 export function normalizeProjectProgressSteps(steps) {
   if (!Array.isArray(steps) || steps.length === 0) return [];
+
+  /** @param {{ step_number?: number, completed?: boolean, label_ar?: string }|null|undefined} s @param {number} fallback */
+  const coerce = (s, fallback) => {
+    if (!s || typeof s !== 'object') return null;
+    const n = Number(s.step_number);
+    const step_number = Number.isFinite(n) && n > 0 ? n : fallback;
+    return /** @type {NormalizedProgressStep} */ ({
+      step_number,
+      completed: s.completed,
+      label_ar: s.label_ar,
+    });
+  };
+
   const sorted = [...steps].sort((a, b) => Number(a.step_number) - Number(b.step_number));
   if (sorted.length === 7) {
     const by = Object.fromEntries(sorted.map(s => [Number(s.step_number), s]));
-    return [
-      by[1],
-      by[2],
-      by[3],
-      by[5] ? { ...by[5], step_number: 4 } : null,
-      {
+    /** @type {(NormalizedProgressStep | null)[]} */
+    const merged = [
+      coerce(by[1], 1),
+      coerce(by[2], 2),
+      coerce(by[3], 3),
+      by[5] ? coerce({ ...by[5], step_number: 4 }, 4) : null,
+      /** @type {NormalizedProgressStep} */ ({
         step_number: 5,
         label_ar: 'شهادة اتمام و ضمانات',
         // خطوتان قديمتان (4 و6) أصبحتا حقلاً واحداً — يكفي إكمال إحداهما
         completed: isStepMarkedComplete(by[4]) || isStepMarkedComplete(by[6]),
-      },
-      by[7] ? { ...by[7], step_number: 6 } : null,
-    ].filter(Boolean);
+      }),
+      by[7] ? coerce({ ...by[7], step_number: 6 }, 6) : null,
+    ];
+    return merged.filter(/** @returns {x is NormalizedProgressStep} */ (x) => x != null);
   }
-  if (sorted.length > 6) return sorted.slice(0, 6);
-  return sorted;
+  if (sorted.length > 6) {
+    return sorted
+      .slice(0, 6)
+      .map((s, i) => coerce(s, i + 1))
+      .filter(/** @returns {x is NormalizedProgressStep} */ x => x != null);
+  }
+  return sorted
+    .map((s, i) => coerce(s, i + 1))
+    .filter(/** @returns {x is NormalizedProgressStep} */ x => x != null);
 }
 
 /**
- * @param {{ steps?: Array<{ completed?: boolean }> }|null|undefined} progress
+ * @param {ProjectProgressShape|null|undefined} progress
  */
 export function isProjectProgressFullyCompleted(progress) {
   const norm = normalizeProjectProgressSteps(progress?.steps);
@@ -123,18 +152,23 @@ export function countFilledSecondPartyTrackerFields(row) {
 export function computeSetupProgressPercentSixStages(contractLike) {
   if (!contractLike || typeof contractLike !== 'object') return 0;
 
-  const norm = normalizeProjectProgressSteps(contractLike.project_progress?.steps);
+  const ppRaw = contractLike['project_progress'];
+  const pp =
+    ppRaw != null && typeof ppRaw === 'object' && !Array.isArray(ppRaw)
+      ? /** @type {ProjectProgressShape & Record<string, unknown>} */ (ppRaw)
+      : null;
+  const stepsRaw = pp?.steps;
+  const norm = normalizeProjectProgressSteps(Array.isArray(stepsRaw) ? stepsRaw : undefined);
   let completed = norm.length > 0 ? norm.filter(s => isStepMarkedComplete(s)).length : 0;
 
   const sp =
     contractLike.second_party_data != null && typeof contractLike.second_party_data === 'object'
-      ? contractLike.second_party_data
+      ? /** @type {Record<string, unknown>} */ (contractLike.second_party_data)
       : contractLike.second_party != null && typeof contractLike.second_party === 'object'
-        ? contractLike.second_party
+        ? /** @type {Record<string, unknown>} */ (contractLike.second_party)
         : null;
   if (sp) completed = Math.max(completed, countFilledSecondPartyTrackerFields(sp));
 
-  const pp = contractLike.project_progress;
   if (
     completed === 0 &&
     pp &&
