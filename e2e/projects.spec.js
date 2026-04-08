@@ -50,12 +50,12 @@ test.describe('Project Management Page', () => {
   test('should load the project management view at /project-management', async ({ page }) => {
     await page.goto('/project-management');
     await expect(page.locator('.project-management-view')).toBeVisible();
-    await expect(page.locator('.welcome-title')).toContainText('إدارة المشاريع');
+    await expect(page.getByTestId('e2e-welcome-title')).toContainText('إدارة المشاريع');
   });
 
   test('should display page header with subtitle', async ({ page }) => {
     await page.goto('/project-management');
-    await expect(page.locator('.welcome-subtitle')).toContainText('عرض وإدارة جميع المشاريع');
+    await expect(page.getByTestId('e2e-welcome-subtitle')).toContainText('عرض وإدارة جميع المشاريع');
   });
 
   test('should show project grid or empty state', async ({ page }) => {
@@ -84,7 +84,7 @@ test.describe('Project Management Page', () => {
 
   test('should have a search box that filters projects', async ({ page }) => {
     await page.goto('/project-management');
-    const searchInput = page.locator('.search-container .search-input');
+    const searchInput = page.getByTestId('e2e-project-search-input');
     await expect(searchInput).toBeVisible();
     await expect(searchInput).toHaveAttribute('placeholder', /ابحث عن مشروع/);
 

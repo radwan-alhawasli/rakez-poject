@@ -1,14 +1,24 @@
 
 .task-description {
-  font-size: 0.88rem;
-  color: var(--text-muted, #666);
-  margin: 0 0 10px;
-  line-height: 1.5;
+  font-size: 0.875rem;
+  color: var(--color-dark-gray, #64748b);
+  margin: 0 0 12px;
+  line-height: 1.55;
   word-break: break-word;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(39, 55, 77, 0.04);
+  border: 1px solid rgba(39, 55, 77, 0.06);
 }
 
 .task-details p {
-  margin: 4px 0;
+  margin: 0;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(39, 55, 77, 0.06);
+}
+
+.task-details p:last-of-type {
+  border-bottom: none;
 }
 
 .task-details .reason {
@@ -28,84 +38,111 @@
 }
 
 .person-name.assignee {
-  background: rgba(253, 203, 110, 0.15);
-  color: #b8860b;
+  background: linear-gradient(
+    135deg,
+    rgba(181, 169, 154, 0.22) 0%,
+    rgba(253, 203, 110, 0.12) 100%
+  );
+  color: var(--color-navy-dark, #1a2636);
+  border: 1px solid rgba(196, 165, 116, 0.35);
 }
 
-/* Status Progress */
+/* Status Progress — محاذاة الخط مع منتصف النقاط + ألوان متوافقة مع الهوية */
 .status-indicator {
-  margin-bottom: 12px;
-  padding: 8px 0;
+  margin-bottom: 4px;
+  padding: 12px 4px 4px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(39, 55, 77, 0.08);
 }
 
 .status-steps {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
 }
 
 .step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .step-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: var(--border-color, #ddd);
-  border: 2px solid var(--border-color, #ccc);
-  transition: all 0.3s ease;
+  background: var(--color-medium-gray, #e2e8f0);
+  border: 2px solid rgba(39, 55, 77, 0.2);
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+  flex-shrink: 0;
 }
 
 .step.done .step-dot {
-  background: var(--success-color, #28a745);
-  border-color: var(--success-color, #28a745);
+  background: var(--color-success, #16a34a);
+  border-color: var(--color-success, #16a34a);
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.15);
 }
 
 .step.failed .step-dot {
-  background: var(--danger-color, #dc3545);
-  border-color: var(--danger-color, #dc3545);
+  background: var(--color-error, #ef4444);
+  border-color: var(--color-error, #ef4444);
 }
 
 .step-label {
-  font-size: 0.65rem;
-  color: var(--text-muted, #999);
+  font-size: 0.68rem;
+  color: var(--color-dark-gray, #64748b);
   white-space: nowrap;
+  text-align: center;
+  line-height: 1.25;
+  max-width: 5.5rem;
 }
 
 .step.done .step-label {
-  color: var(--success-color, #28a745);
-  font-weight: 600;
+  color: var(--color-success, #16a34a);
+  font-weight: 700;
 }
 
 .step.failed .step-label {
-  color: var(--danger-color, #dc3545);
-  font-weight: 600;
+  color: var(--color-error, #ef4444);
+  font-weight: 700;
 }
 
 .step-line {
-  width: 40px;
-  height: 2px;
-  background: var(--border-color, #ddd);
-  margin: 0 4px;
-  margin-bottom: 18px;
-  transition: background 0.3s ease;
+  flex: 0 0 clamp(20px, 8vw, 44px);
+  width: auto;
+  min-width: 16px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(39, 55, 77, 0.12);
+  margin: 0;
+  margin-top: 5px;
+  align-self: flex-start;
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .step-line.active {
-  background: var(--success-color, #28a745);
+  background: var(--color-gold, #b5a99a);
+  box-shadow: 0 1px 4px rgba(39, 55, 77, 0.1);
 }
 
 /* Task Actions */
 .task-actions {
   display: flex;
-  gap: 8px;
-  border-top: 1px solid var(--border-color, #eee);
-  padding-top: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+  border-top: 1px solid rgba(39, 55, 77, 0.08);
+  padding-top: 14px;
+  margin-top: auto;
 }
 
 /* Pagination */
@@ -118,12 +155,23 @@
 }
 
 .pagination button {
-  padding: 6px 12px;
-  border: 1px solid var(--border-color, #ddd);
-  background: var(--card-bg, #fff);
-  color: var(--text-color, #333);
-  border-radius: 4px;
+  padding: 8px 16px;
+  border: 1px solid rgba(39, 55, 77, 0.14);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--color-navy, #27374d);
+  border-radius: var(--radius-sm, 8px);
   cursor: pointer;
+  font-weight: 600;
+  font-family: inherit;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  border-color: rgba(181, 169, 154, 0.55);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
 }
 
 .pagination button:disabled {
@@ -135,8 +183,16 @@
 .loading-state,
 .empty-state {
   text-align: center;
-  padding: 40px;
-  color: var(--text-muted, #666);
+  padding: clamp(28px, 4vw, 44px);
+  color: var(--color-dark-gray, #64748b);
+  border-radius: var(--radius-md, 14px);
+  border: 1px solid rgba(196, 165, 116, 0.28);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 253, 248, 0.92) 0%,
+    rgba(250, 246, 238, 0.85) 100%
+  );
+  box-shadow: 0 8px 28px -18px rgba(15, 23, 42, 0.12);
 }
 
 .error-state {
@@ -192,20 +248,30 @@
 }
 
 .modal-content {
-  background: var(--bg-color, #fff);
-  border-radius: 8px;
+  background: linear-gradient(
+    165deg,
+    rgba(255, 253, 248, 0.98) 0%,
+    rgba(255, 255, 255, 0.99) 100%
+  );
+  border-radius: var(--radius-md, 14px);
   padding: 24px;
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(196, 165, 116, 0.35);
+  box-shadow:
+    0 24px 48px -12px rgba(15, 23, 42, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
 }
 
 .modal-content h3 {
   margin-top: 0;
   margin-bottom: 20px;
-  color: var(--text-color, #333);
+  color: var(--color-navy, #27374d);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-family: 'Cairo', 'Tajawal', system-ui, sans-serif;
 }
 
 .modal-actions {
@@ -273,7 +339,8 @@
     padding: 20px;
   }
   .step-line {
-    width: 28px;
+    flex: 0 0 22px;
+    min-width: 14px;
   }
 }
 
@@ -305,7 +372,8 @@
     font-size: 0.8rem;
   }
   .tab-icon {
-    display: none;
+    width: 1.15rem;
+    height: 1.15rem;
   }
   .btn-primary,
   .btn-secondary {
@@ -354,7 +422,8 @@
     transform: scale(0.9);
   }
   .step-line {
-    width: 20px;
+    flex: 0 0 14px;
+    min-width: 10px;
   }
 }
 

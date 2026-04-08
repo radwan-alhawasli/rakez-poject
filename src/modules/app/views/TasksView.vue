@@ -1,29 +1,53 @@
 <template>
-  <div class="tasks-view">
+  <div class="tasks-view rakez-erp-dashboard rakez-tasks-page">
     <div class="welcome-header">
       <div class="header-flex-container">
         <h1 class="welcome-title">إدارة المهام</h1>
-        <button class="btn-primary" @click="showCreateModal = true">إضافة مهمة</button>
+        <button type="button" class="btn-primary btn-add-task" @click="showCreateModal = true">
+          إضافة مهمة
+        </button>
       </div>
     </div>
 
     <!-- Tabs -->
     <div class="tabs-container">
       <button
+        type="button"
         class="tab-btn"
         :class="{ active: activeTab === 'assigned' }"
         @click="switchTab('assigned')"
       >
-        <span class="tab-icon">📋</span>
+        <span class="tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
         مهام مطلوبة مني
         <span v-if="assignedTotal > 0" class="tab-count">{{ assignedTotal }}</span>
       </button>
       <button
+        type="button"
         class="tab-btn"
         :class="{ active: activeTab === 'requested' }"
         @click="switchTab('requested')"
       >
-        <span class="tab-icon">📤</span>
+        <span class="tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M7 11l5-5m0 0l5 5m-5-5v12"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
         مهام طلبتها من الآخرين
         <span v-if="requestedTotal > 0" class="tab-count">{{ requestedTotal }}</span>
       </button>

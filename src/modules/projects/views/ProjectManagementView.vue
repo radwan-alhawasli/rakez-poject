@@ -3,8 +3,8 @@
     <!-- Header — نفس نمط لوحة مشاريع المبيعات -->
     <div class="welcome-header project-mgmt-header">
       <div class="header-content">
-        <h1 class="welcome-title">إدارة المشاريع</h1>
-        <p class="welcome-subtitle">عرض وإدارة جميع المشاريع النشطة والمكتملة والمؤرشفة.</p>
+        <h1 class="welcome-title" data-testid="e2e-welcome-title">إدارة المشاريع</h1>
+        <p class="welcome-subtitle" data-testid="e2e-welcome-subtitle">عرض وإدارة جميع المشاريع النشطة والمكتملة والمؤرشفة.</p>
       </div>
       <div class="controls-area">
         <div class="search-container">
@@ -16,6 +16,7 @@
             v-model="searchQuery"
             type="text"
             class="search-input"
+            data-testid="e2e-project-search-input"
             placeholder="ابحث عن مشروع بالاسم أو الموقع..."
           />
         </div>
