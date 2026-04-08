@@ -53,6 +53,16 @@
             <DashboardStatIcon name="leads" />
           </template>
         </LuxuryStatCard>
+
+        <LuxuryStatCard
+          label="عدد حجوزات الانتظار"
+          :value="formatCompact(waitingListCount)"
+          description="طلبات في قائمة الانتظار"
+        >
+          <template #icon>
+            <DashboardStatIcon name="clock" />
+          </template>
+        </LuxuryStatCard>
       </div>
     </div>
   </div>
@@ -67,6 +77,8 @@ import { useFormatters } from '@/composables/useFormatters';
 
 const props = defineProps({
   dashboardData: { type: Object, default: null },
+  /** من GET /sales/waiting-list (إجمالي العناصر) */
+  waitingListCount: { type: Number, default: 0 },
   isLoading: { type: Boolean, default: false },
 });
 

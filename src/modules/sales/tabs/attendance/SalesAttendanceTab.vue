@@ -59,17 +59,34 @@
         <thead>
           <tr>
             <th v-if="hasPermission('sales.attendance.manage')">الموظف</th>
+            <th>رقم الجدول</th>
+            <th>معرّف المستخدم</th>
+            <th>اسم المستخدم</th>
+            <th>معرّف المشروع</th>
             <th>اسم المشروع</th>
+            <th>موقع المشروع</th>
             <th>التاريخ</th>
+            <th>اليوم (عربي)</th>
+            <th>اليوم (إنجليزي)</th>
             <th>وقت الدخول</th>
             <th>وقت الخروج</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="record in paginatedAttendance" :key="record.id">
+          <tr
+            v-for="record in paginatedAttendance"
+            :key="`${record.schedule_id ?? record.id ?? ''}-${record.date ?? ''}-${record.user_id ?? ''}`"
+          >
             <td v-if="hasPermission('sales.attendance.manage')" data-label="الموظف">{{ record.employee_name }}</td>
+            <td data-label="رقم الجدول">{{ record.schedule_id != null ? record.schedule_id : '—' }}</td>
+            <td data-label="معرّف المستخدم">{{ record.user_id != null ? record.user_id : '—' }}</td>
+            <td data-label="اسم المستخدم">{{ record.user_name || '—' }}</td>
+            <td data-label="معرّف المشروع">{{ record.project_id != null ? record.project_id : '—' }}</td>
             <td data-label="اسم المشروع">{{ record.project_name || '—' }}</td>
+            <td data-label="موقع المشروع">{{ record.project_location || '—' }}</td>
             <td data-label="التاريخ">{{ formatDate(record.date) }}</td>
+            <td data-label="اليوم (عربي)">{{ record.day_name_ar || '—' }}</td>
+            <td data-label="اليوم (إنجليزي)">{{ record.day_of_week || '—' }}</td>
             <td data-label="وقت الدخول">{{ record.check_in_time || '—' }}</td>
             <td data-label="وقت الخروج">{{ record.check_out_time || '—' }}</td>
           </tr>

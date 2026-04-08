@@ -98,14 +98,28 @@ export const removeTeamMember = async (teamId, userId) => {
 };
 
 /**
+ * Unwrap list payload from GET /hr/marketers/performance (array or { marketers|items|data }).
+ */
+function extractMarketerPerformanceList(response) {
+  const raw = response?.data?.data ?? response?.data;
+  if (Array.isArray(raw)) return raw;
+  if (raw && typeof raw === 'object') {
+    if (Array.isArray(raw.marketers)) return raw.marketers;
+    if (Array.isArray(raw.items)) return raw.items;
+    if (Array.isArray(raw.data)) return raw.data;
+    if (Array.isArray(raw.users)) return raw.users;
+  }
+  return [];
+}
+
+/**
  * List marketer performance
  * GET /hr/marketers/performance
  */
 export const listMarketerPerformance = async (params = {}) => {
   try {
     const response = await apiClient.get('/hr/marketers/performance', { params });
-    const performance = response.data?.data || response.data || [];
-    return Array.isArray(performance) ? performance : [];
+    return extractMarketerPerformanceList(response);
   } catch (error) {
     logger.error('Error fetching marketer performance list:', error);
     throw error;

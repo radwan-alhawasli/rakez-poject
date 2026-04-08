@@ -1,6 +1,6 @@
 <template>
-  <div class="developers-view project-management-view project-management-design" dir="rtl">
-    <div class="welcome-header project-mgmt-header">
+  <div class="developers-view project-management-view project-management-design developers-view--rakez" dir="rtl">
+    <div class="welcome-header project-mgmt-header developers-header">
       <div class="header-content">
         <h1 class="welcome-title">إدارة المطورين</h1>
         <p class="welcome-subtitle">الأطراف الثانية (المطورون) المرتبطة بالعقود — من مصدر بيانات موحّد.</p>
@@ -16,18 +16,42 @@
             type="text"
             class="search-input"
             placeholder="ابحث بالاسم، البريد، السجل التجاري، الهاتف..."
+            autocomplete="off"
           />
         </div>
       </div>
     </div>
 
-    <div class="view-content">
-      <div v-if="isLoading" class="loading-state">
-        <div class="spinner"></div>
-        <p>جاري تحميل المطورين...</p>
+    <div class="view-content developers-view-content">
+      <div v-if="isLoading" class="developers-loading" aria-busy="true" aria-live="polite">
+        <div class="developers-skeleton-grid" role="presentation">
+          <div v-for="n in 6" :key="n" class="developer-skeleton-card">
+            <div class="developer-skeleton-visual loading-skeleton"></div>
+            <div class="developer-skeleton-body">
+              <div class="loading-skeleton developer-skeleton-line developer-skeleton-line--title"></div>
+              <div class="loading-skeleton developer-skeleton-line developer-skeleton-line--sub"></div>
+              <div class="loading-skeleton developer-skeleton-line developer-skeleton-line--meta"></div>
+              <div class="loading-skeleton developer-skeleton-btn"></div>
+            </div>
+          </div>
+        </div>
+        <p class="developers-loading-caption">جاري تحميل المطورين...</p>
       </div>
-      <div v-else-if="filteredDevelopers.length === 0" class="empty-state">
-        <p>{{ allDevelopers.length === 0 ? 'لا توجد أطراف ثانية مسجّلة حالياً.' : 'لا يوجد مطابق لبحثك.' }}</p>
+      <div v-else-if="filteredDevelopers.length === 0" class="empty-state developers-empty">
+        <div class="developers-empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M32 8L12 18v16c0 11.2 8.5 21.6 20 24 11.5-2.4 20-12.8 20-24V18L32 8z"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+            <path d="M24 32l6 6 12-12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <p class="developers-empty-text">
+          {{ allDevelopers.length === 0 ? 'لا توجد أطراف ثانية مسجّلة حالياً.' : 'لا يوجد مطابق لبحثك.' }}
+        </p>
       </div>
       <div v-else class="projects-grid developers-cards-grid">
         <article
@@ -118,6 +142,7 @@ export default {
     const fetchDevelopers = async () => {
       isLoading.value = true;
       try {
+        // GET /second-party-data/second-parties — قائمة المطورين لكل قسم يملك تبويب المطورين
         const raw = await contractService.getDevelopers();
         const list = Array.isArray(raw) ? raw : [];
         allDevelopers.value = list.map(d => normalizeDeveloper(d));

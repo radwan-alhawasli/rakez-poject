@@ -4,6 +4,7 @@
     <DashboardWelcomeHeader />
     <DashboardPrimaryKpis
       :dashboard-data="dashboardData"
+      :waiting-list-count="waitingListCount"
       :is-loading="isLoadingDashboard"
     />
 
@@ -59,7 +60,7 @@ import TaskListWidget from '@/components/dashboard/widgets/TaskListWidget.vue';
 import DashboardWelcomeHeader from './sections/DashboardWelcomeHeader.vue';
 import DashboardPrimaryKpis from './sections/DashboardPrimaryKpis.vue';
 
-const { dashboardData, isLoadingDashboard, loadDashboard } = useSalesDashboard();
+const { dashboardData, waitingListCount, isLoadingDashboard, loadDashboard } = useSalesDashboard();
 
 const { areaPoints, load: loadAnalytics } = useSalesAnalyticsSeries();
 const { items: taskItems, load: loadTasks } = useManagerTasksPreview();

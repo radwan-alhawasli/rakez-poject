@@ -2,6 +2,38 @@ import apiClient from '@/api/apiClient';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
 import { normalizeReservationPayload } from '@/services/sales/salesReservationPayload.js';
+import logger from '@/utils/logger';
+
+/**
+ * فك استجابة قوائم الأهداف — أشكال متعددة من Laravel / pagination.
+ * @param {import('axios').AxiosResponse|any} response
+ * @returns {unknown[]}
+ */
+function unwrapSalesTargetsList(response) {
+  const { items } = extractPaginatedData(response, []);
+  if (Array.isArray(items) && items.length > 0) return items;
+  const data = response?.data ?? response;
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.data)) return data.data;
+  if (data && Array.isArray(data.targets)) return data.targets;
+  const nested = data?.data;
+  if (nested && typeof nested === 'object') {
+    if (Array.isArray(nested.targets)) return nested.targets;
+    if (Array.isArray(nested.data)) return nested.data;
+  }
+  return [];
+}
+
+/**
+ * PATCH {apiClient baseURL}/sales/targets/{id}
+ * يطابق طلب المتصفح مثل: https://api.rakez.com.sa/api/sales/targets/4 (طريقة PATCH، حالة 200)
+ * يُستخدم لتحديث حالة الهدف للمسوق العادي وقائد المبيعات بنفس المسار.
+ * @param {number|string} targetId
+ * @param {Record<string, unknown>} data
+ */
+function patchSalesTargetRecord(targetId, data) {
+  return apiClient.patch(`/sales/targets/${targetId}`, data);
+}
 
 /**
  * Core sales API methods (composed into default export in salesService.js).
@@ -60,10 +92,11 @@ export const salesServiceCoreMethods = {
    * Get emergency contacts for a project
    * GET /sales/projects/:projectId/emergency-contacts
    * @param {number|string} projectId - Project ID
-   * @returns {Promise<unknown[]>} List of emergency contacts
+   * @returns {Promise<unknown|unknown[]>} Contact object, list, or nested payload (unwrapped from axios)
    */
-  getEmergencyContacts(projectId) {
-    return apiClient.get(`/sales/projects/${projectId}/emergency-contacts`);
+  async getEmergencyContacts(projectId) {
+    const response = await apiClient.get(`/sales/projects/${projectId}/emergency-contacts`);
+    return response.data?.data ?? response.data;
   },
 
   // Reservations
@@ -206,13 +239,7 @@ export const salesServiceCoreMethods = {
   async getMyTargets(params = {}) {
     try {
       const response = await apiClient.get('/sales/targets/my', { params });
-      const { items } = extractPaginatedData(response, []);
-      if (Array.isArray(items) && items.length > 0) return items;
-      const data = response?.data ?? response;
-      if (Array.isArray(data)) return data;
-      if (data && Array.isArray(data.data)) return data.data;
-      if (data && Array.isArray(data.targets)) return data.targets;
-      return Array.isArray(items) ? items : [];
+      return unwrapSalesTargetsList(response);
     } catch (error) {
       return handleServiceError(error, 'Fetch my targets', 'get', []);
     }
@@ -228,21 +255,17 @@ export const salesServiceCoreMethods = {
    */
   async getTargetsByProject(contractId) {
     const response = await apiClient.get(`/sales/targets/by-project/${contractId}`);
-    const data = response?.data ?? response;
-    if (data && Array.isArray(data.data)) return data.data;
-    if (Array.isArray(data)) return data;
-    return [];
+    return unwrapSalesTargetsList(response);
   },
 
   /**
-   * Update a sales target
-   * PATCH /sales/targets/{id}
+   * Update a sales target — نفس طلب الشبكة PATCH …/api/sales/targets/{id} للجميع (عبر patchSalesTargetRecord)
    * @param {number|string} targetId - Target ID
    * @param {any} data - { status: 'new'|'in_progress'|'completed' }
-   * @returns {Promise<Object>} Updated target
+   * @returns {Promise<import('axios').AxiosResponse>} Axios response
    */
   updateTarget(targetId, data) {
-    return apiClient.patch(`/sales/targets/${targetId}`, data);
+    return patchSalesTargetRecord(targetId, data);
   },
 
   /**
@@ -518,7 +541,7 @@ export const salesServiceCoreMethods = {
   },
 
   /**
-   * Update my target (api.php: PATCH sales/targets/{id})
+   * Update my target — نفس مسار updateTarget (PATCH …/sales/targets/{id}) مع إرجاع جسم الاستجابة فقط
    * @param {number|string|Object} targetIdOrData - Target ID or payload object with `id` when `data` omitted
    * @param {any} [data] - Target update data (amount, period, etc.)
    * @returns {Promise<Object>} Updated target
@@ -528,7 +551,7 @@ export const salesServiceCoreMethods = {
     const targetId = isDataOnly ? /** @type {any} */ (targetIdOrData).id : targetIdOrData;
     const payload = isDataOnly ? targetIdOrData : data ?? {};
     if (targetId == null) return Promise.reject(new Error('Target ID is required'));
-    const response = await apiClient.patch(`/sales/targets/${targetId}`, payload);
+    const response = await patchSalesTargetRecord(targetId, payload);
     return response.data?.data || response.data || {};
   },
 
@@ -542,6 +565,27 @@ export const salesServiceCoreMethods = {
     const response = await apiClient.get('/sales/waiting-list', { params });
     const { items } = extractPaginatedData(response, []);
     return Array.isArray(items) ? items : [];
+  },
+
+  /**
+   * إجمالي عناصر قائمة انتظار الحجز (يعتمد على meta.total عند توفره).
+   * GET /sales/waiting-list?per_page=1
+   * @param {Record<string, unknown>} [params] - مثل active_only
+   * @returns {Promise<number>}
+   */
+  async getWaitingListCount(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/waiting-list', {
+        params: { per_page: 1, page: 1, ...params },
+      });
+      const { items, total } = extractPaginatedData(response, []);
+      const n = Number(total);
+      if (!Number.isNaN(n) && n >= 0) return n;
+      return Array.isArray(items) ? items.length : 0;
+    } catch (error) {
+      logger.warn('[sales] getWaitingListCount:', error);
+      return 0;
+    }
   },
 
   /**

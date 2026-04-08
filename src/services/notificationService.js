@@ -272,7 +272,7 @@ const notificationService = {
 
   /**
    * Mark notification as read
-   * API: PATCH /notifications/:id/read (shared); POST /accounting/notifications/:id/read (accounting); POST /credit/notifications/:id/read (credit)
+   * API: PATCH /user/notifications/:id/read (shared); POST /accounting/notifications/:id/read (accounting); POST /credit/notifications/:id/read (credit)
    * @param {number|string} id - Notification ID
    * @returns {Promise<void>}
    */
@@ -294,7 +294,7 @@ const notificationService = {
     } else if (isCredit) {
       promise = apiClient.post(`/credit/notifications/${id}/read`);
     } else {
-      promise = apiClient.patch(`/notifications/${id}/read`);
+      promise = apiClient.patch(`/user/notifications/${id}/read`);
     }
     try {
       await promise;
@@ -317,7 +317,7 @@ const notificationService = {
 
   /**
    * Mark all notifications as read
-   * API: PATCH /notifications/mark-all-read (shared); POST /accounting/notifications/read-all (accounting); POST /credit/notifications/read-all (credit)
+   * API: PATCH /user/notifications/mark-all-read (shared); POST /accounting/notifications/read-all (accounting); POST /credit/notifications/read-all (credit)
    * @returns {Promise<void>}
    */
   async markAllAsRead() {
@@ -338,7 +338,7 @@ const notificationService = {
       } else if (isCredit) {
         await apiClient.post('/credit/notifications/read-all');
       } else {
-        await apiClient.patch('/notifications/mark-all-read');
+        await apiClient.patch('/user/notifications/mark-all-read');
       }
       notifications.value.forEach(n => {
         n.read = true;
@@ -398,13 +398,13 @@ const notificationService = {
 
   /**
    * Mark notification as read (alternative endpoint)
-   * PATCH /notifications/:id/read (per API collection)
+   * PATCH /user/notifications/:id/read (per API collection)
    * @param {number|string} id - Notification ID
    * @returns {Promise<Object>} Response
    */
   async markNotificationAsRead(id) {
     try {
-      const response = await apiClient.patch(`/notifications/${id}/read`);
+      const response = await apiClient.patch(`/user/notifications/${id}/read`);
       return response.data?.data || response.data || {};
     } catch (error) {
       logger.error(`Error marking notification ${id} as read:`, error);
@@ -414,12 +414,12 @@ const notificationService = {
 
   /**
    * Mark all notifications as read (alternative endpoint)
-   * PATCH /notifications/mark-all-read (per API collection)
+   * PATCH /user/notifications/mark-all-read (per API collection)
    * @returns {Promise<Object>} Response
    */
   async markAllNotificationsAsRead() {
     try {
-      const response = await apiClient.patch('/notifications/mark-all-read');
+      const response = await apiClient.patch('/user/notifications/mark-all-read');
       return response.data?.data || response.data || {};
     } catch (error) {
       logger.error('Error marking all notifications as read:', error);

@@ -9,6 +9,7 @@ export function useSalesDashboard() {
   const { formatCurrencyAr: formatCurrency } = useFormatters();
 
   const dashboardData = ref(null);
+  const waitingListCount = ref(0);
   const isLoadingDashboard = ref(false);
   const now = new Date();
   const year = now.getFullYear();
@@ -35,7 +36,24 @@ export function useSalesDashboard() {
     try {
       const user = authService.getCurrentUser();
       const scope = user && isSalesLeader(user) ? 'all' : dashboardFilters.scope;
-      const response = await salesService.getDashboard({ ...dashboardFilters, scope });
+      const [dashOutcome, waitOutcome] = await Promise.allSettled([
+        salesService.getDashboard({ ...dashboardFilters, scope }),
+        salesService.getWaitingListCount(),
+      ]);
+
+      if (waitOutcome.status === 'fulfilled' && typeof waitOutcome.value === 'number') {
+        waitingListCount.value = waitOutcome.value;
+      } else if (waitOutcome.status === 'rejected') {
+        logger.warn('[SalesDashboard] waiting-list count:', waitOutcome.reason);
+        waitingListCount.value = 0;
+      }
+
+      if (dashOutcome.status === 'rejected') {
+        logger.error('Error loading dashboard:', dashOutcome.reason);
+        return;
+      }
+
+      const response = dashOutcome.value;
       const raw = response?.data?.data || response?.data || response;
       const ind = raw?.indicators;
       if (ind) {
@@ -67,6 +85,7 @@ export function useSalesDashboard() {
 
   return {
     dashboardData,
+    waitingListCount,
     isLoadingDashboard,
     dashboardFilters,
     computedConfirmedVsNegotiationRatio,

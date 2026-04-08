@@ -136,6 +136,8 @@ import contractService from '@/services/contractService';
 import salesService from '@/services/salesService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
+import { ROLE_SALES, ROLE_SALES_LEADER } from '@/constants/roles';
+import { normalizeRole } from '@/utils/rbac';
 import { isProjectProgressFullyCompleted } from '@/utils/projectProgressSteps';
 import { toast } from '@/composables/useToast';
 import ProjectProgressTab from '@/components/project/ProjectProgressTab.vue';
@@ -144,6 +146,12 @@ import ProjectPhotographyTab from '@/components/project/ProjectPhotographyTab.vu
 import ProjectBoardsTab from '@/components/project/ProjectBoardsTab.vue';
 import ProjectTeamsTab from '@/components/project/ProjectTeamsTab.vue';
 import ProjectReservationsTab from '@/components/project/ProjectReservationsTab.vue';
+
+/** موظف مبيعات أو قائد مبيعات — نفس واجهة تفاصيل المشروع (وحدات، حجز، إلخ) */
+function isSalesDomainUser(user) {
+  const r = normalizeRole(user?.type);
+  return r === ROLE_SALES || r === ROLE_SALES_LEADER;
+}
 
 const route = useRoute();
 
@@ -162,10 +170,7 @@ const isApprovalManager = computed(() => {
   const user = authService.getCurrentUser();
   return user?.type == 1 || user?.type == 10 || (user?.type == 2 && !!user?.is_manager);
 });
-const isSalesUser = computed(() => {
-  const user = authService.getCurrentUser();
-  return user?.type == 6;
-});
+const isSalesUser = computed(() => isSalesDomainUser(authService.getCurrentUser()));
 const isProjectManager = computed(() => {
   const user = authService.getCurrentUser();
   return user?.type == 2;
@@ -199,7 +204,7 @@ const fetchProject = async () => {
     const id = route.params.id;
     const user = authService.getCurrentUser();
     const isEditor = user && user.type == 3;
-    const isSales = user && user.type == 6;
+    const isSales = user && isSalesDomainUser(user);
 
     let data = null;
     try {

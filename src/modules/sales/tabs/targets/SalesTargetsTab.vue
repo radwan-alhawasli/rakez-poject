@@ -1,18 +1,29 @@
 <template>
   <div class="targets-tab">
-    <div class="welcome-header">
+    <div class="welcome-header targets-hero">
       <div class="header-content">
+        <div class="targets-brand-line" aria-hidden="true">
+          <span class="brand-ar">راكز العقارية</span>
+          <span class="brand-sep">|</span>
+          <span class="brand-en">Rakez Real Estate</span>
+        </div>
         <h1 class="welcome-title">
-          <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="10"></circle>
             <circle cx="12" cy="12" r="6"></circle>
             <circle cx="12" cy="12" r="2"></circle>
           </svg>
-          {{ isSalesLeaderView ? 'أهداف الفريق' : 'أهدافي' }}
+          أهدافي
         </h1>
-        <p class="welcome-subtitle">{{ isSalesLeaderView ? 'متابعة أهداف الفريق والأداء المحدد للمبيعات.' : 'متابعة الأهداف التي أسندها مدير الفريق لك وما تم تكليفه لك.' }}</p>
+        <p class="welcome-subtitle">متابعة الأهداف التي أسندها مدير الفريق لك وما تم تكليفه لك.</p>
+        <p
+          v-if="displayTargets.length && !isLoadingTargets && !targetsLoadError"
+          class="targets-meta-line"
+        >
+          {{ displayTargets.length === 1 ? 'هدف واحد في القائمة' : `${displayTargets.length} أهداف في القائمة` }}
+        </p>
       </div>
-      <button v-if="hasPermission('sales.team.manage')" @click="openCreateTargetModalClick" class="btn-add">
+      <button v-if="isSalesLeaderView || hasPermission('sales.team.manage')" @click="openCreateTargetModalClick" class="btn-add">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -44,32 +55,40 @@
 
     <div v-else class="targets-grid">
       <div
-        v-for="target in displayTargets"
-        :key="target.target_id || target.id"
+        v-for="(target, targetIndex) in displayTargets"
+        :key="getTargetStableId(target, targetIndex)"
         class="target-card"
         :class="{
           'target-card-clickable': target.contract_id,
           'target-card-completed': isTargetCompleted(target),
+          'target-card--menu-open': openMenuId === getTargetStableId(target, targetIndex),
         }"
         role="button"
-        tabindex="0"
+        :tabindex="target.contract_id ? 0 : -1"
         @click="onCardClick($event, target)"
-        @keydown.enter="target.contract_id && openUnitsModal(target)"
+        @keydown.enter.prevent="target.contract_id && openUnitsModal(target)"
+        @keydown.space.prevent="target.contract_id && openUnitsModal(target)"
       >
-        <!-- شارة الإنجاز -->
-        <div v-if="isTargetCompleted(target)" class="completed-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
+        <div class="target-card-surface">
+        <!-- شارة إنجاز — شريط علوي أنيق -->
+        <div v-if="isTargetCompleted(target)" class="target-card-ribbon" aria-hidden="true">
+          <span class="target-card-ribbon__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+          <span class="target-card-ribbon__text">مكتمل</span>
         </div>
 
-        <!-- زر ثلاث نقاط — أعلى يسار البطاقة -->
-        <div class="card-menu-wrap">
+        <!-- زر ثلاث نقاط — أعلى يسار البطاقة؛ @click.stop يمنع فتح مودال الوحدات ويُبقي التفاعل داخل القائمة -->
+        <div class="card-menu-wrap" @click.stop>
           <button
             type="button"
             class="card-menu-btn"
-            aria-label="خيارات"
-            @click.stop="toggleCardMenu(target.target_id || target.id)"
+            :aria-expanded="openMenuId === getTargetStableId(target, targetIndex)"
+            aria-haspopup="true"
+            aria-label="خيارات الهدف"
+            @click.stop="toggleCardMenu(getTargetStableId(target, targetIndex))"
           >
             <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
               <circle cx="12" cy="5" r="1.5"></circle>
@@ -77,9 +96,9 @@
               <circle cx="12" cy="19" r="1.5"></circle>
             </svg>
           </button>
-          <div v-if="openMenuId === (target.target_id || target.id)" class="card-dropdown" @click.stop>
+          <div v-if="openMenuId === getTargetStableId(target, targetIndex)" class="card-dropdown" @click.stop>
             <button
-              v-if="hasPermission('sales.team.manage')"
+              v-if="isSalesLeaderView || hasPermission('sales.team.manage')"
               type="button"
               class="card-dropdown-item"
               @click="openAssignMarketers(target)"
@@ -90,9 +109,9 @@
               <div class="card-dropdown-status">
                 <span class="card-dropdown-label">تغيير الحالة</span>
                 <select
-                  :value="(target.status || '').toLowerCase()"
+                  :value="target.status || 'new'"
                   class="card-dropdown-select"
-                  :disabled="updatingTargetId === (target.target_id || target.id)"
+                  :disabled="isTargetUpdating(target)"
                   @change="updateTargetStatus(target, $event.target.value)"
                 >
                   <option v-for="opt in TARGET_STATUS_OPTIONS" :key="opt.value" :value="opt.value">
@@ -101,11 +120,11 @@
                 </select>
               </div>
               <button
-                v-if="(target.status || '').toLowerCase() !== 'completed'"
+                v-if="target.status !== 'completed'"
                 type="button"
                 class="card-dropdown-item card-dropdown-item-done"
-                :disabled="updatingTargetId === (target.target_id || target.id)"
-                @click="updateTargetStatus(target, 'completed')"
+                :disabled="isTargetUpdating(target)"
+                @click.stop="updateTargetStatus(target, 'completed')"
               >
                 جعل منجز (تحقق)
               </button>
@@ -113,11 +132,12 @@
           </div>
         </div>
 
+        <div class="target-card__core">
         <div class="target-header">
           <div class="target-info">
             <h3 class="target-project-name">{{ target.project_name || 'هدف مبيعات' }}</h3>
             <p class="target-marketer">{{ getTargetAssigneeLine(target) }}</p>
-            <p v-if="!isSalesLeaderView" class="target-marketer target-assigned-units">{{ getAssignedUnitsLine(target) }}</p>
+            <p class="target-marketer target-assigned-units">{{ getAssignedUnitsLine(target) }}</p>
           </div>
           <div class="target-value-block">
             <span class="target-value">{{ formatCurrency(target.target_value) }}</span>
@@ -138,6 +158,7 @@
             <span class="progress-pct">{{ getProgressPercentage(target) }}%</span>
           </div>
         </div>
+        </div>
 
         <div class="target-footer">
           <div class="target-footer-left">
@@ -152,6 +173,7 @@
           <span class="target-status" :class="getTargetStatusClass(target)">
             {{ target.status_label_ar || getTargetStatusText(target) }}
           </span>
+        </div>
         </div>
       </div>
     </div>
@@ -243,7 +265,7 @@
     <div v-if="showUnitsModal" class="assign-overlay" @click.self="closeUnitsModal">
       <div class="units-modal assign-modal">
         <div class="assign-modal-header">
-          <h3>{{ isSalesLeaderView ? 'الوحدات المعينة للفريق' : 'وحداتي المعينة' }}</h3>
+          <h3>وحداتي المعينة</h3>
           <button type="button" class="assign-close" aria-label="إغلاق" @click="closeUnitsModal">&times;</button>
         </div>
         <p class="assign-project-name">{{ unitsModalProjectName }}</p>
@@ -251,8 +273,11 @@
         <div v-else-if="unitsModalError" class="units-modal-error">
           <p>{{ unitsModalError }}</p>
         </div>
+        <div v-else-if="unitsModalUnfilteredCount === 0" class="units-modal-empty">
+          <p>لا توجد أهداف أو وحدات مرتبطة بهذا المشروع في استجابة الخادم.</p>
+        </div>
         <div v-else-if="filteredUnitsModalRows.length === 0" class="units-modal-empty">
-          <p>{{ isSalesLeaderView ? 'لا توجد وحدات معينة لهذا المشروع.' : 'لا توجد وحدات معينة لك في هذا المشروع.' }}</p>
+          <p>لا توجد وحدات معينة في هذا المشروع ضمن البيانات المعروضة.</p>
         </div>
         <div v-else class="units-modal-table-wrap">
           <table class="units-modal-table">
@@ -263,7 +288,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(row, idx) in filteredUnitsModalRows" :key="row.unit_id + '-' + idx">
+              <tr v-for="(row, idx) in filteredUnitsModalRows" :key="(row.unit_id != null ? String(row.unit_id) : 'u') + '-' + idx">
                 <td>{{ row.unit_number }}</td>
                 <td v-if="isSalesLeaderView">{{ row.marketer_name }}</td>
               </tr>
@@ -279,23 +304,45 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, inject, unref } from 'vue';
+import { useRoute } from 'vue-router';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import { useSalesTargets } from '@/composables/sales/useSalesTargets';
+import { useSalesTargets, normalizeSalesTargetItem, getSalesTargetPatchId } from '@/composables/sales/useSalesTargets';
 import { useSalesTeam } from '@/composables/sales/useSalesTeam';
 import authService from '@/services/authService';
 import salesService from '@/services/salesService';
 import notificationService from '@/services/notificationService';
 import { isSalesLeader } from '@/utils/rbac';
 
+const route = useRoute();
+/** أولوية على query: لوحة المشروع تمرّر ref معرّف العقد */
+const injectedContractId = inject('salesTargetsContractId', ref(null));
+
 const {
   targets, isLoadingTargets, targetsLoadError, showCreateTargetModal,
   targetForm, targetFormUnits, isLoadingTargetFormUnits, targetFormUnitsError,
   hasPermission, formatCurrency, formatDate,
-  getTargetStatusClass, getTargetStatusText, getProgressPercentage,
-  loadTargets, openCreateTargetModal, onTargetFullProjectChange, toggleTargetUnit, createTarget,
+  getTargetStatusClass, getTargetStatusText, getProgressPercentage, getDisplayedAchievedValue,
+  loadTargets, patchTargetStatus, isTargetUpdating,
+  openCreateTargetModal, onTargetFullProjectChange, toggleTargetUnit, createTarget,
 } = useSalesTargets();
 const { teamMembers, teamProjects, loadTeamMembers, loadTeamProjects } = useSalesTeam();
+
+function resolveContractScopeFromContext() {
+  const inj = unref(injectedContractId);
+  if (inj != null && inj !== '') return inj;
+  const q = route.query.contract_id ?? route.query.contractId;
+  if (q == null || q === '') return null;
+  return Array.isArray(q) ? q[0] : q;
+}
+
+watch(
+  () => [route.query.contract_id, route.query.contractId, unref(injectedContractId)],
+  () => {
+    loadTargets({ contractId: resolveContractScopeFromContext() });
+  },
+  { immediate: true },
+);
 
 const openMenuId = ref(null);
 const assignTarget = ref(null);
@@ -309,6 +356,8 @@ const unitsModalProjectName = ref('');
 const unitsModalLoading = ref(false);
 const unitsModalError = ref('');
 const unitsModalRows = ref([]);
+/** عدد الصفوف قبل تصفية المستخدم (لتمييز «فارغ من الخادم» عن «لا صفوف لك») */
+const unitsModalUnfilteredCount = ref(0);
 
 const teamMembersList = computed(() => Array.isArray(teamMembers.value) ? teamMembers.value : []);
 const teamProjectsList = computed(() => Array.isArray(teamProjects.value) ? teamProjects.value : []);
@@ -333,20 +382,31 @@ const currentUserId = computed(() => {
   return rawId != null ? Number(rawId) : null;
 });
 
-/** غير المدير يرى أهدافه فقط؛ المدير يرى أهداف الفريق كاملة (حسب ما يرجعه الـ API). */
+/** قائد المبيعات أو من لديه إدارة الفريق يرى كل الأهداف؛ غير ذلك يُفلتر حسب المستخدم. */
 const displayTargets = computed(() => {
   const list = Array.isArray(targets.value) ? targets.value : [];
-  if (hasPermission('sales.team.manage')) return list;
+  if (isSalesLeaderView.value || hasPermission('sales.team.manage')) return list;
   if (currentUserId.value == null) return [];
   return list.filter((t) => Number(t.marketer_id) === currentUserId.value);
 });
 
+/** مفتاح Vue فريد لكل بطاقة + مطابقة قائمة الخيارات (لوحات منفصلة) */
+function getTargetStableId(target, index = 0) {
+  const rawId = getSalesTargetPatchId(target);
+  const idPart = rawId != null && rawId !== '' ? String(rawId) : 'noid';
+  const c = target?.contract_id ?? '';
+  const m = target?.marketer_id ?? '';
+  return `${idPart}-${c}-${m}-i${index}`;
+}
+
 function canUpdateTarget(target) {
-  if (!target || currentUserId.value == null) return false;
+  if (!target) return false;
+  const isManager = isSalesLeaderView.value || hasPermission('sales.team.manage');
+  /** قائد الفريق / مدير الفريق: يحدّث أهداف أي مسوق — لا يعتمد على sales.targets.update أو تعرّف المستخدم إن نقصا من الـ API */
+  if (isManager) return true;
   if (!hasPermission('sales.targets.update')) return false;
-  const isOwner = Number(target.marketer_id) === currentUserId.value;
-  const isManager = hasPermission('sales.team.manage');
-  return isOwner || isManager;
+  if (currentUserId.value == null) return false;
+  return Number(target.marketer_id) === currentUserId.value;
 }
 
 function getTargetAssigneeLine(target) {
@@ -356,12 +416,13 @@ function getTargetAssigneeLine(target) {
 
 function getAssignedUnitsLine(target) {
   const units = Array.isArray(target?.units) ? target.units : [];
+  const prefix = isSalesLeaderView.value ? 'نطاق الهدف' : 'المسند لك';
   if (units.length > 0) {
     const unitNumbers = units.map((unit) => unit?.unit_number).filter(Boolean);
-    if (unitNumbers.length > 0) return `المسند لك: ${unitNumbers.join('، ')}`;
+    if (unitNumbers.length > 0) return `${prefix}: ${unitNumbers.join('، ')}`;
   }
-  if (target?.unit_number) return `المسند لك: ${target.unit_number}`;
-  return 'المسند لك: كامل المشروع';
+  if (target?.unit_number) return `${prefix}: ${target.unit_number}`;
+  return `${prefix}: كامل المشروع`;
 }
 
 function isTargetCompleted(target) {
@@ -370,28 +431,14 @@ function isTargetCompleted(target) {
   return status === 'completed' || status === 'achieved' || status === 'done' || label === 'منجز';
 }
 
-function getDisplayedAchievedValue(target) {
-  const achieved = Number(target?.achieved_value || 0);
-  const goal = Number(target?.target_value || 0);
-  if (isTargetCompleted(target) && achieved === 0 && goal > 0) return goal;
-  return achieved;
-}
-
-const updatingTargetId = ref(null);
-
+/**
+ * PATCH أولاً ثم إغلاق القائمة — إن أُغلقت القائمة قبل await كان يُزال الـ select/الزر قبل اكتمال الطلب أو قبل change.
+ */
 async function updateTargetStatus(target, newStatus) {
-  const targetId = target.target_id || target.id;
-  if (!targetId || !['new', 'in_progress', 'completed'].includes(newStatus)) return;
-  updatingTargetId.value = targetId;
-  openMenuId.value = null;
   try {
-    await salesService.updateTarget(targetId, { status: newStatus });
-    notificationService.addNotification('تم تحديث حالة الهدف', 'success');
-    loadTargets();
-  } catch (err) {
-    notificationService.addNotification(err?.response?.data?.message || 'فشل تحديث الحالة', 'error');
+    await patchTargetStatus(target, newStatus);
   } finally {
-    updatingTargetId.value = null;
+    openMenuId.value = null;
   }
 }
 
@@ -425,18 +472,36 @@ async function openUnitsModal(target) {
   unitsModalProjectName.value = projectName;
   unitsModalError.value = '';
   unitsModalRows.value = [];
+  unitsModalUnfilteredCount.value = 0;
+  if (!contractId) {
+    unitsModalError.value = 'لا يوجد معرّف عقد مرتبط بهذا الهدف. تحقق من بيانات المشروع من الخادم.';
+    return;
+  }
   unitsModalLoading.value = true;
   try {
     const data = await salesService.getTargetsByProject(contractId);
-    const rows = (Array.isArray(data) ? data : []).flatMap((t) =>
-      (t.units && t.units.length ? t.units : [{ id: t.target_id, unit_number: t.unit_number || '—' }]).map((u) => ({
-        unit_id: u.id,
-        unit_number: u.unit_number ?? '—',
+    const list = Array.isArray(data) ? data : [];
+    const rows = list.map(normalizeSalesTargetItem).flatMap((t) => {
+      const units = Array.isArray(t.units) ? t.units : [];
+      if (units.length === 0) {
+        return [
+          {
+            unit_id: t.contract_unit_id ?? t.unit_id ?? t.target_id ?? t.id,
+            unit_number: t.unit_number ?? '—',
+            marketer_id: t.marketer_id,
+            marketer_name: t.marketer_name ?? '—',
+          },
+        ];
+      }
+      return units.map((u) => ({
+        unit_id: u.unit_id ?? u.id ?? u.contract_unit_id,
+        unit_number: u.unit_number ?? u.unit_no ?? u.number ?? '—',
         marketer_id: t.marketer_id,
         marketer_name: t.marketer_name ?? '—',
-      }))
-    );
+      }));
+    });
     unitsModalRows.value = rows;
+    unitsModalUnfilteredCount.value = rows.length;
   } catch (err) {
     const msg = err?.response?.data?.message || err?.message;
     const status = err?.response?.status;
@@ -445,6 +510,7 @@ async function openUnitsModal(target) {
         ? 'ليس لديك صلاحية عرض أهداف هذا المشروع.'
         : msg || 'فشل تحميل الوحدات المعينة.';
     unitsModalRows.value = [];
+    unitsModalUnfilteredCount.value = 0;
   } finally {
     unitsModalLoading.value = false;
   }
@@ -455,6 +521,7 @@ function closeUnitsModal() {
   unitsModalProjectName.value = '';
   unitsModalError.value = '';
   unitsModalRows.value = [];
+  unitsModalUnfilteredCount.value = 0;
 }
 
 function toggleCardMenu(id) {
@@ -478,7 +545,7 @@ function closeAssignMarketers() {
 }
 
 async function saveAssignMarketers() {
-  if (!assignTarget.value?.contract_id || selectedMarketerIds.value.length === 0 || !hasPermission('sales.team.manage')) return;
+  if (!assignTarget.value?.contract_id || selectedMarketerIds.value.length === 0 || (!isSalesLeaderView.value && !hasPermission('sales.team.manage'))) return;
   const contractId = assignTarget.value.contract_id;
   const startDate = new Date().toISOString().split('T')[0];
   const endDate = assignTarget.value.end_date || assignTarget.value.deadline || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0];
@@ -511,19 +578,25 @@ async function saveAssignMarketers() {
   }
 }
 
-function onDocumentClick() {
-  openMenuId.value = null;
+/**
+ * إغلاق عند النقر خارج القائمة فقط.
+ * تأجيل الإغلاق لدورة لاحقة حتى يُكمِل المتصفح حدث change على قائمة الحالة (قائمة النظام قد تُطلق click على document قبل change).
+ */
+function onDocumentClick(e) {
+  const t = e?.target;
+  if (t && typeof t.closest === 'function' && t.closest('.card-menu-wrap')) return;
+  setTimeout(() => {
+    openMenuId.value = null;
+  }, 0);
 }
 
 onMounted(() => {
   document.addEventListener('click', onDocumentClick);
-  if (hasPermission('sales.team.manage')) loadTeamMembers({ with_ratings: false });
+  if (isSalesLeaderView.value || hasPermission('sales.team.manage')) loadTeamMembers({ with_ratings: false });
 });
 onUnmounted(() => {
   document.removeEventListener('click', onDocumentClick);
 });
-
-loadTargets();
 </script>
 
 <style scoped src="./styles/SalesTargetsTab.scoped.s1.css"></style>

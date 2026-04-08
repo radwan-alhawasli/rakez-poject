@@ -3,6 +3,7 @@ import accountingService from '@/services/accountingService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
+import { mergeSoldUnitDetail } from '@/utils/accountingSoldUnitFields';
 
 export function useAccountingSoldUnits() {
   const isLoading = ref(false);
@@ -39,7 +40,7 @@ export function useAccountingSoldUnits() {
     try {
       const detail = await accountingService.getSoldUnitById(reservationId);
       if (detail && typeof detail === 'object') {
-        selectedSoldUnit.value = { ...unit, ...detail };
+        selectedSoldUnit.value = mergeSoldUnitDetail(unit, detail);
       }
     } catch (error) {
       logger.error('Error loading sold unit detail:', error);

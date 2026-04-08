@@ -1,10 +1,9 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import taskService from '@/services/taskService';
 import notificationService from '@/services/notificationService';
-import teamService from '@/services/teamService';
-import userService from '@/services/userService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
+import { getApiErrorMessage } from '@/utils/errorHandler';
 
 export function useTasksView() {
   const currentUser = authService.getCurrentUser();
@@ -20,9 +19,6 @@ export function useTasksView() {
   const requestedPage = ref(1);
   const assignedTotalPages = ref(1);
   const requestedTotalPages = ref(1);
-
-  const teams = ref([]);
-  const users = ref([]);
 
   const TASK_SECTIONS_FALLBACK = [
     { key: 'marketing', label: 'قسم التسويق' },
@@ -78,44 +74,6 @@ export function useTasksView() {
     loadCurrentTab(1);
   };
 
-  const extractDropdownDataFromTasks = () => {
-    const uniqueTeams = new Map();
-    const uniqueUsers = new Map();
-
-    if (currentUser) {
-      uniqueUsers.set(currentUser.id, currentUser.name);
-      if (currentUser.team_id) {
-        uniqueTeams.set(currentUser.team_id, `فريق ${currentUser.team_id}`);
-      }
-    }
-
-    const allTasks = [...assignedTasks.value, ...requestedTasks.value];
-    allTasks.forEach(task => {
-      if (task.team_id) {
-        uniqueTeams.set(task.team_id, task.team_name || task.team?.name || `فريق ${task.team_id}`);
-      }
-      if (task.assigned_to) {
-        uniqueUsers.set(
-          task.assigned_to,
-          task.assignee_name || task.assignee?.name || `موظف ${task.assigned_to}`
-        );
-      }
-      if (task.created_by) {
-        uniqueUsers.set(task.created_by, task.creator_name || `موظف ${task.created_by}`);
-      }
-    });
-
-    teams.value.forEach(team => {
-      if (team.id) uniqueTeams.set(team.id, team.name);
-    });
-    users.value.forEach(user => {
-      if (user.id) uniqueUsers.set(user.id, user.name);
-    });
-
-    teams.value = Array.from(uniqueTeams.entries()).map(([id, name]) => ({ id, name }));
-    users.value = Array.from(uniqueUsers.entries()).map(([id, name]) => ({ id, name }));
-  };
-
   const fetchSectionUsers = async sectionKey => {
     if (!sectionKey) {
       sectionUsers.value = [];
@@ -168,22 +126,6 @@ export function useTasksView() {
     }
   };
 
-  const fetchDropdownData = async () => {
-    try {
-      const [teamsData, usersData] = await Promise.all([
-        teamService.getTeams().catch(() => []),
-        userService.getEmployees({ per_page: 100 }).catch(() => ({ items: [] })),
-      ]);
-
-      teams.value = Array.isArray(teamsData) ? teamsData : teamsData.items || [];
-      users.value = usersData?.items || [];
-
-      extractDropdownDataFromTasks();
-    } catch (e) {
-      logger.error('Failed to load teams or users for dropdowns', e);
-    }
-  };
-
   const loadAssignedTasks = async (page = 1) => {
     try {
       isLoading.value = true;
@@ -200,8 +142,6 @@ export function useTasksView() {
       assignedTasks.value = data.items || [];
       assignedTotal.value = data.total || 0;
       assignedTotalPages.value = Math.ceil(assignedTotal.value / itemsPerPage.value) || 1;
-
-      extractDropdownDataFromTasks();
     } catch (err) {
       logger.error('Failed to load assigned tasks', err);
       error.value = 'حدث خطأ في تحميل المهام';
@@ -226,8 +166,6 @@ export function useTasksView() {
       requestedTasks.value = data.items || [];
       requestedTotal.value = data.total || 0;
       requestedTotalPages.value = Math.ceil(requestedTotal.value / itemsPerPage.value) || 1;
-
-      extractDropdownDataFromTasks();
     } catch (err) {
       logger.error('Failed to load requested tasks', err);
       error.value = 'حدث خطأ في تحميل المهام';
@@ -275,29 +213,57 @@ export function useTasksView() {
     return fallback ? fallback.label : sectionKey;
   };
 
+  /** تواريخ بالعربية (تقويم ميلادي) — متوافق مع واجهة عربية أولاً */
   const formatDate = dateString => {
     if (!dateString) return '';
-    return new Date(dateString).toLocaleString('en-US', {
+    const d = new Date(dateString);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleString('ar-SA', {
       year: 'numeric',
-      month: 'short',
+      month: 'long',
       day: 'numeric',
-      hour: '2-digit',
+      hour: 'numeric',
       minute: '2-digit',
+      hour12: true,
     });
+  };
+
+  /** لسمة <time datetime="..."> (ISO) */
+  const taskDateAttr = dateString => {
+    if (!dateString) return undefined;
+    const d = new Date(dateString);
+    return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
+  };
+
+  /** @param {string} localValue - value from input[type=datetime-local] */
+  const formatDueAtForApi = localValue => {
+    if (!localValue) return null;
+    const s = String(localValue).trim().replace('T', ' ');
+    const m = s.match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})(?::(\d{2}))?/);
+    if (m) {
+      const [, datePart, hm, sec] = m;
+      return sec !== undefined ? `${datePart} ${hm}:${sec}` : `${datePart} ${hm}:00`;
+    }
+    if (/\d{2}:\d{2}:\d{2}/.test(s)) return s;
+    return `${s}:00`;
   };
 
   const createTask = async () => {
     try {
       isCreating.value = true;
-      const due_at_formatted = taskForm.due_at ? taskForm.due_at.replace('T', ' ') + ':00' : null;
+      const due_at_formatted = formatDueAtForApi(taskForm.due_at);
 
-      await taskService.createTask({
-        title: taskForm.title,
-        description: taskForm.description,
+      const assignedId = Number.parseInt(String(taskForm.assigned_to), 10);
+      const payload = {
+        task_name: taskForm.title.trim(),
         section: taskForm.section_key,
-        assigned_to: taskForm.assigned_to,
+        assigned_to: Number.isFinite(assignedId) ? assignedId : taskForm.assigned_to,
         due_at: due_at_formatted,
-      });
+      };
+      const desc = taskForm.description?.trim();
+      if (desc) payload.description = desc;
+
+      await taskService.createTask(payload);
 
       notificationService.addNotification('تم إنشاء المهمة بنجاح', 'success');
       showCreateModal.value = false;
@@ -314,6 +280,10 @@ export function useTasksView() {
       loadRequestedTasks(1);
     } catch (e) {
       logger.error('Failed to create task', e);
+      notificationService.addNotification(
+        getApiErrorMessage(e, 'تعذر حفظ المهمة. تحقق من البيانات والمحاولة مرة أخرى.'),
+        'error'
+      );
     } finally {
       isCreating.value = false;
     }
@@ -331,6 +301,11 @@ export function useTasksView() {
       loadCurrentTab(currentPage.value);
     } catch (e) {
       logger.error(`Failed to update task ${taskId}`, e);
+      notificationService.addNotification(
+        getApiErrorMessage(e, 'تعذر تحديث حالة المهمة. حاول مرة أخرى.'),
+        'error'
+      );
+      throw e;
     }
   };
 
@@ -352,15 +327,18 @@ export function useTasksView() {
       return;
     }
 
-    await updateStatus(reasonForm.taskId, 'could_not_complete', reasonForm.reason);
-    closeReasonModal();
+    try {
+      await updateStatus(reasonForm.taskId, 'could_not_complete', reasonForm.reason);
+      closeReasonModal();
+    } catch {
+      void 0;
+    }
   };
 
   onMounted(() => {
     loadAssignedTasks();
     loadInitialCounts();
     loadTaskSections();
-    fetchDropdownData();
   });
 
   return {
@@ -387,6 +365,7 @@ export function useTasksView() {
     getStatusLabel,
     getSectionLabel,
     formatDate,
+    taskDateAttr,
     createTask,
     updateStatus,
     openReasonModal,

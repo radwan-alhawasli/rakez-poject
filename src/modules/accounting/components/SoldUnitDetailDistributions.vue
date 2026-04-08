@@ -268,22 +268,9 @@
   </div>
 
   <div v-if="commissionSummary" class="summary-cards">
-    <div class="summary-card">
-      <span class="card-label">إجمالي العمولة (قبل الضريبة)</span>
-      <span class="card-value">{{ formatNumber(commissionSummary.gross_amount) }}</span>
-    </div>
     <div class="summary-card vat">
       <span class="card-label">ضريبة القيمة المضافة (15%)</span>
       <span class="card-value">{{ formatNumber(commissionSummary.vat) }}</span>
-    </div>
-    <div class="summary-card">
-      <span class="card-label">رسوم البنك / الكاش</span>
-      <input
-        v-model.number="commissionForm.bank_fees"
-        type="number"
-        class="summary-input"
-        min="0"
-      />
     </div>
     <div class="summary-card net">
       <span class="card-label">الصافي النهائي للتوزيع</span>

@@ -1,6 +1,6 @@
 <template>
   <div class="sold-unit-detail-view" dir="rtl">
-    <div class="detail-header">
+    <div class="detail-header sold-unit-detail-header">
       <button class="back-btn" type="button" @click="$emit('back')">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -14,49 +14,52 @@
     </div>
 
     <div v-if="unit" class="detail-body">
-      <div class="unit-info-bar">
-        <div class="unit-info-item">
-          <span class="unit-info-label">وحدة:</span>
-          <span class="unit-info-value"
-            >{{ unit.unit_number || unit.reservation_id || unit.id }} /
-            {{ unit.project_name || 'غير محدد' }}</span
-          >
-        </div>
-        <div class="unit-info-item">
-          <span class="unit-info-label">العميل:</span>
-          <span class="unit-info-value">{{
-            unit.customer_name || unit.client_name || 'غير محدد'
-          }}</span>
-        </div>
-      </div>
-
-      <div class="unit-meta-row">
-        <div class="price-badge">
-          <span class="price-label">سعر البيع النهائي</span>
-          <span class="price-value">{{ formatCurrency(finalPrice) }}</span>
-          <span
-            v-if="commissionStatusLabel"
-            class="status-badge"
-            :class="commissionStatusBadgeClass"
-            >{{ commissionStatusLabel }}</span
-          >
-        </div>
-        <div class="editable-fields">
-          <div class="field-group field-group-readonly">
-            <label>نسبة السعي</label>
-            <span class="form-input input-sm input-readonly" title="من بيانات العقد المرتبط بالوحدة">{{
-              commissionPercentDisplay
+      <section class="unit-detail-summary-card" aria-label="معلومات الوحدة والعمولة">
+        <div class="unit-info-bar">
+          <div class="unit-info-item">
+            <span class="unit-info-label">وحدة</span>
+            <span class="unit-info-value"
+              >{{ unit.unit_number || unit.reservation_id || unit.id }} /
+              {{ unit.project_name || 'غير محدد' }}</span
+            >
+          </div>
+          <div class="unit-info-item">
+            <span class="unit-info-label">العميل</span>
+            <span class="unit-info-value">{{
+              unit.customer_name || unit.client_name || 'غير محدد'
             }}</span>
           </div>
-          <div class="field-group">
-            <label>السعي من</label>
-            <select v-model="commissionForm.commission_source" class="form-input input-sm">
-              <option value="owner">المالك</option>
-              <option value="buyer">المشتري</option>
-            </select>
+        </div>
+
+        <div class="unit-meta-row">
+          <div class="price-badge">
+            <span class="price-label">سعر البيع النهائي</span>
+            <span class="price-value">{{ formatCurrency(finalPrice) }}</span>
+            <span
+              v-if="commissionStatusLabel"
+              class="status-badge"
+              :class="commissionStatusBadgeClass"
+              >{{ commissionStatusLabel }}</span
+            >
+          </div>
+          <div class="editable-fields">
+            <div class="field-group field-group-readonly field-group-readonly--stack">
+              <label>نسبة السعي</label>
+              <span class="form-input input-sm input-readonly" title="من بيانات العقد المرتبط بالوحدة">{{
+                commissionPercentDisplay
+              }}</span>
+            </div>
+            <div class="field-group field-group-readonly field-group-readonly--stack">
+              <label>السعي من</label>
+              <span
+                class="form-input input-sm input-readonly"
+                title="قيمة من بيانات العقد / الخادم"
+                >{{ commissionSourceDisplay }}</span
+              >
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <div v-if="!hasCommission" class="create-commission-section">
         <h3 class="section-title">إنشاء عمولة يدوية</h3>

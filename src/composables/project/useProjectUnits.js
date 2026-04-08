@@ -13,6 +13,51 @@ import { downloadProjectUnitPdf } from '@/composables/project/useProjectUnitsPdf
 import { useProjectUnitReservation } from '@/composables/project/useProjectUnitReservation.js';
 import { useProjectUnitWaitingList } from '@/composables/project/useProjectUnitWaitingList.js';
 
+/** @typedef {'all'|'available'|'reserved'|'sold'|'pending'} UnitStatusFilter */
+/** @typedef {'default'|'status'|'unit_number'|'price_asc'|'price_desc'} UnitsSortOrder */
+
+export const PROJECT_UNITS_FILTER_OPTIONS = [
+  { value: 'all', label: 'الكل' },
+  { value: 'available', label: 'متاحة' },
+  { value: 'reserved', label: 'محجوزة' },
+  { value: 'sold', label: 'مباعة' },
+  { value: 'pending', label: 'قيد التفاوض' },
+];
+
+/** تصفية وحدات المشروع لمستخدمي المبيعات / قائد المبيعات — متاح، محجوز، مباع + التفاوض */
+export const PROJECT_UNITS_SALES_FILTER_OPTIONS = [
+  { value: 'all', label: 'الكل' },
+  { value: 'available', label: 'متاح' },
+  { value: 'reserved', label: 'محجوز' },
+  { value: 'sold', label: 'مباع' },
+  { value: 'pending', label: 'قيد التفاوض' },
+];
+
+/** فرز العرض بعد التصفية: default = ترتيب الخادم، ثم حسب الحالة / رقم الوحدة / السعر */
+export const PROJECT_UNITS_SORT_OPTIONS = [
+  { value: 'default', label: 'الترتيب الافتراضي' },
+  { value: 'status', label: 'حسب الحالة (متاح ← محجوز ← تفاوض ← مباع)' },
+  { value: 'unit_number', label: 'رقم الوحدة' },
+  { value: 'price_asc', label: 'السعر: من الأقل للأعلى' },
+  { value: 'price_desc', label: 'السعر: من الأعلى للأقل' },
+];
+
+function isNegotiationLikeStatus(status) {
+  const s = (status ?? '').toString().toLowerCase();
+  return (
+    s === 'pending' ||
+    s === 'under_negotiation' ||
+    s === 'negotiation' ||
+    s === 'in_negotiation'
+  );
+}
+
+/** موظف مبيعات (6) أو قائد مبيعات (7) — مصادر /sales/projects للوحدات */
+function isSalesRoleUser(user) {
+  const t = Number(user?.type);
+  return t === 6 || t === 7;
+}
+
 /**
  * @param {string|number} projectId
  * @param {string} projectName
@@ -25,7 +70,66 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
   const unitCountFromApi = ref(null);
   const projectSalesSummary = ref(null);
   const unitsLoading = ref(false);
-  const filteredUnits = computed(() => (Array.isArray(units.value) ? units.value : []));
+  /** @type {import('vue').Ref<UnitStatusFilter>} */
+  const unitStatusFilter = ref(/** @type {UnitStatusFilter} */ ('all'));
+  /** @type {import('vue').Ref<UnitsSortOrder>} */
+  const unitsSortOrder = ref(/** @type {UnitsSortOrder} */ ('default'));
+
+  const unitFilterCounts = computed(() => {
+    const list = Array.isArray(units.value) ? units.value : [];
+    const counts = { all: list.length, available: 0, reserved: 0, sold: 0, pending: 0 };
+    for (const u of list) {
+      const s = (u.status ?? '').toString().toLowerCase();
+      if (s === 'available') counts.available += 1;
+      else if (s === 'reserved') counts.reserved += 1;
+      else if (s === 'sold') counts.sold += 1;
+      else if (isNegotiationLikeStatus(s)) counts.pending += 1;
+    }
+    return counts;
+  });
+
+  const filteredUnits = computed(() => {
+    const list = Array.isArray(units.value) ? units.value : [];
+    const f = unitStatusFilter.value;
+    if (f === 'all') return list;
+    return list.filter((u) => {
+      const s = (u.status ?? '').toString().toLowerCase();
+      if (f === 'pending') return isNegotiationLikeStatus(s);
+      return s === f;
+    });
+  });
+
+  function statusSortRank(u) {
+    const s = (u.status ?? '').toString().toLowerCase();
+    if (s === 'available') return 0;
+    if (s === 'reserved') return 1;
+    if (isNegotiationLikeStatus(s)) return 2;
+    if (s === 'sold') return 3;
+    return 4;
+  }
+
+  function compareUnitNumbers(a, b) {
+    const na = String(a.unit_number ?? a.id ?? '');
+    const nb = String(b.unit_number ?? b.id ?? '');
+    return na.localeCompare(nb, 'ar', { numeric: true });
+  }
+
+  const filteredSortedUnits = computed(() => {
+    const list = filteredUnits.value;
+    const order = unitsSortOrder.value;
+    if (!list.length || order === 'default') return list;
+    const copy = [...list];
+    if (order === 'status') {
+      copy.sort((a, b) => statusSortRank(a) - statusSortRank(b) || compareUnitNumbers(a, b));
+    } else if (order === 'unit_number') {
+      copy.sort((a, b) => compareUnitNumbers(a, b));
+    } else if (order === 'price_asc') {
+      copy.sort((a, b) => Number(a.price ?? 0) - Number(b.price ?? 0) || compareUnitNumbers(a, b));
+    } else if (order === 'price_desc') {
+      copy.sort((a, b) => Number(b.price ?? 0) - Number(a.price ?? 0) || compareUnitNumbers(a, b));
+    }
+    return copy;
+  });
 
   const showAddUnitModal = ref(false);
   const isEditingUnit = ref(false);
@@ -69,7 +173,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     projectSalesSummary.value = null;
     try {
       const user = authService.getCurrentUser();
-      if (user && user.type == 6) {
+      if (user && isSalesRoleUser(user)) {
         const initialProject = typeof getInitialProject === 'function' ? getInitialProject() : null;
         if (initialProject) {
           const total = Number(initialProject.total_units ?? 0);
@@ -309,7 +413,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
   };
 
   const pmUser = authService.getCurrentUser();
-  const usePmReservationApi = !(pmUser && pmUser.type == 6);
+  const usePmReservationApi = !(pmUser && isSalesRoleUser(pmUser));
   const reservation = useProjectUnitReservation(projectId, {
     loadUnits,
     useProjectManagementApi: usePmReservationApi,
@@ -321,7 +425,14 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     unitCountFromApi,
     projectSalesSummary,
     unitsLoading,
+    unitStatusFilter,
+    unitsSortOrder,
+    unitFilterCounts,
     filteredUnits,
+    filteredSortedUnits,
+    projectUnitsFilterOptions: PROJECT_UNITS_FILTER_OPTIONS,
+    projectUnitsSalesFilterOptions: PROJECT_UNITS_SALES_FILTER_OPTIONS,
+    projectUnitsSortOptions: PROJECT_UNITS_SORT_OPTIONS,
     showAddUnitModal,
     isEditingUnit,
     unitForm,
