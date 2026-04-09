@@ -137,6 +137,7 @@ import salesService from '@/services/salesService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
 import { extractSecondPartyShowRow, isProjectProgressFullyCompleted } from '@/utils/projectProgressSteps';
+import { isSalesLeader } from '@/utils/rbac';
 import { toast } from '@/composables/useToast';
 import ProjectProgressTab from '@/components/project/ProjectProgressTab.vue';
 import ProjectUnitsTab from '@/components/project/ProjectUnitsTab.vue';
@@ -162,9 +163,12 @@ const isApprovalManager = computed(() => {
   const user = authService.getCurrentUser();
   return user?.type == 1 || user?.type == 10 || (user?.type == 2 && !!user?.is_manager);
 });
+/** موظف مبيعات (6) أو قائد مبيعات (7) أو مسوّق مع علامة قائد — نفس واجهة تفاصيل المشروع */
 const isSalesUser = computed(() => {
   const user = authService.getCurrentUser();
-  return user?.type == 6;
+  if (!user) return false;
+  const t = user.type;
+  return t == 6 || t == 7 || isSalesLeader(user);
 });
 const isProjectManager = computed(() => {
   const user = authService.getCurrentUser();
@@ -199,7 +203,8 @@ const fetchProject = async () => {
     const id = route.params.id;
     const user = authService.getCurrentUser();
     const isEditor = user && user.type == 3;
-    const isSales = user && user.type == 6;
+    const isSales =
+      user && (user.type == 6 || user.type == 7 || isSalesLeader(user));
 
     let data = null;
     try {
