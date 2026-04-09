@@ -234,6 +234,7 @@
   color: #fff;
   padding: 14px 16px;
   margin: 0;
+  border-radius: 0 0 16px 16px;
 }
 
 .sales-view .project-management-design .rakez-card .card-title-main {
@@ -263,12 +264,12 @@
   flex: 1 1 100%;
   height: 8px;
   background: #e5e7eb;
-  border-radius: 4px;
+  border-radius: 999px;
 }
 
 .sales-view .project-management-design .rakez-card .progress-fill-green {
   background: #22c55e;
-  border-radius: 4px;
+  border-radius: 999px;
 }
 
 .sales-view .project-management-design .rakez-card .price-row {

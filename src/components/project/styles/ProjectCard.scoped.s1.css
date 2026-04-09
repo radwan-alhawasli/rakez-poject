@@ -11,14 +11,17 @@
 
 /* تصميم البطاقة مطابق لهوية الشركة ولوحة مشاريع المبيعات (Sales) */
 .project-card.rakez-card {
+  --project-card-radius: 24px;
   background: var(--color-white, #fff);
   border: 1px solid var(--color-medium-gray, #e5e7eb);
-  border-radius: 16px;
-  overflow: visible;
+  border-radius: var(--project-card-radius);
+  /* ضروري لقصّ الشريط والصورة والعنوان حسب الزوايا — بدونه تبقى الحواف حادة */
+  overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
   display: flex;
   flex-direction: column;
   position: relative;
+  isolation: isolate;
   /* ظل أوضح على خلفية رمادية صلبة */
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 14px rgba(15, 23, 42, 0.04);
 }
@@ -32,7 +35,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  border-radius: 16px 16px 0 0;
+  border-radius: var(--project-card-radius) var(--project-card-radius) 0 0;
+  /* لا hidden هنا حتى لا تُقصّ القائمة المنسدلة التي تتدلى أسفل منطقة الصورة */
   overflow: visible;
   background: #f1f5f9;
 }
@@ -46,12 +50,13 @@
   padding: 10px 14px;
   background: rgba(30, 58, 95, 0.92);
   flex-shrink: 0;
+  border-radius: var(--project-card-radius) var(--project-card-radius) 0 0;
 }
 .card-image-top-bar .location-tag {
   flex: 1;
   min-width: 0;
   padding: 6px 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 12px;
   font-weight: 600;
   background: rgba(255, 255, 255, 0.15);
@@ -82,7 +87,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 0 0 16px 16px;
+  border-radius: 0 0 var(--project-card-radius) var(--project-card-radius);
 }
 .card-image img {
   width: 100%;
@@ -119,7 +124,7 @@
   width: 32px;
   height: 32px;
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 8px;
+  border-radius: 10px;
   border: none;
   cursor: pointer;
   display: flex;
@@ -138,7 +143,7 @@
   right: 0;
   left: auto;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 12px;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
   border: 1px solid #e2e8f0;
   min-width: 220px;
@@ -206,6 +211,8 @@
   color: #fff;
   padding: 14px 16px;
   margin: 0;
+  /* تقويس أسفل الشريط قبل منطقة المحتوى البيضاء */
+  border-radius: 0 0 16px 16px;
 }
 .card-title-main {
   font-size: 17px;
@@ -232,6 +239,7 @@
   flex-direction: column;
   gap: 10px;
   min-width: 0;
+  border-radius: 0 0 var(--project-card-radius) var(--project-card-radius);
 }
 .project-name,
 .project-location,
@@ -269,12 +277,12 @@
   flex: 1 1 100%;
   height: 8px;
   background: #e5e7eb;
-  border-radius: 4px;
+  border-radius: 999px;
   overflow: hidden;
 }
 .progress-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 999px;
   transition: width 0.2s;
 }
 .contract-fill-gray {

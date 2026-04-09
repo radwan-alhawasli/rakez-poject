@@ -161,7 +161,7 @@ loadProjects();
 .project-management-design .project-card {
   background: var(--color-white);
   border: 1px solid var(--color-medium-gray);
-  border-radius: 16px;
+  border-radius: 24px;
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
   display: flex;
@@ -179,14 +179,14 @@ loadProjects();
   height: 220px;
   position: relative;
   background: #f1f5f9;
-  border-radius: 16px 16px 0 0;
+  border-radius: 24px 24px 0 0;
 }
 
 .project-management-design .card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 16px 16px 0 0;
+  border-radius: 24px 24px 0 0;
 }
 
 .project-management-design .card-image-placeholder {

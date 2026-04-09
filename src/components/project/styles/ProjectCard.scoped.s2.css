@@ -21,7 +21,7 @@
   background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
   color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: 16px;
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;

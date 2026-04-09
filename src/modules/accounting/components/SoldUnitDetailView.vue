@@ -45,17 +45,13 @@
           <div class="editable-fields">
             <div class="field-group field-group-readonly field-group-readonly--stack">
               <label>نسبة السعي</label>
-              <span class="form-input input-sm input-readonly" title="من بيانات العقد المرتبط بالوحدة">{{
+              <span class="form-input input-sm input-readonly">{{
                 commissionPercentDisplay
               }}</span>
             </div>
             <div class="field-group field-group-readonly field-group-readonly--stack">
               <label>السعي من</label>
-              <span
-                class="form-input input-sm input-readonly"
-                title="قيمة من بيانات العقد / الخادم"
-                >{{ commissionSourceDisplay }}</span
-              >
+              <span class="form-input input-sm input-readonly">{{ commissionSourceDisplay }}</span>
             </div>
           </div>
         </div>
@@ -85,7 +81,6 @@
                 max="100"
                 step="0.1"
                 readonly
-                title="قيمة ثابتة من بيانات العقد"
               />
             </div>
             <div class="form-group">
