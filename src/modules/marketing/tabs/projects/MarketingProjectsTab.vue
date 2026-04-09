@@ -211,16 +211,78 @@
                 </div>
               </div>
 
-              <div class="overview-section marketing-teams-teaser" style="margin-top: 18px">
-                <div class="section-header" style="margin-bottom: 14px">
-                  <h3 class="section-title-chart">
-                    <button type="button" class="teams-page-link" @click="goToMarketingTeamsPage">إدارة فرق التسويق</button>
-                  </h3>
-                  <p class="section-desc">صفحة مخصصة لتعيين الفرق وعرض المسوّقين والمسوق الأعلى تقييماً.</p>
+              <div class="overview-section marketing-teams-panel" style="margin-top: 18px">
+                <header class="marketing-teams-panel__header">
+                  <div class="marketing-teams-panel__header-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                  </div>
+                  <div class="marketing-teams-panel__header-text">
+                    <h3 class="marketing-teams-panel__title">فرق التسويق</h3>
+                    <p class="marketing-teams-panel__subtitle">
+                      فرق المبيعات المسؤولة عن المشروع وأعضاء كل فريق وتقييمهم — من بيانات المشروع نفسها.
+                    </p>
+                  </div>
+                </header>
+
+                <div v-if="!marketingTeamsWithMembers.length" class="marketing-teams-empty" role="status">
+                  <div class="marketing-teams-empty__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="3" y="4" width="18" height="16" rx="2" />
+                      <path d="M7 8h4M7 12h10M7 16h6" />
+                    </svg>
+                  </div>
+                  <p class="marketing-teams-empty__title">لا توجد فرق مسجّلة لهذا المشروع</p>
+                  <p class="marketing-teams-empty__hint">عند ربط فرق تسويق بالمشروع ستظهر هنا مع تفاصيل الأعضاء والتقييمات.</p>
                 </div>
-                <div class="detail-item" style="margin-bottom: 12px">
-                  <span class="detail-label">الموظف المقترح للتواصل</span>
-                  <span class="detail-value">{{ getRecommendedEmployee(selectedProjectDetails) }}</span>
+
+                <div v-else class="marketing-teams-stack">
+                  <div
+                    v-for="(row, idx) in marketingTeamsWithMembers"
+                    :key="row.team?.id ?? idx"
+                    class="marketing-team-card"
+                  >
+                    <div class="marketing-team-card__head">
+                      <span class="marketing-team-card__badge" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                          <circle cx="9" cy="7" r="4" />
+                        </svg>
+                      </span>
+                      <div class="marketing-team-card__head-text">
+                        <h4 class="marketing-team-card__title">{{ marketingTeamDisplayName(row.team) }}</h4>
+                        <span v-if="row.team?.description" class="marketing-team-card__desc">{{ row.team.description }}</span>
+                      </div>
+                    </div>
+                    <p v-if="!row.members.length" class="marketing-team-card__empty">
+                      لا يوجد أعضاء مدرَجون لهذا الفريق في بيانات المشروع.
+                    </p>
+                    <div v-else class="table-wrapper table-responsive marketing-team-table-wrap">
+                      <table class="luxury-table table-mobile-stacked marketing-team-members-table">
+                        <thead>
+                          <tr>
+                            <th>العضو</th>
+                            <th>التقييم</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="(m, mi) in row.members" :key="m.id ?? m.user_id ?? mi" class="hover-row">
+                            <td data-label="العضو" class="marketing-team-member-name">{{ marketingMemberDisplayName(m) }}</td>
+                            <td data-label="التقييم">
+                              <span
+                                class="marketing-rating-pill"
+                                :class="{ 'marketing-rating-pill--muted': marketingMemberRatingLabel(m) === '—' }"
+                              >{{ marketingMemberRatingLabel(m) }}</span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -399,7 +461,6 @@ const {
   budgetForm,
   budgetResult,
   viewProjectDetails,
-  goToMarketingTeamsPage,
   goToUnits,
   goToPhotography,
   viewProjectPlan,
@@ -417,7 +478,10 @@ const {
   contractTimelineDaysLeft,
   durationStatusClass,
   contractTimelineLabel,
-  getRecommendedEmployee,
+  marketingTeamsWithMembers,
+  marketingTeamDisplayName,
+  marketingMemberDisplayName,
+  marketingMemberRatingLabel,
   formatDistribution,
   formatCurrency,
   hasPermission,

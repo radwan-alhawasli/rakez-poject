@@ -7,6 +7,7 @@ import logger from '@/utils/logger';
 import { getCaughtMessage } from '@/utils/caughtError';
 import { useFormatters } from '@/composables/useFormatters';
 import { toast } from '@/composables/useToast';
+import { formatDistribution } from '@/modules/marketing/tabs/projects/marketingProjectsUiHelpers.js';
 
 export function useMarketingEmployeePlans() {
   const route = useRoute();
@@ -324,13 +325,6 @@ export function useMarketingEmployeePlans() {
     } finally {
       isSubmitting.value = false;
     }
-  };
-
-  const formatDistribution = obj => {
-    if (!obj || typeof obj !== 'object') return '—';
-    const entries = Object.entries(obj);
-    if (!entries.length) return '—';
-    return entries.map(([k, v]) => `${k}: ${v}`).join(' • ');
   };
 
   const formatDate = dateString => {

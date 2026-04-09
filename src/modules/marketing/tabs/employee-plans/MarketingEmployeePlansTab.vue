@@ -142,6 +142,7 @@
 
 <script setup>
 import { useMarketingEmployeePlans } from '@/composables/marketing/useMarketingEmployeePlans';
+import { CAMPAIGN_DISTRIBUTION_LABELS } from '@/modules/marketing/tabs/projects/marketingProjectsUiHelpers.js';
 
 const {
   employeePlans,
@@ -167,5 +168,5 @@ const {
 } = useMarketingEmployeePlans();
 
 const platformLabels = { instagram: 'انستغرام', snapchat: 'سناب', tiktok: 'تيك توك', x: 'تويتر X', google_youtube: 'جوجل/يوتيوب', other: 'منصات اخرى', aqar: 'عقار' };
-const campaignLabels = { 'Direct Communication': 'التواصل المباشر', 'Hand Raise': 'Hand Raise', Impression: 'المشاهدات', Sales: 'المبيعات' };
+const campaignLabels = CAMPAIGN_DISTRIBUTION_LABELS;
 </script>

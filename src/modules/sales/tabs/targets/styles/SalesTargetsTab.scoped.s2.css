@@ -92,8 +92,29 @@
 
 /* مودال الوحدات المعينة (مكوّن فرعي — يحتاج :deep) */
 :deep(.units-modal.assign-modal) {
-  max-width: 520px;
+  max-width: min(720px, calc(100vw - 32px));
   background: #ffffff;
+  border-radius: 22px;
+  border: 1px solid rgba(39, 55, 77, 0.1);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 32px 72px rgba(15, 23, 42, 0.18),
+    0 0 0 1px rgba(181, 169, 154, 0.12);
+  overflow: hidden;
+}
+
+:deep(.units-modal.assign-modal .assign-modal-header) {
+  background: linear-gradient(
+    135deg,
+    rgba(248, 246, 243, 0.98) 0%,
+    rgba(241, 245, 249, 0.95) 45%,
+    rgba(238, 242, 247, 0.98) 100%
+  );
+  border-bottom: 1px solid rgba(181, 169, 154, 0.28);
+}
+
+:deep(.units-modal.assign-modal .assign-modal-header h3) {
+  color: var(--color-navy, #27374d);
 }
 
 :deep(.units-modal .assign-project-name) {
@@ -123,37 +144,7 @@
   margin: 0;
 }
 
-:deep(.units-modal-table-wrap) {
-  flex: 1;
-  overflow: auto;
-  padding: 0 20px;
-  max-height: 320px;
-  background: #ffffff;
-}
-
-:deep(.units-modal-table) {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9375rem;
-}
-
-:deep(.units-modal-table th),
-:deep(.units-modal-table td) {
-  padding: 10px 12px;
-  text-align: right;
-  border-bottom: 1px solid #e5e7eb;
-  color: #1e293b;
-}
-
-:deep(.units-modal-table th) {
-  font-weight: 600;
-  color: var(--color-navy);
-  background: #f1f5f9;
-}
-
-:deep(.units-modal-table tbody tr:hover) {
-  background: #f8fafc;
-}
+/* شبكة بطاقات الوحدات: أنماطها في SalesTargetsUnitsModal.scoped.css (scoped على المكوّن) */
 
 :deep(.assign-empty),
 :deep(.assign-loading) {

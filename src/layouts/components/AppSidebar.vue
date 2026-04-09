@@ -28,7 +28,7 @@
           :to="item.to"
           class="nav-item"
           active-class="active"
-          :data-tooltip="item.tooltip || item.label"
+          :data-tooltip="getItemTooltip(item)"
         >
           <div class="nav-content">
             <div v-if="item.hasBadge" class="icon-with-badge">
@@ -142,14 +142,32 @@ const visibleNavItems = computed(() => {
   });
 });
 
-/** الحصول على التسمية الديناميكية (مثل أهداف الفريق/أهدافي) */
+/** الحصول على التسمية الديناميكية (مثل أهداف الفرق لقائد المبيعات / أهدافي) */
 function getItemLabel(item) {
   if (item.dynamicLabel) {
     return props.hasPermission(item.dynamicLabel.permission)
       ? item.dynamicLabel.ifTrue
       : item.dynamicLabel.ifFalse;
   }
+  const byRole = item.labelByRole;
+  if (byRole && typeof byRole === 'object' && byRole[props.userRole] != null) {
+    return byRole[props.userRole];
+  }
   return item.label;
+}
+
+function getItemTooltip(item) {
+  const tipByRole = item.tooltipByRole;
+  if (tipByRole && typeof tipByRole === 'object' && tipByRole[props.userRole] != null) {
+    return tipByRole[props.userRole];
+  }
+  if (item.labelByRole && typeof item.labelByRole === 'object' && item.labelByRole[props.userRole] != null) {
+    return item.labelByRole[props.userRole];
+  }
+  if (item.dynamicLabel) {
+    return getItemLabel(item);
+  }
+  return item.tooltip || item.label;
 }
 </script>
 
