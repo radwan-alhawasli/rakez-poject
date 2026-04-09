@@ -15,6 +15,11 @@ import {
   contractTimelineLabel,
   getRecommendedEmployee as getRecommendedEmployeePure,
   formatDistribution,
+  extractEmbeddedTeamMembers,
+  getProjectMarketingTeamsList,
+  marketingTeamDisplayName,
+  marketingMemberDisplayName,
+  marketingMemberRatingLabel,
 } from '@/modules/marketing/tabs/projects/marketingProjectsUiHelpers.js';
 
 export function useMarketingProjects() {
@@ -34,6 +39,16 @@ export function useMarketingProjects() {
   const showUnitsTable = ref(false);
   const isLoadingUnits = ref(false);
   const recommendedEmployeeByProjectId = ref({});
+
+  const marketingTeamsWithMembers = computed(() => {
+    const d = selectedProjectDetails.value;
+    const teams = getProjectMarketingTeamsList(d);
+    if (!teams.length) return [];
+    return teams.map(t => ({
+      team: t,
+      members: extractEmbeddedTeamMembers(t),
+    }));
+  });
 
   const filteredProjects = computed(() => {
     let list = projects.value;
@@ -101,13 +116,15 @@ export function useMarketingProjects() {
     const projectId = project ? project.id ?? project.marketing_project_id : projectOrId;
     if (!contractId && !projectId) return;
     isLoadingProjectDetails.value = true;
+    let details = null;
     try {
-      const [details, recommended] = await Promise.all([
+      const [d, recommended] = await Promise.all([
         contractId
           ? marketingService.getProjectByContractId(contractId)
           : marketingService.getProjectById(projectId),
         projectId ? marketingService.getRecommendedEmployee(projectId) : Promise.resolve(null),
       ]);
+      details = d;
       selectedProjectDetails.value = details;
       if (projectId && recommended != null && typeof recommended === 'object') {
         recommendedEmployeeByProjectId.value = {
@@ -129,27 +146,6 @@ export function useMarketingProjects() {
     showUnitsTable.value = false;
     isLoadingUnits.value = false;
     await loadProjectDetails(project);
-  };
-
-  const goToMarketingTeamsPage = () => {
-    const d = selectedProjectDetails.value;
-    if (!d) return;
-    const contractIdRaw = d.marketing_project?.contract_id ?? d.contract_id ?? '';
-    const marketingProjectIdRaw = d.id ?? d.marketing_project_id ?? '';
-    const contractId = contractIdRaw != null && contractIdRaw !== '' ? String(contractIdRaw) : '';
-    const marketingProjectId =
-      marketingProjectIdRaw != null && marketingProjectIdRaw !== '' ? String(marketingProjectIdRaw) : '';
-    if (!contractId && !marketingProjectId) return;
-    router
-      .push({
-        name: 'MarketingTeams',
-        query: {
-          ...(contractId ? { contractId } : {}),
-          ...(marketingProjectId ? { marketingProjectId } : {}),
-        },
-      })
-      .catch(() => {});
-    showProjectDetailsModal.value = false;
   };
 
   const goToUnits = async project_id => {
@@ -404,7 +400,6 @@ export function useMarketingProjects() {
     loadProjects,
     loadProjectDetails,
     viewProjectDetails,
-    goToMarketingTeamsPage,
     goToUnits,
     goToPhotography,
     managePlan,
@@ -428,5 +423,9 @@ export function useMarketingProjects() {
     formatCurrency,
     formatNumber,
     hasPermission,
+    marketingTeamsWithMembers,
+    marketingTeamDisplayName,
+    marketingMemberDisplayName,
+    marketingMemberRatingLabel,
   };
 }

@@ -117,11 +117,12 @@
     </div>
   </div>
   <div class="header-right">
-    <div class="logo">
-      <span class="logo-ar">راكز العقارية</span>
-      <span class="logo-sep">|</span>
+    <div class="logo" dir="ltr">
       <span class="logo-en">Rakez Real Estate</span>
-      <div class="logo-icon-bg"></div>
+      <div class="logo-trust-badge" role="img" aria-label="راكز محل الثقة">
+        <span class="logo-trust-line">راكز</span>
+        <span class="logo-trust-line">محل الثقة</span>
+      </div>
     </div>
   </div>
   </header>

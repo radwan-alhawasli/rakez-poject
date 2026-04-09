@@ -22,21 +22,233 @@
   color: #64748b;
 }
 
-.teams-page-link {
-  background: none;
-  border: none;
+/* —— فرق التسويق (مودال تفاصيل المشروع) —— */
+/* يمنع تكرار إطار overview-section العام مع بطاقة القسم */
+.overview-section.marketing-teams-panel {
   padding: 0;
-  margin: 0;
-  font: inherit;
-  font-weight: 700;
-  color: #1e3a5f;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
-.teams-page-link:hover {
-  color: #2563eb;
+.marketing-teams-panel {
+  padding: 0;
+  border: none;
+  background: linear-gradient(145deg, rgba(248, 250, 252, 0.98) 0%, rgba(255, 255, 255, 1) 55%, rgba(241, 245, 249, 0.35) 100%);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 0 0 1px rgba(226, 232, 240, 0.85);
+  overflow: hidden;
+}
+
+.marketing-teams-panel__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.marketing-teams-panel__header-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(30, 58, 95, 0.08) 100%);
+  color: #1e3a5f;
+}
+
+.marketing-teams-panel__header-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.marketing-teams-panel__header-text {
+  min-width: 0;
+  flex: 1;
+  text-align: right;
+}
+
+.marketing-teams-panel__title {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  letter-spacing: -0.01em;
+}
+
+.marketing-teams-panel__subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #64748b;
+}
+
+.marketing-teams-empty {
+  margin: 0 16px 18px;
+  padding: 28px 20px 32px;
+  text-align: center;
+  border-radius: 14px;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.marketing-teams-empty__icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+  color: #94a3b8;
+}
+
+.marketing-teams-empty__icon svg {
+  width: 48px;
+  height: 48px;
+  opacity: 0.85;
+}
+
+.marketing-teams-empty__title {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.marketing-teams-empty__hint {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: #94a3b8;
+  max-width: 320px;
+  margin-inline: auto;
+}
+
+.marketing-teams-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px 18px;
+}
+
+.marketing-team-card {
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 14px;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.marketing-team-card:hover {
+  border-color: rgba(37, 99, 235, 0.2);
+  box-shadow: 0 4px 14px rgba(30, 58, 95, 0.08);
+}
+
+.marketing-team-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid rgba(241, 245, 249, 0.95);
+}
+
+.marketing-team-card__badge {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(30, 58, 95, 0.06);
+  color: #1e3a5f;
+}
+
+.marketing-team-card__badge svg {
+  width: 18px;
+  height: 18px;
+}
+
+.marketing-team-card__head-text {
+  min-width: 0;
+  flex: 1;
+  text-align: right;
+}
+
+.marketing-team-card__title {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.marketing-team-card__desc {
+  display: block;
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.marketing-team-card__empty {
+  margin: 0;
+  padding: 14px 16px 16px;
+  font-size: 0.875rem;
+  color: #94a3b8;
+  text-align: right;
+}
+
+.marketing-team-table-wrap {
+  margin: 0;
+  max-height: 240px;
+  overflow: auto;
+  border-radius: 0 0 14px 14px;
+  border-top: 1px solid rgba(241, 245, 249, 0.95);
+}
+
+.marketing-team-members-table {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.marketing-team-members-table thead th {
+  background: rgba(248, 250, 252, 0.95);
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.8rem;
+  text-transform: none;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.marketing-team-member-name {
+  font-weight: 500;
+  color: #334155;
+}
+
+.marketing-rating-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.12) 0%, rgba(37, 99, 235, 0.06) 100%);
+  color: #1d4ed8;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+}
+
+.marketing-rating-pill--muted {
+  background: rgba(241, 245, 249, 0.9);
+  color: #94a3b8;
+  border-color: rgba(226, 232, 240, 0.9);
+  font-weight: 500;
 }
 
 @media (max-width: 1200px) {

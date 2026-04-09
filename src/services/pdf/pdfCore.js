@@ -119,8 +119,9 @@ export function reshapeArabic(text) {
   return nonArabic + [...arabicParts].reverse().join('');
 }
 
-/** Reshape Arabic only (logical order), for use with drawTextRtl. No character reverse. */
 /**
+ * Reshape Arabic segments to presentation forms; keep Latin/digits/punctuation runs in order.
+ * Used with drawTextRtl (glyph-by-glyph from the right). Preserves run order for mixed lines.
  * @param {any} text
  */
 function reshapeArabicLogical(text) {
@@ -142,21 +143,28 @@ function reshapeArabicLogical(text) {
       continue;
     }
     let combined = r.text;
-    while (j + 1 < runs.length && !runs[j + 1].isArabic && isSpaceOnly(runs[j + 1].text) && j + 2 < runs.length && runs[j + 2].isArabic) {
+    while (
+      j + 1 < runs.length &&
+      !runs[j + 1].isArabic &&
+      isSpaceOnly(runs[j + 1].text) &&
+      j + 2 < runs.length &&
+      runs[j + 2].isArabic
+    ) {
       combined += runs[j + 1].text + runs[j + 2].text;
       j += 2;
     }
     merged.push({ text: combined, isArabic: true });
   }
-  const nonArabic = merged.filter(r => !r.isArabic).map(r => r.text).join('');
-  const arabicParts = merged.filter(r => r.isArabic).map(r => {
-    try {
-      return ArabicReshaper.convertArabic(r.text);
-    } catch (_) {
-      return r.text;
-    }
-  });
-  return nonArabic + arabicParts.join('');
+  return merged
+    .map(r => {
+      if (!r.isArabic) return r.text;
+      try {
+        return ArabicReshaper.convertArabic(r.text);
+      } catch (_) {
+        return r.text;
+      }
+    })
+    .join('');
 }
 
 /**

@@ -1,8 +1,9 @@
 // @ts-nocheck — PDF table/layout helpers: dynamic cell shapes.
-import { PDF_LAYOUT, getPdfDeps, loadArabicFontBytes, reshapeArabic } from './pdfCore.js';
+import { PDF_LAYOUT, getPdfDeps, loadArabicFontBytes, drawTextRtl } from './pdfCore.js';
 
 const { PAGE_WIDTH, PAGE_HEIGHT, DOC_MARGIN, LINE_HEIGHT, TABLE_ROW } = PDF_LAYOUT;
 const TABLE_CELL_PAD = 4;
+const CONTENT_RIGHT = PAGE_WIDTH - DOC_MARGIN;
 
 /**
  * @param {any} page
@@ -12,16 +13,15 @@ const TABLE_CELL_PAD = 4;
  * @param {any} y
  */
 function drawSectionTitle(page, font, rgb, title, y) {
-  const shaped = reshapeArabic(title);
-  const textWidth = font.widthOfTextAtSize(shaped, PDF_LAYOUT.SECTION_TITLE_SIZE);
-  const xRtl = PAGE_WIDTH - DOC_MARGIN - textWidth;
-  page.drawText(shaped, {
-    x: xRtl,
-    y,
-    size: PDF_LAYOUT.SECTION_TITLE_SIZE,
+  drawTextRtl(
+    page,
     font,
-    color: rgb(0.11, 0.16, 0.29),
-  });
+    title,
+    CONTENT_RIGHT,
+    y,
+    PDF_LAYOUT.SECTION_TITLE_SIZE,
+    rgb(0.11, 0.16, 0.29)
+  );
   return y - LINE_HEIGHT;
 }
 
@@ -36,16 +36,7 @@ function drawInfoTable(page, font, rgb, rows, y) {
   for (const [label, value] of rows) {
     if (y < DOC_MARGIN + LINE_HEIGHT) return y;
     const text = `${label}: ${value ?? '—'}`;
-    const shaped = reshapeArabic(text);
-    const textWidth = font.widthOfTextAtSize(shaped, PDF_LAYOUT.BODY_SIZE);
-    const xRtl = PAGE_WIDTH - DOC_MARGIN - textWidth;
-    page.drawText(shaped, {
-      x: xRtl,
-      y,
-      size: PDF_LAYOUT.BODY_SIZE,
-      font,
-      color: rgb(0.2, 0.2, 0.2),
-    });
+    drawTextRtl(page, font, text, CONTENT_RIGHT, y, PDF_LAYOUT.BODY_SIZE, rgb(0.2, 0.2, 0.2));
     y -= TABLE_ROW;
   }
   return y - 8;
@@ -75,14 +66,8 @@ function drawDataTable(page, font, rgb, headers, rows, y) {
    * @param {any} i
    */
   headers.forEach((h, i) => {
-    const xRtl = PAGE_WIDTH - DOC_MARGIN - (i + 1) * colWidth + TABLE_CELL_PAD;
-    page.drawText(reshapeArabic(String(h)), {
-      x: xRtl,
-      y: headY - 14,
-      size: PDF_LAYOUT.TABLE_HEADER_SIZE,
-      font,
-      color: rgb(1, 1, 1),
-    });
+    const xRight = PAGE_WIDTH - DOC_MARGIN - i * colWidth - TABLE_CELL_PAD;
+    drawTextRtl(page, font, String(h), xRight, headY - 14, PDF_LAYOUT.TABLE_HEADER_SIZE, rgb(1, 1, 1));
   });
   y -= 24;
   for (const row of rows) {
@@ -92,14 +77,16 @@ function drawDataTable(page, font, rgb, headers, rows, y) {
      * @param {any} i
      */
     row.forEach((cell, i) => {
-      const xRtl = PAGE_WIDTH - DOC_MARGIN - (i + 1) * colWidth + TABLE_CELL_PAD;
-      page.drawText(reshapeArabic(String(cell ?? '—')), {
-        x: xRtl,
-        y: y - 10,
-        size: PDF_LAYOUT.TABLE_CELL_SIZE,
+      const xRight = PAGE_WIDTH - DOC_MARGIN - i * colWidth - TABLE_CELL_PAD;
+      drawTextRtl(
+        page,
         font,
-        color: rgb(0.2, 0.2, 0.2),
-      });
+        String(cell ?? '—'),
+        xRight,
+        y - 10,
+        PDF_LAYOUT.TABLE_CELL_SIZE,
+        rgb(0.2, 0.2, 0.2)
+      );
     });
     y -= TABLE_ROW;
   }
@@ -120,26 +107,10 @@ export async function buildDocumentPdf({ title, subtitle, sections, footer }) {
   let page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
   let y = PAGE_HEIGHT - DOC_MARGIN;
 
-  const titleShaped = reshapeArabic(title);
-  const titleW = font.widthOfTextAtSize(titleShaped, PDF_LAYOUT.TITLE_SIZE);
-  page.drawText(titleShaped, {
-    x: PAGE_WIDTH - DOC_MARGIN - titleW,
-    y,
-    size: PDF_LAYOUT.TITLE_SIZE,
-    font,
-    color: rgb(0.11, 0.16, 0.29),
-  });
+  drawTextRtl(page, font, title, CONTENT_RIGHT, y, PDF_LAYOUT.TITLE_SIZE, rgb(0.11, 0.16, 0.29));
   y -= 22;
   if (subtitle) {
-    const subShaped = reshapeArabic(subtitle);
-    const subW = font.widthOfTextAtSize(subShaped, PDF_LAYOUT.SUBTITLE_SIZE);
-    page.drawText(subShaped, {
-      x: PAGE_WIDTH - DOC_MARGIN - subW,
-      y,
-      size: PDF_LAYOUT.SUBTITLE_SIZE,
-      font,
-      color: rgb(0.4, 0.4, 0.4),
-    });
+    drawTextRtl(page, font, subtitle, CONTENT_RIGHT, y, PDF_LAYOUT.SUBTITLE_SIZE, rgb(0.4, 0.4, 0.4));
     y -= LINE_HEIGHT;
   }
   y -= 10;
@@ -163,15 +134,15 @@ export async function buildDocumentPdf({ title, subtitle, sections, footer }) {
       page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
       y = PAGE_HEIGHT - DOC_MARGIN;
     }
-    const footerShaped = reshapeArabic(footer);
-    const footerW = font.widthOfTextAtSize(footerShaped, PDF_LAYOUT.FOOTER_SIZE);
-    page.drawText(footerShaped, {
-      x: PAGE_WIDTH - DOC_MARGIN - footerW,
-      y: DOC_MARGIN + 10,
-      size: PDF_LAYOUT.FOOTER_SIZE,
+    drawTextRtl(
+      page,
       font,
-      color: rgb(0.5, 0.5, 0.5),
-    });
+      footer,
+      CONTENT_RIGHT,
+      DOC_MARGIN + 10,
+      PDF_LAYOUT.FOOTER_SIZE,
+      rgb(0.5, 0.5, 0.5)
+    );
   }
 
   return pdfDoc.save();

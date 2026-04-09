@@ -1,29 +1,12 @@
-/* أهداف المبيعات — هوية راكز: كحلي، بيج، خطوط واضحة، بدون خلفيات «نعناعية» */
+/* أهداف المبيعات — هوية راكز؛ بدون طبقة خلفية على التبويب (يظهر لون الحاوية الأم) */
 
 .targets-tab {
   width: 100%;
   direction: rtl;
   position: relative;
-  isolation: isolate;
   min-height: min(100%, 100vh);
   padding-bottom: clamp(24px, 4vw, 48px);
-}
-
-.targets-tab::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 90% 45% at 100% 0%, rgba(39, 55, 77, 0.06) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 40% at 0% 100%, rgba(181, 169, 154, 0.09) 0%, transparent 50%),
-    linear-gradient(180deg, var(--color-off-white, #fdfbf7) 0%, var(--color-cream-gold-light, #f8f4ec) 100%);
-}
-
-.targets-tab > * {
-  position: relative;
-  z-index: 1;
+  background: transparent;
 }
 
 /* ——— رأس الصفحة ——— */
@@ -43,37 +26,6 @@
 .targets-tab .header-content {
   flex: 1 1 280px;
   min-width: 0;
-}
-
-.targets-brand-line {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 8px 10px;
-  margin-bottom: 14px;
-  font-size: 13px;
-  letter-spacing: 0.03em;
-}
-
-.targets-brand-line .brand-ar {
-  font-family: 'Aref Ruqaa', 'Cairo', serif;
-  font-weight: 700;
-  color: var(--color-gold-light, #c5baad);
-}
-
-.targets-brand-line .brand-sep {
-  color: rgba(181, 169, 154, 0.45);
-  font-weight: 300;
-  user-select: none;
-}
-
-.targets-brand-line .brand-en {
-  font-family: 'Cormorant Garamond', 'Cairo', serif;
-  font-weight: 600;
-  font-style: italic;
-  color: rgba(253, 251, 247, 0.9);
-  font-size: 12px;
 }
 
 .targets-meta-line {
@@ -385,27 +337,29 @@
   background: rgba(236, 253, 245, 0.85);
 }
 
-/* ——— نوافذ منبثقة ——— */
-.assign-overlay {
+/* ——— نوافذ منبثقة ———
+   :deep() مطلوب لأن المودالات في مكوّنات فرعية (SalesTargetsUnitsModal وغيرها)
+   وإلا لا تُطبَّق أنماط scoped على محتواها فيبدو المودال شفافاً. */
+:deep(.assign-overlay) {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(15, 23, 42, 0.48);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
 }
 
-.assign-modal {
-  background: var(--color-white);
-  border: 1px solid rgba(39, 55, 77, 0.08);
+:deep(.assign-modal) {
+  background: #ffffff;
+  border: 1px solid rgba(39, 55, 77, 0.12);
   border-radius: 16px;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.75) inset,
-    0 28px 64px rgba(15, 23, 42, 0.2);
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 28px 64px rgba(15, 23, 42, 0.22);
   max-width: 420px;
   width: 100%;
   max-height: 85vh;
@@ -413,16 +367,16 @@
   flex-direction: column;
 }
 
-.assign-modal-header {
+:deep(.assign-modal-header) {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 20px 22px;
-  border-bottom: 1px solid rgba(39, 55, 77, 0.07);
-  background: linear-gradient(180deg, rgba(248, 250, 252, 0.95) 0%, rgba(255, 255, 255, 0.6) 100%);
+  border-bottom: 1px solid rgba(39, 55, 77, 0.08);
+  background: #f1f5f9;
 }
 
-.assign-modal-header h3 {
+:deep(.assign-modal-header h3) {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 800;
@@ -430,12 +384,12 @@
   letter-spacing: -0.02em;
 }
 
-.assign-close {
+:deep(.assign-close) {
   width: 34px;
   height: 34px;
   padding: 0;
   border: none;
-  background: rgba(39, 55, 77, 0.06);
+  background: rgba(39, 55, 77, 0.08);
   font-size: 1.35rem;
   line-height: 1;
   color: var(--color-dark-gray);
@@ -444,27 +398,29 @@
   transition: background 0.2s, color 0.2s;
 }
 
-.assign-close:hover {
-  background: rgba(39, 55, 77, 0.1);
+:deep(.assign-close:hover) {
+  background: rgba(39, 55, 77, 0.14);
   color: var(--color-navy);
 }
 
-.assign-project-name {
+:deep(.assign-project-name) {
   margin: 0;
   padding: 12px 20px;
   font-size: 0.9375rem;
   color: var(--color-dark-gray);
-  border-bottom: 1px solid rgba(241, 245, 249, 0.95);
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.assign-marketers-list {
+:deep(.assign-marketers-list) {
   flex: 1;
   overflow-y: auto;
   padding: 12px 20px;
   max-height: 280px;
+  background: #ffffff;
 }
 
-.assign-marketer-row {
+:deep(.assign-marketer-row) {
   display: flex;
   align-items: center;
   gap: 12px;

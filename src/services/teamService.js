@@ -1,5 +1,7 @@
 import apiClient from '@/api/apiClient';
+import { ensurePdfBlob } from '@/services/hr/hrPdfBlob';
 import logger from '@/utils/logger';
+import { normalizeVoucherDataPayload } from '@/utils/reservationVoucherNormalize';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
 
@@ -601,9 +603,7 @@ export const downloadProjectManagementReservationVoucher = async reservationId =
   const response = await apiClient.get(`/project_management/reservations/${reservationId}/voucher`, {
     responseType: 'blob',
   });
-  const data = response?.data;
-  if (data instanceof Blob) return data;
-  throw new Error('Expected blob for PM reservation voucher');
+  return ensurePdfBlob(response);
 };
 
 /**
@@ -617,11 +617,38 @@ export const getProjectManagementReservationVoucherData = async reservationId =>
     const response = await apiClient.get(
       `/project_management/reservations/${reservationId}/voucher-data`
     );
-    return response.data?.data ?? response.data ?? {};
+    const payload = response.data?.data ?? response.data ?? {};
+    const base = payload && typeof payload === 'object' && !Array.isArray(payload) ? payload : {};
+    const normalized = normalizeVoucherDataPayload(base);
+    /** دمج الخام مع التطبيع حتى لا تُفقد حقول مثل روابط الصور الجاهزة */
+    if (normalized?.reservation != null) {
+      return { ...base, ...normalized };
+    }
+    return base;
   } catch (error) {
     logger.error(`PM voucher-data ${reservationId}:`, error);
     throw error;
   }
+};
+
+/**
+ * Raw GET voucher-data (binary or JSON body) — same URL as JSON helper, responseType blob.
+ * GET /project_management/reservations/:id/voucher-data
+ * @param {string|number} reservationId
+ * @returns {Promise<{ blob: Blob, contentType: string, contentDisposition: string }>}
+ */
+export const fetchProjectManagementReservationVoucherDataBlob = async reservationId => {
+  const response = await apiClient.get(
+    `/project_management/reservations/${reservationId}/voucher-data`,
+    { responseType: 'blob' }
+  );
+  const blob = response?.data;
+  if (!(blob instanceof Blob)) {
+    throw new Error('استجابة السند غير صالحة');
+  }
+  const contentType = response.headers?.['content-type'] || blob.type || '';
+  const contentDisposition = response.headers?.['content-disposition'] || '';
+  return { blob, contentType, contentDisposition };
 };
 
 export default {
@@ -662,4 +689,5 @@ export default {
   logProjectManagementReservationAction,
   downloadProjectManagementReservationVoucher,
   getProjectManagementReservationVoucherData,
+  fetchProjectManagementReservationVoucherDataBlob,
 };

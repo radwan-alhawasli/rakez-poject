@@ -72,9 +72,90 @@ export function getRecommendedEmployee(project, recommendedEmployeeByProjectId) 
   return `${name} (تقديري حسب الأداء)`;
 }
 
+/** تسميات العرض لمفاتيح توزيع الحملة (المفاتيح الإنجليزية ثابتة للـ API) */
+export const CAMPAIGN_DISTRIBUTION_LABELS = {
+  'Direct Communication': 'تواصل مباشر',
+  'Hand Raise': 'Lead',
+  Impression: 'Impression',
+  Sales: 'subscription',
+};
+
 export function formatDistribution(obj) {
   if (!obj || typeof obj !== 'object') return '—';
   const entries = Object.entries(obj);
   if (!entries.length) return '—';
-  return entries.map(([k, v]) => `${k}: ${v}`).join(' • ');
+  return entries
+    .map(([k, v]) => `${CAMPAIGN_DISTRIBUTION_LABELS[k] ?? k}: ${v}`)
+    .join(' • ');
+}
+
+/** أعضاء مضمّنة في كائن الفريق من استجابة GET /marketing/projects/:id */
+export function extractEmbeddedTeamMembers(team) {
+  if (!team || typeof team !== 'object') return [];
+  const keys = [
+    'members',
+    'users',
+    'employees',
+    'team_members',
+    'marketing_team_members',
+    'sales_members',
+    'responsible_members',
+    'marketers',
+  ];
+  for (const k of keys) {
+    const arr = team[k];
+    if (Array.isArray(arr) && arr.length) return arr;
+  }
+  return [];
+}
+
+/**
+ * قائمة فرق التسويق المعروضة في تفاصيل المشروع: يُفضّل responsible_sales_teams ثم marketing_project.teams.
+ * @param {Record<string, unknown> | null | undefined} project
+ * @returns {unknown[]}
+ */
+export function getProjectMarketingTeamsList(project) {
+  if (!project || typeof project !== 'object') return [];
+  const responsible = project.responsible_sales_teams;
+  if (Array.isArray(responsible) && responsible.length) return responsible;
+  const mp = project.marketing_project;
+  const legacy = mp && typeof mp === 'object' ? mp.teams : null;
+  if (Array.isArray(legacy) && legacy.length) return legacy;
+  return [];
+}
+
+export function marketingTeamDisplayName(team) {
+  if (!team || typeof team !== 'object') return '—';
+  return (
+    team.name ??
+    team.team_name ??
+    team.title ??
+    team.label ??
+    team.user?.name ??
+    `فريق #${team.id ?? '—'}`
+  );
+}
+
+export function marketingMemberDisplayName(m) {
+  if (!m || typeof m !== 'object') return '—';
+  return m.name ?? m.user?.name ?? m.user_name ?? `عضو #${m.id ?? m.user_id ?? '—'}`;
+}
+
+/** تقييم العضو (حقول شائعة من الـ API) */
+export function marketingMemberRatingScore(m) {
+  if (!m || typeof m !== 'object') return null;
+  const raw =
+    m.leader_rating ??
+    m.rating ??
+    m.avg_rating ??
+    m.performance_score ??
+    m.score ??
+    m.performance_rating;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+export function marketingMemberRatingLabel(m) {
+  const s = marketingMemberRatingScore(m);
+  return s != null ? String(s) : '—';
 }

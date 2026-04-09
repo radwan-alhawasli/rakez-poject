@@ -2,6 +2,12 @@ import { ref, reactive, computed } from 'vue';
 import salesService from '@/services/salesService';
 import notificationService from '@/services/notificationService';
 import logger from '@/utils/logger';
+import { normalizeVoucherDataPayload } from '@/utils/reservationVoucherNormalize';
+import {
+  blobFromVoucherAssetDescriptor,
+  guessVoucherFilename,
+  pickVoucherAssetDescriptor,
+} from '@/utils/reservationVoucherAsset';
 import { getApiErrorMessage } from '@/utils/errorHandler';
 import { NATIONALITIES } from '@/constants/lookups';
 import {
@@ -111,17 +117,29 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `sond-hajz-${rid}.pdf`;
+            a.download = guessVoucherFilename(rid, blob);
             a.click();
             window.URL.revokeObjectURL(url);
             notificationService.addNotification('تم تنزيل السند', 'success');
             return;
-          } catch (pmErr) {
-            logger.warn('PM voucher download failed, trying voucher-data', pmErr);
+          } catch (e) {
+            logger.warn('PM voucher file failed, trying voucher-data', e);
           }
           try {
-            const { generateReservationVoucherPdf } = await import('@/services/pdfService');
             const vd = await getProjectManagementReservationVoucherData(rid);
+            const asset = pickVoucherAssetDescriptor(vd);
+            if (asset) {
+              const imgBlob = await blobFromVoucherAssetDescriptor(asset);
+              const url = URL.createObjectURL(imgBlob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = guessVoucherFilename(rid, imgBlob);
+              a.click();
+              URL.revokeObjectURL(url);
+              notificationService.addNotification('تم تنزيل السند', 'success');
+              return;
+            }
+            const { generateReservationVoucherPdf } = await import('@/services/pdfService');
             if (vd?.reservation != null) {
               const pdfBytes = await generateReservationVoucherPdf(
                 vd.reservation,
@@ -139,8 +157,8 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
               notificationService.addNotification('تم تنزيل السند', 'success');
               return;
             }
-          } catch (e) {
-            logger.warn('PM voucher-data fallback failed', e);
+          } catch (pmErr) {
+            logger.warn('PM voucher-data / client PDF failed', pmErr);
           }
         }
         try {
@@ -160,12 +178,13 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
           const { getReservationVoucherData } = await import('@/services/pdfApi');
           const { generateReservationVoucherPdf } = await import('@/services/pdfService');
           const data = await getReservationVoucherData(rid);
-          if (data?.reservation != null) {
+          const n = normalizeVoucherDataPayload(data);
+          if (n?.reservation != null) {
             const pdfBytes = await generateReservationVoucherPdf(
-              data.reservation,
-              data.project ?? {},
-              data.unit ?? {},
-              data.employee ?? {}
+              n.reservation,
+              n.project ?? {},
+              n.unit ?? {},
+              n.employee ?? {}
             );
             const blob = new Blob([pdfBytes], { type: 'application/pdf' });
             const url = URL.createObjectURL(blob);

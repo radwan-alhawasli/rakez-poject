@@ -65,13 +65,19 @@
               >
                 استكمال العقد
               </button>
-              <button
-                v-if="request.status === 'completed'"
-                class="edit-btn"
-                @click="openEditModal(request)"
-              >
-                تعديل
-              </button>
+              <template v-if="request.status === 'completed'">
+                <button
+                  type="button"
+                  class="download-contract-btn"
+                  :disabled="isDownloadingContract(request.id)"
+                  @click="downloadContractPdf(request)"
+                >
+                  {{ isDownloadingContract(request.id) ? 'جاري التحميل...' : 'تحميل العقد' }}
+                </button>
+                <button type="button" class="edit-btn" @click="openEditModal(request)">
+                  تعديل
+                </button>
+              </template>
             </td>
           </tr>
         </tbody>
@@ -97,9 +103,11 @@ import EditContractInfoModal from '@/components/EditContractInfoModal.vue';
 import { useRouter, useRoute } from 'vue-router';
 import contractService from '@/services/contractService';
 import authService from '@/services/authService';
+import { downloadContractFillDataPdf } from '@/services/pdfApi';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { userSeesAllMyRequests } from '@/utils/myRequestsScope';
+import { getApiErrorMessage } from '@/utils/errorHandler';
 
 export default {
   name: 'MyRequestsView',
@@ -112,6 +120,7 @@ export default {
     const showEditModal = ref(false);
     const editingContractId = ref(null);
     const editingContractData = ref(null);
+    const downloadingContractId = ref(null);
 
     const showsAllTeamRequests = computed(() => userSeesAllMyRequests(authService.getCurrentUser()));
 
@@ -261,6 +270,32 @@ export default {
       fetchRequests();
     }
 
+    const isDownloadingContract = (id) =>
+      downloadingContractId.value != null && String(downloadingContractId.value) === String(id);
+
+    const downloadContractPdf = async (request) => {
+      const id = request?.id;
+      if (id == null || id === '') return;
+      const st = (request?.status || '').toString().toLowerCase();
+      if (st !== 'completed') return;
+      downloadingContractId.value = id;
+      try {
+        const { blob, filename } = await downloadContractFillDataPdf(id);
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename || `contract-${id}.pdf`;
+        link.click();
+        URL.revokeObjectURL(url);
+        toast.success('تم تحميل العقد');
+      } catch (error) {
+        logger.error('downloadContractPdf failed', error);
+        toast.error(getApiErrorMessage(error, 'فشل تحميل العقد'));
+      } finally {
+        downloadingContractId.value = null;
+      }
+    };
+
     return {
       requests,
       isLoading,
@@ -275,6 +310,8 @@ export default {
       openEditModal,
       closeEditModal,
       onEditSaved,
+      isDownloadingContract,
+      downloadContractPdf,
     };
   },
 };

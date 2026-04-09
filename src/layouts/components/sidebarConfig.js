@@ -205,7 +205,16 @@ const salesItems = [
   { to: '/sales/projects', label: 'المشاريع', tooltip: 'المشاريع', icon: ICONS.projects, permission: 'sales.projects.view' },
   { to: '/sales/unit-search', label: 'بحث الوحدات', tooltip: 'بحث الوحدات', icon: ICONS.search, permission: 'sales.projects.view' },
   { to: '/sales/reservations', label: 'الحجوزات', tooltip: 'الحجوزات', icon: ICONS.calendar, permission: 'sales.reservations.view' },
-  { to: '/sales/targets', label: 'أهدافي', tooltip: 'أهدافي', icon: ICONS.target, permission: 'sales.targets.view' },
+  {
+    to: '/sales/targets',
+    label: 'أهدافي',
+    tooltip: 'أهدافي',
+    icon: ICONS.target,
+    permission: 'sales.targets.view',
+    /** قائد المبيعات (دور 7): تسمية مختلفة في الشريط */
+    labelByRole: { 7: 'أهداف الفرق' },
+    tooltipByRole: { 7: 'أهداف الفرق' },
+  },
   { to: '/sales/team', label: 'الفريق', tooltip: 'الفريق', icon: ICONS.teams, permission: 'sales.team.manage' },
   { to: '/sales/attendance', label: 'دوامي', tooltip: 'دوامي', icon: ICONS.clock, permission: 'sales.attendance.view' },
   { to: '/sales/project-schedules', label: 'إدارة دوام المشاريع', tooltip: 'إدارة دوام المشاريع', icon: ICONS.calendarDots, permission: 'sales.attendance.manage' },

@@ -2,20 +2,21 @@
   <div class="targets-tab">
     <div class="welcome-header targets-hero">
       <div class="header-content">
-        <div class="targets-brand-line" aria-hidden="true">
-          <span class="brand-ar">راكز العقارية</span>
-          <span class="brand-sep">|</span>
-          <span class="brand-en">Rakez Real Estate</span>
-        </div>
         <h1 class="welcome-title">
           <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="10"></circle>
             <circle cx="12" cy="12" r="6"></circle>
             <circle cx="12" cy="12" r="2"></circle>
           </svg>
-          أهدافي
+          {{ isSalesLeaderView ? 'أهداف الفرق' : 'أهدافي' }}
         </h1>
-        <p class="welcome-subtitle">متابعة الأهداف التي أسندها مدير الفريق لك وما تم تكليفه لك.</p>
+        <p class="welcome-subtitle">
+          {{
+            isSalesLeaderView
+              ? 'متابعة أهداف فريق المبيعات والمسوّقين المرتبطين بالمشروع.'
+              : 'متابعة الأهداف التي أسندها مدير الفريق لك وما تم تكليفه لك.'
+          }}
+        </p>
         <p
           v-if="displayTargets.length && !isLoadingTargets && !targetsLoadError"
           class="targets-meta-line"
@@ -415,24 +416,74 @@ async function openUnitsModal(target) {
   try {
     const data = await salesService.getTargetsByProject(contractId);
     const list = Array.isArray(data) ? data : [];
+    const pickUnitLabel = (t, u) => {
+      const raw =
+        (u && (u.unit_number ?? u.unit_no ?? u.number)) ??
+        (t && (t.unit_number ?? t.unit_no ?? t.number));
+      const s = raw != null && raw !== '' ? String(raw).trim() : '';
+      return s || '—';
+    };
+
+    /** حقول وحدة للعرض كبطاقات مشروع (نفس أسماء الحقول تقريباً) */
+    const pickUnitCardFields = (t, u) => {
+      const id =
+        (u && (u.id ?? u.unit_id ?? u.contract_unit_id)) ??
+        t.contract_unit_id ??
+        t.unit_id ??
+        t.target_id ??
+        t.id;
+      const rawStatus =
+        (u && (u.status ?? u.unit_status)) ?? t.unit_status ?? t.unit?.status ?? null;
+      let status = rawStatus;
+      if (status != null && status !== '') {
+        const s = String(status).toLowerCase().trim();
+        if (['متاح', 'متاحة'].includes(String(rawStatus).trim())) status = 'available';
+        else if (['محجوز', 'محجوزة'].includes(String(rawStatus).trim())) status = 'reserved';
+        else if (['مباع', 'مباعة'].includes(String(rawStatus).trim())) status = 'sold';
+        else if (s === 'available' || s === 'reserved' || s === 'sold' || s === 'pending') status = s;
+        else status = rawStatus;
+      } else {
+        status = null;
+      }
+      const price =
+        (u && (u.price ?? u.unit_price ?? u.total_price)) ?? t.unit_price ?? t.price ?? null;
+      const area = (u && (u.area ?? u.total_area)) ?? t.area ?? t.unit?.area ?? null;
+      const rooms = (u && (u.bedrooms ?? u.rooms)) ?? t.bedrooms ?? t.rooms ?? null;
+      const floor = (u && u.floor != null ? u.floor : null) ?? (t.floor != null ? t.floor : null);
+      return {
+        id,
+        status,
+        price: price != null && price !== '' ? price : null,
+        area: area != null && area !== '' ? area : null,
+        rooms: rooms != null && rooms !== '' ? rooms : null,
+        floor: floor != null && floor !== '' ? floor : null,
+      };
+    };
+
     const rows = list.map(normalizeSalesTargetItem).flatMap((t) => {
       const units = Array.isArray(t.units) ? t.units : [];
       if (units.length === 0) {
+        const card = pickUnitCardFields(t, null);
         return [
           {
-            unit_id: t.contract_unit_id ?? t.unit_id ?? t.target_id ?? t.id,
-            unit_number: t.unit_number ?? '—',
+            unit_id: card.id,
+            unit_number: pickUnitLabel(t, null),
             marketer_id: t.marketer_id,
             marketer_name: t.marketer_name ?? '—',
+            ...card,
           },
         ];
       }
-      return units.map((u) => ({
-        unit_id: u.unit_id ?? u.id ?? u.contract_unit_id,
-        unit_number: u.unit_number ?? u.unit_no ?? u.number ?? '—',
-        marketer_id: t.marketer_id,
-        marketer_name: t.marketer_name ?? '—',
-      }));
+      return units.map((u) => {
+        const card = pickUnitCardFields(t, u);
+        return {
+          unit_id: card.id ?? u.unit_id ?? u.id ?? u.contract_unit_id,
+          unit_number: pickUnitLabel(t, u),
+          marketer_id: t.marketer_id,
+          marketer_name: t.marketer_name ?? '—',
+          ...card,
+        };
+      });
     });
     unitsModalRows.value = rows;
     unitsModalUnfilteredCount.value = rows.length;
