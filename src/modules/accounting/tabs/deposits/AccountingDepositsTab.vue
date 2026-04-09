@@ -199,10 +199,14 @@ const {
 } = useAccountingDeposits();
 
 const emptyPrimaryText = computed(() =>
-  projectFilter.trim() ? 'لا توجد نتائج مطابقة لاسم المشروع.' : 'لا توجد بيانات في هذه القائمة.'
+  String(projectFilter.value ?? '').trim()
+    ? 'لا توجد نتائج مطابقة لاسم المشروع.'
+    : 'لا توجد بيانات في هذه القائمة.'
 );
 
-const emptyHintText = computed(() => (projectFilter.trim() ? 'جرّب مسح الفلتر أو تعديل البحث.' : null));
+const emptyHintText = computed(() =>
+  String(projectFilter.value ?? '').trim() ? 'جرّب مسح الفلتر أو تعديل البحث.' : null
+);
 
 function refreshDeposits() {
   if (depositsSubTab.value === 'manage') loadDeposits();

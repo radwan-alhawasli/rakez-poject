@@ -144,7 +144,9 @@ export function useAccountingDeposits() {
 
   const { formatCurrency, formatDate: _fmtDate } = useFormatters();
   const formatDate = (dateStr) => (!dateStr ? 'غير محدد' : _fmtDate(dateStr));
-  const normalizedProjectFilter = computed(() => projectFilter.value.trim().toLowerCase());
+  const normalizedProjectFilter = computed(() =>
+    String(projectFilter.value ?? '').trim().toLowerCase()
+  );
   const filteredDeposits = computed(() => {
     if (!normalizedProjectFilter.value) return deposits.value;
     return deposits.value.filter((deposit) =>
