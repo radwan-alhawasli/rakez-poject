@@ -1,35 +1,4 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue';
-
-function safeHttpUrl(s) {
-  const t = String(s || '').trim();
-  if (!t) return '';
-  try {
-    const u = new URL(t);
-    return u.protocol === 'http:' || u.protocol === 'https:' ? t : '';
-  } catch {
-    return '';
-  }
-}
-
-function videoEmbedSrcFromUrl(raw) {
-  const s = safeHttpUrl(raw);
-  if (!s) return '';
-  try {
-    const u = new URL(s);
-    const host = u.hostname.toLowerCase();
-    if (host.includes('youtube.com') && u.searchParams.get('v')) {
-      const id = u.searchParams.get('v');
-      return id ? `https://www.youtube.com/embed/${id}` : s;
-    }
-    if (host === 'youtu.be') {
-      const id = u.pathname.replace(/^\//, '').split('/')[0];
-      return id ? `https://www.youtube.com/embed/${id}` : s;
-    }
-    return s;
-  } catch {
-    return '';
-  }
-}
 import { useRouter, useRoute } from 'vue-router';
 import contractService from '@/services/contractService';
 import { pickContractCompletionNotes } from '@/services/contract/contractNormalize';
@@ -96,8 +65,6 @@ export function useContractFormView() {
     total_units_value: 0,
     average_unit_price: 0,
     notes: '',
-    image_url: '',
-    video_url: '',
     project_site_url: '',
   });
 
@@ -121,9 +88,6 @@ export function useContractFormView() {
     if (count <= 0) return '0';
     return Math.round(total / count).toLocaleString('en-US');
   });
-
-  const safeImagePreviewUrl = computed(() => safeHttpUrl(form.image_url));
-  const videoEmbedSrc = computed(() => videoEmbedSrcFromUrl(form.video_url));
 
   watch(
     () => form.units,
@@ -227,8 +191,6 @@ export function useContractFormView() {
         }
         form.average_unit_price = data.average_unit_price || form.average_unit_price || 0;
         form.notes = pickContractCompletionNotes(data);
-        form.image_url = data.image_url || form.image_url || '';
-        form.video_url = data.video_url || form.video_url || '';
         form.project_site_url =
           data.project_site_url || data.project_link || data.location_url || form.project_site_url;
 
@@ -359,8 +321,6 @@ export function useContractFormView() {
           note: form.notes || undefined,
           notes: form.notes || undefined,
           description: form.notes || undefined,
-          image_url: form.image_url || undefined,
-          video_url: form.video_url || undefined,
           project_site_url: form.project_site_url || undefined,
           units: unitsForApi(form.units),
           units_count: form.units_count,
@@ -442,8 +402,6 @@ export function useContractFormView() {
     commissionFromLabel,
     commissionPercentDisplay,
     averageUnitPriceDisplay,
-    safeImagePreviewUrl,
-    videoEmbedSrc,
     isSaving,
     isDownloading,
     showDownloadModal,

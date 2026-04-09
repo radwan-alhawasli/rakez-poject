@@ -358,49 +358,6 @@
               </div>
             </div>
 
-            <div class="contract-media-block">
-              <h5 class="contract-media-title">صورة وفيديو (روابط)</h5>
-              <div class="input-row">
-                <div class="field-group full">
-                  <label>رابط الصورة</label>
-                  <input
-                    v-model="form.image_url"
-                    type="url"
-                    class="form-input"
-                    placeholder="https://..."
-                    autocomplete="off"
-                  />
-                </div>
-              </div>
-              <div v-if="safeImagePreviewUrl" class="media-preview media-preview--image">
-                <img :src="safeImagePreviewUrl" alt="معاينة الصورة" class="media-preview-img" />
-              </div>
-              <div class="input-row">
-                <div class="field-group full">
-                  <label>رابط الفيديو</label>
-                  <input
-                    v-model="form.video_url"
-                    type="url"
-                    class="form-input"
-                    placeholder="https://..."
-                    autocomplete="off"
-                  />
-                </div>
-              </div>
-              <div v-if="videoEmbedSrc" class="media-preview media-preview--video">
-                <iframe
-                  :src="videoEmbedSrc"
-                  class="media-preview-iframe"
-                  title="معاينة الفيديو"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowfullscreen
-                />
-              </div>
-              <p v-else-if="form.video_url && String(form.video_url).trim()" class="media-preview-fallback">
-                <a :href="String(form.video_url).trim()" target="_blank" rel="noopener noreferrer">فتح رابط الفيديو</a>
-              </p>
-            </div>
-
             <div class="input-row">
               <div class="field-group full">
                 <label>رابط موقع المشروع</label>

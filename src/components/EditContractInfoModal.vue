@@ -3,7 +3,7 @@
     :open="true"
     rakez-header
     title="تعديل بيانات استكمال العقد"
-    subtitle="نفس حقول استكمال العقد (الطرف الثاني، التواريخ، العمولة، إلخ)."
+    subtitle="تعديل العقد"
     size="wide"
     @update:open="(v) => { if (v === false) emit('close') }"
   >
@@ -277,57 +277,15 @@
               <textarea v-model="form.notes" class="form-input text-area" placeholder="أدخل وصف المشروع أو الملاحظات..."></textarea>
             </div>
           </div>
-          <div class="contract-media-block">
-            <h5 class="contract-media-title">صورة وفيديو (روابط)</h5>
-            <div class="input-row">
-              <div class="field-group full">
-                <label>رابط الصورة</label>
-                <input
-                  v-model="form.image_url"
-                  type="url"
-                  class="form-input"
-                  placeholder="https://..."
-                  autocomplete="off"
-                />
-              </div>
-            </div>
-            <div v-if="safeImagePreviewUrl" class="media-preview media-preview--image">
-              <img :src="safeImagePreviewUrl" alt="معاينة الصورة" class="media-preview-img" />
-            </div>
-            <div class="input-row">
-              <div class="field-group full">
-                <label>رابط الفيديو</label>
-                <input
-                  v-model="form.video_url"
-                  type="url"
-                  class="form-input"
-                  placeholder="https://..."
-                  autocomplete="off"
-                />
-              </div>
-            </div>
-            <div v-if="videoEmbedSrc" class="media-preview media-preview--video">
-              <iframe
-                :src="videoEmbedSrc"
-                class="media-preview-iframe"
-                title="معاينة الفيديو"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen
+          <div class="input-row">
+            <div class="field-group full">
+              <label>رابط صورة المشروع (اختياري)</label>
+              <input
+                v-model="form.project_image_url"
+                type="url"
+                class="form-input"
+                placeholder="https://example.com/image.jpg"
               />
-            </div>
-            <p v-else-if="form.video_url && String(form.video_url).trim()" class="media-preview-fallback">
-              <a :href="String(form.video_url).trim()" target="_blank" rel="noopener noreferrer">فتح رابط الفيديو في تبويب جديد</a>
-            </p>
-            <div class="input-row">
-              <div class="field-group full">
-                <label>رابط صورة المشروع (اختياري)</label>
-                <input
-                  v-model="form.project_image_url"
-                  type="url"
-                  class="form-input"
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
             </div>
           </div>
           <div class="input-row">
@@ -441,9 +399,6 @@ const form = reactive({
   total_units_value: 0,
   city: '',
   notes: '',
-  /** روابط وسائط من الـ API — منفصلة عن project_image_url */
-  image_url: '',
-  video_url: '',
   project_image_url: '',
   project_site_url: '',
 });
@@ -483,39 +438,6 @@ watch(
   () => syncFormTotalsFromUnits(form),
   { deep: true, immediate: true },
 );
-
-const safeImagePreviewUrl = computed(() => {
-  const s = String(form.image_url || '').trim();
-  if (!s) return '';
-  try {
-    const u = new URL(s);
-    return u.protocol === 'http:' || u.protocol === 'https:' ? s : '';
-  } catch {
-    return '';
-  }
-});
-
-/** معاينة فيديو: YouTube كـ embed، وغيرها يُمرَّر الرابط للـ iframe إن أمكن */
-const videoEmbedSrc = computed(() => {
-  const s = String(form.video_url || '').trim();
-  if (!s) return '';
-  try {
-    const u = new URL(s);
-    if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
-    const host = u.hostname.toLowerCase();
-    if (host.includes('youtube.com') && u.searchParams.get('v')) {
-      const id = u.searchParams.get('v');
-      return id ? `https://www.youtube.com/embed/${id}` : s;
-    }
-    if (host === 'youtu.be') {
-      const id = u.pathname.replace(/^\//, '').split('/')[0];
-      return id ? `https://www.youtube.com/embed/${id}` : s;
-    }
-    return s;
-  } catch {
-    return '';
-  }
-});
 
 /** تحويل أي تاريخ من الـ API إلى YYYY-MM-DD لعرضه في input type="date". يدعم ISO وUnix وـ DD-MM-YYYY. */
 function toDateInputValue(val) {
@@ -723,20 +645,6 @@ function mapApiToForm(data) {
     proj.project_link,
     info.project_site_url,
   );
-  form.image_url = pickStr(
-    d.image_url,
-    data.image_url,
-    info.image_url,
-    proj.image_url,
-    d.montage_image_url,
-  );
-  form.video_url = pickStr(
-    d.video_url,
-    data.video_url,
-    info.video_url,
-    proj.video_url,
-    d.montage_video_url,
-  );
   form.project_image_url = pickStr(
     d.project_image_url,
     d.image,
@@ -836,8 +744,6 @@ function mergeSalesProjectDetailsIntoForm(project) {
       p.site_url ??
       p.project_url,
   );
-  setIfEmpty('image_url', p.image_url);
-  setIfEmpty('video_url', p.video_url);
   setIfEmpty(
     'project_image_url',
     p.project_image_url ??
@@ -1007,8 +913,6 @@ async function submit() {
       note: form.notes || undefined,
       notes: form.notes || undefined,
       description: form.notes || undefined,
-      image_url: form.image_url || undefined,
-      video_url: form.video_url || undefined,
       project_image_url: form.project_image_url || undefined,
       project_site_url: form.project_site_url || undefined,
       units: unitsForApi(form.units),
