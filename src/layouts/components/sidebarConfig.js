@@ -1,7 +1,8 @@
 /**
  * تكوين القائمة الجانبية حسب الدور — مصدر واحد للبيانات
  * كل عنصر: { to, label, tooltip, icon (SVG path string), permission?, showIf? }
- * أو عنوان قسم (للإدمن فقط): { type: 'section', label }
+ * أو عنوان قسم: { type: 'section', label } — يُستخدم في قائمة الإدمن لعناوين الأقسام المدمجة.
+ * الإدمن (دور 1): دمج قوائم الأقسام بالترتيب + «إحضار المشاريع»، مع إزالة الروابط المكررة لنفس المسار (to).
  *
  * الأدوار:
  * 1: admin, 2: project_management, 3: editor, 4: developer, 5: marketing,
@@ -56,92 +57,6 @@ const COMMON_ITEMS = {
 };
 
 // ── تعريف القوائم حسب الدور ──
-
-/** Admin (دور 1) — وصول كامل لجميع الأقسام (مع عناوين أقسام ومسارات مطابقة لتبويبات الواجهات) */
-const adminItems = [
-  COMMON_ITEMS.dashboard,
-  COMMON_ITEMS.chat,
-  { ...COMMON_ITEMS.notifications },
-  { to: '/project-management', label: 'إدارة المشاريع', tooltip: 'إدارة المشاريع', icon: ICONS.projects },
-  { to: '/contracts', label: 'العقود', tooltip: 'العقود', icon: ICONS.contracts },
-  { to: '/developers', label: 'المطورون', tooltip: 'المطورون', icon: ICONS.teams },
-  { to: '/team-management', label: 'إدارة الفرق', tooltip: 'إدارة الفرق', icon: ICONS.teamCheck },
-  { to: '/users', label: 'إدارة المستخدمين', tooltip: 'إدارة المستخدمين', icon: ICONS.users },
-  { to: '/admin/locations', label: 'المدن والأحياء', tooltip: 'إدارة المدن والأحياء', icon: ICONS.target },
-  { ...COMMON_ITEMS.tasks },
-  { to: '/contract-form', label: 'إحضار المشاريع', tooltip: 'إحضار المشاريع', icon: ICONS.edit },
-  { to: '/reservations', label: 'الحجوزات', tooltip: 'الحجوزات', icon: ICONS.check },
-  { to: '/image-approval', label: 'الموافقة على الصور', tooltip: 'الموافقة على الصور', icon: ICONS.image },
-
-  { type: 'section', label: 'المبيعات' },
-  { to: '/sales/dashboard', label: 'لوحة المبيعات', tooltip: 'لوحة المبيعات', icon: ICONS.dashboard },
-  { to: '/sales/targets', label: 'أهداف المبيعات', tooltip: 'أهداف المبيعات', icon: ICONS.target },
-  { to: '/sales/projects', label: 'مشاريع المبيعات', tooltip: 'مشاريع المبيعات', icon: ICONS.projects },
-  { to: '/sales/unit-search', label: 'بحث الوحدات', tooltip: 'بحث الوحدات', icon: ICONS.search },
-  { to: '/sales/reservations', label: 'حجوزات المبيعات', tooltip: 'حجوزات المبيعات', icon: ICONS.calendar },
-  { to: '/sales/attendance', label: 'الحضور ودوامي', tooltip: 'الحضور ودوامي', icon: ICONS.clock },
-  { to: '/sales/team', label: 'فريق المبيعات', tooltip: 'فريق المبيعات', icon: ICONS.teams },
-  { to: '/sales/tasks', label: 'مهام المبيعات', tooltip: 'مهام المبيعات', icon: ICONS.tasks },
-  { to: '/sales/assignments', label: 'تعيينات المبيعات', tooltip: 'تعيينات المبيعات', icon: ICONS.teamCheck },
-  { to: '/sales/payment-plans', label: 'خطط السداد', tooltip: 'خطط السداد', icon: ICONS.money },
-  { to: '/sales/project-schedules', label: 'دوام المشاريع', tooltip: 'دوام المشاريع', icon: ICONS.calendarDots },
-  { to: '/sales/sold-units', label: 'الوحدات المباعة (مبيعات)', tooltip: 'الوحدات المباعة — مبيعات', icon: ICONS.money },
-
-  { type: 'section', label: 'الموارد البشرية' },
-  { to: '/hr/dashboard', label: 'لوحة الموارد البشرية', tooltip: 'لوحة الموارد البشرية', icon: ICONS.dashboard },
-  { to: '/hr/teams', label: 'فرق الموارد البشرية', tooltip: 'فرق الموارد البشرية', icon: ICONS.teams },
-  { to: '/hr/team-performance', label: 'أداء الفِرق', tooltip: 'أداء الفِرق', icon: ICONS.analytics },
-  { to: '/hr/employee-performance', label: 'أداء المسوقين', tooltip: 'أداء المسوقين', icon: ICONS.pie },
-  { to: '/hr/users', label: 'مستخدمو الموارد البشرية', tooltip: 'مستخدمي الموارد البشرية', icon: ICONS.users },
-  { to: '/hr/reports', label: 'تقارير الموارد البشرية', tooltip: 'تقارير الموارد البشرية', icon: ICONS.contracts },
-
-  { type: 'section', label: 'الائتمان' },
-  { to: '/credit/dashboard', label: 'لوحة الائتمان', tooltip: 'لوحة الائتمان', icon: ICONS.dashboard },
-  { to: '/credit/notifications', label: 'إشعارات الائتمان', tooltip: 'إشعارات الائتمان', icon: ICONS.notifications },
-  { to: '/credit/bookings', label: 'إدارة الحجوزات (الائتمان)', tooltip: 'إدارة الحجوزات (الائتمان)', icon: ICONS.tasks },
-  { to: '/credit/financing', label: 'التمويل', tooltip: 'التمويل', icon: ICONS.money },
-  { to: '/credit/title-transfer', label: 'نقل الملكية', tooltip: 'نقل الملكية', icon: ICONS.file },
-  { to: '/credit/sold-projects', label: 'المشاريع المباعة (ائتمان)', tooltip: 'المشاريع المباعة — ائتمان', icon: ICONS.projects },
-
-  { type: 'section', label: 'المحاسبة' },
-  { to: '/accounting/dashboard', label: 'لوحة المحاسبة', tooltip: 'لوحة المحاسبة', icon: ICONS.pulse },
-  { to: '/accounting/notifications', label: 'إشعارات المحاسبة', tooltip: 'إشعارات المحاسبة', icon: ICONS.notifications },
-  { to: '/accounting/sold-units', label: 'الوحدات المباعة (محاسبة)', tooltip: 'الوحدات المباعة — محاسبة', icon: ICONS.projects },
-  { to: '/accounting/deposits', label: 'العربون', tooltip: 'العربون', icon: ICONS.calendar },
-  { to: '/accounting/salaries', label: 'الرواتب وتوزيع العمولات', tooltip: 'الرواتب والعمولات', icon: ICONS.teams },
-
-  { type: 'section', label: 'التسويق' },
-  { to: '/marketing/dashboard', label: 'لوحة التسويق', tooltip: 'لوحة التسويق', icon: ICONS.dashboard },
-  { to: '/marketing/projects', label: 'مشاريع التسويق', tooltip: 'مشاريع التسويق', icon: ICONS.market },
-  { to: '/marketing/teams', label: 'فرق التسويق', tooltip: 'فرق التسويق', icon: ICONS.teams },
-  { to: '/marketing/tasks', label: 'مهام التسويق', tooltip: 'مهام التسويق', icon: ICONS.tasks },
-  { to: '/marketing/leads', label: 'العملاء المحتملون', tooltip: 'العملاء المحتملون', icon: ICONS.users },
-  { to: '/marketing/expected-sales', label: 'المبيعات المتوقعة', tooltip: 'المبيعات المتوقعة', icon: ICONS.pie },
-  { to: '/marketing/reports', label: 'تقارير التسويق', tooltip: 'تقارير التسويق', icon: ICONS.analytics },
-  { to: '/marketing/plans', label: 'الخطط', tooltip: 'الخطط', icon: ICONS.calendar },
-  { to: '/marketing/developer-plan', label: 'خطة المطور', tooltip: 'خطة المطور', icon: ICONS.calendar },
-  { to: '/marketing/employee-plans', label: 'خطط الموظفين', tooltip: 'خطط الموظفين', icon: ICONS.teams },
-  { to: '/marketing/ai-assistant', label: 'المساعد الذكي (تسويق)', tooltip: 'المساعد الذكي — تسويق', icon: ICONS.ai },
-
-  { type: 'section', label: 'المونتاج' },
-  { to: '/editor/dashboard', label: 'لوحة المونتاج', tooltip: 'لوحة المونتاج', icon: ICONS.dashboard },
-  { to: '/editor/projects', label: 'مشاريع المونتاج', tooltip: 'مشاريع المونتاج', icon: ICONS.contracts },
-  { to: '/editor/teams', label: 'فرق المونتاج', tooltip: 'فرق المونتاج', icon: ICONS.teams },
-  { to: '/editor/ratings', label: 'التقييمات', tooltip: 'تقييمات المونتاج', icon: ICONS.star },
-  { to: '/editor/contracts', label: 'عقود المونتاج', tooltip: 'عقود المونتاج', icon: ICONS.file },
-
-  { type: 'section', label: 'المخزون' },
-  { to: '/inventory/dashboard', label: 'لوحة المخزون', tooltip: 'لوحة المخزون', icon: ICONS.dashboard },
-  { to: '/inventory/projects', label: 'مشاريع المخزون', tooltip: 'مشاريع المخزون', icon: ICONS.projects },
-  { to: '/inventory/contracts', label: 'عقود المخزون', tooltip: 'عقود المخزون', icon: ICONS.contracts },
-  { to: '/inventory/ai-suggestions', label: 'اقتراحات الذكاء الاصطناعي', tooltip: 'اقتراحات الذكاء الاصطناعي', icon: ICONS.ai },
-
-  { type: 'section', label: 'الملف والطلبات' },
-  COMMON_ITEMS.myRequests,
-  COMMON_ITEMS.exclusiveRequest,
-  COMMON_ITEMS.aiAssistant,
-  COMMON_ITEMS.profile,
-];
 
 /** إدارة المشاريع (دور 2) */
 const pmItems = [
@@ -292,6 +207,53 @@ const inventoryItems = [
   COMMON_ITEMS.profile,
 ];
 
+/** إدارة عامة — إحضار المشاريع (إدمن فقط؛ يُدرَج بين قسم إدارة المشاريع والمونتاج) */
+const ADMIN_CONTRACT_FORM_ITEM = {
+  to: '/contract-form',
+  label: 'إحضار المشاريع',
+  tooltip: 'إحضار المشاريع',
+  icon: ICONS.edit,
+};
+
+/**
+ * كتل قائمة الإدمن — يُزال التكرار حسب `to` مع الإبقاء على أول ظهور (تسميات قسم إدارة المشاريع أولاً).
+ */
+const ADMIN_NAV_BLOCKS = [
+  { label: 'إدارة المشاريع', items: [...pmItems, ADMIN_CONTRACT_FORM_ITEM] },
+  { label: 'المونتاج', items: editorItems },
+  { label: 'المطور', items: developerItems },
+  { label: 'التسويق', items: marketingItems },
+  { label: 'المبيعات', items: salesItems },
+  { label: 'الموارد البشرية', items: hrItems },
+  { label: 'الائتمان', items: creditItems },
+  { label: 'المحاسبة', items: accountingItems },
+  { label: 'المخزون', items: inventoryItems },
+];
+
+function buildAdminNavDedupedByPath() {
+  const seen = new Set();
+  const out = [];
+  for (const { label, items } of ADMIN_NAV_BLOCKS) {
+    const chunk = [];
+    for (const item of items) {
+      if (item.type === 'section') continue;
+      const path = item.to;
+      if (!path) continue;
+      if (seen.has(path)) continue;
+      seen.add(path);
+      chunk.push(item);
+    }
+    if (chunk.length) {
+      out.push({ type: 'section', label });
+      out.push(...chunk);
+    }
+  }
+  return out;
+}
+
+/** Admin (دور 1) — دمج أقسام + إحضار المشاريع، بدون تبويبات مكررة لنفس المسار */
+const adminItems = buildAdminNavDedupedByPath();
+
 /** عناصر للمديرين فقط (is_manager) — تظهر في كل الأدوار */
 const MANAGER_ONLY_ITEMS = [
   { to: '/manager/employees', label: 'التقييم', tooltip: 'التقييم والمراجعات', icon: ICONS.star, showIf: 'isManager' },
@@ -324,5 +286,9 @@ export const SIDEBAR_NAV_MAP = {
  */
 export function getNavItemsForRole(role) {
   const roleItems = SIDEBAR_NAV_MAP[role] || marketingItems;
+  // الإدمن (1): بدون رابط «التقييم» /manager/employees
+  if (role === 1) {
+    return roleItems;
+  }
   return [...MANAGER_ONLY_ITEMS, ...roleItems];
 }

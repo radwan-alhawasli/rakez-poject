@@ -23,77 +23,80 @@
     </div>
 
     <div class="view-content developers-view-content">
-      <div v-if="isLoading" class="developers-loading" aria-busy="true" aria-live="polite">
-        <div class="developers-skeleton-grid" role="presentation">
-          <div v-for="n in 6" :key="n" class="developer-skeleton-card">
-            <div class="developer-skeleton-visual loading-skeleton"></div>
-            <div class="developer-skeleton-body">
-              <div class="loading-skeleton developer-skeleton-line developer-skeleton-line--title"></div>
-              <div class="loading-skeleton developer-skeleton-line developer-skeleton-line--sub"></div>
-              <div class="loading-skeleton developer-skeleton-line developer-skeleton-line--meta"></div>
-              <div class="loading-skeleton developer-skeleton-btn"></div>
+      <!-- خلفية بيج خلف اللوحات فقط (مثل إدارة المشاريع) -->
+      <div class="developers-panels-surface">
+        <div v-if="isLoading" class="developers-loading" aria-busy="true" aria-live="polite">
+          <div class="developers-skeleton-grid" role="presentation">
+            <div v-for="n in 6" :key="n" class="developer-skeleton-card">
+              <div class="developer-skeleton-visual loading-skeleton"></div>
+              <div class="developer-skeleton-body">
+                <div class="loading-skeleton developer-skeleton-line developer-skeleton-line--title"></div>
+                <div class="loading-skeleton developer-skeleton-line developer-skeleton-line--sub"></div>
+                <div class="loading-skeleton developer-skeleton-line developer-skeleton-line--meta"></div>
+                <div class="loading-skeleton developer-skeleton-btn"></div>
+              </div>
             </div>
           </div>
+          <p class="developers-loading-caption">جاري تحميل المطورين...</p>
         </div>
-        <p class="developers-loading-caption">جاري تحميل المطورين...</p>
-      </div>
-      <div v-else-if="filteredDevelopers.length === 0" class="empty-state developers-empty">
-        <div class="developers-empty-icon" aria-hidden="true">
-          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M32 8L12 18v16c0 11.2 8.5 21.6 20 24 11.5-2.4 20-12.8 20-24V18L32 8z"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linejoin="round"
-            />
-            <path d="M24 32l6 6 12-12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+        <div v-else-if="filteredDevelopers.length === 0" class="empty-state developers-empty">
+          <div class="developers-empty-icon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M32 8L12 18v16c0 11.2 8.5 21.6 20 24 11.5-2.4 20-12.8 20-24V18L32 8z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linejoin="round"
+              />
+              <path d="M24 32l6 6 12-12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <p class="developers-empty-text">
+            {{ allDevelopers.length === 0 ? 'لا توجد أطراف ثانية مسجّلة حالياً.' : 'لا يوجد مطابق لبحثك.' }}
+          </p>
         </div>
-        <p class="developers-empty-text">
-          {{ allDevelopers.length === 0 ? 'لا توجد أطراف ثانية مسجّلة حالياً.' : 'لا يوجد مطابق لبحثك.' }}
-        </p>
-      </div>
-      <div v-else class="projects-grid developers-cards-grid">
-        <article
-          v-for="dev in filteredDevelopers"
-          :key="developerRowKey(dev)"
-          class="developer-pm-card rakez-card"
-        >
-          <div class="developer-card-visual">
-            <span class="developer-card-avatar" aria-hidden="true">{{ developerInitial(dev) }}</span>
-            <span v-if="dev.projectCount > 0" class="developer-card-badge">{{ dev.projectCount }} عقد</span>
-          </div>
-          <div class="card-title-block">
-            <h3 class="card-title-main">{{ dev.name }}</h3>
-            <p v-if="dev.role" class="card-title-type">{{ dev.role }}</p>
-            <p v-else class="card-title-type muted">طرف ثانٍ</p>
-          </div>
-          <div class="card-content developer-card-body">
-            <div class="developer-meta-row" v-if="dev.commercialRecord && dev.commercialRecord !== '-'">
-              <span class="meta-label">السجل التجاري</span>
-              <span class="meta-value number">{{ dev.commercialRecord }}</span>
+        <div v-else class="projects-grid developers-cards-grid">
+          <article
+            v-for="dev in filteredDevelopers"
+            :key="developerRowKey(dev)"
+            class="developer-pm-card rakez-card"
+          >
+            <div class="developer-card-visual">
+              <span class="developer-card-avatar" aria-hidden="true">{{ developerInitial(dev) }}</span>
+              <span v-if="dev.projectCount > 0" class="developer-card-badge">{{ dev.projectCount }} عقد</span>
             </div>
-            <div class="developer-meta-row" v-if="dev.email">
-              <span class="meta-label">البريد</span>
-              <span class="meta-value meta-ellipsis" :title="dev.email">{{ dev.email }}</span>
+            <div class="card-title-block">
+              <h3 class="card-title-main">{{ dev.name }}</h3>
+              <p v-if="dev.role" class="card-title-type">{{ dev.role }}</p>
+              <p v-else class="card-title-type muted">طرف ثانٍ</p>
             </div>
-            <div class="developer-meta-row" v-if="dev.phone && dev.phone !== '-'">
-              <span class="meta-label">الهاتف</span>
-              <span class="meta-value number">{{ dev.phone }}</span>
+            <div class="card-content developer-card-body">
+              <div class="developer-meta-row" v-if="dev.commercialRecord && dev.commercialRecord !== '-'">
+                <span class="meta-label">السجل التجاري</span>
+                <span class="meta-value number">{{ dev.commercialRecord }}</span>
+              </div>
+              <div class="developer-meta-row" v-if="dev.email">
+                <span class="meta-label">البريد</span>
+                <span class="meta-value meta-ellipsis" :title="dev.email">{{ dev.email }}</span>
+              </div>
+              <div class="developer-meta-row" v-if="dev.phone && dev.phone !== '-'">
+                <span class="meta-label">الهاتف</span>
+                <span class="meta-value number">{{ dev.phone }}</span>
+              </div>
+              <div class="developer-meta-row" v-if="dev.location && dev.location !== '-'">
+                <span class="meta-label">العنوان</span>
+                <span class="meta-value meta-ellipsis" :title="dev.location">{{ dev.location }}</span>
+              </div>
+              <button type="button" class="btn-view-details rakez-btn" @click="goToDeveloperDetail(dev)">
+                عرض المشاريع والعقود
+                <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="19" y1="12" x2="5" y2="12"></line>
+                  <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+              </button>
             </div>
-            <div class="developer-meta-row" v-if="dev.location && dev.location !== '-'">
-              <span class="meta-label">العنوان</span>
-              <span class="meta-value meta-ellipsis" :title="dev.location">{{ dev.location }}</span>
-            </div>
-            <button type="button" class="btn-view-details rakez-btn" @click="goToDeveloperDetail(dev)">
-              عرض المشاريع والعقود
-              <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-              </svg>
-            </button>
-          </div>
-        </article>
+          </article>
+        </div>
       </div>
     </div>
   </div>

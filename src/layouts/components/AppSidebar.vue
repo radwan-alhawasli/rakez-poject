@@ -104,6 +104,7 @@ import {
 } from '@/components/ui/sidebar';
 import { getNavItemsForRole } from './sidebarConfig.js';
 import { sanitizeNavIconSvg } from '@/utils/safeHtml';
+import { isAdmin } from '@/utils/rbac';
 
 const props = defineProps({
   user: { type: Object, default: null },
@@ -136,7 +137,13 @@ const visibleNavItems = computed(() => {
     }
     // فحص showIf (مثل isManager)
     if (item.showIf === 'isManager') {
-      return props.user?.is_manager === true || props.user?.is_manager === 1;
+      const u = props.user;
+      return (
+        isAdmin(u) ||
+        u?.is_manager === true ||
+        u?.is_manager === 1 ||
+        u?.is_manager === '1'
+      );
     }
     return true;
   });

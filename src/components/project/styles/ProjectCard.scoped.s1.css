@@ -19,11 +19,12 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  /* ظل أوضح على خلفية رمادية صلبة */
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 14px rgba(15, 23, 42, 0.04);
 }
 .project-card.rakez-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
 }
 
 /* غلاف الصورة: شريط علوي ثابت + منطقة صورة كبيرة بدون تداخل */

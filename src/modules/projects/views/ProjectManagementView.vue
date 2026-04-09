@@ -58,45 +58,49 @@
       </template>
     </div>
 
-    <!-- Projects Grid -->
-    <div v-if="isLoading" class="loading-state">
-      <div class="spinner"></div>
-      <p>جاري تحميل المشاريع...</p>
-    </div>
+    <!-- منطقة اللوحات: خلفية بيج فقط خلف الشبكة/التحميل/الفراغ -->
+    <div class="projects-panels-surface">
+      <div v-if="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>جاري تحميل المشاريع...</p>
+      </div>
 
-    <div v-else-if="filteredProjects.length === 0" class="empty-state">
-      <p>لا توجد مشاريع مطابقة للعرض.</p>
-    </div>
+      <div v-else-if="filteredProjects.length === 0" class="empty-state">
+        <p>لا توجد مشاريع مطابقة للعرض.</p>
+      </div>
 
-    <div v-else class="projects-grid">
-      <ProjectCard
-        v-for="project in filteredProjects"
-        :key="project.id"
-        :project="project"
-        :active-menu-id="activeMenuId"
-        :is-project-manager-only="isProjectManagerOnly"
-        @toggle-menu="toggleMenu"
-        @close-menu="activeMenuId = null"
-        @edit-project="onEditProject"
-        @assign-team="onAssignTeam"
-        @view-teams="onAssignTeam"
-        @remove-team="onAssignTeam"
-        @archive-project="onArchiveProject"
-        @mark-complete="onMarkComplete"
-        @download-contract="onDownloadContract"
-        @view-tracker="viewTracker"
-      />
-    </div>
+      <template v-else>
+        <div class="projects-grid">
+          <ProjectCard
+            v-for="project in filteredProjects"
+            :key="project.id"
+            :project="project"
+            :active-menu-id="activeMenuId"
+            :is-project-manager-only="isProjectManagerOnly"
+            @toggle-menu="toggleMenu"
+            @close-menu="activeMenuId = null"
+            @edit-project="onEditProject"
+            @assign-team="onAssignTeam"
+            @view-teams="onAssignTeam"
+            @remove-team="onAssignTeam"
+            @archive-project="onArchiveProject"
+            @mark-complete="onMarkComplete"
+            @download-contract="onDownloadContract"
+            @view-tracker="viewTracker"
+          />
+        </div>
 
-    <!-- Pagination (صفحات التصفح) -->
-    <Pagination
-      v-if="totalProjects > 0"
-      :current-page="currentPage"
-      :total-items="totalProjects"
-      :per-page="perPage"
-      @page-change="handlePageChange"
-      @per-page-change="handlePerPageChange"
-    />
+        <!-- Pagination (صفحات التصفح) -->
+        <Pagination
+          v-if="totalProjects > 0"
+          :current-page="currentPage"
+          :total-items="totalProjects"
+          :per-page="perPage"
+          @page-change="handlePageChange"
+          @per-page-change="handlePerPageChange"
+        />
+      </template>
+    </div>
     </div>
 
     <!-- Details Modal -->

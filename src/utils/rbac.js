@@ -215,8 +215,9 @@ export function canAccessRoute(user, routeMeta) {
   // If no user, deny access
   if (!user) return false;
 
-  // If requiresManager is set, user must have is_manager flag (any role)
+  // If requiresManager is set, user must have is_manager flag — الإدمن يتجاوز هذا القيد
   if (routeMeta?.requiresManager) {
+    if (isAdmin(user)) return true;
     return user.is_manager === true || user.is_manager === 1 || user.is_manager === '1';
   }
 
