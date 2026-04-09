@@ -80,12 +80,30 @@ jobs:
         env:
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
           PLAYWRIGHT_SKIP_WEBSERVER: "1"
+        shell: bash
         run: |
-          npm run preview -- --host 127.0.0.1 --port 4173 &
-          for i in $(seq 1 60); do
-            if curl -sf "http://127.0.0.1:4173/" >/dev/null; then break; fi
+          set -euo pipefail
+          npm run preview -- --host 127.0.0.1 --port 4173 --strictPort &
+          PREVIEW_PID=$!
+          echo "Waiting for Vite preview on 127.0.0.1:4173 (pid ${PREVIEW_PID})..."
+          READY=0
+          for _ in $(seq 1 90); do
+            if ! kill -0 "${PREVIEW_PID}" 2>/dev/null; then
+              echo "Preview process exited before becoming ready."
+              wait "${PREVIEW_PID}" || true
+              exit 1
+            fi
+            if curl -sf "http://127.0.0.1:4173/" >/dev/null; then
+              READY=1
+              break
+            fi
             sleep 2
           done
+          if [ "${READY}" -ne 1 ]; then
+            echo "Preview did not respond in time (check port 4173)."
+            kill "${PREVIEW_PID}" 2>/dev/null || true
+            exit 1
+          fi
           curl -sf "http://127.0.0.1:4173/" >/dev/null
           npx playwright test e2e
 
