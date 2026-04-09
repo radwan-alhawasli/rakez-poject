@@ -1,43 +1,54 @@
 <template>
   <div class="team-tab">
-    <div class="team-header-bar">
-      <h2 class="team-page-title">
-        <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        الفريق
-      </h2>
-    </div>
+    <header class="team-hero" aria-labelledby="team-hero-title">
+      <div class="team-hero-inner">
+        <div class="team-hero-title-row">
+          <span class="title-icon-wrap" aria-hidden="true">
+            <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </span>
+          <div class="team-hero-text">
+            <h2 id="team-hero-title" class="team-hero-title">الفريق</h2>
+            <p class="team-hero-lead">متابعة أعضاء فريق المبيعات والمشاريع المعينة لهم.</p>
+          </div>
+        </div>
 
-    <div class="team-tabs">
-      <button
-        type="button"
-        class="team-tab-btn"
-        :class="{ active: activeTab === 'members' }"
-        @click="activeTab = 'members'"
-      >
-        أعضاء الفريق
-      </button>
-      <button
-        type="button"
-        class="team-tab-btn"
-        :class="{ active: activeTab === 'projects' }"
-        @click="activeTab = 'projects'"
-      >
-        مشاريع الفريق
-      </button>
-    </div>
+        <div class="team-tabs team-tabs--hero" role="tablist" aria-label="أقسام الفريق">
+          <button
+            type="button"
+            role="tab"
+            class="team-tab-btn"
+            :class="{ active: activeTab === 'members' }"
+            :aria-selected="activeTab === 'members'"
+            @click="activeTab = 'members'"
+          >
+            أعضاء الفريق
+          </button>
+          <button
+            type="button"
+            role="tab"
+            class="team-tab-btn"
+            :class="{ active: activeTab === 'projects' }"
+            :aria-selected="activeTab === 'projects'"
+            @click="activeTab = 'projects'"
+          >
+            مشاريع الفريق
+          </button>
+        </div>
+      </div>
+    </header>
 
     <!-- تبويب أعضاء الفريق -->
     <div v-show="activeTab === 'members'" class="team-tab-panel">
-      <div class="team-section-header">
-        <h3 class="panel-title">أعضاء الفريق</h3>
+      <div class="team-panel-toolbar">
+        <p class="team-panel-hint">قائمة المسوقين؛ فعّل الترتيب بالتوصية لعرض الأنسب أولاً.</p>
         <label class="sort-toggle">
           <input type="checkbox" v-model="teamSortByRecommendation" />
-          <span>ترتيب بالتوصية (ذكاء اصطناعي)</span>
+          <span class="sort-toggle__text">ترتيب بالتوصية <span class="sort-toggle__badge">ذكاء اصطناعي</span></span>
         </label>
       </div>
 
@@ -140,8 +151,8 @@
     </div>
 
     <!-- تبويب مشاريع الفريق -->
-    <div v-show="activeTab === 'projects'" class="team-tab-panel">
-      <h3 class="panel-title">مشاريع الفريق</h3>
+    <div v-show="activeTab === 'projects'" class="team-tab-panel team-tab-panel--projects">
+      <p class="team-panel-hint team-panel-hint--solo">المشاريع المرتبطة بفريق المبيعات والوحدات المتاحة.</p>
       <LoadingSpinner v-if="isLoadingTeamProjects" />
 
       <div v-else-if="teamProjectsLoadError" class="empty-state error-state">

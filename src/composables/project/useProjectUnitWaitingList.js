@@ -34,15 +34,22 @@ export function useProjectUnitWaitingList(projectId) {
 
   const submitWaitingList = async () => {
     if (!waitingListUnit.value || !projectId) return;
+    const name = String(waitingListForm.client_name || '').trim();
+    const mobile = String(waitingListForm.phone || '').trim();
+    if (!name || !mobile) {
+      notificationService.addNotification('يرجى إدخال اسم العميل ورقم الجوال', 'error');
+      return;
+    }
     waitingListSaving.value = true;
     try {
+      /** POST /sales/waiting-list يتطلب client_mobile (وليس phone فقط) */
       await salesService.addToWaitingList({
         contract_unit_id: waitingListUnit.value.id,
         unit_id: waitingListUnit.value.id,
         contract_id: projectId,
         project_id: projectId,
-        client_name: waitingListForm.client_name,
-        phone: waitingListForm.phone,
+        client_name: name,
+        client_mobile: mobile,
         priority: waitingListForm.priority || 10,
         notes: waitingListForm.notes || undefined,
       });

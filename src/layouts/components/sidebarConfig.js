@@ -216,7 +216,19 @@ const salesItems = [
     tooltipByRole: { 7: 'أهداف الفرق' },
   },
   { to: '/sales/team', label: 'الفريق', tooltip: 'الفريق', icon: ICONS.teams, permission: 'sales.team.manage' },
-  { to: '/sales/attendance', label: 'دوامي', tooltip: 'دوامي', icon: ICONS.clock, permission: 'sales.attendance.view' },
+  {
+    to: '/sales/attendance',
+    label: 'دوامي',
+    tooltip: 'دوامي',
+    icon: ICONS.clock,
+    permission: 'sales.attendance.view',
+    /** مدير المبيعات / من لديه إدارة حضور الفريق — نفس منطق SalesAttendanceTab (عنوان «دوام الفرق») */
+    dynamicLabel: {
+      permission: 'sales.attendance.manage',
+      ifTrue: 'دوام الفرق',
+      ifFalse: 'دوامي',
+    },
+  },
   { to: '/sales/project-schedules', label: 'إدارة دوام المشاريع', tooltip: 'إدارة دوام المشاريع', icon: ICONS.calendarDots, permission: 'sales.attendance.manage' },
   COMMON_ITEMS.myRequests,
   COMMON_ITEMS.exclusiveRequest,

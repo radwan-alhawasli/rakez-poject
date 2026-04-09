@@ -183,14 +183,18 @@ export default {
     const initDistributions = () => {
       const dists = props.commission?.distributions || [];
       distributions.value = Array.isArray(dists)
-        ? dists.map(d => ({
-            ...d,
-            commission_type: d.commission_type || d.distribution_type || 'jalb',
-            employee_name: d.employee_name || d.user_name,
-            bank_account: d.bank_account || '',
-            amount: d.amount || 0,
-            confirmed: d.confirmed || d.status === 'confirmed',
-          }))
+        ? dists.map(d => {
+            const distId = d.id ?? d.distribution_id ?? d.commission_distribution_id;
+            return {
+              ...d,
+              ...(distId != null && distId !== '' ? { id: distId } : {}),
+              commission_type: d.commission_type || d.distribution_type || 'jalb',
+              employee_name: d.employee_name || d.user_name,
+              bank_account: d.bank_account || '',
+              amount: d.amount || 0,
+              confirmed: d.confirmed || d.status === 'confirmed',
+            };
+          })
         : [];
       editDistributions.value = [
         { commission_type: 'lead_generation', employee_name: '', bank_account: '', percentage: 0 },
@@ -222,9 +226,11 @@ export default {
     };
 
     const handleConfirmRow = dist => {
+      const distributionId = dist.id ?? dist.distribution_id ?? dist.commission_distribution_id;
+      if (distributionId == null || distributionId === '') return;
       emit('submit', {
         action: 'confirm',
-        distributionId: dist.id,
+        distributionId,
         unitNumber: props.commission?.unit_number,
         projectName: props.commission?.project_name,
         commissionType: getCommissionTypeLabel(dist.commission_type || dist.distribution_type),

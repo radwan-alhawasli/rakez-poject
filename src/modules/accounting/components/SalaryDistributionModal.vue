@@ -62,12 +62,6 @@
         <!-- عمولات الموظف لهذا الشهر - تُعرض دائماً بعد التحميل -->
         <div class="sales-commission-section commission-for-month">
           <h3 class="detail-title">عمولات الموظف لهذا الشهر ({{ monthYearLabel }})</h3>
-          <div class="detail-grid">
-            <div class="detail-row">
-              <span class="detail-label">إجمالي العمولات لهذا الشهر:</span>
-              {{ formatCurrency(salary.commissions_total ?? salary.net_monthly_commission ?? salary.total_commissions ?? commissionBreakdownTotal ?? 0) }}
-            </div>
-          </div>
 
           <!-- تفصيل عمولة كل مشروع + سطور details (كيف تم الوصول للإجمالي) -->
           <div class="unit-breakdown">
@@ -333,6 +327,8 @@ export default {
       'contract_salary', 'base_salary', 'salary', 'commission_percentage', 'distribution_status', 'status', 'distribution_id',
       'unit_breakdown', 'commissions_by_project', 'commission_breakdown', 'commissions', 'units', 'employee', 'salary',
       'distributions', 'monthly_distributions', 'commission_distributions',
+      /** يُعرض مكرراً في جدول التفصيل؛ لا نعرضه كصف في بيانات إضافية */
+      'commissions_total',
     ]);
 
     const extraDataRows = computed(() => {
@@ -360,7 +356,6 @@ export default {
         role: 'الدور',
         status_label: 'حالة التوزيع',
         team_name: 'الفريق',
-        commissions_total: 'إجمالي عمولات الشهر',
       };
       return Object.keys(s)
         .filter(key => !EXCLUDED_KEYS.has(key) && s[key] != null && typeof s[key] !== 'object' && !Array.isArray(s[key]))

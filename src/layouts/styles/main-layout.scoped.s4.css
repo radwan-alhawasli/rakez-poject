@@ -27,6 +27,8 @@
   }
 
   .main-content {
+    --main-pad-left: 15px;
+    --main-pad-right: 15px;
     padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 15px 25px 15px;
   }
 
@@ -167,6 +169,8 @@
   }
 
   .main-content {
+    --main-pad-left: 20px;
+    --main-pad-right: 20px;
     padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 12px 20px 12px;
   }
 
@@ -371,6 +375,8 @@
   }
 
   .main-content {
+    --main-pad-left: 18px;
+    --main-pad-right: 18px;
     padding: calc(var(--top-header-height) + var(--content-top-gap)) 10px 18px 10px;
   }
 

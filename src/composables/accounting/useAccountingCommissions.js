@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import accountingService from '@/services/accountingService';
 import logger from '@/utils/logger';
+import { getApiErrorMessage } from '@/utils/errorHandler';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 import { getStatusClass } from '@/utils/statusHelpers';
@@ -45,13 +46,14 @@ export function useAccountingCommissions() {
       if (data.action === 'update') await accountingService.updateDistributions(selectedCommission.value.id, data);
       else if (data.action === 'approve') await accountingService.approveDistribution(selectedCommission.value.id, data.distributionId);
       else if (data.action === 'reject') await accountingService.rejectDistribution(selectedCommission.value.id, data.distributionId, data);
-      else if (data.action === 'confirm') await accountingService.confirmPayment(selectedCommission.value.id, data.distributionId, data);
+      else if (data.action === 'confirm')
+        await accountingService.confirmPayment(selectedCommission.value.id, data.distributionId);
       toast.success('تم تحديث العمولة بنجاح');
       showCommissionModal.value = false;
       loadCommissions();
     } catch (error) {
       logger.error('Error updating commission:', error);
-      toast.error('حدث خطأ أثناء تحديث العمولة');
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء تحديث العمولة'));
     } finally {
       isSavingCommission.value = false;
     }

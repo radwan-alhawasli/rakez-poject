@@ -83,6 +83,97 @@ export function unwrapContractShowPayload(raw) {
   return o;
 }
 
+/**
+ * حقل «الوصف» في استكمال العقد: يفضّل `description` من أي مسار، ثم notes/note فقط.
+ * لا يخلط متطلبات المطور (developer_requiment) ولا requirements مع الوصف.
+ * @param {any} raw
+ */
+export function pickContractCompletionNotes(raw) {
+  if (!raw || typeof raw !== 'object') return '';
+  const info = raw.info && typeof raw.info === 'object' ? raw.info : {};
+  const attrs = raw.attributes && typeof raw.attributes === 'object' ? raw.attributes : {};
+  const proj = raw.project ?? raw.exclusive_project;
+  const sp = raw.second_party_data && typeof raw.second_party_data === 'object' ? raw.second_party_data : {};
+
+  const descriptionPaths = [
+    raw.description,
+    info.description,
+    attrs.description,
+    proj?.description,
+    sp?.description,
+  ];
+  for (let i = 0; i < descriptionPaths.length; i += 1) {
+    const v = descriptionPaths[i];
+    if (v === undefined || v === null) continue;
+    const t = String(v).trim();
+    if (t !== '') return t;
+  }
+
+  const noteFallback = [
+    raw.notes,
+    raw.note,
+    info.notes,
+    info.note,
+    attrs.notes,
+    attrs.note,
+    proj?.notes,
+    proj?.note,
+    raw.project_description,
+    raw.memo,
+    raw.remarks,
+  ];
+  for (let j = 0; j < noteFallback.length; j += 1) {
+    const v = noteFallback[j];
+    if (v === undefined || v === null) continue;
+    const t = String(v).trim();
+    if (t !== '') return t;
+  }
+  return '';
+}
+
+/**
+ * @deprecated استخدم pickContractCompletionNotes — كان يدمج developer_requiment في الوصف بالخطأ.
+ * @param {any} raw
+ */
+export function pickContractDescriptionText(raw) {
+  return pickContractCompletionNotes(raw);
+}
+
+/**
+ * نفس مصادر الوصف لكن دون `developer_requiment` / `requirements` — لنماذج فيها حقل «متطلبات المطور» منفصل عن «الوصف».
+ * @param {any} raw
+ */
+export function pickDescriptionOrNotesText(raw) {
+  if (!raw || typeof raw !== 'object') return '';
+  const info = raw.info && typeof raw.info === 'object' ? raw.info : {};
+  const attrs = raw.attributes && typeof raw.attributes === 'object' ? raw.attributes : {};
+  const proj = raw.project ?? raw.exclusive_project;
+  const candidates = [
+    raw.description,
+    raw.notes,
+    raw.note,
+    info.description,
+    info.notes,
+    info.note,
+    attrs.description,
+    attrs.notes,
+    attrs.note,
+    proj?.description,
+    proj?.notes,
+    proj?.note,
+    raw.project_description,
+    raw.memo,
+    raw.remarks,
+  ];
+  for (let i = 0; i < candidates.length; i += 1) {
+    const v = candidates[i];
+    if (v === undefined || v === null) continue;
+    const t = String(v).trim();
+    if (t !== '') return t;
+  }
+  return '';
+}
+
 /** دمج حقول المشروع المضمّنة (project / exclusive_project) في الجذر حتى تُقرأ note وurl وغيرها من GET /contracts/show */
 /**
  * @param {any} raw
@@ -101,13 +192,15 @@ export function normalizeContractShowResponse(raw) {
   if (!raw || typeof raw !== 'object') return raw;
   const imageUrl = getContractImageUrl(raw) || (raw.photography_department?.image_url ?? raw.photography_department?.image) || null;
   const imageUrlTrimmed = typeof imageUrl === 'string' && imageUrl.trim() ? imageUrl.trim() : null;
+  const completionNotes = pickContractCompletionNotes(raw);
   return {
     ...raw,
     id: raw.id ?? raw.contract_id,
     contract_id: raw.contract_id ?? raw.id,
     name: raw.project_name ?? raw.name ?? (raw.id != null ? `مشروع #${raw.id}` : ''),
     project_name: raw.project_name ?? raw.name,
-    notes: raw.notes ?? raw.note ?? null,
+    notes: completionNotes || null,
+    description: completionNotes || null,
     project_progress: raw.project_progress ?? null,
     image: imageUrlTrimmed ?? imageUrl ?? null,
     project_image_url: imageUrlTrimmed ?? imageUrl ?? raw.project_image_url,

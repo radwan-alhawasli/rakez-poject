@@ -1,12 +1,52 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue';
+
+function safeHttpUrl(s) {
+  const t = String(s || '').trim();
+  if (!t) return '';
+  try {
+    const u = new URL(t);
+    return u.protocol === 'http:' || u.protocol === 'https:' ? t : '';
+  } catch {
+    return '';
+  }
+}
+
+function videoEmbedSrcFromUrl(raw) {
+  const s = safeHttpUrl(raw);
+  if (!s) return '';
+  try {
+    const u = new URL(s);
+    const host = u.hostname.toLowerCase();
+    if (host.includes('youtube.com') && u.searchParams.get('v')) {
+      const id = u.searchParams.get('v');
+      return id ? `https://www.youtube.com/embed/${id}` : s;
+    }
+    if (host === 'youtu.be') {
+      const id = u.pathname.replace(/^\//, '').split('/')[0];
+      return id ? `https://www.youtube.com/embed/${id}` : s;
+    }
+    return s;
+  } catch {
+    return '';
+  }
+}
 import { useRouter, useRoute } from 'vue-router';
 import contractService from '@/services/contractService';
+import { pickContractCompletionNotes } from '@/services/contract/contractNormalize';
 import { downloadFilledContract } from '@/services/pdfService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { contractInfoSchema } from '@/validation/schemas';
 import { useValidation } from '@/composables/useValidation';
 import { useCitiesDistrictsLookups } from '@/composables/useCitiesDistrictsLookups';
+import {
+  CONTRACT_UNIT_TYPE_OPTIONS,
+  emptyUnitRow,
+  isKnownContractUnitTypeLabel,
+  normalizeUnitsFromApi,
+  syncFormTotalsFromUnits,
+  unitsForApi,
+} from '@/utils/contractUnits';
 
 export function useContractFormView() {
   const router = useRouter();
@@ -32,8 +72,9 @@ export function useContractFormView() {
     agency_date: '',
     commission_percent: '',
     commission_from: '',
-    avg_property_value: '',
     release_date: '',
+    /** من API — يُعرض في «متوسط سعر الوحدات» عند التوفر */
+    total_price: null,
     second_party_name: '',
     second_party_id: '',
     second_party_phone: '',
@@ -51,9 +92,12 @@ export function useContractFormView() {
     side: '',
     units_count: 0,
     unit_type: '',
+    units: [emptyUnitRow()],
     total_units_value: 0,
     average_unit_price: 0,
     notes: '',
+    image_url: '',
+    video_url: '',
     project_site_url: '',
   });
 
@@ -70,21 +114,31 @@ export function useContractFormView() {
   });
 
   const averageUnitPriceDisplay = computed(() => {
+    const tp = Number(form.total_price);
+    if (Number.isFinite(tp) && tp > 0) return tp.toLocaleString('en-US');
     const count = Number(form.units_count) || 0;
     const total = Number(form.total_units_value) || 0;
     if (count <= 0) return '0';
     return Math.round(total / count).toLocaleString('en-US');
   });
 
+  const safeImagePreviewUrl = computed(() => safeHttpUrl(form.image_url));
+  const videoEmbedSrc = computed(() => videoEmbedSrcFromUrl(form.video_url));
+
   watch(
-    () => [form.total_units_value, form.units_count],
-    () => {
-      const count = Number(form.units_count) || 0;
-      const total = Number(form.total_units_value) || 0;
-      form.average_unit_price = count > 0 ? Math.round(total / count) : 0;
-    },
-    { immediate: true }
+    () => form.units,
+    () => syncFormTotalsFromUnits(form),
+    { deep: true, immediate: true }
   );
+
+  function addUnitRow() {
+    form.units.push(emptyUnitRow());
+  }
+
+  function removeUnitRow(index) {
+    if (form.units.length <= 1) return;
+    form.units.splice(index, 1);
+  }
 
   const { cities, districts, loading: locationsLoading, load: loadLocationLookups, districtsForCityId } =
     useCitiesDistrictsLookups();
@@ -149,34 +203,32 @@ export function useContractFormView() {
           form.district_id = String(data.district_id);
         }
 
+        form.total_units_value = data.total_units_value || form.total_units_value || 0;
         if (data.units && Array.isArray(data.units) && data.units.length > 0) {
-          const firstUnit = data.units[0];
-          form.unit_type = firstUnit.type || data.unit_type || form.unit_type;
-
-          let totalCount = 0;
-          let calculatedValue = 0;
-
-          data.units.forEach(u => {
-            const count = parseInt(u.count) || 0;
-            const price = parseInt(u.price) || 0;
-            totalCount += count;
-            calculatedValue += price * count;
-          });
-
-          form.units_count =
-            totalCount > 0 ? totalCount : data.units_count || form.units_count || 0;
-          form.avg_property_value =
-            calculatedValue > 0
-              ? calculatedValue
-              : data.avg_property_value || form.avg_property_value || 0;
+          form.units = normalizeUnitsFromApi(data.units);
+          syncFormTotalsFromUnits(form);
         } else {
           form.units_count = data.units_count || data.unit_count || form.units_count || 0;
-          form.unit_type = data.unit_type || form.unit_type;
+          form.unit_type = data.unit_type || form.unit_type || '';
+          const uc = Number(form.units_count) || 0;
+          const ut = String(form.unit_type || '').trim();
+          const tv = Number(form.total_units_value) || 0;
+          if (uc > 0 && ut) {
+            const price = tv > 0 && uc > 0 ? Math.round(tv / uc) : 0;
+            form.units = [{ type: ut, count: uc, price }];
+          } else {
+            form.units = [emptyUnitRow()];
+          }
+          syncFormTotalsFromUnits(form);
         }
-
-        form.total_units_value = data.total_units_value || form.total_units_value || 0;
+        if (data.total_price != null && data.total_price !== '') {
+          const n = Number(data.total_price);
+          form.total_price = Number.isFinite(n) ? n : null;
+        }
         form.average_unit_price = data.average_unit_price || form.average_unit_price || 0;
-        form.notes = data.notes || form.notes;
+        form.notes = pickContractCompletionNotes(data);
+        form.image_url = data.image_url || form.image_url || '';
+        form.video_url = data.video_url || form.video_url || '';
         form.project_site_url =
           data.project_site_url || data.project_link || data.location_url || form.project_site_url;
 
@@ -221,7 +273,6 @@ export function useContractFormView() {
         form.commission_percent =
           commissionVal != null && commissionVal !== '' ? String(commissionVal) : form.commission_percent;
         form.commission_from = data.commission_from || form.commission_from;
-        form.avg_property_value = data.avg_property_value || form.avg_property_value;
         if (data.release_date) {
           const dateStr = data.release_date;
           if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
@@ -304,9 +355,16 @@ export function useContractFormView() {
           commission_from: form.commission_from,
           agency_number: form.agency_number,
           agency_date: form.agency_date ? form.agency_date.split('-').reverse().join('-') : '',
-          avg_property_value: form.avg_property_value.toString(),
           release_date: form.release_date ? form.release_date.split('-').reverse().join('-') : '',
+          note: form.notes || undefined,
+          notes: form.notes || undefined,
+          description: form.notes || undefined,
+          image_url: form.image_url || undefined,
+          video_url: form.video_url || undefined,
           project_site_url: form.project_site_url || undefined,
+          units: unitsForApi(form.units),
+          units_count: form.units_count,
+          unit_type: form.unit_type || undefined,
         };
 
         await contractService.storeContractInfo(requestId.value, payload);
@@ -325,9 +383,7 @@ export function useContractFormView() {
           note: form.notes,
           commission_percent: String(form.commission_percent ?? '').trim() || '0',
           commission_from: form.commission_from,
-          units: form.units_count
-            ? [{ type: form.unit_type || 'شقة', count: form.units_count, price: form.average_unit_price || 0 }]
-            : [],
+          units: unitsForApi(form.units),
         };
         const result = await contractService.createContract(createPayload);
         toast.success('تم إنشاء العقد بنجاح');
@@ -386,6 +442,8 @@ export function useContractFormView() {
     commissionFromLabel,
     commissionPercentDisplay,
     averageUnitPriceDisplay,
+    safeImagePreviewUrl,
+    videoEmbedSrc,
     isSaving,
     isDownloading,
     showDownloadModal,
@@ -393,5 +451,9 @@ export function useContractFormView() {
     saveChanges,
     downloadContract,
     closeModal,
+    addUnitRow,
+    removeUnitRow,
+    contractUnitTypeOptions: CONTRACT_UNIT_TYPE_OPTIONS,
+    isKnownUnitTypeLabel: isKnownContractUnitTypeLabel,
   };
 }

@@ -92,7 +92,7 @@ export function useAccountingSalaries() {
     try {
       if (data.action === 'create') { await accountingService.createDistribution(selectedSalary.value.employee_id, data); toast.success('تم إنشاء التوزيع بنجاح'); }
       else if (data.action === 'approve') { await accountingService.approveSalaryDistribution(data.distributionId); toast.success('تم الموافقة على التوزيع بنجاح'); }
-      else if (data.action === 'paid') { await accountingService.markSalaryAsPaid(data.distributionId, data); toast.success('تم تعيين الراتب كمقبوض بنجاح'); }
+      else if (data.action === 'paid') { await accountingService.markSalaryAsPaid(data.distributionId); toast.success('تم تعيين الراتب كمقبوض بنجاح'); }
       showSalaryModal.value = false;
       loadSalaries();
     } catch (error) {

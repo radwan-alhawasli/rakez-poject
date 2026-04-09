@@ -1,7 +1,7 @@
 <template>
   <div class="exclusive-request">
     <!-- Header -->
-    <div class="welcome-header">
+    <div class="welcome-header exclusive-request-hero">
       <div class="header-content">
         <h1 class="welcome-title">طلب اعتماد مشروع حصري</h1>
         <p class="welcome-subtitle">
@@ -13,12 +13,15 @@
     <!-- Form Container -->
     <div class="form-container">
       <form @submit.prevent="handleSubmit">
-        <h3 class="section-label">بيانات المشروع الحصري</h3>
+        <div class="form-head">
+          <h3 class="section-label">بيانات المشروع الحصري</h3>
+          <p class="form-head-lead">املأ الحقول التالية بدقة؛ تُراجعُ الإدارةُ الطلبَ قبل الاعتماد.</p>
+        </div>
 
         <!-- Section: Developer Info -->
         <div class="form-section">
-          <h4 class="group-title">معلومات المطور</h4>
           <div class="form-group-info">
+            <h4 class="group-title">معلومات المطور</h4>
             <div class="input-row">
               <div class="field-group full">
                 <label>اختر مطورًا أو أضف جديدًا</label>
@@ -64,8 +67,8 @@
 
         <!-- Section: Project Info -->
         <div class="form-section">
-          <h4 class="group-title">معلومات المشروع</h4>
           <div class="form-group-info">
+            <h4 class="group-title">معلومات المشروع</h4>
             <div class="input-row">
               <div class="field-group">
                 <label>اسم المشروع</label>
@@ -158,8 +161,8 @@
 
         <!-- Section: Unit Info (multiple types, each with count) -->
         <div class="form-section">
-          <h4 class="group-title">معلومات الوحدات</h4>
           <div class="form-group-info">
+            <h4 class="group-title">معلومات الوحدات</h4>
             <div class="unit-rows-header input-row">
               <div class="field-group field-type"><label>نوع الوحدات</label></div>
               <div class="field-group field-count"><label>عدد الوحدات</label></div>

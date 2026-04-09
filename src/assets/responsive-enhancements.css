@@ -270,7 +270,8 @@
   .table-responsive:has(.table-mobile-stacked),
   .data-table-container:has(.table-mobile-stacked),
   .luxury-table-container:has(.table-mobile-stacked),
-  .metrics-table-container:has(.table-mobile-stacked) {
+  .metrics-table-container:has(.table-mobile-stacked),
+  .attendance-table-container:has(.table-mobile-stacked) {
     overflow-x: visible !important;
     overflow: visible !important;
   }

@@ -41,20 +41,56 @@
           v-for="project in scheduleProjects"
           :key="project.id"
           class="schedule-project-card"
+          role="button"
+          tabindex="0"
           @click="openProjectSchedule(project)"
+          @keydown.enter.prevent="openProjectSchedule(project)"
         >
-          <h3 class="project-card-title">
-            {{ project.project_name || project.name || project.contract_name }}
-          </h3>
-          <p class="project-card-activity">{{ project.activity_type || 'أنشطة المشروع' }}</p>
-          <p class="project-card-team">فريق المبيعات</p>
+          <div class="schedule-project-card__inner">
+            <div class="schedule-project-card__body">
+              <h3 class="project-card-title">
+                {{ project.project_name || project.name || project.contract_name }}
+              </h3>
+              <div class="project-card-meta">
+                <span class="project-card-pill project-card-pill--activity">
+                  <svg class="project-card-pill__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                  </svg>
+                  {{ project.activity_type || 'أنشطة المشروع' }}
+                </span>
+                <span class="project-card-pill project-card-pill--team">
+                  <svg class="project-card-pill__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  فريق المبيعات
+                </span>
+              </div>
+            </div>
+            <div class="schedule-project-card__accent" aria-hidden="true">
+              <svg class="schedule-project-card__accent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <span class="schedule-project-card__chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </span>
+          </div>
         </div>
       </div>
     </template>
 
     <!-- Detail View (project selected) -->
     <template v-else>
-      <div class="welcome-header schedule-detail-header rakez-schedule-hero">
+      <div class="welcome-header schedule-detail-header rakez-schedule-hero schedule-detail-hero">
         <div class="header-content">
           <button type="button" class="btn-back" @click="backToList">
             <svg
@@ -85,7 +121,7 @@
       </div>
 
       <template v-else>
-        <div class="schedule-date-bar rakez-glass-bar">
+        <div class="schedule-date-bar rakez-glass-bar rakez-solid-bar">
           <div class="schedule-date-display">
             <span class="update-label">تاريخ التحديث:</span>
             <span class="update-value">{{ scheduleDisplayDate }}</span>
@@ -110,9 +146,19 @@
           :class="{ 'schedule-form--saving': isSavingSchedules }"
         >
           <!-- Right: Team Members Schedules -->
-          <div class="schedule-members-section rakez-glass-panel">
+          <div class="schedule-members-section rakez-glass-panel rakez-solid-panel">
             <h3 class="section-label">جداول المسوقين</h3>
-            <div class="schedule-members-list">
+            <div v-if="scheduleMembers.length === 0" class="schedule-members-empty" role="status">
+              <svg class="schedule-members-empty__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <p class="schedule-members-empty__title">لا يوجد مسوّقون في الجدول</p>
+              <p class="schedule-members-empty__hint">جرّب تغيير تاريخ العرض، أو تحقق من ربط المسوقين بهذا المشروع في النظام.</p>
+            </div>
+            <div v-else class="schedule-members-list">
               <div
                 v-for="member in scheduleMembers"
                 :key="member.id"
@@ -172,7 +218,7 @@
           </div>
 
           <!-- Left: Emergency Contact -->
-          <div class="emergency-contact-section rakez-glass-panel">
+          <div class="emergency-contact-section rakez-glass-panel rakez-solid-panel">
             <h3 class="section-label">جهة اتصال الطوارئ</h3>
             <div class="emergency-form">
               <div class="form-group">

@@ -1,0 +1,214 @@
+.accounting-sold-units-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sold-units-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 22px 24px;
+  margin-bottom: 20px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 45%, #1a3050 100%);
+  border: 1px solid rgba(177, 162, 143, 0.35);
+  box-shadow:
+    0 12px 32px rgba(30, 58, 95, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.sold-units-hero-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.sold-units-hero .title-icon-wrap {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: rgba(248, 250, 252, 0.12);
+  border: 1px solid rgba(177, 162, 143, 0.35);
+  color: #e8d5b5;
+}
+
+.sold-units-hero .header-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.sold-units-hero-text {
+  min-width: 0;
+}
+
+.sold-units-hero .welcome-title {
+  margin: 0 0 6px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #e8eef5;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.sold-units-hero .welcome-subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(226, 232, 240, 0.88);
+  line-height: 1.5;
+  max-width: 560px;
+}
+
+.sold-units-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-refresh-sold-units {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 2px solid rgba(177, 162, 143, 0.55);
+  background: rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.btn-refresh-sold-units:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(232, 213, 181, 0.75);
+}
+
+.btn-refresh-sold-units:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-refresh-sold-units svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sold-units-table-wrap {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(177, 162, 143, 0.2);
+  box-shadow: 0 8px 28px rgba(30, 58, 95, 0.06);
+  overflow: hidden;
+}
+
+.sold-units-table-wrap .metrics-table-container {
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+}
+
+.sold-units-table-wrap :deep(.metrics-table) {
+  margin: 0;
+}
+
+.sold-units-table-wrap :deep(.metrics-table thead th) {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  color: #1e3a5f;
+  font-weight: 800;
+  border-bottom: 2px solid rgba(177, 162, 143, 0.35);
+}
+
+.sold-units-table-wrap :deep(.metrics-table tbody tr:hover) {
+  background: rgba(248, 250, 252, 0.88);
+}
+
+/* Override accounting-shell mint `.accounting-view .btn-action.edit` */
+.sold-units-table-wrap :deep(.btn-action.edit) {
+  background: linear-gradient(180deg, #fdfbf7 0%, #f3efe8 100%) !important;
+  color: #1e3a5f !important;
+  border: 1px solid rgba(177, 162, 143, 0.55) !important;
+}
+
+.sold-units-table-wrap :deep(.btn-action.edit:hover) {
+  background: linear-gradient(135deg, rgba(232, 213, 181, 0.45) 0%, rgba(177, 162, 143, 0.22) 100%) !important;
+  border-color: #b1a28f !important;
+  color: #0f2744 !important;
+}
+
+.sold-units-table-wrap :deep(.btn-action.edit:active) {
+  transform: scale(0.98);
+}
+
+.sold-units-table-wrap :deep(.cell-placeholder) {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 48px 24px;
+  text-align: center;
+  background: linear-gradient(180deg, #fff 0%, #fdfbf7 100%);
+  border-radius: 16px;
+  border: 1px dashed rgba(177, 162, 143, 0.35);
+  color: #64748b;
+}
+
+.loading-state .spinner,
+.empty-state .spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(177, 162, 143, 0.25);
+  border-top-color: #b1a28f;
+  border-radius: 50%;
+  animation: sold-units-spin 0.75s linear infinite;
+}
+
+@keyframes sold-units-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-state p,
+.empty-state p {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.empty-state svg {
+  color: rgba(177, 162, 143, 0.65);
+}
+
+@media (max-width: 576px) {
+  .sold-units-hero {
+    padding: 18px 16px;
+  }
+
+  .sold-units-hero .welcome-title {
+    font-size: 1.25rem;
+  }
+
+  .sold-units-table-wrap .table-responsive {
+    margin: 0 -8px;
+  }
+}

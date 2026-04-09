@@ -1,6 +1,7 @@
 <template>
   <AppModal
     :open="true"
+    rakez-header
     title="تعديل بيانات استكمال العقد"
     subtitle="نفس حقول استكمال العقد (الطرف الثاني، التواريخ، العمولة، إلخ)."
     size="wide"
@@ -10,7 +11,13 @@
       <div class="loading-spinner"></div>
       <p>جاري تحميل البيانات...</p>
     </div>
-    <form v-else id="edit-contract-info-form" class="edit-info-form" @submit.prevent="submit">
+    <template v-else>
+      <div class="modal-form-head">
+        <p class="form-head-lead">
+          راجع الحقول وعدّل ما يلزم ثم احفظ؛ نفس ترتيب صفحة استكمال العقد.
+        </p>
+      </div>
+      <form id="edit-contract-info-form" class="edit-info-form" @submit.prevent="submit">
       <!-- 1. معلومات العقد الأساسية — نفس الحقول والترتيب كما تظهر عند الضغط على استكمال العقد -->
       <section class="form-section">
         <h4 class="section-label">معلومات العقد الأساسية</h4>
@@ -97,10 +104,6 @@
                 lang="en"
               />
             </div>
-            <div class="field-group">
-              <label>متوسط قيمة العقار</label>
-              <input v-model="form.avg_property_value" type="number" class="form-input" placeholder="0.00" />
-            </div>
           </div>
         </div>
       </section>
@@ -178,32 +181,84 @@
       <section class="form-section">
         <h4 class="section-label">المشاريع والوحدات</h4>
         <div class="form-group-info">
-          <div class="input-row grid-3">
-            <div class="field-group">
-              <label>عدد الوحدات</label>
-              <input v-model.number="form.units_count" type="number" class="form-input" />
-            </div>
-            <div class="field-group">
-              <label>نوع الوحدة</label>
-              <select v-model="form.unit_type" class="form-input">
-                <option value="">اختر النوع</option>
-                <option value="فيلا">فيلا</option>
-                <option value="شقة">شقة</option>
-              </select>
-            </div>
-            <div class="field-group">
+          <div class="input-row">
+            <div class="field-group full">
               <label>اسم المشروع</label>
               <input v-model="form.project_name" type="text" class="form-input" />
             </div>
           </div>
-          <div class="input-row grid-3">
+          <div class="field-group full contract-units-wrap">
+            <div class="contract-units-table-wrap">
+              <table class="contract-units-table">
+                <thead>
+                  <tr>
+                    <th scope="col">نوع الوحدة</th>
+                    <th scope="col">العدد</th>
+                    <th scope="col">سعر الوحدة (ر.س)</th>
+                    <th scope="col" class="contract-units-actions-col"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, idx) in form.units" :key="idx">
+                    <td>
+                      <div class="select-wrapper contract-unit-type-select">
+                        <select v-model="row.type" class="form-input">
+                          <option value="">... اختر نوعا</option>
+                          <option
+                            v-if="row.type && !isKnownContractUnitTypeLabel(row.type)"
+                            :value="row.type"
+                          >
+                            {{ row.type }}
+                          </option>
+                          <option
+                            v-for="opt in contractUnitTypeOptions"
+                            :key="opt.value"
+                            :value="opt.label"
+                          >
+                            {{ opt.label }}
+                          </option>
+                        </select>
+                      </div>
+                    </td>
+                    <td>
+                      <input
+                        v-model.number="row.count"
+                        type="number"
+                        class="form-input"
+                        min="0"
+                        placeholder="0"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        v-model.number="row.price"
+                        type="number"
+                        class="form-input"
+                        min="0"
+                        placeholder="0"
+                      />
+                    </td>
+                    <td class="contract-units-actions-col">
+                      <button
+                        type="button"
+                        class="contract-units-remove"
+                        :disabled="form.units.length <= 1"
+                        title="حذف السطر"
+                        @click="removeUnitRow(idx)"
+                      >
+                        ×
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button type="button" class="contract-units-add" @click="addUnitRow">+ إضافة نوع وحدة</button>
+          </div>
+          <div class="input-row grid-2">
             <div class="field-group">
               <label>الحي</label>
               <input v-model="form.district" type="text" class="form-input" />
-            </div>
-            <div class="field-group">
-              <label>إجمالي قيمة الوحدات</label>
-              <input v-model.number="form.total_units_value" type="number" class="form-input" min="0" />
             </div>
             <div class="field-group">
               <label>المدينة</label>
@@ -219,18 +274,60 @@
           <div class="input-row">
             <div class="field-group full">
               <label>الوصف</label>
-              <textarea v-model="form.notes" class="form-input text-area" placeholder="أدخل ملاحظاتك هنا..."></textarea>
+              <textarea v-model="form.notes" class="form-input text-area" placeholder="أدخل وصف المشروع أو الملاحظات..."></textarea>
             </div>
           </div>
-          <div class="input-row">
-            <div class="field-group full">
-              <label>رابط صورة المشروع (اختياري)</label>
-              <input
-                v-model="form.project_image_url"
-                type="url"
-                class="form-input"
-                placeholder="https://example.com/image.jpg"
+          <div class="contract-media-block">
+            <h5 class="contract-media-title">صورة وفيديو (روابط)</h5>
+            <div class="input-row">
+              <div class="field-group full">
+                <label>رابط الصورة</label>
+                <input
+                  v-model="form.image_url"
+                  type="url"
+                  class="form-input"
+                  placeholder="https://..."
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+            <div v-if="safeImagePreviewUrl" class="media-preview media-preview--image">
+              <img :src="safeImagePreviewUrl" alt="معاينة الصورة" class="media-preview-img" />
+            </div>
+            <div class="input-row">
+              <div class="field-group full">
+                <label>رابط الفيديو</label>
+                <input
+                  v-model="form.video_url"
+                  type="url"
+                  class="form-input"
+                  placeholder="https://..."
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+            <div v-if="videoEmbedSrc" class="media-preview media-preview--video">
+              <iframe
+                :src="videoEmbedSrc"
+                class="media-preview-iframe"
+                title="معاينة الفيديو"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
               />
+            </div>
+            <p v-else-if="form.video_url && String(form.video_url).trim()" class="media-preview-fallback">
+              <a :href="String(form.video_url).trim()" target="_blank" rel="noopener noreferrer">فتح رابط الفيديو في تبويب جديد</a>
+            </p>
+            <div class="input-row">
+              <div class="field-group full">
+                <label>رابط صورة المشروع (اختياري)</label>
+                <input
+                  v-model="form.project_image_url"
+                  type="url"
+                  class="form-input"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
             </div>
           </div>
           <div class="input-row">
@@ -249,6 +346,7 @@
         </div>
       </section>
     </form>
+    </template>
     <template #footer>
       <div class="modal-footer-actions">
         <Button type="button" variant="outline" class="btn-cancel" @click="emit('close')">
@@ -277,10 +375,19 @@ import AppModal from '@/components/AppModal.vue';
 import Button from '@/components/ui/Button.vue';
 import { LABEL_CANCEL, LABEL_SAVING } from '@/constants/actions';
 import contractService from '@/services/contractService';
+import { pickContractCompletionNotes } from '@/services/contract/contractNormalize';
 import salesService from '@/services/salesService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { showApiError, getApiErrorMessage } from '@/utils/errorHandler';
+import {
+  CONTRACT_UNIT_TYPE_OPTIONS,
+  emptyUnitRow,
+  isKnownContractUnitTypeLabel,
+  isUnitsFormEffectivelyEmpty,
+  syncFormTotalsFromUnits,
+  unitsForApi,
+} from '@/utils/contractUnits';
 
 const props = defineProps({
   contractId: { type: [Number, String], required: true },
@@ -289,6 +396,9 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'saved']);
+
+/** نفس قائمة أنواع الوحدات في طلب المشروع الحصري */
+const contractUnitTypeOptions = CONTRACT_UNIT_TYPE_OPTIONS;
 
 const loading = ref(true);
 const saving = ref(false);
@@ -310,8 +420,9 @@ const form = reactive({
   commission_from: 'owner',
   agency_number: '',
   agency_date: '',
-  avg_property_value: '',
   release_date: '',
+  /** من API (مثل total_price) — يُعرض في «متوسط سعر الوحدات» */
+  total_price: null,
   // الطرف الثاني
   second_party_name: '',
   second_party_id_number: '',
@@ -324,11 +435,15 @@ const form = reactive({
   // المشاريع والوحدات
   units_count: 0,
   unit_type: '',
+  units: [emptyUnitRow()],
   project_name: '',
   district: '',
   total_units_value: 0,
   city: '',
   notes: '',
+  /** روابط وسائط من الـ API — منفصلة عن project_image_url */
+  image_url: '',
+  video_url: '',
   project_image_url: '',
   project_site_url: '',
 });
@@ -346,10 +461,60 @@ const commissionPercentDisplay = computed(() => {
 });
 
 const averageUnitPriceDisplay = computed(() => {
+  const tp = Number(form.total_price);
+  if (Number.isFinite(tp) && tp > 0) return tp.toLocaleString('en-US');
   const count = Number(form.units_count) || 0;
   const total = Number(form.total_units_value) || 0;
   if (count <= 0) return '0';
   return Math.round(total / count).toLocaleString('en-US');
+});
+
+function addUnitRow() {
+  form.units.push(emptyUnitRow());
+}
+
+function removeUnitRow(index) {
+  if (form.units.length <= 1) return;
+  form.units.splice(index, 1);
+}
+
+watch(
+  () => form.units,
+  () => syncFormTotalsFromUnits(form),
+  { deep: true, immediate: true },
+);
+
+const safeImagePreviewUrl = computed(() => {
+  const s = String(form.image_url || '').trim();
+  if (!s) return '';
+  try {
+    const u = new URL(s);
+    return u.protocol === 'http:' || u.protocol === 'https:' ? s : '';
+  } catch {
+    return '';
+  }
+});
+
+/** معاينة فيديو: YouTube كـ embed، وغيرها يُمرَّر الرابط للـ iframe إن أمكن */
+const videoEmbedSrc = computed(() => {
+  const s = String(form.video_url || '').trim();
+  if (!s) return '';
+  try {
+    const u = new URL(s);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
+    const host = u.hostname.toLowerCase();
+    if (host.includes('youtube.com') && u.searchParams.get('v')) {
+      const id = u.searchParams.get('v');
+      return id ? `https://www.youtube.com/embed/${id}` : s;
+    }
+    if (host === 'youtu.be') {
+      const id = u.pathname.replace(/^\//, '').split('/')[0];
+      return id ? `https://www.youtube.com/embed/${id}` : s;
+    }
+    return s;
+  } catch {
+    return '';
+  }
 });
 
 /** تحويل أي تاريخ من الـ API إلى YYYY-MM-DD لعرضه في input type="date". يدعم ISO وUnix وـ DD-MM-YYYY. */
@@ -536,22 +701,11 @@ function mapApiToForm(data) {
   form.district = pickStr(d.district, info.district, d.neighborhood);
   const totalVal = pickNum(d.total_units_value, d.total_price, info.total_price, data.total_price);
   form.total_units_value = totalVal != null ? totalVal : 0;
+  const priceFromApi = pickNum(d.total_price, data.total_price, info.total_price);
+  form.total_price = priceFromApi != null ? priceFromApi : null;
   form.city = pickStr(d.city, info.city, d.project_city, proj.city);
-  form.notes = pickStr(
-    d.notes,
-    d.note,
-    d.description,
-    d.project_description,
-    d.requirements,
-    d.developer_requiment,
-    d.memo,
-    d.remarks,
-    proj.notes,
-    proj.description,
-    proj.note,
-    info.notes,
-    info.description,
-  );
+  /** نفس منطق استكمال العقد: description أولاً ثم ملاحظات — دون خلط requirements مع الوصف */
+  form.notes = pickContractCompletionNotes(data);
   form.project_site_url = pickStr(
     d.project_site_url,
     d.project_link,
@@ -569,10 +723,23 @@ function mapApiToForm(data) {
     proj.project_link,
     info.project_site_url,
   );
+  form.image_url = pickStr(
+    d.image_url,
+    data.image_url,
+    info.image_url,
+    proj.image_url,
+    d.montage_image_url,
+  );
+  form.video_url = pickStr(
+    d.video_url,
+    data.video_url,
+    info.video_url,
+    proj.video_url,
+    d.montage_video_url,
+  );
   form.project_image_url = pickStr(
     d.project_image_url,
     d.image,
-    d.image_url,
     d.main_image,
     d.cover_image,
     proj.project_image_url,
@@ -589,34 +756,25 @@ function mapApiToForm(data) {
     [];
 
   if (unitsList.length > 0) {
-    let totalCount = 0;
-    let calculatedValue = 0;
-    unitsList.forEach((u) => {
-      const count = parseInt(u.count ?? u.quantity ?? u.qty, 10) || 0;
-      const price = parseFloat(String(u.price ?? u.unit_price ?? u.amount ?? 0).replace(/,/g, '')) || 0;
-      totalCount += count;
-      calculatedValue += price * count;
-    });
-    form.unit_type = pickStr(data.unit_type, unitsList[0]?.type, unitsList[0]?.unit_type);
-    form.units_count = totalCount > 0 ? totalCount : pickNum(data.units_count, data.unit_count, info.unit_count) ?? 0;
-    const existingAvg = pickStr(
-      data.avg_property_value,
-      data.average_property_value,
-      data.avg_price,
-      info.avg_property_value,
-    );
-    form.avg_property_value =
-      calculatedValue > 0 ? String(calculatedValue) : existingAvg;
+    form.units = unitsList.map((u) => ({
+      type: pickStr(u.type, u.unit_type) || '',
+      count: parseInt(u.count ?? u.quantity ?? u.qty, 10) || 0,
+      price: Number(u.price ?? u.unit_price ?? 0) || 0,
+    }));
+    syncFormTotalsFromUnits(form);
   } else {
-    const uc = pickNum(data.units_count, data.unit_count, info.units_count, info.unit_count);
-    form.units_count = uc != null ? uc : 0;
-    form.unit_type = pickStr(data.unit_type, info.unit_type);
-    form.avg_property_value = pickStr(
-      data.avg_property_value,
-      data.average_property_value,
-      data.avg_price,
-      info.avg_property_value,
-    );
+    const uc = pickNum(data.units_count, data.unit_count, info.units_count, info.unit_count) ?? 0;
+    const ut = pickStr(data.unit_type, info.unit_type) || '';
+    form.units_count = uc;
+    form.unit_type = ut;
+    const tv = Number(form.total_units_value) || 0;
+    if (uc > 0 && ut) {
+      const price = tv > 0 && uc > 0 ? Math.round(tv / uc) : 0;
+      form.units = [{ type: ut, count: uc, price }];
+    } else {
+      form.units = [emptyUnitRow()];
+    }
+    syncFormTotalsFromUnits(form);
   }
 
   const sig = pickStr(
@@ -678,31 +836,34 @@ function mergeSalesProjectDetailsIntoForm(project) {
       p.site_url ??
       p.project_url,
   );
+  setIfEmpty('image_url', p.image_url);
+  setIfEmpty('video_url', p.video_url);
   setIfEmpty(
     'project_image_url',
     p.project_image_url ??
       p.image ??
-      p.image_url ??
       p.main_image ??
       p.cover_image,
   );
 
   const unitsArr = p.units ?? p.project_units ?? p.contract_units ?? p.data?.units;
   if (Array.isArray(unitsArr) && unitsArr.length > 0) {
-    let totalCount = 0;
-    let calculatedValue = 0;
-    unitsArr.forEach((u) => {
-      const count = parseInt(u.count, 10) || 0;
-      const price = parseInt(u.price ?? u.unit_price, 10) || 0;
-      totalCount += count;
-      calculatedValue += price * count;
-    });
-    setIfEmpty('units_count', totalCount);
-    if (empty(form.unit_type) && unitsArr[0]) {
-      form.unit_type = unitsArr[0].type || '';
-    }
-    if ((empty(form.avg_property_value) || isZeroish(form.avg_property_value)) && calculatedValue > 0) {
-      form.avg_property_value = String(calculatedValue);
+    if (isUnitsFormEffectivelyEmpty(form.units)) {
+      form.units = unitsArr.map((u) => ({
+        type: String(u.type ?? u.unit_type ?? '').trim(),
+        count: parseInt(u.count ?? u.quantity ?? u.qty, 10) || 0,
+        price: Number(u.price ?? u.unit_price ?? 0) || 0,
+      }));
+      syncFormTotalsFromUnits(form);
+    } else {
+      let totalCount = 0;
+      unitsArr.forEach((u) => {
+        totalCount += parseInt(u.count, 10) || 0;
+      });
+      setIfEmpty('units_count', totalCount);
+      if (empty(form.unit_type) && unitsArr[0]) {
+        form.unit_type = unitsArr[0].type || '';
+      }
     }
   } else if (p.total_units != null && (empty(form.units_count) || isZeroish(form.units_count))) {
     form.units_count = Number(p.total_units) || form.units_count;
@@ -713,9 +874,9 @@ function mergeSalesProjectDetailsIntoForm(project) {
     if (tp != null && tp !== '') form.total_units_value = Number(tp) || 0;
   }
 
-  if (empty(form.avg_property_value) || isZeroish(form.avg_property_value)) {
-    const av = p.average_unit_price ?? p.avg_unit_price ?? p.avgPrice ?? p.price;
-    if (av != null && av !== '') form.avg_property_value = String(av);
+  if (form.total_price == null || isZeroish(form.total_price)) {
+    const tp = p.total_price ?? p.total_units_value;
+    if (tp != null && tp !== '') form.total_price = Number(tp) || null;
   }
 
   if (empty(form.second_party_name)) {
@@ -776,7 +937,7 @@ async function fetchDetails() {
   }
   loading.value = true;
   try {
-    // 0) تعبئة أولية من صف القائمة (بعد دمج GET /contracts/show في MyRequests للعقود المكتملة)
+    // 0) تعبئة اختيارية من initialData إن وُجدت (مثلاً من شاشة أخرى تمرّر تفاصيل مسبقة)
     if (props.initialData && typeof props.initialData === 'object' && Object.keys(props.initialData).length > 0) {
       mapApiToForm(props.initialData);
     }
@@ -842,10 +1003,17 @@ async function submit() {
       commission_from: form.commission_from,
       agency_number: form.agency_number,
       agency_date: toApiDate(form.agency_date) || form.agency_date,
-      avg_property_value: String(form.avg_property_value || ''),
       release_date: toApiDate(form.release_date) || form.release_date,
+      note: form.notes || undefined,
+      notes: form.notes || undefined,
+      description: form.notes || undefined,
+      image_url: form.image_url || undefined,
+      video_url: form.video_url || undefined,
       project_image_url: form.project_image_url || undefined,
       project_site_url: form.project_site_url || undefined,
+      units: unitsForApi(form.units),
+      units_count: form.units_count,
+      unit_type: form.unit_type || undefined,
     };
     await contractService.updateContractInfo(props.contractId, payload);
     toast.success('تم حفظ تعديلات استكمال العقد بنجاح');

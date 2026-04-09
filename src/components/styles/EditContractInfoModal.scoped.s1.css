@@ -49,6 +49,11 @@
 .input-row:last-child {
   margin-bottom: 0;
 }
+.input-row.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
 .input-row.grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -138,3 +143,160 @@
   cursor: pointer;
 }
 .btn-save:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.field-hint {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.45;
+}
+.field-hint code {
+  font-size: 11px;
+  background: #f1f5f9;
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+.contract-media-block {
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px dashed rgba(39, 55, 77, 0.18);
+  border-radius: 12px;
+  background: #fafbfc;
+}
+.contract-media-title {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-navy, #1e3a5f);
+}
+.media-preview {
+  margin: 10px 0 14px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+}
+.media-preview--video {
+  aspect-ratio: 16 / 9;
+  max-height: 280px;
+}
+.media-preview-img {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  background: #0f172a;
+}
+.media-preview-iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  border: 0;
+}
+.media-preview-fallback {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+.media-preview-fallback a {
+  color: var(--color-navy, #1e3a5f);
+  font-weight: 600;
+}
+
+.contract-units-wrap {
+  margin-bottom: 1rem;
+}
+.contract-units-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+.contract-units-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.contract-units-table th,
+.contract-units-table td {
+  padding: 10px 12px;
+  text-align: right;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+.contract-units-table thead th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #475569;
+  font-size: 13px;
+}
+.contract-units-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.contract-units-table .form-input {
+  margin: 0;
+  min-width: 0;
+}
+.contract-units-table .select-wrapper {
+  position: relative;
+}
+.contract-units-table .select-wrapper select {
+  width: 100%;
+  cursor: pointer;
+}
+.contract-units-actions-col {
+  width: 44px;
+  text-align: center;
+}
+.contract-units-remove {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.contract-units-remove:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+.contract-units-remove:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.contract-units-add {
+  margin-top: 12px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e3a5f;
+  background: #f1f5f9;
+  border: 1px dashed #94a3b8;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.contract-units-add:hover {
+  background: #e2e8f0;
+}
+
+/* توضيح تحت الهيدر الكحلي — نفس منطق صفحة المشروع الحصري */
+.modal-form-head {
+  margin: 0 0 1.25rem;
+  padding: 16px 18px 18px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(181, 169, 154, 0.4);
+  border-radius: 14px;
+  border-inline-start: 4px solid var(--color-gold, #b5a99a);
+  box-shadow: 0 4px 18px rgba(39, 55, 77, 0.08);
+}
+
+.modal-form-head .form-head-lead {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #1e293b;
+  line-height: 1.65;
+  font-weight: 600;
+}

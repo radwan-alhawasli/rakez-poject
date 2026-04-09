@@ -1,11 +1,11 @@
 <template>
   <div class="contract-form">
     <!-- Header -->
-    <div class="section-header">
+    <div class="welcome-header contract-form-hero">
       <div class="header-content">
-        <h2 class="section-title">إحضار المشاريع والعقود</h2>
-        <p class="section-subtitle">
-          إضافة مطورين جدد، إنشاء عقود، وتعبئة بيانات المشاريع الأولية.
+        <h1 class="welcome-title">استكمال العقد</h1>
+        <p class="welcome-subtitle">
+          أكمل بيانات العقد والطرف الثاني والمشروع والوحدات لاعتماد المستند وإتمام الإجراء.
         </p>
       </div>
     </div>
@@ -25,9 +25,11 @@
 
     <!-- Main Contract Form -->
     <div class="main-form">
-      <div class="form-title-area">
-        <h3 class="main-form-title">نموذج العقد الجديد</h3>
-        <p class="main-form-subtitle">املأ النموذج أدناه لإرسال العقد للمراجعة وإنشاء المشاريع.</p>
+      <div class="form-head">
+        <h3 class="form-head-title">نموذج استكمال العقد</h3>
+        <p class="form-head-lead">
+          املأ الحقول التالية بدقة؛ تُراجعُ الإدارةُ البيانات قبل الاعتماد النهائي.
+        </p>
       </div>
 
       <form @submit.prevent="saveChanges">
@@ -132,15 +134,6 @@
                 <label>تاريخ اصدار المخالصة والانتهاء</label>
                 <input type="date" v-model="form.release_date" class="form-input" />
               </div>
-              <div class="field-group">
-                <label>متوسط قيمة العقار</label>
-                <input
-                  type="number"
-                  v-model="form.avg_property_value"
-                  class="form-input"
-                  placeholder="0.00"
-                />
-              </div>
             </div>
           </div>
         </div>
@@ -228,24 +221,81 @@
         <div class="form-section">
           <h4 class="section-label">المشاريع والوحدات</h4>
           <div class="form-group-info">
-            <div class="input-row grid-3">
-              <div class="field-group">
-                <label>عدد الوحدات</label>
-                <input type="number" v-model.number="form.units_count" class="form-input" min="0" />
-              </div>
-              <div class="field-group">
-                <label>نوع الوحدة</label>
-                <select v-model="form.unit_type" class="form-input">
-                  <option value="">اختر النوع</option>
-                  <option value="فيلا">فيلا</option>
-                  <option value="شقة">شقة</option>
-                </select>
-              </div>
-              <div class="field-group">
+            <div class="input-row">
+              <div class="field-group full">
                 <label>اسم المشروع</label>
                 <input type="text" v-model="form.project_name" class="form-input" :class="{ 'input-error': getFieldError('project_name') }" />
                 <span v-if="getFieldError('project_name')" class="field-error">{{ getFieldError('project_name') }}</span>
               </div>
+            </div>
+
+            <div class="field-group full contract-units-wrap">
+              <div class="contract-units-table-wrap">
+                <table class="contract-units-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">نوع الوحدة</th>
+                      <th scope="col">العدد</th>
+                      <th scope="col">سعر الوحدة (ر.س)</th>
+                      <th scope="col" class="contract-units-actions-col"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(row, idx) in form.units" :key="idx">
+                      <td>
+                        <div class="select-wrapper contract-unit-type-select">
+                          <select v-model="row.type" class="form-input">
+                            <option value="">... اختر نوعا</option>
+                            <option
+                              v-if="row.type && !isKnownUnitTypeLabel(row.type)"
+                              :value="row.type"
+                            >
+                              {{ row.type }}
+                            </option>
+                            <option
+                              v-for="opt in contractUnitTypeOptions"
+                              :key="opt.value"
+                              :value="opt.label"
+                            >
+                              {{ opt.label }}
+                            </option>
+                          </select>
+                        </div>
+                      </td>
+                      <td>
+                        <input
+                          v-model.number="row.count"
+                          type="number"
+                          class="form-input"
+                          min="0"
+                          placeholder="0"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          v-model.number="row.price"
+                          type="number"
+                          class="form-input"
+                          min="0"
+                          placeholder="0"
+                        />
+                      </td>
+                      <td class="contract-units-actions-col">
+                        <button
+                          type="button"
+                          class="contract-units-remove"
+                          :disabled="form.units.length <= 1"
+                          title="حذف السطر"
+                          @click="removeUnitRow(idx)"
+                        >
+                          ×
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button type="button" class="contract-units-add" @click="addUnitRow">+ إضافة نوع وحدة</button>
             </div>
 
             <div class="input-row grid-3">
@@ -283,10 +333,6 @@
                   <option value="w">غرب</option>
                 </select>
               </div>
-              <div class="field-group">
-                <label>إجمالي قيمة الوحدات</label>
-                <input type="number" v-model.number="form.total_units_value" class="form-input" min="0" />
-              </div>
             </div>
 
             <div class="input-row grid-3">
@@ -307,9 +353,52 @@
                 <textarea
                   v-model="form.notes"
                   class="form-input text-area"
-                  placeholder="أدخل ملاحظاتك هنا..."
+                  placeholder="أدخل وصف المشروع أو الملاحظات..."
                 ></textarea>
               </div>
+            </div>
+
+            <div class="contract-media-block">
+              <h5 class="contract-media-title">صورة وفيديو (روابط)</h5>
+              <div class="input-row">
+                <div class="field-group full">
+                  <label>رابط الصورة</label>
+                  <input
+                    v-model="form.image_url"
+                    type="url"
+                    class="form-input"
+                    placeholder="https://..."
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+              <div v-if="safeImagePreviewUrl" class="media-preview media-preview--image">
+                <img :src="safeImagePreviewUrl" alt="معاينة الصورة" class="media-preview-img" />
+              </div>
+              <div class="input-row">
+                <div class="field-group full">
+                  <label>رابط الفيديو</label>
+                  <input
+                    v-model="form.video_url"
+                    type="url"
+                    class="form-input"
+                    placeholder="https://..."
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+              <div v-if="videoEmbedSrc" class="media-preview media-preview--video">
+                <iframe
+                  :src="videoEmbedSrc"
+                  class="media-preview-iframe"
+                  title="معاينة الفيديو"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                />
+              </div>
+              <p v-else-if="form.video_url && String(form.video_url).trim()" class="media-preview-fallback">
+                <a :href="String(form.video_url).trim()" target="_blank" rel="noopener noreferrer">فتح رابط الفيديو</a>
+              </p>
             </div>
 
             <div class="input-row">

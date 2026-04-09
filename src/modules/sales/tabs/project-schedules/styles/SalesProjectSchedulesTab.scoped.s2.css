@@ -1,10 +1,11 @@
 
 .schedule-member-card {
-  background: rgba(255, 255, 255, 0.72);
+  background: #ffffff;
   border: 1px solid rgba(39, 55, 77, 0.1);
   border-radius: 12px;
   padding: 14px 16px;
   transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
 .schedule-member-card:hover {
@@ -194,7 +195,7 @@
   font-size: 14px;
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.88);
+  background: #ffffff;
 }
 
 .emergency-form .form-input:focus {

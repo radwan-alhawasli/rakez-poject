@@ -1,11 +1,11 @@
 
 /* Responsive: Extra Small Mobile */
 @media (max-width: 320px) {
-  .section-title {
-    font-size: 18px;
+  .contract-form .welcome-header.contract-form-hero .welcome-title {
+    font-size: 1.1rem;
   }
-  .main-form-title {
-    font-size: 16px;
+  .form-head-title {
+    font-size: 0.95rem;
   }
   .section-label {
     font-size: 14px;
@@ -123,17 +123,17 @@
 
 /* Responsive: Large Desktop */
 @media (min-width: 1920px) {
-  .section-title {
-    font-size: 38px;
+  .contract-form .welcome-header.contract-form-hero .welcome-title {
+    font-size: 2rem;
   }
-  .section-subtitle {
-    font-size: 18px;
+  .contract-form .welcome-header.contract-form-hero .welcome-subtitle {
+    font-size: 1.05rem;
   }
-  .main-form-title {
-    font-size: 32px;
+  .form-head-title {
+    font-size: 1.35rem;
   }
-  .main-form-subtitle {
-    font-size: 16px;
+  .form-head-lead {
+    font-size: 1rem;
   }
   .section-label {
     font-size: 22px;
@@ -169,11 +169,11 @@
 
 /* Responsive: Ultra-wide */
 @media (min-width: 2560px) {
-  .section-title {
-    font-size: 42px;
+  .contract-form .welcome-header.contract-form-hero .welcome-title {
+    font-size: 2.25rem;
   }
-  .main-form-title {
-    font-size: 36px;
+  .form-head-title {
+    font-size: 1.45rem;
   }
   .form-group-info {
     padding: 40px;

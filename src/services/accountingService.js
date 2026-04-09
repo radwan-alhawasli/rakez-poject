@@ -6,6 +6,17 @@ import { extractPaginatedData } from '@/utils/paginationUtils';
 import { getCaughtMessage, getCaughtStatus } from '@/utils/caughtError';
 
 /**
+ * توحيد معرّف توزيعة العمولة — الباك إند قد يرسل `id` أو `distribution_id` أو `commission_distribution_id`.
+ * @param {Record<string, unknown>} d
+ * @returns {Record<string, unknown>}
+ */
+function normalizeCommissionDistribution(d) {
+  if (!d || typeof d !== 'object') return d;
+  const id = d.id ?? d.distribution_id ?? d.commission_distribution_id;
+  return id != null && id !== '' ? { ...d, id } : { ...d };
+}
+
+/**
  * @typedef {Object} AccountingSoldUnitListItem
  * @property {number|string} [id]
  * @property {number|string} [reservation_id]
@@ -464,13 +475,14 @@ const accountingService = {
     try {
       const response = await apiClient.get(`/accounting/commissions/${commissionId}/summary`);
       const raw = response.data?.data || response.data || {};
+      const distList = raw.distributions || [];
       return {
         gross_amount: raw.total_before_tax ?? raw.gross_amount,
         vat: raw.vat,
         marketing_expenses: raw.marketing_expenses ?? 0,
         bank_fees: raw.bank_fees ?? 0,
         net_amount: raw.net_amount,
-        distributions: raw.distributions || [],
+        distributions: distList.map(normalizeCommissionDistribution),
       };
     } catch (error) {
       logger.error(`Error fetching commission summary ${commissionId}:`, error);
@@ -481,7 +493,7 @@ const accountingService = {
   /**
    * Confirm commission payment with notification
    * POST /accounting/commissions/:commission_id/distributions/:distribution_id/confirm
-   * API: No body required. Sends notification to employee.
+   * API: body is JSON array `[]` (matches Postman / backend contract).
    * @param {number|string} commissionId - Commission ID
    * @param {number|string} distributionId - Distribution ID
    * @returns {Promise<Object>} Confirmed payment
@@ -490,7 +502,7 @@ const accountingService = {
     try {
       const response = await apiClient.post(
         `/accounting/commissions/${commissionId}/distributions/${distributionId}/confirm`,
-        {}
+        []
       );
       return response.data?.data || response.data || {};
     } catch (error) {
@@ -711,15 +723,15 @@ const accountingService = {
   /**
    * Mark salary as paid
    * POST /accounting/salaries/distributions/:distribution_id/paid
+   * API: body is JSON array `[]` (matches Postman / backend contract).
    * @param {number|string} distributionId - Distribution ID
-   * @param {any} data - Payment data (payment_reference, paid_at, etc.)
    * @returns {Promise<Object>} Paid distribution
    */
-  async markSalaryAsPaid(distributionId, data) {
+  async markSalaryAsPaid(distributionId) {
     try {
       const response = await apiClient.post(
         `/accounting/salaries/distributions/${distributionId}/paid`,
-        data
+        []
       );
       return response.data?.data || response.data || {};
     } catch (error) {

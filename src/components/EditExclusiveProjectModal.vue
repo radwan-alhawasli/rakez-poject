@@ -1,6 +1,7 @@
 <template>
   <AppModal
     :open="true"
+    rakez-header
     title="تعديل معلومات المشروع الحصري"
     subtitle="تعديل بيانات المشروع الحصري (نفس حقول طلب مشروع حصري)."
     size="wide"
@@ -10,7 +11,13 @@
       <div class="loading-spinner"></div>
       <p>جاري تحميل البيانات...</p>
     </div>
-    <form id="edit-exclusive-form-id" v-else class="edit-exclusive-form" @submit.prevent="submit">
+    <template v-else>
+      <div class="modal-form-head">
+        <p class="form-head-lead">
+          راجع الحقول وعدّل ما يلزم ثم احفظ؛ نفس حقول صفحة طلب مشروع حصري.
+        </p>
+      </div>
+      <form id="edit-exclusive-form-id" class="edit-exclusive-form" @submit.prevent="submit">
       <!-- معلومات المشروع والمطور (نفس حقول طلب مشروع حصري فقط) -->
       <section class="form-section">
         <h4 class="section-label">معلومات المشروع والمطور</h4>
@@ -120,6 +127,7 @@
       </section>
 
     </form>
+    </template>
     <template #footer>
       <div class="modal-footer-actions">
         <Button type="button" variant="outline" class="btn-close-large" @click="$emit('close')">
@@ -147,6 +155,7 @@ import AppModal from '@/components/AppModal.vue';
 import Button from '@/components/ui/Button.vue';
 import { LABEL_CANCEL, LABEL_SAVING } from '@/constants/actions';
 import contractService from '@/services/contractService';
+import { pickDescriptionOrNotesText } from '@/services/contract/contractNormalize';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { showApiError } from '@/utils/errorHandler';
@@ -214,7 +223,8 @@ function mapApiToForm(data) {
   const commissionVal = data.commission_percent ?? data.commission_percentage;
   form.commission_percent = commissionVal != null && commissionVal !== '' ? String(commissionVal) : '';
   form.developer_requiment = data.developer_requiment ?? data.developer_requirement ?? '';
-  form.notes = data.notes ?? data.note ?? '';
+  /** حقل «الوصف» — يقرأ `description` و`notes`/`note` من الجذر أو info (مثل العقد رقم 22) */
+  form.notes = pickDescriptionOrNotesText(data);
   form.project_image_url = data.project_image_url ?? data.image ?? '';
   form.project_site_url = data.project_site_url ?? data.project_link ?? '';
   if (data.units && Array.isArray(data.units) && data.units.length > 0) {
@@ -276,6 +286,8 @@ async function submit() {
       project_image_url: form.project_image_url || undefined,
       project_site_url: form.project_site_url || undefined,
       note: form.notes || undefined,
+      notes: form.notes || undefined,
+      description: form.notes || undefined,
       units: form.units.map(u => ({
         type: u.type || 'شقة',
         count: Number(u.count) || 0,
@@ -421,6 +433,23 @@ watch(() => props.contractId, fetchDetails);
   justify-content: flex-end;
   flex-wrap: wrap;
 }
+.modal-form-head {
+  margin: 0 0 1.25rem;
+  padding: 16px 18px 18px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(181, 169, 154, 0.4);
+  border-radius: 14px;
+  border-inline-start: 4px solid var(--color-gold, #b5a99a);
+  box-shadow: 0 4px 18px rgba(39, 55, 77, 0.08);
+}
+.modal-form-head .form-head-lead {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #1e293b;
+  line-height: 1.65;
+  font-weight: 600;
+}
+
 .btn-close-large {
   padding: 0.5rem 1.25rem;
   background: #f1f5f9;

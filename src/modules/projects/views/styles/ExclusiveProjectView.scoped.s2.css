@@ -1,246 +1,140 @@
-
-/* Responsive: mobile */
 @media (max-width: 576px) {
-  .section-title {
-    font-size: 20px;
-  }
-  .section-subtitle {
-    font-size: 14px;
-  }
   .section-label {
-    font-size: 18px;
-    padding: 8px 14px;
+    font-size: 1.05rem;
+  }
+  .form-head-lead {
+    font-size: 0.875rem;
   }
   .form-group-info {
-    padding: 16px;
-    border-radius: 12px;
+    padding: 16px 14px 18px;
+    border-radius: 14px;
   }
   .form-input {
-    padding: 10px 12px;
-    font-size: 14px;
-    min-height: 44px;
+    padding: 11px 12px;
+    font-size: 0.9375rem;
+    min-height: 46px;
   }
   .group-title {
-    font-size: 14px;
+    font-size: 0.875rem;
+    padding: 8px 10px;
+  }
+  .field-group label {
+    font-size: 0.8125rem;
   }
   .remove-unit-btn {
     width: 44px;
     height: 44px;
-    font-size: 20px;
+    font-size: 1.35rem;
   }
   .add-unit-link {
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
+    width: 100%;
+    justify-content: center;
+    min-height: 46px;
   }
   .submit-btn {
-    min-height: 48px;
-    font-size: 15px;
+    min-height: 50px;
+    font-size: 0.9375rem;
   }
   .form-section {
+    margin-bottom: 18px;
+  }
+  .success-confirm-box {
+    padding: 22px 16px;
+  }
+}
+
+@media (max-width: 320px) {
+  .exclusive-request {
+    overflow-x: hidden;
+    padding: 0 10px 32px;
+  }
+  .section-label {
+    font-size: 1rem;
+  }
+  .form-input {
+    padding: 10px;
+    font-size: 0.875rem;
+  }
+  .field-hint {
+    font-size: 0.75rem;
+  }
+  .submit-btn {
+    padding: 12px 16px;
+    font-size: 0.875rem;
+    border-radius: 10px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .exclusive-request {
+    max-width: 1000px;
+  }
+  .form-group-info {
+    padding: 26px 28px 30px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .exclusive-request {
+    max-width: 1100px;
+    padding: 0 24px 56px;
+  }
+  .section-label {
+    font-size: 1.35rem;
+  }
+  .form-head-lead {
+    font-size: 1rem;
+  }
+  .form-group-info {
+    padding: 28px 32px 34px;
+    border-radius: 18px;
+  }
+  .form-input {
+    padding: 14px 16px;
+    font-size: 1rem;
+  }
+  .group-title {
+    font-size: 1rem;
+    padding: 12px 16px;
+  }
+  .field-group label {
+    font-size: 0.9375rem;
+  }
+  .submit-btn {
+    padding: 16px 44px;
+    font-size: 1.05rem;
+  }
+  .input-row {
+    gap: 22px;
     margin-bottom: 20px;
   }
 }
 
-/* Responsive: extra small mobile */
-@media (max-width: 320px) {
-  .exclusive-request {
-    overflow-x: hidden;
-  }
-  .section-title {
-    font-size: 18px;
-  }
-  .section-label {
-    font-size: 16px;
-    padding: 6px 10px;
-  }
-  .form-group-info {
-    padding: 12px;
-    border-radius: 10px;
-  }
-  .form-input {
-    padding: 8px 10px;
-    font-size: 13px;
-  }
-  .field-group label {
-    font-size: 12px;
-  }
-  .field-hint {
-    font-size: 11px;
-  }
-  .submit-btn {
-    padding: 12px 16px;
-    font-size: 14px;
-    border-radius: 10px;
-  }
-}
-
-/* Responsive: large desktop */
-@media (min-width: 1200px) {
-  .section-title {
-    font-size: 34px;
-  }
-  .form-container {
-    max-width: 1000px;
-  }
-  .form-group-info {
-    padding: 32px;
-  }
-}
-
-/* Responsive: full HD */
-@media (min-width: 1920px) {
-  .section-title {
-    font-size: 36px;
-  }
-  .section-subtitle {
-    font-size: 18px;
-  }
-  .section-label {
-    font-size: 26px;
-  }
-  .form-container {
-    max-width: 1100px;
-  }
-  .form-group-info {
-    padding: 36px;
-  }
-  .form-input {
-    padding: 14px 18px;
-    font-size: 16px;
-  }
-  .group-title {
-    font-size: 16px;
-  }
-  .field-group label {
-    font-size: 15px;
-  }
-  .submit-btn {
-    padding: 16px 48px;
-    font-size: 17px;
-  }
-  .input-row {
-    gap: 24px;
-  }
-}
-
-/* Responsive: 2K ultra-wide */
 @media (min-width: 2560px) {
-  .section-title {
-    font-size: 40px;
-  }
-  .section-subtitle {
-    font-size: 20px;
+  .exclusive-request {
+    max-width: 1200px;
   }
   .section-label {
-    font-size: 30px;
-    padding: 14px 26px;
-  }
-  .form-container {
-    max-width: 1300px;
+    font-size: 1.5rem;
   }
   .form-group-info {
-    padding: 40px;
-    border-radius: 20px;
-  }
-  .form-input {
-    padding: 16px 20px;
-    font-size: 17px;
-    border-radius: 10px;
-  }
-  .group-title {
-    font-size: 18px;
-    margin-bottom: 24px;
-  }
-  .field-group label {
-    font-size: 16px;
-  }
-  .field-hint {
-    font-size: 15px;
-  }
-  .submit-btn {
-    padding: 18px 56px;
-    font-size: 18px;
-    border-radius: 14px;
-  }
-  .input-row {
-    gap: 28px;
-    margin-bottom: 24px;
-  }
-  .form-section {
-    margin-bottom: 36px;
-  }
-  .remove-unit-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 22px;
-  }
-  .add-unit-link {
-    font-size: 16px;
+    padding: 32px 36px 38px;
   }
 }
 
-/* Responsive: 4K */
 @media (min-width: 3840px) {
-  .section-title {
-    font-size: 48px;
-  }
-  .section-subtitle {
-    font-size: 24px;
+  .exclusive-request {
+    max-width: 1400px;
   }
   .section-label {
-    font-size: 34px;
-    padding: 16px 30px;
-    border-radius: 12px;
-  }
-  .form-container {
-    max-width: 1600px;
-  }
-  .form-group-info {
-    padding: 48px;
-    border-radius: 24px;
+    font-size: 1.65rem;
   }
   .form-input {
-    padding: 18px 24px;
-    font-size: 20px;
-    border-radius: 12px;
-  }
-  .group-title {
-    font-size: 20px;
-    margin-bottom: 28px;
-  }
-  .field-group label {
-    font-size: 18px;
-  }
-  .field-hint {
-    font-size: 17px;
+    padding: 16px 18px;
+    font-size: 1.05rem;
   }
   .submit-btn {
-    padding: 22px 64px;
-    font-size: 20px;
-    border-radius: 16px;
-  }
-  .input-row {
-    gap: 32px;
-    margin-bottom: 28px;
-  }
-  .form-section {
-    margin-bottom: 44px;
-  }
-  .section-header {
-    margin-bottom: 40px;
-  }
-  .form-actions {
-    margin-top: 52px;
-    padding-top: 36px;
-  }
-  .remove-unit-btn {
-    width: 48px;
-    height: 48px;
-    font-size: 26px;
-    border-radius: 12px;
-  }
-  .add-unit-link {
-    font-size: 18px;
+    padding: 18px 52px;
+    font-size: 1.1rem;
   }
 }

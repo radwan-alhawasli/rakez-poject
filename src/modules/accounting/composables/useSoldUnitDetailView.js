@@ -1,6 +1,7 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import accountingService from '@/services/accountingService';
 import logger from '@/utils/logger';
+import { getApiErrorMessage } from '@/utils/errorHandler';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 import {
@@ -144,11 +145,19 @@ export function useSoldUnitDetailView(props, { emit }) {
     return name && String(name).trim() ? String(name).trim() : '—';
   };
 
+  /** معرّف التوزيعة في الـ API (قد يكون id أو distribution_id) */
+  const getDistributionId = dist => {
+    if (!dist || typeof dist !== 'object') return null;
+    const raw = dist.id ?? dist.distribution_id ?? dist.commission_distribution_id;
+    if (raw == null || raw === '') return null;
+    return raw;
+  };
+
   const canConfirmDistribution = dist =>
     !dist.confirmed &&
     dist.status !== 'confirmed' &&
     dist.status !== 'paid' &&
-    !!dist.id;
+    getDistributionId(dist) != null;
 
   const calcAmount = pct => {
     const net = commissionSummary.value?.net_amount || 0;
@@ -312,15 +321,19 @@ export function useSoldUnitDetailView(props, { emit }) {
   };
 
   const handleConfirmPayment = async dist => {
-    if (!commissionId.value || !dist.id) return;
+    const distId = getDistributionId(dist);
+    if (!commissionId.value || distId == null) {
+      toast.warning('تعذر تحديد معرّف التوزيعة. أعد تحميل الصفحة أو احفظ التوزيعات ثم أعد المحاولة.');
+      return;
+    }
     isSaving.value = true;
     try {
-      await accountingService.confirmPayment(commissionId.value, dist.id, {});
+      await accountingService.confirmPayment(commissionId.value, distId);
       toast.success('تم تأكيد الدفع بنجاح');
       loadCommissionSummary();
     } catch (e) {
       logger.error('Error confirming payment:', e);
-      toast.error('حدث خطأ أثناء تأكيد الدفع');
+      toast.error(getApiErrorMessage(e, 'حدث خطأ أثناء تأكيد الدفع'));
     } finally {
       isSaving.value = false;
     }

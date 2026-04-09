@@ -42,10 +42,25 @@ export function useSalesAttendance() {
         id: r.id ?? r.schedule_id ?? r.attendance_id,
         schedule_id: r.schedule_id ?? r.id ?? null,
         user_id: r.user_id ?? null,
-        user_name: r.user_name ?? r.employee_name ?? r.marketer_name ?? r.name ?? '—',
-        employee_name: r.employee_name ?? r.user_name ?? r.marketer_name ?? r.name ?? '—',
+        /* الاسم الشخصي أولاً — تجنب وضع اسم الفريق/القسم في عمود المستخدم عند وجود حقول متعددة */
+        user_name:
+          r.marketer_name ??
+          r.user_name ??
+          r.full_name ??
+          r.display_name ??
+          r.user?.name ??
+          r.employee_name ??
+          r.name ??
+          '—',
+        employee_name:
+          r.employee_name ?? r.marketer_name ?? r.user_name ?? r.user?.name ?? r.name ?? '—',
         project_id: r.project_id ?? r.contract_id ?? null,
-        project_name: r.project_name ?? r.contract_name ?? r.project?.name ?? '—',
+        project_name:
+          r.project_name ??
+          r.contract_name ??
+          r.project?.name ??
+          r.project_title ??
+          '—',
         project_location: r.project_location != null && String(r.project_location).trim() !== '' ? String(r.project_location).trim() : '',
         date: r.date ?? r.schedule_date ?? r.attendance_date,
         schedule_date: r.schedule_date ?? r.date ?? r.attendance_date,

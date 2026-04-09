@@ -1,22 +1,24 @@
 <template>
   <div class="attendance-tab">
-    <div class="welcome-header">
+    <div class="welcome-header attendance-hero">
       <div class="header-content">
         <h1 class="welcome-title">
-          <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          {{ hasPermission('sales.attendance.manage') ? 'حضور الفريق' : 'دوامي' }}
+          <span class="title-icon-wrap" aria-hidden="true">
+            <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </span>
+          {{ hasPermission('sales.attendance.manage') ? 'دوام الفرق' : 'دوامي' }}
         </h1>
         <p class="welcome-subtitle">
-          {{ hasPermission('sales.attendance.manage') ? 'إدارة جداول دوام الفريق ومتابعة الحضور' : 'متابعة سجل دوامك وتوقيتات الدخول والخروج' }}
+          {{ hasPermission('sales.attendance.manage') ? 'إدارة جداول دوام الفرق ومتابعة الحضور' : 'متابعة سجل دوامك وتوقيتات الدخول والخروج' }}
         </p>
       </div>
-      <button v-if="hasPermission('sales.attendance.manage')" type="button" class="btn-add" @click="openScheduleModalClick">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <button v-if="hasPermission('sales.attendance.manage')" type="button" class="btn-add btn-add--schedule" @click="openScheduleModalClick">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
           <line x1="16" y1="2" x2="16" y2="6"></line>
           <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -58,18 +60,18 @@
       <table class="attendance-table table-mobile-stacked">
         <thead>
           <tr>
-            <th v-if="hasPermission('sales.attendance.manage')">الموظف</th>
-            <th>رقم الجدول</th>
-            <th>معرّف المستخدم</th>
-            <th>اسم المستخدم</th>
-            <th>معرّف المشروع</th>
-            <th>اسم المشروع</th>
-            <th>موقع المشروع</th>
-            <th>التاريخ</th>
-            <th>اليوم (عربي)</th>
-            <th>اليوم (إنجليزي)</th>
-            <th>وقت الدخول</th>
-            <th>وقت الخروج</th>
+            <th v-if="hasPermission('sales.attendance.manage')" scope="col">الموظف</th>
+            <th scope="col">التاريخ</th>
+            <th scope="col">اليوم</th>
+            <th scope="col">اليوم (إنجليزي)</th>
+            <th scope="col">دخول</th>
+            <th scope="col">خروج</th>
+            <th scope="col">المشروع</th>
+            <th scope="col">الموقع</th>
+            <th scope="col">اسم المستخدم</th>
+            <th scope="col">رقم الجدول</th>
+            <th scope="col" class="th-id"># مستخدم</th>
+            <th scope="col" class="th-id"># مشروع</th>
           </tr>
         </thead>
         <tbody>
@@ -77,18 +79,20 @@
             v-for="record in paginatedAttendance"
             :key="`${record.schedule_id ?? record.id ?? ''}-${record.date ?? ''}-${record.user_id ?? ''}`"
           >
-            <td v-if="hasPermission('sales.attendance.manage')" data-label="الموظف">{{ record.employee_name }}</td>
-            <td data-label="رقم الجدول">{{ record.schedule_id != null ? record.schedule_id : '—' }}</td>
-            <td data-label="معرّف المستخدم">{{ record.user_id != null ? record.user_id : '—' }}</td>
+            <td v-if="hasPermission('sales.attendance.manage')" data-label="الموظف">
+              {{ record.employee_name }}
+            </td>
+            <td data-label="التاريخ" class="cell-strong">{{ formatDate(record.date) }}</td>
+            <td data-label="اليوم">{{ record.day_name_ar || '—' }}</td>
+            <td data-label="اليوم (إنجليزي)" dir="auto">{{ record.day_of_week || '—' }}</td>
+            <td data-label="وقت الدخول" dir="ltr" class="cell-time">{{ formatTimeCell(record.check_in_time) }}</td>
+            <td data-label="وقت الخروج" dir="ltr" class="cell-time">{{ formatTimeCell(record.check_out_time) }}</td>
+            <td data-label="المشروع" class="cell-strong">{{ record.project_name || '—' }}</td>
+            <td data-label="الموقع">{{ record.project_location || '—' }}</td>
             <td data-label="اسم المستخدم">{{ record.user_name || '—' }}</td>
-            <td data-label="معرّف المشروع">{{ record.project_id != null ? record.project_id : '—' }}</td>
-            <td data-label="اسم المشروع">{{ record.project_name || '—' }}</td>
-            <td data-label="موقع المشروع">{{ record.project_location || '—' }}</td>
-            <td data-label="التاريخ">{{ formatDate(record.date) }}</td>
-            <td data-label="اليوم (عربي)">{{ record.day_name_ar || '—' }}</td>
-            <td data-label="اليوم (إنجليزي)">{{ record.day_of_week || '—' }}</td>
-            <td data-label="وقت الدخول">{{ record.check_in_time || '—' }}</td>
-            <td data-label="وقت الخروج">{{ record.check_out_time || '—' }}</td>
+            <td data-label="رقم الجدول" class="cell-id">{{ record.schedule_id != null ? record.schedule_id : '—' }}</td>
+            <td data-label="# مستخدم" class="cell-id">{{ record.user_id != null ? record.user_id : '—' }}</td>
+            <td data-label="# مشروع" class="cell-id">{{ record.project_id != null ? record.project_id : '—' }}</td>
           </tr>
         </tbody>
       </table>
@@ -189,57 +193,158 @@ async function handleCreateSchedule() {
   await createSchedule();
 }
 
+/** عرض وقت الدخول/الخروج بدون ثوانٍ عند الإمكان */
+function formatTimeCell(raw) {
+  if (raw == null || raw === '') return '—';
+  const s = String(raw).trim();
+  const m = s.match(/^(\d{1,2}:\d{2})(?::\d{2})?/);
+  return m ? m[1] : s;
+}
+
 loadAttendance();
 </script>
 
 <style scoped>
 /* ===== تنسيقات الحضور — هوية راكز (كحلي / ذهبي / زجاجي) ===== */
+@keyframes attendanceFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .attendance-tab {
   width: 100%;
   direction: rtl;
+  font-family: 'Cairo', system-ui, sans-serif;
+  animation: attendanceFadeIn 0.45s ease-out;
 }
 
-.welcome-title {
+/* رأس الصفحة — تخطيط أوضح + شريط ذهبي + تدرج كحلي */
+.attendance-tab .welcome-header.attendance-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: clamp(16px, 3vw, 24px);
+  padding: clamp(20px, 3vw, 28px) clamp(22px, 4vw, 36px);
+  margin-bottom: 28px;
+  border-inline-start: 4px solid var(--color-gold, #b5a99a);
+  background: linear-gradient(128deg, #1a2636 0%, #27374d 42%, #1e3248 100%);
+  box-shadow:
+    0 8px 32px rgba(15, 23, 42, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.attendance-tab .welcome-header.attendance-hero::before {
+  opacity: 0.85;
+}
+
+.attendance-tab .header-content {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.attendance-tab .welcome-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
+  margin: 0 0 10px;
+  font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+  font-weight: 800;
+  color: var(--color-gold, #b5a99a);
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+
+.title-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(181, 169, 154, 0.18) 0%, rgba(181, 169, 154, 0.06) 100%);
+  border: 1px solid rgba(181, 169, 154, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .header-icon {
-  width: 28px;
-  height: 28px;
-  color: var(--color-gold, #b5a99a);
-  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: var(--color-gold-light, #c5baad);
 }
 
-.btn-add {
-  padding: 10px 20px;
-  background: linear-gradient(135deg, var(--color-gold, #b5a99a) 0%, var(--color-gold-dark, #9a8d7d) 100%);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
+.attendance-tab .welcome-subtitle {
+  margin: 0;
+  max-width: 42rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.65;
+  color: rgba(197, 186, 173, 0.92);
+}
+
+/* أزرار إجراء — ذهبي بتباين عالٍ (مثل تبويب الأهداف) */
+.attendance-tab .btn-add {
+  padding: 11px 22px;
+  border-radius: 12px;
+  font-weight: 700;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.3s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
 }
 
-.btn-add:hover:not(:disabled) {
+.attendance-tab .btn-add--schedule {
+  background: linear-gradient(
+    145deg,
+    var(--color-gold-light, #c5baad) 0%,
+    var(--color-gold, #b5a99a) 45%,
+    var(--color-gold-dark, #9a8d7d) 100%
+  );
+  color: var(--color-navy-dark, #1a2636);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.18);
+}
+
+.attendance-tab .btn-add--schedule:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(177, 162, 143, 0.45);
+  box-shadow: 0 8px 24px rgba(39, 55, 77, 0.22);
+  filter: brightness(1.03);
 }
 
-.btn-add:disabled {
-  opacity: 0.7;
+.attendance-tab .btn-add:not(.btn-add--schedule) {
+  background: linear-gradient(135deg, var(--color-gold, #b5a99a) 0%, var(--color-gold-dark, #9a8d7d) 100%);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 16px rgba(177, 162, 143, 0.35);
+}
+
+.attendance-tab .btn-add:not(.btn-add--schedule):hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(177, 162, 143, 0.45);
+}
+
+.attendance-tab .btn-add:disabled {
+  opacity: 0.65;
   cursor: not-allowed;
   transform: none;
+  filter: none;
 }
 
-.btn-add svg {
+.attendance-tab .btn-add svg {
   width: 18px;
   height: 18px;
+  flex-shrink: 0;
 }
 
 /* ===== الحالة الفارغة / خطأ ===== */
@@ -295,45 +400,70 @@ loadAttendance();
 /* ===== جدول الحضور — زجاجي ===== */
 .attendance-table-container {
   overflow-x: auto;
-  background: linear-gradient(
-    165deg,
-    rgba(255, 255, 255, 0.92) 0%,
-    rgba(248, 250, 252, 0.88) 100%
-  );
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(39, 55, 77, 0.1);
+  -webkit-overflow-scrolling: touch;
+  margin-top: 4px;
+  background: var(--color-white, #fff);
+  border: 1px solid rgba(181, 169, 154, 0.32);
   border-radius: 16px;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.6) inset,
-    0 4px 16px rgba(39, 55, 77, 0.08);
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 10px 32px rgba(39, 55, 77, 0.08);
 }
 
 .attendance-table {
   width: 100%;
+  min-width: 980px;
   border-collapse: collapse;
+  font-family: 'Cairo', system-ui, sans-serif;
 }
 
-.attendance-table th {
-  background: linear-gradient(
-    180deg,
-    rgba(39, 55, 77, 0.06) 0%,
-    rgba(39, 55, 77, 0.03) 100%
-  );
-  padding: 14px 16px;
+.attendance-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(39, 55, 77, 0.08) 0%, rgba(39, 55, 77, 0.04) 100%);
+  padding: 13px 12px;
   text-align: right;
-  font-weight: 700;
-  font-size: 0.8125rem;
-  color: var(--color-navy, #27374D);
+  font-weight: 800;
+  font-size: 0.78rem;
+  color: var(--color-navy, #27374d);
   letter-spacing: 0.02em;
-  border-bottom: 1px solid rgba(39, 55, 77, 0.08);
+  border-bottom: 2px solid var(--color-gold, #b5a99a);
+  white-space: nowrap;
+}
+
+.attendance-table thead th + th,
+.attendance-table tbody td + td {
+  border-inline-start: 1px solid rgba(181, 169, 154, 0.35);
+}
+
+.attendance-table .th-id {
+  color: var(--color-gold-dark, #9a8d7d);
+  font-weight: 700;
 }
 
 .attendance-table td {
-  padding: 14px 16px;
-  border-bottom: 1px solid rgba(39, 55, 77, 0.05);
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(181, 169, 154, 0.18);
   font-size: 0.9rem;
-  color: var(--color-charcoal, #1e293b);
+  color: var(--color-navy, #27374d);
+  vertical-align: middle;
+}
+
+.attendance-table .cell-strong {
+  font-weight: 700;
+  color: var(--color-navy, #27374d);
+}
+
+.attendance-table .cell-time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.attendance-table .cell-id {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+  color: var(--color-gold-dark, #9a8d7d);
 }
 
 .attendance-table tbody tr {
@@ -346,6 +476,10 @@ loadAttendance();
 
 .attendance-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+.attendance-tab :deep(.pagination-container) {
+  margin-top: 22px;
 }
 
 /* ===== شارات الحالة ===== */
@@ -519,9 +653,21 @@ loadAttendance();
 }
 
 @media (max-width: 768px) {
-  .welcome-header {
+  .attendance-tab .welcome-header.attendance-hero {
     flex-direction: column;
     align-items: stretch;
+    padding: 20px 18px;
+  }
+
+  .attendance-tab .welcome-header.attendance-hero .btn-add--schedule {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .title-icon-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
   }
 
   .schedule-form .form-row-times {

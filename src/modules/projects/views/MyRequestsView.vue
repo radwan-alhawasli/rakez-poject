@@ -19,17 +19,17 @@
     <div class="data-table-container">
       <div class="table-header-info">
         <h3 class="table-title">قائمة الطلبات</h3>
-        <p class="table-count" v-if="!isLoading">تم العثور على {{ requests.length }} طلب.</p>
+        <p class="table-count" v-if="!isLoading">{{ requestsCountText }}</p>
       </div>
 
       <div class="table-responsive">
-      <table class="custom-table table-mobile-stacked">
+      <table class="custom-table my-requests-table table-mobile-stacked">
         <thead>
           <tr>
-            <th>اسم المشروع</th>
-            <th>تاريخ الطلب</th>
-            <th>الحالة</th>
-            <th class="text-center">الإجراء</th>
+            <th scope="col">اسم المشروع</th>
+            <th scope="col">تاريخ الطلب</th>
+            <th scope="col">الحالة</th>
+            <th scope="col" class="text-center th-actions">الإجراء</th>
           </tr>
         </thead>
         <tbody>
@@ -41,7 +41,7 @@
           </tr>
           <tr v-else-if="requests.length === 0">
             <td data-label="" colspan="4" class="text-center padding-30">
-              <p class="no-data-text">لا يوجد طلبات حالياً.</p>
+              <p class="no-data-text">لا توجد طلبات حالياً.</p>
             </td>
           </tr>
           <tr v-else v-for="request in requests" :key="request.id">
@@ -124,6 +124,15 @@ export default {
 
     const showsAllTeamRequests = computed(() => userSeesAllMyRequests(authService.getCurrentUser()));
 
+    /** صياغة العدد بالعربية */
+    const requestsCountText = computed(() => {
+      const n = requests.value.length;
+      if (n === 0) return 'لا توجد طلبات.';
+      if (n === 1) return 'تم العثور على طلب واحد.';
+      if (n === 2) return 'تم العثور على طلبين.';
+      return `تم العثور على ${n} طلبات.`;
+    });
+
     /**
      * استكمال العقد يختلف عن اعتماد الطلب: المعتمد قد لا يكون قد أكمل نموذج الاستكمال بعد.
      * لا نستخدم commission_percent كدليل على الاكتمال لأنه يُرسل مع طلب المشروع الحصري الأولي.
@@ -143,52 +152,14 @@ export default {
         // 1. Filter out rejected contracts initially if needed, or keep all
         // The user only sees their requests.
 
-        // 2. Process contracts
-        const processedRequests = await Promise.all(
-          data.map(async item => {
-            const status = (item.status || 'Pending').toLowerCase();
+        /** قائمة الطلبات من GET /contracts/index فقط — بدون GET /contracts/show لكل صف.
+         *  تفاصيل العقد تُجلب عند الانتقال لاستكمال العقد أو عند فتح «تعديل» (المودال يستدعي التفاصيل هناك). */
+        const processedRequests = data.map(item => {
+          const status = (item.status || 'Pending').toString().toLowerCase();
+          return { ...item, status };
+        });
 
-            // If approved, we need to check if it's completed
-            // But 'item' from list might be incomplete.
-            // We'll check if we need to fetch details.
-            // Ideally, the list API should return enough info.
-            // If not, we fetch detail.
-
-            if (status === 'approved') {
-              try {
-                const fullDetails = await contractService.getContractById(item.id);
-                const detailStatus = (fullDetails.status || '')
-                  .toString()
-                  .toLowerCase();
-                if (detailStatus === 'completed') {
-                  return { ...item, ...fullDetails, status: 'completed' };
-                }
-                return { ...item, ...fullDetails, status: item.status };
-              } catch (e) {
-                logger.error(`Failed to fetch details for ${item.id}`, e);
-                return item;
-              }
-            }
-            /** عقود مكتملة من القائمة فقط — نجلب GET /contracts/show لملء مودال التعديل وباقي الحقول */
-            if (status === 'completed') {
-              try {
-                const fullDetails = await contractService.getContractById(item.id);
-                if (fullDetails && typeof fullDetails === 'object') {
-                  return { ...item, ...fullDetails, status: 'completed' };
-                }
-              } catch (e) {
-                logger.error(`Failed to fetch details for completed ${item.id}`, e);
-              }
-              return item;
-            }
-            // Preserve API status: pending, rejected, etc.
-            return item;
-          })
-        );
-
-        const validRequests = processedRequests.filter(r => r !== null);
-
-        requests.value = validRequests.map(item => ({
+        requests.value = processedRequests.map(item => ({
           ...item,
           id: item.id,
           project_name: item.project_name || 'بدون اسم',
@@ -255,7 +226,8 @@ export default {
     function openEditModal(request) {
       if (!request?.id) return;
       editingContractId.value = request.id;
-      editingContractData.value = request;
+      /** لا نمرّر بيانات القائمة — المودال يملأ النموذج من GET /contracts/show فقط */
+      editingContractData.value = null;
       showEditModal.value = true;
     }
 
@@ -299,6 +271,7 @@ export default {
     return {
       requests,
       isLoading,
+      requestsCountText,
       showsAllTeamRequests,
       showEditModal,
       editingContractId,

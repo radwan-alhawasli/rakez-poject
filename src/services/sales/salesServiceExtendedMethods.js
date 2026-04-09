@@ -14,7 +14,19 @@ export const salesServiceExtendedMethods = {
    * @returns {Promise<Object>} Created waiting list entry
    */
   async addToWaitingList(data) {
-    const response = await apiClient.post('/sales/waiting-list', data);
+    const raw = data && typeof data === 'object' ? { ...data } : {};
+    const mobile =
+      raw.client_mobile != null && String(raw.client_mobile).trim() !== ''
+        ? String(raw.client_mobile).trim()
+        : raw.phone != null && String(raw.phone).trim() !== ''
+          ? String(raw.phone).trim()
+          : raw.mobile != null && String(raw.mobile).trim() !== ''
+            ? String(raw.mobile).trim()
+            : '';
+    delete raw.phone;
+    delete raw.mobile;
+    raw.client_mobile = mobile;
+    const response = await apiClient.post('/sales/waiting-list', raw);
     return response.data?.data || response.data || {};
   },
 

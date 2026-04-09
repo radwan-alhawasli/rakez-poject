@@ -109,8 +109,11 @@
 }
 
 /* Main content: background image full page + overlay so text is readable */
+/* --main-pad-left/right: يورثان للصفحات لملء الهيدر بدون شريط بيج بجانب الشريط الجانبي */
 .main-content {
-  padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 40px 40px 40px;
+  --main-pad-left: 40px;
+  --main-pad-right: 40px;
+  padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) var(--main-pad-right) 40px var(--main-pad-left);
   position: relative;
   z-index: 5;
   min-width: 0;
@@ -202,9 +205,11 @@
     --top-header-height: 90px;
   }
   .main-content {
+    --main-pad-left: 60px;
+    --main-pad-right: 60px;
     max-width: 3200px;
     margin: 0 auto;
-    padding: calc(var(--top-header-height) + var(--content-top-gap)) 60px 60px 60px;
+    padding: calc(var(--top-header-height) + var(--content-top-gap)) var(--main-pad-right) 60px var(--main-pad-left);
   }
 
   .top-header {
@@ -262,9 +267,11 @@
     --top-header-height: 80px;
   }
   .main-content {
+    --main-pad-left: 52px;
+    --main-pad-right: 52px;
     max-width: 2400px;
     margin: 0 auto;
-    padding: calc(var(--top-header-height) + var(--content-top-gap)) 52px 52px 52px;
+    padding: calc(var(--top-header-height) + var(--content-top-gap)) var(--main-pad-right) 52px var(--main-pad-left);
   }
 
   .top-header {
@@ -302,9 +309,11 @@
 /* Extra Large Screens (1920px - 2559px) */
 @media (min-width: 1920px) and (max-width: 2559px) {
   .main-content {
+    --main-pad-left: 50px;
+    --main-pad-right: 50px;
     max-width: 1800px;
     margin: 0 auto;
-    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 50px 50px 50px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) var(--main-pad-right) 50px var(--main-pad-left);
   }
 
   .top-header {
@@ -315,7 +324,9 @@
 /* Large Desktop (1440px - 1919px) */
 @media (min-width: 1440px) and (max-width: 1919px) {
   .main-content {
-    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 45px 45px 45px;
+    --main-pad-left: 45px;
+    --main-pad-right: 45px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) var(--main-pad-right) 45px var(--main-pad-left);
   }
 
   .top-header {
@@ -326,7 +337,9 @@
 /* Standard Desktop (1200px - 1439px) */
 @media (min-width: 1200px) and (max-width: 1439px) {
   .main-content {
-    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 40px 40px 40px;
+    --main-pad-left: 40px;
+    --main-pad-right: 40px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) var(--main-pad-right) 40px var(--main-pad-left);
   }
 
   .top-header {
@@ -356,7 +369,9 @@
   }
 
   .main-content {
-    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) 25px 35px 25px;
+    --main-pad-left: 25px;
+    --main-pad-right: 35px;
+    padding: calc(var(--top-header-height, 60px) + var(--content-top-gap, 24px)) var(--main-pad-right) 25px var(--main-pad-left);
   }
 
   .logo-ar {
@@ -422,7 +437,9 @@
   }
 
   .main-content {
-    padding: calc(var(--top-header-height) + var(--content-top-gap)) 20px 30px 20px;
+    --main-pad-left: 20px;
+    --main-pad-right: 30px;
+    padding: calc(var(--top-header-height) + var(--content-top-gap)) var(--main-pad-right) 20px var(--main-pad-left);
   }
 
   .back-btn,

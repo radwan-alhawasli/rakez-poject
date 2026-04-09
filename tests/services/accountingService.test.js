@@ -291,22 +291,17 @@ describe('accountingService', () => {
     it('should confirm commission payment', async () => {
       const commissionId = 1;
       const distributionId = 10;
-      const paymentData = { payment_reference: 'TXN-2026-02-001' };
       mock
         .onPost(`/accounting/commissions/${commissionId}/distributions/${distributionId}/confirm`)
         .reply(200, createSuccessResponse({ confirmed: true }));
 
-      const result = await accountingService.confirmPayment(
-        commissionId,
-        distributionId,
-        paymentData
-      );
+      const result = await accountingService.confirmPayment(commissionId, distributionId);
 
       expect(mock.history.post.length).toBe(1);
       expect(result).toBeDefined();
     });
 
-    it('should post empty body per API spec', async () => {
+    it('should post JSON array body [] per API spec', async () => {
       const commissionId = 1;
       const distributionId = 10;
       mock
@@ -315,7 +310,7 @@ describe('accountingService', () => {
 
       await accountingService.confirmPayment(commissionId, distributionId);
 
-      expect(JSON.parse(mock.history.post[0].data)).toEqual({});
+      expect(JSON.parse(mock.history.post[0].data)).toEqual([]);
     });
   });
 
@@ -498,16 +493,16 @@ describe('accountingService', () => {
   });
 
   describe('markSalaryAsPaid', () => {
-    it('should mark salary as paid', async () => {
+    it('should mark salary as paid with JSON array body [] per API spec', async () => {
       const distributionId = 1;
-      const paymentData = { payment_reference: 'SAL-2026-02-001', paid_at: '2026-02-28T10:30:00Z' };
       mock
         .onPost(`/accounting/salaries/distributions/${distributionId}/paid`)
         .reply(200, createSuccessResponse({ paid: true }));
 
-      const result = await accountingService.markSalaryAsPaid(distributionId, paymentData);
+      const result = await accountingService.markSalaryAsPaid(distributionId);
 
       expect(mock.history.post.length).toBe(1);
+      expect(JSON.parse(mock.history.post[0].data)).toEqual([]);
       expect(result).toBeDefined();
     });
   });

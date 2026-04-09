@@ -1,25 +1,26 @@
 <template>
   <div class="sold-units-tab">
-    <div class="welcome-header">
-      <div class="header-content">
-        <h1 class="welcome-title">الوحدات المباعة</h1>
-        <p class="welcome-subtitle">سجل الوحدات المكتملة البيع وملخصات العمولات</p>
+    <header class="welcome-header sold-units-hero" aria-labelledby="sold-units-title">
+      <div class="sold-units-hero-inner">
+        <span class="title-icon-wrap" aria-hidden="true">
+          <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+        </span>
+        <div class="sold-units-hero-text">
+          <h1 id="sold-units-title" class="welcome-title">الوحدات المباعة</h1>
+          <p class="welcome-subtitle">سجل الوحدات المكتملة البيع وملخصات العمولات</p>
+        </div>
       </div>
-      <button class="btn-primary" @click="loadSoldUnits">
-        <svg
-          viewBox="0 0 24 24"
-          width="16"
-          height="16"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
+      <button type="button" class="btn-refresh" :disabled="isLoadingSoldUnits" @click="loadSoldUnits">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <polyline points="23 4 23 10 17 10"></polyline>
           <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
         </svg>
         تحديث
       </button>
-    </div>
+    </header>
 
     <div v-if="isLoadingSoldUnits" class="loading-state">
       <div class="spinner"></div>
@@ -94,7 +95,7 @@
       </div>
 
       <!-- Sold units table -->
-      <div v-else class="table-container table-responsive">
+      <div class="sold-units-table-wrap table-container table-responsive">
         <table class="data-table table-mobile-stacked">
           <thead>
             <tr>
@@ -170,161 +171,4 @@ const {
 loadSoldUnits();
 </script>
 
-<style scoped>
-/* ─── Sold Units / Deposits / Analytics shared ────────────────────────────── */
-.sold-units-tab,
-.deposits-tab,
-.analytics-tab {
-  animation: fadeInUp 0.3s ease;
-}
-
-.sub-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  border-bottom: 2px solid var(--color-medium-gray);
-  padding-bottom: 0;
-}
-
-.sub-tab-btn {
-  padding: 10px 20px;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-dark-gray);
-  cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
-}
-
-.sub-tab-btn.active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
-}
-
-.sub-tab-btn:hover:not(.active) {
-  color: #334155;
-}
-
-.commission-panel {
-  background: var(--color-white);
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
-}
-
-.commission-panel-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.commission-panel-header h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-charcoal);
-}
-
-.commission-details .detail-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
-}
-
-.detail-card {
-  background: var(--color-light-gray);
-  border-radius: 10px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.detail-label {
-  font-size: 12px;
-  color: var(--color-dark-gray);
-  font-weight: 500;
-}
-
-.detail-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-charcoal);
-}
-
-.detail-value.success {
-  color: #10b981;
-}
-.detail-value.warning {
-  color: #f59e0b;
-}
-
-.report-summary {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.analytics-grid {
-  margin-bottom: 24px;
-}
-
-.badge-sold {
-  background: #dbeafe;
-  color: #1d4ed8;
-  padding: 3px 10px;
-  border-radius: var(--radius-lg);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.badge-success {
-  background: #dcfce7;
-  color: #16a34a;
-  padding: 3px 10px;
-  border-radius: var(--radius-lg);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.badge-danger {
-  background: #fee2e2;
-  color: #dc2626;
-  padding: 3px 10px;
-  border-radius: var(--radius-lg);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.badge-warning {
-  background: #fef3c7;
-  color: #d97706;
-  padding: 3px 10px;
-  border-radius: var(--radius-lg);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.btn-icon-sm {
-  background: #f1f5f9;
-  border: none;
-  border-radius: 6px;
-  padding: 6px;
-  cursor: pointer;
-  color: #475569;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, color 0.2s;
-}
-
-.btn-icon-sm:hover {
-  background: var(--color-medium-gray);
-  color: var(--color-charcoal);
-}
-</style>
+<style scoped src="./styles/SalesSoldUnitsTab.scoped.s1.css"></style>

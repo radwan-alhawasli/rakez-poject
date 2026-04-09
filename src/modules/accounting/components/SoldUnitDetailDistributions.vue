@@ -278,28 +278,32 @@
     </div>
   </div>
 
-  <div class="distribution-table-section">
-    <h3 class="section-title">توزيع العمولة الصافية</h3>
-    <div class="table-responsive">
+  <div class="distribution-table-section net-commission-block" aria-labelledby="net-commission-heading">
+    <div class="net-commission-head">
+      <h3 id="net-commission-heading" class="section-title">توزيع العمولة الصافية</h3>
+      <p class="net-commission-lead">ملخص التوزيعات بعد الخصومات؛ يمكن تأكيد دفع كل مستفيد عند الجاهزية.</p>
+    </div>
+    <div class="table-responsive net-commission-table-wrap">
       <table class="distribution-table">
         <thead>
           <tr>
-            <th>نوع العمولة</th>
-            <th>اسم المستفيد</th>
-            <th>النسبة %</th>
-            <th>المبلغ (ر.س)</th>
-            <th>الإجراءات</th>
+            <th scope="col">نوع العمولة</th>
+            <th scope="col">اسم المستفيد</th>
+            <th scope="col">النسبة %</th>
+            <th scope="col">المبلغ (ر.س)</th>
+            <th scope="col">الإجراءات</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(dist, idx) in distributions" :key="dist.id || idx">
+          <tr v-for="(dist, idx) in distributions" :key="dist.id || dist.distribution_id || idx" class="dist-data-row">
             <td>{{ getTypeLabel(dist.type || dist.commission_type) }}</td>
             <td>{{ getBeneficiaryName(dist) }}</td>
-            <td>{{ dist.percentage != null ? (Number(dist.percentage) || 0).toFixed(2) + '%' : '—' }}</td>
-            <td>{{ formatNumber(dist.amount) }}</td>
-            <td>
+            <td class="dist-pct-cell">{{ dist.percentage != null ? (Number(dist.percentage) || 0).toFixed(2) + '%' : '—' }}</td>
+            <td class="dist-amount-cell">{{ formatNumber(dist.amount) }}</td>
+            <td class="dist-actions-cell">
               <button
                 v-if="canConfirmDistribution(dist)"
+                type="button"
                 class="btn-action confirm"
                 @click="handleConfirmPayment(dist)"
                 :disabled="isSaving"
@@ -315,8 +319,8 @@
           <tr v-if="distributions.length > 0 && totalDistPct < 100" class="total-row">
             <td>الشركة</td>
             <td>—</td>
-            <td>{{ (100 - (Number(totalDistPct) || 0)).toFixed(2) }}%</td>
-            <td>{{ formatNumber(companyAmount) }}</td>
+            <td class="dist-pct-cell">{{ (100 - (Number(totalDistPct) || 0)).toFixed(2) }}%</td>
+            <td class="dist-amount-cell">{{ formatNumber(companyAmount) }}</td>
             <td>—</td>
           </tr>
         </tbody>

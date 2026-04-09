@@ -1,45 +1,93 @@
 <template>
   <Teleport to="body">
     <div class="detail-modal-overlay" @click.self="emit('close')">
-      <div class="detail-modal">
+      <div class="detail-modal" role="dialog" aria-labelledby="reservation-detail-title">
         <div class="detail-modal-header">
-          <h3>تفاصيل الحجز</h3>
-          <button type="button" class="detail-modal-close" @click="emit('close')">&times;</button>
+          <h3 id="reservation-detail-title">تفاصيل الحجز</h3>
+          <button
+            type="button"
+            class="detail-modal-close"
+            aria-label="إغلاق"
+            @click="emit('close')"
+          >
+            &times;
+          </button>
         </div>
         <div class="detail-modal-body">
-          <div class="detail-section">
-            <h4>الوحدة والمشروع</h4>
-            <p><strong>وحدة:</strong> {{ item.unit_number || item.unitNumber || '—' }}</p>
-            <p><strong>مشروع:</strong> {{ item.project_name || item.projectName || '—' }}</p>
-            <p><strong>نوع الحجز:</strong> {{ item.reservation_type === 'negotiation' ? 'تفاوض' : 'حجز مؤكد' }}</p>
-            <p>
-              <strong>التاريخ:</strong>
-              {{ formatDate(item.contract_date || item.created_at || item.date) }}
-            </p>
-          </div>
-          <div class="detail-section">
-            <h4>تفاصيل العميل</h4>
-            <p><strong>الاسم:</strong> {{ item.client_name || item.clientName || '—' }}</p>
-            <p><strong>الجوال:</strong> {{ item.client_mobile || item.clientPhone || '—' }}</p>
-            <p><strong>الجنسية:</strong> {{ item.client_nationality || item.clientNationality || '—' }}</p>
-          </div>
-          <div class="detail-section">
-            <h4>التفاصيل المالية</h4>
-            <p>
-              <strong>العربون:</strong>
-              {{ formatCurrency(item.down_payment_amount || item.depositAmount || 0) }} ريال
-            </p>
-            <p>
-              <strong>حالة العربون:</strong>
-              {{ item.down_payment_status === 'refundable' ? 'قابل للاسترداد' : 'غير قابل للاسترداد' }}
-            </p>
-            <p><strong>طريقة الدفع:</strong> {{ item.payment_method || item.paymentMethod || '—' }}</p>
-            <p><strong>آلية الشراء:</strong> {{ item.purchase_mechanism || item.purchaseMethod || '—' }}</p>
-          </div>
-          <div class="detail-section">
-            <h4>المسوق</h4>
-            <p><strong>الاسم:</strong> {{ item.marketing_employee_name || item.marketerName || '—' }}</p>
-          </div>
+          <section class="detail-section">
+            <h4 class="detail-section-title">الوحدة والمشروع</h4>
+            <dl class="detail-dl">
+              <div class="detail-row">
+                <dt>وحدة</dt>
+                <dd>{{ item.unit_number || item.unitNumber || '—' }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>مشروع</dt>
+                <dd>{{ item.project_name || item.projectName || '—' }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>نوع الحجز</dt>
+                <dd>{{ reservationTypeLabel(item.reservation_type) }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>التاريخ</dt>
+                <dd>{{ formatDate(item.contract_date || item.created_at || item.date) }}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="detail-section">
+            <h4 class="detail-section-title">تفاصيل العميل</h4>
+            <dl class="detail-dl detail-dl--two">
+              <div class="detail-row">
+                <dt>الاسم</dt>
+                <dd>{{ item.client_name || item.clientName || '—' }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>الجوال</dt>
+                <dd dir="ltr" class="detail-dd-ltr">{{ item.client_mobile || item.clientPhone || '—' }}</dd>
+              </div>
+              <div class="detail-row detail-row--full">
+                <dt>الجنسية</dt>
+                <dd>{{ nationalityLabel(item.client_nationality || item.clientNationality) }}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="detail-section">
+            <h4 class="detail-section-title">التفاصيل المالية</h4>
+            <dl class="detail-dl">
+              <div class="detail-row detail-row--highlight">
+                <dt>العربون</dt>
+                <dd class="detail-amount">
+                  {{ formatNumber(item.down_payment_amount || item.depositAmount || 0) }}
+                  <span class="detail-currency">ريال</span>
+                </dd>
+              </div>
+              <div class="detail-row">
+                <dt>حالة العربون</dt>
+                <dd>{{ downPaymentStatusLabel(item.down_payment_status) }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>طريقة الدفع</dt>
+                <dd>{{ paymentMethodLabel(item.payment_method || item.paymentMethod) }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>آلية الشراء</dt>
+                <dd>{{ purchaseMechanismLabel(item.purchase_mechanism || item.purchaseMethod) }}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="detail-section detail-section--last">
+            <h4 class="detail-section-title">المسوق</h4>
+            <dl class="detail-dl">
+              <div class="detail-row">
+                <dt>الاسم</dt>
+                <dd>{{ item.marketing_employee_name || item.marketerName || '—' }}</dd>
+              </div>
+            </dl>
+          </section>
         </div>
       </div>
     </div>
@@ -48,6 +96,13 @@
 
 <script setup>
 import { useFormatters } from '@/composables/useFormatters';
+import {
+  downPaymentStatusLabel,
+  nationalityLabel,
+  paymentMethodLabel,
+  purchaseMechanismLabel,
+  reservationTypeLabel,
+} from '@/utils/reservationDisplayLabels';
 
 defineProps({
   item: {
@@ -58,7 +113,7 @@ defineProps({
 
 const emit = defineEmits(['close']);
 
-const { formatDate, formatCurrency } = useFormatters();
+const { formatDate, formatNumber } = useFormatters();
 </script>
 
 <style src="./styles/ReservationDetailModal.css"></style>
