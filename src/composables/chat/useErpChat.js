@@ -136,8 +136,8 @@ export function useErpChat() {
   const subscribeToConversation = convId => {
     if (!pusher || !convId) return;
     
-    // We try both private and public channels because different environments or docs might vary
-    const channelsToTry = [`conversation.${convId}`, `private-conversation.${convId}`];
+    // Laravel private channels use the private-* prefix; try private first (required for Broadcast::channel auth).
+    const channelsToTry = [`private-conversation.${convId}`, `conversation.${convId}`];
     // Common event names in Laravel/Pusher setups
     const eventsToTry = ['message.sent', 'MessageSent', 'message-sent'];
 

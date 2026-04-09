@@ -1,8 +1,32 @@
 import Pusher from 'pusher-js';
+import appConfig from '@/config/appConfig';
 
 // Vite: use import.meta.env (process.env is not available in browser)
 /** @param {string} key */
 const getEnv = key => (typeof import.meta.env !== 'undefined' && import.meta.env[key]) || '';
+
+/**
+ * Absolute URL to Laravel broadcasting auth (private/presence channels).
+ * A relative path hits the Vite dev server (e.g. :8080) and breaks private channel auth.
+ */
+function resolveBroadcastingAuthEndpoint() {
+  const custom = (getEnv('VITE_APP_PUSHER_AUTH_ENDPOINT') || '').trim();
+  if (custom.startsWith('http://') || custom.startsWith('https://')) {
+    return custom;
+  }
+  const base = appConfig.apiBaseUrl.replace(/\/+$/, '');
+  if (!custom || custom === '/api/broadcasting/auth') {
+    return `${base}/broadcasting/auth`;
+  }
+  if (custom.startsWith('/api/')) {
+    const origin = base.replace(/\/api$/, '');
+    return `${origin}${custom}`;
+  }
+  if (custom.startsWith('/')) {
+    return `${base}${custom}`;
+  }
+  return `${base}/${custom}`;
+}
 
 /**
  * Create and configure a Pusher instance for real-time notifications.
@@ -19,10 +43,12 @@ export function createPusher(token) {
     return null;
   }
 
+  const authEndpoint = resolveBroadcastingAuthEndpoint();
+
   const options = useReverb
     ? {
         cluster: getEnv('VITE_APP_PUSHER_CLUSTER') || 'mt1',
-        authEndpoint: getEnv('VITE_APP_PUSHER_AUTH_ENDPOINT') || '/api/broadcasting/auth',
+        authEndpoint,
         auth: {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -33,11 +59,12 @@ export function createPusher(token) {
         wssPort: parseInt(getEnv('VITE_APP_PUSHER_WSS_PORT'), 10) || 443,
         forceTLS: getEnv('VITE_APP_PUSHER_FORCE_TLS') === 'true',
         disableStats: true,
+        enabledTransports: ['ws', 'wss'],
       }
     : {
         cluster: getEnv('VITE_APP_PUSHER_CLUSTER') || 'mt1',
         encrypted: true,
-        authEndpoint: getEnv('VITE_APP_PUSHER_AUTH_ENDPOINT') || '/api/broadcasting/auth',
+        authEndpoint,
         auth: {
           headers: {
             Authorization: `Bearer ${token}`,
