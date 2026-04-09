@@ -38,6 +38,9 @@ export async function listAdminCities() {
   }
 }
 
+/**
+ * @param {Record<string, unknown>} payload
+ */
 export async function createAdminCity(payload) {
   try {
     const r = await apiClient.post('/admin/cities', payload);
@@ -47,6 +50,9 @@ export async function createAdminCity(payload) {
   }
 }
 
+/**
+ * @param {string|number} cityId
+ */
 export async function getAdminCity(cityId) {
   try {
     const r = await apiClient.get(`/admin/cities/${cityId}`);
@@ -56,6 +62,10 @@ export async function getAdminCity(cityId) {
   }
 }
 
+/**
+ * @param {string|number} cityId
+ * @param {Record<string, unknown>} payload
+ */
 export async function updateAdminCity(cityId, payload) {
   try {
     const r = await apiClient.put(`/admin/cities/${cityId}`, payload);
@@ -65,6 +75,9 @@ export async function updateAdminCity(cityId, payload) {
   }
 }
 
+/**
+ * @param {string|number} cityId
+ */
 export async function deleteAdminCity(cityId) {
   try {
     const r = await apiClient.delete(`/admin/cities/${cityId}`);
@@ -85,6 +98,9 @@ export async function listAdminDistricts() {
   }
 }
 
+/**
+ * @param {Record<string, unknown>} payload
+ */
 export async function createAdminDistrict(payload) {
   try {
     const r = await apiClient.post('/admin/districts', payload);
@@ -94,6 +110,9 @@ export async function createAdminDistrict(payload) {
   }
 }
 
+/**
+ * @param {string|number} districtId
+ */
 export async function getAdminDistrict(districtId) {
   try {
     const r = await apiClient.get(`/admin/districts/${districtId}`);
@@ -103,6 +122,10 @@ export async function getAdminDistrict(districtId) {
   }
 }
 
+/**
+ * @param {string|number} districtId
+ * @param {Record<string, unknown>} payload
+ */
 export async function updateAdminDistrict(districtId, payload) {
   try {
     const r = await apiClient.patch(`/admin/districts/${districtId}`, payload);
@@ -112,6 +135,9 @@ export async function updateAdminDistrict(districtId, payload) {
   }
 }
 
+/**
+ * @param {string|number} districtId
+ */
 export async function deleteAdminDistrict(districtId) {
   try {
     const r = await apiClient.delete(`/admin/districts/${districtId}`);

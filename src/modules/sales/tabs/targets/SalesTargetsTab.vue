@@ -179,63 +179,20 @@
       </div>
     </div>
 
-    <!-- مودال إضافة هدف جديد -->
-    <div v-if="showCreateTargetModal" class="assign-overlay" @click.self="closeCreateTargetModal">
-      <div class="assign-modal create-target-modal">
-        <div class="assign-modal-header">
-          <h3>إضافة هدف جديد</h3>
-          <button type="button" class="assign-close" aria-label="إغلاق" @click="closeCreateTargetModal">&times;</button>
-        </div>
-        <form @submit.prevent="handleCreateTarget" class="create-target-form">
-          <div class="form-row">
-            <label class="form-label">المسوق</label>
-            <select v-model="targetForm.marketer_id" class="form-select" required>
-              <option value="">— اختر المسوق —</option>
-              <option v-for="m in teamMembersList" :key="m.id" :value="m.id">{{ m.name }}</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <label class="form-label">المشروع</label>
-            <select v-model="targetForm.contract_id" class="form-select" required>
-              <option value="">— اختر المشروع —</option>
-              <option v-for="p in teamProjectsList" :key="p.id" :value="p.id">{{ p.project_name || p.name }}</option>
-            </select>
-          </div>
-          <div v-if="targetForm.contract_id" class="form-row">
-            <label class="form-label">الوحدات (اختياري)</label>
-            <label class="checkbox-row">
-              <input type="checkbox" :checked="targetForm.contract_unit_ids.length === 0" @change="onTargetFullProjectChange" />
-              <span>كل وحدات المشروع</span>
-            </label>
-            <p v-if="targetForm.contract_unit_ids.length === 0" class="units-hint">سيُنشأ هدف واحد للمشروع بدون ربط وحدة محددة. أو أزل التحديد واختر وحدات أدناه.</p>
-            <div class="units-list">
-              <LoadingSpinner v-if="isLoadingTargetFormUnits" text="جاري تحميل الوحدات..." />
-              <p v-else-if="targetFormUnitsError" class="form-error">{{ targetFormUnitsError }}</p>
-              <template v-else-if="targetFormUnits.length">
-                <label v-for="u in targetFormUnits" :key="u.id" class="units-checkbox-row">
-                  <input type="checkbox" :checked="targetForm.contract_unit_ids.includes(u.id)" @change="toggleTargetUnit(u.id)" />
-                  <span>{{ u.unit_number ?? u.id }}</span>
-                </label>
-              </template>
-            </div>
-          </div>
-          <div class="form-row">
-            <label class="form-label">قيمة الهدف (ر.س)</label>
-            <input v-model.number="targetForm.target_value" type="number" min="0" class="form-input" placeholder="0" />
-          </div>
-          <div class="form-row">
-            <label class="form-label">الموعد النهائي</label>
-            <input v-model="targetForm.deadline" type="date" class="form-input" required />
-          </div>
-          <div class="assign-modal-actions">
-            <button type="button" class="btn-secondary" @click="closeCreateTargetModal">إلغاء</button>
-            <button type="submit" class="btn-add" :disabled="createTargetSaving">
-              {{ createTargetSaving ? 'جاري الحفظ...' : 'حفظ' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <SalesTargetsCreateTargetModal
+      :open="showCreateTargetModal"
+      :target-form="targetForm"
+      :team-members-list="teamMembersList"
+      :team-projects-list="teamProjectsList"
+      :target-form-units="targetFormUnits"
+      :is-loading-target-form-units="isLoadingTargetFormUnits"
+      :target-form-units-error="targetFormUnitsError"
+      :create-target-saving="createTargetSaving"
+      :on-target-full-project-change="onTargetFullProjectChange"
+      :toggle-target-unit="toggleTargetUnit"
+      @close="closeCreateTargetModal"
+      @submit="handleCreateTarget"
+    />
 
     <SalesTargetsAssignMarketersModal
       v-if="assignTarget"
@@ -266,6 +223,7 @@ import { ref, computed, onMounted, onUnmounted, watch, inject, unref } from 'vue
 import { useRoute } from 'vue-router';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import SalesTargetsAssignMarketersModal from '@/modules/sales/tabs/targets/SalesTargetsAssignMarketersModal.vue';
+import SalesTargetsCreateTargetModal from '@/modules/sales/tabs/targets/SalesTargetsCreateTargetModal.vue';
 import SalesTargetsUnitsModal from '@/modules/sales/tabs/targets/SalesTargetsUnitsModal.vue';
 import { useSalesTargets, normalizeSalesTargetItem } from '@/composables/sales/useSalesTargets';
 import {
@@ -274,6 +232,7 @@ import {
   getAssignedUnitsLine,
   isTargetCompleted,
 } from '@/modules/sales/tabs/targets/salesTargetsTabDisplay.js';
+import { buildUnitsModalRows } from '@/modules/sales/tabs/targets/salesTargetsUnitsModalRows.js';
 import { useSalesTeam } from '@/composables/sales/useSalesTeam';
 import authService from '@/services/authService';
 import salesService from '@/services/salesService';
@@ -416,75 +375,7 @@ async function openUnitsModal(target) {
   try {
     const data = await salesService.getTargetsByProject(contractId);
     const list = Array.isArray(data) ? data : [];
-    const pickUnitLabel = (t, u) => {
-      const raw =
-        (u && (u.unit_number ?? u.unit_no ?? u.number)) ??
-        (t && (t.unit_number ?? t.unit_no ?? t.number));
-      const s = raw != null && raw !== '' ? String(raw).trim() : '';
-      return s || '—';
-    };
-
-    /** حقول وحدة للعرض كبطاقات مشروع (نفس أسماء الحقول تقريباً) */
-    const pickUnitCardFields = (t, u) => {
-      const id =
-        (u && (u.id ?? u.unit_id ?? u.contract_unit_id)) ??
-        t.contract_unit_id ??
-        t.unit_id ??
-        t.target_id ??
-        t.id;
-      const rawStatus =
-        (u && (u.status ?? u.unit_status)) ?? t.unit_status ?? t.unit?.status ?? null;
-      let status = rawStatus;
-      if (status != null && status !== '') {
-        const s = String(status).toLowerCase().trim();
-        if (['متاح', 'متاحة'].includes(String(rawStatus).trim())) status = 'available';
-        else if (['محجوز', 'محجوزة'].includes(String(rawStatus).trim())) status = 'reserved';
-        else if (['مباع', 'مباعة'].includes(String(rawStatus).trim())) status = 'sold';
-        else if (s === 'available' || s === 'reserved' || s === 'sold' || s === 'pending') status = s;
-        else status = rawStatus;
-      } else {
-        status = null;
-      }
-      const price =
-        (u && (u.price ?? u.unit_price ?? u.total_price)) ?? t.unit_price ?? t.price ?? null;
-      const area = (u && (u.area ?? u.total_area)) ?? t.area ?? t.unit?.area ?? null;
-      const rooms = (u && (u.bedrooms ?? u.rooms)) ?? t.bedrooms ?? t.rooms ?? null;
-      const floor = (u && u.floor != null ? u.floor : null) ?? (t.floor != null ? t.floor : null);
-      return {
-        id,
-        status,
-        price: price != null && price !== '' ? price : null,
-        area: area != null && area !== '' ? area : null,
-        rooms: rooms != null && rooms !== '' ? rooms : null,
-        floor: floor != null && floor !== '' ? floor : null,
-      };
-    };
-
-    const rows = list.map(normalizeSalesTargetItem).flatMap((t) => {
-      const units = Array.isArray(t.units) ? t.units : [];
-      if (units.length === 0) {
-        const card = pickUnitCardFields(t, null);
-        return [
-          {
-            unit_id: card.id,
-            unit_number: pickUnitLabel(t, null),
-            marketer_id: t.marketer_id,
-            marketer_name: t.marketer_name ?? '—',
-            ...card,
-          },
-        ];
-      }
-      return units.map((u) => {
-        const card = pickUnitCardFields(t, u);
-        return {
-          unit_id: card.id ?? u.unit_id ?? u.id ?? u.contract_unit_id,
-          unit_number: pickUnitLabel(t, u),
-          marketer_id: t.marketer_id,
-          marketer_name: t.marketer_name ?? '—',
-          ...card,
-        };
-      });
-    });
+    const rows = buildUnitsModalRows(list, normalizeSalesTargetItem);
     unitsModalRows.value = rows;
     unitsModalUnfilteredCount.value = rows.length;
   } catch (err) {
