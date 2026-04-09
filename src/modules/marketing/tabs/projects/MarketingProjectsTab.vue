@@ -150,21 +150,60 @@
                   <span class="detail-label">نسبة السعي</span>
                   <span class="detail-value number">{{ Number(selectedProjectDetails.commission_percentage ?? 0) + '%' }}</span>
                 </div>
-                <div class="detail-item detail-item--stacked">
-                  <span class="detail-label">نسبة التسويق</span>
-                  <input
-                    v-model="uiOnlyMarketingPercent"
-                    type="number"
-                    class="form-input marketing-percent-ui-input"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    inputmode="decimal"
-                    placeholder="مثال: 10"
-                    aria-describedby="marketing-percent-ui-hint"
-                  />
-                  <p id="marketing-percent-ui-hint" class="detail-ui-only-hint">
-                    للملاحظات المحلية فقط — غير مربوط بالخادم (API)
+                <div class="detail-item detail-item--stacked marketing-percent-block">
+                  <span class="detail-label">نسبة التسويق (المشروع)</span>
+                  <span
+                    v-if="selectedProjectDetails.marketing_percent_source === 'marketing_project'"
+                    class="marketing-percent-source-badge"
+                    title="القيمة من سجل مشروع التسويق"
+                  >مصدر: مشروع تسويق</span>
+                  <template v-if="hasPermission('marketing.budgets.manage')">
+                    <div class="marketing-percent-input-row">
+                      <input
+                        v-model="marketingPercentDraft"
+                        type="number"
+                        class="form-input marketing-percent-ui-input"
+                        min="6"
+                        max="10"
+                        step="0.5"
+                        inputmode="decimal"
+                        placeholder="6–10 أو اترك فارغاً للمسح عند الحفظ"
+                        :disabled="isSavingMarketingPercent || isLoadingProjectDetails"
+                        aria-describedby="marketing-percent-hint"
+                      />
+                      <button
+                        type="button"
+                        class="btn-primary marketing-percent-save-btn"
+                        :disabled="isSavingMarketingPercent || isLoadingProjectDetails"
+                        @click="saveProjectMarketingPercent"
+                      >
+                        حفظ
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-secondary marketing-percent-clear-btn"
+                        :disabled="isSavingMarketingPercent || isLoadingProjectDetails"
+                        @click="clearProjectMarketingPercent"
+                      >
+                        مسح النسبة
+                      </button>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <p class="detail-value number marketing-percent-readonly">
+                      {{
+                        selectedProjectDetails.marketing_percent != null &&
+                        selectedProjectDetails.marketing_percent !== ''
+                          ? Number(selectedProjectDetails.marketing_percent) + '%'
+                          : 'غير محدد'
+                      }}
+                    </p>
+                  </template>
+                  <p id="marketing-percent-hint" class="detail-ui-only-hint">
+                    <template v-if="hasPermission('marketing.budgets.manage')">
+                      النسبة الرسمية للمشروع (6%–10%)؛ تُزامن مع خطط المطور والموظفين بعد الحفظ. التعديل يتطلب صلاحية إدارة الميزانية.
+                    </template>
+                    <template v-else>عرض فقط — تعديل النسبة يتطلب صلاحية إدارة الميزانية (marketing.budgets.manage).</template>
                   </p>
                 </div>
                 <div class="detail-item">
@@ -457,7 +496,10 @@ const {
   projectPlansModalPlanUrl,
   projectPlansModalHasDeveloperPlan,
   projectPlansModalEmployeePlans,
-  uiOnlyMarketingPercent,
+  marketingPercentDraft,
+  isSavingMarketingPercent,
+  saveProjectMarketingPercent,
+  clearProjectMarketingPercent,
   budgetForm,
   budgetResult,
   viewProjectDetails,

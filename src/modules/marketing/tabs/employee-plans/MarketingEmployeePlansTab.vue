@@ -18,14 +18,26 @@
         </div>
       </div>
 
-      <div v-if="employeePlanBudgetSummary.marketing_value > 0" class="details-grid" style="margin-bottom: 20px">
-        <div class="detail-item">
-          <span class="detail-label">قيمة العمولة</span>
-          <span class="detail-value number">{{ formatCurrency(employeePlanBudgetSummary.commission_value) }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">قيمة التسويق</span>
-          <span class="detail-value number">{{ formatCurrency(employeePlanBudgetSummary.marketing_value) }}</span>
+      <div
+        v-if="employeePlansProjectId"
+        class="employee-plan-budget-panel overview-section"
+        style="margin-bottom: 20px; padding: 16px 18px; background: linear-gradient(145deg, #f0f9ff 0%, #fff 100%); border-radius: 12px; border: 1px solid #bae6fd"
+      >
+        <h4 style="margin: 0 0 12px; font-size: 0.95rem; color: #0c4a6e; font-weight: 700">ميزانية الحملة حسب المشروع</h4>
+        <p v-if="isLoadingProjectBudgetContext" style="margin: 0; font-size: 0.9rem; color: #64748b">جاري تحميل نسبة التسويق من المشروع…</p>
+        <div v-else class="details-grid" style="margin: 0">
+          <div class="detail-item">
+            <span class="detail-label">ميزانية الحملة (تقديرية)</span>
+            <span class="detail-value number">{{ formatCurrency(employeePlanBudgetSummary.marketing_value) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">قيمة العمولة (تقديرية)</span>
+            <span class="detail-value number">{{ formatCurrency(employeePlanBudgetSummary.commission_value) }}</span>
+          </div>
+          <div v-if="employeePlanBudgetSummary.marketing_percent_label" class="detail-item" style="grid-column: 1 / -1">
+            <span class="detail-label">نسبة التسويق المستخدمة</span>
+            <span class="detail-value">{{ employeePlanBudgetSummary.marketing_percent_label }}</span>
+          </div>
         </div>
       </div>
 
@@ -149,6 +161,7 @@ const {
   isLoadingEmployeePlans,
   employeePlansProjectId,
   projects,
+  isLoadingProjectBudgetContext,
   employeePlanBudgetSummary,
   platformDistribution,
   campaignDistributionByPlatform,

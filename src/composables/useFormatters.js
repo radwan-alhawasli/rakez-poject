@@ -5,9 +5,7 @@
  *   const { formatCurrency, formatCompact, formatDate, formatNumber } = useFormatters();
  */
 
-const ARABIC_DIGITS = /[\u0660-\u0669]/g;
-const toWestern = (str) =>
-  String(str).replace(ARABIC_DIGITS, (d) => d.charCodeAt(0) - 0x0660);
+import { localeOpts, toWesternDigits } from '@/utils/intlLatn';
 
 export function useFormatters() {
   const currencyFormatterEN = new Intl.NumberFormat('en-US', {
@@ -20,6 +18,7 @@ export function useFormatters() {
     style: 'currency',
     currency: 'SAR',
     minimumFractionDigits: 0,
+    numberingSystem: 'latn',
   });
 
   const numberFormatter = new Intl.NumberFormat('en-US');
@@ -44,7 +43,7 @@ export function useFormatters() {
   };
 
   const formatCurrencyAr = (val) => {
-    return toWestern(currencyFormatterAR.format(Number(val) || 0));
+    return toWesternDigits(currencyFormatterAR.format(Number(val) || 0));
   };
 
   const formatNumber = (val) => {
@@ -94,7 +93,7 @@ export function useFormatters() {
     try {
       const d = new Date(dateStr);
       if (Number.isNaN(d.getTime())) return fallback;
-      return toWestern(d.toLocaleDateString('ar-SA'));
+      return toWesternDigits(d.toLocaleDateString('ar-SA', localeOpts()));
     } catch {
       return fallback;
     }
@@ -105,12 +104,15 @@ export function useFormatters() {
     try {
       const d = new Date(dateStr);
       if (Number.isNaN(d.getTime())) return dateStr;
-      return toWestern(
-        d.toLocaleDateString('ar-SA', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        }),
+      return toWesternDigits(
+        d.toLocaleDateString(
+          'ar-SA',
+          localeOpts({
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+        ),
       );
     } catch {
       return dateStr;
@@ -132,14 +134,17 @@ export function useFormatters() {
     try {
       const d = new Date(dateStr);
       if (Number.isNaN(d.getTime())) return fallback;
-      return toWestern(
-        d.toLocaleDateString('ar-EG', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
+      return toWesternDigits(
+        d.toLocaleDateString(
+          'ar-EG',
+          localeOpts({
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+        ),
       );
     } catch {
       return fallback;

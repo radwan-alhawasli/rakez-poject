@@ -22,6 +22,34 @@
   color: #64748b;
 }
 
+.marketing-percent-block .marketing-percent-source-badge {
+  display: inline-block;
+  font-size: 11px;
+  color: #0369a1;
+  background: rgba(224, 242, 254, 0.95);
+  padding: 3px 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.marketing-percent-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.marketing-percent-input-row .marketing-percent-ui-input {
+  flex: 1 1 140px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.marketing-percent-readonly {
+  margin: 0;
+  font-weight: 600;
+}
+
 /* —— فرق التسويق (مودال تفاصيل المشروع) —— */
 /* يمنع تكرار إطار overview-section العام مع بطاقة القسم */
 .overview-section.marketing-teams-panel {

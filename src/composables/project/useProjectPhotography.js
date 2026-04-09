@@ -3,6 +3,7 @@ import contractService from '@/services/contractService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { showApiError } from '@/utils/errorHandler';
+import { localeOpts } from '@/utils/intlLatn';
 
 export function useProjectPhotography(projectId) {
   const isLoading = ref(false);
@@ -80,9 +81,9 @@ export function useProjectPhotography(projectId) {
         photographyForm.status = mapped.status;
         photographyForm.rejection_reason = mapped.rejection_reason;
         if (p.updated_at) {
-          photographyForm.updated_at = new Date(p.updated_at).toLocaleDateString('ar-SA');
+          photographyForm.updated_at = new Date(p.updated_at).toLocaleDateString('ar-SA', localeOpts());
         } else if (p.created_at) {
-          photographyForm.updated_at = new Date(p.created_at).toLocaleDateString('ar-SA');
+          photographyForm.updated_at = new Date(p.created_at).toLocaleDateString('ar-SA', localeOpts());
         }
         photographyForm.isExisting = true;
       } else {
@@ -116,7 +117,7 @@ export function useProjectPhotography(projectId) {
       }
       photographyForm.status = 'pending';
       photographyForm.rejection_reason = null;
-      photographyForm.updated_at = new Date().toLocaleDateString('ar-SA');
+      photographyForm.updated_at = new Date().toLocaleDateString('ar-SA', localeOpts());
       isEditingPending.value = false;
       await loadPhotography();
     } catch (error) {

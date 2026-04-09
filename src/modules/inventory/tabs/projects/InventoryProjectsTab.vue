@@ -188,7 +188,7 @@ function formatPrice(n) {
   if (n == null || n === '') return '';
   const num = Number(n);
   if (Number.isNaN(num)) return String(n);
-  return new Intl.NumberFormat('ar-SA').format(num);
+  return new Intl.NumberFormat('ar-SA', { numberingSystem: 'latn' }).format(num);
 }
 
 /**

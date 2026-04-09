@@ -140,6 +140,7 @@ import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import managerService from '@/services/managerService';
 import { toast } from '@/composables/useToast';
+import { localeOpts } from '@/utils/intlLatn';
 
 const route = useRoute();
 const employeeId = computed(() => route.params.id);
@@ -163,7 +164,7 @@ const PREVIEW_COUNT = 3;
 function formatDate(d) {
   if (!d) return '—';
   const d2 = new Date(d);
-  return Number.isNaN(d2.getTime()) ? String(d) : d2.toLocaleDateString('ar-SA');
+  return Number.isNaN(d2.getTime()) ? String(d) : d2.toLocaleDateString('ar-SA', localeOpts());
 }
 
 function starsText(n) {
@@ -219,7 +220,7 @@ function monthLabel(yyyyMm) {
   const [y, m] = yyyyMm.split('-').map(Number);
   if (!y || !m) return yyyyMm;
   const d = new Date(y, m - 1, 1);
-  return d.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long' });
+  return d.toLocaleDateString('ar-SA', localeOpts({ year: 'numeric', month: 'long' }));
 }
 
 async function fetchEmployee() {

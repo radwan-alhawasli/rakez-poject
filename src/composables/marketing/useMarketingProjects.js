@@ -7,6 +7,8 @@ import logger from '@/utils/logger';
 import { useFormatters } from '@/composables/useFormatters';
 import { usePermissions } from '@/composables/usePermissions';
 import { toast } from '@/composables/useToast';
+import { getCaughtMessage, getCaughtStatus } from '@/utils/caughtError';
+import { HTTP_FORBIDDEN, HTTP_UNPROCESSABLE_ENTITY } from '@/constants/httpStatus';
 import {
   getStatusClass,
   getStatusText,
@@ -21,6 +23,24 @@ import {
   marketingMemberDisplayName,
   marketingMemberRatingLabel,
 } from '@/modules/marketing/tabs/projects/marketingProjectsUiHelpers.js';
+
+/** @param {unknown} error */
+function firstMarketingPercentValidationMessage(error) {
+  const data =
+    error && typeof error === 'object' && 'response' in error && error.response && typeof error.response === 'object'
+      ? error.response.data
+      : null;
+  if (!data || typeof data !== 'object' || !data.errors || typeof data.errors !== 'object') return null;
+  const mp = /** @type {Record<string, unknown>} */ (data.errors).marketing_percent;
+  return Array.isArray(mp) && typeof mp[0] === 'string' ? mp[0] : null;
+}
+
+/** @param {Record<string, unknown>|null|undefined} d */
+function resolveContractIdForMarketingPatch(d) {
+  if (!d) return null;
+  const v = d.marketing_project?.contract_id ?? d.contract_id ?? d.id;
+  return v != null && v !== '' ? v : null;
+}
 
 export function useMarketingProjects() {
   const router = useRouter();
@@ -77,8 +97,9 @@ export function useMarketingProjects() {
   const projectPlansModalHasDeveloperPlan = ref(false);
   const projectPlansModalDeveloperPlan = ref(null);
   const projectPlansModalEmployeePlans = ref([]);
-  /** حقل واجهة فقط في مودال التفاصيل — لا يُحفظ ولا يُرسل لأي API */
-  const uiOnlyMarketingPercent = ref('');
+  /** مسودة حقل نسبة التسويق في مودال التفاصيل — تُزامن من GET وتُحفظ عبر PATCH */
+  const marketingPercentDraft = ref('');
+  const isSavingMarketingPercent = ref(false);
 
   // Budget form
   const budgetForm = reactive({
@@ -108,6 +129,15 @@ export function useMarketingProjects() {
     }
   };
 
+  const syncMarketingPercentDraft = () => {
+    const p = selectedProjectDetails.value?.marketing_percent;
+    if (p === null || p === undefined || p === '') {
+      marketingPercentDraft.value = '';
+    } else {
+      marketingPercentDraft.value = String(p);
+    }
+  };
+
   const loadProjectDetails = async projectOrId => {
     const project = typeof projectOrId === 'object' && projectOrId != null ? projectOrId : null;
     const contractId = project
@@ -126,6 +156,7 @@ export function useMarketingProjects() {
       ]);
       details = d;
       selectedProjectDetails.value = details;
+      syncMarketingPercentDraft();
       if (projectId && recommended != null && typeof recommended === 'object') {
         recommendedEmployeeByProjectId.value = {
           ...recommendedEmployeeByProjectId.value,
@@ -140,8 +171,80 @@ export function useMarketingProjects() {
     }
   };
 
+  const saveProjectMarketingPercent = async () => {
+    const d = selectedProjectDetails.value;
+    const contractId = resolveContractIdForMarketingPatch(d);
+    if (contractId == null || contractId === '') {
+      toast.warning('تعذر تحديد رقم العقد لهذا المشروع');
+      return;
+    }
+    const raw = String(marketingPercentDraft.value ?? '').trim();
+    /** @type {number|null} */
+    let payload;
+    if (raw === '') {
+      payload = null;
+    } else {
+      const n = Number(raw);
+      if (!Number.isFinite(n)) {
+        toast.warning('أدخل رقماً صالحاً لنسبة التسويق');
+        return;
+      }
+      if (n < 6 || n > 10) {
+        toast.warning('نسبة التسويق يجب أن تكون بين 6% و10% (أو اترك الحقل فارغاً لمسح النسبة)');
+        return;
+      }
+      payload = n;
+    }
+    isSavingMarketingPercent.value = true;
+    try {
+      await marketingService.updateMarketingProjectPercent(contractId, payload);
+      toast.success('تم تحديث نسبة التسويق للمشروع');
+      await loadProjectDetails(d);
+    } catch (error) {
+      const st = getCaughtStatus(error);
+      if (st === HTTP_FORBIDDEN) {
+        toast.error('ليس لديك صلاحية تعديل الميزانية (مطلوب: marketing.budgets.manage)');
+      } else if (st === HTTP_UNPROCESSABLE_ENTITY) {
+        const msg = firstMarketingPercentValidationMessage(error) || getCaughtMessage(error);
+        toast.error(msg);
+      } else {
+        toast.error(getCaughtMessage(error) || 'تعذر حفظ نسبة التسويق');
+      }
+    } finally {
+      isSavingMarketingPercent.value = false;
+    }
+  };
+
+  const clearProjectMarketingPercent = async () => {
+    const d = selectedProjectDetails.value;
+    const contractId = resolveContractIdForMarketingPatch(d);
+    if (contractId == null || contractId === '') {
+      toast.warning('تعذر تحديد رقم العقد لهذا المشروع');
+      return;
+    }
+    isSavingMarketingPercent.value = true;
+    try {
+      await marketingService.updateMarketingProjectPercent(contractId, null);
+      toast.success('تم مسح نسبة التسويق للمشروع');
+      marketingPercentDraft.value = '';
+      await loadProjectDetails(d);
+    } catch (error) {
+      const st = getCaughtStatus(error);
+      if (st === HTTP_FORBIDDEN) {
+        toast.error('ليس لديك صلاحية تعديل الميزانية (مطلوب: marketing.budgets.manage)');
+      } else if (st === HTTP_UNPROCESSABLE_ENTITY) {
+        const msg = firstMarketingPercentValidationMessage(error) || getCaughtMessage(error);
+        toast.error(msg);
+      } else {
+        toast.error(getCaughtMessage(error) || 'تعذر مسح نسبة التسويق');
+      }
+    } finally {
+      isSavingMarketingPercent.value = false;
+    }
+  };
+
   const viewProjectDetails = async project => {
-    uiOnlyMarketingPercent.value = '';
+    marketingPercentDraft.value = '';
     showProjectDetailsModal.value = true;
     showUnitsTable.value = false;
     isLoadingUnits.value = false;
@@ -393,7 +496,10 @@ export function useMarketingProjects() {
     projectPlansModalPlanUrl,
     projectPlansModalHasDeveloperPlan,
     projectPlansModalEmployeePlans,
-    uiOnlyMarketingPercent,
+    marketingPercentDraft,
+    isSavingMarketingPercent,
+    saveProjectMarketingPercent,
+    clearProjectMarketingPercent,
     budgetForm,
     budgetResult,
     isSubmitting,

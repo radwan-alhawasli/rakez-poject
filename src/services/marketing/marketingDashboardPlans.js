@@ -67,6 +67,24 @@ export default {
   },
 
   /**
+   * Canonical marketing % on `marketing_projects.marketing_percent` (syncs to developer + employee plans).
+   * PATCH /marketing/projects/{contractId}/marketing-percent — body must include `marketing_percent` (6–10 or null to clear).
+   * Permission: marketing.budgets.manage
+   * @param {string|number} contractId - contracts.id
+   * @param {number|null} marketingPercent
+   */
+  async updateMarketingProjectPercent(contractId, marketingPercent) {
+    try {
+      const response = await apiClient.patch(`/marketing/projects/${contractId}/marketing-percent`, {
+        marketing_percent: marketingPercent,
+      });
+      return unwrap(response, {});
+    } catch (error) {
+      return handleServiceError(error, 'Update marketing project percent', 'patch');
+    }
+  },
+
+  /**
    * Get recommended employee for client communication (performance + developer booking ratio).
    * API path: GET /marketing/projects/:project_id/recommend-employee. Uses marketing project_id.
    * Returns null if endpoint not implemented or 404.

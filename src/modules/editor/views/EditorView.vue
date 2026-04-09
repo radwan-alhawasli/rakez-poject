@@ -217,6 +217,7 @@ import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import editorService from '@/services/editorService';
 import logger from '@/utils/logger';
+import { localeOpts } from '@/utils/intlLatn';
 import EditorContractsSection from '@/modules/editor/components/EditorContractsSection.vue';
 import EditorContractDetailSection from '@/modules/editor/components/EditorContractDetailSection.vue';
 import EditorSecondPartySection from '@/modules/editor/components/EditorSecondPartySection.vue';
@@ -481,13 +482,16 @@ export default {
       if (!s) return '—';
       const date = new Date(s);
       if (Number.isNaN(date.getTime())) return s;
-      return date.toLocaleDateString('ar-EG', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      return date.toLocaleDateString(
+        'ar-EG',
+        localeOpts({
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+      );
     }
 
     function formatDetailValueForRow(value) {

@@ -6,6 +6,7 @@ import { useEditorProjects } from '@/modules/editor/composables/useEditorProject
 import editorService from '@/services/editorService';
 import { toast } from '@/composables/useToast';
 import { isMontageDecisionFinal } from '@/utils/montageApproval';
+import { localeOpts } from '@/utils/intlLatn';
 
 export function useEditorProjectsView() {
   const route = useRoute();
@@ -340,7 +341,7 @@ export function useEditorProjectsView() {
     if (n == null) return '—';
     const num = Number(n);
     if (Number.isNaN(num)) return '—';
-    return new Intl.NumberFormat('ar-SA', { style: 'decimal' }).format(num);
+    return new Intl.NumberFormat('ar-SA', localeOpts({ style: 'decimal' })).format(num);
   }
 
   function montageDecisionBucket(p) {

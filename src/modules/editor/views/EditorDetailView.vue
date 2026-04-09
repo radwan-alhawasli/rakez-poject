@@ -98,6 +98,7 @@ import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import editorService from '@/services/editorService';
 import logger from '@/utils/logger';
+import { localeOpts } from '@/utils/intlLatn';
 
 /** تسميات عربية لجميع الحقول */
 const FIELD_LABELS = {
@@ -234,13 +235,16 @@ function formatDisplayDate(val) {
   if (!s) return '—';
   const date = new Date(s);
   if (Number.isNaN(date.getTime())) return s;
-  return date.toLocaleDateString('ar-EG', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return date.toLocaleDateString(
+    'ar-EG',
+    localeOpts({
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+  );
 }
 
 function formatCell(value) {

@@ -145,6 +145,7 @@ import { ref, onMounted } from 'vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
 import contractService from '@/services/contractService';
 import logger from '@/utils/logger';
+import { localeOpts } from '@/utils/intlLatn';
 import { toast } from '@/composables/useToast';
 import {
   Dialog,
@@ -207,7 +208,7 @@ export default {
                   projectId: project.id,
                   projectName: project.project_name || project.name || `Project #${project.id}`,
                   ...data,
-                  updated_at: new Date(data.updated_at || Date.now()).toLocaleDateString('ar-SA'),
+                  updated_at: new Date(data.updated_at || Date.now()).toLocaleDateString('ar-SA', localeOpts()),
                 };
               }
             } catch (_e) {

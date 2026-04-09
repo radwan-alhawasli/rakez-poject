@@ -12,6 +12,16 @@ const toNumber = (value, fallback = 0) => {
 const toArray = value => (Array.isArray(value) ? value : []);
 
 /**
+ * @param {any} value
+ * @returns {number|null}
+ */
+const toMarketingPercentNullable = value => {
+  if (value === null || value === undefined || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+};
+
+/**
  * Marketing dashboard KPI payload.
  * Preferred count field from API: `number_of_available_units` (عدد الوحدات المتاحة).
  * Legacy alias: `available_units_count`.
@@ -100,6 +110,12 @@ export const normalizeProjectDetails = raw => {
     commission_percentage: toNumber(raw.commission_percent ?? raw.commission_percentage),
     advertiser_number: raw.advertiser_number,
     advertiser_number_value: raw.advertiser_number_value,
+    /** Canonical project marketing % (GET …/marketing/projects/:contractId); mirrors sync to plans */
+    marketing_percent: toMarketingPercentNullable(raw.marketing_percent),
+    marketing_percent_source:
+      raw.marketing_percent_source != null && raw.marketing_percent_source !== ''
+        ? String(raw.marketing_percent_source)
+        : null,
   };
 };
 

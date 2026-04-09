@@ -52,6 +52,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import managerService from '@/services/managerService';
+import { localeOpts } from '@/utils/intlLatn';
 
 const tasks = ref([]);
 const isLoading = ref(true);
@@ -68,7 +69,7 @@ const filters = ref({
 function formatDate(d) {
   if (!d) return '—';
   const d2 = new Date(d);
-  return isNaN(d2.getTime()) ? d : d2.toLocaleDateString('ar-SA');
+  return isNaN(d2.getTime()) ? d : d2.toLocaleDateString('ar-SA', localeOpts());
 }
 
 async function fetchTasks() {

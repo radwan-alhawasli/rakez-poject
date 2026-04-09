@@ -275,7 +275,7 @@ export default {
       // إجمالي السعر من API (total_price)
       const totalPrice =
         c.total_price != null && c.total_price !== ''
-          ? Number(c.total_price).toLocaleString('ar-SA') + ' ر.س'
+          ? Number(c.total_price).toLocaleString('ar-SA', { numberingSystem: 'latn' }) + ' ر.س'
           : '';
 
       // صورة المشروع من الـ API — تعرض سواء معتمدة أو قيد المراجعة

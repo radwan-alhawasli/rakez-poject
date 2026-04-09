@@ -278,9 +278,14 @@ function mapContract(contract) {
   const created = contract.created_at ?? contract.createdAt ?? contract.date;
   const createdDate =
     created instanceof Date
-      ? created.toLocaleDateString('ar-SA')
+      ? created.toLocaleDateString('ar-SA', { numberingSystem: 'latn' })
       : created
-        ? new Date(created).toLocaleDateString('ar-SA', { year: 'numeric', month: '2-digit', day: '2-digit' })
+        ? new Date(created).toLocaleDateString('ar-SA', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            numberingSystem: 'latn',
+          })
         : '—';
   const commRaw = contract.commission_percent ?? contract.commission_percentage ?? contract.info?.commission_percent;
   let commissionLabel = '—';

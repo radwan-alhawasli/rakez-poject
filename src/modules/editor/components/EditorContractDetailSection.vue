@@ -61,6 +61,8 @@
 </template>
 
 <script setup>
+import { localeOpts } from '@/utils/intlLatn';
+
 defineProps({
   contractId: { type: [Number, String], default: null },
   selectedContract: { type: Object, default: () => ({}) },
@@ -153,13 +155,16 @@ function formatDisplayDate(val) {
   if (!s) return '—';
   const date = new Date(s);
   if (Number.isNaN(date.getTime())) return s;
-  return date.toLocaleDateString('ar-EG', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return date.toLocaleDateString(
+    'ar-EG',
+    localeOpts({
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+  );
 }
 
 function formatNestedValue(value) {

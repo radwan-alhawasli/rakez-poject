@@ -15,6 +15,8 @@
 </template>
 
 <script setup>
+import { localeOpts } from '@/utils/intlLatn';
+
 defineProps({
   items: {
     type: Array,
@@ -34,7 +36,7 @@ function formatDue(it) {
   const d = it.due_at || it.due;
   if (!d) return '';
   try {
-    return new Date(d).toLocaleDateString('ar-SA', { dateStyle: 'short' });
+    return new Date(d).toLocaleDateString('ar-SA', localeOpts({ dateStyle: 'short' }));
   } catch {
     return String(d);
   }

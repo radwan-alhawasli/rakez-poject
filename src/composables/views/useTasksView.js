@@ -4,6 +4,7 @@ import notificationService from '@/services/notificationService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
 import { getApiErrorMessage } from '@/utils/errorHandler';
+import { localeOpts } from '@/utils/intlLatn';
 
 export function useTasksView() {
   const currentUser = authService.getCurrentUser();
@@ -218,14 +219,17 @@ export function useTasksView() {
     if (!dateString) return '';
     const d = new Date(dateString);
     if (Number.isNaN(d.getTime())) return '';
-    return d.toLocaleString('ar-SA', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
+    return d.toLocaleString(
+      'ar-SA',
+      localeOpts({
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      }),
+    );
   };
 
   /** لسمة <time datetime="..."> (ISO) */

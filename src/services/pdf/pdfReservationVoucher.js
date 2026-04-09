@@ -23,14 +23,14 @@ export async function generateReservationVoucherPdf(reservation, project = {}, u
         ['نوع الوحدة / Unit Type', unit?.type ?? unit?.unit_type ?? 'N/A'],
         ['المساحة (م²) / Area', unit?.area ?? 'N/A'],
         ['الطابق / Floor', unit?.floor ?? 'N/A'],
-        ['سعر الوحدة (ريال) / Price', unit?.price != null ? Number(unit.price).toLocaleString('ar-SA', { minimumFractionDigits: 2 }) : 'N/A'],
+        ['سعر الوحدة (ريال) / Price', unit?.price != null ? Number(unit.price).toLocaleString('ar-SA', { minimumFractionDigits: 2, numberingSystem: 'latn' }) : 'N/A'],
       ],
     },
     {
       sectionTitle: '◆ بيانات الدفع',
       infoRows: [
         ['طريقة الدفع / Payment Method', paymentLabels[res.payment_method] ?? res.payment_method],
-        ['مبلغ الدفعة المقدمة (ريال)', res.down_payment_amount != null ? Number(res.down_payment_amount).toLocaleString('ar-SA', { minimumFractionDigits: 2 }) : '—'],
+        ['مبلغ الدفعة المقدمة (ريال)', res.down_payment_amount != null ? Number(res.down_payment_amount).toLocaleString('ar-SA', { minimumFractionDigits: 2, numberingSystem: 'latn' }) : '—'],
         ['حالة الدفعة المقدمة', downStatus],
         ['آلية الشراء / Purchase', purchaseLabels[res.purchase_mechanism] ?? res.purchase_mechanism],
       ],
@@ -57,7 +57,7 @@ export async function generateReservationVoucherPdf(reservation, project = {}, u
   }
   return buildDocumentPdf({
     title: `سند حجز - ${res.id ?? ''}`,
-    subtitle: `مستلم من: ${res.client_name ?? ''} | رقم الجوال: ${res.client_mobile ?? ''} | النوع: ${typeLabel} | المبلغ: ${Number(res.down_payment_amount ?? 0).toLocaleString('ar-SA')} | التاريخ: ${contractDate}`,
+    subtitle: `مستلم من: ${res.client_name ?? ''} | رقم الجوال: ${res.client_mobile ?? ''} | النوع: ${typeLabel} | المبلغ: ${Number(res.down_payment_amount ?? 0).toLocaleString('ar-SA', { numberingSystem: 'latn' })} | التاريخ: ${contractDate}`,
     sections,
     footer: 'يعتبر اعتماد الحجز بتوقيع العميل والإقرار بالموافقة وقراءة الشروط. تم إنشاؤه آلياً بواسطة نظام راكز.',
   });

@@ -11,6 +11,7 @@ import {
   extractSecondPartyShowRow,
   isSecondPartyFieldFilled,
 } from '@/utils/projectProgressSteps';
+import { localeOpts } from '@/utils/intlLatn';
 
 /**
  * @param {string|number} projectId - Contract/project ID
@@ -225,7 +226,7 @@ export function useProjectProgress(projectId, options = {}) {
       }
 
       currentStage.status = 'completed';
-      currentStage.completedAt = new Date().toLocaleDateString('ar-SA');
+      currentStage.completedAt = new Date().toLocaleDateString('ar-SA', localeOpts());
       const allCompleted = stages.every(s => s.status === 'completed');
       if (allCompleted) {
         try {

@@ -18,6 +18,7 @@
 
 <script setup>
 import { useFormatters } from '@/composables/useFormatters';
+import { localeOpts } from '@/utils/intlLatn';
 
 const props = defineProps({
   items: {
@@ -39,7 +40,7 @@ function formatAmount(it) {
 
 function formatDate(d) {
   try {
-    return new Date(d).toLocaleString('ar-SA', { dateStyle: 'short', timeStyle: 'short' });
+    return new Date(d).toLocaleString('ar-SA', localeOpts({ dateStyle: 'short', timeStyle: 'short' }));
   } catch {
     return String(d);
   }

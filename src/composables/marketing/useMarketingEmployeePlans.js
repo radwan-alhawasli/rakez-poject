@@ -58,16 +58,41 @@ export function useMarketingEmployeePlans() {
     marketing_percent: MARKETING_PERCENT_FIXED,
   });
 
+  /** تفاصيل مشروع التسويق (GET …/marketing/projects/:contractId) لنسبة التسويق الرسمية وميزانية الحملة */
+  const projectBudgetContext = ref(null);
+  const isLoadingProjectBudgetContext = ref(false);
+
   const employeePlanBudgetSummary = computed(() => {
     const p = projects.value.find(x => String(x.id) === String(employeePlansProjectId.value));
-    if (!p) return { commission_value: 0, marketing_value: 0 };
+    if (!p) {
+      return {
+        commission_value: 0,
+        marketing_value: 0,
+        marketing_percent_used: null,
+        marketing_percent_label: '',
+      };
+    }
     const unitPrice = Number(p.average_unit_price) || 0;
     const commissionPercent = Number(p.commission_percentage) || 0;
-    const rawMarketingPercent = Number(budgetForm.marketing_percent) || MARKETING_PERCENT_FIXED;
+    const canonical = projectBudgetContext.value?.marketing_percent;
+    const rawFromApi = canonical != null && canonical !== '' ? Number(canonical) : null;
+    const rawFallback = Number(budgetForm.marketing_percent) || MARKETING_PERCENT_FIXED;
+    const rawMarketingPercent =
+      rawFromApi != null && Number.isFinite(rawFromApi) ? rawFromApi : rawFallback;
     const marketingPercent = rawMarketingPercent > 1 ? rawMarketingPercent / 100 : rawMarketingPercent;
     const commissionValue = unitPrice * (commissionPercent / 100);
     const marketingValue = commissionValue * marketingPercent;
-    return { commission_value: commissionValue, marketing_value: marketingValue };
+    const marketing_percent_used = rawFromApi != null && Number.isFinite(rawFromApi) ? rawFromApi : rawFallback;
+    const marketing_percent_label =
+      rawFromApi != null && Number.isFinite(rawFromApi)
+        ? `${rawFromApi}% (من المشروع)`
+        : `${rawFallback}% (افتراضي حتى يُحدَّد في المشروع)`;
+    return {
+      commission_value: commissionValue,
+      marketing_value: marketingValue,
+      marketing_percent_used,
+      marketing_percent_label,
+    };
   });
 
   const platformDistributionSum = computed(() =>
@@ -132,6 +157,26 @@ export function useMarketingEmployeePlans() {
       projects.value = [];
     } finally {
       isLoadingProjects.value = false;
+    }
+  };
+
+  const loadProjectBudgetContext = async () => {
+    projectBudgetContext.value = null;
+    const pid = employeePlansProjectId.value;
+    if (!pid) return;
+    const p = projects.value.find(x => String(x.id) === String(pid));
+    if (!p) return;
+    const contractId = p.marketing_project?.contract_id ?? p.contract_id ?? p.id;
+    if (contractId == null || contractId === '') return;
+    isLoadingProjectBudgetContext.value = true;
+    try {
+      const d = await marketingService.getProjectByContractId(contractId);
+      projectBudgetContext.value = d && typeof d === 'object' ? d : null;
+    } catch (error) {
+      logger.debug('Project budget context unavailable for employee plans:', error);
+      projectBudgetContext.value = null;
+    } finally {
+      isLoadingProjectBudgetContext.value = false;
     }
   };
 
@@ -301,7 +346,12 @@ export function useMarketingEmployeePlans() {
 
     try {
       isSubmitting.value = true;
-      const rawMarketingPercent = Number(budgetForm.marketing_percent) || MARKETING_PERCENT_FIXED;
+      const canonical = projectBudgetContext.value?.marketing_percent;
+      const rawFromApi = canonical != null && canonical !== '' ? Number(canonical) : null;
+      const rawMarketingPercent =
+        rawFromApi != null && Number.isFinite(rawFromApi)
+          ? rawFromApi
+          : Number(budgetForm.marketing_percent) || MARKETING_PERCENT_FIXED;
       const platform_distribution = buildEmployeePlanPlatformDistributionForApi(platformDistribution);
       const campaign_distribution = buildFlatCampaignDistributionForApi(
         platformDistribution,
@@ -345,6 +395,14 @@ export function useMarketingEmployeePlans() {
     { immediate: true }
   );
 
+  watch(
+    () => [employeePlansProjectId.value, projects.value],
+    () => {
+      loadProjectBudgetContext();
+    },
+    { immediate: true }
+  );
+
   onMounted(() => {
     loadProjects();
   });
@@ -354,6 +412,7 @@ export function useMarketingEmployeePlans() {
     isLoadingEmployeePlans,
     employeePlansProjectId,
     projects,
+    isLoadingProjectBudgetContext,
     employeePlanBudgetSummary,
     platformDistribution,
     campaignDistributionByPlatform,

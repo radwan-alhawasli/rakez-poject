@@ -1,3 +1,5 @@
+import { localeOpts } from '@/utils/intlLatn';
+
 /** تسميات المراحل الست — متوافقة مع واجهة دور الائتمان */
 export const CREDIT_FINANCING_STAGE_LABELS = [
   'تواصل مع العميل',
@@ -128,7 +130,7 @@ export function formatStageDueLine(opts) {
       try {
         const d = new Date(apiCompletedAt);
         if (!Number.isNaN(d.getTime())) {
-          return `اكتمل في ${d.toLocaleDateString('ar-SA')}`;
+          return `اكتمل في ${d.toLocaleDateString('ar-SA', localeOpts())}`;
         }
       } catch {
         /* fallthrough */
@@ -159,7 +161,7 @@ export function formatStageDueLine(opts) {
   const days = Math.ceil(ms / (24 * 60 * 60 * 1000));
   if (days < 0) return `متأخر ${Math.abs(days)} يوم`;
   if (days === 0) return 'يستحق اليوم';
-  return `متبقي ${days} يوم · الاستحقاق ${due.toLocaleDateString('ar-SA')}`;
+  return `متبقي ${days} يوم · الاستحقاق ${due.toLocaleDateString('ar-SA', localeOpts())}`;
 }
 
 /**

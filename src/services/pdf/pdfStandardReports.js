@@ -41,7 +41,7 @@ export async function generateCommissionClaimPdf(commission, distributions = [])
     {
       sectionTitle: '◆ معلومات العمولة',
       infoRows: [
-        ['سعر البيع النهائي', commission ? `${Number(commission.final_selling_price ?? 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })} ريال` : null],
+        ['سعر البيع النهائي', commission ? `${Number(commission.final_selling_price ?? 0).toLocaleString('ar-SA', { minimumFractionDigits: 2, numberingSystem: 'latn' })} ريال` : null],
         ['نسبة العمولة', commission ? `${commission.commission_percentage}%` : null],
         ['الحالة', commission?.status ? statusMap[commission.status] ?? commission.status : null],
       ],
@@ -53,18 +53,18 @@ export async function generateCommissionClaimPdf(commission, distributions = [])
         d.recipient?.name ?? d.external_marketer_name ?? 'غير محدد',
         d.type ?? '—',
         `${d.percentage ?? 0}%`,
-        `${Number(d.amount ?? 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })} ريال`,
+        `${Number(d.amount ?? 0).toLocaleString('ar-SA', { minimumFractionDigits: 2, numberingSystem: 'latn' })} ريال`,
         statusMap[d.status] ?? d.status ?? '—',
       ]),
     },
     {
       sectionTitle: '◆ الإجماليات',
       infoRows: [
-        ['المبلغ الإجمالي', commission ? `${Number(commission.total_amount ?? 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })} ريال` : null],
-        ['ضريبة القيمة المضافة (15%)', commission ? `${Number(commission.vat ?? 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })} ريال` : null],
-        ['مصاريف التسويق', commission ? `${Number(commission.marketing_expenses ?? 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })} ريال` : null],
-        ['رسوم البنك', commission ? `${Number(commission.bank_fees ?? 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })} ريال` : null],
-        ['صافي العمولة', commission ? `${Number(commission.net_amount ?? 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })} ريال` : null],
+        ['المبلغ الإجمالي', commission ? `${Number(commission.total_amount ?? 0).toLocaleString('ar-SA', { minimumFractionDigits: 2, numberingSystem: 'latn' })} ريال` : null],
+        ['ضريبة القيمة المضافة (15%)', commission ? `${Number(commission.vat ?? 0).toLocaleString('ar-SA', { minimumFractionDigits: 2, numberingSystem: 'latn' })} ريال` : null],
+        ['مصاريف التسويق', commission ? `${Number(commission.marketing_expenses ?? 0).toLocaleString('ar-SA', { minimumFractionDigits: 2, numberingSystem: 'latn' })} ريال` : null],
+        ['رسوم البنك', commission ? `${Number(commission.bank_fees ?? 0).toLocaleString('ar-SA', { minimumFractionDigits: 2, numberingSystem: 'latn' })} ريال` : null],
+        ['صافي العمولة', commission ? `${Number(commission.net_amount ?? 0).toLocaleString('ar-SA', { minimumFractionDigits: 2, numberingSystem: 'latn' })} ريال` : null],
       ],
     },
   ];

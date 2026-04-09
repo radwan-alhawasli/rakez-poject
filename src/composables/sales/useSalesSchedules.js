@@ -5,6 +5,7 @@ import notificationService from '@/services/notificationService';
 import authService from '@/services/authService';
 import { isSalesLeader } from '@/utils/rbac';
 import logger from '@/utils/logger';
+import { localeOpts } from '@/utils/intlLatn';
 
 export function useSalesSchedules() {
   const route = useRoute();
@@ -65,11 +66,14 @@ export function useSalesSchedules() {
     if (!d) return '—';
     try {
       const [y, m, day] = d.split('-').map(Number);
-      return new Date(y, m - 1, day).toLocaleDateString('ar-SA', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      });
+      return new Date(y, m - 1, day).toLocaleDateString(
+        'ar-SA',
+        localeOpts({
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        }),
+      );
     } catch {
       return d;
     }
@@ -110,12 +114,15 @@ export function useSalesSchedules() {
 
   const updateScheduleViewTime = () => {
     const now = new Date();
-    scheduleViewTime.value = now.toLocaleTimeString('ar-SA', {
-      hour12: true,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
+    scheduleViewTime.value = now.toLocaleTimeString(
+      'ar-SA',
+      localeOpts({
+        hour12: true,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }),
+    );
   };
 
   const getAvatarColor = id => {

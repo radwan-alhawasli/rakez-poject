@@ -9,6 +9,7 @@ import authService from '@/services/authService';
 import notificationService from '@/services/notificationService';
 import { createPusher } from '@/plugins/pusher';
 import logger from '@/utils/logger';
+import { localeOpts } from '@/utils/intlLatn';
 
 const EMOJI_LIST = [
   '\u{1F600}', '\u{1F602}', '\u{1F60D}', '\u{1F60A}', '\u{1F609}', '\u{1F614}', '\u{1F622}', '\u{1F621}',
@@ -104,12 +105,12 @@ export function useErpChat() {
     if (hrs < 24) return `${hrs} س`;
     const days = Math.floor(hrs / 24);
     if (days < 7) return `${days} ي`;
-    return new Date(dt).toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' });
+    return new Date(dt).toLocaleDateString('ar-SA', localeOpts({ month: 'short', day: 'numeric' }));
   };
 
   const formatMsgTime = dt => {
     if (!dt) return '';
-    return new Date(dt).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+    return new Date(dt).toLocaleTimeString('ar-SA', localeOpts({ hour: '2-digit', minute: '2-digit' }));
   };
 
   const scrollToBottom = () => {
