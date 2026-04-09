@@ -21,13 +21,14 @@ export const TRACKER_SECOND_PARTY_KEYS = [
 export function extractSecondPartyShowRow(snap) {
   if (snap == null || typeof snap !== 'object') return null;
 
-  const hasTrackerKeys = obj =>
+  const hasTrackerKeys = (/** @type {unknown} */ obj) =>
     obj != null &&
     typeof obj === 'object' &&
     !Array.isArray(obj) &&
     TRACKER_SECOND_PARTY_KEYS.some(k => Object.prototype.hasOwnProperty.call(obj, k));
 
-  const asRow = o => (hasTrackerKeys(o) ? /** @type {Record<string, unknown>} */ (o) : null);
+  const asRow = (/** @type {unknown} */ o) =>
+    hasTrackerKeys(o) ? /** @type {Record<string, unknown>} */ (o) : null;
 
   const d1 =
     'data' in snap && snap.data != null && typeof snap.data === 'object' && !Array.isArray(snap.data)
