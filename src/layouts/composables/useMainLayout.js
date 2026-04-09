@@ -10,12 +10,14 @@ import authService from '@/services/authService';
 import { usePermissions } from '@/composables/usePermissions';
 import { getRoleLabel } from '@/constants/roles';
 import { normalizeRole } from '@/utils/rbac';
+import { useChatUnreadBadge } from '@/composables/chat/useChatUnreadBadge';
 
 const MOBILE_BREAKPOINT = 992;
 
 export function useMainLayout() {
   const route = useRoute();
   const router = useRouter();
+  const { chatUnreadCount, refreshChatUnreadCount } = useChatUnreadBadge();
 
   const isSidebarOpen = ref(false);
   const isSidebarHovered = ref(false);
@@ -140,6 +142,8 @@ export function useMainLayout() {
     notifications,
     showNotifications,
     unreadCount,
+    chatUnreadCount,
+    refreshChatUnreadCount,
     isSidebarOpen,
     isSidebarHovered,
     isMobile,

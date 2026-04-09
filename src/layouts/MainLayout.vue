@@ -22,6 +22,7 @@
         :notifications="notifications"
         :show-notifications="showNotifications"
         :unread-count="unreadCount"
+        :chat-unread-count="chatUnreadCount"
         @toggle-notifications="toggleNotifications"
         @mark-as-read="markAsRead"
         @mark-all-read="markAllAsRead"

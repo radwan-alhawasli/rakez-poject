@@ -2,6 +2,25 @@
   <header class="top-header">
     <div class="header-left">
       <SidebarTrigger />
+    <RouterLink
+      to="/chat"
+      class="notification-btn chat-shortcut-link"
+      aria-label="الدردشة"
+      title="الدردشة"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+      <span v-if="chatUnreadCount > 0" class="notification-badge">{{ chatBadgeLabel }}</span>
+    </RouterLink>
     <button class="back-btn" @click="$router.back()">
       <svg
         class="arrow-icon"
@@ -129,13 +148,21 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick, onBeforeUnmount } from 'vue';
+import { ref, watch, nextTick, onBeforeUnmount, computed } from 'vue';
+import { RouterLink } from 'vue-router';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
 const props = defineProps({
   notifications: { type: Array, default: () => [] },
   showNotifications: { type: Boolean, default: false },
   unreadCount: { type: Number, default: 0 },
+  chatUnreadCount: { type: Number, default: 0 },
+});
+
+const chatBadgeLabel = computed(() => {
+  const n = props.chatUnreadCount;
+  if (n > 99) return '99+';
+  return String(n);
 });
 
 const emit = defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
