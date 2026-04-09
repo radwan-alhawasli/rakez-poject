@@ -6,11 +6,6 @@
           <div class="hr-performance-shell__brand">
             <span class="hr-performance-shell__kicker">الموارد البشرية</span>
             <h1 class="hr-performance-shell__title">أداء المسوقين</h1>
-            <p class="hr-performance-shell__subtitle">
-              بيانات من مسار
-              <strong class="hr-performance-shell__mono">GET /hr/marketers/performance</strong>
-              — تُفلتر حسب السنة والشهر (ومعامل بحث اختياري بالاسم عند دعم الخادم).
-            </p>
           </div>
           <div class="hr-performance-shell__controls">
             <label class="hr-performance-field">

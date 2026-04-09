@@ -1,13 +1,6 @@
 /* يوحّد المظهر مع تبويب أداء الفرق — هوية Rakez */
 @import '../../team-performance/styles/HRPerformanceTab.scoped.css';
 
-.hr-performance-shell__mono {
-  font-family: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
-  font-size: 0.9em;
-  font-weight: 700;
-  color: rgba(248, 250, 252, 0.95);
-}
-
 /* حقل بحث نصي بجانب القوائم */
 .hr-performance-field--grow {
   flex: 1 1 200px;
