@@ -40,9 +40,75 @@ async function seedAuth(page, userOverrides = {}) {
   }, { user: defaultUser, now, thirtyMin });
 }
 
+/**
+ * CI / preview لا يتصل بخادم API؛ بدون بيانات تُعرض حالة فارغة ولا يظهر الجدول.
+ * نعترض GET لمسار accounting sold-units كي تمر اختبارات هيكل الجدول والعرض.
+ */
+async function mockAccountingSoldUnitsApi(page) {
+  await page.route('**/accounting/sold-units**', async route => {
+    // لا تعترض طلب الوثيقة (SPA) — وإلا يُستبدل HTML بـ JSON ولا تُحمَّل الواجهة
+    if (route.request().resourceType() === 'document') {
+      await route.continue();
+      return;
+    }
+    if (route.request().method() !== 'GET') {
+      await route.continue();
+      return;
+    }
+    const url = new URL(route.request().url());
+    const path = url.pathname.replace(/\/$/, '');
+    const detailMatch = path.match(/\/accounting\/sold-units\/(\d+)$/);
+    if (detailMatch) {
+      const id = detailMatch[1];
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: {
+            id: Number(id),
+            reservation_id: Number(id),
+            project_name: 'مشروع تجريبي',
+            unit_number: 'A-101',
+            final_sale_price: 500000,
+            commission_percentage: 2.5,
+            commission_source: 'buyer',
+            team_name: 'فريق 1',
+          },
+        }),
+      });
+      return;
+    }
+    if (/\/accounting\/sold-units$/.test(path)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: [
+            {
+              id: 1,
+              reservation_id: 100,
+              project_name: 'مشروع تجريبي',
+              unit_number: 'A-101',
+              unit_type: 'شقة',
+              final_sale_price: 500000,
+              commission_source: 'buyer',
+              commission_percentage: 2.5,
+              team_name: 'فريق 1',
+            },
+          ],
+          meta: { total: 1 },
+        }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+}
+
 test.describe('Accounting sold units (commission data)', () => {
   test.beforeEach(async ({ page }) => {
     await seedAuth(page);
+    await mockAccountingSoldUnitsApi(page);
   });
 
   test('should load sold units at /accounting/sold-units', async ({ page }) => {
@@ -53,7 +119,7 @@ test.describe('Accounting sold units (commission data)', () => {
 
   test('should show sold-units tab content via route', async ({ page }) => {
     await page.goto('/accounting/sold-units');
-    await expect(page.locator('.section-title')).toContainText('الوحدات المباعة');
+    await expect(page.locator('#acct-sold-units-title')).toContainText('الوحدات المباعة');
   });
 
   test('should render table structure for sold units list', async ({ page }) => {
