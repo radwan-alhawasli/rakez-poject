@@ -1,44 +1,32 @@
 <template>
   <div class="editor-projects-view">
-    <div class="page-header">
-      <h1 class="page-title">المشاريع</h1>
-      <p class="page-subtitle">قبل المونتاج وبعد المونتاج حسب حالة التصوير والمونتاج.</p>
-    </div>
-
-    <div class="tabs-row">
-      <button
-        :class="['tab-btn', { active: activeTab === 'before' }]"
-        @click="activeTab = 'before'"
-      >
-        قبل المونتاج ({{ beforeMontage.length }})
-      </button>
-      <button
-        :class="['tab-btn', { active: activeTab === 'after' }]"
-        @click="activeTab = 'after'"
-      >
-        بعد المونتاج ({{ afterMontage.length }})
-      </button>
-    </div>
-
-    <div v-if="isLoading" class="loading-state">
-      <div class="spinner"></div>
-      <p>جاري تحميل المشاريع...</p>
-    </div>
-
-    <template v-else>
-      <!-- Before Montage -->
-      <section v-if="activeTab === 'before'" class="content-panel">
-        <div v-if="beforeMontage.length === 0" class="empty-state">
-          <p>لا توجد مشاريع قبل المونتاج.</p>
+    <!-- طابور قبول الوسائط (مدير): بعد المونتاج + قيد المراجعة فقط -->
+    <template v-if="isPendingQueueOnly">
+      <div class="page-header">
+        <h1 class="page-title">قبول الوسائط</h1>
+        <p class="page-subtitle">
+          مشاريع أُكمل مونتاجها وبانتظار اعتمادك أو رفضها.
+        </p>
+      </div>
+      <div v-if="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>جاري تحميل المشاريع...</p>
+      </div>
+      <section v-else class="content-panel">
+        <div v-if="afterMontageListForView.length === 0" class="empty-state">
+          <p>لا توجد مشاريع بانتظار قبول الوسائط.</p>
         </div>
         <div v-else class="cards-grid">
           <EditorProjectCard
-            v-for="p in beforeMontage"
+            v-for="p in afterMontageListForView"
             :key="p.id"
             :project="p"
+            variant="after"
             :is-manager="isManager"
-            status-label="قبل المونتاج"
-            status-class="status-pending"
+            :status-label="montageStatusLabel(p)"
+            :status-class="montageStatusClass(p)"
+            :has-links="isManager ? (montageHasLinksMap[p.id] ?? null) : null"
+            compact-links
             @add-links="openDetail($event)"
             @see-more="openSeeMore($event)"
             @approve="doApprove($event.id)"
@@ -46,59 +34,79 @@
           />
         </div>
       </section>
+    </template>
 
-      <!-- After Montage -->
-      <section v-if="activeTab === 'after'" class="content-panel">
-        <div v-if="afterMontage.length === 0" class="empty-state">
-          <p>لا توجد مشاريع بعد المونتاج.</p>
-        </div>
-        <template v-else>
-          <div class="tabs-row tabs-row-sub" role="tablist" aria-label="تصفية حالة المونتاج">
-            <button
-              type="button"
-              :class="['tab-btn', { active: afterStatusFilter === 'all' }]"
-              role="tab"
-              :aria-selected="afterStatusFilter === 'all'"
-              @click="afterStatusFilter = 'all'"
-            >
-              الكل ({{ afterMontageCounts.all }})
-            </button>
-            <button
-              type="button"
-              :class="['tab-btn', { active: afterStatusFilter === 'pending' }]"
-              role="tab"
-              :aria-selected="afterStatusFilter === 'pending'"
-              @click="afterStatusFilter = 'pending'"
-            >
-              قيد المراجعة ({{ afterMontageCounts.pending }})
-            </button>
-            <button
-              type="button"
-              :class="['tab-btn', { active: afterStatusFilter === 'approved' }]"
-              role="tab"
-              :aria-selected="afterStatusFilter === 'approved'"
-              @click="afterStatusFilter = 'approved'"
-            >
-              معتمد ({{ afterMontageCounts.approved }})
-            </button>
-            <button
-              type="button"
-              :class="['tab-btn', { active: afterStatusFilter === 'rejected' }]"
-              role="tab"
-              :aria-selected="afterStatusFilter === 'rejected'"
-              @click="afterStatusFilter = 'rejected'"
-            >
-              مرفوض ({{ afterMontageCounts.rejected }})
-            </button>
-          </div>
-          <div v-if="filteredAfterMontage.length === 0" class="empty-state empty-state-filtered">
-            <p>لا توجد مشاريع ضمن التصفية المحددة.</p>
+    <template v-else>
+      <div class="page-header">
+        <h1 class="page-title">المشاريع</h1>
+        <p class="page-subtitle">
+          التبويبان يصفّان القائمة: «قبل المونتاج» لما يحتاج إدخال/تصحيح روابط المونتاج؛ «بعد المونتاج» يعرض فقط المشاريع التي لديها روابط كاملة في <strong>قسم المونتاج</strong> وليست بحالة رفض.
+        </p>
+      </div>
+
+      <div class="tabs-row" role="tablist" aria-label="تصفية المشاريع حسب مرحلة المونتاج">
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === 'before'"
+          :class="['tab-btn', { active: activeTab === 'before' }]"
+          @click="goProjectsTab('before')"
+        >
+          قبل المونتاج ({{ beforeMontage.length }})
+        </button>
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === 'after'"
+          :class="['tab-btn', { active: activeTab === 'after' }]"
+          @click="goProjectsTab('after')"
+        >
+          بعد المونتاج ({{ afterMontage.length }})
+        </button>
+      </div>
+      <p v-if="activeTab === 'after'" class="tab-filter-hint" role="note">
+        تصفية نشطة: مشاريع بروابط مونتاج كاملة (صورة، فيديو، وصف) وحالة المونتاج ليست «مرفوض» — يشمل الروابط المحفوظة في قسم المونتاج أو الواردة على العقد.
+      </p>
+
+      <div v-if="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>جاري تحميل المشاريع...</p>
+      </div>
+
+      <template v-else>
+        <!-- Before Montage -->
+        <section v-if="activeTab === 'before'" class="content-panel">
+          <div v-if="beforeMontage.length === 0" class="empty-state">
+            <p>لا توجد مشاريع قبل المونتاج.</p>
           </div>
           <div v-else class="cards-grid">
             <EditorProjectCard
-              v-for="p in filteredAfterMontage"
+              v-for="p in beforeMontage"
               :key="p.id"
               :project="p"
+              variant="before"
+              :is-manager="isManager"
+              status-label="قبل المونتاج"
+              status-class="status-pending"
+              @add-links="openDetail($event)"
+              @see-more="openSeeMore($event)"
+              @approve="doApprove($event.id)"
+              @reject="openRejectModal($event.id)"
+            />
+          </div>
+        </section>
+
+        <!-- After Montage -->
+        <section v-if="activeTab === 'after'" class="content-panel">
+          <div v-if="afterMontage.length === 0" class="empty-state">
+            <p>لا توجد مشاريع بعد المونتاج.</p>
+          </div>
+          <div v-else class="cards-grid">
+            <EditorProjectCard
+              v-for="p in afterMontageListForView"
+              :key="p.id"
+              :project="p"
+              variant="after"
               :is-manager="isManager"
               :status-label="montageStatusLabel(p)"
               :status-class="montageStatusClass(p)"
@@ -110,8 +118,8 @@
               @reject="openRejectModal($event.id)"
             />
           </div>
-        </template>
-      </section>
+        </section>
+      </template>
     </template>
 
     <!-- Detail + Montage Modal -->
@@ -123,38 +131,48 @@
         </div>
         <div v-if="detailLoading" class="loading-inline">جاري تحميل التفاصيل...</div>
         <template v-else>
-          <div v-if="detail || montageData" class="detail-fields">
-            <p><strong>رقم المعلن:</strong> <span :class="{ 'value-null': !displayDetail.advertiser_number }">{{ displayDetail.advertiser_number ?? '—' }}</span></p>
-            <p><strong>رابط التصوير:</strong>
-              <a v-if="displayDetail.photography_link && displayDetail.photography_link !== '—'" :href="displayDetail.photography_link" target="_blank" rel="noopener noreferrer" class="link-cell">{{ displayDetail.photography_link }}</a>
+          <div v-if="detail || montageData" class="detail-fields photography-source-block">
+            <h4 class="modal-section-title">بيانات التصوير الأصلية (مرجع للمحرر)</h4>
+            <p><strong>رقم المعلن:</strong> <span :class="{ 'value-null': !photographySourceDetail.advertiser_number || photographySourceDetail.advertiser_number === '—' }">{{ photographySourceDetail.advertiser_number ?? '—' }}</span></p>
+            <p><strong>حالة التصوير:</strong>
+              <span
+                class="status-badge inline-status"
+                :class="photographySourceDetail.photography_status.class"
+              >{{ photographySourceDetail.photography_status.label }}</span>
+            </p>
+            <p><strong>رابط التصوير (الأصل):</strong>
+              <a v-if="photographySourceDetail.photography_link && photographySourceDetail.photography_link !== '—'" :href="photographySourceDetail.photography_link" target="_blank" rel="noopener noreferrer" class="link-cell">{{ photographySourceDetail.photography_link }}</a>
               <span v-else :class="{ 'value-null': true }">—</span></p>
-            <p><strong>رابط الفيديو:</strong>
-              <a v-if="displayDetail.video_link && displayDetail.video_link !== '—'" :href="displayDetail.video_link" target="_blank" rel="noopener noreferrer" class="link-cell">{{ displayDetail.video_link }}</a>
+            <p><strong>رابط الفيديو (الأصل):</strong>
+              <a v-if="photographySourceDetail.video_link && photographySourceDetail.video_link !== '—'" :href="photographySourceDetail.video_link" target="_blank" rel="noopener noreferrer" class="link-cell">{{ photographySourceDetail.video_link }}</a>
               <span v-else :class="{ 'value-null': true }">—</span></p>
-            <p><strong>الوصف:</strong> <span :class="{ 'value-null': !displayDetail.description }">{{ displayDetail.description ?? '—' }}</span></p>
-            <p><strong>الوحدات المتاحة:</strong> <span :class="{ 'value-null': displayDetail.available_units == null }">{{ displayDetail.available_units !== undefined && displayDetail.available_units !== null ? displayDetail.available_units : '—' }}</span></p>
+            <p><strong>الوصف (الأصل):</strong> <span :class="{ 'value-null': photographySourceDetail.description === '—' }">{{ photographySourceDetail.description ?? '—' }}</span></p>
+            <p><strong>الوحدات المتاحة:</strong> <span :class="{ 'value-null': photographySourceDetail.available_units == null }">{{ photographySourceDetail.available_units !== undefined && photographySourceDetail.available_units !== null ? photographySourceDetail.available_units : '—' }}</span></p>
           </div>
           <!-- سبب رفض المونتاج (يظهر عند الرفض فقط) -->
           <div v-if="montageRejectionNote" class="rejection-details-panel" role="region" aria-label="تفاصيل رفض المونتاج">
             <h4 class="rejection-details-panel__title">تفاصيل رفض المونتاج</h4>
             <p class="rejection-details-panel__body">{{ montageRejectionNote }}</p>
-            <p class="rejection-details-panel__hint">عند تحديث الروابط أو الوصف والضغط على «تحديث» يُعاد إرسال العمل لـ <strong>قيد المراجعة</strong> بعد اعتماد الخادم.</p>
+            <p class="rejection-details-panel__hint">عند تحديث روابط المونتاج أو الوصف والضغط على «حفظ» أو «تحديث» يُعاد إرسال العمل لـ <strong>قيد المراجعة</strong> بعد اعتماد الخادم.</p>
           </div>
           <!-- Montage form: images, videos, description -->
           <div class="montage-form-section">
-            <h4>قسم المونتاج (صور، فيديو، وصف)</h4>
+            <h4>مخرجات المونتاج (الروابط بعد التعديل)</h4>
+            <p class="montage-form-hint">
+              أدخل روابط الصور والفيديو والوصف <strong>بعد المونتاج</strong>؛ عند اكتمال الحقول الثلاثة يُرسل الطلب إلى تبويب «بعد المونتاج» لمراجعة المدير.
+            </p>
             <div class="form-grid">
               <div class="form-group">
-                <label>رابط الصور</label>
+                <label>رابط صور المونتاج</label>
                 <input v-model="montageForm.image_url" type="text" class="form-input" placeholder="URL" />
               </div>
               <div class="form-group">
-                <label>رابط الفيديو</label>
+                <label>رابط فيديو المونتاج</label>
                 <input v-model="montageForm.video_url" type="text" class="form-input" placeholder="URL" />
               </div>
               <div class="form-group full-width">
-                <label>الوصف</label>
-                <textarea v-model="montageForm.description" class="form-input" rows="3" placeholder="الوصف"></textarea>
+                <label>وصف المونتاج</label>
+                <textarea v-model="montageForm.description" class="form-input" rows="3" placeholder="وصف المحتوى بعد المونتاج"></textarea>
               </div>
             </div>
             <div class="modal-actions">
@@ -162,23 +180,6 @@
               <button type="button" class="btn-primary" :disabled="montageSaving" @click="submitMontage">
                 {{ montageData && Object.keys(montageData).length ? 'تحديث' : 'حفظ' }}
               </button>
-            </div>
-          </div>
-          <!-- Manager: Approve / Reject (after montage only, إن لم يُعتمد/يُرفض بعد) -->
-          <div
-            v-if="
-              isManager &&
-              activeTab === 'after' &&
-              montageData &&
-              (selectedProject.has_montage_data == 1 || selectedProject.has_montage == 1 || selectedProject.has_montage === true) &&
-              !isMontageDecisionFinal(selectedProject, montageStatusLabel(selectedProject))
-            "
-            class="manager-actions"
-          >
-            <h4>قرار المدير</h4>
-            <div class="action-buttons">
-              <button type="button" class="btn-approve" @click="doApprove(selectedProject.id)">قبول</button>
-              <button type="button" class="btn-reject" @click="openRejectModal(selectedProject.id)">رفض</button>
             </div>
           </div>
         </template>
@@ -262,9 +263,8 @@ const {
   isLoading,
   beforeMontage,
   afterMontage,
-  afterStatusFilter,
-  filteredAfterMontage,
-  afterMontageCounts,
+  isPendingQueueOnly,
+  afterMontageListForView,
   detail,
   detailLoading,
   montageData,
@@ -281,9 +281,10 @@ const {
   montageRejectionNote,
   seeMoreMontageRejection,
   seeMoreMontageStatusLine,
-  displayDetail,
+  photographySourceDetail,
   seeMoreDisplay,
   seeMoreUnits,
+  goProjectsTab,
   openDetail,
   openSeeMore,
   closeSeeMore,
@@ -299,7 +300,6 @@ const {
   doApprove,
   openRejectModal,
   doReject,
-  isMontageDecisionFinal,
 } = useEditorProjectsView();
 </script>
 

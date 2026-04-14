@@ -108,25 +108,61 @@
       </div>
     </div>
 
-    <!-- Rejection Modal (Dialog) -->
-    <Dialog :open="showRejectModal" @update:open="showRejectModal = $event">
-      <DialogContent class="image-reject-dialog max-w-md rounded-2xl p-6" dir="rtl">
-        <DialogHeader>
-          <DialogTitle>رفض الصور</DialogTitle>
-        </DialogHeader>
-        <p class="mb-3 text-sm text-muted-foreground">يرجى ذكر سبب الرفض ليتمكن المطور من التعديل:</p>
-        <textarea
-          v-model="rejectReasonInput"
-          class="form-input mb-4 w-full rounded-lg border border-[var(--color-medium-gray)] px-3 py-2"
-          rows="3"
-          placeholder="سبب الرفض..."
-        ></textarea>
-        <DialogFooter class="flex-col gap-2 sm:flex-row sm:justify-end">
-          <button type="button" class="btn-text" @click="closeRejectModal">إلغاء</button>
-          <button type="button" class="btn-danger-solid" @click="confirmReject">تأكيد الرفض</button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <!-- تأكيد رفض الصور — نفس نمط ConfirmModal / ProjectPhotographyTab -->
+    <AlertDialog :open="showRejectModal" @update:open="onRejectOpenChange">
+      <AlertDialogContent
+        class="confirm-alert-content max-w-md rounded-2xl border-0 bg-white p-0 shadow-xl"
+        dir="rtl"
+      >
+        <AlertDialogHeader class="px-6 pt-6 pb-2 text-center sm:text-center">
+          <AlertDialogTitle class="text-xl font-extrabold text-[var(--color-navy)]">
+            رفض الصور
+          </AlertDialogTitle>
+        </AlertDialogHeader>
+        <div class="confirm-modal-body px-6 pb-4 pt-2 text-center">
+          <div
+            class="confirm-modal-icon icon-warning mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-10 w-10">
+              <path
+                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+              ></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <p class="confirm-modal-message mb-3 text-base font-medium text-[var(--color-dark-gray)]">
+            يرجى ذكر سبب الرفض ليتمكن المطور من التعديل:
+          </p>
+          <label class="sr-only" for="image-approval-reject-reason">سبب الرفض</label>
+          <textarea
+            id="image-approval-reject-reason"
+            v-model="rejectReasonInput"
+            class="photography-reject-textarea"
+            rows="4"
+            placeholder="سبب الرفض..."
+          ></textarea>
+        </div>
+        <AlertDialogFooter
+          class="flex flex-row flex-wrap justify-center gap-3 border-t border-[var(--color-light-gray)] px-6 py-4 sm:justify-center"
+        >
+          <AlertDialogCancel
+            type="button"
+            class="btn-cancel min-w-[120px] rounded-xl border-2 border-[var(--color-medium-gray)] bg-[var(--color-light-gray)] px-8 py-3.5 text-[15px] font-bold text-[var(--color-dark-gray)] hover:bg-[var(--color-light-gray)] hover:text-[var(--color-charcoal)]"
+            @click="closeRejectModal"
+          >
+            إلغاء
+          </AlertDialogCancel>
+          <button
+            type="button"
+            class="photography-reject-confirm-btn min-w-[120px] rounded-xl px-8 py-3.5 text-[15px] font-bold text-white shadow-md"
+            @click="confirmReject"
+          >
+            تأكيد الرفض
+          </button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
 
     <ConfirmModal
       v-if="showConfirmModal"
@@ -148,22 +184,24 @@ import logger from '@/utils/logger';
 import { localeOpts } from '@/utils/intlLatn';
 import { toast } from '@/composables/useToast';
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default {
   name: 'ImageApprovalView',
   components: {
     ConfirmModal,
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
   },
   setup() {
     const pendingImages = ref([]);
@@ -267,11 +305,17 @@ export default {
 
     const closeRejectModal = () => {
       showRejectModal.value = false;
+      rejectReasonInput.value = '';
       selectedItem.value = null;
     };
 
+    const onRejectOpenChange = open => {
+      if (!open) closeRejectModal();
+    };
+
     const confirmReject = async () => {
-      if (!rejectReasonInput.value) {
+      const reason = String(rejectReasonInput.value || '').trim();
+      if (!reason) {
         toast.warning('يرجى إدخال سبب الرفض');
         return;
       }
@@ -279,8 +323,9 @@ export default {
 
       try {
         await contractService.approvePhotography(selectedItem.value.projectId, {
-          status: 'rejected',
-          rejection_reason: rejectReasonInput.value,
+          approved: '0',
+          comment: reason,
+          rejection_comment: reason,
         });
         // Remove from list
         pendingImages.value = pendingImages.value.filter(
@@ -310,6 +355,7 @@ export default {
       rejectReasonInput,
       openRejectModal,
       closeRejectModal,
+      onRejectOpenChange,
       confirmReject,
     };
   },
@@ -318,3 +364,44 @@ export default {
 
 <style scoped src="./styles/ImageApprovalView.scoped.s1.css"></style>
 <style scoped src="./styles/ImageApprovalView.scoped.s2.css"></style>
+<style scoped>
+/* نفس نمط رفض التصوير في ProjectPhotographyTab */
+.confirm-modal-icon.icon-warning {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #d97706;
+  border: 3px solid #fbbf24;
+}
+.confirm-modal-message {
+  line-height: 1.6;
+}
+.photography-reject-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--color-navy, #27374d);
+  background: #f8fafc;
+  border: 2px solid var(--color-light-gray, #e2e8f0);
+  border-radius: 12px;
+  min-height: 120px;
+  resize: vertical;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.photography-reject-textarea::placeholder {
+  color: #94a3b8;
+}
+.photography-reject-textarea:focus {
+  outline: none;
+  border-color: #b1a28f;
+  background: #fff;
+}
+.photography-reject-confirm-btn {
+  background: linear-gradient(135deg, var(--color-error, #ef4444) 0%, #dc2626 100%);
+}
+.photography-reject-confirm-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+</style>

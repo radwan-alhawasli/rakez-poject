@@ -29,15 +29,6 @@
             }}
           </span>
 
-          <button
-            v-if="photographyForm.status === 'rejected'"
-            type="button"
-            class="btn-rejection-reason"
-            @click="openRejectionReasonModal"
-          >
-            عرض سبب الرفض
-          </button>
-
           <div
             v-if="photographyForm.updated_at"
             class="update-info-badge text-gray-500 text-[13px]"
@@ -58,23 +49,6 @@
             </svg>
             آخر تحديث: {{ photographyForm.updated_at }}
           </div>
-        </div>
-
-        <!-- تفاصيل الرفض (لموظف إدارة المشاريع / المطور) -->
-        <div
-          v-if="photographyForm.status === 'rejected'"
-          class="photography-rejection-details"
-          role="region"
-          aria-label="تفاصيل رفض التصوير"
-        >
-          <h4 class="photography-rejection-title">تفاصيل الرفض من إدارة المشاريع</h4>
-          <p v-if="photographyForm.rejection_reason" class="photography-rejection-body">
-            {{ photographyForm.rejection_reason }}
-          </p>
-          <p v-else class="photography-rejection-body muted">لم يُذكر نص للرفض. يمكنك تعديل الروابط وإعادة الإرسال للمراجعة.</p>
-          <p v-if="!isManager" class="photography-rejection-hint">
-            بعد تحديث البيانات والضغط على «حفظ وإرسال للموافقة» يعود الطلب إلى <strong>قيد المراجعة</strong>.
-          </p>
         </div>
       </div>
 
@@ -189,44 +163,81 @@
               تم اعتماد الصور
             </p>
           </div>
+
+          <!-- سبب الرفض (للمطوّر): يظهر تحت زر الإرسال حتى يُحدَّث الطلب ويُعاد للمراجعة -->
+          <div
+            v-if="photographyForm.status === 'rejected'"
+            class="photography-rejection-panel"
+            role="region"
+            aria-label="سبب رفض طلب التصوير"
+          >
+            <h4 class="photography-rejection-panel__title">سبب الرفض</h4>
+            <p class="photography-rejection-panel__body">
+              {{ photographyForm.rejection_reason || 'لم يُذكر سبب محدد.' }}
+            </p>
+            <p class="photography-rejection-panel__hint">
+              عند تحديث الروابط أو الوصف والضغط على «حفظ وإرسال للموافقة» يُعاد إرسال الطلب لـ
+              <strong>قيد المراجعة</strong> بعد اعتماد الخادم، ويختفي هذا الإشعار.
+            </p>
+          </div>
         </form>
       </div>
 
-      <!-- Read-only: سبب الرفض -->
-      <div v-if="showRejectionReasonModal" class="modal-overlay" @click.self="closeRejectionReasonModal">
-        <div class="modal-content">
-          <h3>سبب الرفض</h3>
-          <p class="photography-rejection-body read-only-modal-body">
-            {{ photographyForm.rejection_reason || 'لم يُذكر نص للرفض.' }}
-          </p>
-          <div class="modal-actions">
-            <button type="button" class="btn-text" @click="closeRejectionReasonModal">إغلاق</button>
+      <!-- تأكيد رفض التصوير — نفس نمط ConfirmModal مع حقل سبب الرفض -->
+      <AlertDialog :open="showRejectModal" @update:open="onRejectOpenChange">
+        <AlertDialogContent
+          class="confirm-alert-content max-w-md rounded-2xl border-0 bg-white p-0 shadow-xl"
+          dir="rtl"
+        >
+          <AlertDialogHeader class="px-6 pt-6 pb-2 text-center sm:text-center">
+            <AlertDialogTitle class="text-xl font-extrabold text-[var(--color-navy)]">
+              رفض طلب التصوير
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          <div class="confirm-modal-body px-6 pb-4 pt-2 text-center">
+            <div
+              class="confirm-modal-icon icon-warning mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-10 w-10">
+                <path
+                  d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+                ></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
+            <p class="confirm-modal-message mb-3 text-base font-medium text-[var(--color-dark-gray)]">
+              يرجى ذكر سبب الرفض ليتمكن المطور من التعديل:
+            </p>
+            <label class="sr-only" for="photography-reject-reason">سبب الرفض</label>
+            <textarea
+              id="photography-reject-reason"
+              v-model="rejectReasonInput"
+              class="photography-reject-textarea"
+              rows="4"
+              placeholder="سبب الرفض..."
+            ></textarea>
           </div>
-        </div>
-      </div>
-
-      <!-- Rejection Modal -->
-      <div v-if="showRejectModal" class="modal-overlay">
-        <div class="modal-content">
-          <h3>رفض الصور</h3>
-          <p>يرجى ذكر سبب الرفض ليتمكن المطور من التعديل:</p>
-          <textarea
-            v-model="rejectReasonInput"
-            class="form-input w-full mb-4"
-            rows="3"
-            placeholder="سبب الرفض..."
-          ></textarea>
-          <div class="modal-actions">
-            <button class="btn-text" @click="showRejectModal = false">إلغاء</button>
+          <AlertDialogFooter
+            class="flex flex-row flex-wrap justify-center gap-3 border-t border-[var(--color-light-gray)] px-6 py-4 sm:justify-center"
+          >
+            <AlertDialogCancel
+              type="button"
+              class="btn-cancel min-w-[120px] rounded-xl border-2 border-[var(--color-medium-gray)] bg-[var(--color-light-gray)] px-8 py-3.5 text-[15px] font-bold text-[var(--color-dark-gray)] hover:bg-[var(--color-light-gray)] hover:text-[var(--color-charcoal)]"
+              @click="closeRejectModal"
+            >
+              إلغاء
+            </AlertDialogCancel>
             <button
-              class="btn-danger bg-red-500 text-white py-2 px-4 rounded-md border-none"
+              type="button"
+              class="photography-reject-confirm-btn min-w-[120px] rounded-xl px-8 py-3.5 text-[15px] font-bold text-white shadow-md"
               @click="rejectPhotography"
             >
               تأكيد الرفض
             </button>
-          </div>
-        </div>
-      </div>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </template>
 
     <ConfirmModal
@@ -244,6 +255,14 @@
 <script setup>
 import { onMounted } from 'vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useProjectPhotography } from '@/composables/project/useProjectPhotography';
 
 const props = defineProps({
@@ -259,9 +278,6 @@ const {
   isEditingPending,
   showRejectModal,
   rejectReasonInput,
-  showRejectionReasonModal,
-  openRejectionReasonModal,
-  closeRejectionReasonModal,
   showConfirmModal,
   confirmModalConfig,
   onConfirmModalConfirm,
@@ -270,8 +286,13 @@ const {
   cancelPhotoEdit,
   approvePhotography,
   openRejectModal,
+  closeRejectModal,
   rejectPhotography,
 } = useProjectPhotography(props.projectId);
+
+const onRejectOpenChange = open => {
+  if (!open) closeRejectModal();
+};
 
 onMounted(() => {
   loadPhotography();
@@ -337,23 +358,82 @@ onMounted(() => {
   background: #fee2e2;
   color: #dc2626;
 }
-.btn-rejection-reason {
-  padding: 6px 12px;
+
+/* نفس أيقونة التحذير في ConfirmModal */
+.confirm-modal-icon.icon-warning {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #d97706;
+  border: 3px solid #fbbf24;
+}
+
+.confirm-modal-message {
+  line-height: 1.6;
+}
+
+.photography-reject-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--color-navy, #27374d);
+  background: #f8fafc;
+  border: 2px solid var(--color-light-gray, #e2e8f0);
+  border-radius: 12px;
+  min-height: 120px;
+  resize: vertical;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.photography-reject-textarea::placeholder {
+  color: #94a3b8;
+}
+
+.photography-reject-textarea:focus {
+  outline: none;
+  border-color: #b1a28f;
+  background: #fff;
+}
+
+.photography-reject-confirm-btn {
+  background: linear-gradient(135deg, var(--color-error, #ef4444) 0%, #dc2626 100%);
+}
+
+.photography-reject-confirm-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.photography-rejection-panel {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
   border-radius: 10px;
   border: 1px solid #fecaca;
-  background: #fff;
-  color: #991b1b;
+  background: linear-gradient(180deg, #fff5f5 0%, #fef2f2 100%);
+  box-shadow: 0 1px 3px rgba(153, 27, 27, 0.08);
+  text-align: right;
+}
+.photography-rejection-panel__title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
   font-weight: 700;
-  font-size: 12px;
-  cursor: pointer;
+  color: #991b1b;
 }
-.btn-rejection-reason:hover {
-  background: #fef2f2;
+.photography-rejection-panel__body {
+  margin: 0 0 0.65rem 0;
+  color: #7f1d1d;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
-.read-only-modal-body {
-  margin: 0 0 1rem;
-  min-height: 3rem;
+.photography-rejection-panel__hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #9a3412;
+  line-height: 1.45;
 }
+
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -407,31 +487,6 @@ onMounted(() => {
 .update-btn.secondary {
   background: #64748b;
 }
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 500px;
-}
-.modal-actions {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
 .btn-text {
   background: none;
   border: none;
@@ -447,41 +502,6 @@ onMounted(() => {
     max-width: 100%;
   }
   .form-grid { grid-template-columns: 1fr; }
-  .modal-content {
-    max-width: 90%;
-    padding: 24px;
-  }
-}
-.photography-rejection-details {
-  margin-top: 1.25rem;
-  padding: 1rem 1.15rem;
-  border-radius: 10px;
-  border: 1px solid #fecaca;
-  background: linear-gradient(180deg, #fff5f5 0%, #fef2f2 100%);
-  box-shadow: 0 1px 3px rgba(153, 27, 27, 0.08);
-}
-.photography-rejection-title {
-  margin: 0 0 0.5rem 0;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #991b1b;
-}
-.photography-rejection-body {
-  margin: 0 0 0.65rem 0;
-  color: #7f1d1d;
-  line-height: 1.55;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.photography-rejection-body.muted {
-  color: #9a3412;
-  font-style: italic;
-}
-.photography-rejection-hint {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #9a3412;
-  line-height: 1.45;
 }
 
 @media (max-width: 576px) {
@@ -498,11 +518,5 @@ onMounted(() => {
     min-height: 44px;
     width: 100%;
   }
-  .modal-content {
-    max-width: 95%;
-    padding: 20px;
-  }
-  .modal-actions { flex-direction: column; }
-  .modal-actions button { min-height: 44px; }
 }
 </style>

@@ -32,6 +32,14 @@ export function useProjectPhotography(projectId) {
     showConfirmModal.value = false;
   };
 
+  const pickRejectionText = p => {
+    if (!p || typeof p !== 'object') return null;
+    const t = (p.rejection_comment ?? p.comment ?? p.rejection_reason ?? '')
+      .toString()
+      .trim();
+    return t || null;
+  };
+
   const mapApiToFormStatus = p => {
     if (!p || typeof p !== 'object') return { status: 'pending', rejection_reason: null };
     const approved = p.approved;
@@ -39,22 +47,18 @@ export function useProjectPhotography(projectId) {
       return { status: 'approved', rejection_reason: null };
     }
     if (approved === '0' || approved === 0 || approved === false) {
-      const reason = (p.comment ?? p.rejection_reason ?? '').toString().trim() || null;
-      return { status: 'rejected', rejection_reason: reason };
+      return { status: 'rejected', rejection_reason: pickRejectionText(p) };
     }
     const st = String(p.status || '').toLowerCase();
     if (st === 'approved' || st.includes('معتمد')) {
       return { status: 'approved', rejection_reason: null };
     }
     if (st === 'rejected' || st.includes('مرفوض') || st.includes('رفض')) {
-      const reason = (p.comment ?? p.rejection_reason ?? '').toString().trim() || null;
-      return { status: 'rejected', rejection_reason: reason };
+      return { status: 'rejected', rejection_reason: pickRejectionText(p) };
     }
     return {
       status: 'pending',
-      rejection_reason: (p.rejection_reason ?? p.comment ?? null)
-        ? String(p.rejection_reason ?? p.comment).trim()
-        : null,
+      rejection_reason: pickRejectionText(p),
     };
   };
 
@@ -156,6 +160,11 @@ export function useProjectPhotography(projectId) {
     showRejectModal.value = true;
   };
 
+  const closeRejectModal = () => {
+    showRejectModal.value = false;
+    rejectReasonInput.value = '';
+  };
+
   const rejectPhotography = async () => {
     const reason = String(rejectReasonInput.value || '').trim();
     if (!reason) {
@@ -166,8 +175,9 @@ export function useProjectPhotography(projectId) {
       await contractService.approvePhotography(projectId, {
         approved: '0',
         comment: reason,
+        rejection_comment: reason,
       });
-      showRejectModal.value = false;
+      closeRejectModal();
       toast.success('تم رفض الصور');
       await loadPhotography();
     } catch (error) {
@@ -202,6 +212,7 @@ export function useProjectPhotography(projectId) {
     cancelPhotoEdit,
     approvePhotography,
     openRejectModal,
+    closeRejectModal,
     rejectPhotography,
   };
 }

@@ -13,6 +13,8 @@ export default {
     { path: '', name: 'Editor', redirect: { name: 'EditorDashboard' } },
     { path: 'dashboard', name: 'EditorDashboard', component: () => import('@/modules/editor/views/EditorDashboardView.vue') },
     { path: 'projects', name: 'EditorProjects', component: () => import('@/modules/editor/views/EditorProjectsView.vue') },
+    /** قبول الوسائط — نفس الصفحة مع filter=pending (قيد المراجعة بعد المونتاج) */
+    { path: 'media-approval', name: 'EditorMediaApproval', redirect: { name: 'EditorProjects', query: { filter: 'pending' } } },
     { path: 'projects/not-montaged', name: 'EditorProjectsNotMontaged', redirect: { name: 'EditorProjects', query: { tab: 'before' } } },
     { path: 'projects/after-montage', name: 'EditorProjectsAfterMontage', redirect: { name: 'EditorProjects', query: { tab: 'after' } } },
     { path: 'teams', name: 'EditorTeams', component: () => import('@/modules/editor/views/EditorTeamsView.vue') },

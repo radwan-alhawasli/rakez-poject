@@ -7,7 +7,6 @@ import { toast } from '@/composables/useToast';
 import { showApiError, getApiErrorMessage } from '@/utils/errorHandler';
 import { useFormatters } from '@/composables/useFormatters';
 import {
-  getTrackerLabels,
   getTrackerStageCount,
   isCashReservation,
   recordAfterAdvance,
@@ -100,7 +99,6 @@ export function useCreditBookings() {
 
   const showNegotiationModal = ref(false);
   const showProcessModal = ref(false);
-  const showAdvanceConfirmModal = ref(false);
   const isAdvancing = ref(false);
   const showRejectFinancingModal = ref(false);
   const rejectFinancingReason = ref('');
@@ -330,37 +328,6 @@ export function useCreditBookings() {
       title_transfer_id: raw.title_transfer?.id ?? raw.title_transfer_id ?? null,
     };
   };
-
-  // ── Tracker / advance stage ──
-
-  const advanceCompletedCount = computed(() => {
-    const b = selectedBooking.value;
-    const cap = getTrackerStageCount(b || {});
-    const t = selectedFinancingTracker.value;
-    if (t?.all_completed) return cap;
-    const steps = b?.credit_procedure_steps;
-    if (Array.isArray(steps) && steps.length > 0) {
-      return Math.min(
-        cap,
-        steps.filter(s => s.status === 'completed' || s.status === 'done' || s.completed).length
-      );
-    }
-    const stages = t?.stages ?? [];
-    const completed = t?.completed_stages;
-    if (typeof completed === 'number') return Math.min(cap, completed);
-    return Math.min(cap, stages.filter(s => s?.completed || s?.done).length);
-  });
-
-  const nextStageLabel = computed(() => {
-    const b = selectedBooking.value;
-    const labels = getTrackerLabels(b || {});
-    const steps = b?.credit_procedure_steps;
-    const n = advanceCompletedCount.value;
-    if (n >= labels.length) return '';
-    if (Array.isArray(steps) && steps[n])
-      return steps[n].label_ar || steps[n].label || labels[n] || '';
-    return labels[n] || '';
-  });
 
   // ── Load functions ──
 
@@ -789,25 +756,34 @@ export function useCreditBookings() {
     showConfirmModal.value = false;
   };
 
-  const onBookingNextStage = () => {
+  const onBookingNextStage = async () => {
     const bookingId = selectedBookingId();
     if (!bookingId) {
       toast.warning('لا يمكن تنفيذ العملية');
       return;
     }
-    showAdvanceConfirmModal.value = true;
-  };
-
-  const onAdvanceConfirm = async () => {
-    const bookingId = selectedBookingId();
-    if (!bookingId) return;
+    const booking = selectedBooking.value;
+    if (selectedFinancingTracker.value?.all_completed) {
+      toast.warning('جميع المراحل مكتملة');
+      return;
+    }
     isAdvancing.value = true;
     try {
+      /** أول طلب POST قد يُنشئ التتبع فقط دون تسجيل إكمال للمرحلة الحالية (راجع creditService.advanceFinancing). */
+      const beforeClick = countCompletedStages(selectedFinancingTracker.value, booking);
       await creditService.advanceFinancing(bookingId, {});
       await refreshBookingDetail();
-      const done = countCompletedStages(selectedFinancingTracker.value, selectedBooking.value);
-      recordAfterAdvance(bookingId, done, selectedBooking.value);
-      showAdvanceConfirmModal.value = false;
+      let after = countCompletedStages(selectedFinancingTracker.value, selectedBooking.value);
+      if (
+        after === beforeClick &&
+        !selectedFinancingTracker.value?.all_completed &&
+        beforeClick === 0
+      ) {
+        await creditService.advanceFinancing(bookingId, {});
+        await refreshBookingDetail();
+        after = countCompletedStages(selectedFinancingTracker.value, selectedBooking.value);
+      }
+      recordAfterAdvance(bookingId, after, selectedBooking.value);
       toast.success('تمت المرحلة بنجاح');
     } catch (e) {
       logger.error('Advance financing error:', e);
@@ -951,9 +927,7 @@ export function useCreditBookings() {
     selectedBookingId,
     showNegotiationModal,
     showProcessModal,
-    showAdvanceConfirmModal,
     isAdvancing,
-    nextStageLabel,
     showRejectFinancingModal,
     showEditFinancingStageModal,
     editFinancingStageNumber,
@@ -990,7 +964,6 @@ export function useCreditBookings() {
     onBookingNextStage,
     onBookingRejectFinancing,
     onConfirmModalConfirm,
-    onAdvanceConfirm,
     closeRejectFinancingModal,
     onRejectFinancingConfirm,
     openNegotiationUpdate,

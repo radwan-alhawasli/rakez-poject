@@ -8,6 +8,16 @@
 .page-header { margin-bottom: 1.5rem; }
 .page-title { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.25rem 0; }
 .page-subtitle { color: #64748b; margin: 0; font-size: 0.9rem; }
+.tab-filter-hint {
+  margin: -0.75rem 0 1.25rem 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  color: #475569;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  line-height: 1.5;
+}
 .tabs-row-sub {
   margin-bottom: 1.25rem;
   flex-wrap: wrap;
@@ -140,6 +150,33 @@
 .units-list li { margin: 0.25rem 0; }
 .link-cell { color: #1e3a5f; word-break: break-all; text-decoration: none; }
 .link-cell:hover { text-decoration: underline; }
+.modal-section-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.05rem;
+  color: #1e3a5f;
+  font-weight: 700;
+}
+.photography-source-block {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+.montage-form-hint {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.55;
+}
+.inline-status.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.inline-status.status-approved { background: #d1fae5; color: #065f46; }
+.inline-status.status-pending { background: #fef3c7; color: #92400e; }
+.inline-status.status-rejected { background: #fee2e2; color: #991b1b; }
 .montage-form-section h4, .manager-actions h4 { margin: 1rem 0 0.5rem 0; font-size: 1rem; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 .form-group.full-width { grid-column: 1 / -1; }

@@ -23,18 +23,126 @@
           <h2>المهام</h2>
         </div>
         <div v-if="tasksLoading" class="loading-inline">جاري تحميل المهام...</div>
-        <div v-else-if="tasks.length === 0" class="empty-inline">لا توجد مهام لهذا الموظف.</div>
-        <div v-else class="tasks-list">
-          <div v-for="t in tasks" :key="t.id" class="task-card">
-            <div class="task-header">
-              <h4>{{ t.title || t.name || '—' }}</h4>
-              <span :class="['task-status', taskStatusClass(t.status)]">{{ formatTaskStatus(t.status) }}</span>
+        <template v-else>
+          <div class="tasks-stats-row" role="region" aria-label="إحصائيات المهام">
+            <div class="stat-card">
+              <span class="stat-label">إجمالي المهام</span>
+              <span class="stat-value">{{ tasks.length }}</span>
             </div>
-            <p v-if="t.description" class="task-desc">{{ t.description }}</p>
-            <div class="task-meta">
-              <span v-if="t.due_at">الموعد: {{ formatDate(t.due_at) }}</span>
-              <span v-if="t.section">القسم: {{ t.section }}</span>
+            <div class="stat-card">
+              <span class="stat-label">المكتملة</span>
+              <span class="stat-value">{{ doneTasksCount }}</span>
             </div>
+            <div class="stat-card stat-card--accent">
+              <span class="stat-label">نسبة الإنجاز</span>
+              <span class="stat-value">{{ completionPercentDisplay }}٪</span>
+            </div>
+          </div>
+          <div
+            class="tasks-status-breakdown"
+            role="region"
+            aria-label="نسب المهام حسب الحالة"
+          >
+            <div class="breakdown-item">
+              <span class="breakdown-label">قيد الانتظار</span>
+              <span class="breakdown-pct">{{ statusBreakdown.pendingPct }}٪</span>
+              <span class="breakdown-count">({{ statusBreakdown.pending }})</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">قيد التنفيذ</span>
+              <span class="breakdown-pct">{{ statusBreakdown.inProgressPct }}٪</span>
+              <span class="breakdown-count">({{ statusBreakdown.inProgress }})</span>
+            </div>
+            <div class="breakdown-item breakdown-item--done">
+              <span class="breakdown-label">مكتمل</span>
+              <span class="breakdown-pct">{{ statusBreakdown.donePct }}٪</span>
+              <span class="breakdown-count">({{ statusBreakdown.done }})</span>
+            </div>
+            <div v-if="statusBreakdown.other > 0" class="breakdown-item">
+              <span class="breakdown-label">أخرى</span>
+              <span class="breakdown-pct">{{ statusBreakdown.otherPct }}٪</span>
+              <span class="breakdown-count">({{ statusBreakdown.other }})</span>
+            </div>
+          </div>
+          <div v-if="tasks.length === 0" class="empty-inline">لا توجد مهام لهذا الموظف.</div>
+          <template v-else>
+            <div class="tasks-toolbar">
+              <button
+                type="button"
+                class="btn-toggle-done"
+                :class="{ active: showDoneOnly }"
+                @click="showDoneOnly = !showDoneOnly"
+              >
+                {{ showDoneOnly ? 'عرض كل المهام' : 'عرض المهام المكتملة فقط' }}
+              </button>
+            </div>
+            <div v-if="filteredTasks.length === 0" class="empty-inline">
+              {{ showDoneOnly ? 'لا توجد مهام مكتملة ضمن القائمة.' : 'لا توجد مهام.' }}
+            </div>
+            <div v-else class="tasks-by-month">
+              <div v-for="[monthKey, monthTasks] in groupedFilteredTasks" :key="monthKey" class="month-group-tasks">
+                <h3 class="month-title-tasks">{{ taskMonthLabel(monthKey) }}</h3>
+                <div class="tasks-list">
+                  <button
+                    v-for="t in monthTasks"
+                    :key="t.id"
+                    type="button"
+                    class="task-card task-card--clickable"
+                    @click="openTaskDetail(t)"
+                  >
+                    <div class="task-header">
+                      <h4>{{ t.title || t.name || '—' }}</h4>
+                      <span :class="['task-status', taskStatusClass(t.status)]">{{ formatTaskStatus(t.status) }}</span>
+                    </div>
+                    <p v-if="t.description" class="task-desc">{{ t.description }}</p>
+                    <div class="task-meta">
+                      <span v-if="t.due_at">الموعد: {{ formatDate(t.due_at) }}</span>
+                      <span v-if="t.section">القسم: {{ t.section }}</span>
+                    </div>
+                    <span class="task-open-hint">عرض التفاصيل ←</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </template>
+        </template>
+      </div>
+
+      <div v-if="taskDetailOpen" class="modal-overlay" role="dialog" aria-modal="true" @click.self="closeTaskDetail">
+        <div class="modal-content task-detail-modal">
+          <div class="task-detail-modal__head">
+            <h3>{{ taskDetail?.title || taskDetail?.name || 'تفاصيل المهمة' }}</h3>
+            <button type="button" class="btn-close-modal" aria-label="إغلاق" @click="closeTaskDetail">×</button>
+          </div>
+          <div v-if="taskDetailLoading" class="loading-inline">جاري تحميل التفاصيل...</div>
+          <div v-else class="task-detail-body">
+            <p v-if="taskDetail?.description" class="task-detail-desc">{{ taskDetail.description }}</p>
+            <dl class="task-detail-dl">
+              <div v-if="taskDetail?.status != null" class="task-detail-row">
+                <dt>الحالة</dt>
+                <dd>
+                  <span :class="['task-status', taskStatusClass(taskDetail.status)]">{{
+                    formatTaskStatus(taskDetail.status)
+                  }}</span>
+                </dd>
+              </div>
+              <div v-if="taskDetail?.section" class="task-detail-row">
+                <dt>القسم</dt>
+                <dd>{{ taskDetail.section }}</dd>
+              </div>
+              <div v-if="taskDetail?.due_at" class="task-detail-row">
+                <dt>الموعد</dt>
+                <dd>{{ formatDate(taskDetail.due_at) }}</dd>
+              </div>
+              <div v-if="taskDetail?.created_at" class="task-detail-row">
+                <dt>تاريخ الإنشاء</dt>
+                <dd>{{ formatDate(taskDetail.created_at) }}</dd>
+              </div>
+              <div v-if="taskDetail?.updated_at" class="task-detail-row">
+                <dt>آخر تحديث</dt>
+                <dd>{{ formatDate(taskDetail.updated_at) }}</dd>
+              </div>
+            </dl>
           </div>
         </div>
       </div>
@@ -141,6 +249,12 @@ import { useRoute } from 'vue-router';
 import managerService from '@/services/managerService';
 import { toast } from '@/composables/useToast';
 import { localeOpts } from '@/utils/intlLatn';
+import {
+  isTaskDoneStatus,
+  groupTasksByMonth,
+  completionPercent,
+  buildTaskStatusBreakdown,
+} from '@/utils/managerTasksDisplay';
 
 const route = useRoute();
 const employeeId = computed(() => route.params.id);
@@ -148,6 +262,10 @@ const employeeId = computed(() => route.params.id);
 const employee = ref({});
 const reviews = ref([]);
 const tasks = ref([]);
+const showDoneOnly = ref(false);
+const taskDetailOpen = ref(false);
+const taskDetailLoading = ref(false);
+const taskDetail = ref(null);
 const isLoading = ref(true);
 const reviewsLoading = ref(false);
 const tasksLoading = ref(false);
@@ -173,7 +291,9 @@ function starsText(n) {
 }
 
 function taskStatusClass(status) {
-  return String(status || 'unknown').toLowerCase().replace(/[\s-]+/g, '_');
+  const s = String(status || 'unknown').toLowerCase().replace(/[\s-]+/g, '_');
+  if (s === 'done' || s === 'closed' || s === 'complete' || s === 'finished') return 'completed';
+  return s;
 }
 
 function formatTaskStatus(status) {
@@ -182,9 +302,54 @@ function formatTaskStatus(status) {
     pending: 'قيد الانتظار',
     in_progress: 'قيد التنفيذ',
     completed: 'مكتمل',
+    done: 'مكتمل',
+    closed: 'مكتمل',
     could_not_complete: 'لم يكتمل',
   };
   return map[s] || status || '—';
+}
+
+const doneTasksCount = computed(() => tasks.value.filter(t => isTaskDoneStatus(t.status)).length);
+
+const completionPercentDisplay = computed(() =>
+  completionPercent(tasks.value.length, doneTasksCount.value)
+);
+
+const statusBreakdown = computed(() => buildTaskStatusBreakdown(tasks.value));
+
+const filteredTasks = computed(() => {
+  if (!showDoneOnly.value) return tasks.value;
+  return tasks.value.filter(t => isTaskDoneStatus(t.status));
+});
+
+const groupedFilteredTasks = computed(() => groupTasksByMonth(filteredTasks.value));
+
+function taskMonthLabel(key) {
+  if (key === 'unknown') return 'بدون تاريخ محدد';
+  const [y, m] = key.split('-').map(Number);
+  if (!y || !m) return key;
+  const d = new Date(y, m - 1, 1);
+  return d.toLocaleDateString('ar-SA', localeOpts({ year: 'numeric', month: 'long' }));
+}
+
+async function openTaskDetail(t) {
+  if (!t?.id) return;
+  taskDetail.value = null;
+  taskDetailOpen.value = true;
+  taskDetailLoading.value = true;
+  try {
+    taskDetail.value = await managerService.getTask(t.id);
+  } catch (e) {
+    toast.error(e?.response?.data?.message || e?.message || 'تعذر تحميل المهمة');
+    taskDetailOpen.value = false;
+  } finally {
+    taskDetailLoading.value = false;
+  }
+}
+
+function closeTaskDetail() {
+  taskDetailOpen.value = false;
+  taskDetail.value = null;
 }
 
 const reviewsSorted = computed(() => {
@@ -256,17 +421,22 @@ async function fetchEmployeeTasks() {
   if (!id) return;
   tasksLoading.value = true;
   try {
-    const params = {
-      assigned_to: id,
-      per_page: 100,
-      sort_by: 'due_at',
-      sort_order: 'desc',
-    };
-    let res = await managerService.getTasks(params);
-    let items = res?.items ?? [];
-    if (!items.length && employee.value?.email) {
-      res = await managerService.getTasks({ ...params, assigned_to: employee.value.email });
-      items = res?.items ?? [];
+    const sort = { sort_by: 'due_at', sort_order: 'desc' };
+    const strategies = [
+      { ...sort, assigned_to: id },
+      { ...sort, user_id: id },
+      { ...sort, assignee_id: id },
+    ];
+    if (employee.value?.email) {
+      strategies.push({ ...sort, assigned_to: employee.value.email });
+    }
+    let items = [];
+    for (const q of strategies) {
+      const res = await managerService.getAllTasks(q, { perPage: 100, maxPages: 40 });
+      if (res.items.length) {
+        items = res.items;
+        break;
+      }
     }
     tasks.value = items;
   } catch (_) {

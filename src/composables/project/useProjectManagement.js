@@ -15,6 +15,7 @@ import {
   contractTimelineDisplay,
   isReadyForMarketingTab,
   isNotReadyTab,
+  isCompleteSecondTruthy,
 } from '@/composables/project/useProjectManagementHelpers';
 import { useProjectManagementLifecycle } from '@/composables/project/useProjectManagementLifecycle';
 
@@ -162,7 +163,15 @@ export function useProjectManagement() {
           p.ready_for_marketing === true ||
           p.ready_for_marketing === 1 ||
           String(p.ready_for_marketing || '').toLowerCase() === 'true';
-        const rakezStatusLabel = p.status === 'Approved' || isReadyFlag ? 'متاح' : (p.status === 'Rejected' || p.status === 'Refused' ? 'مؤرشف' : (p.statusLabel || p.status || '—'));
+        const completeSecond = isCompleteSecondTruthy(p);
+        const statusLower = String(p.status || '').toLowerCase();
+        const isCompletedContract = statusLower === 'completed';
+        const rakezStatusLabel =
+          p.status === 'Approved' || isReadyFlag || completeSecond || isCompletedContract
+            ? 'متاح'
+            : p.status === 'Rejected' || p.status === 'Refused'
+              ? 'مؤرشف'
+              : p.statusLabel || p.status || '—';
         const propertyTypeLabel = (p.unit_type_label_ar && String(p.unit_type_label_ar).trim()) || unitType || (totalUnits ? 'وحدات' : 'مشروع');
 
         const photo = p.photography_department;
@@ -191,13 +200,20 @@ export function useProjectManagement() {
             ).trim()}`.replace(/^,\s*|,\s*$/g, '') || '—',
           image: imageStr || null,
           hasImage: !!imageStr,
-          statusLabel: p.status === 'Approved' || isReadyFlag ? 'Active' : p.status,
-          statusClass: p.status === 'Approved' || isReadyFlag ? 'active' : 'pending',
+          statusLabel:
+            p.status === 'Approved' || isReadyFlag || completeSecond || isCompletedContract
+              ? 'Active'
+              : p.status,
+          statusClass:
+            p.status === 'Approved' || isReadyFlag || completeSecond || isCompletedContract
+              ? 'active'
+              : 'pending',
           units,
           advertiser_number: p.advertiser_number,
           assignee: p.marketer,
           status: p.status,
-          is_ready_for_marketing: p.status === 'Approved' || isReadyFlag,
+          is_complete_second: completeSecond,
+          is_ready_for_marketing: completeSecond || p.status === 'Approved' || isReadyFlag,
           description: p.description || p.details || '',
           descriptionLine: descLine,
           setupProgress: setupProgressVal,
@@ -258,6 +274,9 @@ export function useProjectManagement() {
             if (!detail) {
               return proj;
             }
+            const mergedCompleteSecond =
+              isCompleteSecondTruthy(detail) || proj.is_complete_second;
+            const detailStatus = detail?.status ?? proj.status;
             const pp = detail?.project_progress;
             const detailImage =
               detail?.project_image_url ?? detail?.image ?? detail?.image_url ?? detail?.main_image ?? '';
@@ -287,6 +306,21 @@ export function useProjectManagement() {
             };
             const setupProgressVal = computeSetupProgressPercentSixStages(mergedForSetup);
 
+            const completeVisuals = mergedCompleteSecond
+              ? {
+                  rakezStatusLabel: 'متاح',
+                  statusLabel: 'Active',
+                  statusClass: 'active',
+                  status: detailStatus,
+                  is_complete_second: true,
+                  is_ready_for_marketing: true,
+                }
+              : {
+                  is_complete_second: mergedCompleteSecond,
+                  is_ready_for_marketing: mergedCompleteSecond || proj.is_ready_for_marketing,
+                  status: detailStatus,
+                };
+
             if (!pp) {
               const base =
                 hasImageFromDetail && !proj.hasImage
@@ -294,6 +328,7 @@ export function useProjectManagement() {
                   : { ...proj };
               return {
                 ...base,
+                ...completeVisuals,
                 setupProgress: setupProgressVal,
                 ...timelineFromDetail,
                 daysLeft: timelineFromDetail.daysLeftVal,
@@ -318,6 +353,7 @@ export function useProjectManagement() {
 
             return {
               ...proj,
+              ...completeVisuals,
               setupProgress: setupProgressVal,
               ...timelineFromDetail,
               daysLeft: timelineFromDetail.daysLeftVal,
@@ -424,7 +460,7 @@ export function useProjectManagement() {
         return;
       }
       await contractService.markContractComplete(id);
-      toast.success('تم تحديد المشروع كمكتمل ويظهر ضمن «مشاريع جاهزة للتسويق»');
+      toast.success('تم تحديد المشروع كمكتمل وسيظهر ضمن «مشاريع جاهزة للتسويق»');
       if (!isEditor.value) {
         activeTab.value = 'ready';
       }

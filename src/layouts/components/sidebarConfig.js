@@ -82,6 +82,13 @@ const editorItems = [
   { ...COMMON_ITEMS.notifications, hasBadge: true },
   { ...COMMON_ITEMS.tasks },
   { to: '/editor/projects', label: 'المشاريع', tooltip: 'المشاريع (قبل / بعد المونتاج)', icon: ICONS.contracts },
+  {
+    to: '/editor/projects?filter=pending',
+    label: 'قبول الوسائط',
+    tooltip: 'مشاريع بانتظار اعتماد المونتاج (قيد المراجعة)',
+    icon: ICONS.teamCheck,
+    showIf: 'isManager',
+  },
   { to: '/ai-assistant', label: 'الذكاء الاصطناعي', tooltip: 'الذكاء الاصطناعي', icon: ICONS.ai },
   { to: '/editor/teams', label: 'الفرق', tooltip: 'الفرق', icon: ICONS.teams },
   { to: '/editor/ratings', label: 'التقييمات', tooltip: 'تقييمات الموظفين', icon: ICONS.star, showIf: 'isManager' },

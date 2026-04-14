@@ -1,24 +1,18 @@
 /**
  * Editor dashboard: KPIs قبل/بعد المونتاج.
- * نفس منطق useEditorProjects: أعلام الباكند أو ثلاثي صورة+فيديو+وصف (contractHasCompleteMontageTriplet).
+ * نفس منطق useEditorProjects: ثلاثي مونتاج مكتمل وليس مرفوضاً من المدير.
  */
 
 import { ref, computed } from 'vue';
 import editorService from '@/services/editorService';
-import { contractHasCompleteMontageTriplet } from '@/utils/editorMontageCard';
+import { isAfterMontageListProject } from '@/utils/editorMontageCard';
 
 export function useEditorDashboard() {
   const searchQuery = ref('');
   const isLoading = ref(true);
   const allContracts = ref([]);
 
-  const isAfterMontage = c => {
-    const hasFlags =
-      (c.has_photography_data == 1 || c.has_photography == 1 || c.has_photography === true) &&
-      (c.has_montage_data == 1 || c.has_montage == 1 || c.has_montage === true);
-    if (hasFlags) return true;
-    return contractHasCompleteMontageTriplet(c);
-  };
+  const isAfterMontage = isAfterMontageListProject;
 
   const notReady = computed(() =>
     allContracts.value.filter(c => !isAfterMontage(c))

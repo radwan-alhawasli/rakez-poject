@@ -1,7 +1,8 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useFormatters } from '@/composables/useFormatters';
 import {
-  CREDIT_FINANCING_STAGE_LABELS,
+  getTrackerLabels,
+  getTrackerStageCount,
   formatStageDueLine,
   isStageOverdue,
 } from '@/utils/creditFinancingStages';
@@ -104,16 +105,22 @@ export function useCreditBookingDetailPanel(props) {
     tick.value;
     const b = props.booking;
     const ft = props.financingTracker;
-    if (ft?.all_completed) return 6;
-    if (typeof ft?.completed_stages === 'number') return Math.min(6, ft.completed_stages);
+    const cap = getTrackerStageCount(b || {});
+    if (ft?.all_completed) return cap;
+    if (typeof ft?.completed_stages === 'number') return Math.min(cap, ft.completed_stages);
     const steps = b?.credit_procedure_steps;
     if (Array.isArray(steps) && steps.length > 0) {
-      return steps.filter(s => s.status === 'completed' || s.status === 'done' || s.completed)
-        .length;
+      return Math.min(
+        cap,
+        steps.filter(s => s.status === 'completed' || s.status === 'done' || s.completed).length
+      );
     }
     const stages = ft?.stages ?? [];
     if (Array.isArray(stages) && stages.length > 0) {
-      return stages.filter(s => s?.completed || s?.done || s?.status === 'completed').length;
+      return Math.min(
+        cap,
+        stages.filter(s => s?.completed || s?.done || s?.status === 'completed').length
+      );
     }
     return 0;
   });
@@ -132,18 +139,22 @@ export function useCreditBookingDetailPanel(props) {
 
   const currentStepIndex = computed(() => {
     const n = rawCompletedCount.value;
-    if (n >= CREDIT_FINANCING_STAGE_LABELS.length) return -1;
+    const b = props.booking;
+    const cap = getTrackerStageCount(b || {});
+    if (n >= cap) return -1;
     return n;
   });
 
   const currentStepLabel = computed(() => {
     const i = currentStepIndex.value;
     if (i < 0) return '';
+    const b = props.booking;
+    const labels = getTrackerLabels(b || {});
     const steps = props.booking?.credit_procedure_steps;
     if (Array.isArray(steps) && steps[i]) {
-      return steps[i].label_ar || CREDIT_FINANCING_STAGE_LABELS[i];
+      return steps[i].label_ar || labels[i];
     }
-    return CREDIT_FINANCING_STAGE_LABELS[i] || '';
+    return labels[i] || '';
   });
 
   const trackerSteps = computed(() => {
@@ -151,7 +162,7 @@ export function useCreditBookingDetailPanel(props) {
     const b = props.booking;
     const ft = props.financingTracker;
     const bookingId = b?.id ?? b?.reservation_id;
-    const labels = CREDIT_FINANCING_STAGE_LABELS;
+    const labels = getTrackerLabels(b || {});
     const n = rawCompletedCount.value;
     const apiSteps = b?.credit_procedure_steps;
     const stages = ft?.stages;
@@ -192,8 +203,12 @@ export function useCreditBookingDetailPanel(props) {
           apiDueDate: apiDue,
           apiCompletedAt,
         });
+      const apiAr = Array.isArray(apiSteps) && apiSteps[i]?.label_ar;
+      const isLast = i === labels.length - 1;
+      // آخر مرحلة: نعرض التسمية المعتمدة محلياً (تجاهل «تنفيذ العقود» وغيرها من الـ API)
+      const stepLabel = isLast ? label : apiAr || label;
       return {
-        label: (Array.isArray(apiSteps) && apiSteps[i]?.label_ar) || label,
+        label: stepLabel,
         done,
         dueLine,
         isOverdue: overdue,
@@ -201,9 +216,10 @@ export function useCreditBookingDetailPanel(props) {
     });
   });
 
-  const allStepsDone = computed(
-    () => props.financingTracker?.all_completed === true || rawCompletedCount.value >= 6
-  );
+  const allStepsDone = computed(() => {
+    const cap = getTrackerStageCount(props.booking || {});
+    return props.financingTracker?.all_completed === true || rawCompletedCount.value >= cap;
+  });
 
   const canAdvanceStage = computed(
     () => !allStepsDone.value && !isFinancingRejected.value

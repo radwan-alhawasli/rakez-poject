@@ -9,6 +9,34 @@ import logger from '@/utils/logger';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
 
+/**
+ * استخراج مصفوفة المهام من أشكال Laravel/JSON شائعة عندما لا يطابقها extractPaginatedData.
+ * @param {import('axios').AxiosResponse} response
+ * @returns {unknown[]}
+ */
+function extractManagerTasksArray(response) {
+  const root = response?.data ?? response;
+  const asArray = v => (Array.isArray(v) ? v : null);
+
+  let a = asArray(root);
+  if (a) return a;
+
+  if (root && typeof root === 'object') {
+    for (const k of ['data', 'tasks', 'items', 'results', 'records']) {
+      a = asArray(root[k]);
+      if (a) return a;
+    }
+    const inner = root.data;
+    if (inner && typeof inner === 'object') {
+      for (const k of ['data', 'tasks', 'items', 'results', 'records']) {
+        a = asArray(inner[k]);
+        if (a) return a;
+      }
+    }
+  }
+  return [];
+}
+
 const managerService = {
   /**
    * List employees under manager
@@ -139,12 +167,49 @@ const managerService = {
   async getTasks(params = {}) {
     try {
       const response = await apiClient.get('/manager/tasks', { params });
-      const { items, total } = extractPaginatedData(response, []);
-      return { items: items ?? [], total: total ?? 0 };
+      let { items, total } = extractPaginatedData(response, []);
+      const raw = response.data?.data ?? response.data;
+      if (!items || !items.length) {
+        const fallback = extractManagerTasksArray(response);
+        if (fallback.length) {
+          items = fallback;
+          total =
+            (raw && typeof raw === 'object' && !Array.isArray(raw)
+              ? raw.total ?? raw.meta?.total ?? raw.meta?.pagination?.total
+              : null) ?? items.length;
+        } else if (raw && typeof raw === 'object' && !Array.isArray(raw) && Array.isArray(raw.tasks)) {
+          items = raw.tasks;
+          total = raw.total ?? raw.meta?.total ?? items.length;
+        }
+      }
+      return { items: Array.isArray(items) ? items : [], total: total ?? 0 };
     } catch (error) {
       logger.error('Error fetching manager tasks:', error);
       return handleServiceError(error, 'Manager tasks', 'get', { items: [], total: 0 });
     }
+  },
+
+  /**
+   * جلب كل الصفحات (حتى maxPages) — لصفحة «كل المهام».
+   * @param {Record<string, unknown>} params — بدون page/per_page أو تُستبدل داخلياً
+   * @param {{ perPage?: number, maxPages?: number }} [opts]
+   */
+  async getAllTasks(params = {}, opts = {}) {
+    const perPage = Math.min(Math.max(Number(opts.perPage) || 100, 1), 200);
+    const maxPages = Math.min(Math.max(Number(opts.maxPages) || 50, 1), 100);
+    const base = { ...params, per_page: perPage };
+    delete base.page;
+    const all = [];
+    let totalFromApi = 0;
+    for (let page = 1; page <= maxPages; page++) {
+      const res = await this.getTasks({ ...base, page });
+      const batch = res?.items ?? [];
+      totalFromApi = res?.total ?? totalFromApi;
+      all.push(...batch);
+      if (batch.length < perPage) break;
+      if (totalFromApi && all.length >= totalFromApi) break;
+    }
+    return { items: all, total: all.length };
   },
 
   /**

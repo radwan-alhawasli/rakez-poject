@@ -7,6 +7,7 @@ import editorService from '@/services/editorService';
 import { toast } from '@/composables/useToast';
 import { isMontageDecisionFinal } from '@/utils/montageApproval';
 import { localeOpts } from '@/utils/intlLatn';
+import { getPhotographyApprovalSummary, pickTrim } from '@/utils/editorMontageCard';
 
 export function useEditorProjectsView() {
   const route = useRoute();
@@ -34,9 +35,10 @@ export function useEditorProjectsView() {
   } = useEditorProjects();
 
   const activeTab = ref('before');
-  /** بعد المونتاج: تصفية حسب قرار المدير */
-  const afterStatusFilter = ref('all');
   const selectedProject = ref(null);
+
+  /** صف «قبول الوسائط»: مشاريع بعد المونتاج وبانتظار اعتماد المدير فقط */
+  const isPendingQueueOnly = computed(() => route.query.filter === 'pending');
   const montageForm = ref({ image_url: '', video_url: '', description: '' });
   const montageSaving = ref(false);
   const rejectTargetId = ref(null);
@@ -110,62 +112,60 @@ export function useEditorProjectsView() {
     };
   }
 
-  const displayDetail = computed(() => {
+  /** بيانات التصوير الأصلية فقط (للعرض في أعلى النافذة) */
+  const photographySourceDetail = computed(() => {
     const d = detail.value || {};
     const m = montageData.value || {};
-    const fromApi = contractDisplayFromApi(d);
-    const fromMontageContract = contractDisplayFromApi(m.contract || m.contract_data || {});
-    const fallbackUnits = d.contract_units ?? d.units ?? m.contract_units ?? m.units ?? [];
-    const fallbackCount = Array.isArray(fallbackUnits) ? fallbackUnits.length : 0;
-    const fallback = {
-      advertiser_number:
-        d.advertiser_number ??
-        d.publisher_number ??
-        d.advertiser_section_url ??
-        m.advertiser_number,
-      photography_link:
-        d.photography_link ??
-        d.photography_url ??
-        d.image_url ??
-        d.montage_department?.image_url ??
-        m.image_url ??
-        m.photography_link ??
-        m.montage_department?.image_url,
-      video_link:
-        d.photography_department?.video_url ??
-        d.montage_department?.video_url ??
-        d.video_url ??
-        m.video_url ??
-        m.montage_department?.video_url,
-      description:
-        d.description ?? d.montage_department?.description ?? m.description ?? m.montage_department?.description,
-      unitsCount: fallbackCount,
-    };
-    const api = fromApi || fromMontageContract;
-    const advertiser_number = api?.advertiser_number ?? fallback.advertiser_number;
-    const photography_link = api?.image_url ?? fallback.photography_link;
-    const video_link = api?.video_url ?? fallback.video_link;
-    const description = api?.description ?? fallback.description;
-    const unitsCount = api?.unitsCount ?? fallback.unitsCount ?? 0;
+    const contract =
+      d && typeof d === 'object' && (d.id != null || Object.keys(d).length > 0)
+        ? d
+        : m.contract_data || m.contract || {};
+    if (!contract || typeof contract !== 'object') {
+      return {
+        advertiser_number: '—',
+        photography_link: '—',
+        video_link: '—',
+        description: '—',
+        available_units: 0,
+        photography_status: getPhotographyApprovalSummary({}),
+      };
+    }
+    const photo = contract.photography_department || {};
+    const second = contract.second_party_data || {};
+    const units = contract.contract_units ?? contract.units ?? [];
+    const ulen = Array.isArray(units) ? units.length : 0;
+    const adv =
+      second.advertiser_number ??
+      second.publisher_number ??
+      contract.advertiser_number ??
+      contract.publisher_number ??
+      '—';
+    const pl = pickTrim(photo.image_url ?? photo.image_link);
+    const vl = pickTrim(photo.video_url);
+    const desc = pickTrim(photo.description);
     return {
-      advertiser_number: advertiser_number ?? '—',
-      photography_link: photography_link ?? '—',
-      video_link: video_link ?? '—',
-      description: description ?? '—',
-      available_units: unitsCount,
-      units: api?.contract_units ?? [],
+      advertiser_number: adv,
+      photography_link: pl || '—',
+      video_link: vl || '—',
+      description: desc || '—',
+      available_units: ulen,
+      photography_status: getPhotographyApprovalSummary(contract),
     };
   });
 
   const seeMoreDisplay = computed(() => {
     const d = seeMoreDetail.value || seeMoreProject.value || {};
+    const photo = d.photography_department || {};
     const api = contractDisplayFromApi(d);
     if (api) {
+      const img = pickTrim(photo.image_url ?? photo.image_link) || api.image_url || null;
+      const vid = pickTrim(photo.video_url) || api.video_url || null;
+      const desc = pickTrim(photo.description) || api.description || null;
       return {
         advertiser_number: api.advertiser_number ?? '—',
-        photography_link: api.image_url ?? null,
-        video_link: api.video_url ?? null,
-        description: api.description ?? null,
+        photography_link: img,
+        video_link: vid,
+        description: desc,
         available_units: api.unitsCount,
       };
     }
@@ -175,18 +175,12 @@ export function useEditorProjectsView() {
       advertiser_number:
         d.advertiser_number ?? d.publisher_number ?? d.advertiser_section_url ?? '—',
       photography_link:
-        d.photography_link ??
-        d.photography_url ??
-        d.image_url ??
-        d.montage_department?.image_url ??
-        null,
+        pickTrim(photo.image_url ?? photo.image_link) ||
+        (d.photography_link ?? d.photography_url ?? null),
       video_link:
-        d.photography_department?.video_url ??
-        d.montage_department?.video_url ??
-        d.video_url ??
-        d.montage_video_url ??
-        null,
-      description: d.description ?? d.montage_department?.description ?? null,
+        pickTrim(photo.video_url) ||
+        (d.photography_department?.video_url ?? d.video_url ?? null),
+      description: pickTrim(photo.description) || d.description || null,
       available_units: unitsArray.length,
     };
   });
@@ -200,8 +194,13 @@ export function useEditorProjectsView() {
   });
 
   watch(
-    () => route.query.tab,
-    tab => {
+    () => route.query,
+    q => {
+      if (q.filter === 'pending') {
+        activeTab.value = 'after';
+        return;
+      }
+      const tab = q.tab;
       if (tab === 'before' || tab === 'after') activeTab.value = tab;
     },
     { immediate: true }
@@ -235,11 +234,18 @@ export function useEditorProjectsView() {
     if (!selectedProject.value) return;
     const d = detail.value || {};
     const m = montageData.value || {};
-    const api = contractDisplayFromApi(d);
+    const md =
+      d.montage_department && typeof d.montage_department === 'object' ? d.montage_department : {};
+    const rootM = m && typeof m === 'object' ? m : {};
+    const nestedMd =
+      rootM.montage_department && typeof rootM.montage_department === 'object'
+        ? rootM.montage_department
+        : {};
     montageForm.value = {
-      image_url: (m && m.image_url) ?? api?.image_url ?? d.image_url ?? '',
-      video_url: (m && m.video_url) ?? api?.video_url ?? d.video_url ?? '',
-      description: (m && m.description) ?? api?.description ?? d.description ?? '',
+      image_url:
+        pickTrim(rootM.image_url ?? nestedMd.image_url ?? md.image_url ?? md.image_link) || '',
+      video_url: pickTrim(rootM.video_url ?? nestedMd.video_url ?? md.video_url ?? md.video_link) || '',
+      description: pickTrim(rootM.description ?? nestedMd.description ?? md.description) || '',
     };
   }
 
@@ -292,16 +298,18 @@ export function useEditorProjectsView() {
     { debounce: 80, flush: 'post' }
   );
 
-  watch(activeTab, t => {
-    if (t === 'before') afterStatusFilter.value = 'all';
-  });
-
   onMounted(async () => {
     await fetchContracts();
-    const tab = route.query.tab;
-    if (tab === 'after' || tab === 'before') activeTab.value = tab;
+    const q = route.query;
+    if (q.filter === 'pending') activeTab.value = 'after';
+    else if (q.tab === 'after' || q.tab === 'before') activeTab.value = q.tab;
     preloadDetails();
   });
+
+  function goProjectsTab(tab) {
+    activeTab.value = tab;
+    router.replace({ query: { tab } });
+  }
 
   function openDetail(p) {
     selectedProject.value = p;
@@ -351,20 +359,10 @@ export function useEditorProjectsView() {
     return 'pending';
   }
 
-  const filteredAfterMontage = computed(() => {
+  const afterMontageListForView = computed(() => {
     const list = afterMontage.value;
-    if (afterStatusFilter.value === 'all') return list;
-    return list.filter(x => montageDecisionBucket(x) === afterStatusFilter.value);
-  });
-
-  const afterMontageCounts = computed(() => {
-    const list = afterMontage.value;
-    return {
-      all: list.length,
-      approved: list.filter(x => montageDecisionBucket(x) === 'approved').length,
-      rejected: list.filter(x => montageDecisionBucket(x) === 'rejected').length,
-      pending: list.filter(x => montageDecisionBucket(x) === 'pending').length,
-    };
+    if (!isPendingQueueOnly.value) return list;
+    return list.filter(x => montageDecisionBucket(x) === 'pending');
   });
 
   function montageStatusLabel(p) {
@@ -468,6 +466,8 @@ export function useEditorProjectsView() {
         };
       }
       closeDetail();
+      activeTab.value = 'before';
+      router.replace({ query: { tab: 'before' } });
     } catch (e) {
       toast.error(e?.message || 'فشل');
     }
@@ -493,9 +493,10 @@ export function useEditorProjectsView() {
     montageRejectionNote,
     seeMoreMontageRejection,
     seeMoreMontageStatusLine,
-    displayDetail,
+    photographySourceDetail,
     seeMoreDisplay,
     seeMoreUnits,
+    goProjectsTab,
     openDetail,
     openSeeMore,
     closeSeeMore,
@@ -512,8 +513,7 @@ export function useEditorProjectsView() {
     openRejectModal,
     doReject,
     isMontageDecisionFinal,
-    afterStatusFilter,
-    filteredAfterMontage,
-    afterMontageCounts,
+    isPendingQueueOnly,
+    afterMontageListForView,
   };
 }

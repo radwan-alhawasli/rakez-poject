@@ -10,22 +10,31 @@
         <dd :class="{ 'value-null': isNull(advertiserNumber) }">{{ displayValue(advertiserNumber) }}</dd>
       </div>
       <div class="detail-row">
-        <dt>رابط التصوير</dt>
+        <dt>{{ variant === 'before' ? 'رابط التصوير (الأصل)' : 'رابط الصور (بعد المونتاج)' }}</dt>
         <dd :class="{ 'value-null': isNull(photographyLink) }">
           <a v-if="photographyLink && !isNull(photographyLink)" :href="photographyLink" target="_blank" rel="noopener noreferrer" class="link-cell">{{ linkLabel(photographyLink) }}</a>
           <span v-else>{{ displayValue(photographyLink) }}</span>
         </dd>
       </div>
       <div class="detail-row">
-        <dt>رابط الفيديو</dt>
+        <dt>{{ variant === 'before' ? 'رابط الفيديو (الأصل)' : 'رابط الفيديو (بعد المونتاج)' }}</dt>
         <dd :class="{ 'value-null': isNull(videoLink) }">
           <a v-if="videoLink && !isNull(videoLink)" :href="videoLink" target="_blank" rel="noopener noreferrer" class="link-cell">{{ linkLabel(videoLink) }}</a>
           <span v-else>{{ displayValue(videoLink) }}</span>
         </dd>
       </div>
       <div class="detail-row">
-        <dt>الوصف</dt>
+        <dt>{{ variant === 'before' ? 'الوصف (الأصل)' : 'الوصف (بعد المونتاج)' }}</dt>
         <dd :class="{ 'value-null': isNull(description) }">{{ descriptionLabel }}</dd>
+      </div>
+      <div v-if="variant === 'before' && photographyStatus" class="detail-row">
+        <dt>حالة التصوير</dt>
+        <dd>
+          <span
+            class="status-badge"
+            :class="photographyStatus.class"
+          >{{ photographyStatus.label }}</span>
+        </dd>
       </div>
       <div class="detail-row">
         <dt>الوحدات المتاحة</dt>
@@ -47,35 +56,37 @@
           اضافه الروابط
         </button>
       </template>
-      <!-- Manager: accept/reject only when project has links and decision not yet taken -->
+      <!-- Manager: إضافة الروابط أولاً، ثم قبول/رفض تحتها عند توفر الروابط -->
       <template v-else>
-        <template v-if="hasLinks && !montageFinal">
-          <button type="button" class="btn-card btn-approve" @click="$emit('approve', project)">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            قبول
-          </button>
-          <button type="button" class="btn-card btn-reject" @click="$emit('reject', project)">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            رفض
-          </button>
-        </template>
-        <div v-else-if="hasLinks && montageFinal" class="done-block">
-          <span class="done-label">{{ finalDecisionLabel }}</span>
-          <button
-            v-if="compactLinks"
-            type="button"
-            class="btn-card btn-see-more"
-            @click="$emit('see-more', project)"
-          >
-            عرض المزيد
-          </button>
-        </div>
-        <div v-else class="manager-pending-block">
-          <span class="pending-label">قيد المراجعة</span>
+        <div class="manager-actions-stack">
           <button type="button" class="btn-card btn-add-links" @click="$emit('add-links', project)">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
             اضافه الروابط
           </button>
+          <template v-if="hasLinks === true && !montageFinal">
+            <div class="manager-decision-row">
+              <button type="button" class="btn-card btn-approve" @click="$emit('approve', project)">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                قبول
+              </button>
+              <button type="button" class="btn-card btn-reject" @click="$emit('reject', project)">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                رفض
+              </button>
+            </div>
+          </template>
+          <div v-else-if="hasLinks === true && montageFinal" class="done-block">
+            <span class="done-label">{{ finalDecisionLabel }}</span>
+            <button
+              v-if="compactLinks"
+              type="button"
+              class="btn-card btn-see-more"
+              @click="$emit('see-more', project)"
+            >
+              عرض المزيد
+            </button>
+          </div>
+          <span v-else-if="hasLinks === false" class="pending-label">قيد المراجعة</span>
         </div>
       </template>
     </div>
@@ -86,8 +97,10 @@
 import { computed } from 'vue';
 import { isMontageDecisionFinal } from '@/utils/montageApproval';
 import {
-  getMontageTripletFromContract,
+  getPhotographyTripletFromContract,
+  getMontageOutputTripletFromContract,
   contractHasCompleteMontageTriplet,
+  getPhotographyApprovalSummary,
   pickTrim,
 } from '@/utils/editorMontageCard';
 
@@ -101,11 +114,26 @@ const props = defineProps({
   hasLinks: { type: Boolean, default: null },
   /** After-montage tab: shorten links on card; use "عرض المزيد" for full text + rejection in modal */
   compactLinks: { type: Boolean, default: false },
+  /** before = بيانات التصوير الأصلية؛ after = مخرجات المونتاج */
+  variant: {
+    type: String,
+    default: 'after',
+    validator: v => v === 'before' || v === 'after',
+  },
 });
 
 defineEmits(['add-links', 'see-more', 'approve', 'reject']);
 
-const montageTriplet = computed(() => getMontageTripletFromContract(props.project));
+const displayTriplet = computed(() =>
+  props.variant === 'before'
+    ? getPhotographyTripletFromContract(props.project)
+    : getMontageOutputTripletFromContract(props.project)
+);
+
+const photographyStatus = computed(() => {
+  if (props.variant !== 'before') return null;
+  return getPhotographyApprovalSummary(props.project);
+});
 
 const advertiserNumber = computed(() => {
   const p = props.project;
@@ -121,9 +149,9 @@ const advertiserNumber = computed(() => {
       p?.advertiser_section_url
   );
 });
-const photographyLink = computed(() => montageTriplet.value.image);
-const videoLink = computed(() => montageTriplet.value.video);
-const description = computed(() => montageTriplet.value.description);
+const photographyLink = computed(() => displayTriplet.value.image);
+const videoLink = computed(() => displayTriplet.value.video);
+const description = computed(() => displayTriplet.value.description);
 const availableUnits = computed(() => {
   const p = props.project;
   const units = p?.contract_units ?? p?.units;
@@ -131,7 +159,7 @@ const availableUnits = computed(() => {
   return p?.available_units ?? p?.availableUnits ?? p?.units_count ?? p?.unitsCount;
 });
 
-/** True if project has montage links for manager to approve/reject; use prop if provided, else derive from project */
+/** من الأب إن وُجد؛ وإلا يُشتق من العقد (مكتمل الثلاثي) */
 const hasLinks = computed(() => {
   if (props.hasLinks === true || props.hasLinks === false) return props.hasLinks;
   return contractHasCompleteMontageTriplet(props.project);
@@ -304,6 +332,25 @@ function displayValue(v) {
 .done-block .btn-see-more {
   flex: none;
   width: 100%;
+}
+.manager-actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  align-items: stretch;
+}
+.manager-actions-stack .btn-add-links {
+  width: 100%;
+  flex: none;
+}
+.manager-decision-row {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+.manager-decision-row .btn-card {
+  flex: 1;
 }
 .manager-pending-block {
   display: flex;

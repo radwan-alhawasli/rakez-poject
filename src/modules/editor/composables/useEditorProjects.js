@@ -6,7 +6,12 @@
 import { ref, computed } from 'vue';
 import editorService from '@/services/editorService';
 import { buildContractPatchFromMontageShow } from '@/utils/montageApproval';
-import { contractHasCompleteMontageTriplet } from '@/utils/editorMontageCard';
+import {
+  contractHasCompleteMontageTriplet,
+  isAfterMontageListProject,
+  isMontageManagerRejected,
+  pickTrim,
+} from '@/utils/editorMontageCard';
 
 export function useEditorProjects() {
   const contracts = ref([]);
@@ -22,14 +27,45 @@ export function useEditorProjects() {
   /** يمنع تداخل طلبات متوازية لنفس الدفعة (يحدّث عند كل استدعاء جديد) */
   let montageLinksFetchGeneration = 0;
 
-  // بعد المونتاج: إما أعلام الباكند (تصوير + مونتاج) أو اكتمال ثلاثي: صورة + فيديو + وصف (من show العقد أو المونتاج).
-  const isAfterMontage = c => {
-    const hasFlags =
-      (c.has_photography_data == 1 || c.has_photography == 1 || c.has_photography === true) &&
-      (c.has_montage_data == 1 || c.has_montage == 1 || c.has_montage === true);
-    if (hasFlags) return true;
-    return contractHasCompleteMontageTriplet(c);
-  };
+  /**
+   * بعد نجاح حفظ/تحديث روابط المونتاج: يُعرض المشروع في «بعد المونتاج» فوراً حتى لو
+   * لم يتطابق شكل الاستجابة مع contractHasCompleteMontageTriplet (تعقيم روابط، إلخ).
+   */
+  const optimisticAfterMontageIds = ref(/** @type {Set<number>} */ (new Set()));
+
+  function addOptimisticAfterMontage(contractId) {
+    const n = Number(contractId);
+    if (Number.isNaN(n)) return;
+    const s = new Set(optimisticAfterMontageIds.value);
+    s.add(n);
+    optimisticAfterMontageIds.value = s;
+  }
+
+  function removeOptimisticAfterMontage(contractId) {
+    const n = Number(contractId);
+    const s = new Set(optimisticAfterMontageIds.value);
+    s.delete(n);
+    optimisticAfterMontageIds.value = s;
+  }
+
+  function pruneOptimisticAfterMontageIds() {
+    const s = new Set(optimisticAfterMontageIds.value);
+    for (const id of s) {
+      const row = contracts.value.find(c => Number(c.id) === id);
+      if (row && isAfterMontageListProject(row)) s.delete(id);
+    }
+    optimisticAfterMontageIds.value = s;
+  }
+
+  /** بعد المونتاج: ثلاثي مكتمل أو حفظ ناجح حديثاً، وليس مرفوضاً من المدير. */
+  function isAfterMontageRow(p) {
+    if (!p || typeof p !== 'object') return false;
+    if (isMontageManagerRejected(p)) return false;
+    if (optimisticAfterMontageIds.value.has(Number(p.id))) return true;
+    return isAfterMontageListProject(p);
+  }
+
+  const isAfterMontage = isAfterMontageRow;
 
   const beforeMontage = computed(() =>
     contracts.value.filter(c => !isAfterMontage(c))
@@ -38,15 +74,50 @@ export function useEditorProjects() {
     contracts.value.filter(isAfterMontage)
   );
 
-  async function fetchContracts() {
-    isLoading.value = true;
+  /**
+   * @param {{ silent?: boolean }} [options] — silent: لا تعطل الواجهة بشاشة التحميل (بعد إجراءات المستخدم)
+   */
+  async function fetchContracts(options = {}) {
+    const silent = options.silent === true;
+    if (!silent) isLoading.value = true;
     try {
       const list = await editorService.getContracts();
       contracts.value = Array.isArray(list) ? list : [];
+      pruneOptimisticAfterMontageIds();
     } catch (_) {
       contracts.value = [];
     } finally {
-      isLoading.value = false;
+      if (!silent) isLoading.value = false;
+    }
+  }
+
+  /** دمج تفاصيل العقد + المونتاج لصف واحد (بعد أن يستبدل الفهرس الصفوف دون حقول متداخلة) */
+  async function refreshContractRow(contractId) {
+    if (!contractId) return;
+    try {
+      const [showRes, montRes] = await Promise.allSettled([
+        editorService.getContractById(contractId),
+        editorService.getMontage(contractId),
+      ]);
+      if (showRes.status === 'fulfilled' && showRes.value && typeof showRes.value === 'object') {
+        mergeContractDetail(contractId, showRes.value);
+        if (detail.value && Number(detail.value.id) === Number(contractId)) {
+          detail.value = showRes.value;
+        }
+      }
+      if (
+        montRes.status === 'fulfilled' &&
+        montRes.value &&
+        typeof montRes.value === 'object' &&
+        Object.keys(montRes.value).length
+      ) {
+        mergeMontageShowIntoContract(contractId, montRes.value);
+        if (detail.value && Number(detail.value.id) === Number(contractId)) {
+          montageData.value = montRes.value;
+        }
+      }
+    } catch (_) {
+      /* skip */
     }
   }
 
@@ -60,6 +131,17 @@ export function useEditorProjects() {
     if (idx === -1) return;
     const prev = list[idx];
     const next = { ...prev, ...data };
+    const prevMd = prev.montage_department;
+    const dataMd = data.montage_department;
+    if (
+      (prevMd && typeof prevMd === 'object') ||
+      (dataMd !== null && dataMd !== undefined && typeof dataMd === 'object')
+    ) {
+      next.montage_department = {
+        ...(typeof prevMd === 'object' && prevMd ? prevMd : {}),
+        ...(dataMd !== null && dataMd !== undefined && typeof dataMd === 'object' ? dataMd : {}),
+      };
+    }
     const hadMontage =
       prev.has_montage_data == 1 ||
       prev.has_montage == 1 ||
@@ -80,11 +162,37 @@ export function useEditorProjects() {
     contracts.value = list;
   }
 
+  /** يوحّد أشكال استجابة الباكند (data، montage بدل montage_department، إلخ). */
+  function normalizeMontageShowResponse(raw) {
+    if (!raw || typeof raw !== 'object') return raw;
+    const out = { ...raw };
+    const d = raw.data;
+    if (d && typeof d === 'object' && !Array.isArray(d)) {
+      Object.assign(out, d);
+    }
+    const montAlt = raw.montage ?? (d && typeof d === 'object' ? d.montage : undefined);
+    if (montAlt && typeof montAlt === 'object') {
+      const prev = out.montage_department;
+      out.montage_department = {
+        ...(typeof prev === 'object' && prev ? prev : {}),
+        ...montAlt,
+      };
+    }
+    if (d && typeof d === 'object' && d.montage_department && typeof d.montage_department === 'object') {
+      out.montage_department = {
+        ...(typeof out.montage_department === 'object' ? out.montage_department : {}),
+        ...d.montage_department,
+      };
+    }
+    return out;
+  }
+
   /** Merge montage-department/show into list row so status / approved / comment match API. */
   function mergeMontageShowIntoContract(contractId, showData) {
     if (!contractId || !showData || typeof showData !== 'object') return;
-    if (!Object.keys(showData).length) return;
-    const patch = buildContractPatchFromMontageShow(showData);
+    const normalized = normalizeMontageShowResponse(showData);
+    if (!Object.keys(normalized).length) return;
+    const patch = buildContractPatchFromMontageShow(normalized);
     if (!patch.montage_department || typeof patch.montage_department !== 'object') return;
     const list = [...contracts.value];
     const idx = list.findIndex(c => Number(c.id) === Number(contractId));
@@ -96,6 +204,36 @@ export function useEditorProjects() {
       montage_department: {
         ...(typeof prev === 'object' && prev ? prev : {}),
         ...patch.montage_department,
+      },
+    };
+    contracts.value = list;
+  }
+
+  /**
+   * يضمن ظهور المشروع في «بعد المونتاج» حتى لو كان GET show يعيد {} أو شكلاً لا يُدمج.
+   */
+  function mergeMontagePayloadIntoContract(contractId, payload) {
+    if (!contractId || !payload || typeof payload !== 'object') return;
+    const image_url = pickTrim(payload.image_url);
+    const video_url = pickTrim(payload.video_url);
+    const description = pickTrim(payload.description);
+    if (!image_url || !video_url || !description) return;
+    const list = [...contracts.value];
+    const idx = list.findIndex(c => Number(c.id) === Number(contractId));
+    if (idx === -1) return;
+    const prev = list[idx].montage_department;
+    list[idx] = {
+      ...list[idx],
+      has_montage_data: 1,
+      has_montage: 1,
+      montage_status: 'pending',
+      approval_status: 'pending',
+      montage_approval_status: 'pending',
+      montage_department: {
+        ...(typeof prev === 'object' && prev ? prev : {}),
+        image_url,
+        video_url,
+        description,
       },
     };
     contracts.value = list;
@@ -189,26 +327,27 @@ export function useEditorProjects() {
     }
     await fetchMontage(contractId);
     mergeMontageShowIntoContract(contractId, montageData.value || {});
-    // If backend didn't set flags in list, optimistically mark so project appears in "after montage"
-    const id = Number(contractId);
-    const list = [...contracts.value];
-    const idx = list.findIndex(c => Number(c.id) === id);
-    if (idx !== -1 && !isAfterMontage(list[idx])) {
-      list[idx] = {
-        ...list[idx],
-        has_photography_data: 1,
-        has_montage_data: 1,
-        has_photography: 1,
-        has_montage: 1,
-      };
-      contracts.value = list;
-    }
+    mergeMontagePayloadIntoContract(contractId, payload);
     try {
       const fresh = await editorService.getContractById(contractId);
       mergeContractDetail(contractId, fresh || {});
+      if (detail.value && Number(detail.value.id) === Number(contractId)) {
+        detail.value = fresh || detail.value;
+      }
     } catch (_) {
       /* keep optimistic row */
     }
+    mergeMontagePayloadIntoContract(contractId, payload);
+    mergeMontageShowIntoContract(contractId, montageData.value || {});
+    const pu = pickTrim(payload.image_url);
+    const pv = pickTrim(payload.video_url);
+    const pd = pickTrim(payload.description);
+    if (pu && pv && pd) {
+      addOptimisticAfterMontage(contractId);
+      pruneOptimisticAfterMontageIds();
+    }
+    await fetchContracts({ silent: true });
+    await refreshContractRow(contractId);
   }
 
   async function fetchTeams() {
@@ -230,6 +369,7 @@ export function useEditorProjects() {
       body.comment = String(rejectionReason || '').trim() || '';
     }
     await editorService.approveMontage(id, body);
+    if (status === 'rejected') removeOptimisticAfterMontage(id);
     const st = status === 'approved' ? 'approved' : 'rejected';
     const list = [...contracts.value];
     const idx = list.findIndex(c => Number(c.id) === Number(id));
@@ -250,7 +390,8 @@ export function useEditorProjects() {
       };
       contracts.value = list;
     }
-    await fetchContracts();
+    await fetchContracts({ silent: true });
+    await preloadDetails();
     const idxAfter = contracts.value.findIndex(c => Number(c.id) === Number(id));
     if (idxAfter !== -1) {
       const row = contracts.value[idxAfter];
@@ -263,8 +404,7 @@ export function useEditorProjects() {
       }
     }
     if (detail.value && Number(detail.value.id) === Number(id)) {
-      await fetchDetail(id);
-      await fetchMontage(id);
+      await refreshContractRow(id);
     }
     const ids = contracts.value.filter(c => isAfterMontage(c)).map(c => c.id);
     if (ids.length) await fetchMontageLinksForProjects(ids);
@@ -319,5 +459,6 @@ export function useEditorProjects() {
     mergeContractDetail,
     mergeMontageShowIntoContract,
     preloadDetails,
+    refreshContractRow,
   };
 }

@@ -77,9 +77,8 @@ export const contractServiceAdminMethods = {
   },
 
   /**
-   * تحديد عقد كمكتمل (جاهز للتسويق) — يحفظ عبر نفس مسار تحديث الحالة المستخدم بعد إكمال المسار.
-   * ملاحظة: مسار PATCH /contracts/:id/complete غير مُعرَّف على api.rakez.com.sa (404)، لذلك نعتمد
-   * PATCH /contracts/update-status/:id مع { status: 'ready' } (Laravel: in:ready,rejected).
+   * تحديد عقد كمكتمل (جاهز للتسويق) — يحفظ عبر PATCH /contracts/update-status/:id
+   * مع { status: 'ready', is_complete_second: true } عندما يدعم الخادم الحقل.
    * @param {any} contractId
    */
   async markContractComplete(contractId) {
@@ -89,7 +88,7 @@ export const contractServiceAdminMethods = {
       err.response = { status: 400, data: { message: 'معرف العقد مطلوب' } };
       throw err;
     }
-    return this.updateContractStatusProjectManager(id, 'ready');
+    return this.updateContractStatusProjectManager(id, 'ready', { is_complete_second: true });
   },
 
   /**
@@ -108,13 +107,17 @@ export const contractServiceAdminMethods = {
 
   /**
    * تحديث حالة العقد (لمدير المشاريع)
-   * PATCH /contracts/update-status/:id — Body: { status: 'ready' | 'rejected' }
+   * PATCH /contracts/update-status/:id — Body: { status: 'ready' | 'rejected', ...extra }
    * @param {any} contractId
    * @param {any} status
+   * @param {Record<string, unknown>} [extra] — مثلاً { is_complete_second: true }
    */
-  async updateContractStatusProjectManager(contractId, status) {
+  async updateContractStatusProjectManager(contractId, status, extra = {}) {
     try {
-      const response = await apiClient.patch(`/contracts/update-status/${contractId}`, { status });
+      const response = await apiClient.patch(`/contracts/update-status/${contractId}`, {
+        status,
+        ...extra,
+      });
       return response.data;
     } catch (error) {
       return handleServiceError(error, 'Update contract status (PM)', 'patch');
