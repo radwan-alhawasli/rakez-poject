@@ -2,17 +2,17 @@ import { localeOpts } from '@/utils/intlLatn';
 
 /** تسميات المراحل الست — متوافقة مع واجهة دور الائتمان */
 export const CREDIT_FINANCING_STAGE_LABELS = [
-  'تواصل مع العميل',
+  'التواصل مع العميل',
   'رفع الطلب إلى البنك',
   'صدور التقييم',
   'زيارة المقيم للمشروع',
   'الإجراءات البنكية والعقود',
-  'تجهيز قبل الافراغ',
+  'فتره التجهيز قبل الافراغ',
 ];
 
 /** حجز كاش: مرحلتان فقط (بدون مسار بنكي) */
 export const CREDIT_CASH_STAGE_LABELS = [
-  'تواصل مع العميل',
+  'التواصل مع العميل',
   'فتره التجهيز قبل الافراغ',
 ];
 
@@ -27,10 +27,12 @@ export function getPurchaseMechanismKey(booking) {
   return 'supported_bank';
 }
 
-/** آلية الشراء كاش (لا يُعرض مسار الائتمان البنكي الكامل) */
+/** آلية الشراء كاش أو دفع كاش (لا يُعرض مسار الائتمان البنكي الكامل) */
 export function isCashReservation(booking) {
   const p = String(booking?.purchase_mechanism ?? '').toLowerCase();
-  return p === 'cash' || p === 'كاش';
+  if (p === 'cash' || p === 'كاش') return true;
+  const pay = String(booking?.payment_method ?? '').toLowerCase();
+  return pay === 'cash' || pay === 'كاش';
 }
 
 /** عدد مراحل التتبع في الواجهة: 2 لكاش، 6 لغيره */

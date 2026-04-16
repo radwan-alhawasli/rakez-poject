@@ -125,8 +125,13 @@
         </div>
       </div>
       <div v-if="!allStepsDone && canAdvanceStage" class="tracker-next-wrap">
-        <button type="button" class="btn-next-stage" @click="$emit('next-stage')">
-          الانتقال للمرحلة التالية
+        <button
+          type="button"
+          class="btn-next-stage"
+          :disabled="isAdvancing"
+          @click="$emit('next-stage')"
+        >
+          {{ isAdvancing ? 'جاري التنفيذ...' : 'الانتقال للمرحلة التالية' }}
         </button>
       </div>
       <div
@@ -277,6 +282,8 @@ export default {
     financingTracker: { type: Object, default: null },
     /** نافذة رفض التمويل مفتوحة — تمييز الزر */
     rejectModalOpen: { type: Boolean, default: false },
+    /** طلب الانتقال للمرحلة التالية قيد التنفيذ */
+    isAdvancing: { type: Boolean, default: false },
   },
   emits: [
     'evacuation',

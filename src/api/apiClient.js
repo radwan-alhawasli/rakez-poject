@@ -55,7 +55,7 @@ apiClient.interceptors.request.use(
     const token = secureStorage.getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      // Update last activity on each request
+      // Update last activity on each requestimage.png
       secureStorage.updateLastActivity();
     }
     // When sending FormData, do not set Content-Type so the browser sends multipart/form-data with boundary

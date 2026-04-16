@@ -166,6 +166,9 @@ export const contractServiceUnitsMethods = {
         if (payload.comment != null && String(payload.comment).trim() !== '') {
           body.comment = String(payload.comment).trim();
         }
+        if (payload.rejection_comment != null && String(payload.rejection_comment).trim() !== '') {
+          body.rejection_comment = String(payload.rejection_comment).trim();
+        }
       } else if (payload.status === 'approved') {
         body = { approved: '1' };
       } else if (payload.status === 'rejected') {

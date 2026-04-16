@@ -83,6 +83,9 @@ export function extractPaginatedData(response, fallbackItems = []) {
     } else if (Array.isArray(nested.items)) {
       items = nested.items;
       total = nested.total ?? nested.meta?.total ?? items.length;
+    } else if (Array.isArray(nested.tasks)) {
+      items = nested.tasks;
+      total = nested.total ?? nested.meta?.total ?? items.length;
     } else if (Array.isArray(nested.teams)) {
       items = nested.teams;
       total = nested.total ?? nested.meta?.total ?? items.length;

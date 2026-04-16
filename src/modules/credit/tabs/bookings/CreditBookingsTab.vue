@@ -57,6 +57,7 @@
       <CreditBookingDetailPanel
         :booking="selectedBooking"
         :financing-tracker="selectedFinancingTracker"
+        :is-advancing="isAdvancing"
         :reject-modal-open="showRejectFinancingModal"
         @evacuation="onBookingEvacuation"
         @delete="onBookingDelete"
@@ -196,34 +197,6 @@
       @close="showProcessModal = false"
       @submit="handleProcessWaiting"
     />
-
-    <!-- تأكيد الانتقال للمرحلة التالية -->
-    <div
-      v-if="showAdvanceConfirmModal"
-      class="modal-overlay"
-      @click.self="showAdvanceConfirmModal = false"
-    >
-      <div class="modal-card advance-confirm-modal">
-        <h3 class="modal-title">تأكيد الانتقال للمرحلة التالية؟</h3>
-        <p class="modal-body">
-          هل تريد تحديث حالة الائتمان إلى «{{ nextStageLabel }}»؟ سيؤدي هذا إلى إعادة تعيين عداد
-          الوقت.
-        </p>
-        <div class="modal-actions">
-          <button type="button" class="btn-modal-cancel" @click="showAdvanceConfirmModal = false">
-            إلغاء
-          </button>
-          <button
-            type="button"
-            class="btn-modal-confirm"
-            :disabled="isAdvancing"
-            @click="onAdvanceConfirm"
-          >
-            {{ isAdvancing ? 'جاري التنفيذ...' : 'تأكيد' }}
-          </button>
-        </div>
-      </div>
-    </div>
 
     <!-- رفض التمويل – سبب الرفض -->
     <div
@@ -433,9 +406,7 @@ const {
   selectedBookingId,
   showNegotiationModal,
   showProcessModal,
-  showAdvanceConfirmModal,
   isAdvancing,
-  nextStageLabel,
   showRejectFinancingModal,
   showEditFinancingStageModal,
   editFinancingStageNumber,
@@ -470,7 +441,6 @@ const {
   onBookingNextStage,
   onBookingRejectFinancing,
   onConfirmModalConfirm,
-  onAdvanceConfirm,
   closeRejectFinancingModal,
   onRejectFinancingConfirm,
   openNegotiationUpdate,

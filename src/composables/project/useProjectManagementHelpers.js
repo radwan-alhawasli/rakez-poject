@@ -30,11 +30,17 @@ export function isArchivedProject(p) {
   return p.status === 'Refused' || p.status === 'Rejected';
 }
 
-/** تبويب «جاهزة للتسويق»: معتمد أو مُعلَم جاهزاً (من الـ API) + وجود وحدات؛ لا يشمل المؤرشف. */
+/** قيمة is_complete_second من الـ API (boolean أو 1 أو "true") */
+export function isCompleteSecondTruthy(p) {
+  if (!p || typeof p !== 'object') return false;
+  const v = p.is_complete_second;
+  return v === true || v === 1 || String(v).toLowerCase() === 'true';
+}
+
+/** تبويب «جاهزة للتسويق»: العقود المكتملة حسب الخادم (is_complete_second)؛ لا يشمل المؤرشف. */
 export function isReadyForMarketingTab(p) {
   if (isArchivedProject(p)) return false;
-  const hasUnits = Array.isArray(p.units) && p.units.length > 0;
-  return hasUnits && p.is_ready_for_marketing === true;
+  return isCompleteSecondTruthy(p);
 }
 
 export function isNotReadyTab(p) {
