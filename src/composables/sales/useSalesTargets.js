@@ -213,10 +213,10 @@ export function useSalesTargets() {
   const targetsLoadError = ref('');
   const showCreateTargetModal = ref(false);
   const targetForm = reactive({
-    marketer_id: '',
+    assignee_marketer_id: '',
     contract_id: '',
     contract_unit_ids: [],
-    target_value: 0,
+    assigned_target_value: 0,
     deadline: '',
   });
   const targetFormUnits = shallowRef([]);
@@ -457,6 +457,10 @@ export function useSalesTargets() {
     showCreateTargetModal.value = true;
   };
 
+  /**
+   * إنشاء هدف مبيعات جديد.
+   * المرجع: docs/SALES_TARGETS_API_SUMMARY.md
+   */
   const createTarget = async () => {
     const canManageTeam = hasPermission('sales.team.manage') || isSalesLeader(authService.getCurrentUser());
     if (!canManageTeam) {
@@ -466,36 +470,43 @@ export function useSalesTargets() {
     try {
       const startDate = new Date().toISOString().split('T')[0];
       const basePayload = {
-        marketer_id: targetForm.marketer_id,
+        assignee_marketer_id: targetForm.assignee_marketer_id,
         contract_id: targetForm.contract_id,
         target_type: 'reservation',
         start_date: startDate,
         end_date: targetForm.deadline,
         leader_notes: null,
-        target_value: targetForm.target_value,
+        assigned_target_value: targetForm.assigned_target_value,
       };
       const unitIds = Array.isArray(targetForm.contract_unit_ids) ? targetForm.contract_unit_ids : [];
       if (unitIds.length === 0) {
+        // Project Level
         await salesService.createTarget({ ...basePayload, contract_unit_id: null });
         notificationService.addNotification('تم إنشاء الهدف بنجاح', 'success');
+      } else if (unitIds.length === 1) {
+        // Single Unit
+        await salesService.createTarget({ 
+            ...basePayload, 
+            contract_unit_id: unitIds[0], 
+            must_sell_units_count: 1 
+        });
+        notificationService.addNotification('تم إنشاء الهدف بنجاح', 'success');
       } else {
-        let created = 0;
-        for (const unitId of unitIds) {
-          await salesService.createTarget({ ...basePayload, contract_unit_id: unitId });
-          created++;
-        }
-        notificationService.addNotification(
-          created === 1 ? 'تم إنشاء الهدف بنجاح' : `تم إنشاء ${created} أهداف بنجاح`,
-          'success'
-        );
+        // Multi Units
+        await salesService.createTarget({ 
+            ...basePayload, 
+            contract_unit_ids: unitIds, 
+            must_sell_units_count: unitIds.length 
+        });
+        notificationService.addNotification(`تم إنشاء الهدف لـ ${unitIds.length} وحدات بنجاح`, 'success');
       }
       showCreateTargetModal.value = false;
       loadTargets();
       Object.assign(targetForm, {
-        marketer_id: '',
+        assignee_marketer_id: '',
         contract_id: '',
         contract_unit_ids: [],
-        target_value: 0,
+        assigned_target_value: 0,
         deadline: '',
       });
       targetFormUnits.value = [];

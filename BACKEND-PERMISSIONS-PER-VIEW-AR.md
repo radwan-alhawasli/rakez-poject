@@ -374,7 +374,8 @@
 ### SalesViewExtended (جميع التابات)
 **الدور المطلوب:** sales أو sales_leader أو admin.
 
-**الصلاحيات الدنيا:** sales.dashboard.view، sales.projects.view، sales.units.view، sales.units.book، sales.reservations.create، sales.reservations.view، sales.reservations.confirm، sales.reservations.cancel، sales.waiting_list.create، sales.waiting_list.convert، sales.goals.view، sales.goals.create، sales.schedule.view، sales.targets.view، sales.targets.update، sales.team.manage، sales.attendance.view، sales.attendance.manage، sales.tasks.manage، sales.tasks.create_for_marketing، sales.projects.allocate_shifts، sales.negotiation.approve، sales.payment-plan.manage، contracts.view (للمشاريع الحصرية/المطورين)، second_party.view. تعيين المشاريع من admin: **sales.team.manage** مع دور admin.
+**الصلاحيات الدنيا:** sales.dashboard.view، sales.projects.view، sales.units.view، sales.units.book، sales.reservations.create، sales.reservations.view، sales.reservations.confirm، sales.reservations.cancel، sales.waiting_list.create، sales.waiting_list.convert، sales.goals.view، sales.goals.create، sales.schedule.view، sales.targets.view، sales.targets.update (PATCH)، sales.team.manage (POST)، sales.attendance.view، sales.attendance.manage، sales.tasks.manage، sales.tasks.create_for_marketing، sales.projects.allocate_shifts، sales.negotiation.approve، sales.payment-plan.manage، contracts.view (للمشاريع الحصرية/المطورين)، second_party.view. تعيين المشاريع من admin: **sales.team.manage** مع دور admin.  
+**ملاحظة:** لمعاينة تفاصيل الـ API والمفاتيح الجديدة لإنشاء الأهداف (`assignee_marketer_id`, `assigned_target_value`) راجع [SALES_TARGETS_API_SUMMARY.md](docs/SALES_TARGETS_API_SUMMARY.md).
 
 ---
 

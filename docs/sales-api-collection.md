@@ -109,7 +109,34 @@
 
 ---
 
+---
+
+## 2.7 أهداف المبيعات (Sales Targets)
+
+إدارة أهداف المبيعات للمسوقين والمشاريع.
+
+### 2.7.1 إنشاء هدف جديد (Leader)
+
+**الطريقة:** `POST /api/sales/targets`
+
+**الطلب:**
+
+| الحقل | الشرح |
+|-------|-------|
+| `assignee_marketer_id` | معرف المسوق (User ID من نوع sales) |
+| `contract_id` | معرف المشروع/العقد |
+| `contract_unit_id` | معرف الوحدة (اختياري، null للمشروع بالكامل) |
+| `contract_unit_ids` | مصفوفة معرفات الوحدات (للأهداف المتعددة) |
+| `must_sell_units_count` | عدد الوحدات المطلوب بيعها |
+| `assigned_target_value` | قيمة الهدف المطلوبة بالريال |
+| `start_date` / `end_date` | فترة الهدف |
+
+**ملاحظة:** لمعاينة جميع التفاصيل والمسارات، راجع [SALES_TARGETS_API_SUMMARY.md](SALES_TARGETS_API_SUMMARY.md).
+
+---
+
 ## استخدام من الواجهة الأمامية
 
 - **تعيين فردي:** `salesService.createSchedule({ contract_id, user_id, schedule_date, start_time, end_time })`.
-- **حفظ جماعي:** `salesService.saveProjectSchedules(projectId, schedules, date)`؛ القيمة المرجعة قد تتضمن `items` أو عناصر تحتوي على `day_name_ar`, `schedule_date`, `start_time`, `end_time` لعرض رسالة النجاح.
+- **حفظ جماعي:** `salesService.saveProjectSchedules(projectId, schedules, date)`.
+- **إدارة الأهداف:** يتم استخدام `useSalesTargets` الذي يعتمد على `salesService.createTarget` و `salesService.updateTarget`.

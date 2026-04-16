@@ -260,6 +260,7 @@ export const salesServiceCoreMethods = {
 
   /**
    * Update a sales target — نفس طلب الشبكة PATCH …/api/sales/targets/{id} للجميع (عبر patchSalesTargetRecord)
+   * المرجع: docs/SALES_TARGETS_API_SUMMARY.md
    * @param {number|string} targetId - Target ID
    * @param {any} data - { status: 'new'|'in_progress'|'completed' }
    * @returns {Promise<import('axios').AxiosResponse>} Axios response
@@ -271,7 +272,8 @@ export const salesServiceCoreMethods = {
   /**
    * Create target (leader only). Assignee must be a user of type `sales` (from team/members).
    * POST /sales/targets — Permission: sales.team.manage
-   * @param {any} data - marketer_id (user type sales, from GET /sales/team/members), contract_id, contract_unit_id, target_type (reservation|negotiation|closing), start_date, end_date, leader_notes
+   * المرجع: docs/SALES_TARGETS_API_SUMMARY.md
+   * @param {any} data - assignee_marketer_id (user type sales, from GET /sales/team/members), contract_id, contract_unit_id (or contract_unit_ids array), must_sell_units_count, target_type (reservation|negotiation|closing), start_date, end_date, leader_notes, assigned_target_value
    * @returns {Promise<Object>} Created target
    */
   createTarget(data) {

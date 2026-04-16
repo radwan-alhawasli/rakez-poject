@@ -9,7 +9,6 @@
       <MarketingTasksTab v-else-if="activeTab === 'tasks'" />
       <MarketingLeadsTab v-else-if="activeTab === 'leads'" />
       <MarketingExpectedSalesTab v-else-if="activeTab === 'expected-sales'" />
-      <MarketingReportsTab v-else-if="activeTab === 'reports'" />
       <MarketingAiAssistantTab v-else-if="activeTab === 'ai-assistant'" />
     </div>
   </div>
@@ -44,9 +43,6 @@ const MarketingLeadsTab = defineAsyncComponent(() =>
 const MarketingExpectedSalesTab = defineAsyncComponent(() =>
   import('@/modules/marketing/tabs/expected-sales/MarketingExpectedSalesTab.vue')
 );
-const MarketingReportsTab = defineAsyncComponent(() =>
-  import('@/modules/marketing/tabs/reports/MarketingReportsTab.vue')
-);
 const MarketingAiAssistantTab = defineAsyncComponent(() =>
   import('@/modules/marketing/tabs/ai-assistant/MarketingAiAssistantTab.vue')
 );
@@ -60,7 +56,6 @@ const VALID_TABS = [
   'tasks',
   'leads',
   'expected-sales',
-  'reports',
   'plans',
   'developer-plan',
   'employee-plans',

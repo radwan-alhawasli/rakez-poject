@@ -432,12 +432,12 @@ async function saveAssignMarketers() {
     let created = 0;
     for (const marketerId of selectedMarketerIds.value) {
       await salesService.createTarget({
-        marketer_id: marketerId,
+        assignee_marketer_id: marketerId,
         contract_id: contractId,
         target_type: 'reservation',
         start_date: startDate,
         end_date: endDate,
-        target_value: targetValue,
+        assigned_target_value: targetValue,
       });
       created++;
     }

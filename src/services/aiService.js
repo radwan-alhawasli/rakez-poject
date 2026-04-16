@@ -9,6 +9,7 @@ import { getCaughtRequestUrl, getCaughtStatus } from '@/utils/caughtError';
 /**
  * خدمة المساعد الذكي
  * التكامل مع واجهة برمجة التطبيقات لميزات الذكاء الاصطناعي
+ * ملاحظة للمساعد الذكي: توثيق أهداف المبيعات (Sales Targets) موجود في docs/SALES_TARGETS_API_SUMMARY.md
  */
 const aiService = {
   /**
