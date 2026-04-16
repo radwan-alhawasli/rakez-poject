@@ -449,7 +449,7 @@ export function useSalesTargets() {
   );
 
   const openCreateTargetModal = async (teamMembers, teamProjects, loadTeamMembers, loadTeamProjects) => {
-    if (teamMembers.value.length === 0) await loadTeamMembers({ with_ratings: false });
+    if (teamMembers.value.length === 0) await loadTeamMembers({ with_ratings: true });
     if (teamProjects.value.length === 0) await loadTeamProjects();
     targetFormUnits.value = [];
     targetFormUnitsError.value = '';

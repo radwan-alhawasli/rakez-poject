@@ -468,7 +468,7 @@ function onDocumentClick(e) {
 
 onMounted(() => {
   document.addEventListener('click', onDocumentClick);
-  if (isSalesLeaderView.value || hasPermission('sales.team.manage')) loadTeamMembers({ with_ratings: false });
+  if (isSalesLeaderView.value || hasPermission('sales.team.manage')) loadTeamMembers({ with_ratings: true });
 });
 onUnmounted(() => {
   document.removeEventListener('click', onDocumentClick);
