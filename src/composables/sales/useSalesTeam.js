@@ -65,11 +65,17 @@ export function useSalesTeam() {
     }
   };
 
-  const loadTeamProjects = async () => {
+  const teamProjectsPagination = ref({
+    total: 0,
+    current_page: 1,
+    per_page: 15,
+  });
+
+  const loadTeamProjects = async (params = {}) => {
     isLoadingTeamProjects.value = true;
     teamProjectsLoadError.value = '';
     try {
-      const data = await salesService.getTeamProjects();
+      const data = await salesService.getTeamProjects(params);
       const raw = data?.items ?? (Array.isArray(data) ? data : []);
       teamProjects.value = raw.map(p => ({
         ...p,
@@ -78,6 +84,11 @@ export function useSalesTeam() {
         project_name:
           p.project_name ?? p.name ?? p.contract_name ?? `مشروع #${p.contract_id ?? p.id ?? ''}`,
       }));
+      if (data?.meta?.pagination) {
+        teamProjectsPagination.value = data.meta.pagination;
+      } else if (data?.total != null) {
+        teamProjectsPagination.value.total = data.total;
+      }
     } catch (error) {
       logger.error('[SalesTeam] Error loading team projects:', error);
       teamProjects.value = [];
@@ -87,6 +98,7 @@ export function useSalesTeam() {
       isLoadingTeamProjects.value = false;
     }
   };
+
 
   const loadTeamRecommendations = async () => {
     isLoadingTeamRecommendations.value = true;
@@ -194,7 +206,9 @@ export function useSalesTeam() {
   return {
     teamMembers,
     teamProjects,
+    teamProjectsPagination,
     teamMembersDisplay,
+
     isLoadingTeam,
     isLoadingTeamProjects,
     isLoadingTeamRecommendations,

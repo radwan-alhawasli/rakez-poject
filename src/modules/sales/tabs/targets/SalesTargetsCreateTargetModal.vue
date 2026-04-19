@@ -10,7 +10,7 @@
       <form @submit.prevent="$emit('submit')" class="create-target-form">
         <div class="form-row">
           <label class="form-label" for="create-target-marketer">المسوق</label>
-          <select id="create-target-marketer" v-model="targetForm.marketer_id" class="form-select" required>
+          <select id="create-target-marketer" v-model="targetForm.assignee_marketer_id" class="form-select" required>
             <option value="">اختر المسوق</option>
             <option v-for="m in teamMembersList" :key="m.id" :value="m.id">{{ m.name }}</option>
           </select>
@@ -43,7 +43,7 @@
           <label class="form-label" for="create-target-value">قيمة الهدف (ر.س)</label>
           <input
             id="create-target-value"
-            v-model.number="targetForm.target_value"
+            v-model.number="targetForm.assigned_target_value"
             type="number"
             min="0"
             step="1"

@@ -7,21 +7,24 @@ import logger from '@/utils/logger';
 /**
  * فك استجابة قوائم الأهداف — أشكال متعددة من Laravel / pagination.
  * @param {import('axios').AxiosResponse|any} response
- * @returns {unknown[]}
+ * @returns {{ items: unknown[], total: number }}
  */
 function unwrapSalesTargetsList(response) {
-  const { items } = extractPaginatedData(response, []);
-  if (Array.isArray(items) && items.length > 0) return items;
+  const { items, total } = extractPaginatedData(response, []);
+  if (Array.isArray(items) && items.length > 0) return { items, total };
+  
   const data = response?.data ?? response;
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.data)) return data.data;
-  if (data && Array.isArray(data.targets)) return data.targets;
+  if (Array.isArray(data)) return { items: data, total: data.length };
+  if (data && Array.isArray(data.data)) return { items: data.data, total: data.total ?? data.data.length };
+  if (data && Array.isArray(data.targets)) return { items: data.targets, total: data.total ?? data.targets.length };
+  
   const nested = data?.data;
   if (nested && typeof nested === 'object') {
-    if (Array.isArray(nested.targets)) return nested.targets;
-    if (Array.isArray(nested.data)) return nested.data;
+    if (Array.isArray(nested.targets)) return { items: nested.targets, total: nested.total ?? nested.targets.length };
+    if (Array.isArray(nested.data)) return { items: nested.data, total: nested.total ?? nested.data.length };
   }
-  return [];
+  
+  return { items: [], total: 0 };
 }
 
 /**
@@ -32,7 +35,7 @@ function unwrapSalesTargetsList(response) {
  * @param {Record<string, unknown>} data
  */
 function patchSalesTargetRecord(targetId, data) {
-  return apiClient.patch(`/sales/targets/${targetId}`, data);
+  return apiClient.patch(`sales/targets/${targetId}`, data);
 }
 
 /**
@@ -247,14 +250,14 @@ export const salesServiceCoreMethods = {
    * Sales staff (non-leader) → only targets where marketer_id = current user.
    * Each item: marketer_id / marketer_name = assignee (user type `sales` in the system — sales team member).
    * @param {any} params - Optional: from, to, status (new|in_progress|completed), per_page
-   * @returns {Promise<unknown[]>} List of targets (SalesTargetItem: units[], marketer_id, marketer_name, contract_id, etc.)
+   * @returns {Promise<{ items: unknown[], total: number }>} List of targets (SalesTargetItem: units[], marketer_id, marketer_name, contract_id, etc.)
    */
   async getMyTargets(params = {}) {
     try {
-      const response = await apiClient.get('/sales/targets/my', { params });
+      const response = await apiClient.get('sales/targets/my', { params });
       return unwrapSalesTargetsList(response);
     } catch (error) {
-      return handleServiceError(error, 'Fetch my targets', 'get', []);
+      return handleServiceError(error, 'Fetch my targets', 'get', { items: [], total: 0 });
     }
   },
 
@@ -264,31 +267,33 @@ export const salesServiceCoreMethods = {
    * Permission: sales.targets.view. Used when opening the "assigned units" modal from team goals.
    * Each item: marketer_id / marketer_name = assignee (user type `sales` — sales team member).
    * @param {number|string} contractId - Contract/Project ID
-   * @returns {Promise<unknown[]>} List of targets for this project (SalesTargetItem: units[], marketer_id, marketer_name, etc.)
+   * @returns {Promise<{ items: unknown[], total: number }>} List of targets for this project (SalesTargetItem: units[], marketer_id, marketer_name, etc.)
    */
   async getTargetsByProject(contractId) {
-    const response = await apiClient.get(`/sales/targets/by-project/${contractId}`);
+    const response = await apiClient.get(`sales/targets/by-project/${contractId}`);
     return unwrapSalesTargetsList(response);
   },
 
   /**
    * Update a sales target — نفس طلب الشبكة PATCH …/api/sales/targets/{id} للجميع (عبر patchSalesTargetRecord)
+   * المرجع: docs/SALES_TARGETS_API_SUMMARY.md
    * @param {number|string} targetId - Target ID
    * @param {any} data - { status: 'new'|'in_progress'|'completed' }
    * @returns {Promise<import('axios').AxiosResponse>} Axios response
    */
   updateTarget(targetId, data) {
-    return patchSalesTargetRecord(targetId, data);
+    return apiClient.patch(`sales/targets/${targetId}`, data);
   },
 
   /**
    * Create target (leader only). Assignee must be a user of type `sales` (from team/members).
    * POST /sales/targets — Permission: sales.team.manage
-   * @param {any} data - marketer_id (user type sales, from GET /sales/team/members), contract_id, contract_unit_id, target_type (reservation|negotiation|closing), start_date, end_date, leader_notes
+   * المرجع: docs/SALES_TARGETS_API_SUMMARY.md
+   * @param {any} data - assignee_marketer_id (user type sales, from GET /sales/team/members), contract_id, contract_unit_id (or contract_unit_ids array), must_sell_units_count, target_type (reservation|negotiation|closing), start_date, end_date, leader_notes, assigned_target_value
    * @returns {Promise<Object>} Created target
    */
   createTarget(data) {
-    return apiClient.post('/sales/targets', data);
+    return apiClient.post('sales/targets', data);
   },
 
   // Attendance
@@ -339,7 +344,7 @@ export const salesServiceCoreMethods = {
    */
   async getTeamProjects(params = {}) {
     try {
-      const response = await apiClient.get('/sales/team/projects', { params });
+      const response = await apiClient.get('sales/team/projects', { params });
       const { items, total } = extractPaginatedData(response, []);
       return { items, total };
     } catch (error) {
@@ -388,7 +393,7 @@ export const salesServiceCoreMethods = {
    */
   async getTeamMembers(params = {}) {
     const { with_ratings = true } = params;
-    const response = await apiClient.get('/sales/team/members', {
+    const response = await apiClient.get('sales/team/members', {
       params: { with_ratings },
     });
     const raw = response?.data?.data ?? response?.data ?? [];
@@ -398,6 +403,7 @@ export const salesServiceCoreMethods = {
       id: m.id ?? m.user_id ?? m.marketer_id,
       name: m.name ?? m.full_name ?? m.marketer_name ?? m.email ?? `#${m.id ?? m.user_id ?? ''}`,
       email: m.email ?? null,
+      avatar: m.image_url ?? m.avatar_url ?? m.profile_image ?? null,
       team: m.team ?? m.team_name ?? null,
       total_sales: m.total_sales ?? m.sales_count ?? 0,
       total_value: m.total_value ?? m.sales_value ?? m.total_sales_value ?? 0,
@@ -415,7 +421,7 @@ export const salesServiceCoreMethods = {
    * @returns {Promise<unknown[]>} Same shape as getTeamMembers with recommendation_score, confirmed_percent, unit_type_avg_score, etc.
    */
   async getTeamRecommendations() {
-    const response = await apiClient.get('/sales/team/recommendations');
+    const response = await apiClient.get('sales/team/recommendations');
     const raw = response?.data?.data ?? response?.data ?? [];
     const list = Array.isArray(raw) ? raw : [];
     return list.map(m => ({
@@ -423,6 +429,7 @@ export const salesServiceCoreMethods = {
       id: m.id ?? m.user_id ?? m.marketer_id,
       name: m.name ?? m.full_name ?? m.marketer_name ?? m.email ?? `#${m.id ?? m.user_id ?? ''}`,
       email: m.email ?? null,
+      avatar: m.image_url ?? m.avatar_url ?? m.profile_image ?? null,
       team: m.team ?? m.team_name ?? null,
       total_sales: m.total_sales ?? m.sales_count ?? 0,
       total_value: m.total_value ?? m.sales_value ?? m.total_sales_value ?? 0,
@@ -457,7 +464,7 @@ export const salesServiceCoreMethods = {
     if (rating != null) body.rating = Number(rating);
     if (comment != null && String(comment).trim() !== '') body.comment = String(comment).trim();
     if (Object.keys(body).length === 0) return Promise.reject(new Error('يجب إرسال التقييم و/أو التعليق'));
-    return apiClient.patch(`/sales/team/members/${memberId}/rating`, body);
+    return apiClient.patch(`sales/team/members/${memberId}/rating`, body);
   },
 
   /**
@@ -467,7 +474,7 @@ export const salesServiceCoreMethods = {
    * @returns {Promise<Object>}
    */
   removeTeamMember(memberId) {
-    return apiClient.post(`/sales/team/members/${memberId}/remove`);
+    return apiClient.post(`sales/team/members/${memberId}/remove`);
   },
 
   /**

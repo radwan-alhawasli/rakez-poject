@@ -18,7 +18,6 @@ export default {
     { path: 'tasks', name: 'MarketingTasks', component: () => import('@/modules/marketing/views/MarketingView.vue'), meta: { permissions: [PERMISSIONS.MARKETING_TASKS_VIEW] } },
     { path: 'leads', name: 'MarketingLeads', component: () => import('@/modules/marketing/views/MarketingView.vue'), meta: { permissions: [PERMISSIONS.MARKETING_TEAMS_VIEW] } },
     { path: 'expected-sales', name: 'MarketingExpectedSales', component: () => import('@/modules/marketing/views/MarketingView.vue'), meta: { permissions: [PERMISSIONS.MARKETING_REPORTS_VIEW] } },
-    { path: 'reports', name: 'MarketingReports', component: () => import('@/modules/marketing/views/MarketingView.vue'), meta: { permissions: [PERMISSIONS.MARKETING_REPORTS_VIEW] } },
     { path: 'plans', name: 'MarketingPlans', component: () => import('@/modules/marketing/views/MarketingView.vue'), meta: { permissions: [PERMISSIONS.MARKETING_PLANS_CREATE] } },
     { path: 'ai-assistant', name: 'MarketingAiAssistant', component: () => import('@/modules/marketing/views/MarketingView.vue'), meta: { permissions: [PERMISSIONS.USE_AI_ASSISTANT] } },
     { path: 'developer-plan', name: 'MarketingDeveloperPlan', component: () => import('@/modules/marketing/views/MarketingView.vue'), meta: { permissions: [PERMISSIONS.MARKETING_PLANS_CREATE] } },

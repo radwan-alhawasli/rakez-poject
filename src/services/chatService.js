@@ -57,6 +57,9 @@ export function normalizeConversation(raw) {
  */
 export function normalizeMessage(raw) {
   if (!raw || typeof raw !== 'object') return null;
+  const attachment = raw.attachment || raw.file || raw.file_url || raw.media_url || null;
+  const type = raw.attachment_type || raw.type || raw.file_type || (attachment ? 'file' : 'text');
+  
   return {
     ...raw,
     id: raw.id,
@@ -65,6 +68,8 @@ export function normalizeMessage(raw) {
     message: raw.message ?? raw.body ?? raw.text ?? '',
     is_read: !!(raw.is_read ?? raw.isRead),
     created_at: raw.created_at || raw.createdAt,
+    attachment,
+    attachment_type: type,
   };
 }
 
@@ -139,9 +144,8 @@ const chatService = {
   },
 
   /**
-   * POST /chat/conversations/:conversationId/messages
+   * @param {number|string} conversationId
    * @param {string} message
-    * @param {any} conversationId
    */
   async sendMessage(conversationId, message) {
     try {
@@ -152,6 +156,24 @@ const chatService = {
       return normalizeMessage(raw);
     } catch (error) {
       return handleServiceError(error, 'Send chat message', 'post');
+    }
+  },
+
+  /**
+   * POST /chat/conversations/:conversationId/messages
+   * Support for file/voice attachments via FormData
+   * @param {string} conversationId
+   * @param {FormData} formData
+   */
+  async sendAttachment(conversationId, formData) {
+    try {
+      const res = await apiClient.post(`/chat/conversations/${conversationId}/messages`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const raw = unwrap(res);
+      return normalizeMessage(raw);
+    } catch (error) {
+      return handleServiceError(error, 'Send chat attachment', 'post');
     }
   },
 

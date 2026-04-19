@@ -57,95 +57,34 @@
         </div>
       </section>
 
-      <div v-if="!hasCommission" class="create-commission-section">
-        <h3 class="section-title">إنشاء عمولة يدوية</h3>
-        <form class="create-form" @submit.prevent="handleCreateCommission">
-          <div class="form-row">
-            <div class="form-group">
-              <label>سعر البيع النهائي (ر.س)</label>
-              <input
-                v-model.number="commissionForm.final_selling_price"
-                type="number"
-                class="form-input"
-                min="0"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label>نسبة السعي (%)</label>
-              <input
-                v-model.number="commissionForm.commission_percentage"
-                type="number"
-                class="form-input"
-                min="0"
-                max="100"
-                step="0.1"
-                readonly
-              />
-            </div>
-            <div class="form-group">
-              <label>الفريق المسؤول</label>
-              <input
-                v-model="commissionForm.team_responsible"
-                type="text"
-                class="form-input"
-                placeholder="فريق المبيعات"
-              />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>مصاريف التسويق (ر.س)</label>
-              <input
-                v-model.number="commissionForm.marketing_expenses"
-                type="number"
-                class="form-input"
-                min="0"
-              />
-            </div>
-            <div class="form-group">
-              <label>رسوم البنك (ر.س)</label>
-              <input
-                v-model.number="commissionForm.bank_fees"
-                type="number"
-                class="form-input"
-                min="0"
-              />
-            </div>
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="btn-primary">إنشاء عمولة</button>
-          </div>
-        </form>
+      <div class="distributions-main-section">
+        <SoldUnitDetailDistributions
+          :employees="employees"
+          :commission-summary="commissionSummary"
+          :distributions="distributions"
+          :commission-form="commissionForm"
+          v-model:lead-gen-rows="leadGenRows"
+          v-model:persuasion-rows="persuasionRows"
+          v-model:closing-rows="closingRows"
+          v-model:has-external-broker="hasExternalBroker"
+          v-model:external-marketer="externalMarketer"
+          v-model:management-pct="managementPct"
+          :is-saving="isSaving"
+          :format-currency="formatCurrency"
+          :format-number="formatNumber"
+          :get-type-label="getTypeLabel"
+          :get-beneficiary-name="getBeneficiaryName"
+          :can-confirm-distribution="canConfirmDistribution"
+          :calc-amount="calcAmount"
+          :add-lead-gen-row="addLeadGenRow"
+          :add-persuasion-row="addPersuasionRow"
+          :add-closing-row="addClosingRow"
+          :handle-save-distributions="handleSaveDistributions"
+          :handle-confirm-payment="handleConfirmPayment"
+          :total-dist-pct="totalDistPct"
+          :company-amount="companyAmount"
+        />
       </div>
-
-      <SoldUnitDetailDistributions
-        v-else
-        :employees="employees"
-        :commission-summary="commissionSummary"
-        :distributions="distributions"
-        :commission-form="commissionForm"
-        v-model:lead-gen-rows="leadGenRows"
-        v-model:persuasion-rows="persuasionRows"
-        v-model:closing-rows="closingRows"
-        v-model:has-external-broker="hasExternalBroker"
-        v-model:external-marketer="externalMarketer"
-        v-model:management-pct="managementPct"
-        :is-saving="isSaving"
-        :format-currency="formatCurrency"
-        :format-number="formatNumber"
-        :get-type-label="getTypeLabel"
-        :get-beneficiary-name="getBeneficiaryName"
-        :can-confirm-distribution="canConfirmDistribution"
-        :calc-amount="calcAmount"
-        :add-lead-gen-row="addLeadGenRow"
-        :add-persuasion-row="addPersuasionRow"
-        :add-closing-row="addClosingRow"
-        :handle-save-distributions="handleSaveDistributions"
-        :handle-confirm-payment="handleConfirmPayment"
-        :total-dist-pct="totalDistPct"
-        :company-amount="companyAmount"
-      />
     </div>
   </div>
 </template>

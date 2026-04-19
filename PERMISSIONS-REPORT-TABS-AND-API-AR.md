@@ -76,12 +76,12 @@
 
 | ما يستخدمه التاب | استدعاء API | الصلاحيات التي يجب تضمينها |
 |-------------------|--------------|-----------------------------|
-| عرض الأهداف | GET targets by project | `sales.targets.view` |
-| إنشاء هدف (قائد) | POST create target | `sales.goals.create` أو `sales.team.manage` |
+| عرض الأهداف | GET targets by project / my | `sales.targets.view` (راجع [SALES_TARGETS_API_SUMMARY.md](docs/SALES_TARGETS_API_SUMMARY.md)) |
+| إنشاء هدف (قائد) | POST create target | `sales.team.manage` (مفاتيح: `assignee_marketer_id`, `assigned_target_value`) |
 | تحديث حالة الهدف | PATCH update target status | `sales.targets.update` |
 | قائمة أعضاء الفريق (لتعيين هدف) | GET team members | `sales.team.manage` |
 
-**مجموع صلاحيات التاب:** `sales.targets.view`, `sales.targets.update`, وإذا كان قائد: `sales.team.manage`, `sales.goals.create`.
+**مجموع صلاحيات التاب:** `sales.targets.view`, `sales.targets.update`, وإذا كان قائد: `sales.team.manage`. لمزيد من التفاصيل حول مفاتيح البيانات، راجع ملخص الـ API.
 
 ---
 

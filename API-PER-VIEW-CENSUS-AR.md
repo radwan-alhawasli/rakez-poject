@@ -381,9 +381,9 @@
 - `POST /sales/reservations/:id/confirm`  
 - `POST /sales/reservations/:id/cancel`  
 - `GET /sales/reservations/:id/voucher`  
-- `GET /sales/targets/...`  
-- `POST /sales/targets`  
-- `PATCH /sales/targets/...`  
+- `GET /sales/targets/...` (لمزيد من التفاصيل، راجع [SALES_TARGETS_API_SUMMARY.md](docs/SALES_TARGETS_API_SUMMARY.md))
+- `POST /sales/targets` (مفاتيح: `assignee_marketer_id`, `assigned_target_value`)
+- `PATCH /sales/targets/...` (تحديث حالة الهدف)  
 - `GET /sales/attendance/...`  
 - `POST /sales/attendance/...`  
 - `GET /sales/team/projects`  

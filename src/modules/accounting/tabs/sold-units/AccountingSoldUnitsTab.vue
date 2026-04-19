@@ -1,6 +1,6 @@
 <template>
   <div class="management-view accounting-sold-units-tab">
-    <SoldUnitDetailView v-if="soldUnitDetailView === 'detail' && selectedSoldUnit" :unit="selectedSoldUnit" @back="handleSoldUnitDetailBack" @create-commission="handleCreateCommission" />
+    <SoldUnitDetailView v-if="soldUnitDetailView === 'detail' && selectedSoldUnit" :unit="selectedSoldUnit" @back="handleSoldUnitDetailBack" />
     <template v-else>
       <header class="welcome-header sold-units-hero" aria-labelledby="acct-sold-units-title">
         <div class="sold-units-hero-inner">
@@ -112,7 +112,6 @@ const {
   loadSoldUnits,
   viewSoldUnitDetail,
   handleSoldUnitDetailBack,
-  handleCreateCommission,
   handlePageChange,
   handlePerPageChange,
   formatCurrency,

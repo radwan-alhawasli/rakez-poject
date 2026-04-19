@@ -113,7 +113,6 @@ const marketingItems = [
   { to: '/marketing/projects', label: 'مشاريع التسويق', tooltip: 'مشاريع التسويق', icon: ICONS.market, permission: 'marketing.projects.view' },
   { to: '/marketing/developer-plan', label: 'خطة المطور', tooltip: 'خطة المطور', icon: ICONS.calendar, permission: 'marketing.plans.create' },
   { to: '/marketing/employee-plans', label: 'خطط الموظفين', tooltip: 'خطط الموظفين', icon: ICONS.teams, permission: 'marketing.plans.create' },
-  { to: '/marketing/reports', label: 'أدائي', tooltip: 'أدائي', icon: ICONS.pie, permission: 'marketing.reports.view' },
   COMMON_ITEMS.aiAssistant,
   COMMON_ITEMS.profile,
 ];

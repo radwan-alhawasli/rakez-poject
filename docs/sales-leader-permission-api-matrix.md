@@ -23,7 +23,7 @@
 | `sales.goals.create` | Create target action | `/sales/targets` | `createTarget` | `POST /sales/targets` | Implemented |
 | `sales.schedule.view` | Attendance tab (read) | `/sales/attendance` | `getMyAttendance` | `GET /sales/attendance/my` | Implemented |
 | `sales.targets.view` | Targets tab read | `/sales/targets` | `getMyTargets` | `GET /sales/targets/my` | Implemented |
-| `sales.targets.update` | Target update flow | `/sales/targets` | `updateTarget` | `PUT /sales/targets/{target_id}` | Implemented |
+| `sales.targets.update` | Target update flow | `/sales/targets` | `updateTarget` | `PATCH /sales/targets/{target_id}` | Implemented |
 | `sales.attendance.view` | Attendance tab | `/sales/attendance` | `getMyAttendance`, `getTeamAttendance` | `GET /sales/attendance/my`, `GET /sales/attendance/team` | Implemented |
 | `sales.attendance.manage` | Create schedule action | `/sales/attendance` | `createSchedule` | `POST /sales/attendance/schedules` | Implemented |
 | `sales.tasks.manage` | Tasks tab + status update | `/sales/tasks` | `getTaskProjects`, `getProjectTasks`, `updateTaskStatus` | `GET /sales/tasks/projects*`, `PUT /sales/marketing-tasks/{task_id}` | Implemented |

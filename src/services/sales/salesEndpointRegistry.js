@@ -13,6 +13,8 @@
  * - merge_only: endpoint taken from "RAKEZ_ERP_COMPLETE_API_COLLECTION.postman_collection.json" when missing in 249
  */
 export const SALES_API_ENDPOINT_REGISTRY = {
+  getTeamProjects: { method: 'GET', endpoint: '/sales/team/projects', source: 'preferred_249' },
+  getTeamMembers: { method: 'GET', endpoint: '/sales/team/members', source: 'preferred_249' },
   getDashboard: { method: 'GET', endpoint: '/sales/dashboard', source: 'preferred_249' },
   getSoldUnits: { method: 'GET', endpoint: '/sales/sold-units', source: 'preferred_249' },
   getSoldUnitCommissionSummary: {

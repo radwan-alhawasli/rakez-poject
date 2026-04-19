@@ -36,6 +36,12 @@ export function useErpChat() {
   const currentPage = ref(1);
   const hasMoreMessages = ref(false);
   const contextMenu = ref({ visible: false, x: 0, y: 0, msg: null });
+  const isRecording = ref(false);
+  const recordingDuration = ref(0);
+  const mediaRecorder = ref(null);
+  const audioChunks = ref([]);
+  let recordingTimer = null;
+  const selectedFile = ref(null);
 
   let pusher = null;
   const isPusherConnected = ref(false);
@@ -281,40 +287,112 @@ export function useErpChat() {
 
   const sendMessage = async () => {
     const text = newMessage.value.trim();
-    if (!text || !activeConversation.value || isSending.value) return;
+    if (!text && !selectedFile.value) return;
+    if (!activeConversation.value || isSending.value) return;
+    
     isSending.value = true;
+    const file = selectedFile.value;
+    const isAttachment = !!file;
+    
+    // Type detection for UI optimistic message
+    let attType = 'text';
+    if (file) {
+      if (file.type.startsWith('image/')) attType = 'image';
+      else if (file.type.startsWith('audio/') || file.name.endsWith('.webm')) attType = 'voice';
+      else attType = 'file';
+    }
+
     const optimistic = {
       id: `tmp-${Date.now()}`,
       conversation_id: activeConversation.value.id,
       sender_id: currentUserId.value,
-      message: text,
+      message: text || (file ? file.name : ''),
       is_read: false,
       created_at: new Date().toISOString(),
       _optimistic: true,
+      attachment_type: attType,
+      _isUploading: isAttachment,
     };
+
     messages.value.push(optimistic);
+    const savedText = text;
     newMessage.value = '';
+    selectedFile.value = null; // Clear selection
     showEmoji.value = false;
     await nextTick();
     scrollToBottom();
+
     try {
-      const saved = await chatService.sendMessage(activeConversation.value.id, text);
-      // Replace optimistic message with actual data from server
+      let saved;
+      if (isAttachment) {
+        const fd = new FormData();
+        fd.append('file', file);
+        if (savedText) fd.append('message', savedText);
+        fd.append('attachment_type', attType);
+        saved = await chatService.sendAttachment(activeConversation.value.id, fd);
+      } else {
+        saved = await chatService.sendMessage(activeConversation.value.id, savedText);
+      }
+
       const idx = messages.value.findIndex(m => m.id === optimistic.id);
-      if (idx !== -1 && saved) {
-        messages.value.splice(idx, 1, saved);
+      if (idx !== -1) {
+        if (saved && saved.id) {
+          messages.value.splice(idx, 1, saved);
+        } else {
+          messages.value[idx]._isUploading = false;
+        }
       }
       messages.value = sortAndDedupeMessages(messages.value);
-      updateConvPreview(activeConversation.value.id, text);
-    } catch (e) {
+      updateConvPreview(activeConversation.value.id, isAttachment ? `[\u0645\u0631\u0641\u0642] ${file.name}` : savedText);
+    } catch (_e) {
       const idx = messages.value.findIndex(m => m.id === optimistic.id);
       if (idx !== -1) messages.value.splice(idx, 1);
-      notificationService.addNotification(
-        e?.response?.data?.message || 'تعذر إرسال الرسالة',
-        'error'
-      );
+      notificationService.addNotification('فشل الإرسال', 'error');
     } finally {
       isSending.value = false;
+    }
+  };
+
+  const uploadFile = async (file) => {
+    // Now this just selects the file
+    selectedFile.value = file;
+  };
+
+  const clearSelectedFile = () => {
+    selectedFile.value = null;
+  };
+
+  const startVoiceRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder.value = new MediaRecorder(stream);
+      audioChunks.value = [];
+      
+      mediaRecorder.value.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunks.value.push(e.data);
+      };
+      
+      mediaRecorder.value.onstop = async () => {
+        const audioBlob = new Blob(audioChunks.value, { type: 'audio/webm' });
+        const file = new File([audioBlob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
+        await uploadFile(file);
+        stream.getTracks().forEach(t => t.stop());
+      };
+      
+      mediaRecorder.value.start();
+      isRecording.value = true;
+      recordingDuration.value = 0;
+      recordingTimer = setInterval(() => { recordingDuration.value++; }, 1000);
+    } catch (_err) {
+      notificationService.addNotification('تعذر الوصول للميكروفون', 'error');
+    }
+  };
+
+  const stopVoiceRecording = () => {
+    if (mediaRecorder.value && isRecording.value) {
+      mediaRecorder.value.stop();
+      isRecording.value = false;
+      clearInterval(recordingTimer);
     }
   };
 
@@ -347,8 +425,11 @@ export function useErpChat() {
   };
 
   const insertEmoji = e => {
+    if (isRecording.value) stopVoiceRecording();
     newMessage.value += e;
-    composerInput.value?.focus();
+    nextTick(() => {
+      composerInput.value?.focus();
+    });
   };
 
   const searchUsers = () => {
@@ -489,5 +570,12 @@ export function useErpChat() {
     closeNewChatModal,
     removeConversation,
     isPusherConnected,
+    isRecording,
+    recordingDuration,
+    startVoiceRecording,
+    stopVoiceRecording,
+    uploadFile,
+    selectedFile,
+    clearSelectedFile,
   };
 }

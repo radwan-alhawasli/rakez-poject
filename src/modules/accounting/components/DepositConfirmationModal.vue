@@ -4,10 +4,11 @@
     :title="action === 'confirm' ? 'تأكيد الوديعة' : 'معالجة الاسترداد'"
     @update:open="(v) => { if (v === false) $emit('close') }"
   >
-    <form @submit.prevent="handleSubmit" class="modal-body">
-        <div v-if="deposit" class="deposit-detail-section">
-          <div class="detail-row">
-            <span class="detail-label">المشروع:</span> {{ deposit.project_name || '—' }}
+    <form @submit.prevent="handleSubmit" class="modal-body-premium">
+        <div v-if="deposit" class="deposit-brief-card">
+          <div class="brief-item">
+            <span class="brief-label">المشروع</span>
+            <span class="brief-value">{{ deposit.project_name || '—' }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">نوع الوحدة:</span> {{ deposit.unit_type || '—' }}
@@ -25,17 +26,6 @@
           <div class="detail-row">
             <span class="detail-label">اسم العميل:</span>
             {{ deposit.client_name || deposit.customer_name || '—' }}
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">نسبة السعي:</span>
-            {{ deposit.commission_percentage ? deposit.commission_percentage + '%' : '—' }}
-            {{
-              deposit.commission_source === 'owner'
-                ? '(من المالك)'
-                : deposit.commission_source === 'buyer'
-                ? '(من المشتري)'
-                : ''
-            }}
           </div>
         </div>
         <div class="form-group" v-if="action === 'confirm'">
@@ -110,26 +100,39 @@ export default {
 </script>
 
 <style scoped>
-.deposit-detail-section {
-  background: var(--color-light-gray);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
+.modal-body-premium {
+  padding: 8px 0;
 }
 
-.detail-row {
-  margin-bottom: 8px;
-  font-size: 14px;
+.deposit-brief-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
-.detail-row:last-child {
-  margin-bottom: 0;
+.brief-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.detail-label {
-  font-weight: 600;
-  color: var(--color-dark-gray);
-  margin-left: 8px;
+.brief-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.brief-value {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #1e3a5f;
 }
 
 .form-group {
@@ -138,52 +141,56 @@ export default {
 
 .form-label {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-charcoal);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #334155;
   margin-bottom: 8px;
 }
 
 .form-input,
 .form-textarea {
   width: 100%;
-  padding: 12px 15px;
-  border: 2px solid var(--color-medium-gray);
-  border-radius: 12px;
-  font-size: 15px;
+  padding: 14px 18px;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.form-textarea {
-  resize: vertical;
-}
-
-.modal-footer {
-  display: flex;
-  gap: 15px;
-  justify-content: flex-end;
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid var(--color-light-gray);
+.form-input:focus {
+  outline: none;
+  border-color: #b1a28f;
+  box-shadow: 0 0 0 4px rgba(177, 162, 143, 0.15);
 }
 
 .btn-secondary {
   padding: 12px 24px;
-  border: 2px solid var(--color-medium-gray);
-  border-radius: 12px;
-  background: white;
-  color: var(--color-dark-gray);
-  font-weight: 600;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  color: #64748b;
+  font-weight: 700;
   cursor: pointer;
+  transition: all 0.2s;
 }
 
 .btn-primary {
-  padding: 12px 24px;
+  padding: 12px 28px;
   border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
-  color: white;
-  font-weight: 700;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #1e3a5f 0%, #162a44 100%);
+  color: #fff;
+  font-weight: 800;
   cursor: pointer;
+  box-shadow: 0 8px 20px rgba(30, 58, 95, 0.2);
+  transition: all 0.3s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(30, 58, 95, 0.3);
 }
 
 /* Tablet responsive */

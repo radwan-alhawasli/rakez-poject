@@ -119,9 +119,9 @@ export const teamSchema = z.object({
 // ─── Sales Target ─────────────────────────────────────────────────────────────
 
 export const salesTargetSchema = z.object({
-  marketer_id: z.union([z.number(), z.string()]).refine(v => v !== '' && v !== 0, 'المسوق مطلوب'),
+  assignee_marketer_id: z.union([z.number(), z.string()]).refine(v => v !== '' && v !== 0, 'المسوق مطلوب'),
   contract_id: z.union([z.number(), z.string()]).refine(v => v !== '' && v !== 0, 'المشروع مطلوب'),
-  target_value: z.number({ invalid_type_error: 'قيمة الهدف يجب أن تكون رقمًا' }).positive('قيمة الهدف يجب أن تكون موجبة'),
+  assigned_target_value: z.number({ invalid_type_error: 'قيمة الهدف يجب أن تكون رقمًا' }).positive('قيمة الهدف يجب أن تكون موجبة'),
   deadline: z.string().min(1, 'الموعد النهائي مطلوب'),
 });
 

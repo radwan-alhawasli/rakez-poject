@@ -1,7 +1,6 @@
 import { ref } from 'vue';
 import accountingService from '@/services/accountingService';
 import logger from '@/utils/logger';
-import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 import { mergeSoldUnitDetail } from '@/utils/accountingSoldUnitFields';
 
@@ -52,21 +51,6 @@ export function useAccountingSoldUnits() {
     selectedSoldUnit.value = null;
   };
 
-  const handleCreateCommission = async (data) => {
-    try {
-      const commission = await accountingService.createManualCommission(
-        selectedSoldUnit.value.reservation_id || selectedSoldUnit.value.id, data
-      );
-      toast.success('تم إنشاء العمولة اليدوية بنجاح');
-      if (commission?.id) {
-        selectedSoldUnit.value = { ...selectedSoldUnit.value, commission_id: commission.id };
-      }
-      loadSoldUnits();
-    } catch (error) {
-      logger.error('Error creating commission:', error);
-      toast.error('حدث خطأ أثناء إنشاء العمولة');
-    }
-  };
 
   const handlePageChange = (page) => {
     currentPage.value = page;
@@ -92,7 +76,6 @@ export function useAccountingSoldUnits() {
     loadSoldUnits,
     viewSoldUnitDetail,
     handleSoldUnitDetailBack,
-    handleCreateCommission,
     handlePageChange,
     handlePerPageChange,
     formatCurrency,

@@ -110,7 +110,7 @@ export const contractServiceAdminMethods = {
    * PATCH /contracts/update-status/:id — Body: { status: 'ready' | 'rejected', ...extra }
    * @param {any} contractId
    * @param {any} status
-   * @param {Record<string, unknown>} [extra] — مثلاً { is_complete_second: true }
+   * @param {Record<string, unknown>} [extra] - e.g. { is_complete_second: true }
    */
   async updateContractStatusProjectManager(contractId, status, extra = {}) {
     try {

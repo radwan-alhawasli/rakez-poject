@@ -1,4 +1,4 @@
-﻿# تقرير شامل لجميع نقاط النهاية (API)
+# تقرير شامل لجميع نقاط النهاية (API)
 
 - التاريخ: 2026-03-13
 - البيئة: Localhost `http://localhost:8000`
@@ -72,6 +72,7 @@
 - مسار `ai/assistant/chat` متاح ويعمل (200).
 - `project_management/teams/update/{id}` يقبل `PUT` وليس `POST`.
 - يوجد تعارض تسمية محتمل بين `sales.payment-plan.manage` (frontend) و `sales.payment_plan.manage` (backend).
+- لمزيد من التفاصيل حول أهداف المبيعات (Targets)، يرجى مراجعة [SALES_TARGETS_API_SUMMARY.md](docs/SALES_TARGETS_API_SUMMARY.md).
 
 ## 4) القائمة الكاملة لجميع نقاط النهاية الفريدة
 

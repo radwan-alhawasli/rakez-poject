@@ -23,7 +23,7 @@
       </button>
     </div>
 
-    <div v-if="!projectName && !isLoadingCandidates" class="empty-state">
+    <div v-if="!projectId && !isLoadingCandidates" class="empty-state">
       <p>لم يتم تحديد المشروع. افتح الصفحة من تفاصيل المطور.</p>
       <router-link :to="developerDetailRoute" class="link-back">العودة لتفاصيل المطور</router-link>
     </div>
@@ -154,12 +154,12 @@
                   />
                   <span v-else>—</span>
                 </td>
-                <td>{{ row.reservation_id }}</td>
-                <td>{{ row.unit_number || '—' }}</td>
-                <td>{{ formatCurrency(row.claim_amount) }}</td>
+                <td>{{ row.reservation_id || row.booking_id || row.id }}</td>
+                <td>{{ row.unit_number || row.unit_name || '\u2014' }}</td>
+                <td>{{ formatCurrency(row.claim_amount || row.amount || 0) }}</td>
                 <td>
-                  <span v-if="row.has_claim_file || row.has_pdf" class="status-tag good">نعم</span>
-                  <span v-else class="status-tag">—</span>
+                  <span v-if="row.has_claim_file || row.has_pdf || row.claim_file_id" class="status-tag good">نعم</span>
+                  <span v-else class="status-tag">\u2014</span>
                 </td>
                 <td>
                   <button
@@ -225,22 +225,32 @@ export default {
     const candidatesRequestedWithContractId = ref(false);
 
     const projectCandidates = computed(() => {
-      if (soldUnits.value.length > 0) return soldUnits.value;
+      let list = [];
+      if (soldUnits.value.length > 0) {
+        list = soldUnits.value;
+      } else {
+        list = candidates.value || [];
+      }
+      
+      if (!list.length) return [];
+      
       const pid = projectId.value;
       const pName = (project.value?.project_name || project.value?.name || project.value?.title || '').trim();
-      if (!candidates.value.length) return [];
+
+      // If we specifically requested this project's candidates, return them all
       if (pid && candidatesRequestedWithContractId.value) {
-        return candidates.value;
+        return list;
       }
-      return candidates.value.filter(c => {
-        if (pid && c.contract_id != null && c.contract_id !== '') {
-          return String(c.contract_id) === String(pid);
+
+      return list.filter(c => {
+        const c_id = c.contract_id ?? c.project_id ?? c.id;
+        if (pid && c_id != null && c_id !== '') {
+          return String(c_id) === String(pid);
         }
         if (pName && (c.project_name || '').trim()) {
           return (c.project_name || '').trim() === pName;
         }
-        if (pid) return false;
-        return true;
+        return !pid; // If no pid, show all
       });
     });
 
@@ -313,30 +323,33 @@ export default {
       claimFilesForbidden.value = false;
       const pid = projectId.value;
       try {
+        // We call candidates API as requested by the user for contract_id filter
+        const params = { per_page: 500 };
         if (pid) {
+          params.contract_id = pid;
+          candidatesRequestedWithContractId.value = true;
+        } else {
+          candidatesRequestedWithContractId.value = false;
+        }
+
+        const res = await accountingService.getClaimFileCandidates(params);
+        claimFilesForbidden.value = !!res?.forbidden;
+        
+        // Handle both {items, total} and raw array
+        const rawItems = res?.items ?? (Array.isArray(res) ? res : []);
+        candidates.value = rawItems;
+
+        // Optionally supplement with soldUnits if candidates is empty or for full status
+        if (pid && candidates.value.length === 0) {
           const units = await accountingService.getClaimFileSoldUnits(pid);
           soldUnits.value = Array.isArray(units) ? [...units] : [];
         } else {
           soldUnits.value = [];
         }
-        if (soldUnits.value.length === 0) {
-          const params = { per_page: 500 };
-          if (pid) {
-            params.contract_id = pid;
-            candidatesRequestedWithContractId.value = true;
-          } else {
-            candidatesRequestedWithContractId.value = false;
-          }
-          const data = await accountingService.getClaimFileCandidates(params);
-          claimFilesForbidden.value = !!data?.forbidden;
-          candidates.value = data?.items ?? (Array.isArray(data) ? data : []);
-        } else {
-          candidatesRequestedWithContractId.value = false;
-        }
       } catch (error) {
         logger.error('Error loading claim file units', error);
         candidates.value = [];
-        showApiError(error, 'حدث خطأ أثناء تحميل الوحدات');
+        showApiError(error, '\u062d\u062f\u062b \u062e\u0637\u0623 \u0623\u062b\u0646\u0627\u0621 \u062a\u062d\u0645\u064a\u0644 \u0627\u0644\u0648\u062d\u062f\u0627\u062a');
       } finally {
         isLoadingCandidates.value = false;
       }
@@ -450,6 +463,7 @@ export default {
         }
       } catch (e) {
         logger.error('Failed to load developer/project for units view', e);
+        if (!projectName.value) projectName.value = '\u0645\u0634\u0631\u0648\u0631\u0639 \u0631\u0642\u0645 ' + projId;
       }
     }
 
@@ -469,7 +483,10 @@ export default {
       () => [route.params.projectId, route.params.id],
       ([newPid]) => {
         initFromState();
-        if (newPid) loadCandidates();
+        if (newPid) {
+          if (!projectName.value) loadDeveloperAndProject();
+          loadCandidates();
+        }
       },
       { immediate: false }
     );
@@ -501,6 +518,7 @@ export default {
       formatCurrency,
       handleSubmit,
       goBack,
+      projectId,
     };
   },
 };
