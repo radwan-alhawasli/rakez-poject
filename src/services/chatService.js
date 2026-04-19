@@ -143,6 +143,10 @@ const chatService = {
     }
   },
 
+  /**
+   * @param {number|string} conversationId
+   * @param {string} message
+   */
   async sendMessage(conversationId, message) {
     try {
       const res = await apiClient.post(`/chat/conversations/${conversationId}/messages`, {

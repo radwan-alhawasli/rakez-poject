@@ -344,7 +344,7 @@ export function useErpChat() {
       }
       messages.value = sortAndDedupeMessages(messages.value);
       updateConvPreview(activeConversation.value.id, isAttachment ? `[\u0645\u0631\u0641\u0642] ${file.name}` : savedText);
-    } catch (e) {
+    } catch (_e) {
       const idx = messages.value.findIndex(m => m.id === optimistic.id);
       if (idx !== -1) messages.value.splice(idx, 1);
       notificationService.addNotification('فشل الإرسال', 'error');
@@ -383,7 +383,7 @@ export function useErpChat() {
       isRecording.value = true;
       recordingDuration.value = 0;
       recordingTimer = setInterval(() => { recordingDuration.value++; }, 1000);
-    } catch (err) {
+    } catch (_err) {
       notificationService.addNotification('تعذر الوصول للميكروفون', 'error');
     }
   };

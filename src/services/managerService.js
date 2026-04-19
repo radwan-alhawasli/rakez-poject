@@ -16,6 +16,7 @@ import { extractPaginatedData } from '@/utils/paginationUtils';
  */
 function extractManagerTasksArray(response) {
   const root = response?.data ?? response;
+  /** @param {any} v */
   const asArray = v => (Array.isArray(v) ? v : null);
 
   let a = asArray(root);
@@ -197,6 +198,7 @@ const managerService = {
   async getAllTasks(params = {}, opts = {}) {
     const perPage = Math.min(Math.max(Number(opts.perPage) || 100, 1), 200);
     const maxPages = Math.min(Math.max(Number(opts.maxPages) || 50, 1), 100);
+    /** @type {Record<string, any>} */
     const base = { ...params, per_page: perPage };
     delete base.page;
     const all = [];
