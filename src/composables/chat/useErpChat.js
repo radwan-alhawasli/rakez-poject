@@ -312,6 +312,7 @@ export function useErpChat() {
       _optimistic: true,
       attachment_type: attType,
       _isUploading: isAttachment,
+      attachment: isAttachment && file ? URL.createObjectURL(file) : null,
     };
 
     messages.value.push(optimistic);
@@ -327,6 +328,7 @@ export function useErpChat() {
       if (isAttachment) {
         const fd = new FormData();
         fd.append('file', file);
+        fd.append('attachment', file);
         if (savedText) fd.append('message', savedText);
         fd.append('attachment_type', attType);
         saved = await chatService.sendAttachment(activeConversation.value.id, fd);
@@ -337,6 +339,10 @@ export function useErpChat() {
       const idx = messages.value.findIndex(m => m.id === optimistic.id);
       if (idx !== -1) {
         if (saved && saved.id) {
+          // Fallback: If backend omitted sender_id, retain it from optimistic to avoid the message flipping side
+          if (!saved.sender_id || saved.sender_id === 0) {
+            saved.sender_id = optimistic.sender_id;
+          }
           messages.value.splice(idx, 1, saved);
         } else {
           messages.value[idx]._isUploading = false;

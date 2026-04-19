@@ -35,8 +35,8 @@ function resolveBroadcastingAuthEndpoint() {
  */
 /** @param {string} token */
 export function createPusher(token) {
-  const key = (getEnv('VITE_APP_PUSHER_KEY') || '').trim() || 'your-pusher-key';
-  const wsHost = (getEnv('VITE_APP_PUSHER_WS_HOST') || '').trim();
+  const key = (getEnv('VITE_REVERB_APP_KEY') || getEnv('VITE_APP_PUSHER_KEY') || '').trim() || 'your-pusher-key';
+  const wsHost = (getEnv('VITE_REVERB_HOST') || getEnv('VITE_APP_PUSHER_WS_HOST') || '').trim();
   const useReverb = wsHost !== '';
 
   if (!key || key === 'your-pusher-key') {
@@ -55,9 +55,9 @@ export function createPusher(token) {
           },
         },
         wsHost: wsHost || 'localhost',
-        wsPort: parseInt(getEnv('VITE_APP_PUSHER_WS_PORT'), 10) || 8080,
-        wssPort: parseInt(getEnv('VITE_APP_PUSHER_WSS_PORT'), 10) || 443,
-        forceTLS: getEnv('VITE_APP_PUSHER_FORCE_TLS') === 'true',
+        wsPort: parseInt(getEnv('VITE_REVERB_PORT') || getEnv('VITE_APP_PUSHER_WS_PORT'), 10) || 8080,
+        wssPort: parseInt(getEnv('VITE_REVERB_PORT') || getEnv('VITE_APP_PUSHER_WSS_PORT'), 10) || 443,
+        forceTLS: (getEnv('VITE_REVERB_SCHEME') || getEnv('VITE_APP_PUSHER_FORCE_TLS')) === 'https' || getEnv('VITE_APP_PUSHER_FORCE_TLS') === 'true',
         disableStats: true,
         enabledTransports: ['ws', 'wss'],
       }
