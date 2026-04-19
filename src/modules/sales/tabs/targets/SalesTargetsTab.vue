@@ -304,11 +304,6 @@ const filteredUnitsModalRows = computed(() => {
   return rows.filter((r) => Number(r.marketer_id) === currentUserId.value);
 });
 
-const TARGET_STATUS_OPTIONS = [
-  { value: 'new', label: 'جديد' },
-  { value: 'in_progress', label: 'قيد التنفيذ' },
-  { value: 'completed', label: 'منجز' },
-];
 
 const currentUserId = computed(() => {
 

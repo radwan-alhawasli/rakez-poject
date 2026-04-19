@@ -23,42 +23,12 @@
     </div>
 
     <template v-else>
-      <div class="tasks-stats-row" role="region" aria-label="إحصائيات المهام">
-        <div class="stat-card">
-          <span class="stat-label">إجمالي المهام</span>
-          <span class="stat-value">{{ tasks.length }}</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">المكتملة</span>
-          <span class="stat-value">{{ doneTasksCount }}</span>
-        </div>
-        <div class="stat-card stat-card--accent">
-          <span class="stat-label">نسبة الإنجاز</span>
-          <span class="stat-value">{{ completionPercentDisplay }}٪</span>
-        </div>
-      </div>
-      <div class="tasks-status-breakdown" role="region" aria-label="نسب المهام حسب الحالة">
-        <div class="breakdown-item">
-          <span class="breakdown-label">قيد الانتظار</span>
-          <span class="breakdown-pct">{{ statusBreakdown.pendingPct }}٪</span>
-          <span class="breakdown-count">({{ statusBreakdown.pending }})</span>
-        </div>
-        <div class="breakdown-item">
-          <span class="breakdown-label">قيد التنفيذ</span>
-          <span class="breakdown-pct">{{ statusBreakdown.inProgressPct }}٪</span>
-          <span class="breakdown-count">({{ statusBreakdown.inProgress }})</span>
-        </div>
-        <div class="breakdown-item breakdown-item--done">
-          <span class="breakdown-label">مكتمل</span>
-          <span class="breakdown-pct">{{ statusBreakdown.donePct }}٪</span>
-          <span class="breakdown-count">({{ statusBreakdown.done }})</span>
-        </div>
-        <div v-if="statusBreakdown.other > 0" class="breakdown-item">
-          <span class="breakdown-label">أخرى</span>
-          <span class="breakdown-pct">{{ statusBreakdown.otherPct }}٪</span>
-          <span class="breakdown-count">({{ statusBreakdown.other }})</span>
-        </div>
-      </div>
+      <ManagerTaskStats
+        :tasks-count="tasks.length"
+        :done-tasks-count="doneTasksCount"
+        :completion-percent-display="completionPercentDisplay"
+        :status-breakdown="statusBreakdown"
+      />
       <div v-if="tasks.length === 0" class="empty-state">
         <p>لا توجد مهام.</p>
       </div>
@@ -73,34 +43,16 @@
             {{ showDoneOnly ? 'عرض كل المهام' : 'عرض المهام المكتملة فقط' }}
           </button>
         </div>
-        <div v-if="filteredTasks.length === 0" class="empty-state">
-          <p>{{ showDoneOnly ? 'لا توجد مهام مكتملة ضمن نتيجة البحث.' : 'لا توجد مهام.' }}</p>
-        </div>
-        <div v-else class="tasks-by-month">
-          <div v-for="[monthKey, monthTasks] in groupedFilteredTasks" :key="monthKey" class="month-group-tasks">
-            <h3 class="month-title-tasks">{{ taskMonthLabel(monthKey) }}</h3>
-            <div class="tasks-list">
-              <button
-                v-for="t in monthTasks"
-                :key="t.id"
-                type="button"
-                class="task-card task-card--clickable"
-                @click="openTaskDetail(t)"
-              >
-                <div class="task-header">
-                  <h4>{{ t.title || t.name || '—' }}</h4>
-                  <span :class="['task-status', taskStatusClass(t.status)]">{{ formatTaskStatus(t.status) }}</span>
-                </div>
-                <p v-if="t.description" class="task-desc">{{ t.description }}</p>
-                <div class="task-meta">
-                  <span v-if="t.assigned_to">المُعيّن: {{ t.assigned_to }}</span>
-                  <span v-if="t.due_at">الموعد: {{ formatDate(t.due_at) }}</span>
-                </div>
-                <span class="task-open-hint">عرض التفاصيل ←</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        <ManagerTaskList
+          :filtered-tasks="filteredTasks"
+          :show-done-only="showDoneOnly"
+          :grouped-filtered-tasks="groupedFilteredTasks"
+          :task-month-label="taskMonthLabel"
+          :task-status-class="taskStatusClass"
+          :format-task-status="formatTaskStatus"
+          :format-date="formatDate"
+          @open-task-detail="openTaskDetail"
+        />
       </template>
     </template>
 
@@ -150,31 +102,29 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import managerService from '@/services/managerService';
+import { onMounted } from 'vue';
+import { useManagerTasks } from '@/composables/manager/useManagerTasks';
+import ManagerTaskStats from '@/modules/manager/components/ManagerTaskStats.vue';
+import ManagerTaskList from '@/modules/manager/components/ManagerTaskList.vue';
 import { localeOpts } from '@/utils/intlLatn';
-import { toast } from '@/composables/useToast';
-import {
-  isTaskDoneStatus,
-  groupTasksByMonth,
-  completionPercent,
-  buildTaskStatusBreakdown,
-} from '@/utils/managerTasksDisplay';
 
-const tasks = ref([]);
-const isLoading = ref(true);
-const showDoneOnly = ref(false);
-const taskDetailOpen = ref(false);
-const taskDetailLoading = ref(false);
-const taskDetail = ref(null);
-
-const filters = ref({
-  status: '',
-  assigned_to: '',
-  section: '',
-  sort_by: 'due_at',
-  sort_order: 'desc',
-});
+const {
+  tasks,
+  isLoading,
+  showDoneOnly,
+  taskDetailOpen,
+  taskDetailLoading,
+  taskDetail,
+  filters,
+  doneTasksCount,
+  completionPercentDisplay,
+  statusBreakdown,
+  filteredTasks,
+  groupedFilteredTasks,
+  fetchTasks,
+  openTaskDetail,
+  closeTaskDetail,
+} = useManagerTasks();
 
 function formatDate(d) {
   if (!d) return '—';
@@ -201,69 +151,12 @@ function formatTaskStatus(status) {
   return map[s] || status || '—';
 }
 
-const doneTasksCount = computed(() => tasks.value.filter(t => isTaskDoneStatus(t.status)).length);
-
-const completionPercentDisplay = computed(() =>
-  completionPercent(tasks.value.length, doneTasksCount.value)
-);
-
-const statusBreakdown = computed(() => buildTaskStatusBreakdown(tasks.value));
-
-const filteredTasks = computed(() => {
-  if (!showDoneOnly.value) return tasks.value;
-  return tasks.value.filter(t => isTaskDoneStatus(t.status));
-});
-
-const groupedFilteredTasks = computed(() => groupTasksByMonth(filteredTasks.value));
-
 function taskMonthLabel(key) {
   if (key === 'unknown') return 'بدون تاريخ محدد';
   const [y, m] = key.split('-').map(Number);
   if (!y || !m) return key;
   const d = new Date(y, m - 1, 1);
   return d.toLocaleDateString('ar-SA', localeOpts({ year: 'numeric', month: 'long' }));
-}
-
-async function fetchTasks() {
-  isLoading.value = true;
-  try {
-    const base = {
-      sort_by: filters.value.sort_by || 'due_at',
-      sort_order: filters.value.sort_order || 'desc',
-    };
-    if (filters.value.status) base.status = filters.value.status;
-    const at = String(filters.value.assigned_to || '').trim();
-    if (at) base.assigned_to = at;
-    const sec = String(filters.value.section || '').trim();
-    if (sec) base.section = sec;
-
-    const res = await managerService.getAllTasks(base, { perPage: 100, maxPages: 50 });
-    tasks.value = res?.items ?? [];
-  } catch (_) {
-    tasks.value = [];
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-async function openTaskDetail(t) {
-  if (!t?.id) return;
-  taskDetail.value = null;
-  taskDetailOpen.value = true;
-  taskDetailLoading.value = true;
-  try {
-    taskDetail.value = await managerService.getTask(t.id);
-  } catch (e) {
-    toast.error(e?.response?.data?.message || e?.message || 'تعذر تحميل المهمة');
-    taskDetailOpen.value = false;
-  } finally {
-    taskDetailLoading.value = false;
-  }
-}
-
-function closeTaskDetail() {
-  taskDetailOpen.value = false;
-  taskDetail.value = null;
 }
 
 onMounted(() => {
@@ -318,79 +211,6 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.tasks-stats-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.stat-card {
-  padding: 14px 16px;
-  border-radius: 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.stat-card--accent {
-  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-  border-color: #a7f3d0;
-}
-
-.stat-label {
-  font-size: 0.8rem;
-  color: #64748b;
-}
-
-.stat-value {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.tasks-status-breakdown {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
-  margin-bottom: 16px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-}
-
-.breakdown-item {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px;
-  justify-content: space-between;
-}
-
-.breakdown-item--done .breakdown-pct {
-  color: #047857;
-}
-
-.breakdown-label {
-  font-size: 0.85rem;
-  color: #64748b;
-  width: 100%;
-}
-
-.breakdown-pct {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.breakdown-count {
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-
 .tasks-toolbar {
   margin-bottom: 16px;
 }
@@ -415,97 +235,6 @@ onMounted(() => {
   color: #065f46;
 }
 
-.month-group-tasks {
-  margin-bottom: 24px;
-}
-
-.month-title-tasks {
-  margin: 0 0 12px 0;
-  font-size: 1.05rem;
-  color: #475569;
-  font-weight: 700;
-}
-
-.tasks-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.task-card {
-  padding: 20px;
-  background: var(--color-white);
-  border-radius: 16px;
-  border: 1px solid rgba(177, 162, 143, 0.2);
-}
-
-.task-card--clickable {
-  width: 100%;
-  text-align: right;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  font: inherit;
-}
-
-.task-card--clickable:hover {
-  border-color: var(--color-gold);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.task-open-hint {
-  display: block;
-  margin-top: 8px;
-  font-size: 0.8rem;
-  color: var(--color-gold);
-  font-weight: 600;
-}
-
-.task-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-
-.task-header h4 {
-  margin: 0;
-  font-size: 1.1rem;
-}
-
-.task-status {
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.task-status.pending {
-  background: #fef3c7;
-  color: #92400e;
-}
-.task-status.in_progress {
-  background: #dbeafe;
-  color: #1e40af;
-}
-.task-status.completed {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.task-desc {
-  margin: 0 0 12px 0;
-  font-size: 0.95rem;
-  color: var(--color-dark-gray);
-  line-height: 1.5;
-}
-
-.task-meta {
-  display: flex;
-  gap: 16px;
-  font-size: 0.9rem;
-  color: var(--color-dark-gray);
-  flex-wrap: wrap;
-}
 
 .loading-state,
 .empty-state,
