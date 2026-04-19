@@ -220,7 +220,6 @@ import { useAccountingDeposits } from '@/composables/accounting/useAccountingDep
 
 const {
   isLoading,
-  deposits,
   filteredDeposits,
   depositsSubTab,
   projectFilter,

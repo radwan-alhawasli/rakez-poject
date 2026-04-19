@@ -129,7 +129,7 @@
 <script setup>
 import { useFormatters } from '@/composables/useFormatters';
 
-const props = defineProps({
+defineProps({
   open: Boolean,
   project: {
     type: Object,

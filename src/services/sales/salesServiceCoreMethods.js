@@ -237,7 +237,7 @@ export const salesServiceCoreMethods = {
    * Sales staff (non-leader) → only targets where marketer_id = current user.
    * Each item: marketer_id / marketer_name = assignee (user type `sales` in the system — sales team member).
    * @param {any} params - Optional: from, to, status (new|in_progress|completed), per_page
-   * @returns {Promise<unknown[]>} List of targets (SalesTargetItem: units[], marketer_id, marketer_name, contract_id, etc.)
+   * @returns {Promise<{ items: unknown[], total: number }>} List of targets (SalesTargetItem: units[], marketer_id, marketer_name, contract_id, etc.)
    */
   async getMyTargets(params = {}) {
     try {
@@ -254,7 +254,7 @@ export const salesServiceCoreMethods = {
    * Permission: sales.targets.view. Used when opening the "assigned units" modal from team goals.
    * Each item: marketer_id / marketer_name = assignee (user type `sales` — sales team member).
    * @param {number|string} contractId - Contract/Project ID
-   * @returns {Promise<unknown[]>} List of targets for this project (SalesTargetItem: units[], marketer_id, marketer_name, etc.)
+   * @returns {Promise<{ items: unknown[], total: number }>} List of targets for this project (SalesTargetItem: units[], marketer_id, marketer_name, etc.)
    */
   async getTargetsByProject(contractId) {
     const response = await apiClient.get(`sales/targets/by-project/${contractId}`);

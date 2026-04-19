@@ -126,7 +126,7 @@
 <script setup>
 import { useFormatters } from '@/composables/useFormatters';
 
-const props = defineProps({
+defineProps({
   open: Boolean,
   unit: {
     type: Object,
