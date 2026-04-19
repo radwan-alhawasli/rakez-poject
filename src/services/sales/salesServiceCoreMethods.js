@@ -7,21 +7,24 @@ import logger from '@/utils/logger';
 /**
  * فك استجابة قوائم الأهداف — أشكال متعددة من Laravel / pagination.
  * @param {import('axios').AxiosResponse|any} response
- * @returns {unknown[]}
+ * @returns {{ items: unknown[], total: number }}
  */
 function unwrapSalesTargetsList(response) {
-  const { items } = extractPaginatedData(response, []);
-  if (Array.isArray(items) && items.length > 0) return items;
+  const { items, total } = extractPaginatedData(response, []);
+  if (Array.isArray(items) && items.length > 0) return { items, total };
+  
   const data = response?.data ?? response;
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.data)) return data.data;
-  if (data && Array.isArray(data.targets)) return data.targets;
+  if (Array.isArray(data)) return { items: data, total: data.length };
+  if (data && Array.isArray(data.data)) return { items: data.data, total: data.total ?? data.data.length };
+  if (data && Array.isArray(data.targets)) return { items: data.targets, total: data.total ?? data.targets.length };
+  
   const nested = data?.data;
   if (nested && typeof nested === 'object') {
-    if (Array.isArray(nested.targets)) return nested.targets;
-    if (Array.isArray(nested.data)) return nested.data;
+    if (Array.isArray(nested.targets)) return { items: nested.targets, total: nested.total ?? nested.targets.length };
+    if (Array.isArray(nested.data)) return { items: nested.data, total: nested.total ?? nested.data.length };
   }
-  return [];
+  
+  return { items: [], total: 0 };
 }
 
 /**
@@ -32,7 +35,7 @@ function unwrapSalesTargetsList(response) {
  * @param {Record<string, unknown>} data
  */
 function patchSalesTargetRecord(targetId, data) {
-  return apiClient.patch(`/sales/targets/${targetId}`, data);
+  return apiClient.patch(`sales/targets/${targetId}`, data);
 }
 
 /**
@@ -238,10 +241,10 @@ export const salesServiceCoreMethods = {
    */
   async getMyTargets(params = {}) {
     try {
-      const response = await apiClient.get('/sales/targets/my', { params });
+      const response = await apiClient.get('sales/targets/my', { params });
       return unwrapSalesTargetsList(response);
     } catch (error) {
-      return handleServiceError(error, 'Fetch my targets', 'get', []);
+      return handleServiceError(error, 'Fetch my targets', 'get', { items: [], total: 0 });
     }
   },
 
@@ -254,7 +257,7 @@ export const salesServiceCoreMethods = {
    * @returns {Promise<unknown[]>} List of targets for this project (SalesTargetItem: units[], marketer_id, marketer_name, etc.)
    */
   async getTargetsByProject(contractId) {
-    const response = await apiClient.get(`/sales/targets/by-project/${contractId}`);
+    const response = await apiClient.get(`sales/targets/by-project/${contractId}`);
     return unwrapSalesTargetsList(response);
   },
 
@@ -266,7 +269,7 @@ export const salesServiceCoreMethods = {
    * @returns {Promise<import('axios').AxiosResponse>} Axios response
    */
   updateTarget(targetId, data) {
-    return patchSalesTargetRecord(targetId, data);
+    return apiClient.patch(`sales/targets/${targetId}`, data);
   },
 
   /**
@@ -277,7 +280,7 @@ export const salesServiceCoreMethods = {
    * @returns {Promise<Object>} Created target
    */
   createTarget(data) {
-    return apiClient.post('/sales/targets', data);
+    return apiClient.post('sales/targets', data);
   },
 
   // Attendance
@@ -328,7 +331,7 @@ export const salesServiceCoreMethods = {
    */
   async getTeamProjects(params = {}) {
     try {
-      const response = await apiClient.get('/sales/team/projects', { params });
+      const response = await apiClient.get('sales/team/projects', { params });
       const { items, total } = extractPaginatedData(response, []);
       return { items, total };
     } catch (error) {
@@ -377,7 +380,7 @@ export const salesServiceCoreMethods = {
    */
   async getTeamMembers(params = {}) {
     const { with_ratings = true } = params;
-    const response = await apiClient.get('/sales/team/members', {
+    const response = await apiClient.get('sales/team/members', {
       params: { with_ratings },
     });
     const raw = response?.data?.data ?? response?.data ?? [];
@@ -387,6 +390,7 @@ export const salesServiceCoreMethods = {
       id: m.id ?? m.user_id ?? m.marketer_id,
       name: m.name ?? m.full_name ?? m.marketer_name ?? m.email ?? `#${m.id ?? m.user_id ?? ''}`,
       email: m.email ?? null,
+      avatar: m.image_url ?? m.avatar_url ?? m.profile_image ?? null,
       team: m.team ?? m.team_name ?? null,
       total_sales: m.total_sales ?? m.sales_count ?? 0,
       total_value: m.total_value ?? m.sales_value ?? m.total_sales_value ?? 0,
@@ -404,7 +408,7 @@ export const salesServiceCoreMethods = {
    * @returns {Promise<unknown[]>} Same shape as getTeamMembers with recommendation_score, confirmed_percent, unit_type_avg_score, etc.
    */
   async getTeamRecommendations() {
-    const response = await apiClient.get('/sales/team/recommendations');
+    const response = await apiClient.get('sales/team/recommendations');
     const raw = response?.data?.data ?? response?.data ?? [];
     const list = Array.isArray(raw) ? raw : [];
     return list.map(m => ({
@@ -412,6 +416,7 @@ export const salesServiceCoreMethods = {
       id: m.id ?? m.user_id ?? m.marketer_id,
       name: m.name ?? m.full_name ?? m.marketer_name ?? m.email ?? `#${m.id ?? m.user_id ?? ''}`,
       email: m.email ?? null,
+      avatar: m.image_url ?? m.avatar_url ?? m.profile_image ?? null,
       team: m.team ?? m.team_name ?? null,
       total_sales: m.total_sales ?? m.sales_count ?? 0,
       total_value: m.total_value ?? m.sales_value ?? m.total_sales_value ?? 0,
@@ -446,7 +451,7 @@ export const salesServiceCoreMethods = {
     if (rating != null) body.rating = Number(rating);
     if (comment != null && String(comment).trim() !== '') body.comment = String(comment).trim();
     if (Object.keys(body).length === 0) return Promise.reject(new Error('يجب إرسال التقييم و/أو التعليق'));
-    return apiClient.patch(`/sales/team/members/${memberId}/rating`, body);
+    return apiClient.patch(`sales/team/members/${memberId}/rating`, body);
   },
 
   /**
@@ -456,7 +461,7 @@ export const salesServiceCoreMethods = {
    * @returns {Promise<Object>}
    */
   removeTeamMember(memberId) {
-    return apiClient.post(`/sales/team/members/${memberId}/remove`);
+    return apiClient.post(`sales/team/members/${memberId}/remove`);
   },
 
   /**

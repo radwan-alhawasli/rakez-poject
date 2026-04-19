@@ -123,7 +123,7 @@
               @contextmenu.prevent="onMessageContext($event, msg)"
             >
               <div class="erp-chat-bubble">
-                <p>{{ msg.message }}</p>
+                <p v-if="msg.message">{{ msg.message }}</p>
                 <div class="erp-chat-bubble-meta">
                   <span class="erp-chat-bubble-time">{{ formatMsgTime(msg.created_at) }}</span>
                   <svg
@@ -137,15 +137,32 @@
                     aria-hidden="true"
                   >
                     <template v-if="msg.is_read">
-                      <!-- Double check for read -->
                       <path d="M7 12l5 5L22 7" />
                       <path d="M2 12l5 5L17 7" />
                     </template>
                     <template v-else>
-                      <!-- Single check for sent -->
                       <polyline points="20 6 9 17 4 12" />
                     </template>
                   </svg>
+                </div>
+
+                <!-- Attachment Rendering -->
+                <div v-if="msg.attachment_type !== 'text'" class="erp-chat-attachment">
+                  <div v-if="msg.attachment_type === 'image'" class="erp-chat-att-image">
+                    <img :src="msg.attachment" :alt="msg.message" loading="lazy" @click="previewImage(msg.attachment)" />
+                  </div>
+                  <div v-else-if="msg.attachment_type === 'voice'" class="erp-chat-att-voice">
+                    <audio controls :src="msg.attachment"></audio>
+                  </div>
+                  <div v-else-if="msg.attachment_type === 'file' || msg.attachment" class="erp-chat-att-file">
+                    <a :href="msg.attachment" target="_blank" download class="erp-chat-file-link">
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                        <polyline points="13 2 13 9 20 9"></polyline>
+                      </svg>
+                      <span>{{ msg.message || 'ملف مرفق' }}</span>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -201,7 +218,68 @@
                 </div>
               </Transition>
             </div>
+
+            <div v-if="selectedFile" class="erp-chat-selected-file">
+              <div class="selected-file-info">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                  <polyline points="13 2 13 9 20 9"></polyline>
+                </svg>
+                <span class="file-name">{{ selectedFile.name }}</span>
+                <span class="file-size">({{ (selectedFile.size / 1024).toFixed(1) }} KB)</span>
+              </div>
+              <button type="button" class="clear-file-btn" @click="clearSelectedFile">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <div class="erp-chat-actions">
+              <input
+                ref="fileInput"
+                type="file"
+                style="display: none"
+                @change="onFileSelected"
+              />
+              <button
+                type="button"
+                class="erp-chat-action-btn"
+                title="إرفاق ملف"
+                @click="$refs.fileInput.click()"
+              >
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                </svg>
+              </button>
+              
+              <button
+                type="button"
+                class="erp-chat-action-btn"
+                :class="{ 'is-recording': isRecording }"
+                :title="isRecording ? 'إيقاف التسجيل' : 'تسجيل صوتي'"
+                @click="toggleRecording"
+              >
+                <svg v-if="!isRecording" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" y1="19" x2="12" y2="23"></line>
+                  <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+                <svg v-else viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                  <rect x="6" y="6" width="12" height="12"></rect>
+                </svg>
+              </button>
+            </div>
+
+            <div v-if="isRecording" class="erp-chat-recording-status">
+              <span class="recording-dot"></span>
+              <span class="recording-time">{{ formatRecordingTime(recordingDuration) }}</span>
+            </div>
+
             <input
+              v-else
               ref="composerInput"
               v-model="newMessage"
               class="erp-chat-input"
@@ -335,5 +413,36 @@ const {
   closeNewChatModal,
   removeConversation,
   isPusherConnected,
+  isRecording,
+  recordingDuration,
+  startVoiceRecording,
+  stopVoiceRecording,
+  uploadFile,
+  selectedFile,
+  clearSelectedFile,
 } = useErpChat();
+
+function onFileSelected(e) {
+  const file = e.target.files[0];
+  if (file) uploadFile(file);
+  e.target.value = '';
+}
+
+function toggleRecording() {
+  if (isRecording.value) {
+    stopVoiceRecording();
+  } else {
+    startVoiceRecording();
+  }
+}
+
+function formatRecordingTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function previewImage(url) {
+  window.open(url, '_blank');
+}
 </script>

@@ -74,7 +74,13 @@
 
       <div v-else class="team-members-grid">
         <div v-for="member in teamMembersDisplay" :key="member.id" class="member-card">
-          <div class="member-avatar">{{ (member.name || '?').charAt(0) }}</div>
+          <div class="member-avatar-wrap">
+            <img v-if="member.avatar" :src="member.avatar" :alt="member.name" class="member-image" />
+            <div v-else class="member-avatar">{{ (member.name || '?').charAt(0) }}</div>
+            <div v-if="teamSortByRecommendation && member.recommendationScore" class="recommendation-badge" title="درجة التوصية">
+              {{ Math.round(member.recommendationScore) }}
+            </div>
+          </div>
           <div class="member-info">
             <h4>{{ member.name }}</h4>
             <p class="member-role">{{ member.role || 'عضو فريق' }}</p>

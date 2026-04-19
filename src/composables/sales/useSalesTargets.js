@@ -229,28 +229,42 @@ export function useSalesTargets() {
   /** null = GET /sales/targets/my؛ عند التعيين = GET /sales/targets/by-project/{id} (سياق مشروع) */
   const activeContractId = ref(null);
 
-  /**
-   * @param {{ contractId?: string|number|null }} [options] - عند تمرير { contractId } يُحدَّد مصدر القائمة؛ بدون وسيط يُعاد التحميل بنفس النطاق الأخير.
-   */
-  const loadTargets = async (options) => {
-    if (options !== undefined && options !== null && typeof options === 'object' && 'contractId' in options) {
-      const v = options.contractId;
-      activeContractId.value = v != null && v !== '' ? String(v) : null;
+  const targetsMeta = reactive({
+    total: 0,
+    perPage: 25,
+    currentPage: 1,
+  });
+
+  const loadTargets = async (options = {}) => {
+    if (options !== undefined && options !== null && typeof options === 'object') {
+      if ('contractId' in options) {
+        const v = options.contractId;
+        activeContractId.value = v != null && v !== '' ? String(v) : null;
+      }
+      if ('page' in options) targetsMeta.currentPage = options.page;
+      if ('perPage' in options) targetsMeta.perPage = options.perPage;
     }
     const contractScope = activeContractId.value;
+    const params = {
+      page: targetsMeta.currentPage,
+      per_page: targetsMeta.perPage,
+    };
 
     targetsLoadError.value = '';
     isLoadingTargets.value = true;
     try {
-      let raw;
+      let result;
       if (contractScope) {
-        raw = await salesService.getTargetsByProject(contractScope);
-        logger.info('[SalesTargets] by-project API:', { contractId: contractScope, length: Array.isArray(raw) ? raw.length : 'N/A' });
+        result = await salesService.getTargetsByProject(contractScope, params);
+        logger.info('[SalesTargets] by-project API:', { contractId: contractScope, total: result?.total });
       } else {
-        raw = await salesService.getMyTargets();
-        logger.info('[SalesTargets] my API response:', { type: typeof raw, isArray: Array.isArray(raw), length: Array.isArray(raw) ? raw.length : 'N/A' });
+        result = await salesService.getMyTargets(params);
+        logger.info('[SalesTargets] my API response:', { total: result?.total });
       }
-      const list = Array.isArray(raw) ? raw : [];
+
+      const list = result?.items || (Array.isArray(result) ? result : []);
+      targetsMeta.total = result?.total ?? list.length;
+
       targets.value = list.map((item) => {
         const normalized = normalizeSalesTargetItem(item);
         if (contractScope && (normalized.contract_id == null || normalized.contract_id === '')) {
@@ -519,6 +533,7 @@ export function useSalesTargets() {
 
   return {
     targets,
+    targetsMeta,
     activeContractId,
     updatingTargetId,
     patchTargetStatus,

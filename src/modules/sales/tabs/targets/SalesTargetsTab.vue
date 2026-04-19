@@ -18,10 +18,10 @@
           }}
         </p>
         <p
-          v-if="displayTargets.length && !isLoadingTargets && !targetsLoadError"
+          v-if="targetsMeta.total && !isLoadingTargets && !targetsLoadError"
           class="targets-meta-line"
         >
-          {{ displayTargets.length === 1 ? 'هدف واحد في القائمة' : `${displayTargets.length} أهداف في القائمة` }}
+          {{ targetsMeta.total === 1 ? 'هدف واحد في القائمة' : `${targetsMeta.total} أهداف في القائمة` }}
         </p>
       </div>
       <button v-if="isSalesLeaderView || hasPermission('sales.team.manage')" @click="openCreateTargetModalClick" class="btn-add">
@@ -33,152 +33,228 @@
       </button>
     </div>
 
-    <LoadingSpinner v-if="isLoadingTargets" text="جاري تحميل الأهداف..." />
+    <!-- View for Sales Leader: Project Board -->
+    <div v-if="isSalesLeaderView">
+      <LoadingSpinner v-if="isLoadingTeamProjects" text="جاري تحميل المشاريع..." />
+      
+      <div v-else-if="teamProjectsLoadError" class="empty-state error-state">
+        <p>{{ teamProjectsLoadError }}</p>
+        <button type="button" class="btn-add" @click="loadTeamProjects()">إعادة المحاولة</button>
+      </div>
 
-    <div v-else-if="targetsLoadError" class="empty-state error-state">
-      <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-      </svg>
-      <p>{{ targetsLoadError }}</p>
-      <button type="button" class="btn-add" @click="loadTargets()">إعادة المحاولة</button>
+      <div v-else-if="teamProjects.length === 0" class="empty-state">
+        <p>لا توجد مشاريع مخصصة للفريق حالياً.</p>
+      </div>
+
+      <div v-else class="targets-grid">
+        <ProjectBoardCard 
+          v-for="project in teamProjects"
+          :key="project.contract_id"
+          :project="project"
+          @view-details="openProjectDetails"
+          @view-units="openUnitsDetails"
+          @assign-target="openAssignProjectTargets"
+        />
+      </div>
+
     </div>
 
-    <div v-else-if="displayTargets.length === 0" class="empty-state">
-      <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <circle cx="12" cy="12" r="6"></circle>
-        <circle cx="12" cy="12" r="2"></circle>
-      </svg>
-      <p>لا توجد أهداف محددة للعرض حالياً.</p>
-    </div>
+    <!-- View for Staff: Targets -->
+    <div v-else>
+      <LoadingSpinner v-if="isLoadingTargets" text="جاري تحميل الأهداف..." />
 
-    <div v-else class="targets-grid">
-      <div
-        v-for="(target, targetIndex) in displayTargets"
-        :key="getTargetStableId(target, targetIndex)"
-        class="target-card"
-        :class="{
-          'target-card-clickable': target.contract_id,
-          'target-card-completed': isTargetCompleted(target),
-          'target-card--menu-open': openMenuId === getTargetStableId(target, targetIndex),
-        }"
-        role="button"
-        :tabindex="target.contract_id ? 0 : -1"
-        @click="onCardClick($event, target)"
-        @keydown.enter.prevent="target.contract_id && openUnitsModal(target)"
-        @keydown.space.prevent="target.contract_id && openUnitsModal(target)"
-      >
-        <div class="target-card-surface">
-        <!-- شارة إنجاز — شريط علوي أنيق -->
-        <div v-if="isTargetCompleted(target)" class="target-card-ribbon" aria-hidden="true">
-          <span class="target-card-ribbon__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          </span>
-          <span class="target-card-ribbon__text">مكتمل</span>
-        </div>
+      <div v-else-if="targetsLoadError" class="empty-state error-state">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p>{{ targetsLoadError }}</p>
+        <button type="button" class="btn-add" @click="loadTargets()">إعادة المحاولة</button>
+      </div>
 
-        <!-- زر ثلاث نقاط — أعلى يسار البطاقة؛ @click.stop يمنع فتح مودال الوحدات ويُبقي التفاعل داخل القائمة -->
-        <div class="card-menu-wrap" @click.stop>
-          <button
-            type="button"
-            class="card-menu-btn"
-            :aria-expanded="openMenuId === getTargetStableId(target, targetIndex)"
-            aria-haspopup="true"
-            aria-label="خيارات الهدف"
-            @click.stop="toggleCardMenu(getTargetStableId(target, targetIndex))"
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-              <circle cx="12" cy="5" r="1.5"></circle>
-              <circle cx="12" cy="12" r="1.5"></circle>
-              <circle cx="12" cy="19" r="1.5"></circle>
-            </svg>
-          </button>
-          <div v-if="openMenuId === getTargetStableId(target, targetIndex)" class="card-dropdown" @click.stop>
-            <button
-              v-if="isSalesLeaderView || hasPermission('sales.team.manage')"
-              type="button"
-              class="card-dropdown-item"
-              @click="openAssignMarketers(target)"
-            >
-              إضافة مسوقين للمشروع
-            </button>
-            <template v-if="canUpdateTarget(target)">
-              <div class="card-dropdown-status">
-                <span class="card-dropdown-label">تغيير الحالة</span>
-                <select
-                  :value="target.status || 'new'"
-                  class="card-dropdown-select"
-                  :disabled="isTargetUpdating(target)"
-                  @change="updateTargetStatus(target, $event.target.value)"
-                >
-                  <option v-for="opt in TARGET_STATUS_OPTIONS" :key="opt.value" :value="opt.value">
-                    {{ opt.label }}
-                  </option>
-                </select>
-              </div>
-              <button
-                v-if="target.status !== 'completed'"
-                type="button"
-                class="card-dropdown-item card-dropdown-item-done"
-                :disabled="isTargetUpdating(target)"
-                @click.stop="updateTargetStatus(target, 'completed')"
-              >
-                جعل منجز (تحقق)
-              </button>
-            </template>
-          </div>
-        </div>
+      <div v-else-if="displayTargets.length === 0" class="empty-state">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="12" r="6"></circle>
+          <circle cx="12" cy="12" r="2"></circle>
+        </svg>
+        <p>لا توجد أهداف محددة للعرض حالياً.</p>
+      </div>
 
-        <div class="target-card__core">
-        <div class="target-header">
-          <div class="target-info">
-            <h3 class="target-project-name">{{ target.project_name || 'هدف مبيعات' }}</h3>
-            <p class="target-marketer">{{ getTargetAssigneeLine(target, isSalesLeaderView) }}</p>
-            <p class="target-marketer target-assigned-units">{{ getAssignedUnitsLine(target, isSalesLeaderView) }}</p>
-          </div>
-          <div class="target-value-block">
-            <span class="target-value">{{ formatCurrency(target.target_value) }}</span>
-            <span class="target-value-label">الهدف</span>
-          </div>
-        </div>
-
-        <div class="target-progress">
-          <div class="progress-bar">
-            <div
-              class="progress-fill"
-              :class="getTargetStatusClass(target)"
-              :style="{ width: getProgressPercentage(target) + '%' }"
-            ></div>
-          </div>
-          <div class="progress-text">
-            <span>محقق: {{ formatCurrency(getDisplayedAchievedValue(target)) }}</span>
-            <span class="progress-pct">{{ getProgressPercentage(target) }}%</span>
-          </div>
-        </div>
-        </div>
-
-        <div class="target-footer">
-          <div class="target-footer-left">
-            <div class="target-deadline">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
+      <div v-else class="targets-grid">
+        <div
+          v-for="(target, targetIndex) in displayTargets"
+          :key="getTargetStableId(target, targetIndex)"
+          class="target-card"
+          :class="{
+            'target-card-clickable': target.contract_id,
+            'target-card-completed': isTargetCompleted(target),
+            'target-card--menu-open': openMenuId === getTargetStableId(target, targetIndex),
+          }"
+          role="button"
+          :tabindex="target.contract_id ? 0 : -1"
+          @click="onCardClick($event, target)"
+          @keydown.enter.prevent="target.contract_id && openUnitsModal(target)"
+          @keydown.space.prevent="target.contract_id && openUnitsModal(target)"
+        >
+          <div class="target-card-surface">
+          <!-- شارة إنجاز — شريط علوي أنيق -->
+          <div v-if="isTargetCompleted(target)" class="target-card-ribbon" aria-hidden="true">
+            <span class="target-card-ribbon__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
-              <span>الموعد النهائي: {{ formatDate(target.end_date || target.deadline) }}</span>
+            </span>
+            <span class="target-card-ribbon__text">مكتمل</span>
+          </div>
+
+          <!-- زر ثلاث نقاط — أعلى يسار البطاقة -->
+          <div class="card-menu-wrap" @click.stop>
+            <button
+              type="button"
+              class="card-menu-btn"
+              :aria-expanded="openMenuId === getTargetStableId(target, targetIndex)"
+              aria-haspopup="true"
+              aria-label="خيارات الهدف"
+              @click.stop="toggleCardMenu(getTargetStableId(target, targetIndex))"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <circle cx="12" cy="5" r="1.5"></circle>
+                <circle cx="12" cy="12" r="1.5"></circle>
+                <circle cx="12" cy="19" r="1.5"></circle>
+              </svg>
+            </button>
+            <div v-if="openMenuId === getTargetStableId(target, targetIndex)" class="card-dropdown" @click.stop>
+              <button
+                v-if="isSalesLeaderView || hasPermission('sales.team.manage')"
+                type="button"
+                class="card-dropdown-item"
+                @click="openAssignMarketers(target)"
+              >
+                إضافة مسوقين للمشروع
+              </button>
+              <template v-if="canUpdateTarget(target)">
+                <div class="card-dropdown-status">
+                  <span class="card-dropdown-label">تغيير الحالة</span>
+                  <select
+                    :value="target.status || 'new'"
+                    class="card-dropdown-select"
+                    :disabled="isTargetUpdating(target)"
+                    @change="updateTargetStatus(target, $event.target.value)"
+                  >
+                    <option v-for="opt in TARGET_STATUS_OPTIONS" :key="opt.value" :value="opt.value">
+                      {{ opt.label }}
+                    </option>
+                  </select>
+                </div>
+                <button
+                  v-if="target.status !== 'completed'"
+                  type="button"
+                  class="card-dropdown-item card-dropdown-item-done"
+                  :disabled="isTargetUpdating(target)"
+                  @click.stop="updateTargetStatus(target, 'completed')"
+                >
+                  جعل منجز (تحقق)
+                </button>
+              </template>
             </div>
           </div>
-          <span class="target-status" :class="getTargetStatusClass(target)">
-            {{ target.status_label_ar || getTargetStatusText(target) }}
-          </span>
-        </div>
+
+          <div class="target-card__core">
+          <div class="target-header">
+            <div class="target-info">
+              <h3 class="target-project-name">{{ target.project_name || 'هدف مبيعات' }}</h3>
+              
+              <!-- عرض الموقع إن وُجد -->
+              <div v-if="target.project_location" class="target-location">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span>
+                  {{ target.project_location.city_name || 'الرياض' }} 
+                  {{ target.project_location.district_name ? ` - ${target.project_location.district_name}` : '' }}
+                </span>
+              </div>
+
+              <p class="target-marketer">{{ getTargetAssigneeLine(target, isSalesLeaderView) }}</p>
+              <p class="target-marketer target-assigned-units">{{ getAssignedUnitsLine(target, isSalesLeaderView) }}</p>
+            </div>
+            <div class="target-value-block">
+              <span class="target-value">{{ formatCurrency(target.target_value) }}</span>
+              <span class="target-value-label">الهدف</span>
+            </div>
+          </div>
+
+          <div class="target-progress">
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                :class="getTargetStatusClass(target)"
+                :style="{ width: getProgressPercentage(target) + '%' }"
+              ></div>
+            </div>
+            <div class="progress-text">
+              <span>محقق: {{ formatCurrency(getDisplayedAchievedValue(target)) }}</span>
+              <span class="progress-pct">{{ getProgressPercentage(target) }}%</span>
+            </div>
+          </div>
+          </div>
+
+          <div class="target-footer">
+            <div class="target-footer-left">
+              <div class="target-deadline">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>الموعد النهائي: {{ formatDate(target.end_date || target.deadline) }}</span>
+              </div>
+            </div>
+
+            <!-- خيار تحديد الحالة للمسوق -->
+            <div class="target-card-actions" v-if="canUpdateTarget(target)" @click.stop>
+               <button 
+                 type="button" 
+                 class="btn-status-toggle" 
+                 :class="{ 'active': target.status === 'in_progress' }"
+                 :disabled="isTargetUpdating(target)"
+                 @click="updateTargetStatus(target, 'in_progress')"
+               >
+                 قيد التنفيذ
+               </button>
+               <button 
+                 type="button" 
+                 class="btn-status-toggle btn-success" 
+                 :class="{ 'active': target.status === 'completed' }"
+                 :disabled="isTargetUpdating(target)"
+                 @click="updateTargetStatus(target, 'completed')"
+               >
+                 مكتمل
+               </button>
+            </div>
+            
+            <span v-else class="target-status" :class="getTargetStatusClass(target)">
+              {{ target.status_label_ar || getTargetStatusText(target) }}
+            </span>
+          </div>
+          </div>
         </div>
       </div>
+
+      <Pagination
+        v-if="targetsMeta.total > targetsMeta.perPage"
+        :current-page="targetsMeta.currentPage"
+        :total-items="targetsMeta.total"
+        :per-page="targetsMeta.perPage"
+        @page-change="p => loadTargets({ page: p })"
+        @per-page-change="pp => loadTargets({ page: 1, perPage: pp })"
+      />
     </div>
 
+
+    <!-- Modals -->
     <SalesTargetsCreateTargetModal
       :open="showCreateTargetModal"
       :target-form="targetForm"
@@ -215,6 +291,31 @@
       :is-sales-leader-view="isSalesLeaderView"
       @close="closeUnitsModal"
     />
+
+    <ProjectUnitsDetailsModal
+      v-if="selectedProjectForUnits"
+      :open="!!selectedProjectForUnits"
+      :project="selectedProjectForUnits"
+      @close="selectedProjectForUnits = null"
+    />
+
+    <ProjectDetailsModal
+      v-if="selectedProjectForDetails"
+      :open="!!selectedProjectForDetails"
+      :project="selectedProjectForDetails"
+      @close="selectedProjectForDetails = null"
+    />
+
+    <SalesTargetsProjectAssignModal
+      v-if="projectForAssign"
+      :open="!!projectForAssign"
+      :project="projectForAssign"
+      :team-members="teamMembersList"
+      :loading="isAssigningProjectTargets"
+      @close="projectForAssign = null"
+      @submit="handleProjectAssignSubmit"
+    />
+
   </div>
 </template>
 
@@ -222,10 +323,17 @@
 import { ref, computed, onMounted, onUnmounted, watch, inject, unref } from 'vue';
 import { useRoute } from 'vue-router';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import Pagination from '@/components/Pagination.vue';
 import SalesTargetsAssignMarketersModal from '@/modules/sales/tabs/targets/SalesTargetsAssignMarketersModal.vue';
 import SalesTargetsCreateTargetModal from '@/modules/sales/tabs/targets/SalesTargetsCreateTargetModal.vue';
 import SalesTargetsUnitsModal from '@/modules/sales/tabs/targets/SalesTargetsUnitsModal.vue';
+import SalesTargetsProjectAssignModal from '@/modules/sales/tabs/targets/SalesTargetsProjectAssignModal.vue';
+import ProjectBoardCard from '@/modules/sales/components/ProjectBoardCard.vue';
+import ProjectDetailsModal from '@/modules/sales/components/ProjectDetailsModal.vue';
+import ProjectUnitsDetailsModal from '@/modules/sales/components/ProjectUnitsDetailsModal.vue';
 import { useSalesTargets, normalizeSalesTargetItem } from '@/composables/sales/useSalesTargets';
+
+
 import {
   getTargetStableId,
   getTargetAssigneeLine,
@@ -244,14 +352,63 @@ const route = useRoute();
 const injectedContractId = inject('salesTargetsContractId', ref(null));
 
 const {
-  targets, isLoadingTargets, targetsLoadError, showCreateTargetModal,
+  targets, targetsMeta, isLoadingTargets, targetsLoadError, showCreateTargetModal,
   targetForm, targetFormUnits, isLoadingTargetFormUnits, targetFormUnitsError,
   hasPermission, formatCurrency, formatDate,
   getTargetStatusClass, getTargetStatusText, getProgressPercentage, getDisplayedAchievedValue,
   loadTargets, patchTargetStatus, isTargetUpdating,
   openCreateTargetModal, onTargetFullProjectChange, toggleTargetUnit, createTarget,
 } = useSalesTargets();
-const { teamMembers, teamProjects, loadTeamMembers, loadTeamProjects } = useSalesTeam();
+const { teamMembers, teamProjects, loadTeamMembers, loadTeamProjects, isLoadingTeamProjects, teamProjectsLoadError } = useSalesTeam();
+
+const selectedProjectForDetails = ref(null);
+const selectedProjectForUnits = ref(null);
+
+function openProjectDetails(project) {
+  selectedProjectForDetails.value = project;
+}
+
+function openUnitsDetails(project) {
+  selectedProjectForUnits.value = project;
+}
+
+const projectForAssign = ref(null);
+const isAssigningProjectTargets = ref(false);
+
+function openAssignProjectTargets(project) {
+  projectForAssign.value = project;
+}
+
+async function handleProjectAssignSubmit(data) {
+  isAssigningProjectTargets.value = true;
+  try {
+    const { marketer_ids, ...rest } = data;
+    let successCount = 0;
+    
+    for (const marketer_id of marketer_ids) {
+      await salesService.createTarget({
+        marketer_id,
+        ...rest
+      });
+      successCount++;
+    }
+    
+    notificationService.addNotification(
+      successCount > 1 
+        ? `تم تعيين الأهداف لـ ${successCount} مسوقين بنجاح` 
+        : 'تم تعيين الهدف للمسوق بنجاح', 
+      'success'
+    );
+    projectForAssign.value = null;
+    loadTargets({ contractId: resolveContractScopeFromContext() });
+  } catch (err) {
+    const msg = err?.response?.data?.message || err?.message || 'فشل تعيين الأهداف';
+    notificationService.addNotification(msg, 'error');
+  } finally {
+    isAssigningProjectTargets.value = false;
+  }
+}
+
 
 function resolveContractScopeFromContext() {
   const inj = unref(injectedContractId);
@@ -275,20 +432,17 @@ const selectedMarketerIds = ref([]);
 const assignSaving = ref(false);
 const loadingTeamMembers = ref(false);
 
-// مودال الوحدات المعينة + المسؤول (عند الضغط على البطاقة)
 const showUnitsModal = ref(false);
 const unitsModalProjectName = ref('');
 const unitsModalLoading = ref(false);
 const unitsModalError = ref('');
 const unitsModalRows = ref([]);
-/** عدد الصفوف قبل تصفية المستخدم (لتمييز «فارغ من الخادم» عن «لا صفوف لك») */
 const unitsModalUnfilteredCount = ref(0);
 
 const teamMembersList = computed(() => Array.isArray(teamMembers.value) ? teamMembers.value : []);
 const teamProjectsList = computed(() => Array.isArray(teamProjects.value) ? teamProjects.value : []);
 const isSalesLeaderView = computed(() => isSalesLeader(authService.getCurrentUser()));
 
-/** المدير يرى كل الصفوف؛ المستخدم العادي يرى وحداته فقط */
 const filteredUnitsModalRows = computed(() => {
   const rows = unitsModalRows.value;
   if (isSalesLeaderView.value || currentUserId.value == null) return rows;
@@ -302,6 +456,7 @@ const TARGET_STATUS_OPTIONS = [
 ];
 
 const currentUserId = computed(() => {
+
   const u = authService.getCurrentUser();
   const rawId = u?.id ?? u?.user_id ?? u?.employee_id ?? u?.marketer_id;
   return rawId != null ? Number(rawId) : null;
@@ -468,8 +623,12 @@ function onDocumentClick(e) {
 
 onMounted(() => {
   document.addEventListener('click', onDocumentClick);
-  if (isSalesLeaderView.value || hasPermission('sales.team.manage')) loadTeamMembers({ with_ratings: true });
+  if (isSalesLeaderView.value || hasPermission('sales.team.manage')) {
+    loadTeamMembers({ with_ratings: true });
+    loadTeamProjects();
+  }
 });
+
 onUnmounted(() => {
   document.removeEventListener('click', onDocumentClick);
 });
@@ -477,3 +636,5 @@ onUnmounted(() => {
 
 <style scoped src="./styles/SalesTargetsTab.scoped.s1.css"></style>
 <style scoped src="./styles/SalesTargetsTab.scoped.s2.css"></style>
+
+

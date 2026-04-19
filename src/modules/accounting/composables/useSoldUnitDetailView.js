@@ -302,10 +302,32 @@ export function useSoldUnitDetailView(props, { emit }) {
       toast.warning('مجموع النسب يجب أن يساوي 100%');
       return;
     }
-    if (!commissionId.value) return;
+    
     isSaving.value = true;
     try {
-      await accountingService.updateDistributions(commissionId.value, {
+      // If no commission exists yet, create it first
+      if (!hasCommission.value) {
+        const payload = {
+          ...commissionForm,
+          contract_unit_id: commissionForm.contract_unit_id || props.unit?.id || 1,
+        };
+        const newComm = await accountingService.createManualCommission(
+          props.unit.reservation_id || props.unit.id,
+          payload
+        );
+        if (newComm?.id) {
+          // Update props.unit locally if possible? Better to wait for summary
+          // But we need the ID for the next call
+          commissionSummary.value = { id: newComm.id }; 
+        } else {
+          throw new Error('Failed to create commission');
+        }
+      }
+
+      const idToUpdate = commissionId.value;
+      if (!idToUpdate) throw new Error('No commission ID available');
+
+      await accountingService.updateDistributions(idToUpdate, {
         distributions: dists,
         bank_fees: Number(commissionForm.bank_fees) || 0,
         commission_source: commissionForm.commission_source || 'owner',
