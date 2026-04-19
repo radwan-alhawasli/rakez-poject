@@ -169,7 +169,7 @@ import {
   isTargetCompleted,
 } from '@/modules/sales/tabs/targets/salesTargetsTabDisplay.js';
 
-const props = defineProps({
+defineProps({
   displayTargets: {
     type: Array,
     required: true

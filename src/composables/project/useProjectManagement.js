@@ -4,7 +4,6 @@ import contractService from '@/services/contractService';
 import authService from '@/services/authService';
 import logger from '@/utils/logger';
 import {
-  computeSetupProgressPercentSixStages,
   isSecondPartyTrackerShowResponseComplete,
 } from '@/utils/projectProgressSteps';
 import { toast } from '@/composables/useToast';
@@ -12,10 +11,8 @@ import { useFormatters } from '@/composables/useFormatters';
 import { useProjectManagementModals } from '@/composables/project/useProjectManagementModals';
 import { getApiErrorMessage } from '@/utils/errorHandler';
 import {
-  contractTimelineDisplay,
   isReadyForMarketingTab,
   isNotReadyTab,
-  isCompleteSecondTruthy,
 } from '@/composables/project/useProjectManagementHelpers';
 import { useProjectManagementLifecycle } from '@/composables/project/useProjectManagementLifecycle';
 import { mapProjectItem, enrichProjectItem } from '@/composables/project/projectManagementMapper';

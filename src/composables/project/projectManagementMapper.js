@@ -1,7 +1,6 @@
-import logger from '@/utils/logger';
+
 import {
   computeSetupProgressPercentSixStages,
-  isSecondPartyTrackerShowResponseComplete,
 } from '@/utils/projectProgressSteps';
 import { contractTimelineDisplay, isCompleteSecondTruthy } from '@/composables/project/useProjectManagementHelpers';
 
