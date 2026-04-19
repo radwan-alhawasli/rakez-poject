@@ -79,6 +79,18 @@
             </dl>
           </section>
 
+          <section v-if="item.receipt_voucher" class="detail-section">
+            <h4 class="detail-section-title">إيصال الدفع</h4>
+            <div class="detail-voucher-preview">
+              <a :href="item.receipt_voucher" target="_blank" rel="noopener noreferrer" class="voucher-link">
+                <img :src="item.receipt_voucher" alt="إيصال الدفع" class="voucher-img" />
+                <div class="voucher-overlay">
+                  <span>تكبير الصورة</span>
+                </div>
+              </a>
+            </div>
+          </section>
+
           <section class="detail-section detail-section--last">
             <h4 class="detail-section-title">المسوق</h4>
             <dl class="detail-dl">

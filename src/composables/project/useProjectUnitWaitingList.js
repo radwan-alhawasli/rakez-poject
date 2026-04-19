@@ -14,16 +14,25 @@ export function useProjectUnitWaitingList(projectId) {
   const waitingListForm = reactive({
     client_name: '',
     phone: '',
-    priority: 10,
+    priority: 1,
     notes: '',
   });
 
-  const openWaitingListModal = (unit) => {
+  const openWaitingListModal = async (unit) => {
     waitingListUnit.value = unit;
     waitingListForm.client_name = '';
     waitingListForm.phone = '';
-    waitingListForm.priority = 10;
     waitingListForm.notes = '';
+    waitingListForm.priority = 1;
+
+    try {
+      const list = await salesService.getWaitingListByUnit(unit.id);
+      waitingListForm.priority = (Array.isArray(list) ? list.length : 0) + 1;
+    } catch (e) {
+      logger.warn('Could not fetch waiting list for priority calculation', e);
+      waitingListForm.priority = 1;
+    }
+
     showWaitingListModal.value = true;
   };
 

@@ -227,6 +227,14 @@
             <span class="unit-detail-label">السعر</span>
             <span class="unit-detail-value">{{ formatCurrency(selectedUnitForDetail.price) }}</span>
           </div>
+          <div class="unit-detail-row">
+            <span class="unit-detail-label">عرض الشارع</span>
+            <span class="unit-detail-value">{{ selectedUnitForDetail.street_width != null ? selectedUnitForDetail.street_width + ' م' : '—' }}</span>
+          </div>
+          <div class="unit-detail-row">
+            <span class="unit-detail-label">وصف الوحدة</span>
+            <span class="unit-detail-value">{{ selectedUnitForDetail.description || '—' }}</span>
+          </div>
           <div class="unit-detail-row unit-detail-row-diagram">
             <span class="unit-detail-label">مخطط الوحدة</span>
             <span class="unit-detail-value">
@@ -329,8 +337,8 @@
               <input v-model="waitingListForm.phone" required type="text" placeholder="05xxxxxxxx" />
             </div>
             <div class="form-group">
-              <label>الأولوية (1–10)</label>
-              <input v-model.number="waitingListForm.priority" type="number" min="1" max="10" placeholder="10" />
+              <label>الأولوية</label>
+              <div class="priority-display">{{ waitingListForm.priority }}</div>
             </div>
             <div class="form-group" style="grid-column: span 2">
               <label>ملاحظات</label>

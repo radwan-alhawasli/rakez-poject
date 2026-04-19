@@ -120,7 +120,20 @@ export const salesServiceCoreMethods = {
    * @returns {Promise<Object>} Created reservation (reservation_id, status, voucher_url, etc.)
    */
   createReservation(data) {
-    return apiClient.post('/sales/reservations', normalizeReservationPayload(data));
+    const payload = normalizeReservationPayload(data);
+    if (data?.receipt_voucher instanceof File) {
+      const formData = new FormData();
+      Object.entries(payload).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, value);
+        }
+      });
+      formData.append('receipt_voucher', data.receipt_voucher);
+      return apiClient.post('/sales/reservations', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    }
+    return apiClient.post('/sales/reservations', payload);
   },
 
   /**

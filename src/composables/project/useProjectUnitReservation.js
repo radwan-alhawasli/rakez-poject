@@ -59,6 +59,7 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
     down_payment_amount: 0,
     down_payment_status: 'pending',
     purchase_mechanism: 'cash',
+    receipt_voucher: null,
     negotiation_notes: '',
     /** حقول إضافية لـ POST /project_management/reservations */
     client_email: '',

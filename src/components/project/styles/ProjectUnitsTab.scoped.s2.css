@@ -321,6 +321,18 @@
 .form-group textarea {
   grid-column: span 2;
 }
+.priority-display {
+  padding: 8px 12px;
+  background: #f1f5f9;
+  border: 1px solid var(--color-medium-gray);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-navy);
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+}
 .modal-actions {
   margin-top: 20px;
   display: flex;

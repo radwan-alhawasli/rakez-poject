@@ -193,6 +193,38 @@
               </div>
             </div>
 
+            <!-- صورة الإيصال (صورة السند) -->
+            <div class="rsv-row rsv-row-1">
+              <div class="rsv-field rsv-field--full">
+                <label class="rsv-label">صورة إيصال الدفع (اختياري)</label>
+                <div class="rsv-file-upload">
+                  <input
+                    type="file"
+                    id="receipt_voucher"
+                    accept="image/*"
+                    class="rsv-file-input"
+                    @change="onFileChange"
+                  />
+                  <label for="receipt_voucher" class="rsv-file-label">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <span>{{ fileName || 'اختر صورة الإيصال...' }}</span>
+                  </label>
+                  <div v-if="filePreview" class="rsv-file-preview">
+                    <img :src="filePreview" alt="معاينة الإيصال" />
+                    <button type="button" class="rsv-file-remove" @click="removeFile">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- عربون مسترد + آلية الشراء -->
             <div class="rsv-row rsv-row-2">
               <div class="rsv-field">
@@ -225,7 +257,7 @@
 </template>
 
 <script>
-import { computed, reactive, watch } from 'vue';
+import { computed, reactive, watch, ref } from 'vue';
 
 /** اسم فريق من استجابة API: نص، كائن (name / team_name)، أو مصفوفة فرق */
 function formatTeamLabel(value) {
@@ -291,8 +323,33 @@ export default {
       negotiation_notes: '',
       negotiation_reason: '',
       proposed_price: null,
+      receipt_voucher: null,
       ...props.formData,
     });
+
+    const fileName = ref('');
+    const filePreview = ref('');
+
+    const onFileChange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        form.receipt_voucher = file;
+        fileName.value = file.name;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          filePreview.value = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    const removeFile = () => {
+      form.receipt_voucher = null;
+      fileName.value = '';
+      filePreview.value = '';
+      const input = document.getElementById('receipt_voucher');
+      if (input) input.value = '';
+    };
 
     watch(
       () => props.formData,
@@ -515,6 +572,10 @@ export default {
       paymentMethods,
       purchaseMechanisms,
       downPaymentStatuses,
+      fileName,
+      filePreview,
+      onFileChange,
+      removeFile,
       onSubmit,
     };
   },

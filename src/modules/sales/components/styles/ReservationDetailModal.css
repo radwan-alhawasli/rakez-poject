@@ -259,3 +259,58 @@
     font-size: 17px;
   }
 }
+
+/* ── Receipt Voucher Preview ── */
+.detail-voucher-preview {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.voucher-link {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #f0f0f0;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.voucher-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(39, 55, 77, 0.15);
+  border-color: var(--color-gold, #b5a99a);
+}
+
+.voucher-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.voucher-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(39, 55, 77, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.voucher-link:hover .voucher-overlay {
+  opacity: 1;
+}
+
+.voucher-overlay span {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  border-radius: 20px;
+}
