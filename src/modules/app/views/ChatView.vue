@@ -292,7 +292,7 @@
             <button
               type="button"
               class="erp-chat-send"
-              :disabled="!newMessage.trim() || isSending"
+              :disabled="(!newMessage.trim() && !selectedFile) || isSending"
               aria-label="إرسال"
               @click="sendMessage"
             >

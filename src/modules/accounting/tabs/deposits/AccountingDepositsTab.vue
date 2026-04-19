@@ -77,9 +77,9 @@
                     <span class="project-indicator"></span>
                     {{ deposit.project_name || 'غير محدد' }}
                   </td>
-                  <td>{{ deposit.unit_type || '—' }}</td>
-                  <td>{{ deposit.client_name || deposit.customer_name || 'غير محدد' }}</td>
-                  <td class="amount-cell">{{ formatCurrency(deposit.amount) }}</td>
+                  <td>{{ deposit.unit_number || deposit.reservation_id || deposit.unit_type || '\u2014' }}</td>
+                  <td>{{ deposit.client_name || deposit.customer_name || '\u063a\u064a\u0631 \u0645\u062d\u062f\u062f' }}</td>
+                  <td class="amount-cell">{{ formatCurrency(deposit.amount || deposit.deposit_amount || 0) }}</td>
                   <td class="date-cell">{{ formatDate(deposit.payment_date || deposit.created_at) }}</td>
                   <td>
                     <button v-if="deposit.status === 'pending'" type="button" class="btn-luxury-confirm" @click="confirmDeposit(deposit)">
@@ -107,8 +107,12 @@
                   <span class="value">{{ deposit.client_name || deposit.customer_name || '—' }}</span>
                 </div>
                 <div class="card-info-item">
+                  <span class="label">رقم الوحدة</span>
+                  <span class="value">{{ deposit.unit_number || deposit.reservation_id || '\u2014' }}</span>
+                </div>
+                <div class="card-info-item">
                   <span class="label">قيمة العربون</span>
-                  <span class="value highlight">{{ formatCurrency(deposit.amount) }}</span>
+                  <span class="value highlight">{{ formatCurrency(deposit.amount || deposit.deposit_amount || 0) }}</span>
                 </div>
                 <div class="card-info-item">
                   <span class="label">تاريخ الدفع</span>

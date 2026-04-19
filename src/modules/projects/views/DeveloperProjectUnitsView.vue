@@ -23,7 +23,7 @@
       </button>
     </div>
 
-    <div v-if="!projectName && !isLoadingCandidates" class="empty-state">
+    <div v-if="!projectId && !isLoadingCandidates" class="empty-state">
       <p>لم يتم تحديد المشروع. افتح الصفحة من تفاصيل المطور.</p>
       <router-link :to="developerDetailRoute" class="link-back">العودة لتفاصيل المطور</router-link>
     </div>
@@ -323,31 +323,28 @@ export default {
       claimFilesForbidden.value = false;
       const pid = projectId.value;
       try {
-        let units = [];
+        // We call candidates API as requested by the user for contract_id filter
+        const params = { per_page: 500 };
         if (pid) {
-          units = await accountingService.getClaimFileSoldUnits(pid);
+          params.contract_id = pid;
+          candidatesRequestedWithContractId.value = true;
+        } else {
+          candidatesRequestedWithContractId.value = false;
+        }
+
+        const res = await accountingService.getClaimFileCandidates(params);
+        claimFilesForbidden.value = !!res?.forbidden;
+        
+        // Handle both {items, total} and raw array
+        const rawItems = res?.items ?? (Array.isArray(res) ? res : []);
+        candidates.value = rawItems;
+
+        // Optionally supplement with soldUnits if candidates is empty or for full status
+        if (pid && candidates.value.length === 0) {
+          const units = await accountingService.getClaimFileSoldUnits(pid);
           soldUnits.value = Array.isArray(units) ? [...units] : [];
         } else {
           soldUnits.value = [];
-        }
-        
-        // If units is empty, fetch candidates
-        if (soldUnits.value.length === 0) {
-          const params = { per_page: 500 };
-          if (pid) {
-            params.contract_id = pid;
-            candidatesRequestedWithContractId.value = true;
-          } else {
-            candidatesRequestedWithContractId.value = false;
-          }
-          const res = await accountingService.getClaimFileCandidates(params);
-          claimFilesForbidden.value = !!res?.forbidden;
-          
-          // Handle both {items, total} and raw array
-          const rawItems = res?.items ?? (Array.isArray(res) ? res : []);
-          candidates.value = rawItems;
-        } else {
-          candidatesRequestedWithContractId.value = false;
         }
       } catch (error) {
         logger.error('Error loading claim file units', error);
@@ -466,6 +463,7 @@ export default {
         }
       } catch (e) {
         logger.error('Failed to load developer/project for units view', e);
+        if (!projectName.value) projectName.value = '\u0645\u0634\u0631\u0648\u0631\u0639 \u0631\u0642\u0645 ' + projId;
       }
     }
 
@@ -485,7 +483,10 @@ export default {
       () => [route.params.projectId, route.params.id],
       ([newPid]) => {
         initFromState();
-        if (newPid) loadCandidates();
+        if (newPid) {
+          if (!projectName.value) loadDeveloperAndProject();
+          loadCandidates();
+        }
       },
       { immediate: false }
     );
@@ -517,6 +518,7 @@ export default {
       formatCurrency,
       handleSubmit,
       goBack,
+      projectId,
     };
   },
 };
