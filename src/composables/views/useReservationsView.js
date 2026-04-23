@@ -63,15 +63,21 @@ export function useReservationsView() {
     () => isPmReservationsList.value || hasPermission('sales.negotiation.approve')
   );
 
+  /** Sold units belong exclusively in the evacuated tab */
+  const isSold = r => String(r.credit_status || '').toLowerCase() === 'sold';
+
   const activeCounts = computed(() => ({
     active: reservations.value.filter(
       r =>
         r.status !== 'cancelled' &&
         r.status !== 'canceled' &&
-        r.status !== 'rejected'
+        r.status !== 'rejected' &&
+        !isSold(r)
     ).length,
     cancelled: reservations.value.filter(
-      r => r.status === 'cancelled' || r.status === 'canceled' || r.status === 'rejected'
+      r =>
+        (r.status === 'cancelled' || r.status === 'canceled' || r.status === 'rejected') &&
+        !isSold(r)
     ).length,
     waiting: waitingList.value.length,
     negotiations: negotiations.value.length,
@@ -82,7 +88,7 @@ export function useReservationsView() {
     const cancelledStatuses = ['cancelled', 'canceled', 'rejected'];
     if (activeTab.value === 'cancelled') {
       return reservations.value
-        .filter(r => cancelledStatuses.includes(r.status))
+        .filter(r => cancelledStatuses.includes(r.status) && !isSold(r))
         .sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
     }
     if (activeTab.value === 'evacuated') {
@@ -91,7 +97,7 @@ export function useReservationsView() {
       );
     }
     return reservations.value
-      .filter(r => !cancelledStatuses.includes(r.status))
+      .filter(r => !cancelledStatuses.includes(r.status) && !isSold(r))
       .sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
   });
 

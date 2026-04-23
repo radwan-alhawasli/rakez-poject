@@ -150,7 +150,7 @@ export const salesServiceCoreMethods = {
       const response = await apiClient.post('/sales/reservations/filter', body);
       const { items, total } = extractPaginatedData(response, []);
       return { items, total };
-    } catch (filterError) {
+    } catch (_filterError) {
       // Fallback: try GET with query params if POST /filter is not available
       try {
         const response = await apiClient.get('/sales/reservations', { params: body });
