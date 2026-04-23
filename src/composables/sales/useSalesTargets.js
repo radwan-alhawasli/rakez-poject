@@ -14,6 +14,8 @@ import {
   num,
 } from './salesTargetsNormalizer';
 
+export * from './salesTargetsNormalizer';
+
 
 export function useSalesTargets() {
   const { hasPermission } = usePermissions();
