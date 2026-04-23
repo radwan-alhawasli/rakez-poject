@@ -315,9 +315,18 @@ const currentUserId = computed(() => {
 /** قائد المبيعات أو من لديه إدارة الفريق يرى كل الأهداف؛ غير ذلك يُفلتر حسب المستخدم. */
 const displayTargets = computed(() => {
   const list = Array.isArray(targets.value) ? targets.value : [];
+  // قائد المبيعات يرى كل شيء؛ أو من لديه صلاحية إدارة الفريق.
   if (isSalesLeaderView.value || hasPermission('sales.team.manage')) return list;
+  
   if (currentUserId.value == null) return [];
-  return list.filter((t) => Number(t.marketer_id) === currentUserId.value);
+  
+  return list.filter((t) => {
+    // إذا كان معرّف المسوّق موجوداً في العنصر، نتأكد أنه يطابق المستخدم الحالي (منعاً لأي تداخل).
+    // إذا لم يكن موجوداً، نثق في أن الـ API أرجع فقط أهداف هذا المستخدم (خاصة في مسار /my).
+    const mId = t.marketer_id != null && t.marketer_id !== '' ? Number(t.marketer_id) : null;
+    if (mId === null || Number.isNaN(mId)) return true;
+    return mId === currentUserId.value;
+  });
 });
 
 function canUpdateTarget(target) {

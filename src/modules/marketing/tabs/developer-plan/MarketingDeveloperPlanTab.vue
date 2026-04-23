@@ -10,7 +10,20 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-left: 6px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             Excel
           </button>
-          <button class="btn-secondary" @click="exportDeveloperPlanPdf">PDF</button>
+          <button
+            class="btn-secondary"
+            @click="exportDeveloperPlanPdf"
+            :disabled="!developerPlanForm.contract_id || isExportingPdf"
+            :title="!developerPlanForm.contract_id ? 'اختر مشروعاً أولاً لتفعيل هذا الزر' : 'تنزيل PDF من الخادم'"
+          >
+            <span v-if="isExportingPdf" style="display: inline-flex; align-items: center; gap: 6px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="animation: spin 1s linear infinite">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+              </svg>
+              جاري التنزيل...
+            </span>
+            <span v-else>PDF</span>
+          </button>
         </div>
       </div>
 
@@ -71,7 +84,7 @@
               <span class="campaign-flow-join-inner">×</span>
             </div>
             <div class="campaign-metric-card">
-              <span class="campaign-metric-label">متوسط سعر الوحدات (ريال)</span>
+              <span class="campaign-metric-label">اجمالي قيمة الوحدات المتاحة</span>
               <span class="campaign-metric-value campaign-metric-value--num">{{ contractRates.avgPrice != null ? formatCurrency(contractRates.avgPrice) : '—' }}</span>
             </div>
             <div class="campaign-flow-join" aria-hidden="true">
@@ -229,6 +242,7 @@ const {
   isLoadingDeveloperPlan,
   isCalculatingBudget,
   isSubmitting,
+  isExportingPdf,
   projects,
   formatCurrency,
   formatNumber,

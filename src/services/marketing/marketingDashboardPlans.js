@@ -127,6 +127,22 @@ export default {
   },
 
   /**
+   * استدعاء PDF من الـ API: GET /marketing/developer-plans/{contract_id}/pdf
+   * يرجع Blob لتحميل الملف مباشرةً.
+   * @param {string|number} contractId
+   * @returns {Promise<Blob>}
+   */
+  async getDeveloperPlanPdf(contractId) {
+    const response = await apiClient.get(
+      `/marketing/developer-plans/${contractId}/pdf`,
+      { responseType: 'blob' }
+    );
+    // الـ response قد يكون الـ blob مباشرةً أو في response.data
+    const blob = response?.data instanceof Blob ? response.data : response;
+    return blob;
+  },
+
+  /**
    * حساب ميزانية الحملة: عمولة = نسبة السعي × متوسط السعر، ميزانية الحملة = عمولة × نسبة التسويق (6%-10%).
    * POST /api/marketing/developer-plans/calculate-budget
    * Permission: marketing.plans.create

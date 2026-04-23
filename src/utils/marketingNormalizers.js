@@ -61,14 +61,27 @@ export const normalizeMarketingDashboard = raw => {
 /** @param {any} [raw] */
 export const normalizeProjectDetails = raw => {
   raw = raw ?? {};
-  const units = toArray(raw.units);
-  const availableUnits = units.filter(u => {
-    const s = String(u.status || '').toLowerCase();
-    return s === 'available' || s === '?????' || s === '';
+  // الوحدات: يُفضّل contract_units (من GET /marketing/projects/:id) ثم units ثم مواضع احتياطية
+  const rawContractUnits =
+    raw.contract_units ??
+    raw.contractUnits ??
+    [];
+  const rawUnits =
+    raw.units ??
+    raw.contract_info?.units ??
+    raw.contract?.units ??
+    raw.marketing_project?.units ??
+    [];
+  const contract_units = toArray(rawContractUnits.length ? rawContractUnits : rawUnits);
+  const units = contract_units; // alias لتوافق الكود القديم
+
+  const availableUnits = contract_units.filter(u => {
+    const s = String(u.status || u.unit_status || '').toLowerCase();
+    return s === 'available' || s === 'متاح' || s === '';
   });
-  const pendingUnits = units.filter(u => {
-    const s = String(u.status || '').toLowerCase();
-    return s === 'pending' || s === 'reserved' || s === 'pending_approval' || s === '?????';
+  const pendingUnits = contract_units.filter(u => {
+    const s = String(u.status || u.unit_status || '').toLowerCase();
+    return s === 'pending' || s === 'reserved' || s === 'pending_approval' || s === 'محجوز';
   });
 
   const unitsCount = raw.units_count;
@@ -85,15 +98,16 @@ export const normalizeProjectDetails = raw => {
       ? toNumber(raw.units_pending)
       : null;
 
-  const availableUnitsValue = availableUnits.reduce((acc, u) => acc + toNumber(u.price), 0);
-  const averageUnitPrice = units.length
-    ? units.reduce((acc, u) => acc + toNumber(u.price), 0) / units.length
+  const availableUnitsValue = availableUnits.reduce((acc, u) => acc + toNumber(u.price ?? u.unit_price), 0);
+  const averageUnitPrice = contract_units.length
+    ? contract_units.reduce((acc, u) => acc + toNumber(u.price ?? u.unit_price), 0) / contract_units.length
     : toNumber(raw.avg_unit_price ?? raw.average_unit_price ?? raw.avg_price);
 
   const contractNumber = raw.contract_number ?? raw.contract_info?.contract_number;
 
   return {
     ...raw,
+    contract_units,
     units,
     contract_number: contractNumber,
     location:
@@ -110,7 +124,6 @@ export const normalizeProjectDetails = raw => {
     commission_percentage: toNumber(raw.commission_percent ?? raw.commission_percentage),
     advertiser_number: raw.advertiser_number,
     advertiser_number_value: raw.advertiser_number_value,
-    /** Canonical project marketing % (GET …/marketing/projects/:contractId); mirrors sync to plans */
     marketing_percent: toMarketingPercentNullable(raw.marketing_percent),
     marketing_percent_source:
       raw.marketing_percent_source != null && raw.marketing_percent_source !== ''

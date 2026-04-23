@@ -60,6 +60,10 @@ export function useMarketingProjects() {
   const isLoadingUnits = ref(false);
   const recommendedEmployeeByProjectId = ref({});
 
+  // Media modal
+  const showMediaModal = ref(false);
+  const mediaModalProject = ref(null);
+
   const marketingTeamsWithMembers = computed(() => {
     const d = selectedProjectDetails.value;
     const teams = getProjectMarketingTeamsList(d);
@@ -140,27 +144,25 @@ export function useMarketingProjects() {
 
   const loadProjectDetails = async projectOrId => {
     const project = typeof projectOrId === 'object' && projectOrId != null ? projectOrId : null;
-    const contractId = project
-      ? project.marketing_project?.contract_id ?? project.contract_id ?? project.id
+    // marketing project id (primary key in marketing_projects table)
+    const marketingProjectId = project
+      ? project.id ?? project.marketing_project_id
       : projectOrId;
-    const projectId = project ? project.id ?? project.marketing_project_id : projectOrId;
-    if (!contractId && !projectId) return;
+    if (!marketingProjectId) return;
     isLoadingProjectDetails.value = true;
     let details = null;
     try {
       const [d, recommended] = await Promise.all([
-        contractId
-          ? marketingService.getProjectByContractId(contractId)
-          : marketingService.getProjectById(projectId),
-        projectId ? marketingService.getRecommendedEmployee(projectId) : Promise.resolve(null),
+        marketingService.getProjectById(marketingProjectId),
+        marketingService.getRecommendedEmployee(marketingProjectId).catch(() => null),
       ]);
       details = d;
       selectedProjectDetails.value = details;
       syncMarketingPercentDraft();
-      if (projectId && recommended != null && typeof recommended === 'object') {
+      if (marketingProjectId && recommended != null && typeof recommended === 'object') {
         recommendedEmployeeByProjectId.value = {
           ...recommendedEmployeeByProjectId.value,
-          [projectId]: recommended,
+          [marketingProjectId]: recommended,
         };
       }
     } catch (error) {
@@ -253,12 +255,30 @@ export function useMarketingProjects() {
 
   const goToUnits = async project_id => {
     showUnitsTable.value = true;
-    if (selectedProjectDetails.value?.units?.length > 0) return;
+    const d = selectedProjectDetails.value;
+
+    // contract_units محمّلة بالفعل من GET /marketing/projects/:id — لا حاجة لـ API إضافي
+    const alreadyLoaded =
+      (d?.contract_units?.length ?? 0) > 0 ||
+      (d?.units?.length ?? 0) > 0;
+
+    if (alreadyLoaded) return;
+
+    // fallback: إذا لم تُرجع التفاصيل وحدات، نُحاول جلبها عبر contract_id
     isLoadingUnits.value = true;
     try {
-      const units = await contractService.getContractUnits(project_id);
+      const contractId =
+        d?.marketing_project?.contract_id ??
+        d?.contract_id ??
+        d?.contract_info?.id ??
+        project_id;
+      const units = await contractService.getContractUnits(contractId);
       if (selectedProjectDetails.value) {
-        selectedProjectDetails.value = { ...selectedProjectDetails.value, units };
+        selectedProjectDetails.value = {
+          ...selectedProjectDetails.value,
+          contract_units: Array.isArray(units) ? units : [],
+          units: Array.isArray(units) ? units : [],
+        };
       }
     } catch (error) {
       logger.error('Error loading units:', error);
@@ -267,9 +287,11 @@ export function useMarketingProjects() {
     }
   };
 
+  /** فتح modal الصور والفيديوهات بدلاً من الانتقال لصفحة أخرى */
   const goToPhotography = projectId => {
     if (!projectId) return;
-    router.push({ name: 'ProjectTracker', params: { id: String(projectId) }, query: { tab: 'photography' } }).catch(() => {});
+    mediaModalProject.value = selectedProjectDetails.value;
+    showMediaModal.value = true;
   };
 
   const managePlan = projectId => {
@@ -477,6 +499,11 @@ export function useMarketingProjects() {
     loadProjects();
   });
 
+  const closeMediaModal = () => {
+    showMediaModal.value = false;
+    mediaModalProject.value = null;
+  };
+
   return {
     projects,
     filteredProjects,
@@ -533,5 +560,8 @@ export function useMarketingProjects() {
     marketingTeamDisplayName,
     marketingMemberDisplayName,
     marketingMemberRatingLabel,
+    showMediaModal,
+    mediaModalProject,
+    closeMediaModal,
   };
 }
