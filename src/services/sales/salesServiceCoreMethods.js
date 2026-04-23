@@ -141,17 +141,24 @@ export const salesServiceCoreMethods = {
 
   /**
    * Get list of reservations
-   * GET /sales/reservations
-   * @param {any} params - mine (bool), include_cancelled (bool), contract_id, status (under_negotiation|confirmed|cancelled), from, to, per_page
+   * POST /sales/reservations (body-based filtering)
+   * @param {any} body - marketing_employee_id, credit_status, include_cancelled (bool), contract_id, status (under_negotiation|confirmed|cancelled), from, to, per_page
    * @returns {Promise<{ items: unknown[], total: number }>} Paginated list of reservations
    */
-  async getReservations(params = {}) {
+  async getReservations(body = {}) {
     try {
-      const response = await apiClient.get('/sales/reservations', { params });
+      const response = await apiClient.post('/sales/reservations/filter', body);
       const { items, total } = extractPaginatedData(response, []);
       return { items, total };
-    } catch (error) {
-      return handleServiceError(error, 'Fetch reservations', 'get') || { items: [], total: 0 };
+    } catch (filterError) {
+      // Fallback: try GET with query params if POST /filter is not available
+      try {
+        const response = await apiClient.get('/sales/reservations', { params: body });
+        const { items, total } = extractPaginatedData(response, []);
+        return { items, total };
+      } catch (error) {
+        return handleServiceError(error, 'Fetch reservations', 'get') || { items: [], total: 0 };
+      }
     }
   },
 

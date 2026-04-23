@@ -582,6 +582,55 @@ const creditService = {
     }
   },
 
+  // --- Marketing Requests ---
+  async getMarketingRequests(params = {}) {
+    try {
+      const response = await apiClient.get('/credit/order-marketing-developers', { params });
+      const data = response.data?.data || response.data || [];
+      const items = Array.isArray(data) ? data : (data.data || []);
+      const total = data.total || items.length;
+      return { items, total };
+    } catch (error) {
+      return handleServiceError(error, 'Error fetching marketing requests', 'get') || { items: [], total: 0 };
+    }
+  },
+  async getMarketingRequestById(id) {
+    try {
+      const response = await apiClient.get(`/credit/order-marketing-developers/${id}`);
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      logger.error(`Error fetching marketing request ${id}:`, error);
+      throw error;
+    }
+  },
+  async createMarketingRequest(data) {
+    try {
+      const response = await apiClient.post('/credit/order-marketing-developers', data);
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      logger.error('Error creating marketing request:', error);
+      throw error;
+    }
+  },
+  async updateMarketingRequest(id, data) {
+    try {
+      const response = await apiClient.put(`/credit/order-marketing-developers/${id}`, data);
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      logger.error(`Error updating marketing request ${id}:`, error);
+      throw error;
+    }
+  },
+  async deleteMarketingRequest(id) {
+    try {
+      const response = await apiClient.delete(`/credit/order-marketing-developers/${id}`);
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      logger.error(`Error deleting marketing request ${id}:`, error);
+      throw error;
+    }
+  },
+
   // --- Sold Projects ---
 
   /**

@@ -18,5 +18,6 @@ export default {
     { path: 'financing', name: 'CreditFinancing', component: () => import('@/modules/credit/views/CreditView.vue'), meta: { permissions: [PERMISSIONS.CREDIT_FINANCING_MANAGE] } },
     { path: 'title-transfer', name: 'CreditTitleTransfer', component: () => import('@/modules/credit/views/CreditView.vue'), meta: { permissions: [PERMISSIONS.CREDIT_TITLE_TRANSFER_MANAGE] } },
     { path: 'sold-projects', name: 'CreditSoldProjects', component: () => import('@/modules/credit/views/CreditView.vue'), meta: { permissions: [PERMISSIONS.CREDIT_BOOKINGS_VIEW] } },
+    { path: 'marketing-requests', name: 'CreditMarketingRequests', component: () => import('@/modules/credit/views/CreditView.vue') },
   ],
 };

@@ -3,6 +3,7 @@ import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 import salesService from '@/services/salesService';
 import { usePermissions } from '@/composables/usePermissions';
+import { ROLE_SALES, ROLE_SALES_LEADER } from '@/constants/roles';
 import logger from '@/utils/logger';
 import { normalizeVoucherDataPayload } from '@/utils/reservationVoucherNormalize';
 import {
@@ -30,6 +31,13 @@ export function useReservationsView() {
 
   const isPmReservationsList = computed(() => usePmReservationsApi());
 
+  /** الوحدات المفرغة visible only for Sales (6) and Sales Leader (7) */
+  const showEvacuatedTab = computed(() => {
+    const u = authService.getCurrentUser();
+    const t = Number(u?.type);
+    return t === ROLE_SALES || t === ROLE_SALES_LEADER;
+  });
+
   const activeTab = ref('active');
   const isLoading = ref(false);
   const detailItem = ref(null);
@@ -45,6 +53,7 @@ export function useReservationsView() {
   const reservations = ref([]);
   const waitingList = ref([]);
   const negotiations = ref([]);
+  const evacuatedUnits = ref([]);
 
   const canConfirm = computed(
     () => isPmReservationsList.value || hasPermission('sales.reservations.confirm')
@@ -66,6 +75,7 @@ export function useReservationsView() {
     ).length,
     waiting: waitingList.value.length,
     negotiations: negotiations.value.length,
+    evacuated: evacuatedUnits.value.length,
   }));
 
   const filteredReservations = computed(() => {
@@ -74,6 +84,11 @@ export function useReservationsView() {
       return reservations.value
         .filter(r => cancelledStatuses.includes(r.status))
         .sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
+    }
+    if (activeTab.value === 'evacuated') {
+      return evacuatedUnits.value.sort(
+        (a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
+      );
     }
     return reservations.value
       .filter(r => !cancelledStatuses.includes(r.status))
@@ -86,8 +101,9 @@ export function useReservationsView() {
         const items = await getProjectManagementReservations({ per_page: 500 });
         reservations.value = Array.isArray(items) ? items : [];
       } else {
+        const u = authService.getCurrentUser();
         const result = await salesService.getReservations({
-          mine: true,
+          marketing_employee_id: u?.id,
           include_cancelled: true,
           per_page: 100,
         });
@@ -140,12 +156,35 @@ export function useReservationsView() {
     }
   };
 
+  const loadEvacuatedUnits = async () => {
+    if (isPmReservationsList.value) {
+      evacuatedUnits.value = [];
+      return;
+    }
+    try {
+      const u = authService.getCurrentUser();
+      const result = await salesService.getReservations({
+        marketing_employee_id: u?.id,
+        credit_status: 'sold',
+        per_page: 100,
+      });
+      const items = result?.items || result?.data || result || [];
+      evacuatedUnits.value = Array.isArray(items) ? items : [];
+    } catch (e) {
+      logger.error('Error loading evacuated units:', e);
+      evacuatedUnits.value = [];
+    }
+  };
+
   const loadAll = async () => {
     isLoading.value = true;
     try {
-      await loadReservations();
-      await loadWaitingList();
-      await loadNegotiations();
+      await Promise.all([
+        loadReservations(),
+        loadWaitingList(),
+        loadNegotiations(),
+        loadEvacuatedUnits(),
+      ]);
     } finally {
       isLoading.value = false;
     }
@@ -511,6 +550,8 @@ export function useReservationsView() {
     reservations,
     waitingList,
     negotiations,
+    evacuatedUnits,
+    showEvacuatedTab,
     canConfirm,
     canConvert,
     canApproveNeg,

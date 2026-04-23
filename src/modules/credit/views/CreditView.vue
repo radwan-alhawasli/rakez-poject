@@ -12,6 +12,8 @@
       <CreditTitleTransferTab v-else-if="activeTab === 'title-transfer'" />
 
       <CreditSoldProjectsTab v-else-if="activeTab === 'sold-projects'" />
+
+      <CreditMarketingRequestsTab v-else-if="activeTab === 'marketing-requests'" />
     </div>
   </div>
 </template>
@@ -39,6 +41,9 @@ const CreditTitleTransferTab = defineAsyncComponent(() =>
 const CreditSoldProjectsTab = defineAsyncComponent(() =>
   import('@/modules/credit/tabs/sold-projects/CreditSoldProjectsTab.vue')
 );
+const CreditMarketingRequestsTab = defineAsyncComponent(() =>
+  import('@/modules/credit/tabs/marketing-requests/CreditMarketingRequestsTab.vue')
+);
 
 const route = useRoute();
 
@@ -50,6 +55,7 @@ const activeTab = computed(() => {
   if (name === 'CreditFinancing') return 'financing';
   if (name === 'CreditTitleTransfer') return 'title-transfer';
   if (name === 'CreditSoldProjects') return 'sold-projects';
+  if (name === 'CreditMarketingRequests') return 'marketing-requests';
   return 'dashboard';
 });
 </script>

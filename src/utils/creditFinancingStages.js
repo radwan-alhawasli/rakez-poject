@@ -30,9 +30,7 @@ export function getPurchaseMechanismKey(booking) {
 /** آلية الشراء كاش أو دفع كاش (لا يُعرض مسار الائتمان البنكي الكامل) */
 export function isCashReservation(booking) {
   const p = String(booking?.purchase_mechanism ?? '').toLowerCase();
-  if (p === 'cash' || p === 'كاش') return true;
-  const pay = String(booking?.payment_method ?? '').toLowerCase();
-  return pay === 'cash' || pay === 'كاش';
+  return p === 'cash' || p === 'كاش';
 }
 
 /** عدد مراحل التتبع في الواجهة: 2 لكاش، 6 لغيره */
