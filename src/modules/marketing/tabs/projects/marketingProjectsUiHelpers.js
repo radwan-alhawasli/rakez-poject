@@ -159,3 +159,41 @@ export function marketingMemberRatingLabel(m) {
   const s = marketingMemberRatingScore(m);
   return s != null ? String(s) : '—';
 }
+
+/** @param {unknown} error */
+export function firstMarketingPercentValidationMessage(error) {
+  const data =
+    error && typeof error === 'object' && 'response' in error && error.response && typeof error.response === 'object'
+      ? error.response.data
+      : null;
+  if (!data || typeof data !== 'object' || !data.errors || typeof data.errors !== 'object') return null;
+  const mp = /** @type {Record<string, unknown>} */ (data.errors).marketing_percent;
+  return Array.isArray(mp) && typeof mp[0] === 'string' ? mp[0] : null;
+}
+
+/** @param {Record<string, unknown>|null|undefined} d */
+export function resolveContractIdForMarketingPatch(d) {
+  if (!d) return null;
+  const v = d.marketing_project?.contract_id ?? d.contract_id ?? d.id;
+  return v != null && v !== '' ? v : null;
+}
+
+export function resolveProjectPlanAttachmentUrl(project) {
+  const raw = project?.project_plans || project?.marketing_project?.project_plans || project?.plan_url || '';
+  if (typeof raw !== 'string' || !raw.trim()) return '';
+  const u = raw.trim();
+  return u.startsWith('http') ? u : `${window.location.origin}${u.startsWith('/') ? u : `/${u}`}`;
+}
+
+export function developerPlanLooksPresent(plan) {
+  if (!plan || typeof plan !== 'object') return false;
+  if (plan.raw_plan || plan.rawPlan) return true;
+  return Boolean(
+    plan.id ??
+      plan.contract_id ??
+      plan.average_cpm ??
+      plan.averageCpm ??
+      plan.marketing_value ??
+      plan.marketingValue
+  );
+}

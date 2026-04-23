@@ -139,7 +139,7 @@ export default {
     );
     // الـ response قد يكون الـ blob مباشرةً أو في response.data
     const blob = response?.data instanceof Blob ? response.data : response;
-    return blob;
+    return /** @type {Blob} */ (blob);
   },
 
   /**

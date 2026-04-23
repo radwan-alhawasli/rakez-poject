@@ -22,25 +22,14 @@ import {
   marketingTeamDisplayName,
   marketingMemberDisplayName,
   marketingMemberRatingLabel,
+  firstMarketingPercentValidationMessage,
+  resolveContractIdForMarketingPatch,
+  resolveProjectPlanAttachmentUrl,
+  developerPlanLooksPresent,
 } from '@/modules/marketing/tabs/projects/marketingProjectsUiHelpers.js';
 
-/** @param {unknown} error */
-function firstMarketingPercentValidationMessage(error) {
-  const data =
-    error && typeof error === 'object' && 'response' in error && error.response && typeof error.response === 'object'
-      ? error.response.data
-      : null;
-  if (!data || typeof data !== 'object' || !data.errors || typeof data.errors !== 'object') return null;
-  const mp = /** @type {Record<string, unknown>} */ (data.errors).marketing_percent;
-  return Array.isArray(mp) && typeof mp[0] === 'string' ? mp[0] : null;
-}
+import { useMarketingProjectBudget } from '@/composables/marketing/useMarketingProjectBudget.js';
 
-/** @param {Record<string, unknown>|null|undefined} d */
-function resolveContractIdForMarketingPatch(d) {
-  if (!d) return null;
-  const v = d.marketing_project?.contract_id ?? d.contract_id ?? d.id;
-  return v != null && v !== '' ? v : null;
-}
 
 export function useMarketingProjects() {
   const router = useRouter();
@@ -92,31 +81,16 @@ export function useMarketingProjects() {
 
   // Modals
   const showProjectDetailsModal = ref(false);
-  const showCalculateBudgetModal = ref(false);
-  /** مودال «الخطة»: خطة المطور/المرفق + خطط الموظفين */
-  const showProjectPlansModal = ref(false);
-  const projectPlansModalProject = ref(null);
-  const projectPlansModalLoading = ref(false);
-  const projectPlansModalPlanUrl = ref('');
-  const projectPlansModalHasDeveloperPlan = ref(false);
-  const projectPlansModalDeveloperPlan = ref(null);
-  const projectPlansModalEmployeePlans = ref([]);
-  /** مسودة حقل نسبة التسويق في مودال التفاصيل — تُزامن من GET وتُحفظ عبر PATCH */
-  const marketingPercentDraft = ref('');
-  const isSavingMarketingPercent = ref(false);
 
-  // Budget form
-  const budgetForm = reactive({
-    project_id: '',
-    contract_id: '',
-    unit_price: '',
-    commission_percent: '',
-    marketing_percent: MARKETING_PERCENT_FIXED,
-    contract_duration_days: '',
-    contract_duration_months: '',
-  });
-  const budgetResult = ref(null);
-  const isSubmitting = ref(false);
+  const {
+    showCalculateBudgetModal,
+    budgetForm,
+    budgetResult,
+    isSubmitting,
+    onBudgetProjectChange,
+    openCalculateBudgetModal,
+    calculateBudget,
+  } = useMarketingProjectBudget(projects);
 
   const loadProjects = async () => {
     isLoadingProjects.value = true;
@@ -307,13 +281,6 @@ export function useMarketingProjects() {
     }).catch(() => {});
   };
 
-  const resolveProjectPlanAttachmentUrl = project => {
-    const raw = project?.project_plans || project?.marketing_project?.project_plans || project?.plan_url || '';
-    if (typeof raw !== 'string' || !raw.trim()) return '';
-    const u = raw.trim();
-    return u.startsWith('http') ? u : `${window.location.origin}${u.startsWith('/') ? u : `/${u}`}`;
-  };
-
   const developerPlanLooksPresent = plan => {
     if (!plan || typeof plan !== 'object') return false;
     if (plan.raw_plan || plan.rawPlan) return true;
@@ -423,74 +390,6 @@ export function useMarketingProjects() {
     router.push({ name: 'MarketingEmployeePlans', query: { projectId: String(id) } }).catch(() => {});
   };
 
-  // Budget calculation
-  const onBudgetProjectChange = () => {
-    if (!budgetForm.project_id) {
-      budgetForm.contract_id = '';
-      budgetForm.unit_price = '';
-      budgetForm.commission_percent = '';
-      return;
-    }
-    const p = projects.value.find(proj => String(proj.id) === String(budgetForm.project_id));
-    if (p) {
-      budgetForm.contract_id = p.contract_number ?? p.marketing_project?.contract_id ?? p.id ?? '';
-      budgetForm.unit_price = p.average_unit_price ?? '';
-      budgetForm.commission_percent = p.commission_percentage ?? '';
-    }
-  };
-
-  const openCalculateBudgetModal = () => {
-    budgetForm.project_id = '';
-    budgetForm.contract_id = '';
-    budgetForm.unit_price = '';
-    budgetForm.commission_percent = '';
-    budgetForm.marketing_percent = MARKETING_PERCENT_FIXED;
-    budgetForm.contract_duration_days = '';
-    budgetForm.contract_duration_months = '';
-    budgetResult.value = null;
-    showCalculateBudgetModal.value = true;
-  };
-
-  const calculateBudget = async () => {
-    if (!budgetForm.contract_id || !budgetForm.unit_price) {
-      toast.warning('الرجاء إدخال جميع الحقول المطلوبة');
-      return;
-    }
-    try {
-      isSubmitting.value = true;
-      const rawMarketingPercent = Number(budgetForm.marketing_percent) || MARKETING_PERCENT_FIXED;
-      const result = await marketingService.calculateBudget({
-        contract_id: parseInt(budgetForm.contract_id),
-        unit_price: parseFloat(budgetForm.unit_price),
-        marketing_percent: rawMarketingPercent,
-      });
-      const unitPrice = Number(budgetForm.unit_price) || 0;
-      const commissionPercent = Number(budgetForm.commission_percent) || 0;
-      const marketingPercent = rawMarketingPercent > 1 ? rawMarketingPercent / 100 : rawMarketingPercent;
-      const commissionValue = result.commission_value ?? unitPrice * (commissionPercent / 100);
-      const marketingValue = result.marketing_value ?? Number(commissionValue) * marketingPercent;
-      const durationDays = Number(budgetForm.contract_duration_days) || Number(result.contract_duration_days) || 0;
-      const durationMonths = Number(budgetForm.contract_duration_months) || Number(result.contract_duration_months) || 0;
-      const dailyBudget = durationDays ? Number(marketingValue) / durationDays : result.daily_budget ?? 0;
-      const monthlyBudget = durationMonths ? Number(marketingValue) / durationMonths : result.monthly_budget ?? 0;
-      budgetResult.value = {
-        commission_value: Number(commissionValue) || 0,
-        marketing_value: Number(marketingValue) || 0,
-        daily_budget: Number(dailyBudget) || 0,
-        monthly_budget: Number(monthlyBudget) || 0,
-      };
-      notificationService.addNotification(
-        `تم حساب الميزانية: إجمالي التسويق ${formatCurrency(marketingValue || 0)} ريال | يومي ${formatCurrency(dailyBudget || 0)} ريال | شهري ${formatCurrency(monthlyBudget || 0)} ريال`,
-        'success'
-      );
-      showCalculateBudgetModal.value = false;
-    } catch (error) {
-      logger.error('Error calculating budget:', error);
-      toast.error('حدث خطأ أثناء حساب الميزانية');
-    } finally {
-      isSubmitting.value = false;
-    }
-  };
 
   const getRecommendedEmployee = project =>
     getRecommendedEmployeePure(project, recommendedEmployeeByProjectId.value);
