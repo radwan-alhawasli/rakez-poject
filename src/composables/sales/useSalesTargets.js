@@ -8,9 +8,7 @@ import { isSalesLeader } from '@/utils/rbac';
 import logger from '@/utils/logger';
 
 import { 
-  normalizeTargetStatus, 
   mapStatusForApiPatch, 
-  extractSalesTargetRowId, 
   normalizeSalesTargetItem, 
   getSalesTargetPatchId, 
   num,

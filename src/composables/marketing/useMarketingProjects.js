@@ -2,7 +2,6 @@ import { ref, reactive, computed, shallowRef, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import marketingService from '@/services/marketingService';
 import contractService from '@/services/contractService';
-import notificationService from '@/services/notificationService';
 import logger from '@/utils/logger';
 import { useFormatters } from '@/composables/useFormatters';
 import { usePermissions } from '@/composables/usePermissions';
@@ -25,7 +24,6 @@ import {
   firstMarketingPercentValidationMessage,
   resolveContractIdForMarketingPatch,
   resolveProjectPlanAttachmentUrl,
-  developerPlanLooksPresent,
 } from '@/modules/marketing/tabs/projects/marketingProjectsUiHelpers.js';
 
 import { useMarketingProjectBudget } from '@/composables/marketing/useMarketingProjectBudget.js';
@@ -36,8 +34,6 @@ export function useMarketingProjects() {
   const { hasPermission } = usePermissions();
   const { formatNumber, formatDate } = useFormatters();
   const formatCurrency = formatNumber;
-
-  const MARKETING_PERCENT_FIXED = 10;
 
   const projects = shallowRef([]);
   const projectSearchQuery = ref('');
@@ -81,6 +77,19 @@ export function useMarketingProjects() {
 
   // Modals
   const showProjectDetailsModal = ref(false);
+
+  /** مودال «الخطة»: خطة المطور/المرفق + خطط الموظفين */
+  const showProjectPlansModal = ref(false);
+  const projectPlansModalProject = ref(null);
+  const projectPlansModalLoading = ref(false);
+  const projectPlansModalPlanUrl = ref('');
+  const projectPlansModalHasDeveloperPlan = ref(false);
+  const projectPlansModalDeveloperPlan = ref(null);
+  const projectPlansModalEmployeePlans = ref([]);
+
+  /** مسودة حقل نسبة التسويق في مودال التفاصيل — تُزامن من GET وتُحفظ عبر PATCH */
+  const marketingPercentDraft = ref('');
+  const isSavingMarketingPercent = ref(false);
 
   const {
     showCalculateBudgetModal,
