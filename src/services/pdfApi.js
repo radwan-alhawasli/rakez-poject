@@ -1,6 +1,6 @@
 /**
  * PDF Data API — Most endpoints return JSON for client-side PDF generation.
- * See docs/PDF_DATA_SHAPES.md for JSON shapes. Some endpoints return PDF blobs (e.g. fill-data/pdf).
+ * See docs/PDF_DATA_SHAPES.md for JSON shapes. Some endpoints return PDF blobs (e.g. contracts/show/:id/pdf).
  */
 import apiClient from '@/api/apiClient';
 import { ensurePdfBlob } from '@/services/hr/hrPdfBlob';
@@ -26,7 +26,7 @@ export async function getContractFillData(contractId) {
 
 /**
  * Completed exclusive contract PDF from server (filled template).
- * GET /api/contracts/:id/fill-data/pdf
+ * GET /api/contracts/show/:id/pdf
  * @param {string|number} contractId
  * @returns {Promise<{ blob: Blob, filename?: string }>}
  */
@@ -36,7 +36,7 @@ export async function downloadContractFillDataPdf(contractId) {
     const err = new Error('معرف العقد مطلوب');
     throw err;
   }
-  const response = await apiClient.get(`/contracts/${id}/fill-data/pdf`, {
+  const response = await apiClient.get(`/contracts/show/${id}/pdf`, {
     responseType: 'blob',
     headers: { Accept: 'application/pdf' },
   });

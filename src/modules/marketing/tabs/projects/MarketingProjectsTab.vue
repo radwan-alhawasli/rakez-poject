@@ -131,6 +131,12 @@
       @close="closeProjectPlansModal"
     />
 
+    <MarketingMediaModal
+      v-if="showMediaModal"
+      :project="mediaModalProject"
+      @close="closeMediaModal"
+    />
+
   </div>
 </template>
 
@@ -143,6 +149,7 @@ import {
 import MarketingCalculateBudgetModal from '@/modules/marketing/tabs/projects/MarketingCalculateBudgetModal.vue';
 import MarketingProjectDetailsModal from '@/modules/marketing/tabs/projects/MarketingProjectDetailsModal.vue';
 import MarketingProjectPlansModal from '@/modules/marketing/tabs/projects/MarketingProjectPlansModal.vue';
+import MarketingMediaModal from '@/modules/marketing/tabs/projects/MarketingMediaModal.vue';
 
 const {
   projects,
@@ -192,6 +199,9 @@ const {
   formatDistribution,
   formatCurrency,
   hasPermission,
+  showMediaModal,
+  mediaModalProject,
+  closeMediaModal,
 } = useMarketingProjects();
 </script>
 

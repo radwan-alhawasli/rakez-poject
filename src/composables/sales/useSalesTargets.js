@@ -99,6 +99,7 @@ export function extractSalesTargetRowId(raw) {
   const fromUnits = pickFromUnits();
   const v =
     pick(raw) ??
+    raw.id ??
     raw.target_id ??
     raw.sales_target_id ??
     raw.salesTargetId ??
@@ -135,7 +136,14 @@ export function normalizeSalesTargetItem(raw) {
     null;
 
   const targetId = extractSalesTargetRowId(raw);
-  const mid = raw.marketer_id ?? raw.user_id ?? raw.assignee_id;
+  const mid = 
+    raw.marketer_id ?? 
+    raw.user_id ?? 
+    raw.assignee_id ?? 
+    raw.marketer?.id ?? 
+    raw.marketer?.user_id ?? 
+    raw.assignee?.id;
+    
   const marketerId =
     mid != null && mid !== '' && Number.isFinite(Number(mid)) ? Number(mid) : mid;
 

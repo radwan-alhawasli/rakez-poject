@@ -219,9 +219,14 @@ export function useProjectManagement() {
 
   const onDownloadContract = async project => {
     activeMenuId.value = null;
+    const cid = project?.contract_id ?? project?.id;
+    if (!cid) {
+      toast.error('تعذر تحديد معرف العقد');
+      return;
+    }
     try {
       if (typeof contractService.downloadContract === 'function') {
-        await contractService.downloadContract(project.id);
+        await contractService.downloadContract(cid);
         toast.success('تم تحميل العقد');
       } else {
         toast.info('تحميل العقد: سيتم ربطها بالـ API عند التوفر.');

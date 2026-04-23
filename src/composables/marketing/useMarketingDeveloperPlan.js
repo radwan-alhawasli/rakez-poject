@@ -399,42 +399,34 @@ export function useMarketingDeveloperPlan() {
     link.click();
   };
 
+  const isExportingPdf = ref(false);
+
   const exportDeveloperPlanPdf = async () => {
+    const contractId = developerPlanForm.contract_id || developerPlanForm.project_id;
+    if (!contractId) {
+      toast.warning('يرجى اختيار مشروع أولاً لتتمكن من تنزيل الـ PDF');
+      return;
+    }
+    isExportingPdf.value = true;
     try {
-      const results = platformResults.value || [];
-      const toSafeNumber = value => {
-        const num = Number(value);
-        return Number.isFinite(num) ? num : 0;
-      };
-      const rows = results.map((r, i) => ({
-        id: String(i + 1).padStart(2, '0'),
-        platform: r.labelAr ?? r.platform ?? '',
-        clicks: toSafeNumber(r.clicks),
-        impressions: toSafeNumber(r.views ?? r.impressions),
-      }));
-      const { exportDeveloperPlanTemplateToPdf } = await import('@/utils/exportTemplateToPdf');
-      const pdfBytes = await exportDeveloperPlanTemplateToPdf({
-        logoSrc: '',
-        rows,
-        footer: {
-          phone: '920015711',
-          website: 'rakezalaqaria.com',
-          addressAr: 'المملكة العربية السعودية - الرياض، حي الملقا، طريق أنس بن مالك 3110',
-          addressEn: 'Kingdom of Saudi Arabia - Riyadh 3110 Anas Bin Malik street, Al Malqa Dist.',
-          cr: '1010653001',
-          companyAr: 'شركة راكز العقارية',
-          companyEn: 'RAKEZ REAL ESTATE CO.',
-        },
-      });
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = await marketingService.getDeveloperPlanPdf(contractId);
+      if (!blob || blob.size === 0) {
+        toast.error('لم يتم استلام ملف PDF صالح من الخادم');
+        return;
+      }
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `developer_plan_${new Date().toISOString().split('T')[0]}.pdf`;
+      link.href = url;
+      link.download = `developer_plan_${contractId}_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
       link.click();
-      URL.revokeObjectURL(link.href);
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } catch (error) {
-      logger.error('Error exporting developer plan PDF:', error);
-      toast.error('تعذر تصدير PDF');
+      logger.error('Error exporting developer plan PDF from API:', error);
+      toast.error('تعذر تنزيل PDF — تحقق من الاتصال أو حاول مجدداً');
+    } finally {
+      isExportingPdf.value = false;
     }
   };
 
@@ -476,6 +468,7 @@ export function useMarketingDeveloperPlan() {
     isLoadingDeveloperPlan,
     isCalculatingBudget,
     isSubmitting,
+    isExportingPdf,
     projects,
     formatCurrency,
     formatNumber,

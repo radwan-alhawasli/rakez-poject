@@ -244,3 +244,5 @@ function updateTargetStatus(target, newStatus) {
   emit('update-target-status', target, newStatus);
 }
 </script>
+
+<style scoped src="../styles/SalesTargetList.scoped.css"></style>

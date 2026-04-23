@@ -1,8 +1,31 @@
 import apiClient from '@/api/apiClient';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
+import { downloadContractFillDataPdf } from '@/services/pdfApi';
 
 export const contractServiceMiscMethods = {
   // --- Missing Endpoints ---
+
+  /**
+   * Download contract PDF from server
+   * @param {number|string} id - Contract ID
+   */
+  async downloadContract(id) {
+    try {
+      const { blob, filename } = await downloadContractFillDataPdf(id);
+      if (!blob) throw new Error('Blob is empty');
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename || `contract-${id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      return handleServiceError(error, `Download contract ${id}`, 'get');
+    }
+  },
+
 
   /**
    * Delete contract
