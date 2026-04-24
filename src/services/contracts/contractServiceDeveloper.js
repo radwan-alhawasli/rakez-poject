@@ -1,14 +1,18 @@
+// @ts-check
 import apiClient from '@/api/apiClient';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 
 export const contractServiceDeveloperMethods = {
+
   // --- Developer / Second Party Endpoints ---
 
   /**
    * جلب قائمة المطورين
    * GET /second-party-data/second-parties
+   * @returns {Promise<any[]>}
    */
   async getDevelopers() {
+
     try {
       const response = await apiClient.get('/second-party-data/second-parties');
       // Normalize response
@@ -31,10 +35,11 @@ export const contractServiceDeveloperMethods = {
    * List developers (Accounting Module API) – نفس المصدر المستخدم في "عرض المطورين" بقسم المحاسبة.
    * GET /developers?search=&per_page=15&page=1
    * Accessible by accounting, project_management, admin.
-   * @param {any} params - { search, per_page, page }
-   * @returns {Promise<{ data: unknown[], meta: Object }>}
+   * @param {Record<string, any>} params - { search, per_page, page }
+   * @returns {Promise<{ data: any[], meta: Record<string, any> }>}
    */
   async getDevelopersList(params = {}) {
+
     try {
       const response = await apiClient.get('/developers', { params });
       const res = response.data;
@@ -56,9 +61,10 @@ export const contractServiceDeveloperMethods = {
    * Get developer details (Accounting Module API).
    * GET /developers/:id — يُستدعى بالـ id الرقمي (يُرجع من قائمة المطورين).
    * @param {string|number} id - numeric id or developer identifier from list
-   * @returns {Promise<Object|null>} data object or null on 404/error
+   * @returns {Promise<Record<string, any>|null>} data object or null on 404/error
    */
   async getDeveloperDetail(id) {
+
     try {
       const param = String(id).trim();
       // إرسال الـ id كما هو (رقم أو نص)؛ إذا كان شبيه برقم هاتف يبدأ بـ + نزيل الـ + للتوافق مع الـ backend
@@ -76,9 +82,11 @@ export const contractServiceDeveloperMethods = {
   /**
    * جلب بيانات قسم المونتاج (editor prefix)
    * GET /editor/montage-department/show/:id
-    * @param {any} id
+   * @param {string|number} id
+   * @returns {Promise<Record<string, any>>}
    */
   async getMontage(id) {
+
     try {
       const response = await apiClient.get(`/editor/montage-department/show/${id}`);
       return response.data;
@@ -90,10 +98,11 @@ export const contractServiceDeveloperMethods = {
   /**
    * حفظ بيانات قسم المونتاج (editor prefix)
    * POST /editor/montage-department/store/:id
-    * @param {any} id
-    * @param {any} payload
+   * @param {string|number} id
+   * @param {Record<string, any>} payload
    */
   async storeMontage(id, payload) {
+
     try {
       const response = await apiClient.post(`/editor/montage-department/store/${id}`, payload);
       return response.data;
@@ -105,10 +114,11 @@ export const contractServiceDeveloperMethods = {
   /**
    * تحديث بيانات قسم المونتاج (editor prefix, PUT)
    * PUT /editor/montage-department/update/:id
-    * @param {any} id
-    * @param {any} payload
+   * @param {string|number} id
+   * @param {Record<string, any>} payload
    */
   async updateMontage(id, payload) {
+
     try {
       const response = await apiClient.put(`/editor/montage-department/update/${id}`, payload);
       return response.data;
@@ -120,9 +130,10 @@ export const contractServiceDeveloperMethods = {
   /**
    * جلب مشاريع مطور بواسطة البريد الإلكتروني
    * GET /second-party-data/contracts-by-email
-    * @param {any} email
+   * @param {string} email
    */
   async getDeveloperContractsByEmail(email) {
+
     try {
       const response = await apiClient.get('/second-party-data/contracts-by-email', {
         params: { email },

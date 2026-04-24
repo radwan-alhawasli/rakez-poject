@@ -594,6 +594,11 @@ const creditService = {
       return handleServiceError(error, 'Error fetching marketing requests', 'get') || { items: [], total: 0 };
     }
   },
+  /**
+   * Get a single marketing request by ID
+   * GET /credit/order-marketing-developers/:id
+   * @param {number|string} id - Marketing request ID
+   */
   async getMarketingRequestById(id) {
     try {
       const response = await apiClient.get(`/credit/order-marketing-developers/${id}`);
@@ -603,6 +608,11 @@ const creditService = {
       throw error;
     }
   },
+  /**
+   * Create a new marketing request
+   * POST /credit/order-marketing-developers
+   * @param {Record<string, unknown>} data - Marketing request payload
+   */
   async createMarketingRequest(data) {
     try {
       const response = await apiClient.post('/credit/order-marketing-developers', data);
@@ -612,6 +622,12 @@ const creditService = {
       throw error;
     }
   },
+  /**
+   * Update an existing marketing request
+   * PUT /credit/order-marketing-developers/:id
+   * @param {number|string} id - Marketing request ID
+   * @param {Record<string, unknown>} data - Update payload
+   */
   async updateMarketingRequest(id, data) {
     try {
       const response = await apiClient.put(`/credit/order-marketing-developers/${id}`, data);
@@ -621,6 +637,11 @@ const creditService = {
       throw error;
     }
   },
+  /**
+   * Delete a marketing request
+   * DELETE /credit/order-marketing-developers/:id
+   * @param {number|string} id - Marketing request ID
+   */
   async deleteMarketingRequest(id) {
     try {
       const response = await apiClient.delete(`/credit/order-marketing-developers/${id}`);

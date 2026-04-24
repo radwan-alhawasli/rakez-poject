@@ -2,6 +2,12 @@
 
 export {};
 
+declare module '*.vue' {
+  import type { DefineComponent } from 'vue';
+  const component: DefineComponent<{}, {}, any>;
+  export default component;
+}
+
 /** Axios/API-normalized errors in services (checkJs; optional fields). */
 declare global {
   interface Error {
@@ -11,5 +17,8 @@ declare global {
     code?: string;
     originalError?: unknown;
     isAuthRedirect?: boolean;
+    url?: string;
+    method?: string;
   }
 }
+

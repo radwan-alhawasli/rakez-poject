@@ -1,8 +1,10 @@
+// @ts-check
 /**
  * Helpers for values caught in try/catch when useUnknownInCatchVariables is enabled.
  *
  * @module utils/caughtError
  */
+
 
 /**
  * @param {unknown} value
@@ -26,16 +28,12 @@ export function getCaughtStatus(caught) {
 }
 
 /**
- * Best-effort user-facing message from a caught value.
- * @param {unknown} caught
- * @returns {string}
- */
-/**
  * Axios response.config.url when present (for matching paths on 404).
  * @param {unknown} caught
  * @returns {string|undefined}
  */
 export function getCaughtRequestUrl(caught) {
+
   if (!isRecord(caught)) return undefined;
   const res = caught.response;
   if (!isRecord(res)) return undefined;
@@ -45,9 +43,12 @@ export function getCaughtRequestUrl(caught) {
 }
 
 /**
+ * Best-effort user-facing message from a caught value.
  * @param {any} caught
+ * @returns {string}
  */
 export function getCaughtMessage(caught) {
+
   if (caught instanceof Error) return caught.message;
   if (isRecord(caught)) {
     const res = caught.response;

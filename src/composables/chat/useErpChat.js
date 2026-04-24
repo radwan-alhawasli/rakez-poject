@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * ERP دردشة داخلية — حالة ومنطق الواجهة (Rakez Chat API)
  * @module composables/chat/useErpChat
@@ -10,6 +11,7 @@ import notificationService from '@/services/notificationService';
 import { createPusher } from '@/plugins/pusher';
 import logger from '@/utils/logger';
 import { localeOpts } from '@/utils/intlLatn';
+
 
 const EMOJI_LIST = [
   '\u{1F600}', '\u{1F602}', '\u{1F60D}', '\u{1F60A}', '\u{1F609}', '\u{1F614}', '\u{1F622}', '\u{1F621}',
@@ -41,11 +43,15 @@ export function useErpChat() {
   const mediaRecorder = ref(null);
   const audioChunks = ref([]);
   let recordingTimer = null;
+  /** @type {import('vue').Ref<any>} */
   const selectedFile = ref(null);
 
+  /** @type {any} */
   let pusher = null;
   const isPusherConnected = ref(false);
+  /** @type {any[]} */
   const pusherSubscriptions = [];
+
   let searchDebounce = null;
 
   const currentUserId = computed(() => {
@@ -68,7 +74,13 @@ export function useErpChat() {
     return conversations.value.reduce((sum, c) => sum + (c.unread_count || 0), 0);
   });
 
+  /**
+   * @param {string} name
+   */
   const avatarLetter = name => (name || 'U').charAt(0).toUpperCase();
+  /**
+   * @param {string} name
+   */
   const avatarColor = name => {
     const colors = ['#27374D', '#B5A99A', '#5B7B9A', '#6B8F71', '#8B6F5E', '#7B6B8F', '#6B8B9B', '#8F7B5B'];
     let hash = 0;
@@ -79,8 +91,11 @@ export function useErpChat() {
   /**
    * Sort messages by date and deduplicate by ID.
    * Ensures UI remains consistent regardless of arrival order.
+   * @param {any[]} list
+   * @returns {any[]}
    */
   const sortAndDedupeMessages = (list) => {
+
     if (!Array.isArray(list)) return [];
     
     // Sort by created_at (primary) and id (secondary for tie-breaking)
@@ -139,7 +154,11 @@ export function useErpChat() {
     }
   };
 
+  /**
+   * @param {string|number} convId
+   */
   const subscribeToConversation = convId => {
+
     if (!pusher || !convId) return;
     
     // Laravel private channels use the private-* prefix; try private first (required for Broadcast::channel auth).
@@ -236,7 +255,12 @@ export function useErpChat() {
     }
   };
 
+  /**
+   * @param {string|number} convId
+   * @param {string} text
+   */
   const updateConvPreview = (convId, text) => {
+
     const c = conversations.value.find(x => x.id === convId);
     if (c) {
       c._lastPreview = text && text.length > 40 ? `${text.slice(0, 40)}…` : (text || '');

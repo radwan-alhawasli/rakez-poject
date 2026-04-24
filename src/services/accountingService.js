@@ -7,14 +7,15 @@ import { getCaughtMessage, getCaughtStatus } from '@/utils/caughtError';
 
 /**
  * توحيد معرّف توزيعة العمولة — الباك إند قد يرسل `id` أو `distribution_id` أو `commission_distribution_id`.
- * @param {Record<string, unknown>} d
- * @returns {Record<string, unknown>}
+ * @param {Record<string, any>} d
+ * @returns {Record<string, any>}
  */
 function normalizeCommissionDistribution(d) {
   if (!d || typeof d !== 'object') return d;
   const id = d.id ?? d.distribution_id ?? d.commission_distribution_id;
   return id != null && id !== '' ? { ...d, id } : { ...d };
 }
+
 
 /**
  * @typedef {Object} AccountingSoldUnitListItem
@@ -62,10 +63,11 @@ const accountingService = {
    * GET /accounting/dashboard?from_date=YYYY-MM-DD&to_date=YYYY-MM-DD
    * API returns: units_sold, total_received_deposits, total_refunded_deposits,
    *   total_projects_value, total_sales_value, total_commissions, pending_commissions, approved_commissions
-   * @param {any} params - { from_date, to_date }
-   * @returns {Promise<Object>} Normalized dashboard data
+   * @param {Record<string, any>} params - { from_date, to_date }
+   * @returns {Promise<Record<string, any>>} Normalized dashboard data
    */
   async getDashboard(params = {}) {
+
     try {
       const apiParams = {};
       if (params.from_date) apiParams.from_date = params.from_date;
@@ -96,10 +98,11 @@ const accountingService = {
   /**
    * Get accounting notifications
    * GET /accounting/notifications
-   * @param {any} params - Query parameters
-   * @returns {Promise<{ items: unknown[]; total: number }>}
+   * @param {Record<string, any>} params - Query parameters
+   * @returns {Promise<{ items: any[]; total: number }>}
    */
   async getNotifications(params = {}) {
+
     try {
       const response = await apiClient.get('/accounting/notifications', { params });
       const { items, total } = extractPaginatedData(response, []);
@@ -148,10 +151,11 @@ const accountingService = {
   /**
    * Get claim file candidates: reservations/units eligible for claim files (optional).
    * GET /accounting/claim-files/candidates?per_page=500
-   * @param {any} params - { per_page, page }
-   * @returns {Promise<{ items: unknown[], total: number, forbidden?: boolean }>}
+   * @param {Record<string, any>} params - { per_page, page }
+   * @returns {Promise<{ items: any[], total: number, forbidden?: boolean }>}
    */
   async getClaimFileCandidates(params = {}) {
+
     try {
       const response = await apiClient.get('/accounting/claim-files/candidates', { params });
       const { items, total } = extractPaginatedData(response, []);
@@ -176,9 +180,10 @@ const accountingService = {
    * GET /accounting/claim-files/sold-units?contract_id={id}
    * API ref 2.1 — كل عنصر: reservation_id, unit_number, claim_amount, has_claim_file, has_pdf, download_path
    * @param {string|number} contractId - contract_id (مثل projectId)
-   * @returns {Promise<unknown[]>} data array
+   * @returns {Promise<any[]>} data array
    */
   async getClaimFileSoldUnits(contractId) {
+
     try {
       const response = await apiClient.get('/accounting/claim-files/sold-units', {
         params: { contract_id: contractId },
@@ -223,10 +228,11 @@ const accountingService = {
   /**
    * Get all sold units with commission info
    * GET /accounting/sold-units
-   * @param {any} params - Query parameters
+   * @param {Record<string, any>} params - Query parameters
    * @returns {Promise<{ items: AccountingSoldUnitListItem[], total: number }>}
    */
   async getSoldUnits(params = {}) {
+
     try {
       const response = await apiClient.get('/accounting/sold-units', { params });
       const { items, total } = extractPaginatedData(response, []);
@@ -245,14 +251,16 @@ const accountingService = {
    * Get list of marketers for commission distribution dropdown
    * GET /accounting/marketers
    * API returns: data[] with id, name
-   * @returns {Promise<unknown[]>} List of { id, name }
+   * @returns {Promise<any[]>} List of { id, name }
    */
   async getMarketers() {
+
     try {
       const response = await apiClient.get('/accounting/marketers');
       const raw = response.data?.data ?? response.data;
       const list = Array.isArray(raw) ? raw : raw?.data || raw?.items || [];
-      return (list || []).map(/** @param {any} m */ m => ({ id: m.id, name: m.name || m.email || '' }));
+      return (list || []).map((/** @type {any} */ m) => ({ id: m.id, name: m.name || m.email || '' }));
+
     } catch (error) {
       logger.error('Error fetching marketers:', error);
       return [];
@@ -282,10 +290,12 @@ const accountingService = {
    * API body: contract_unit_id, final_selling_price, commission_percentage, commission_source (owner|buyer),
    *   team_responsible, marketing_expenses, bank_fees
    * @param {number|string} reservationId - Reservation ID
-   * @param {any} data - Commission data
-   * @returns {Promise<Object>} Created commission
+   * @param {number|string} reservationId - Reservation ID
+   * @param {Record<string, any>} data - Commission data
+   * @returns {Promise<Record<string, any>>} Created commission
    */
   async createManualCommission(reservationId, data) {
+
     try {
       const body = {
         contract_unit_id: data.contract_unit_id,
@@ -310,10 +320,11 @@ const accountingService = {
   /**
    * Get released/paid commissions list (عرض للمحاسبة)
    * GET /accounting/commissions/released
-   * @param {any} params - from_date (Y-m-d), to_date (Y-m-d), per_page (1-100), page
-   * @returns {Promise<Object>} { items, total } — each item: id, commission_id, employee_id, employee_name, project_name, unit_number, type, type_label, amount, percentage, status, approved_at, paid_at, notification_sent
+   * @param {Record<string, any>} params - from_date (Y-m-d), to_date (Y-m-d), per_page (1-100), page
+   * @returns {Promise<{ items: any[]; total: number }>} { items, total } — each item: id, commission_id, employee_id, employee_name, project_name, unit_number, type, type_label, amount, percentage, status, approved_at, paid_at, notification_sent
    */
   async getReleasedCommissions(params = {}) {
+
     try {
       const response = await apiClient.get('/accounting/commissions/released', { params });
       const { items, total } = extractPaginatedData(response, []);
@@ -331,9 +342,10 @@ const accountingService = {
   /**
    * Get commission distribution types (for dropdowns)
    * GET /accounting/commission-distribution-types
-   * @returns {Promise<Object>} { types: string[], type_labels: Record<string, string> }
+   * @returns {Promise<{ types: string[], type_labels: Record<string, string> }>}
    */
   async getCommissionDistributionTypes() {
+
     try {
       const response = await apiClient.get('/accounting/commission-distribution-types');
       const raw = response.data?.data ?? response.data ?? {};
@@ -350,10 +362,11 @@ const accountingService = {
   /**
    * Get commissions list
    * GET /accounting/commissions
-   * @param {any} params - Query parameters
-   * @returns {Promise<Object>} { items, total }
+   * @param {Record<string, any>} params - Query parameters
+   * @returns {Promise<{ items: any[]; total: number }>} { items, total }
    */
   async getCommissions(params = {}) {
+
     try {
       const response = await apiClient.get('/accounting/commissions', { params });
       const { items, total } = extractPaginatedData(response, []);
@@ -372,10 +385,12 @@ const accountingService = {
    * Types: lead_generation, persuasion, closing, team_leader, sales_manager, project_manager, external_marketer, other
    * For external_marketer/other: external_name, bank_account
    * @param {number|string} commissionId - Commission ID
-   * @param {any} data - { distributions: [...], bank_fees?, commission_source? } — الحقول الاختيارية تُرسل إن وُجدت (دعم الباك اختياري).
-   * @returns {Promise<Object>} Updated distributions
+   * @param {number|string} commissionId - Commission ID
+   * @param {Record<string, any>} data - { distributions: [...], bank_fees?, commission_source? } — الحقول الاختيارية تُرسل إن وُجدت (دعم الباك اختياري).
+   * @returns {Promise<Record<string, any>>} Updated distributions
    */
   async updateDistributions(commissionId, data) {
+
     try {
       const apiTypes = {
         jalb: 'lead_generation',
@@ -397,8 +412,9 @@ const accountingService = {
         other: 'other',
       };
       const apiTypesRec = /** @type {Record<string, string>} */ (apiTypes);
-      const distributions = (data.distributions || []).map(/** @param {any} d */ d => ({
+      const distributions = (data.distributions || []).map((/** @type {any} */ d) => ({
         type:
+
           apiTypesRec[String(d.commission_type)] || d.type || d.commission_type || 'lead_generation',
         user_id: d.user_id,
         percentage: d.percentage,
@@ -448,10 +464,13 @@ const accountingService = {
    * POST /accounting/commissions/:commission_id/distributions/:distribution_id/reject
    * @param {number|string} commissionId - Commission ID
    * @param {number|string} distributionId - Distribution ID
-   * @param {any} data - Rejection data (notes, etc.)
-   * @returns {Promise<Object>} Rejected distribution
+   * @param {number|string} commissionId - Commission ID
+   * @param {number|string} distributionId - Distribution ID
+   * @param {Record<string, any>} data - Rejection data (notes, etc.)
+   * @returns {Promise<Record<string, any>>} Rejected distribution
    */
   async rejectDistribution(commissionId, distributionId, data = {}) {
+
     try {
       const response = await apiClient.post(
         `/accounting/commissions/${commissionId}/distributions/${distributionId}/reject`,
@@ -469,9 +488,10 @@ const accountingService = {
    * GET /accounting/commissions/:commission_id/summary
    * API returns: total_before_tax, vat, marketing_expenses, bank_fees, net_amount, distributions
    * @param {number|string} commissionId - Commission ID
-   * @returns {Promise<Object>} Normalized summary { gross_amount, vat, marketing_expenses, bank_fees, net_amount, distributions }
+   * @returns {Promise<Record<string, any>>} Normalized summary { gross_amount, vat, marketing_expenses, bank_fees, net_amount, distributions }
    */
   async getCommissionSummary(commissionId) {
+
     try {
       const response = await apiClient.get(`/accounting/commissions/${commissionId}/summary`);
       const raw = response.data?.data || response.data || {};
@@ -517,10 +537,11 @@ const accountingService = {
   /**
    * Get pending deposits awaiting confirmation
    * GET /accounting/deposits/pending
-   * @param {any} params - Query parameters
-   * @returns {Promise<{ items: unknown[]; total: number }>}
+   * @param {Record<string, any>} params - Query parameters
+   * @returns {Promise<{ items: any[]; total: number }>}
    */
   async getPendingDeposits(params = {}) {
+
     try {
       const response = await apiClient.get('/accounting/deposits/pending', { params });
       const { items, total } = extractPaginatedData(response, []);
@@ -540,10 +561,12 @@ const accountingService = {
    * POST /accounting/deposits/:deposit_id/confirm
    * API body: { received_date?, bank_reference? }
    * @param {number|string} depositId - Deposit ID
-   * @param {any} data - { received_date, bank_reference } (optional but recommended)
-   * @returns {Promise<Object>} Confirmed deposit
+   * @param {number|string} depositId - Deposit ID
+   * @param {Record<string, any>} data - { received_date, bank_reference } (optional but recommended)
+   * @returns {Promise<Record<string, any>>} Confirmed deposit
    */
   async confirmDeposit(depositId, data = {}) {
+
     try {
       const response = await apiClient.post(`/accounting/deposits/${depositId}/confirm`, data);
       return response.data?.data || response.data || {};
@@ -556,10 +579,11 @@ const accountingService = {
   /**
    * Get deposits requiring follow-up
    * GET /accounting/deposits/follow-up
-   * @param {any} params - Query parameters
-   * @returns {Promise<{ items: unknown[]; total: number }>}
+   * @param {Record<string, any>} params - Query parameters
+   * @returns {Promise<{ items: any[]; total: number }>}
    */
   async getDepositsFollowUp(params = {}) {
+
     try {
       const response = await apiClient.get('/accounting/deposits/follow-up', { params });
       const { items, total } = extractPaginatedData(response, []);
@@ -579,10 +603,12 @@ const accountingService = {
    * POST /accounting/deposits/:deposit_id/refund
    * API body: { reason?, refund_amount? }
    * @param {number|string} depositId - Deposit ID
-   * @param {any} data - { reason, refund_amount } (optional but recommended)
-   * @returns {Promise<Object>} Refunded deposit
+   * @param {number|string} depositId - Deposit ID
+   * @param {Record<string, any>} data - { reason, refund_amount } (optional but recommended)
+   * @returns {Promise<Record<string, any>>} Refunded deposit
    */
   async processRefund(depositId, data = {}) {
+
     try {
       const response = await apiClient.post(`/accounting/deposits/${depositId}/refund`, data);
       return response.data?.data || response.data || {};
@@ -612,10 +638,12 @@ const accountingService = {
    * Confirm commission received (after claim file)
    * POST /accounting/deposits/:reservation_id/commission-received
    * @param {number|string} reservationId - Reservation ID
-   * @param {any} data - Optional confirmation data
-   * @returns {Promise<Object>} Result
+   * @param {number|string} reservationId - Reservation ID
+   * @param {Record<string, any>} data - Optional confirmation data
+   * @returns {Promise<Record<string, any>>} Result
    */
   async confirmCommissionReceived(reservationId, data = {}) {
+
     try {
       const response = await apiClient.post(
         `/accounting/deposits/${reservationId}/commission-received`,
@@ -633,10 +661,11 @@ const accountingService = {
   /**
    * Get employee salaries with commissions for the month
    * GET /accounting/salaries
-   * @param {any} params - Query parameters (month, year)
-   * @returns {Promise<{ items: unknown[]; total: number }>}
+   * @param {Record<string, any>} params - Query parameters (month, year)
+   * @returns {Promise<{ items: any[]; total: number }>}
    */
   async getSalaries(params = {}) {
+
     try {
       const response = await apiClient.get('/accounting/salaries', { params });
       const { items, total } = extractPaginatedData(response, []);
@@ -650,10 +679,12 @@ const accountingService = {
    * Get detailed salary breakdown for employee
    * GET /accounting/salaries/:employee_id
    * @param {number|string} employeeId - Employee ID
-   * @param {any} params - Query parameters (month, year)
-   * @returns {Promise<Object>} Employee salary details
+   * @param {number|string} employeeId - Employee ID
+   * @param {Record<string, any>} params - Query parameters (month, year)
+   * @returns {Promise<Record<string, any>>} Employee salary details
    */
   async getEmployeeSalary(employeeId, params = {}) {
+
     try {
       const response = await apiClient.get(`/accounting/salaries/${employeeId}`, { params });
       return response.data?.data || response.data || {};
@@ -678,10 +709,12 @@ const accountingService = {
    * Create monthly salary distribution
    * POST /accounting/salaries/:employee_id/distribute
    * @param {number|string} employeeId - Employee ID
-   * @param {any} data - Distribution data (month, year, base_salary, total_commissions, etc.)
-   * @returns {Promise<Object>} Created distribution
+   * @param {number|string} employeeId - Employee ID
+   * @param {Record<string, any>} data - Distribution data (month, year, base_salary, total_commissions, etc.)
+   * @returns {Promise<Record<string, any>>} Created distribution
    */
   async createDistribution(employeeId, data) {
+
     try {
       const response = await apiClient.post(`/accounting/salaries/${employeeId}/distribute`, data);
       return response.data?.data || response.data || {};
@@ -768,10 +801,12 @@ const accountingService = {
    * POST /accounting/confirmations/:id/confirm
    * API body: { confirmed_date? }
    * @param {number|string} confirmationId - Confirmation ID (or reservation id if backend accepts)
-   * @param {any} data - { confirmed_date } (optional, e.g. "2026-03-01")
-   * @returns {Promise<Object>} Confirmed result
+   * @param {number|string} confirmationId - Confirmation ID (or reservation id if backend accepts)
+   * @param {Record<string, any>} data - { confirmed_date } (optional, e.g. "2026-03-01")
+   * @returns {Promise<Record<string, any>>} Confirmed result
    */
   async confirmDownPayment(confirmationId, data = {}) {
+
     try {
       const response = await apiClient.post(
         `/accounting/confirmations/${confirmationId}/confirm`,

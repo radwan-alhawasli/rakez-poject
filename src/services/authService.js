@@ -49,7 +49,8 @@ const authService = {
           throw new Error('Authentication failed: no user data returned');
         }
 
-        const userData = { ...user };
+        const userData = /** @type {AuthUser} */ ({ ...user });
+
 
         // Normalize type if it comes as string "admin" from backend
         if (typeof userData.type === 'string' && ROLE_MAP[userData.type] !== undefined) {
@@ -101,8 +102,8 @@ const authService = {
   },
 
   /**
-   * Get current logged in user info (from storage)
-   * @returns {AuthUser|null}
+   * Get current logged in user info
+   * @returns {Record<string, any>|null} User info or null
    */
   getCurrentUser() {
     return /** @type {AuthUser|null} */ (secureStorage.getUserInfo());

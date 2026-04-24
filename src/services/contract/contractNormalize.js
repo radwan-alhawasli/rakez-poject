@@ -1,8 +1,11 @@
-/** استخراج رابط الصورة من أي حقل متوقع من الـ API. يعرض الصورة سواء معتمدة أو قيد المراجعة. */
-/**
- * @param {any} p
+// @ts-check
+
+/** 
+ * استخراج رابط الصورة من أي حقل متوقع من الـ API. يعرض الصورة سواء معتمدة أو قيد المراجعة.
+ * @param {Record<string, any>} p
  */
 function getContractImageUrl(p) {
+
   if (!p || typeof p !== 'object') return null;
   const photo = p.photography_department;
   const url =
@@ -17,11 +20,12 @@ function getContractImageUrl(p) {
   return typeof url === 'string' && url.trim() ? url.trim() : null;
 }
 
-/** Normalize a contract from GET /contracts/index or /contracts/show to the same details shape we use everywhere. */
-/**
- * @param {any} p
+/** 
+ * Normalize a contract from GET /contracts/index or /contracts/show to the same details shape we use everywhere.
+ * @param {Record<string, any>} p
  */
 export function normalizeContractItem(p) {
+
   if (!p || typeof p !== 'object') return p;
   const imageUrl = getContractImageUrl(p);
   return {
@@ -40,9 +44,10 @@ export function normalizeContractItem(p) {
 /**
  * جسم إنشاء/تحديث العقد — يطابق GET /contracts/show (commission_percent وليس commission_percentage).
  * يدعم المفتاحين للتوافق مع كود قديم ثم يُخرج شكلاً واحداً للخادم.
-  * @param {any} raw
+ * @param {Record<string, any>} raw
  */
 export function normalizeContractWritePayload(raw) {
+
   if (!raw || typeof raw !== 'object') return raw;
   const out = { ...raw };
   const pct = out.commission_percent ?? out.commission_percentage;
@@ -67,11 +72,12 @@ export function normalizeContractWritePayload(raw) {
   return out;
 }
 
-/** فك طبقات استجابة GET /contracts/show/:id إن وُجدت (مثل data.contract أو غلاف success). */
-/**
- * @param {any} raw
+/** 
+ * فك طبقات استجابة GET /contracts/show/:id إن وُجدت (مثل data.contract أو غلاف success).
+ * @param {Record<string, any>} raw
  */
 export function unwrapContractShowPayload(raw) {
+
   if (raw == null || typeof raw !== 'object') return null;
   let o = raw;
   if (o.contract && typeof o.contract === 'object') {
@@ -86,9 +92,10 @@ export function unwrapContractShowPayload(raw) {
 /**
  * حقل «الوصف» في استكمال العقد: يفضّل `description` من أي مسار، ثم notes/note فقط.
  * لا يخلط متطلبات المطور (developer_requiment) ولا requirements مع الوصف.
- * @param {any} raw
+ * @param {Record<string, any>} raw
  */
 export function pickContractCompletionNotes(raw) {
+
   if (!raw || typeof raw !== 'object') return '';
   const info = raw.info && typeof raw.info === 'object' ? raw.info : {};
   const attrs = raw.attributes && typeof raw.attributes === 'object' ? raw.attributes : {};
@@ -133,17 +140,19 @@ export function pickContractCompletionNotes(raw) {
 
 /**
  * @deprecated استخدم pickContractCompletionNotes — كان يدمج developer_requiment في الوصف بالخطأ.
- * @param {any} raw
+ * @param {Record<string, any>} raw
  */
 export function pickContractDescriptionText(raw) {
+
   return pickContractCompletionNotes(raw);
 }
 
 /**
  * نفس مصادر الوصف لكن دون `developer_requiment` / `requirements` — لنماذج فيها حقل «متطلبات المطور» منفصل عن «الوصف».
- * @param {any} raw
+ * @param {Record<string, any>} raw
  */
 export function pickDescriptionOrNotesText(raw) {
+
   if (!raw || typeof raw !== 'object') return '';
   const info = raw.info && typeof raw.info === 'object' ? raw.info : {};
   const attrs = raw.attributes && typeof raw.attributes === 'object' ? raw.attributes : {};
@@ -174,11 +183,12 @@ export function pickDescriptionOrNotesText(raw) {
   return '';
 }
 
-/** دمج حقول المشروع المضمّنة (project / exclusive_project) في الجذر حتى تُقرأ note وurl وغيرها من GET /contracts/show */
-/**
- * @param {any} raw
+/** 
+ * دمج حقول المشروع المضمّنة (project / exclusive_project) في الجذر حتى تُقرأ note وurl وغيرها من GET /contracts/show
+ * @param {Record<string, any>} raw
  */
 export function mergeNestedProjectIntoRoot(raw) {
+
   if (raw == null || typeof raw !== 'object') return raw;
   const nested = raw.project ?? raw.exclusive_project;
   if (!nested || typeof nested !== 'object') return raw;
@@ -186,9 +196,10 @@ export function mergeNestedProjectIntoRoot(raw) {
 }
 
 /**
- * @param {any} raw
+ * @param {Record<string, any>} raw
  */
 export function normalizeContractShowResponse(raw) {
+
   if (!raw || typeof raw !== 'object') return raw;
   const imageUrl = getContractImageUrl(raw) || (raw.photography_department?.image_url ?? raw.photography_department?.image) || null;
   const imageUrlTrimmed = typeof imageUrl === 'string' && imageUrl.trim() ? imageUrl.trim() : null;
