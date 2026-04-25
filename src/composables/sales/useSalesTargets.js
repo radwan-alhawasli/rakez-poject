@@ -21,6 +21,7 @@ export function useSalesTargets() {
   const { hasPermission } = usePermissions();
   const { formatCurrencyAr: formatCurrency, formatDate } = useFormatters();
 
+  /** @type {import('vue').Ref<any[]>} */
   const targets = shallowRef([]);
   const isLoadingTargets = ref(false);
   const targetsLoadError = ref('');
@@ -28,10 +29,12 @@ export function useSalesTargets() {
   const targetForm = reactive({
     assignee_marketer_id: '',
     contract_id: '',
+    /** @type {any[]} */
     contract_unit_ids: [],
     assigned_target_value: 0,
     deadline: '',
   });
+  /** @type {import('vue').Ref<any[]>} */
   const targetFormUnits = shallowRef([]);
   const isLoadingTargetFormUnits = ref(false);
   const targetFormUnitsError = ref('');
@@ -39,7 +42,7 @@ export function useSalesTargets() {
   /** أثناء PATCH حالة الهدف — لنفس المسار API للجميع */
   const updatingTargetId = ref(null);
 
-  /** null = GET /sales/targets/my؛ عند التعيين = GET /sales/targets/by-project/{id} (سياق مشروع) */
+  /** @type {import('vue').Ref<string | null>} */
   const activeContractId = ref(null);
 
   const targetsMeta = reactive({
@@ -48,14 +51,15 @@ export function useSalesTargets() {
     currentPage: 1,
   });
 
+  /** @param {any} [options] */
   const loadTargets = async (options = {}) => {
     if (options !== undefined && options !== null && typeof options === 'object') {
       if ('contractId' in options) {
-        const v = options.contractId;
+        const v = (/** @type {any} */ (options)).contractId;
         activeContractId.value = v != null && v !== '' ? String(v) : null;
       }
-      if ('page' in options) targetsMeta.currentPage = options.page;
-      if ('perPage' in options) targetsMeta.perPage = options.perPage;
+      if ('page' in options) targetsMeta.currentPage = (/** @type {any} */ (options)).page;
+      if ('perPage' in options) targetsMeta.perPage = (/** @type {any} */ (options)).perPage;
     }
     const contractScope = activeContractId.value;
     const params = {
@@ -78,14 +82,15 @@ export function useSalesTargets() {
       const list = result?.items || (Array.isArray(result) ? result : []);
       targetsMeta.total = result?.total ?? list.length;
 
-      targets.value = list.map((item) => {
+      targets.value = list.map((/** @type {any} */ item) => {
         const normalized = normalizeSalesTargetItem(item);
         if (contractScope && (normalized.contract_id == null || normalized.contract_id === '')) {
           return { ...normalized, contract_id: contractScope };
         }
         return normalized;
       });
-    } catch (error) {
+    } catch (err) {
+      const error = /** @type {any} */ (err);
       logger.error('[SalesTargets] Error loading targets:', error);
       logger.error('[SalesTargets] Response status:', error?.response?.status, 'data:', error?.response?.data);
       targets.value = [];
@@ -109,6 +114,7 @@ export function useSalesTargets() {
     }
   };
 
+  /** @param {any} err */
   function formatTargetStatusUpdateError(err) {
     const d = err?.response?.data;
     const msg =
@@ -121,6 +127,7 @@ export function useSalesTargets() {
     return code ? `فشل تحديث الحالة (${code})` : 'فشل تحديث الحالة';
   }
 
+  /** @param {any} target */
   const isTargetUpdating = (target) => {
     const id = getSalesTargetPatchId(target);
     if (id == null || updatingTargetId.value == null) return false;
@@ -130,6 +137,8 @@ export function useSalesTargets() {
   /**
    * تحديث حالة الهدف: PATCH {baseURL}/sales/targets/{id} (مثال الإنتاج: https://api.rakez.com.sa/api/sales/targets/4)
    * قائد المبيعات والمسوق العادي يستخدمان salesService.updateTarget — لا مسار منفصل للقائد.
+   * @param {any} target
+   * @param {any} newStatus
    */
   const patchTargetStatus = async (target, newStatus) => {
     const targetId = getSalesTargetPatchId(target);
@@ -160,6 +169,7 @@ export function useSalesTargets() {
     }
   };
 
+  /** @param {any} target */
   const getProgressPercentage = target => {
     const goal = num(target?.target_value, 0);
     if (!goal) return 0;
@@ -175,6 +185,7 @@ export function useSalesTargets() {
     return calculated;
   };
 
+  /** @param {any} target */
   const getTargetStatusClass = target => {
     const status = String(target.status || '').toLowerCase();
     const statusToClass = {
@@ -186,7 +197,7 @@ export function useSalesTargets() {
       at_risk: 'at-risk',
       new: 'at-risk',
     };
-    if (statusToClass[status]) return statusToClass[status];
+    if (statusToClass[/** @type {keyof typeof statusToClass} */ (status)]) return statusToClass[/** @type {keyof typeof statusToClass} */ (status)];
     const percentage = getProgressPercentage(target);
     if (percentage >= 100) return 'completed';
     if (percentage >= 75) return 'on-track';
@@ -194,6 +205,7 @@ export function useSalesTargets() {
     return 'at-risk';
   };
 
+  /** @param {any} target */
   const getTargetStatusText = target => {
     if (target.status_label_ar) return target.status_label_ar;
     const percentage = getProgressPercentage(target);
@@ -203,13 +215,17 @@ export function useSalesTargets() {
     return 'يحتاج متابعة';
   };
 
+  /** @param {any} target */
   const isTargetCompletedLocal = target => {
     const status = String(target?.status || '').toLowerCase();
     const label = String(target?.status_label_ar || '').trim();
     return status === 'completed' || status === 'achieved' || status === 'done' || label === 'منجز';
   };
 
-  /** محقق معروض: إذا كان الهدف منجزاً والخادم أرسل 0 للمحقق، نعرض الهدف كاملاً */
+  /** 
+   * محقق معروض: إذا كان الهدف منجزاً والخادم أرسل 0 للمحقق، نعرض الهدف كاملاً 
+   * @param {any} target
+   */
   const getDisplayedAchievedValue = target => {
     const achieved = num(target?.achieved_value, 0);
     const goal = num(target?.target_value, 0);
@@ -217,6 +233,7 @@ export function useSalesTargets() {
     return achieved;
   };
 
+  /** @param {any} contractId */
   const loadTargetFormUnits = async (contractId) => {
     if (!contractId) {
       targetFormUnits.value = [];
@@ -226,15 +243,16 @@ export function useSalesTargets() {
     isLoadingTargetFormUnits.value = true;
     targetFormUnitsError.value = '';
     try {
-      const { data } = await salesService.getProjectUnits(contractId, { per_page: 500 });
+      const { data } = /** @type {any} */ (await salesService.getProjectUnits(contractId, { per_page: 500 }));
       const list = Array.isArray(data) ? data : [];
-      targetFormUnits.value = list.map(u => ({
+      targetFormUnits.value = list.map((/** @type {any} */ u) => ({
         ...u,
         id: u.id ?? u.unit_id,
         unit_number: u.unit_number ?? u.unit_id,
         area: u.area ?? u.area_m2,
       }));
-    } catch (error) {
+    } catch (err) {
+      const error = /** @type {any} */ (err);
       logger.error('Error loading target form units:', error);
       const status = error?.response?.status;
       const msg = error?.response?.data?.message ?? error?.message;
@@ -249,10 +267,12 @@ export function useSalesTargets() {
     }
   };
 
+  /** @param {any} e */
   const onTargetFullProjectChange = (e) => {
     if (e.target.checked) targetForm.contract_unit_ids = [];
   };
 
+  /** @param {any} unitId */
   const toggleTargetUnit = (unitId) => {
     const ids = targetForm.contract_unit_ids;
     const i = ids.indexOf(unitId);
@@ -275,6 +295,12 @@ export function useSalesTargets() {
     }
   );
 
+  /** 
+   * @param {any} teamMembers 
+   * @param {any} teamProjects 
+   * @param {Function} loadTeamMembers 
+   * @param {Function} loadTeamProjects 
+   */
   const openCreateTargetModal = async (teamMembers, teamProjects, loadTeamMembers, loadTeamProjects) => {
     if (teamMembers.value.length === 0) await loadTeamMembers({ with_ratings: true });
     if (teamProjects.value.length === 0) await loadTeamProjects();
@@ -289,7 +315,8 @@ export function useSalesTargets() {
    * المرجع: docs/SALES_TARGETS_API_SUMMARY.md
    */
   const createTarget = async () => {
-    const canManageTeam = hasPermission('sales.team.manage') || isSalesLeader(authService.getCurrentUser());
+    const user = /** @type {any} */ (authService.getCurrentUser());
+    const canManageTeam = hasPermission('sales.team.manage') || isSalesLeader(user);
     if (!canManageTeam) {
       notificationService.addNotification('غير مصرح لك بإنشاء أهداف', 'warning');
       return;
@@ -338,7 +365,8 @@ export function useSalesTargets() {
       });
       targetFormUnits.value = [];
       targetFormUnitsError.value = '';
-    } catch (error) {
+    } catch (err) {
+      const error = /** @type {any} */ (err);
       logger.error('Error creating target:', error);
       notificationService.addNotification('حدث خطأ أثناء إنشاء الهدف', 'error');
     }

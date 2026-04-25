@@ -14,6 +14,7 @@ const POLL_MS = 60000;
 export function useChatUnreadBadge() {
   const chatUnreadCount = ref(0);
   const route = useRoute();
+  /** @type {any} */
   let pollTimer = null;
 
   const refreshChatUnreadCount = async () => {

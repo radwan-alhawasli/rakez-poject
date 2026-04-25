@@ -274,10 +274,11 @@ export const salesServiceCoreMethods = {
    * Permission: sales.targets.view. Used when opening the "assigned units" modal from team goals.
    * Each item: marketer_id / marketer_name = assignee (user type `sales` — sales team member).
    * @param {number|string} contractId - Contract/Project ID
+   * @param {any} [params] - Optional query parameters (page, per_page)
    * @returns {Promise<{ items: unknown[], total: number }>} List of targets for this project (SalesTargetItem: units[], marketer_id, marketer_name, etc.)
    */
-  async getTargetsByProject(contractId) {
-    const response = await apiClient.get(`sales/targets/by-project/${contractId}`);
+  async getTargetsByProject(contractId, params = {}) {
+    const response = await apiClient.get(`sales/targets/by-project/${contractId}`, { params });
     return unwrapSalesTargetsList(response);
   },
 

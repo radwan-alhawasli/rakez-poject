@@ -6,12 +6,13 @@ import { contractTimelineDisplay, isCompleteSecondTruthy } from '@/composables/p
 
 /**
  * Creates the initial mapped project structure from raw API list item.
+ * @param {any} p
  */
 export function mapProjectItem(p) {
   const units = p.units || [];
   const totalUnits = units.length;
   const soldCount = units.filter(
-    u =>
+    (/** @type {any} */ u) =>
       String(u.status || '').toLowerCase() === 'sold' ||
       String(u.status || '').toLowerCase().includes('sold')
   ).length;
@@ -27,10 +28,10 @@ export function mapProjectItem(p) {
 
   const setupProgressVal = computeSetupProgressPercentSixStages(p);
 
-  const unitPrices = units.map(u => Number(u.price) || 0).filter(Boolean);
+  const unitPrices = units.map((/** @type {any} */ u) => Number(u.price) || 0).filter(Boolean);
   const priceMin = p.price_min ?? p.min_price ?? (unitPrices.length ? Math.min(...unitPrices) : null);
   const priceMax = p.price_max ?? p.max_price ?? (unitPrices.length ? Math.max(...unitPrices) : null);
-  const avgPrice = units.length ? units.reduce((a, b) => a + (Number(b.price) || 0), 0) / units.length : (p.average_unit_price ?? p.avg_unit_price);
+  const avgPrice = units.length ? units.reduce((/** @type {any} */ a, /** @type {any} */ b) => a + (Number(b.price) || 0), 0) / units.length : (p.average_unit_price ?? p.avg_unit_price);
   
   let priceRangeText = '—';
   if (priceMin != null && priceMax != null && priceMin !== priceMax) {
@@ -42,7 +43,7 @@ export function mapProjectItem(p) {
     priceRangeText = `${Number(avgPrice).toLocaleString('en-US')} - ${Number(avgPrice).toLocaleString('en-US')}`;
   }
 
-  const unitAreas = units.map(u => Number(u.area) || Number(u.area_m2) || 0).filter(Boolean);
+  const unitAreas = units.map((/** @type {any} */ u) => Number(u.area) || Number(u.area_m2) || 0).filter(Boolean);
   const areaMin = p.area_min_m2 ?? p.area_min ?? (unitAreas.length ? Math.min(...unitAreas) : null);
   const areaMax = p.area_max_m2 ?? p.area_max ?? (unitAreas.length ? Math.max(...unitAreas) : null);
   const areaRange = areaMin != null && areaMax != null ? `${areaMin} - ${areaMax} م²` : areaMax != null ? `${areaMax} م²` : areaMin != null ? `${areaMin} م²` : '—';
@@ -91,11 +92,11 @@ export function mapProjectItem(p) {
     setupProgress: setupProgressVal,
     soldUnitsCount: soldCount,
     soldUnitsPercent: totalUnits ? Math.round((soldCount / totalUnits) * 100) : 0,
-    avgPrice: units.length ? units.reduce((a, b) => a + (Number(b.price) || 0), 0) / units.length : 0,
+    avgPrice: units.length ? units.reduce((/** @type {any} */ a, /** @type {any} */ b) => a + (Number(b.price) || 0), 0) / units.length : 0,
     commission_percentage: Number(p.commission_percentage || 0),
-    availableUnits: units.filter(u => String(u.status || '').toLowerCase() === 'available' || !u.status).length,
-    pendingUnits: units.filter(u => String(u.status || '').toLowerCase().includes('pending') || String(u.status || '').toLowerCase().includes('reserved')).length,
-    availableUnitsValue: units.filter(u => String(u.status || '').toLowerCase() === 'available' || !u.status).reduce((acc, u) => acc + (Number(u.price) || 0), 0),
+    availableUnits: units.filter((/** @type {any} */ u) => String(u.status || '').toLowerCase() === 'available' || !u.status).length,
+    pendingUnits: units.filter((/** @type {any} */ u) => String(u.status || '').toLowerCase().includes('pending') || String(u.status || '').toLowerCase().includes('reserved')).length,
+    availableUnitsValue: units.filter((/** @type {any} */ u) => String(u.status || '').toLowerCase() === 'available' || !u.status).reduce((/** @type {any} */ acc, /** @type {any} */ u) => acc + (Number(u.price) || 0), 0),
     endDate: p.contract_end_date || p.end_date || p.agreement_end_date || null,
     agreement_duration_days: p.agreement_duration_days ?? null,
     created_at: p.created_at ?? null,
@@ -119,6 +120,8 @@ export function mapProjectItem(p) {
 
 /**
  * Enriches the mapped project structure with individual detail values if fetched.
+ * @param {any} proj
+ * @param {any} detail
  */
 export function enrichProjectItem(proj, detail) {
   if (!detail) return proj;

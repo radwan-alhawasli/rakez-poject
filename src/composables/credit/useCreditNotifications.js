@@ -5,16 +5,19 @@ import { useFormatters } from '@/composables/useFormatters';
 
 export function useCreditNotifications() {
   const isLoading = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const creditNotifications = ref([]);
   const currentPage = ref(1);
   const perPage = ref(25);
   const totalItems = ref(0);
 
   const showNotificationModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const selectedNotification = ref(null);
   const isSavingNotification = ref(false);
 
   const { formatDate: _fmtDate } = useFormatters();
+  /** @param {any} dateStr */
   const formatDate = dateStr => (!dateStr ? 'غير محدد' : _fmtDate(dateStr));
 
   const loadCreditNotifications = async () => {
@@ -34,10 +37,11 @@ export function useCreditNotifications() {
     }
   };
 
+  /** @param {any} notificationId */
   const markCreditNotificationRead = async notificationId => {
     try {
       await creditService.markNotificationRead(notificationId);
-      const n = creditNotifications.value.find(x => x.id === notificationId);
+      const n = creditNotifications.value.find((/** @type {any} */ x) => x.id === notificationId);
       if (n) n.read = true;
     } catch (e) {
       logger.error('Error marking notification read:', e);
@@ -47,23 +51,26 @@ export function useCreditNotifications() {
   const markAllCreditNotificationsRead = async () => {
     try {
       await creditService.markAllNotificationsRead();
-      creditNotifications.value.forEach(n => { n.read = true; });
+      creditNotifications.value.forEach((/** @type {any} */ n) => { n.read = true; });
     } catch (e) {
       logger.error('Error marking all notifications read:', e);
     }
   };
 
+  /** @param {any} page */
   const handlePageChange = page => {
     currentPage.value = page;
     loadCreditNotifications();
   };
 
+  /** @param {any} val */
   const handlePerPageChange = val => {
     perPage.value = val;
     currentPage.value = 1;
     loadCreditNotifications();
   };
 
+  /** @param {any} notification */
   const viewNotificationDetail = notification => {
     selectedNotification.value = notification;
     showNotificationModal.value = true;
@@ -75,7 +82,7 @@ export function useCreditNotifications() {
     try {
       await creditService.markNotificationRead(selectedNotification.value.id);
       selectedNotification.value = { ...selectedNotification.value, read: true };
-      const n = creditNotifications.value.find(x => x.id === selectedNotification.value.id);
+      const n = creditNotifications.value.find((/** @type {any} */ x) => x.id === (/** @type {any} */ (selectedNotification.value)).id);
       if (n) n.read = true;
     } catch (e) {
       logger.error('Error marking notification read:', e);
@@ -84,6 +91,7 @@ export function useCreditNotifications() {
     }
   };
 
+  /** @param {any} type */
   const getNotificationTypeLabel = type =>
     (type && typeof type === 'string' ? type : 'عام');
 

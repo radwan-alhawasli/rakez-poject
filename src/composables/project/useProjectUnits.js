@@ -42,6 +42,7 @@ export const PROJECT_UNITS_SORT_OPTIONS = [
   { value: 'price_desc', label: 'السعر: من الأعلى للأقل' },
 ];
 
+/** @param {any} status */
 function isNegotiationLikeStatus(status) {
   const s = (status ?? '').toString().toLowerCase();
   return (
@@ -52,7 +53,10 @@ function isNegotiationLikeStatus(status) {
   );
 }
 
-/** موظف مبيعات (6) أو قائد مبيعات (7) — مصادر /sales/projects للوحدات */
+/**
+ * موظف مبيعات (6) أو قائد مبيعات (7) — مصادر /sales/projects للوحدات
+ * @param {any} user
+ */
 function isSalesRoleUser(user) {
   const t = Number(user?.type);
   return t === 6 || t === 7;
@@ -66,8 +70,11 @@ function isSalesRoleUser(user) {
 export function useProjectUnits(projectId, projectName, getInitialProject) {
   const { formatCurrencyAr: formatCurrency } = useFormatters();
 
+  /** @type {import('vue').Ref<any[]>} */
   const units = ref([]);
+  /** @type {import('vue').Ref<number | null>} */
   const unitCountFromApi = ref(null);
+  /** @type {import('vue').Ref<any>} */
   const projectSalesSummary = ref(null);
   const unitsLoading = ref(false);
   /** @type {import('vue').Ref<UnitStatusFilter>} */
@@ -99,6 +106,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     });
   });
 
+  /** @param {any} u */
   function statusSortRank(u) {
     const s = (u.status ?? '').toString().toLowerCase();
     if (s === 'available') return 0;
@@ -108,6 +116,10 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     return 4;
   }
 
+  /**
+   * @param {any} a
+   * @param {any} b
+   */
   function compareUnitNumbers(a, b) {
     const na = String(a.unit_number ?? a.id ?? '');
     const nb = String(b.unit_number ?? b.id ?? '');
@@ -133,8 +145,10 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
 
   const showAddUnitModal = ref(false);
   const isEditingUnit = ref(false);
+  /** @type {import('vue').Ref<string | number | null>} */
   const editingUnitId = ref(null);
   const showUnitDetailModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const selectedUnitForDetail = ref(null);
 
   const unitForm = reactive({
@@ -151,6 +165,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
 
   const csvUploading = ref(false);
   const showConfirmModal = ref(false);
+  /** @type {import('vue').Ref<{ title: string; message: string; type: string; confirmText: string; resolve: Function | null }>} */
   const confirmModalConfig = ref({ title: '', message: '', type: 'warning', confirmText: 'تأكيد', resolve: null });
   const onConfirmModalConfirm = async () => {
     const fn = confirmModalConfig.value.resolve;
@@ -158,6 +173,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     showConfirmModal.value = false;
   };
 
+  /** @param {any} u */
   const normalizeUnit = (u) => ({
     ...u,
     id: u.id ?? u.unit_id ?? u.contract_unit_id,
@@ -174,7 +190,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     try {
       const user = authService.getCurrentUser();
       if (user && isSalesRoleUser(user)) {
-        const initialProject = typeof getInitialProject === 'function' ? getInitialProject() : null;
+        const initialProject = /** @type {any} */ (typeof getInitialProject === 'function' ? getInitialProject() : null);
         if (initialProject) {
           const total = Number(initialProject.total_units ?? 0);
           const sold = Number(initialProject.sold_units ?? 0);
@@ -203,7 +219,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
 
         let raw = null;
         try {
-          const projectRes = await salesService.getProjectDetails(projectId);
+          const projectRes = /** @type {any} */ (await salesService.getProjectDetails(projectId));
           raw = projectRes?.data?.data ?? projectRes?.data ?? projectRes;
           const fromDetails =
             raw?.units ?? raw?.project_units ?? raw?.contract_units ?? raw?.data?.units ?? raw?.data?.project_units;
@@ -224,7 +240,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
           }
         } catch (_) { /* متابعة إلى endpoint الوحدات */ }
 
-        const res = await salesService.getProjectUnits(projectId, { per_page: 500 });
+        const res = /** @type {any} */ (await salesService.getProjectUnits(projectId, { per_page: 500 }));
         const { items, total } = extractPaginatedData(
           { data: res?.data, meta: res?.meta },
           []
@@ -235,7 +251,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
 
         if (units.value.length === 0) {
           try {
-            const fallback = await contractService.getContractUnits(projectId);
+            const fallback = /** @type {any} */ (await contractService.getContractUnits(projectId));
             const arr = Array.isArray(fallback) ? fallback : [];
             units.value = arr.map(normalizeUnit);
             if (unitCountFromApi.value == null && units.value.length > 0) unitCountFromApi.value = units.value.length;
@@ -257,7 +273,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
           }
         } else if (units.value.length === 0) {
           try {
-            const projectRes = await salesService.getProjectDetails(projectId);
+            const projectRes = /** @type {any} */ (await salesService.getProjectDetails(projectId));
             const r = projectRes?.data?.data ?? projectRes?.data ?? projectRes;
             if (r && (r.total_units > 0 || r.sold_units > 0 || r.available_units >= 0 || r.reserved_units > 0)) {
               projectSalesSummary.value = {
@@ -299,6 +315,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     unitForm.diagrames = '';
   };
 
+  /** @param {any} unit */
   const openUnitDetail = (unit) => {
     selectedUnitForDetail.value = unit;
     showUnitDetailModal.value = true;
@@ -329,6 +346,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
   const submitUnitForm = async () => {
     try {
       if (isEditingUnit.value) {
+        if (!editingUnitId.value) return;
         await contractService.updateContractUnit(editingUnitId.value, { ...unitForm });
         toast.success('تم تحديث الوحدة بنجاح');
       } else {
@@ -343,6 +361,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     }
   };
 
+  /** @param {any} unit */
   const openEditUnit = (unit) => {
     isEditingUnit.value = true;
     editingUnitId.value = unit.id;
@@ -357,6 +376,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     showAddUnitModal.value = true;
   };
 
+  /** @param {any} unit */
   const confirmDeleteUnit = (unit) => {
     confirmModalConfig.value = {
       title: 'حذف الوحدة',
@@ -392,6 +412,7 @@ export function useProjectUnits(projectId, projectName, getInitialProject) {
     }
   };
 
+  /** @param {any} event */
   const handleCsvUpload = async (event) => {
     const file = event.target?.files?.[0];
     if (!file) return;

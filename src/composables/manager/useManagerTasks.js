@@ -9,11 +9,13 @@ import {
 } from '@/utils/managerTasksDisplay';
 
 export function useManagerTasks() {
+  /** @type {import('vue').Ref<any[]>} */
   const tasks = ref([]);
   const isLoading = ref(true);
   const showDoneOnly = ref(false);
   const taskDetailOpen = ref(false);
   const taskDetailLoading = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const taskDetail = ref(null);
 
   const filters = ref({
@@ -38,6 +40,7 @@ export function useManagerTasks() {
   async function fetchTasks() {
     isLoading.value = true;
     try {
+      /** @type {any} */
       const base = {
         sort_by: filters.value.sort_by || 'due_at',
         sort_order: filters.value.sort_order || 'desc',
@@ -57,6 +60,7 @@ export function useManagerTasks() {
     }
   }
 
+  /** @param {any} t */
   async function openTaskDetail(t) {
     if (!t?.id) return;
     taskDetail.value = null;
@@ -65,7 +69,7 @@ export function useManagerTasks() {
     try {
       taskDetail.value = await managerService.getTask(t.id);
     } catch (e) {
-      toast.error(e?.response?.data?.message || e?.message || 'تعذر تحميل المهمة');
+      toast.error((/** @type {any} */ (e))?.response?.data?.message || (/** @type {any} */ (e))?.message || 'تعذر تحميل المهمة');
       taskDetailOpen.value = false;
     } finally {
       taskDetailLoading.value = false;

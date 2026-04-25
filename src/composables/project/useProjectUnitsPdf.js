@@ -1,5 +1,6 @@
 import { unref } from 'vue';
 
+/** @param {any} opts */
 export async function downloadProjectUnitPdf(opts) {
   const {
     getSelectedUnit,
@@ -10,7 +11,7 @@ export async function downloadProjectUnitPdf(opts) {
     getApiErrorMessage,
     logger,
   } = opts;
-  const unit = getSelectedUnit();
+  const unit = /** @type {any} */ (getSelectedUnit());
   if (!unit) {
     notificationService.addNotification('لا توجد وحدة محددة للتحميل', 'info');
     return;
@@ -21,7 +22,7 @@ export async function downloadProjectUnitPdf(opts) {
   try {
     try {
       const { getUnitPdfData } = await import('@/services/pdfApi');
-      const data = await getUnitPdfData(unitId);
+      const data = /** @type {any} */ (await getUnitPdfData(unitId));
       if (data?.unit != null) {
         const pdfBytes = await generateUnitDetailsPdf(data.unit, {
           projectName: (data.projectName ?? data.project_name ?? nameStr) || '',

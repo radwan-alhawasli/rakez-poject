@@ -14,15 +14,29 @@ import {
 import { localeOpts } from '@/utils/intlLatn';
 
 /**
- * @param {string|number} projectId - Contract/project ID
- * @param {{ onTrackerFullyCompleted?: (id: string|number) => void }} [options] - Called when all stages are completed and backend status is updated
+ * @param {any} projectId - Contract/project ID
+ * @param {{ onTrackerFullyCompleted?: (id: any) => void }} [options] - Called when all stages are completed and backend status is updated
  */
 export function useProjectProgress(projectId, options = {}) {
   const { onTrackerFullyCompleted } = options;
   const isLoading = ref(false);
   const projectLinkUrl = ref('');
 
-  /** Six stages ↔ POST/PUT second-party-data body (no completion_certificate_url). */
+  /**
+   * @typedef {Object} ProgressStage
+   * @property {string} name
+   * @property {string} status
+   * @property {string} apiKey
+   * @property {string} value
+   * @property {string} entryDate
+   * @property {string | null} completedAt
+   * @property {string} [inputType]
+   * @property {string} [inputmode]
+   * @property {string} [inputLabel]
+   * @property {string} [placeholder]
+   */
+
+  /** @type {ProgressStage[]} */
   const stages = reactive([
     { name: 'الصكوك والرخصة', status: 'pending', apiKey: 'real_estate_papers_url', value: '', entryDate: '', completedAt: null },
     { name: 'المخطاطات والتصميمات', status: 'pending', apiKey: 'plans_equipment_docs_url', value: '', entryDate: '', completedAt: null },
@@ -53,9 +67,11 @@ export function useProjectProgress(projectId, options = {}) {
     return Math.round((count / n) * 100);
   });
 
+  /** @param {number} index */
   const selectStage = (index) => { activeStageIndex.value = index; };
 
   /**
+   * @param {any} projectProgress
    * @param {{ skipActiveStageUpdate?: boolean }} [opts]
    */
   const applyProjectProgress = (projectProgress, opts = {}) => {
@@ -68,7 +84,7 @@ export function useProjectProgress(projectId, options = {}) {
       stages[idx].name = step.label_ar || stages[idx].name;
       const done = isStepMarkedComplete(step);
       stages[idx].status = done ? 'completed' : 'pending';
-      stages[idx].completedAt = done ? stages[idx].completedAt || 'تم' : null;
+      stages[idx].completedAt = done ? (stages[idx].completedAt || 'تم') : null;
     });
     if (opts.skipActiveStageUpdate) return;
     const firstPending = stages.findIndex(s => s.status === 'pending');
@@ -78,10 +94,12 @@ export function useProjectProgress(projectId, options = {}) {
   /**
    * مصدر حقيقة اكتمال المرحلة: project_progress.steps من العقد إن وُجدت.
    * بيانات second-party تُستخدم للقيم والتواريخ فقط — لا تُفرض «مكتمل» لأن وجود رابط قد يسبق تحديث العداد في الـ API.
+   * @param {any} projectProgress
    */
   const loadProgress = async projectProgress => {
     isLoading.value = true;
     try {
+      /** @type {any} */
       let secondParty = null;
       try {
         const trackerData = await contractService.getSecondPartyData(projectId);
@@ -140,7 +158,7 @@ export function useProjectProgress(projectId, options = {}) {
 
   const saveProgress = async () => {
     const currentStage = stages[activeStageIndex.value];
-    if (!currentStage.value && currentStage.value !== 0) {
+    if (!currentStage.value && (/** @type {any} */ (currentStage.value)) !== 0) {
       const msg = currentStage.apiKey === 'advertiser_section_url'
         ? 'الرجاء إدخال رقم المعلن قبل الحفظ'
         : 'الرجاء إدخال الرابط قبل الحفظ';
@@ -167,6 +185,7 @@ export function useProjectProgress(projectId, options = {}) {
         logger.warn('Could not refresh contract/second-party after tracker save:', e);
       }
 
+      /** @param {any} d */
       const applySecondPartyToStages = d => {
         if (!d || typeof d !== 'object') return;
         projectLinkUrl.value = d.project_link_url || d.project_link || projectLinkUrl.value;

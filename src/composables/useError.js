@@ -11,18 +11,19 @@ import { handleError, retryWithBackoff, getApiErrorMessage, showApiError as show
  * @param {Object} [options] - Options
  * @param {boolean} [options.showNotifications=true] - Whether to show toast on error
  * @param {boolean} [options.autoLog=true] - Whether to log errors
- * @returns {{ error, isLoading, isRetrying, handle, clearError, execute, wrap, getApiErrorMessage, showApiError }}
+ * @returns {{ error: import('vue').Ref<any>, isLoading: import('vue').Ref<boolean>, isRetrying: import('vue').Ref<boolean>, handle: Function, clearError: Function, execute: Function, wrap: Function, getApiErrorMessage: Function, showApiError: Function }}
  */
 export function useError(options = {}) {
   const { showNotifications = true, autoLog = true } = options;
 
+  /** @type {import('vue').Ref<any>} */
   const error = ref(null);
   const isLoading = ref(false);
   const isRetrying = ref(false);
 
   /**
    * Handle error and show notification
-   * @param {Error} err - Error object
+   * @param {any} err - Error object
    * @param {Object} context - Additional context
    */
   const handle = (err, context = {}) => {
@@ -47,8 +48,8 @@ export function useError(options = {}) {
   /**
    * Execute function with error handling
    * @param {Function} fn - Function to execute
-   * @param {Object} options - Options
-   * @returns {Promise} Function result
+   * @param {any} execOptions - Options
+   * @returns {Promise<any>} Function result
    */
   const execute = async (fn, execOptions = {}) => {
     const { showLoading = true, retry = false, retryOptions = {} } = execOptions;
@@ -81,6 +82,7 @@ export function useError(options = {}) {
    * @returns {Function} Wrapped function with error handling
    */
   const wrap = fn => {
+    /** @param {any[]} args */
     return async (...args) => {
       return execute(() => fn(...args));
     };

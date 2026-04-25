@@ -11,10 +11,12 @@ export function useSalesSchedules() {
   const route = useRoute();
   const router = useRouter();
 
+  /** @type {import('vue').Ref<any[]>} */
   const scheduleProjects = shallowRef([]);
   const isLoadingScheduleProjects = ref(false);
   const scheduleProjectsLoadError = ref('');
   const selectedScheduleProject = ref(null);
+  /** @type {import('vue').Ref<any[]>} */
   const scheduleMembers = ref([]);
   const isLoadingScheduleDetail = ref(false);
   const isSavingSchedules = ref(false);
@@ -26,14 +28,16 @@ export function useSalesSchedules() {
   const scheduleServerTime = ref('');
   const scheduleDayNameAr = ref('');
 
+  /** @param {any[]} raw */
   const normalizeProjects = raw =>
-    raw.map(p => ({
+    raw.map((/** @type {any} */ p) => ({
       ...p,
       id: p.contract_id ?? p.id,
       contract_id: p.contract_id ?? p.id,
       project_name: p.project_name || p.name || p.contract_name,
     }));
 
+  /** @param {any} v */
   const toTimeHHMM = v => {
     if (v == null || v === '') return null;
     const s = String(v).trim();
@@ -42,6 +46,7 @@ export function useSalesSchedules() {
     return /^\d{1,2}:\d{2}$/.test(part) ? part : null;
   };
 
+  /** @param {any} m */
   const normalizeScheduleMember = m => ({
     ...m,
     is_present: !!(m.is_present ?? m.present),
@@ -49,6 +54,7 @@ export function useSalesSchedules() {
     end_time: toTimeHHMM(m.end_time ?? m.check_out_time) || '17:00',
   });
 
+  /** @param {string} dateStr */
   const getArabicDayForDate = dateStr => {
     if (!dateStr) return getArabicDayForDate(new Date().toISOString().slice(0, 10));
     const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
@@ -125,6 +131,7 @@ export function useSalesSchedules() {
     );
   };
 
+  /** @param {number} id */
   const getAvatarColor = id => {
     const colors = [
       '#2ecc71', '#3498db', '#9b59b6', '#e67e22',
@@ -137,13 +144,13 @@ export function useSalesSchedules() {
     isLoadingScheduleProjects.value = true;
     scheduleProjectsLoadError.value = '';
     try {
-      const data = await salesService.getTeamProjects();
+      const data = /** @type {any} */ (await salesService.getTeamProjects());
       const raw = data?.items ?? (Array.isArray(data) ? data : []);
       if (raw.length > 0) {
         scheduleProjects.value = normalizeProjects(raw);
         return;
       }
-      const assignments = await salesService.getMyAssignments();
+      const assignments = /** @type {any} */ (await salesService.getMyAssignments());
       const assignRaw = assignments?.items ?? (Array.isArray(assignments) ? assignments : []);
       if (assignRaw.length > 0) {
         scheduleProjects.value = normalizeProjects(assignRaw);
@@ -151,11 +158,12 @@ export function useSalesSchedules() {
       }
       const user = authService.getCurrentUser();
       const scope = user && isSalesLeader(user) ? 'team' : 'me';
-      const res = await salesService.getProjects({ scope, per_page: 100 });
+      const res = /** @type {any} */ (await salesService.getProjects({ scope, per_page: 100 }));
       const list = res?.data?.data ?? res?.data ?? res;
       const projRaw = Array.isArray(list) ? list : [];
       scheduleProjects.value = normalizeProjects(projRaw);
-    } catch (error) {
+    } catch (err) {
+      const error = /** @type {any} */ (err);
       logger.error('[SalesSchedules] Error loading schedule projects:', error);
       scheduleProjects.value = [];
       const msg = error?.response?.data?.message || error?.message;
@@ -165,12 +173,17 @@ export function useSalesSchedules() {
     }
   };
 
+  /** 
+   * @param {any} project 
+   * @param {any} routeProjectId 
+   */
   const projectMatchesRouteId = (project, routeProjectId) => {
     if (project == null || routeProjectId == null) return false;
     const id = project.contract_id ?? project.id;
     return String(id) === String(routeProjectId);
   };
 
+  /** @param {any} project */
   const loadDetailForProject = async project => {
     selectedScheduleProject.value = project;
     scheduleViewDate.value = new Date().toISOString().slice(0, 10);
@@ -182,11 +195,11 @@ export function useSalesSchedules() {
       const projectId = project.contract_id || project.id;
       const date = scheduleViewDate.value;
       const [scheduleResult, ecData] = await Promise.all([
-        salesService.getProjectScheduleMembers(projectId, date),
-        salesService.getEmergencyContacts(projectId).catch(() => ({})),
+        /** @type {Promise<any>} */ (salesService.getProjectScheduleMembers(projectId, date)),
+        /** @type {Promise<any>} */ (salesService.getEmergencyContacts(projectId).catch(() => ({}))),
       ]);
       const list = scheduleResult.members ?? [];
-      scheduleMembers.value = list.map(m => normalizeScheduleMember(m));
+      scheduleMembers.value = list.map((/** @type {any} */ m) => normalizeScheduleMember(m));
       scheduleServerDate.value = scheduleResult.server_date ?? '';
       scheduleServerTime.value = scheduleResult.server_time ?? '';
       scheduleDayNameAr.value = scheduleResult.day_name_ar ?? '';
@@ -251,15 +264,15 @@ export function useSalesSchedules() {
   );
 
   const loadScheduleForSelectedDate = async () => {
-    const project = selectedScheduleProject.value;
+    const project = /** @type {any} */ (selectedScheduleProject.value);
     if (!project) return;
     const projectId = project.contract_id || project.id;
     const date = scheduleViewDate.value || new Date().toISOString().slice(0, 10);
     isLoadingScheduleDetail.value = true;
     try {
-      const result = await salesService.getProjectScheduleMembers(projectId, date);
+      const result = /** @type {any} */ (await salesService.getProjectScheduleMembers(projectId, date));
       const list = result.members ?? [];
-      scheduleMembers.value = list.map(m => normalizeScheduleMember(m));
+      scheduleMembers.value = list.map((/** @type {any} */ m) => normalizeScheduleMember(m));
       scheduleServerDate.value = result.server_date ?? '';
       scheduleServerTime.value = result.server_time ?? '';
       scheduleDayNameAr.value = result.day_name_ar ?? '';
@@ -272,6 +285,7 @@ export function useSalesSchedules() {
     }
   };
 
+  /** @param {any} project */
   const openProjectSchedule = project => {
     const projectId = project.contract_id || project.id;
     router.push({
@@ -280,6 +294,7 @@ export function useSalesSchedules() {
     });
   };
 
+  /** @param {any} member */
   const toggleScheduleMember = member => {
     const idx = scheduleMembers.value.findIndex(m => m.id === member.id);
     if (idx !== -1) {
@@ -291,6 +306,11 @@ export function useSalesSchedules() {
     }
   };
 
+  /** 
+   * @param {any} member 
+   * @param {string} field 
+   * @param {any} value 
+   */
   const updateMemberScheduleTime = (member, field, value) => {
     const idx = scheduleMembers.value.findIndex(m => m.id === member.id);
     if (idx !== -1 && (field === 'start_time' || field === 'end_time')) {
@@ -307,17 +327,18 @@ export function useSalesSchedules() {
   const saveAllSchedules = async () => {
     isSavingSchedules.value = true;
     try {
+      const project = /** @type {any} */ (selectedScheduleProject.value);
       const projectId =
-        selectedScheduleProject.value?.contract_id || selectedScheduleProject.value?.id;
+        project?.contract_id || project?.id;
       const date = scheduleViewDate.value || new Date().toISOString().slice(0, 10);
-      const schedules = scheduleMembers.value.map(m => ({
+      const schedules = scheduleMembers.value.map((/** @type {any} */ m) => ({
         user_id: m.id,
         is_present: !!(m.is_present ?? m.present),
         start_time: m.start_time || '08:00',
         end_time: m.end_time || '17:00',
       }));
 
-      const result = await salesService.saveProjectSchedules(projectId, schedules, date);
+      const result = /** @type {any} */ (await salesService.saveProjectSchedules(projectId, schedules, date));
       await salesService.updateEmergencyContacts(projectId, {
         name: emergencyContact.name,
         phone: emergencyContact.phone,
@@ -329,7 +350,7 @@ export function useSalesSchedules() {
       if (scheduleDetailRef.value) {
         try {
           const { default: html2canvas } = await import('html2canvas');
-          const canvas = await html2canvas(scheduleDetailRef.value, {
+          const canvas = await html2canvas(/** @type {HTMLElement} */ (scheduleDetailRef.value), {
             useCORS: true,
             scale: 1.5,
             backgroundColor: '#f8fafc',

@@ -10,6 +10,7 @@ export function useMarketingExpectedSales() {
   const { formatNumber } = useFormatters();
   const formatCurrency = formatNumber;
 
+  /** @type {import('vue').Ref<any[]>} */
   const expectedSalesRows = ref([]);
   const isLoadingExpectedSales = ref(false);
   const isSubmitting = ref(false);
@@ -23,6 +24,7 @@ export function useMarketingExpectedSales() {
   });
   const expectedSalesItems = computed(() => expectedSalesRows.value);
 
+  /** @type {import('vue').Ref<any[]>} */
   const projects = ref([]);
   const isLoadingProjects = ref(false);
 
@@ -47,7 +49,7 @@ export function useMarketingExpectedSales() {
         per_page: 100,
       });
       const raw = data?.items ?? [];
-      expectedSalesRows.value = raw.map(item => normalizeExpectedSale(item));
+      expectedSalesRows.value = raw.map((/** @type {any} */ item) => normalizeExpectedSale(item));
     } catch (error) {
       logger.error('Error loading expected sales:', error);
       expectedSalesRows.value = [];
@@ -86,8 +88,9 @@ export function useMarketingExpectedSales() {
     }
   };
 
+  /** @param {any} dateString */
   const formatDate = dateString => {
-    if (!dateString) return '\u063A\u064A\u0631 \u0645\u062D\u062F\u062F';
+    if (!dateString) return 'غير محدد';
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-GB').format(date);
   };

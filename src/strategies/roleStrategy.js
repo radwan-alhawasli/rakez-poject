@@ -10,10 +10,10 @@ import { ROLE_MAP } from '@/constants/roles';
  */
 class RoleStrategy {
   /**
-   * @param {any} route
+   * @param {any} _route
    * @returns {boolean}
    */
-  canAccessRoute(route) {
+  canAccessRoute(_route) {
     return false;
   }
 

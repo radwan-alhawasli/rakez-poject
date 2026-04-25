@@ -9,9 +9,8 @@ import { showApiError, getApiErrorMessage } from '@/utils/errorHandler';
 import { MSG_ERROR_GENERIC } from '@/constants/messages';
 
 /**
- * @param {Object} [options] - Options
- * @param {string} [options.loadingKey='isLoading'] - Name of the loading ref (e.g. 'isLoading', 'isSaving', 'isGeneratingClaimFile')
- * @returns {{ run, [loadingKey]: Ref<boolean>, resetLoading, getApiErrorMessage }}
+ * @param {any} [options] - Options
+ * @returns {{ run: Function, resetLoading: Function, getApiErrorMessage: Function, [key: string]: any }}
  */
 export function useAsyncAction(options = {}) {
   const loadingKey = options.loadingKey || 'isLoading';
@@ -20,18 +19,15 @@ export function useAsyncAction(options = {}) {
   /**
    * Run an async function with loading state and optional toast messages.
    * @param {Function} fn - Async function (no args, or pass args via run(() => apiCall(a,b)))
-   * @param {Object} [runOptions] - Options
-   * @param {string} [runOptions.successMessage] - Toast success message (if provided, shown on success)
-   * @param {string} [runOptions.errorMessage] - Fallback error message for toast (default: MSG_ERROR_GENERIC)
-   * @param {boolean} [runOptions.showLoading=true] - Whether to set loading to true during execution
-   * @returns {Promise<*>} Result of fn, or undefined on error
+   * @param {any} [runOptions] - Options
+   * @returns {Promise<any>} Result of fn, or undefined on error
    */
   const run = async (fn, runOptions = {}) => {
     const {
       successMessage = null,
       errorMessage = MSG_ERROR_GENERIC,
       showLoading = true,
-    } = runOptions;
+    } = /** @type {any} */ (runOptions);
 
     if (showLoading) loading.value = true;
     try {
@@ -52,6 +48,7 @@ export function useAsyncAction(options = {}) {
     loading.value = false;
   };
 
+  /** @type {any} */
   const out = { run, resetLoading, getApiErrorMessage };
   out[loadingKey] = loading;
   return out;

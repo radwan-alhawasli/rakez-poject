@@ -10,6 +10,7 @@ import { toast } from '@/composables/useToast';
  * @param {() => Promise<void>} reloadProject
  */
 export function useMarketingProjectTeams(projectDetailsRef, reloadProject) {
+  /** @type {import('vue').Ref<any[]>} */
   const availableTeams = ref([]);
   const selectedTeamIdToAdd = ref('');
   const isTeamActionLoading = ref(false);
@@ -19,6 +20,7 @@ export function useMarketingProjectTeams(projectDetailsRef, reloadProject) {
     message: '',
     type: 'warning',
     confirmText: 'تأكيد',
+    /** @type {(() => Promise<void>)|null} */
     resolve: null,
   });
 
@@ -33,7 +35,7 @@ export function useMarketingProjectTeams(projectDetailsRef, reloadProject) {
 
   const assignTeamToProject = async () => {
     if (!selectedTeamIdToAdd.value || !projectDetailsRef.value) return;
-    const projectId = projectDetailsRef.value.id;
+    const projectId = /** @type {any} */ (projectDetailsRef.value).id;
     isTeamActionLoading.value = true;
     try {
       await teamService.addTeamsToContract(projectId, [selectedTeamIdToAdd.value]);
@@ -48,10 +50,11 @@ export function useMarketingProjectTeams(projectDetailsRef, reloadProject) {
     }
   };
 
+  /** @param {any} team */
   const removeTeamFromProject = team => {
     const details = projectDetailsRef.value;
     if (!details) return;
-    const projectId = details.id;
+    const projectId = /** @type {any} */ (details).id;
     const teamId = team.id;
     confirmModalConfig.value = {
       title: 'إزالة الفريق',

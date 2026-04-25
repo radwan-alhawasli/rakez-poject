@@ -39,6 +39,7 @@ export function useMarketingProjects() {
   const projectSearchQuery = ref('');
   const projectsFilter = reactive({ completedContractsOnly: false });
   const isLoadingProjects = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const selectedProjectDetails = ref(null);
   const isLoadingProjectDetails = ref(false);
   const showUnitsTable = ref(false);
@@ -50,7 +51,7 @@ export function useMarketingProjects() {
   const mediaModalProject = ref(null);
 
   const marketingTeamsWithMembers = computed(() => {
-    const d = selectedProjectDetails.value;
+    const d = /** @type {any} */ (selectedProjectDetails.value);
     const teams = getProjectMarketingTeamsList(d);
     if (!teams.length) return [];
     return teams.map(t => ({
@@ -60,17 +61,18 @@ export function useMarketingProjects() {
   });
 
   const filteredProjects = computed(() => {
+    /** @type {any[]} */
     let list = projects.value;
     if (projectSearchQuery.value) {
       const q = projectSearchQuery.value.toLowerCase();
       list = list.filter(
-        p =>
+        (/** @type {any} */ p) =>
           (p.project_name || p.name || '').toLowerCase().includes(q) ||
           (p.developer_name || '').toLowerCase().includes(q)
       );
     }
     if (projectsFilter.completedContractsOnly) {
-      list = list.filter(p => p.contract_status === 'completed');
+      list = list.filter((/** @type {any} */ p) => p.contract_status === 'completed');
     }
     return list;
   });
@@ -117,7 +119,7 @@ export function useMarketingProjects() {
   };
 
   const syncMarketingPercentDraft = () => {
-    const p = selectedProjectDetails.value?.marketing_percent;
+    const p = /** @type {any} */ (selectedProjectDetails.value)?.marketing_percent;
     if (p === null || p === undefined || p === '') {
       marketingPercentDraft.value = '';
     } else {
@@ -125,6 +127,7 @@ export function useMarketingProjects() {
     }
   };
 
+  /** @param {any} projectOrId */
   const loadProjectDetails = async projectOrId => {
     const project = typeof projectOrId === 'object' && projectOrId != null ? projectOrId : null;
     // marketing project id (primary key in marketing_projects table)
@@ -157,7 +160,7 @@ export function useMarketingProjects() {
   };
 
   const saveProjectMarketingPercent = async () => {
-    const d = selectedProjectDetails.value;
+    const d = /** @type {any} */ (selectedProjectDetails.value);
     const contractId = resolveContractIdForMarketingPatch(d);
     if (contractId == null || contractId === '') {
       toast.warning('تعذر تحديد رقم العقد لهذا المشروع');
@@ -201,7 +204,7 @@ export function useMarketingProjects() {
   };
 
   const clearProjectMarketingPercent = async () => {
-    const d = selectedProjectDetails.value;
+    const d = /** @type {any} */ (selectedProjectDetails.value);
     const contractId = resolveContractIdForMarketingPatch(d);
     if (contractId == null || contractId === '') {
       toast.warning('تعذر تحديد رقم العقد لهذا المشروع');
@@ -228,6 +231,7 @@ export function useMarketingProjects() {
     }
   };
 
+  /** @param {any} project */
   const viewProjectDetails = async project => {
     marketingPercentDraft.value = '';
     showProjectDetailsModal.value = true;
@@ -236,9 +240,10 @@ export function useMarketingProjects() {
     await loadProjectDetails(project);
   };
 
+  /** @param {any} project_id */
   const goToUnits = async project_id => {
     showUnitsTable.value = true;
-    const d = selectedProjectDetails.value;
+    const d = /** @type {any} */ (selectedProjectDetails.value);
 
     // contract_units محمّلة بالفعل من GET /marketing/projects/:id — لا حاجة لـ API إضافي
     const alreadyLoaded =
@@ -258,7 +263,7 @@ export function useMarketingProjects() {
       const units = await contractService.getContractUnits(contractId);
       if (selectedProjectDetails.value) {
         selectedProjectDetails.value = {
-          ...selectedProjectDetails.value,
+          ...(/** @type {any} */ (selectedProjectDetails.value)),
           contract_units: Array.isArray(units) ? units : [],
           units: Array.isArray(units) ? units : [],
         };
@@ -270,15 +275,16 @@ export function useMarketingProjects() {
     }
   };
 
-  /** فتح modal الصور والفيديوهات بدلاً من الانتقال لصفحة أخرى */
+  /** @param {any} projectId */
   const goToPhotography = projectId => {
     if (!projectId) return;
     mediaModalProject.value = selectedProjectDetails.value;
     showMediaModal.value = true;
   };
 
+  /** @param {any} projectId */
   const managePlan = projectId => {
-    const p = projects.value.find(x => String(x.id) === String(projectId));
+    const p = /** @type {any} */ (projects.value.find(x => String(/** @type {any} */ (x).id) === String(projectId)));
     router.push({
       name: 'MarketingPlans',
       query: {
@@ -290,6 +296,7 @@ export function useMarketingProjects() {
     }).catch(() => {});
   };
 
+  /** @param {any} plan */
   const developerPlanLooksPresent = plan => {
     if (!plan || typeof plan !== 'object') return false;
     if (plan.raw_plan || plan.rawPlan) return true;
@@ -303,6 +310,7 @@ export function useMarketingProjects() {
     );
   };
 
+  /** @param {any} project */
   const viewProjectPlan = async project => {
     if (!project) return;
     projectPlansModalProject.value = project;
@@ -360,8 +368,8 @@ export function useMarketingProjects() {
   };
 
   const goToDeveloperPlanEditorFromModal = () => {
-    const project = projectPlansModalProject.value;
-    const plan = projectPlansModalDeveloperPlan.value;
+    const project = /** @type {any} */ (projectPlansModalProject.value);
+    const plan = /** @type {any} */ (projectPlansModalDeveloperPlan.value);
     if (!project) return;
     const cid =
       project?.marketing_project?.contract_id ?? project?.contract_id ?? project?.contractId ?? project?.id;
@@ -386,13 +394,13 @@ export function useMarketingProjects() {
   };
 
   const goToManageDeveloperPlanFromPlansModal = () => {
-    const p = projectPlansModalProject.value;
+    const p = /** @type {any} */ (projectPlansModalProject.value);
     closeProjectPlansModal();
     if (p?.id) managePlan(p.id);
   };
 
   const goToEmployeePlansManagementFromModal = () => {
-    const p = projectPlansModalProject.value;
+    const p = /** @type {any} */ (projectPlansModalProject.value);
     const id = p?.id ?? p?.marketing_project_id;
     closeProjectPlansModal();
     if (id == null || id === '') return;
@@ -400,6 +408,7 @@ export function useMarketingProjects() {
   };
 
 
+  /** @param {any} project */
   const getRecommendedEmployee = project =>
     getRecommendedEmployeePure(project, recommendedEmployeeByProjectId.value);
 

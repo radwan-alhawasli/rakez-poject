@@ -28,7 +28,7 @@ export function useContractFormView() {
     if (raw == null || raw === '') return null;
     return String(raw);
   });
-  const { validate, getFieldError, clearErrors, errors } = useValidation(contractInfoSchema);
+  const { validate, getFieldError, clearErrors, errors } = (/** @type {any} */ (useValidation(contractInfoSchema)));
 
   const form = reactive({
     phone: '',
@@ -99,6 +99,7 @@ export function useContractFormView() {
     form.units.push(emptyUnitRow());
   }
 
+  /** @param {number} index */
   function removeUnitRow(index) {
     if (form.units.length <= 1) return;
     form.units.splice(index, 1);
@@ -187,7 +188,7 @@ export function useContractFormView() {
         }
         if (data.total_price != null && data.total_price !== '') {
           const n = Number(data.total_price);
-          form.total_price = Number.isFinite(n) ? n : null;
+          form.total_price = (/** @type {any} */ (Number.isFinite(n) ? n : null));
         }
         form.average_unit_price = data.average_unit_price || form.average_unit_price || 0;
         form.notes = pickContractCompletionNotes(data);

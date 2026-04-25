@@ -9,17 +9,21 @@ export function useSalesTeam() {
   const { hasPermission } = usePermissions();
   const { formatCurrencyAr: formatCurrency } = useFormatters();
 
+  /** @type {import('vue').Ref<any[]>} */
   const teamMembers = shallowRef([]);
+  /** @type {import('vue').Ref<any[]>} */
   const teamProjects = shallowRef([]);
   const isLoadingTeam = ref(false);
   const isLoadingTeamProjects = ref(false);
   const teamLoadError = ref('');
   const teamProjectsLoadError = ref('');
   const teamSortByRecommendation = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const teamRecommendations = shallowRef([]);
   const isLoadingTeamRecommendations = ref(false);
   const memberRatingSaving = ref(null);
   const memberCommentEditId = ref(null);
+  /** @type {import('vue').Ref<Record<string, string>>} */
   const memberCommentDrafts = ref({});
   const memberToRemove = ref(null);
   const memberRemoveLoading = ref(false);
@@ -29,7 +33,7 @@ export function useSalesTeam() {
       return teamRecommendations.value;
     }
     const list = Array.isArray(teamMembers.value) ? teamMembers.value : [];
-    const withScore = list.map(m => {
+    const withScore = list.map(/** @param {any} m */ m => {
       const totalRes = Math.max(1, Number(m.total_reservations) || 0);
       const confirmedRate = (Number(m.confirmed_bookings) || 0) / totalRes;
       const villaCount = Number(m.villa_count) || 0;
@@ -43,12 +47,14 @@ export function useSalesTeam() {
     return withScore;
   });
 
+  /** @param {any} params */
   const loadTeamMembers = async (params = {}) => {
     isLoadingTeam.value = true;
     teamLoadError.value = '';
     try {
       teamMembers.value = await salesService.getTeamMembers(params);
-    } catch (error) {
+    } catch (err) {
+      const error = /** @type {any} */ (err);
       logger.error('[SalesTeam] Error loading team members:', error);
       teamMembers.value = [];
       const status = error?.response?.status;
@@ -71,13 +77,14 @@ export function useSalesTeam() {
     per_page: 15,
   });
 
+  /** @param {any} params */
   const loadTeamProjects = async (params = {}) => {
     isLoadingTeamProjects.value = true;
     teamProjectsLoadError.value = '';
     try {
-      const data = await salesService.getTeamProjects(params);
+      const data = /** @type {any} */ (await salesService.getTeamProjects(params));
       const raw = data?.items ?? (Array.isArray(data) ? data : []);
-      teamProjects.value = raw.map(p => ({
+      teamProjects.value = raw.map(/** @param {any} p */ p => ({
         ...p,
         id: p.contract_id ?? p.id,
         contract_id: p.contract_id ?? p.id,
@@ -89,7 +96,8 @@ export function useSalesTeam() {
       } else if (data?.total != null) {
         teamProjectsPagination.value.total = data.total;
       }
-    } catch (error) {
+    } catch (err) {
+      const error = /** @type {any} */ (err);
       logger.error('[SalesTeam] Error loading team projects:', error);
       teamProjects.value = [];
       const msg = error?.response?.data?.message || error?.message;
@@ -112,14 +120,19 @@ export function useSalesTeam() {
     }
   };
 
+  /** 
+   * @param {any} memberId 
+   * @param {number} rating 
+   */
   const setMemberRating = async (memberId, rating) => {
     if (!hasPermission('sales.team.manage')) return;
     memberRatingSaving.value = memberId;
     try {
       await salesService.rateTeamMember(memberId, rating);
+      /** @param {any[]} arr @param {any} id @param {Function} fn */
       const updateArr = (arr, id, fn) => Array.isArray(arr) ? arr.map(m => (m.id === id ? fn(m) : m)) : [];
-      teamMembers.value = updateArr(teamMembers.value, memberId, m => ({ ...m, rating }));
-      teamRecommendations.value = updateArr(teamRecommendations.value, memberId, m => ({ ...m, rating }));
+      teamMembers.value = updateArr(teamMembers.value, memberId, (/** @type {any} */ m) => ({ ...m, rating }));
+      teamRecommendations.value = updateArr(teamRecommendations.value, memberId, (/** @type {any} */ m) => ({ ...m, rating }));
       notificationService.addNotification('تم تحديث التقييم', 'success');
     } catch (error) {
       logger.error('Error rating team member:', error);
@@ -129,6 +142,7 @@ export function useSalesTeam() {
     }
   };
 
+  /** @param {any} member */
   const openMemberComment = member => {
     if (!member?.id) return;
     memberCommentEditId.value = member.id;
@@ -142,6 +156,7 @@ export function useSalesTeam() {
     memberCommentEditId.value = null;
   };
 
+  /** @param {any} member */
   const saveMemberComment = async member => {
     if (!hasPermission('sales.team.manage')) return;
     if (!member?.id) {
@@ -156,6 +171,7 @@ export function useSalesTeam() {
     memberRatingSaving.value = member.id;
     try {
       await salesService.rateTeamMember(member.id, undefined, comment);
+      /** @param {any[]} arr @param {any} id */
       const updateC = (arr, id) =>
         Array.isArray(arr) ? arr.map(m => (m.id === id ? { ...m, comment } : m)) : [];
       teamMembers.value = updateC(teamMembers.value, member.id);
@@ -165,7 +181,8 @@ export function useSalesTeam() {
       const next = { ...memberCommentDrafts.value };
       delete next[member.id];
       memberCommentDrafts.value = next;
-    } catch (error) {
+    } catch (err) {
+      const error = /** @type {any} */ (err);
       logger.error('Error saving member comment:', error);
       notificationService.addNotification(
         error?.response?.data?.message || 'حدث خطأ أثناء حفظ التعليق',
@@ -176,6 +193,7 @@ export function useSalesTeam() {
     }
   };
 
+  /** @param {any} member */
   const confirmRemoveMember = member => {
     memberToRemove.value = member;
   };
@@ -188,11 +206,12 @@ export function useSalesTeam() {
     if (!memberToRemove.value) return;
     memberRemoveLoading.value = true;
     try {
-      await salesService.removeTeamMember(memberToRemove.value.id);
+      await salesService.removeTeamMember((/** @type {any} */ (memberToRemove.value)).id);
       notificationService.addNotification('تم إخراج العضو من الفريق', 'success');
       memberToRemove.value = null;
       await loadTeamMembers();
-    } catch (error) {
+    } catch (err) {
+      const error = /** @type {any} */ (err);
       logger.error('Error removing team member:', error);
       notificationService.addNotification(
         error?.response?.data?.message || 'حدث خطأ أثناء إخراج العضو من الفريق',

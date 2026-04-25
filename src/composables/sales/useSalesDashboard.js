@@ -8,6 +8,7 @@ import logger from '@/utils/logger';
 export function useSalesDashboard() {
   const { formatCurrencyAr: formatCurrency } = useFormatters();
 
+  /** @type {import('vue').Ref<any>} */
   const dashboardData = ref(null);
   const waitingListCount = ref(0);
   const isLoadingDashboard = ref(false);
@@ -22,7 +23,7 @@ export function useSalesDashboard() {
   });
 
   const computedConfirmedVsNegotiationRatio = computed(() => {
-    const d = dashboardData.value;
+    const d = /** @type {any} */ (dashboardData.value);
     if (!d) return 0;
     if (d.percent_confirmed != null && d.percent_confirmed !== '') return Number(d.percent_confirmed);
     const confirmed = Number(d.confirmed_count ?? d.confirmed_reservations ?? 0) || 0;
@@ -53,7 +54,7 @@ export function useSalesDashboard() {
         return;
       }
 
-      const response = dashOutcome.value;
+      const response = /** @type {any} */ (dashOutcome.value);
       const raw = response?.data?.data || response?.data || response;
       const ind = raw?.indicators;
       if (ind) {

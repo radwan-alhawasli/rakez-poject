@@ -5,6 +5,7 @@ import { toast } from '@/composables/useToast';
 import { showApiError } from '@/utils/errorHandler';
 import { localeOpts } from '@/utils/intlLatn';
 
+/** @param {any} projectId */
 export function useProjectPhotography(projectId) {
   const isLoading = ref(false);
   const isPhotoSaving = ref(false);
@@ -18,20 +19,26 @@ export function useProjectPhotography(projectId) {
     image_url: '',
     video_url: '',
     description: '',
+    /** @type {string | null} */
     status: null,
+    /** @type {string | null} */
     rejection_reason: null,
+    /** @type {string | null} */
     updated_at: null,
     isExisting: false,
   });
 
   const showConfirmModal = ref(false);
+  /** @type {import('vue').Ref<{title: string, message: string, type: string, confirmText: string, resolve: (() => Promise<void>) | null}>} */
   const confirmModalConfig = ref({ title: '', message: '', type: 'warning', confirmText: 'تأكيد', resolve: null });
   const onConfirmModalConfirm = async () => {
+    /** @type {any} */
     const fn = confirmModalConfig.value.resolve;
     if (fn) await fn();
     showConfirmModal.value = false;
   };
 
+  /** @param {any} p */
   const pickRejectionText = p => {
     if (!p || typeof p !== 'object') return null;
     const t = (p.rejection_comment ?? p.comment ?? p.rejection_reason ?? '')
@@ -40,6 +47,7 @@ export function useProjectPhotography(projectId) {
     return t || null;
   };
 
+  /** @param {any} p */
   const mapApiToFormStatus = p => {
     if (!p || typeof p !== 'object') return { status: 'pending', rejection_reason: null };
     const approved = p.approved;
@@ -103,6 +111,7 @@ export function useProjectPhotography(projectId) {
   const savePhotographyData = async () => {
     isPhotoSaving.value = true;
     try {
+      /** @type {any} */
       const payload = {
         image_url: photographyForm.image_url,
         video_url: photographyForm.video_url,

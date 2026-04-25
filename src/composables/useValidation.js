@@ -23,12 +23,15 @@ import { sanitizeFormData } from '@/utils/sanitizer';
  * @returns {Object} Validation utilities
  */
 export function useValidation(schema = {}, options = {}) {
-  const { autoSanitize = true, validateOnChange = false, zodMode = false } = options;
+  const opts = /** @type {any} */ (options);
+  const { autoSanitize = true, validateOnChange = false, zodMode = false } = opts;
 
   // Detect zod schema automatically (has a .safeParse method)
-  const isZodSchema = zodMode || (typeof schema?.safeParse === 'function');
+  const isZodSchema = zodMode || (typeof (/** @type {any} */ (schema))?.safeParse === 'function');
 
+  /** @type {Record<string, any>} */
   const errors = reactive({});
+  /** @type {Record<string, boolean>} */
   const touched = reactive({});
   const isValid = computed(() => Object.keys(errors).length === 0);
 
@@ -36,10 +39,10 @@ export function useValidation(schema = {}, options = {}) {
    * Validate field
    * @param {string} field - Field name
    * @param {*} value - Field value
-   * @param {Object} fieldSchema - Field validation schema
+   * @param {any} fieldSchema - Field validation schema
    */
   function validateField(field, value, fieldSchema = null) {
-    const rules = fieldSchema || schema[field];
+    const rules = fieldSchema || (/** @type {any} */ (schema))[field];
     if (!rules || !Array.isArray(rules)) {
       return;
     }
@@ -100,7 +103,7 @@ export function useValidation(schema = {}, options = {}) {
 
     if (isZodSchema) {
       // Zod validation path
-      const result = schema.safeParse(formData);
+      const result = (/** @type {any} */ (schema)).safeParse(formData);
       if (!result.success) {
         const fieldErrors = result.error.flatten().fieldErrors;
         Object.assign(errors, fieldErrors);
@@ -122,7 +125,7 @@ export function useValidation(schema = {}, options = {}) {
    */
   function touch(field) {
     touched[field] = true;
-    if (validateOnChange && schema[field]) {
+    if (validateOnChange && (/** @type {any} */ (schema))[field]) {
       // Validate on touch if enabled
     }
   }
@@ -138,7 +141,7 @@ export function useValidation(schema = {}, options = {}) {
 
   /**
    * Clear validation errors
-   * @param {string} field - Field name (optional)
+   * @param {string|null} field - Field name (optional)
    */
   function clearErrors(field = null) {
     if (field) {
@@ -156,7 +159,8 @@ export function useValidation(schema = {}, options = {}) {
    * @returns {string|null} Error message or null
    */
   function getFieldError(field) {
-    return errors[field]?.[0] || null;
+    const error = errors[field];
+    return (Array.isArray(error) ? error[0] : error) || null;
   }
 
   /**

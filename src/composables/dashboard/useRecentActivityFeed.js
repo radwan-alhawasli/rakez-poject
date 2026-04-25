@@ -12,6 +12,7 @@ import logger from '@/utils/logger';
  */
 export function useAccountingRecentActivity(options = {}) {
   const maxItems = options.maxItems ?? 8;
+  /** @type {import('vue').ShallowRef<any[]>} */
   const items = shallowRef([]);
   const loading = ref(false);
 

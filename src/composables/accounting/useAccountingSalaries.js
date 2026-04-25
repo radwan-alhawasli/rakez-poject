@@ -7,6 +7,7 @@ import { getStatusClass } from '@/utils/statusHelpers';
 
 export function useAccountingSalaries() {
   const isLoading = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const salaries = ref([]);
   const salaryMonth = ref(new Date().toISOString().slice(0, 7));
   const currentPage = ref(1);
@@ -14,6 +15,7 @@ export function useAccountingSalaries() {
   const totalItems = ref(0);
 
   const showSalaryModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const selectedSalary = ref(null);
   const isSavingSalary = ref(false);
   const isLoadingDetail = ref(false);
@@ -41,6 +43,7 @@ export function useAccountingSalaries() {
     }
   };
 
+  /** @param {any} salary */
   const viewSalaryDetail = async (salary) => {
     selectedSalary.value = salary;
     showSalaryModal.value = true;
@@ -87,10 +90,11 @@ export function useAccountingSalaries() {
     }
   };
 
+  /** @param {any} data */
   const handleSalarySubmit = async (data) => {
     isSavingSalary.value = true;
     try {
-      if (data.action === 'create') { await accountingService.createDistribution(selectedSalary.value.employee_id, data); toast.success('تم إنشاء التوزيع بنجاح'); }
+      if (data.action === 'create') { await accountingService.createDistribution(selectedSalary.value?.employee_id, data); toast.success('تم إنشاء التوزيع بنجاح'); }
       else if (data.action === 'approve') { await accountingService.approveSalaryDistribution(data.distributionId); toast.success('تم الموافقة على التوزيع بنجاح'); }
       else if (data.action === 'paid') { await accountingService.markSalaryAsPaid(data.distributionId); toast.success('تم تعيين الراتب كمقبوض بنجاح'); }
       showSalaryModal.value = false;
@@ -103,11 +107,13 @@ export function useAccountingSalaries() {
     }
   };
 
+  /** @param {any} page */
   const handlePageChange = (page) => {
     currentPage.value = page;
     loadSalaries();
   };
 
+  /** @param {any} val */
   const handlePerPageChange = (val) => {
     perPage.value = val;
     currentPage.value = 1;

@@ -11,7 +11,7 @@ const TAB_ROUTE_ENTRIES = Object.freeze([
 const TAB_ROUTE_MAP = Object.freeze(Object.fromEntries(TAB_ROUTE_ENTRIES));
 const ROUTE_NAME_MAP = Object.freeze(
   TAB_ROUTE_ENTRIES.reduce((acc, [routeName, tabId]) => {
-    if (!acc[tabId]) acc[tabId] = routeName;
+    if (!(/** @type {any} */ (acc))[tabId]) (/** @type {any} */ (acc))[tabId] = routeName;
     return acc;
   }, {})
 );
@@ -20,7 +20,10 @@ export function useInventoryRouting() {
   const route = useRoute();
   const router = useRouter();
 
-  const getTabFromRoute = () => TAB_ROUTE_MAP[route.name] || 'dashboard';
+  const getTabFromRoute = () => {
+    const name = String(route.name || '');
+    return (/** @type {any} */ (TAB_ROUTE_MAP))[name] || 'dashboard';
+  };
 
   const activeTab = ref(getTabFromRoute());
 
@@ -32,8 +35,9 @@ export function useInventoryRouting() {
     }
   );
 
+  /** @param {any} tabId */
   const switchTab = tabId => {
-    const targetRoute = ROUTE_NAME_MAP[tabId];
+    const targetRoute = (/** @type {any} */ (ROUTE_NAME_MAP))[tabId];
     if (targetRoute) router.push({ name: targetRoute });
   };
 

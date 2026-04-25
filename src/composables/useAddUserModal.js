@@ -7,6 +7,10 @@ import logger from '@/utils/logger';
 import { createUserSchema, editUserSchema } from '@/validation/schemas';
 import { useValidation } from '@/composables/useValidation';
 
+/**
+ * @param {any} props
+ * @param {any} emit
+ */
 export function useAddUserModal(props, emit) {
   const isEdit = ref(false);
   const dateType = ref('gregorian');
@@ -14,25 +18,27 @@ export function useAddUserModal(props, emit) {
 
   const createValidation = useValidation(createUserSchema);
   const editValidation = useValidation(editUserSchema);
+  /** @param {string} field */
   const getFieldError = field => {
-    const v = isEdit.value ? editValidation : createValidation;
+    const v = /** @type {any} */ (isEdit.value ? editValidation : createValidation);
     return v.getFieldError(field);
   };
   const signatureFileInput = ref(null);
+  /** @type {import('vue').Ref<any[]>} */
   const teamsList = ref([]);
 
   onMounted(async () => {
     try {
       if (props.useAdminApi) {
         const list = await teamService.getTeams({ per_page: 100 });
-        teamsList.value = (Array.isArray(list) ? list : []).map(t => ({
+        teamsList.value = (Array.isArray(list) ? list : []).map(/** @param {any} t */ t => ({
           id: t.id ?? t.team_id,
           name: t.name || t.team_name || `فريق ${t.id ?? t.team_id}`,
         }));
       } else {
-        const res = await hrService.getTeams({ per_page: 100 });
+        const res = /** @type {any} */ (await hrService.getTeams({ per_page: 100 }));
         const items = res?.items ?? [];
-        teamsList.value = items.map(t => ({
+        teamsList.value = items.map(/** @param {any} t */ t => ({
           id: t.id ?? t.team_id,
           name: t.name || t.team_name || `فريق ${t.id ?? t.team_id}`,
         }));
@@ -67,6 +73,7 @@ export function useAddUserModal(props, emit) {
     is_manager: false,
   });
 
+  /** @param {any} event */
   const handleCVUpload = event => {
     const file = event.target.files[0];
     if (file) {
@@ -74,6 +81,7 @@ export function useAddUserModal(props, emit) {
     }
   };
 
+  /** @param {any} event */
   const handleSignatureUpload = event => {
     const file = event.target.files[0];
     if (file) {
@@ -137,7 +145,7 @@ export function useAddUserModal(props, emit) {
   watch(
     () => form.value.type,
     newType => {
-      const salesOrMarketing = 5 === newType || 6 === newType;
+      const salesOrMarketing = 5 === Number(newType) || 6 === Number(newType);
       if (!salesOrMarketing) {
         form.value.team = '';
       }
@@ -145,7 +153,7 @@ export function useAddUserModal(props, emit) {
   );
 
   const handleSubmit = () => {
-    const v = isEdit.value ? editValidation : createValidation;
+    const v = /** @type {any} */ (isEdit.value ? editValidation : createValidation);
     v.clearErrors();
     const dataToValidate = {
       name: form.value.name,
@@ -163,6 +171,7 @@ export function useAddUserModal(props, emit) {
       return;
     }
 
+    /** @type {any} */
     const submissionData = {
       id: props.editUser?.id,
       name: form.value.name,
@@ -188,6 +197,7 @@ export function useAddUserModal(props, emit) {
       delete submissionData.team;
     }
 
+    /** @param {any} dateStr */
     const formatDateForAPI = dateStr => {
       if (!dateStr) return '';
       const date = new Date(dateStr);

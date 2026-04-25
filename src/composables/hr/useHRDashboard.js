@@ -3,6 +3,7 @@ import hrService from '@/services/hrService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 
+/** @param {any[]} candidates */
 function firstNumeric(...candidates) {
   for (const v of candidates) {
     if (v == null || v === '') continue;
@@ -14,11 +15,11 @@ function firstNumeric(...candidates) {
 
 export function useHRDashboard() {
   const isLoading = ref(false);
-  const error = ref(null);
+  const error = ref((/** @type {string|null} */ (null)));
   /** نسبة التغيير الشهري لمتوسط بيع الفريق (من الـ API إن وُجدت) */
-  const avgTeamMonthlySalesTrendPercent = ref(null);
+  const avgTeamMonthlySalesTrendPercent = ref((/** @type {number|null} */ (null)));
   /** نسبة التغيير الشهري لعدد الموظفين (من الـ API إن وُجدت) */
-  const currentEmployeesTrendPercent = ref(null);
+  const currentEmployeesTrendPercent = ref((/** @type {number|null} */ (null)));
 
   const dashboardMetrics = reactive({
     totalEmployees: 0,

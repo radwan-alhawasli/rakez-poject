@@ -6,6 +6,7 @@ import logger from '@/utils/logger';
 export function useSalesAssignments() {
   const { formatDate } = useFormatters();
 
+  /** @type {import('vue').ShallowRef<any[]>} */
   const myAssignments = shallowRef([]);
   const isLoadingAssignments = ref(false);
 

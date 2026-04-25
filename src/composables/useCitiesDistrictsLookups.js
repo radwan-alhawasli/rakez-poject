@@ -5,7 +5,9 @@ import locationService from '@/services/locationService';
  * تحميل مدن وأحياء من الـ API لاستخدامها في نماذج العقود.
  */
 export function useCitiesDistrictsLookups() {
+  /** @type {import('vue').Ref<any[]>} */
   const cities = ref([]);
+  /** @type {import('vue').Ref<any[]>} */
   const districts = ref([]);
   const loading = ref(false);
 
@@ -20,10 +22,13 @@ export function useCitiesDistrictsLookups() {
     }
   }
 
-  /** أحياء المدينة المختارة فقط */
+  /**
+   * أحياء المدينة المختارة فقط
+   * @param {any} cityId
+   */
   function districtsForCityId(cityId) {
     if (cityId == null || cityId === '') return [];
-    return districts.value.filter(d => String(d.city_id) === String(cityId));
+    return districts.value.filter(d => String((/** @type {any} */ (d)).city_id) === String(cityId));
   }
 
   return {

@@ -10,19 +10,30 @@ import logger from '@/utils/logger';
 import { PERMISSIONS } from '@/constants/permissions';
 import { LOGIN_PATH, ROOT_PATH, LOGIN_ROUTE_NAME } from './config';
 
+/** @param {any} route */
 export function isPublicRoute(route) {
   return Boolean(route?.meta?.public);
 }
 
+/** @param {any} route */
 export function isLoginRoute(route) {
   return route?.name === LOGIN_ROUTE_NAME;
 }
 
+/**
+ * @param {any} to
+ * @param {Function} next
+ */
 export function handleUnauthenticatedAccess(to, next) {
   logger.warn('Unauthenticated access attempt to:', to.path);
   next(LOGIN_PATH);
 }
 
+/**
+ * @param {any} user
+ * @param {Function} next
+ * @param {string} toPath
+ */
 export function redirectByRole(user, next, toPath) {
   const dest = getDashboardPathForUser(user);
   if (dest === toPath) {
@@ -54,12 +65,12 @@ export function registerGuards(router) {
 
     if (!isAuthenticated) return handleUnauthenticatedAccess(to, next);
 
-    if (!canAccessRoute(user, to.meta)) {
+    if (!canAccessRoute(/** @type {any} */ (user), to.meta)) {
       logger.warn('Access denied for user:', user?.email, 'to route:', to.path);
-      const salesLeader = isSalesLeader(user);
+      const salesLeader = isSalesLeader(/** @type {any} */ (user));
       if (salesLeader && to.path.startsWith('/marketing')) {
         notificationService.addNotification('غير مصرح لك بالوصول إلى واجهات التسويق', 'warning');
-        if (canAccessRoute(user, { permissions: [PERMISSIONS.SALES_TASKS_MANAGE] })) {
+        if (canAccessRoute(/** @type {any} */ (user), { permissions: [PERMISSIONS.SALES_TASKS_MANAGE] })) {
           next('/sales/tasks');
           return;
         }

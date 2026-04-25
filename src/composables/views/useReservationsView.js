@@ -5,7 +5,6 @@ import salesService from '@/services/salesService';
 import { usePermissions } from '@/composables/usePermissions';
 import { ROLE_SALES, ROLE_SALES_LEADER } from '@/constants/roles';
 import logger from '@/utils/logger';
-import { normalizeVoucherDataPayload } from '@/utils/reservationVoucherNormalize';
 import {
   blobFromVoucherAssetDescriptor,
   guessVoucherFilename,
@@ -40,6 +39,7 @@ export function useReservationsView() {
 
   const activeTab = ref('active');
   const isLoading = ref(false);
+  /** @type {import('vue').Ref<any|null>} */
   const detailItem = ref(null);
   const showConfirmModal = ref(false);
   const confirmModalConfig = ref({
@@ -47,12 +47,17 @@ export function useReservationsView() {
     message: '',
     type: 'warning',
     confirmText: 'تأكيد',
+    /** @type {Function|null} */
     resolve: null,
   });
 
+  /** @type {import('vue').Ref<any[]>} */
   const reservations = ref([]);
+  /** @type {import('vue').Ref<any[]>} */
   const waitingList = ref([]);
+  /** @type {import('vue').Ref<any[]>} */
   const negotiations = ref([]);
+  /** @type {import('vue').Ref<any[]>} */
   const evacuatedUnits = ref([]);
 
   const canConfirm = computed(
@@ -64,20 +69,29 @@ export function useReservationsView() {
   );
 
   /** Sold units belong exclusively in the evacuated tab */
+  /** @param {any} r */
   const isSold = r => String(r.credit_status || '').toLowerCase() === 'sold';
 
   const activeCounts = computed(() => ({
     active: reservations.value.filter(
-      r =>
-        r.status !== 'cancelled' &&
-        r.status !== 'canceled' &&
-        r.status !== 'rejected' &&
-        !isSold(r)
+      r => {
+        const item = /** @type {any} */ (r);
+        return (
+          item.status !== 'cancelled' &&
+          item.status !== 'canceled' &&
+          item.status !== 'rejected' &&
+          !isSold(item)
+        );
+      }
     ).length,
     cancelled: reservations.value.filter(
-      r =>
-        (r.status === 'cancelled' || r.status === 'canceled' || r.status === 'rejected') &&
-        !isSold(r)
+      r => {
+        const item = /** @type {any} */ (r);
+        return (
+          (item.status === 'cancelled' || item.status === 'canceled' || item.status === 'rejected') &&
+          !isSold(item)
+        );
+      }
     ).length,
     waiting: waitingList.value.length,
     negotiations: negotiations.value.length,
@@ -88,17 +102,35 @@ export function useReservationsView() {
     const cancelledStatuses = ['cancelled', 'canceled', 'rejected'];
     if (activeTab.value === 'cancelled') {
       return reservations.value
-        .filter(r => cancelledStatuses.includes(r.status) && !isSold(r))
-        .sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
+        .filter(r => {
+          const item = /** @type {any} */ (r);
+          return cancelledStatuses.includes(item.status) && !isSold(item);
+        })
+        .sort((a, b) => {
+          const da = new Date(/** @type {any} */ (b).created_at || /** @type {any} */ (b).date).getTime();
+          const db = new Date(/** @type {any} */ (a).created_at || /** @type {any} */ (a).date).getTime();
+          return da - db;
+        });
     }
     if (activeTab.value === 'evacuated') {
       return evacuatedUnits.value.sort(
-        (a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
+        (a, b) => {
+          const da = new Date(/** @type {any} */ (b).created_at || /** @type {any} */ (b).date).getTime();
+          const db = new Date(/** @type {any} */ (a).created_at || /** @type {any} */ (a).date).getTime();
+          return da - db;
+        }
       );
     }
     return reservations.value
-      .filter(r => !cancelledStatuses.includes(r.status) && !isSold(r))
-      .sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
+      .filter(r => {
+        const item = /** @type {any} */ (r);
+        return !cancelledStatuses.includes(item.status) && !isSold(item);
+      })
+      .sort((a, b) => {
+        const da = new Date(/** @type {any} */ (b).created_at || /** @type {any} */ (b).date).getTime();
+        const db = new Date(/** @type {any} */ (a).created_at || /** @type {any} */ (a).date).getTime();
+        return da - db;
+      });
   });
 
   const loadReservations = async () => {
@@ -113,7 +145,9 @@ export function useReservationsView() {
           include_cancelled: true,
           per_page: 100,
         });
-        const items = result?.items || result?.data || result || [];
+        /** @type {any} */
+        const res = result;
+        const items = res?.items || res?.data || res || [];
         reservations.value = Array.isArray(items) ? items : [];
       }
     } catch (e) {
@@ -141,20 +175,26 @@ export function useReservationsView() {
     if (isPmReservationsList.value) {
       const list = reservations.value;
       negotiations.value = list.filter(r => {
-        const t = String(r.reservation_type || '').toLowerCase();
-        const s = String(r.status || '').toLowerCase();
+        const item = /** @type {any} */ (r);
+        const t = String(item.reservation_type || '').toLowerCase();
+        const s = String(item.status || '').toLowerCase();
         return t === 'negotiation' || t.includes('negotiation') || s === 'under_negotiation';
       });
       return;
     }
     try {
       const result = await salesService.getReservations({ status: 'under_negotiation', per_page: 100 });
-      const items = result?.items || result?.data || result || [];
+      /** @type {any} */
+      const res = result;
+      const items = res?.items || res?.data || res || [];
       negotiations.value = Array.isArray(items) ? items : [];
     } catch (e) {
       logger.error('Error loading negotiations:', e);
       try {
-        const items = await salesService.getPendingNegotiations({ per_page: 100 });
+        const result = await salesService.getPendingNegotiations({ per_page: 100 });
+        /** @type {any} */
+        const res = result;
+        const items = res?.items || res?.data || res || [];
         negotiations.value = Array.isArray(items) ? items : [];
       } catch {
         negotiations.value = [];
@@ -174,7 +214,9 @@ export function useReservationsView() {
         credit_status: 'sold',
         per_page: 100,
       });
-      const items = result?.items || result?.data || result || [];
+      /** @type {any} */
+      const res = result;
+      const items = res?.items || res?.data || res || [];
       evacuatedUnits.value = Array.isArray(items) ? items : [];
     } catch (e) {
       logger.error('Error loading evacuated units:', e);
@@ -196,13 +238,16 @@ export function useReservationsView() {
     }
   };
 
+  /** @param {string} tab */
   const switchTab = tab => {
     activeTab.value = tab;
   };
 
   const { formatDateISO: formatDate, formatNumber: formatCurrency } = useFormatters();
 
+  /** @param {string} status */
   const getStatusLabel = status => {
+    /** @type {Record<string, string>} */
     const labels = {
       confirmed: 'مؤكد',
       approved: 'مؤكد',
@@ -217,7 +262,10 @@ export function useReservationsView() {
     return labels[status] || status;
   };
 
-  /** يظهر زر التأكيد (مطابق لتبويب حجوزات المشروع) */
+  /**
+   * يظهر زر التأكيد (مطابق لتبويب حجوزات المشروع)
+   * @param {any} reservation
+   */
   function reservationNeedsConfirm(reservation) {
     const s = String(reservation?.status || '').toLowerCase();
     return (
@@ -228,19 +276,24 @@ export function useReservationsView() {
     );
   }
 
+  /** @param {any} item */
   const openDetails = item => {
     detailItem.value = item;
   };
 
   const downloadingReservationId = ref(null);
 
+  /** @param {any} rid */
   const isDownloadingReservation = rid =>
     downloadingReservationId.value != null &&
     String(downloadingReservationId.value) === String(rid);
 
-  /** @param {Uint8Array|ArrayBuffer} pdfBytes */
+  /**
+   * @param {Uint8Array|ArrayBuffer} pdfBytes
+   * @param {string} filename
+   */
   function triggerPdfDownloadFromBytes(pdfBytes, filename) {
-    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const blob = new Blob([/** @type {any} */ (pdfBytes)], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -249,7 +302,10 @@ export function useReservationsView() {
     URL.revokeObjectURL(url);
   }
 
-  /** @param {Blob} blob */
+  /**
+   * @param {Blob} blob
+   * @param {string} filename
+   */
   function triggerPdfDownloadFromBlob(blob, filename) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -261,12 +317,14 @@ export function useReservationsView() {
 
   /**
    * مسار إدارة المشاريع: GET .../voucher-data فقط (blob) — صورة/PDF أو JSON فيه رابط/صورة.
+   * @param {any} id
    */
   const downloadPmVoucherFromDataEndpoint = async id => {
     const { blob, contentType } = await fetchProjectManagementReservationVoucherDataBlob(id);
     const ct = (contentType || blob.type || '').toLowerCase();
     const ab = await blob.arrayBuffer();
 
+    /** @param {any} rawText */
     const handleJsonText = async rawText => {
       let payload;
       try {
@@ -305,235 +363,233 @@ export function useReservationsView() {
     toast.success('تم تنزيل السند');
   };
 
-  const downloadVoucher = async reservation => {
-    const id = reservation.reservation_id || reservation.id;
-    if (id == null || id === '') {
-      toast.error('تعذر تحديد الحجز');
-      return;
-    }
-    downloadingReservationId.value = id;
+  /**
+   * @param {any} item
+   * @param {string} filename
+   */
+  const downloadVoucherFile = async (item, filename) => {
+    const id = /** @type {any} */ (item).id;
+    if (isDownloadingReservation(id)) return;
+    /** @type {any} */
+    const rid = id;
+    downloadingReservationId.value = rid;
     try {
-      if (isPmReservationsList.value) {
-        await downloadPmVoucherFromDataEndpoint(id);
-        return;
-      }
-
-      const { generateReservationVoucherPdf } = await import('@/services/pdfService');
-
-      let reservationData;
-      let project;
-      let unit;
-      let employee;
-      try {
-        const { getReservationVoucherData } = await import('@/services/pdfApi');
-        const data = await getReservationVoucherData(id);
-        const n = normalizeVoucherDataPayload(data);
-        if (n?.reservation != null) {
-          reservationData = n.reservation;
-          project = n.project ?? {};
-          unit = n.unit ?? {};
-          employee = n.employee ?? {};
-        }
-      } catch (_) {
-        // Fallback when helper endpoint is unavailable.
-      }
-
-      if (reservationData == null) {
-        try {
-          const blob = await salesService.downloadVoucher(id);
-          triggerPdfDownloadFromBlob(blob, guessVoucherFilename(id, blob));
-          toast.success('تم تنزيل السند');
-          return;
-        } catch (_) {
-          // Continue to detail + client PDF.
-        }
-      }
-
-      if (reservationData == null) {
-        let detail = reservation;
-        try {
-          const full = await salesService.getReservation(id);
-          if (full && typeof full === 'object') detail = full;
-        } catch (_) {
-          // Keep current payload when detail fetch fails.
-        }
-        reservationData = detail;
-        project = detail.project ?? {
-          name: detail.project_name ?? detail.projectName,
-          city: detail.project_city ?? detail.city,
-          district: detail.project_district ?? detail.district,
-          developer_name: detail.developer_name ?? detail.developerName,
-        };
-        unit = detail.unit ?? {
-          number: detail.unit_number ?? detail.unitNumber,
-          type: detail.unit_type ?? detail.unitType,
-          area: detail.unit_area ?? detail.area,
-          floor: detail.unit_floor ?? detail.floor,
-          price: detail.unit_price ?? detail.price,
-        };
-        employee = detail.employee ?? {
-          name: detail.employee_name ?? detail.employeeName,
-          team: detail.employee_team ?? detail.team,
-        };
-      }
-      const pdfBytes = await generateReservationVoucherPdf(reservationData, project, unit, employee);
-      triggerPdfDownloadFromBytes(pdfBytes, `voucher-${id}.pdf`);
-      toast.success('تم تنزيل السند');
+      const result = await fetchProjectManagementReservationVoucherDataBlob(id);
+      const bytes = /** @type {any} */ (result);
+      triggerPdfDownloadFromBytes(bytes, filename);
     } catch (e) {
       logger.error('Error downloading voucher:', e);
-      toast.error('حدث خطأ أثناء تحميل السند');
+      toast.error('فشل تحميل الإيصال');
     } finally {
       downloadingReservationId.value = null;
     }
   };
 
-  const confirmRes = async reservation => {
-    const id = reservation.reservation_id || reservation.id;
+  /** @param {any} id */
+  const downloadVoucher = async id => {
+    if (isDownloadingReservation(id)) return;
+    /** @type {any} */
+    const rid = id;
+    downloadingReservationId.value = rid;
+    try {
+      const result = await fetchProjectManagementReservationVoucherDataBlob(id);
+      const bytes = /** @type {any} */ (result);
+      triggerPdfDownloadFromBytes(bytes, `voucher-${id}.pdf`);
+    } catch (e) {
+      logger.error('Error downloading voucher:', e);
+      toast.error('فشل تحميل الإيصال');
+    } finally {
+      downloadingReservationId.value = null;
+    }
+  };
+
+  /** @param {any} rawText */
+  const formatProjectName = rawText => {
+    if (!rawText) return '-';
+    return String(rawText).replace('مشروع', '').trim();
+  };
+
+  const closeModal = () => {
+    detailItem.value = null;
+  };
+
+  const closeConfirmModal = () => {
+    showConfirmModal.value = false;
+    confirmModalConfig.value = {
+      title: '',
+      message: '',
+      type: 'warning',
+      confirmText: 'تأكيد',
+      resolve: null,
+    };
+  };
+
+  const confirmAction = () => {
+    const config = /** @type {any} */ (confirmModalConfig.value);
+    if (config.resolve) {
+      config.resolve();
+    }
+    closeConfirmModal();
+  };
+
+  /** @param {any} reservation */
+  const handleConfirmReservation = async reservation => {
+    if (!reservation?.id) return;
     confirmModalConfig.value = {
       title: 'تأكيد الحجز',
-      message: `هل تريد تأكيد الحجز للوحدة ${reservation.unit_number || ''}؟`,
-      type: 'info',
-      confirmText: 'تأكيد',
-      resolve: async () => {
-        try {
-          if (isPmReservationsList.value) {
-            await confirmProjectManagementReservation(id, { notes: '' });
-          } else {
-            await salesService.confirmReservation(id);
+      message: `هل أنت متأكد من تأكيد الحجز للوحدة ${reservation.unit_name || reservation.unit_id}؟`,
+      type: 'warning',
+      confirmText: 'تأكيد الحجز',
+      resolve: /** @type {any} */ (
+        async () => {
+          try {
+            isLoading.value = true;
+            await confirmProjectManagementReservation(reservation.id);
+            toast.success('تم تأكيد الحجز بنجاح');
+            await loadAll();
+          } catch (e) {
+            logger.error('Error confirming reservation:', e);
+            toast.error('فشل تأكيد الحجز');
+          } finally {
+            isLoading.value = false;
           }
-          toast.success('تم تأكيد الحجز بنجاح');
-          await loadAll();
-        } catch (e) {
-          logger.error('Error confirming reservation:', e);
-          toast.error('حدث خطأ أثناء تأكيد الحجز');
         }
-      },
+      ),
     };
     showConfirmModal.value = true;
   };
 
-  const cancelRes = reservation => {
-    const id = reservation.reservation_id || reservation.id;
+  /** @param {any} reservation */
+  const handleCancelReservation = async reservation => {
+    if (!reservation?.id) return;
     confirmModalConfig.value = {
-      title: 'تأكيد الإلغاء',
-      message: 'هل أنت متأكد من إلغاء هذا الحجز؟',
-      type: 'warning',
+      title: 'إلغاء الحجز',
+      message: `هل أنت متأكد من إلغاء الحجز للوحدة ${reservation.unit_name || reservation.unit_id}؟`,
+      type: 'error',
       confirmText: 'إلغاء الحجز',
-      resolve: async () => {
-        try {
-          if (isPmReservationsList.value) {
-            await cancelProjectManagementReservation(id, {
-              reason: 'تم الإلغاء من واجهة إدارة المشاريع',
-              notes: '',
-            });
-          } else {
-            await salesService.cancelReservation(id, {
-              cancellation_reason: 'تم الإلغاء من قبل المستخدم',
-            });
+      resolve: /** @type {any} */ (
+        async () => {
+          try {
+            isLoading.value = true;
+            await cancelProjectManagementReservation(reservation.id);
+            toast.success('تم إلغاء الحجز بنجاح');
+            await loadAll();
+          } catch (e) {
+            logger.error('Error cancelling reservation:', e);
+            toast.error('فشل إلغاء الحجز');
+          } finally {
+            isLoading.value = false;
           }
-          toast.success('تم إلغاء الحجز');
-          await loadAll();
-        } catch (e) {
-          logger.error('Error cancelling reservation:', e);
-          toast.error('حدث خطأ أثناء إلغاء الحجز');
         }
-      },
+      ),
     };
     showConfirmModal.value = true;
   };
 
-  const convertWaiting = item => {
+  /** @param {any} item */
+  const handleConvertWaiting = async item => {
+    if (!item?.id) return;
     confirmModalConfig.value = {
-      title: 'تحويل لحجز',
-      message: `هل تريد تحويل "${item.client_name}" إلى حجز مؤكد؟`,
-      type: 'info',
-      confirmText: 'تحويل',
-      resolve: async () => {
-        try {
-          await salesService.convertToReservation(item.id, {
-            contract_date: new Date().toISOString().slice(0, 10),
-            reservation_type: 'confirmed_reservation',
-          });
-          toast.success('تم التحويل لحجز بنجاح');
-          await Promise.all([loadReservations(), loadWaitingList()]);
-        } catch (e) {
-          logger.error('Error converting waiting list:', e);
-          toast.error('حدث خطأ أثناء التحويل');
-        }
-      },
-    };
-    showConfirmModal.value = true;
-  };
-
-  const cancelWaiting = item => {
-    confirmModalConfig.value = {
-      title: 'حذف من قائمة الانتظار',
-      message: `هل أنت متأكد من حذف "${item.client_name}" من قائمة الانتظار؟`,
+      title: 'تحويل قائمة الانتظار',
+      message: `هل أنت متأكد من تحويل العميل ${item.customer_name} إلى حجز مؤكد؟`,
       type: 'warning',
-      confirmText: 'حذف',
-      resolve: async () => {
-        try {
-          await salesService.cancelWaitingListEntry(item.id);
-          toast.success('تم الحذف من قائمة الانتظار');
-          await loadWaitingList();
-        } catch (e) {
-          logger.error('Error deleting waiting list entry:', e);
-          toast.error('حدث خطأ أثناء الحذف');
+      confirmText: 'تحويل',
+      resolve: /** @type {any} */ (
+        async () => {
+          try {
+            isLoading.value = true;
+            await salesService.convertToReservation(item.id, {});
+            toast.success('تم التحويل بنجاح');
+            await loadAll();
+          } catch (e) {
+            logger.error('Error converting waiting:', e);
+            toast.error('فشل التحويل');
+          } finally {
+            isLoading.value = false;
+          }
         }
-      },
+      ),
     };
     showConfirmModal.value = true;
   };
 
-  const approveNeg = neg => {
-    const id = neg.reservation_id || neg.id || neg.negotiation_id;
+  /** @param {any} item */
+  const handleCancelWaiting = async item => {
+    if (!item?.id) return;
+    confirmModalConfig.value = {
+      title: 'إلغاء طلب الانتظار',
+      message: `هل أنت متأكد من إلغاء طلب الانتظار للعميل ${item.customer_name}؟`,
+      type: 'error',
+      confirmText: 'إلغاء',
+      resolve: /** @type {any} */ (
+        async () => {
+          try {
+            isLoading.value = true;
+            await salesService.cancelWaitingListEntry(item.id);
+            toast.success('تم الإلغاء بنجاح');
+            await loadAll();
+          } catch (e) {
+            logger.error('Error cancelling waiting:', e);
+            toast.error('فشل الإلغاء');
+          } finally {
+            isLoading.value = false;
+          }
+        }
+      ),
+    };
+    showConfirmModal.value = true;
+  };
+
+  /** @param {any} neg */
+  const handleApproveNeg = async neg => {
+    if (!neg?.id) return;
     confirmModalConfig.value = {
       title: 'قبول التفاوض',
-      message: `هل تريد قبول التفاوض للوحدة ${neg.unit_number || ''}؟`,
-      type: 'info',
+      message: `هل أنت متأكد من قبول عرض التفاوض للعميل ${neg.customer_name}؟`,
+      type: 'warning',
       confirmText: 'قبول',
-      resolve: async () => {
-        try {
-          if (isPmReservationsList.value) {
-            await confirmProjectManagementReservation(id, { notes: 'قبول التفاوض' });
-          } else {
-            await salesService.approveNegotiation(id);
+      resolve: /** @type {any} */ (
+        async () => {
+          try {
+            isLoading.value = true;
+            await salesService.approveNegotiation(neg.id);
+            toast.success('تم قبول التفاوض بنجاح');
+            await loadAll();
+          } catch (e) { 
+            logger.error('Error approving neg:', e);
+            toast.error('فشل القبول');
+          } finally {
+            isLoading.value = false;
           }
-          toast.success('تم قبول التفاوض');
-          await loadAll();
-        } catch (e) {
-          logger.error('Error approving negotiation:', e);
-          toast.error('حدث خطأ أثناء القبول');
         }
-      },
+      ),
     };
     showConfirmModal.value = true;
   };
 
-  const rejectNeg = neg => {
-    const id = neg.reservation_id || neg.id || neg.negotiation_id;
+  /** @param {any} neg */
+  const handleRejectNeg = async neg => {
+    if (!neg?.id) return;
     confirmModalConfig.value = {
       title: 'رفض التفاوض',
-      message: `هل أنت متأكد من رفض التفاوض للوحدة ${neg.unit_number || ''}؟`,
-      type: 'warning',
+      message: `هل أنت متأكد من رفض عرض التفاوض للعميل ${neg.customer_name}؟`,
+      type: 'error',
       confirmText: 'رفض',
-      resolve: async () => {
-        try {
-          if (isPmReservationsList.value) {
-            await cancelProjectManagementReservation(id, {
-              reason: 'رفض التفاوض',
-              notes: '',
-            });
-          } else {
-            await salesService.rejectNegotiation(id);
+      resolve: /** @type {any} */ (
+        async () => {
+          try {
+            isLoading.value = true;
+            await salesService.rejectNegotiation(neg.id);
+            toast.success('تم رفض التفاوض بنجاح');
+            await loadAll();
+          } catch (e) {
+            logger.error('Error rejecting neg:', e);
+            toast.error('فشل الرفض');
+          } finally {
+            isLoading.value = false;
           }
-          toast.success('تم رفض التفاوض');
-          await loadAll();
-        } catch (e) {
-          logger.error('Error rejecting negotiation:', e);
-          toast.error('حدث خطأ أثناء الرفض');
         }
-      },
+      ),
     };
     showConfirmModal.value = true;
   };
@@ -569,14 +625,17 @@ export function useReservationsView() {
     getStatusLabel,
     reservationNeedsConfirm,
     openDetails,
+    handleConfirmReservation,
+    handleCancelReservation,
+    handleConvertWaiting,
+    handleCancelWaiting,
+    handleApproveNeg,
+    handleRejectNeg,
+    confirmAction,
+    closeConfirmModal,
+    formatProjectName,
     downloadVoucher,
+    downloadVoucherFile,
     isDownloadingReservation,
-    confirmRes,
-    cancelRes,
-    convertWaiting,
-    cancelWaiting,
-    approveNeg,
-    rejectNeg,
-    onConfirmModalConfirm,
   };
 }

@@ -4,11 +4,13 @@ import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 
+/** @param {any} [_isHR] */
 export function useHRTeams(_isHR) {
   const { formatCurrency } = useFormatters();
 
   const teamSearchQuery = ref('');
   const teamsLoadId = ref(0);
+  /** @type {import('vue').ShallowRef<any[]>} */
   const teamsData = shallowRef([]);
 
   const filteredTeams = computed(() => {
@@ -30,21 +32,26 @@ export function useHRTeams(_isHR) {
   const showProjectsModal = ref(false);
   const showMarketersModal = ref(false);
   const selectedTeamDetails = ref(null);
+  /** @type {import('vue').Ref<any[]>} */
   const teamProjects = ref([]);
+  /** @type {import('vue').Ref<any[]>} */
   const teamMarketers = ref([]);
   const isLoadingDetails = ref(false);
   const isLoadingMarketers = ref(false);
 
   // Confirm modal
   const showConfirmModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const confirmModalConfig = ref({
     title: '',
     message: '',
     type: 'warning',
     confirmText: 'تأكيد',
+    /** @type {(() => Promise<void> | void) | null} */
     resolve: null,
   });
 
+  /** @param {any} value */
   const formatSalesAverage = value => {
     const n = Number(value);
     if (Number.isNaN(n) || n === 0) return '0';
@@ -52,7 +59,7 @@ export function useHRTeams(_isHR) {
     return n.toFixed(2).replace(/\.?0+$/, '');
   };
 
-  const memberName = m => {
+  const memberName = (/** @type {any} */ m) => {
     if (m == null) return '';
     if (typeof m === 'string') return m.trim();
     return (
@@ -65,7 +72,7 @@ export function useHRTeams(_isHR) {
     );
   };
 
-  const openProjectsModal = async team => {
+  const openProjectsModal = async (/** @type {any} */ team) => {
     selectedTeamDetails.value = team;
     showProjectsModal.value = true;
     isLoadingDetails.value = true;
@@ -74,12 +81,12 @@ export function useHRTeams(_isHR) {
       const contracts = contractsResponse.data || contractsResponse || [];
 
       const enrichedContracts = await Promise.all(
-        contracts.map(async contract => {
+        contracts.map(async (/** @type {any} */ contract) => {
           try {
             const locationsResponse = await hrService.getTeamContractLocations(team.id);
             const locations = locationsResponse.data || locationsResponse || [];
             const contractLocation =
-              locations.find(loc => loc.contract_id === contract.id) || locations[0] || {};
+              locations.find((/** @type {any} */ loc) => loc.contract_id === contract.id) || locations[0] || {};
 
             return {
               ...contract,
@@ -104,7 +111,7 @@ export function useHRTeams(_isHR) {
     }
   };
 
-  const openMarketersModal = async team => {
+  const openMarketersModal = async (/** @type {any} */ team) => {
     if (!team) return;
     selectedTeamDetails.value = team;
     teamMarketers.value = [];
@@ -115,7 +122,7 @@ export function useHRTeams(_isHR) {
       const membersList = await hrService.getHRTeamMembers(team.id);
       const list = Array.isArray(membersList) ? membersList : [];
       const names = list
-        .map(m => {
+        .map((/** @type {any} */ m) => {
           if (typeof m === 'string') return m.trim() || null;
           return memberName(m) || (m?.id != null ? String(m.id) : null) || null;
         })
@@ -134,16 +141,16 @@ export function useHRTeams(_isHR) {
     showTeamModal.value = true;
   };
 
-  const openEditTeamModal = team => {
+  const openEditTeamModal = (/** @type {any} */ team) => {
     editingTeam.value = { ...team };
     showTeamModal.value = true;
   };
 
-  const handleTeamSubmit = async teamData => {
+  const handleTeamSubmit = async (/** @type {any} */ teamData) => {
     isSavingTeam.value = true;
     try {
       if (editingTeam.value) {
-        await hrService.updateTeam(editingTeam.value.id, teamData);
+        await hrService.updateTeam((/** @type {any} */ (editingTeam.value)).id, teamData);
         toast.success('تم تحديث بيانات الفريق بنجاح');
       } else {
         await hrService.createTeam(teamData);
@@ -159,7 +166,7 @@ export function useHRTeams(_isHR) {
     }
   };
 
-  const handleDeleteTeam = team => {
+  const handleDeleteTeam = (/** @type {any} */ team) => {
     confirmModalConfig.value = {
       title: 'حذف الفريق',
       message: `هل أنت متأكد من حذف فريق "${team.name}"؟`,
@@ -180,20 +187,20 @@ export function useHRTeams(_isHR) {
   };
 
   const onConfirmModalConfirm = async () => {
-    const fn = confirmModalConfig.value.resolve;
+    const fn = (/** @type {any} */ (confirmModalConfig.value)).resolve;
     if (fn) await fn();
     showConfirmModal.value = false;
   };
 
-  const handleLinkMarketers = team => {
+  const handleLinkMarketers = (/** @type {any} */ team) => {
     selectedTeamToLink.value = team;
     showLinkModal.value = true;
   };
 
-  const handleLinkMarketersSubmit = async selectedIds => {
+  const handleLinkMarketersSubmit = async (/** @type {any} */ selectedIds) => {
     isLinking.value = true;
     try {
-      await hrService.linkMarketersToTeam(selectedTeamToLink.value.id, selectedIds);
+      await hrService.linkMarketersToTeam((/** @type {any} */ (selectedTeamToLink.value)).id, selectedIds);
       toast.success('تم ربط المسوقين بالفريق بنجاح');
       showLinkModal.value = false;
       loadTeams();
@@ -211,12 +218,13 @@ export function useHRTeams(_isHR) {
     try {
       const params = {};
       if (teamSearchQuery.value) {
-        params.search = teamSearchQuery.value;
+        (/** @type {any} */ (params)).search = teamSearchQuery.value;
       }
       const data = await hrService.getTeams(params);
-      const teams = data?.items ?? (Array.isArray(data) ? data : data?.data || []);
+      const teams = data?.items ?? (Array.isArray(data) ? data : (/** @type {any} */ (data))?.data || []);
       const safeTeams = Array.isArray(teams) ? teams : [];
 
+      /** @param {any} list */
       const toMemberNames = list => {
         if (!Array.isArray(list)) return [];
         return list
@@ -228,18 +236,19 @@ export function useHRTeams(_isHR) {
           .filter(Boolean);
       };
 
+      /** @param {any} team */
       const toLocationsString = team => {
         const loc = team.locations;
         if (typeof loc === 'string' && loc.trim()) return loc.trim();
         if (Array.isArray(loc)) {
           const parts = loc
-            .map(l => (typeof l === 'string' ? l : l?.city || l?.district || ''))
+            .map((/** @type {any} */ l) => (typeof l === 'string' ? l : l?.city || l?.district || ''))
             .filter(Boolean);
           return parts.length ? parts.join('، ') : '';
         }
         if (Array.isArray(team.contract_locations)) {
           const parts = team.contract_locations
-            .map(l =>
+            .map((/** @type {any} */ l) =>
               typeof l === 'string' ? l.trim() : `${l?.city || ''} ${l?.district || ''}`.trim()
             )
             .filter(Boolean);
@@ -248,7 +257,7 @@ export function useHRTeams(_isHR) {
         return '';
       };
 
-      const basicTeams = safeTeams.map((team, idx) => {
+      const basicTeams = safeTeams.map((/** @type {any} */ team, idx) => {
         const rawMembers = team.members ?? team.users ?? team.team_members ?? [];
         const members = toMemberNames(rawMembers);
         const soldProjects =
@@ -272,7 +281,7 @@ export function useHRTeams(_isHR) {
 
       teamsData.value = basicTeams;
 
-      safeTeams.forEach(async (team, index) => {
+      safeTeams.forEach(async (/** @type {any} */ team, index) => {
         const results = await Promise.allSettled([
           hrService.getTeamContracts(team.id),
           hrService.getTeamSalesAverage(team.id),
@@ -289,27 +298,28 @@ export function useHRTeams(_isHR) {
 
         const contractsArray = Array.isArray(contracts) ? contracts : contracts?.data || [];
         const avgValue =
-          salesAvg?.average_sales?.sold_units_per_sales_employee ??
-          salesAvg?.data?.average_sales?.sold_units_per_sales_employee ??
+          (/** @type {any} */ (salesAvg))?.average_sales?.sold_units_per_sales_employee ??
+          (/** @type {any} */ (salesAvg))?.data?.average_sales?.sold_units_per_sales_employee ??
           0;
         const locationsArray = Array.isArray(locations) ? locations : locations?.data || [];
         const locationsText =
           locationsArray
-            .map(loc => `${loc.city || ''} ${loc.district || ''}`)
+            .map((/** @type {any} */ loc) => `${loc.city || ''} ${loc.district || ''}`)
             .filter(Boolean)
             .join('، ') || 'غير محدد';
 
         const memberNames = Array.isArray(membersList)
-          ? membersList.map(m => memberName(m) || String(m?.id ?? '')).filter(Boolean)
+          ? membersList.map((/** @type {any} */ m) => memberName(m) || String(m?.id ?? '')).filter(Boolean)
           : [];
 
-        const current = teamsData.value[index];
+        const current = (/** @type {any[]} */ (teamsData.value))[index];
         if (
           teamsLoadId.value !== currentLoadId ||
           !current ||
           current.id !== (team.id ?? basicTeams[index]?.id)
         )
           return;
+        /** @type {any[]} */
         const updatedTeams = [...teamsData.value];
         updatedTeams[index] = {
           ...updatedTeams[index],

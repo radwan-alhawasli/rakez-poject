@@ -6,6 +6,7 @@ import logger from '@/utils/logger';
 export function useSalesAnalytics() {
   const { formatCurrencyAr: formatCurrency } = useFormatters();
 
+  /** @type {import('vue').Ref<any>} */
   const analyticsDashboard = ref(null);
   const now = new Date();
   const analyticsFilters = reactive({
@@ -14,6 +15,7 @@ export function useSalesAnalytics() {
   });
   const isLoadingAnalytics = ref(false);
   const analyticsSubTab = ref('overview');
+  /** @type {import('vue').Ref<any>} */
   const analyticsMonthlyReport = ref(null);
   const isLoadingMonthlyReport = ref(false);
 

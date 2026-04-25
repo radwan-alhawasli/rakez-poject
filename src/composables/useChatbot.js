@@ -26,11 +26,15 @@ const ERROR_MESSAGES = {
   default: 'عذراً، حدث خطأ أثناء الاتصال. يرجى المحاولة لاحقاً.',
 };
 
+/** @param {any} status */
 function getErrorContent(status) {
-  return ERROR_MESSAGES[status] || ERROR_MESSAGES.default;
+  return ERROR_MESSAGES[/** @type {keyof typeof ERROR_MESSAGES} */ (status)] || ERROR_MESSAGES.default;
 }
 
-/** التحقق مما إذا كان النص يبدو كرسالة خطأ من الخادم الخلفي */
+/** 
+ * التحقق مما إذا كان النص يبدو كرسالة خطأ من الخادم الخلفي 
+ * @param {any} text
+ */
 function looksLikeBackendError(text) {
   if (!text || typeof text !== 'string') return false;
   const lower = text.toLowerCase();
@@ -60,14 +64,18 @@ export const STATUS_LABELS = {
 export function useChatbot(currentRouteRef, options = {}) {
   const router = useRouter();
   const disposed = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const messagesRef = ref(null);
+  /** @type {import('vue').Ref<any>} */
   const inputRef = ref(null);
   const inputText = ref('');
+  /** @type {import('vue').Ref<any[]>} */
   const messages = ref([]);
   const isTyping = ref(false);
   const isStreaming = ref(false);
   const streamingHtml = ref('');
   const statusLabel = ref('');
+  /** @type {import('vue').Ref<string|null>} */
   const sessionId = ref(options.initialSessionId || null);
   const section = ref(options.section || null);
 
@@ -76,7 +84,7 @@ export function useChatbot(currentRouteRef, options = {}) {
     try {
       isTyping.value = true;
       messages.value = []; // مسح الرسائل القديمة قبل تحميل الجديدة
-      const data = await aiService.getConversation(sessionId.value);
+      const data = /** @type {any} */ (await aiService.getConversation(sessionId.value));
 
       // استخراج الرسائل بناءً على هيكل الاستجابة المحتمل
       let historyMessages = [];
@@ -89,7 +97,7 @@ export function useChatbot(currentRouteRef, options = {}) {
       }
 
       if (historyMessages.length > 0) {
-        messages.value = historyMessages.map(m => {
+        messages.value = historyMessages.map(/** @param {any} m */ m => {
           const content = m.content || m.message || m.text || m.answer || m.answer_markdown || '';
           const role = m.role || (m.is_user || m.type === 'user' ? 'user' : 'assistant');
           return {
@@ -140,6 +148,7 @@ export function useChatbot(currentRouteRef, options = {}) {
     disposed.value = true;
   }
 
+  /** @param {string|null} newSessionId */
   function resetSession(newSessionId = null) {
     sessionId.value = newSessionId;
     messages.value = [];
@@ -147,12 +156,13 @@ export function useChatbot(currentRouteRef, options = {}) {
 
   /** بناء سياق الصفحة الحالية لإرساله مع الطلب */
   function buildPageContext() {
-    const r = currentRouteRef?.value ?? currentRouteRef ?? {};
-    const path = r.path || '/';
-    const entityId = r.params?.id
-      ? isNaN(Number(r.params.id))
+    const r = /** @type {any} */ (currentRouteRef);
+    const rValue = r?.value ?? r ?? {};
+    const path = rValue.path || '/';
+    const entityId = rValue.params?.id
+      ? isNaN(Number(rValue.params.id))
         ? null
-        : Number(r.params.id)
+        : Number(rValue.params.id)
       : null;
     let entityType = null;
     if (path.includes('lead') || path.includes('leads')) entityType = 'lead';
@@ -167,13 +177,15 @@ export function useChatbot(currentRouteRef, options = {}) {
     };
   }
 
+  /** @param {any} backendRoute */
   function navigateTo(backendRoute) {
     const path = backendRouteToVuePath(backendRoute);
     router.push(path);
   }
 
+  /** @param {string} content */
   function pushErrorMessage(content) {
-    messages.value.push({
+    messages.value.push(/** @type {any} */ ({
       role: 'assistant',
       content,
       contentHtml: sanitizeMarkdown(content),
@@ -182,11 +194,12 @@ export function useChatbot(currentRouteRef, options = {}) {
       followUpQuestions: [],
       explainAccess: null,
       isError: true,
-    });
+    }));
   }
 
+  /** @param {any} data */
   function pushAssistantMessage(data) {
-    messages.value.push({
+    messages.value.push(/** @type {any} */ ({
       role: 'assistant',
       content: data.content || '',
       contentHtml: data.contentHtml
@@ -197,29 +210,34 @@ export function useChatbot(currentRouteRef, options = {}) {
       followUpQuestions: data.followUpQuestions || [],
       explainAccess: data.explainAccess || null,
       isError: false,
-    });
+    }));
   }
 
   // --------------- V2 streaming ---------------
 
+  /** @param {string} text */
   async function sendMessageStream(text) {
     isStreaming.value = true;
     let accumulated = '';
-    let meta = {};
-    let sseError = null;
+    let meta = /** @type {any} */ ({});
+    let sseError = /** @type {any} */ (null);
 
     const callbacks = {
+      /** @param {{stage: string}} param0 */
       onStatus: ({ stage }) => {
-        statusLabel.value = STATUS_LABELS[stage] || '';
+        statusLabel.value = STATUS_LABELS[/** @type {keyof typeof STATUS_LABELS} */ (stage)] || '';
       },
+      /** @param {{text: string}} param0 */
       onDelta: ({ text: chunk }) => {
         accumulated += chunk;
         streamingHtml.value = sanitizeMarkdown(accumulated);
       },
+      /** @param {any} data */
       onMeta: data => {
         meta = data;
         if (data.session_id) sessionId.value = data.session_id;
       },
+      /** @param {any} data */
       onError: data => {
         sseError = data;
       },
@@ -229,13 +247,14 @@ export function useChatbot(currentRouteRef, options = {}) {
     try {
       await aiAssistantV2.chatStream(text, sessionId.value, buildPageContext(), callbacks);
     } catch (err) {
-      if (err.name === 'AbortError') {
+      const error = /** @type {any} */ (err);
+      if (error.name === 'AbortError') {
         if (accumulated) {
           pushAssistantMessage({ content: accumulated });
         }
         return;
       }
-      throw err;
+      throw error;
     }
 
     if (sseError) {
@@ -262,9 +281,10 @@ export function useChatbot(currentRouteRef, options = {}) {
 
   // --------------- V2 fetch ---------------
 
+  /** @param {string} text */
   async function sendMessageV2(text) {
     const pageContext = buildPageContext();
-    const response = await aiAssistantV2.chat(text, sessionId.value, pageContext);
+    const response = /** @type {any} */ (await aiAssistantV2.chat(text, sessionId.value, pageContext));
     if (disposed.value) return true;
 
     // تشخيص: عرض الرد الكامل من الخادم
@@ -333,6 +353,7 @@ export function useChatbot(currentRouteRef, options = {}) {
 
   // --------------- V1 احتياطي ---------------
 
+  /** @param {string} text */
   async function sendMessageV1(text) {
     const payload = {
       message: text,
@@ -340,7 +361,7 @@ export function useChatbot(currentRouteRef, options = {}) {
       section: section.value || undefined,
       context: {},
     };
-    const data = await aiService.chat(payload);
+    const data = /** @type {any} */ (await aiService.chat(payload));
     if (disposed.value) return true;
 
     logger.debug('[V1 تشخيص] الرد:', JSON.stringify(data, null, 2));
@@ -361,21 +382,22 @@ export function useChatbot(currentRouteRef, options = {}) {
 
   // --------------- بحث RAG ---------------
 
+  /** @param {string} query */
   async function ragSearch(query) {
     if (!query || isTyping.value) return;
 
-    messages.value.push({ role: 'user', content: query });
+    messages.value.push(/** @type {any} */ ({ role: 'user', content: query }));
     isTyping.value = true;
 
     try {
-      const sources = await aiAssistantV2.search(query);
+      const sources = /** @type {any[]} */ (await aiAssistantV2.search(query));
       if (disposed.value) return;
 
       if (sources.length === 0) {
         pushAssistantMessage({ content: 'لم يتم العثور على نتائج مطابقة.' });
       } else {
         const summaryLines = sources.map(
-          (s, i) => `${i + 1}. **${s.title || 'مصدر'}**${s.excerpt ? ': ' + s.excerpt : ''}`
+          (s, i) => `${i + 1}. **${(/** @type {any} */ (s)).title || 'مصدر'}**${(/** @type {any} */ (s)).excerpt ? ': ' + (/** @type {any} */ (s)).excerpt : ''}`
         );
         const markdown = '### نتائج البحث\n\n' + summaryLines.join('\n');
         pushAssistantMessage({
@@ -386,9 +408,10 @@ export function useChatbot(currentRouteRef, options = {}) {
       }
     } catch (err) {
       if (disposed.value) return;
-      const status = err.status ?? err.response?.status;
+      const error = /** @type {any} */ (err);
+      const status = error.status ?? error.response?.status;
       pushErrorMessage(getErrorContent(status));
-      logger.error('خطأ في بحث RAG:', err);
+      logger.error('خطأ في بحث RAG:', error);
     } finally {
       if (!disposed.value) {
         isTyping.value = false;
@@ -403,7 +426,7 @@ export function useChatbot(currentRouteRef, options = {}) {
     const text = inputText.value?.trim();
     if (!text || isTyping.value) return;
 
-    messages.value.push({ role: 'user', content: text });
+    messages.value.push(/** @type {any} */ ({ role: 'user', content: text }));
     inputText.value = '';
     isTyping.value = true;
     isSending = true;
@@ -414,7 +437,8 @@ export function useChatbot(currentRouteRef, options = {}) {
       } catch (streamErr) {
         if (disposed.value) return;
 
-        const status = streamErr.status ?? streamErr.response?.status;
+        const error = /** @type {any} */ (streamErr);
+        const status = error.status ?? error.response?.status;
         if (status === 403) {
           pushErrorMessage(aiAssistantV2.AI_V2_MESSAGES.FORBIDDEN);
           return;
@@ -426,15 +450,17 @@ export function useChatbot(currentRouteRef, options = {}) {
           await sendMessageV2(text);
         } catch (err) {
           if (disposed.value) return;
-          logger.debug('فشل V2، جاري تجربة V1', err.status ?? err.response?.status);
+          const errorV2 = /** @type {any} */ (err);
+          logger.debug('فشل V2، جاري تجربة V1', errorV2.status ?? errorV2.response?.status);
 
           try {
             await sendMessageV1(text);
           } catch (v1Err) {
             if (disposed.value) return;
-            const v1Status = v1Err.status ?? v1Err.response?.status;
+            const errorV1 = /** @type {any} */ (v1Err);
+            const v1Status = errorV1.status ?? errorV1.response?.status;
             pushErrorMessage(getErrorContent(v1Status));
-            logger.error('فشلت جميع نقاط الوصول:', v1Err);
+            logger.error('فشلت جميع نقاط الوصول:', errorV1);
           }
         }
       }
@@ -452,9 +478,11 @@ export function useChatbot(currentRouteRef, options = {}) {
 
   function retryLastMessage() {
     if (messages.value.length < 2) return;
+    /** @type {any} */
     const lastAssistant = messages.value[messages.value.length - 1];
     if (lastAssistant?.role !== 'assistant' || !lastAssistant.isError) return;
     messages.value.pop();
+    /** @type {any} */
     const lastUser = messages.value[messages.value.length - 1];
     if (lastUser?.role === 'user') {
       inputText.value = lastUser.content;
@@ -463,11 +491,13 @@ export function useChatbot(currentRouteRef, options = {}) {
     }
   }
 
+  /** @param {string} text */
   function sendQuickPrompt(text) {
     inputText.value = text;
     sendMessage();
   }
 
+  /** @param {string} content */
   function copyMessageContent(content) {
     if (!content) return Promise.resolve();
     return navigator.clipboard.writeText(content).catch(err => {
@@ -478,7 +508,7 @@ export function useChatbot(currentRouteRef, options = {}) {
   function scrollToBottom() {
     nextTick(() => {
       if (disposed.value || !messagesRef.value) return;
-      messagesRef.value.scrollTop = messagesRef.value.scrollHeight;
+      (/** @type {any} */ (messagesRef.value)).scrollTop = (/** @type {any} */ (messagesRef.value)).scrollHeight;
     });
   }
 

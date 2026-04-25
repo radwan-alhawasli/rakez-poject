@@ -29,13 +29,15 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
   const createdReservationId = ref(null);
   const lastReservationPayload = ref(null);
   const isVoucherDownloading = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const reservationLookups = ref(null);
+  /** @type {import('vue').Ref<any>} */
   const reservationContextRef = ref(null);
 
   const reservationLookupsForModal = computed(() => {
     const l = reservationLookups.value?.nationalities;
     const nationalities = Array.isArray(l) && l.length
-      ? l.map(n => ({ value: n.value ?? n, label: n.label ?? n }))
+      ? l.map(/** @param {any} n */ n => ({ value: n.value ?? n, label: n.label ?? n }))
       : NATIONALITIES;
     return {
       nationalities,
@@ -67,6 +69,7 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
     commission_percentage: 3,
   });
 
+  /** @param {any} response */
   const pickReservationIdFromCreateResponse = response => {
     const d = response?.data?.data ?? response?.data;
     if (d == null) return null;
@@ -82,6 +85,7 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
     return null;
   };
 
+  /** @param {any} created */
   const pickPmReservationId = created => {
     if (created == null || typeof created !== 'object') return null;
     const id = created.reservation_id ?? created.id;
@@ -127,7 +131,7 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
             logger.warn('PM voucher file failed, trying voucher-data', e);
           }
           try {
-            const vd = await getProjectManagementReservationVoucherData(rid);
+            const vd = /** @type {any} */ (await getProjectManagementReservationVoucherData(rid));
             const asset = pickVoucherAssetDescriptor(vd);
             if (asset) {
               const imgBlob = await blobFromVoucherAssetDescriptor(asset);
@@ -202,15 +206,15 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
         }
       }
 
-      const payload = lastReservationPayload.value;
+      const payload = /** @type {any} */ (lastReservationPayload.value);
       if (!payload || typeof payload !== 'object') {
         notificationService.addNotification('لا توجد بيانات كافية لإصدار السند', 'error');
         return;
       }
       const { generateReservationVoucherPdf } = await import('@/services/pdfService');
-      const ctx = reservationContextRef.value && typeof reservationContextRef.value === 'object'
+      const ctx = /** @type {any} */ (reservationContextRef.value && typeof reservationContextRef.value === 'object'
         ? reservationContextRef.value
-        : {};
+        : {});
       const unit = ctx.unit ?? selectedUnit.value ?? {};
       const contract =
         typeof ctx.contract === 'object' && ctx.contract
@@ -258,6 +262,7 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
     }
   };
 
+  /** @param {any} unit */
   const openReserveModal = async (unit) => {
     createdReservationId.value = null;
     lastReservationPayload.value = null;
@@ -265,6 +270,7 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
     reservationForm.contract_id = projectId;
     reservationForm.contract_unit_id = unit.id;
     reservationContextRef.value = null;
+    /** @type {any} */
     let data = null;
     try {
       if (useProjectManagementApi) {
@@ -287,11 +293,12 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
           }
         }
       } else {
+        /** @type {any} */
         let response;
         try {
           response = await salesService.getReservationContext(unit.id, { include: 'teams' });
         } catch (e) {
-          const st = e?.response?.status;
+          const st = /** @type {any} */ (e)?.response?.status;
           if (st === 400 || st === 422) {
             response = await salesService.getReservationContext(unit.id);
           } else {
@@ -324,10 +331,11 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
       reservationLookups.value = null;
     }
 
+    /** @type {any[]} */
     let teamsList = [];
     if (projectId) {
       try {
-        const t = await getContractTeams(projectId);
+        const t = /** @type {any} */ (await getContractTeams(projectId));
         teamsList = Array.isArray(t) ? t : [];
       } catch (e) {
         logger.warn('Reservation modal: could not load project marketing teams', e);
@@ -343,22 +351,23 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
     showReservationModal.value = true;
   };
 
+  /** @param {any} payload */
   const submitReservationPayload = async payload => {
     isSubmitting.value = true;
     try {
       if (useProjectManagementApi) {
-        const ctx = reservationContextRef.value && typeof reservationContextRef.value === 'object'
+        const ctx = /** @type {any} */ (reservationContextRef.value && typeof reservationContextRef.value === 'object'
           ? reservationContextRef.value
-          : {};
+          : {});
         const u = ctx.unit ?? selectedUnit.value ?? {};
         const proposed = Number(payload.proposed_price);
         const finalPrice =
           Number.isFinite(proposed) && proposed > 0
             ? proposed
-            : Number(u.price ?? u.total_unit_price ?? selectedUnit.value?.price ?? selectedUnit.value?.total_price ?? 0);
+            : Number(u.price ?? u.total_unit_price ?? (/** @type {any} */ (selectedUnit.value))?.price ?? (/** @type {any} */ (selectedUnit.value))?.total_price ?? 0);
         const pct = Number(reservationForm.commission_percentage);
         const pmBody = {
-          unit_id: Number(payload.contract_unit_id ?? selectedUnit.value?.id),
+          unit_id: Number(payload.contract_unit_id ?? (/** @type {any} */ (selectedUnit.value))?.id),
           client_name: String(payload.client_name || '').trim(),
           client_phone: String(payload.client_mobile || '').trim(),
           client_email: String(reservationForm.client_email || '').trim(),
@@ -368,7 +377,7 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
           commission_source: 'owner',
           commission_percentage: Number.isFinite(pct) && pct >= 0 ? pct : 3,
         };
-        const created = await createProjectManagementReservation(pmBody);
+        const created = /** @type {any} */ (await createProjectManagementReservation(pmBody));
         lastReservationPayload.value = { ...payload, ...pmBody };
         const rid = pickPmReservationId(created);
         createdReservationId.value = rid != null && rid !== '' ? rid : null;
@@ -381,7 +390,7 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
           );
         }
       } else {
-        const response = await salesService.createReservation(payload);
+        const response = /** @type {any} */ (await salesService.createReservation(payload));
         lastReservationPayload.value = { ...payload };
         const rid = pickReservationIdFromCreateResponse(response);
         createdReservationId.value = rid != null && rid !== '' ? rid : null;

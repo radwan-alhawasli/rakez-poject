@@ -9,6 +9,7 @@ import { showApiError } from '@/utils/errorHandler';
 
 export function useCreditClaimFiles() {
   const isLoading = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const claimFiles = ref([]);
   const currentPage = ref(1);
   const perPage = ref(25);
@@ -16,14 +17,18 @@ export function useCreditClaimFiles() {
 
   const showClaimModal = ref(false);
   const showCombinedClaimModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const combinedClaimModalRef = ref(null);
+  /** @type {import('vue').Ref<any>} */
   const selectedClaim = ref(null);
   const isSavingClaim = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const claimCandidates = ref([]);
   const isLoadingCandidates = ref(false);
   const isSavingCombinedClaim = ref(false);
 
   const { formatCurrency, formatDate: _fmtDate } = useFormatters();
+  /** @param {any} dateStr */
   const formatDate = dateStr => (!dateStr ? 'غير محدد' : _fmtDate(dateStr));
 
 
@@ -65,11 +70,12 @@ export function useCreditClaimFiles() {
     }
   };
 
+  /** @param {any} payload */
   const handleCombinedClaimSubmit = async payload => {
     isSavingCombinedClaim.value = true;
     try {
       const result = await creditService.createCombinedClaimFile(payload);
-      const fileId = result?.id ?? '';
+      const fileId = (/** @type {any} */ (result))?.id ?? '';
       toast.success(
         fileId
           ? `تم إنشاء ملف المطالبة المجمّع رقم ${fileId}`
@@ -79,19 +85,20 @@ export function useCreditClaimFiles() {
       loadClaimFiles();
     } catch (error) {
       logger.error('Error creating combined claim file:', error);
-      const msg = error?.response?.data?.message;
+      const msg = (/** @type {any} */ (error))?.response?.data?.message;
       toast.error(msg || 'حدث خطأ أثناء إنشاء ملف المطالبة المجمّع');
     } finally {
       isSavingCombinedClaim.value = false;
     }
   };
 
+  /** @param {any} payload */
   const handleBulkClaimSubmit = async payload => {
     isSavingCombinedClaim.value = true;
     try {
       const result = await creditService.generateBulkClaimFiles(payload);
-      const created = result?.created ?? {};
-      const errors = result?.errors ?? {};
+      const created = (/** @type {any} */ (result))?.created ?? {};
+      const errors = (/** @type {any} */ (result))?.errors ?? {};
       const createdCount = Object.keys(created).length;
       const errorCount = Object.keys(errors).length;
 
@@ -116,11 +123,13 @@ export function useCreditClaimFiles() {
     }
   };
 
+  /** @param {any} claim */
   const downloadClaimPdf = claim => {
     const url = creditService.getClaimFilePdfDownloadUrl(claim.id);
     window.open(url, '_blank');
   };
 
+  /** @param {any} claim */
   const generateClaimPdf = async claim => {
     try {
       await creditService.generateClaimFilePdf(claim.id);
@@ -132,6 +141,7 @@ export function useCreditClaimFiles() {
     }
   };
 
+  /** @param {any} claim */
   const submitClaim = async claim => {
     try {
       await creditService.submitClaim(claim.id);
@@ -143,16 +153,18 @@ export function useCreditClaimFiles() {
     }
   };
 
+  /** @param {any} claim */
   const approveClaim = claim => {
     selectedClaim.value = claim;
     showClaimModal.value = true;
   };
 
+  /** @param {any} data */
   const handleClaimSubmit = async data => {
     isSavingClaim.value = true;
     try {
-      if (selectedClaim.value && selectedClaim.value.id) {
-        await creditService.approveClaim(selectedClaim.value.id, data);
+      if (selectedClaim.value && (/** @type {any} */ (selectedClaim.value)).id) {
+        await creditService.approveClaim((/** @type {any} */ (selectedClaim.value)).id, data);
         toast.success('تم الموافقة على ملف المطالبة بنجاح');
       } else {
         await creditService.createClaimFile(data);
@@ -168,11 +180,13 @@ export function useCreditClaimFiles() {
     }
   };
 
+  /** @param {any} page */
   const handlePageChange = page => {
     currentPage.value = page;
     loadClaimFiles();
   };
 
+  /** @param {any} val */
   const handlePerPageChange = val => {
     perPage.value = val;
     currentPage.value = 1;

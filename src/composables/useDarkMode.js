@@ -4,6 +4,7 @@ const STORAGE_KEY = 'rakez-dark-mode';
 
 const isDark = ref(false);
 
+/** @param {boolean} dark */
 function applyTheme(dark) {
   if (dark) {
     document.documentElement.classList.add('dark');

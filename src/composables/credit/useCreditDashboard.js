@@ -21,9 +21,10 @@ export function useCreditDashboard() {
     isLoading.value = true;
     try {
       const data = await creditService.getDashboard();
-      const root = data && typeof data === 'object' ? data : {};
+      const root = data && typeof data === 'object' ? (/** @type {any} */ (data)) : {};
       const nested = root.kpis && typeof root.kpis === 'object' ? root.kpis : {};
       const kpis = { ...root, ...nested };
+      /** @param {any} v */
       const num = v => (v == null || v === '' ? 0 : Number(v)) || 0;
 
       dashboardMetrics.confirmedBookings = num(
@@ -46,10 +47,18 @@ export function useCreditDashboard() {
     }
   };
 
+  /** @param {any} v */
+  const formatValue = v => {
+    if (v === null || v === undefined) return '0';
+    if (typeof v === 'number') return v.toLocaleString();
+    return String(v);
+  };
+
   return {
     userName,
     isLoading,
     dashboardMetrics,
     loadDashboardMetrics,
+    formatValue,
   };
 }

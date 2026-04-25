@@ -7,7 +7,9 @@ import logger from '@/utils/logger';
 export function useSalesTasks() {
   const { hasPermission } = usePermissions();
 
+  /** @type {import('vue').Ref<any[]>} */
   const marketingTasks = shallowRef([]);
+  /** @type {import('vue').Ref<any[]>} */
   const taskProjectOptions = shallowRef([]);
   const isLoadingTasks = ref(false);
   const showCreateTaskModal = ref(false);
@@ -21,7 +23,7 @@ export function useSalesTasks() {
   const loadTaskProjectOptions = async () => {
     try {
       const list = await salesService.getTaskProjects();
-      taskProjectOptions.value = (Array.isArray(list) ? list : []).map(p => ({
+      taskProjectOptions.value = (Array.isArray(list) ? list : []).map(/** @param {any} p */ p => ({
         ...p,
         id: p.contract_id ?? p.id,
         contract_id: p.contract_id ?? p.id,
@@ -44,12 +46,13 @@ export function useSalesTasks() {
       const projectList = Array.isArray(projects) ? projects : [];
       const allTasks = [];
       for (const project of projectList) {
-        const projectId = project.contract_id ?? project.id;
+        const p = /** @type {any} */ (project);
+        const projectId = p.contract_id ?? p.id;
         if (projectId == null || projectId === '') continue;
         const tasks = await salesService.getProjectTasks(projectId);
         const projectName =
-          project.project_name ?? project.name ?? project.contract_name ?? `مشروع #${projectId}`;
-        const normalized = (Array.isArray(tasks) ? tasks : []).map(t => ({
+          p.project_name ?? p.name ?? p.contract_name ?? `مشروع #${projectId}`;
+        const normalized = (Array.isArray(tasks) ? tasks : []).map(/** @param {any} t */ t => ({
           id: t.id ?? t.task_id,
           task_name: t.task_name ?? t.name ?? t.title ?? '—',
           status: t.status ?? t.task_status ?? 'pending',
@@ -70,6 +73,7 @@ export function useSalesTasks() {
     }
   };
 
+  /** @param {any} status */
   const getTaskStatusText = status => {
     const statusMap = {
       pending: 'معلقة',
@@ -77,9 +81,13 @@ export function useSalesTasks() {
       completed: 'مكتملة',
       cancelled: 'ملغاة',
     };
-    return statusMap[status] || status;
+    return statusMap[/** @type {keyof typeof statusMap} */ (status)] || status;
   };
 
+  /** 
+   * @param {any} teamMembers 
+   * @param {Function} loadTeamMembers 
+   */
   const openCreateTaskModal = async (teamMembers, loadTeamMembers) => {
     if (teamMembers.value.length === 0) await loadTeamMembers();
     if (taskProjectOptions.value.length === 0) await loadTaskProjectOptions();
@@ -108,6 +116,10 @@ export function useSalesTasks() {
     }
   };
 
+  /** 
+   * @param {any} taskId 
+   * @param {any} status 
+   */
   const updateTask = async (taskId, status) => {
     if (!hasPermission('sales.tasks.manage')) {
       notificationService.addNotification('غير مصرح لك بتحديث حالة المهام', 'warning');

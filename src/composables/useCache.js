@@ -2,9 +2,16 @@ import { ref, shallowRef } from 'vue';
 
 const _store = new Map();
 
+/**
+ * @param {string} key
+ * @param {Function} fetcher
+ * @param {number} [ttlMs]
+ */
 export function useCache(key, fetcher, ttlMs = 60000) {
+  /** @type {import('vue').ShallowRef<any>} */
   const data = shallowRef(null);
   const isLoading = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const error = ref(null);
 
   function _getCached() {

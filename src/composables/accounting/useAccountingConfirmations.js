@@ -10,6 +10,7 @@ export function useAccountingConfirmations() {
   const currentPage = ref(1);
   const perPage = ref(25);
   const totalItems = ref(0);
+  const showConfirmationHistoryModal = ref(false);
 
   /** @type {import('vue').Ref<any>} */
   const selectedReservationId = ref(null);

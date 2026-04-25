@@ -12,7 +12,9 @@ import {
   recordAfterAdvance,
 } from '@/utils/creditFinancingStages';
 
+/** @param {any} obj */
 function stripEmptyPayload(obj) {
+  /** @type {any} */
   const out = {};
   Object.entries(obj || {}).forEach(([k, v]) => {
     if (v === undefined || v === null) return;
@@ -23,7 +25,12 @@ function stripEmptyPayload(obj) {
   return out;
 }
 
-/** دمج استجابة GET /financing مع حقول العرض إن وُجدت في GET /bookings/:id */
+/**
+ * دمج استجابة GET /financing مع حقول العرض إن وُجدت في GET /bookings/:id
+ * @param {any} financingGet
+ * @param {any} bookingPayload
+ * @param {any} bookingId
+ */
 function buildFinancingTrackerState(financingGet, bookingPayload, bookingId) {
   const fromFin = financingGet && typeof financingGet === 'object' ? financingGet : {};
   const fromBook = bookingPayload && typeof bookingPayload === 'object' ? bookingPayload : {};
@@ -50,6 +57,10 @@ function buildFinancingTrackerState(financingGet, bookingPayload, bookingId) {
   return hasSignal ? merged : null;
 }
 
+/**
+ * @param {any} tracker
+ * @param {any} booking
+ */
 function countCompletedStages(tracker, booking) {
   const cap = getTrackerStageCount(booking || {});
   const t = tracker;
@@ -88,13 +99,20 @@ export function useCreditBookings() {
   const perPage = ref(25);
   const totalItems = ref(0);
 
+  /** @type {import('vue').Ref<any[]>} */
   const confirmedBookings = ref([]);
+  /** @type {import('vue').Ref<any[]>} */
   const negotiationBookings = ref([]);
+  /** @type {import('vue').Ref<any[]>} */
   const waitingBookings = ref([]);
+  /** @type {import('vue').Ref<any[]>} */
   const soldBookings = ref([]);
+  /** @type {import('vue').Ref<any[]>} */
   const rejectedBookings = ref([]);
 
+  /** @type {import('vue').Ref<any>} */
   const selectedBooking = ref(null);
+  /** @type {import('vue').Ref<any>} */
   const selectedFinancingTracker = ref(null);
 
   const showNegotiationModal = ref(false);
@@ -123,13 +141,16 @@ export function useCreditBookings() {
     message: '',
     type: 'warning',
     confirmText: 'تأكيد',
+    /** @type {(() => void) | null} */
     resolve: null,
   });
 
   const { formatDate: _fmtDate } = useFormatters();
+  /** @param {any} dateStr */
   const formatDate = dateStr => (!dateStr ? 'غير محدد' : _fmtDate(dateStr));
 
   /** تواريخ الجدول: YYYY-MM-DD بدون انحراف تقويم/منطقة زمنية */
+  /** @param {any} dateStr */
   const formatBookingListDate = dateStr => {
     if (dateStr == null || dateStr === '') return 'غير محدد';
     const s = String(dateStr).trim();
@@ -142,7 +163,7 @@ export function useCreditBookings() {
 
   const bookingsSubTab = computed(() => {
     if (route.name !== 'CreditBookings') return 'confirmed';
-    let t = route.query.tab || 'confirmed';
+    let t = String(route.query.tab || 'confirmed');
     if (t === 'all') t = 'confirmed';
     const allowed = ['confirmed', 'negotiation', 'waiting', 'sold', 'rejected'];
     return allowed.includes(t) ? t : 'confirmed';
@@ -159,9 +180,10 @@ export function useCreditBookings() {
   );
 
   const hasBookingRowActions = computed(() =>
-    ['confirmed', 'negotiation', 'waiting'].includes(bookingsSubTab.value),
+    ['confirmed', 'negotiation', 'waiting'].includes(String(bookingsSubTab.value)),
   );
 
+  /** @param {any} tab */
   const setBookingsSubTab = tab => {
     router.push({ name: 'CreditBookings', query: { ...route.query, tab } });
   };
@@ -177,7 +199,8 @@ export function useCreditBookings() {
   });
 
   const emptyBookingsMessage = computed(() => {
-    const tab = bookingsSubTab.value;
+    const tab = String(bookingsSubTab.value);
+    /** @type {Record<string, string>} */
     const messages = {
       confirmed: 'لا توجد حجوزات مؤكدة',
       negotiation: 'لا توجد حجوزات قيد التفاوض',
@@ -188,6 +211,7 @@ export function useCreditBookings() {
     return messages[tab] || 'لا توجد حجوزات';
   });
 
+  /** @param {any} booking */
   const getBookingStatusClass = booking => {
     const s = (booking.credit_status ?? booking.status ?? '').toLowerCase();
     if (s.includes('confirmed') || s.includes('مؤكد') || s.includes('approved'))
@@ -199,9 +223,11 @@ export function useCreditBookings() {
     return 'good';
   };
 
+  /** @param {any} booking */
   const getBookingStatusLabel = booking => {
     if (booking.credit_status_label_ar) return booking.credit_status_label_ar;
     const s = booking.credit_status ?? booking.status ?? '';
+    /** @type {Record<string, string>} */
     const map = {
       confirmed: 'مؤكد',
       negotiation: 'قيد التفاوض',
@@ -215,11 +241,14 @@ export function useCreditBookings() {
 
   // ── Normalization ──
 
+  /** @param {any} r */
   const normalizeBookingListItem = r => {
-    const id = r?.id ?? r?.reservation_id ?? r?.booking_id;
-    return { ...r, id, reservation_id: r?.reservation_id ?? r?.id ?? r?.booking_id ?? id };
+    if (!r) return null;
+    const id = r.id ?? r.reservation_id ?? r.booking_id;
+    return { ...r, id, reservation_id: r.reservation_id ?? id };
   };
 
+  /** @param {any} raw */
   const normalizeBookingForModal = raw => {
     if (!raw) return null;
     const snap = raw.snapshot && typeof raw.snapshot === 'object' ? raw.snapshot : {};
@@ -397,7 +426,7 @@ export function useCreditBookings() {
         per_page: perPage.value,
       });
       const raw = data?.items ?? (Array.isArray(data) ? data : []);
-      soldBookings.value = raw.map(r =>
+      soldBookings.value = raw.map((/** @type {any} */ r) =>
         normalizeBookingListItem({
           ...r,
           customer_name: r.customer_name ?? r.client_name ?? 'غير محدد',
@@ -463,11 +492,13 @@ export function useCreditBookings() {
 
   // ── Pagination ──
 
+  /** @param {any} page */
   const handlePageChange = page => {
     currentPage.value = page;
     loadBookingsForCurrentTab();
   };
 
+  /** @param {any} val */
   const handlePerPageChange = val => {
     perPage.value = val;
     currentPage.value = 1;
@@ -495,6 +526,7 @@ export function useCreditBookings() {
     }
   };
 
+  /** @param {any} booking */
   const viewBookingDetail = async booking => {
     const bookingId = booking?.id ?? booking?.reservation_id ?? booking?.booking_id;
     if (!bookingId) {
@@ -825,7 +857,7 @@ export function useCreditBookings() {
       toast.success('تم رفض التمويل');
       if (selectedBooking.value) {
         selectedBooking.value = {
-          ...selectedBooking.value,
+          ...(/** @type {object} */ (selectedBooking.value)),
           credit_status: 'rejected',
           credit_status_label_ar: 'مرفوض التمويل',
         };
@@ -846,6 +878,7 @@ export function useCreditBookings() {
 
   // ── Negotiation ──
 
+  /** @param {any} booking */
   const openNegotiationUpdate = booking => {
     if (!(booking?.id ?? booking?.reservation_id)) {
       toast.warning('معرف الحجز غير صالح');
@@ -855,6 +888,7 @@ export function useCreditBookings() {
     showNegotiationModal.value = true;
   };
 
+  /** @param {any} data */
   const handleNegotiationUpdate = async data => {
     const bookingId = selectedBookingId();
     if (!bookingId) {
@@ -870,7 +904,7 @@ export function useCreditBookings() {
     } catch (error) {
       logger.error('Error updating negotiation:', error);
       const msg =
-        error?.code === 'INVALID_BOOKING_ID' ? error.message : 'حدث خطأ أثناء تحديث حالة التفاوض';
+        (/** @type {any} */ (error))?.code === 'INVALID_BOOKING_ID' ? (/** @type {any} */ (error)).message : 'حدث خطأ أثناء تحديث حالة التفاوض';
       toast.error(msg);
     } finally {
       isSavingNegotiation.value = false;
@@ -879,6 +913,7 @@ export function useCreditBookings() {
 
   // ── Process waiting ──
 
+  /** @param {any} booking */
   const openProcessWaiting = booking => {
     if (!(booking?.id ?? booking?.reservation_id)) {
       toast.warning('معرف الحجز غير صالح');
@@ -888,6 +923,7 @@ export function useCreditBookings() {
     showProcessModal.value = true;
   };
 
+  /** @param {any} data */
   const handleProcessWaiting = async data => {
     const bookingId = selectedBookingId();
     if (!bookingId) {
@@ -903,8 +939,8 @@ export function useCreditBookings() {
     } catch (error) {
       logger.error('Error processing waiting booking:', error);
       const msg =
-        error?.code === 'INVALID_BOOKING_ID'
-          ? error.message
+        (/** @type {any} */ (error))?.code === 'INVALID_BOOKING_ID'
+          ? (/** @type {any} */ (error)).message
           : getApiErrorMessage(error, 'حدث خطأ أثناء معالجة الحجز');
       toast.error(msg);
     } finally {

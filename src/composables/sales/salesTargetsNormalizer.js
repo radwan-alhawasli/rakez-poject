@@ -1,9 +1,14 @@
+/**
+ * @param {any} v
+ * @param {number} fallback
+ */
 export function num(v, fallback = 0) {
   if (v == null || v === '') return fallback;
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
 }
 
+/** @param {any} raw */
 export function normalizeTargetStatus(raw) {
   const rawStatus = String(raw?.status ?? '').trim();
   if (['منجز', 'مكتمل'].includes(rawStatus)) return 'completed';
@@ -19,12 +24,14 @@ export function normalizeTargetStatus(raw) {
   return 'new';
 }
 
+/** @param {any} uiStatus */
 export function mapStatusForApiPatch(uiStatus) {
   const s = String(uiStatus ?? '').toLowerCase();
   if (s === 'completed' || s === 'new' || s === 'in_progress') return s;
   return s;
 }
 
+/** @param {any} raw */
 export function extractSalesTargetRowId(raw) {
   if (!raw || typeof raw !== 'object') return null;
   if (typeof raw.sales_target === 'number' && Number.isFinite(raw.sales_target) && raw.sales_target > 0) {
@@ -33,6 +40,7 @@ export function extractSalesTargetRowId(raw) {
   if (typeof raw.sales_target === 'string' && /^\d+$/.test(String(raw.sales_target).trim())) {
     return String(raw.sales_target).trim();
   }
+  /** @param {any} o */
   const pick = (o) => {
     if (!o || typeof o !== 'object' || Array.isArray(o)) return null;
     return (
@@ -94,6 +102,7 @@ export function extractSalesTargetRowId(raw) {
   return v;
 }
 
+/** @param {any} raw */
 export function normalizeSalesTargetItem(raw) {
   if (!raw || typeof raw !== 'object') return raw;
   const project = raw.project || raw.contract || {};
@@ -173,6 +182,7 @@ export function normalizeSalesTargetItem(raw) {
   };
 }
 
+/** @param {any} target */
 export function getSalesTargetPatchId(target) {
   if (!target || typeof target !== 'object') return null;
   const direct =

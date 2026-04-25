@@ -3,6 +3,10 @@ import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import boardsDepartmentService from '@/services/boardsDepartmentService';
 
+/**
+ * @param {any} projectId
+ * @param {string} [projectName]
+ */
 export function useProjectBoards(projectId, projectName) {
   const isLoading = ref(false);
   const boardsTabState = ref('pending');

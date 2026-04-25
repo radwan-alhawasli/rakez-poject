@@ -6,6 +6,7 @@ import { showApiError } from '@/utils/errorHandler';
 
 export function useMarketingRequests() {
   const isLoading = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const requestsList = ref([]);
   const currentPage = ref(1);
   const perPage = ref(25);
@@ -14,6 +15,7 @@ export function useMarketingRequests() {
   const showCreateModal = ref(false);
   const showEditModal = ref(false);
   const showDeleteModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const selectedRequest = ref(null);
 
   const form = ref({
@@ -38,11 +40,13 @@ export function useMarketingRequests() {
     }
   };
 
+  /** @param {any} page */
   const handlePageChange = (page) => {
     currentPage.value = page;
     loadRequests();
   };
 
+  /** @param {any} val */
   const handlePerPageChange = (val) => {
     perPage.value = val;
     currentPage.value = 1;
@@ -54,6 +58,7 @@ export function useMarketingRequests() {
     showCreateModal.value = true;
   };
 
+  /** @param {any} req */
   const openEdit = (req) => {
     selectedRequest.value = req;
     form.value = {
@@ -65,6 +70,7 @@ export function useMarketingRequests() {
     showEditModal.value = true;
   };
 
+  /** @param {any} req */
   const openDelete = (req) => {
     selectedRequest.value = req;
     showDeleteModal.value = true;
@@ -90,7 +96,7 @@ export function useMarketingRequests() {
     if (!selectedRequest.value) return;
     isSaving.value = true;
     try {
-      await creditService.updateMarketingRequest(selectedRequest.value.id, form.value);
+      await creditService.updateMarketingRequest((/** @type {any} */ (selectedRequest.value)).id, form.value);
       toast.success('تم تحديث الطلب بنجاح');
       showEditModal.value = false;
       loadRequests();
@@ -105,7 +111,7 @@ export function useMarketingRequests() {
     if (!selectedRequest.value) return;
     isSaving.value = true;
     try {
-      await creditService.deleteMarketingRequest(selectedRequest.value.id);
+      await creditService.deleteMarketingRequest((/** @type {any} */ (selectedRequest.value)).id);
       toast.success('تم حذف الطلب بنجاح');
       showDeleteModal.value = false;
       loadRequests();

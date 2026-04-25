@@ -182,7 +182,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, inject, unref } from 'vue';
 import { useRoute } from 'vue-router';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { CardSkeleton, TableSkeleton } from '@/components/ui/skeleton';
 import Pagination from '@/components/Pagination.vue';
 import SalesTargetsAssignMarketersModal from '@/modules/sales/tabs/targets/SalesTargetsAssignMarketersModal.vue';

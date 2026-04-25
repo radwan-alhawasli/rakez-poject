@@ -38,6 +38,7 @@ export function useProjectManagement() {
   const activeTab = ref(isEditor.value ? 'all_projects' : 'not_ready');
   const searchQuery = ref('');
   const isLoading = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const projects = ref([]);
   const activeMenuId = ref(null);
   const currentPage = ref(1);
@@ -162,20 +163,23 @@ export function useProjectManagement() {
   const notReadyCount = computed(() => projects.value.filter(isNotReadyTab).length);
   const readyCount = computed(() => projects.value.filter(isReadyForMarketingTab).length);
   const archiveCount = computed(
-    () => projects.value.filter(p => p.status === 'Refused' || p.status === 'Rejected').length
+    () => projects.value.filter((/** @type {any} */ p) => p.status === 'Refused' || p.status === 'Rejected').length
   );
   const allProjectsCount = computed(
-    () => projects.value.filter(p => p.status !== 'Rejected' && p.status !== 'Refused').length
+    () => projects.value.filter((/** @type {any} */ p) => p.status !== 'Rejected' && p.status !== 'Refused').length
   );
 
+  /** @param {any} project */
   const viewTracker = project => {
     router.push({ name: 'ProjectTracker', params: { id: project.id } });
   };
 
+  /** @param {any} id */
   const toggleMenu = id => {
     activeMenuId.value = activeMenuId.value === id ? null : id;
   };
 
+  /** @param {any} project */
   const onEditProject = project => {
     activeMenuId.value = null;
     router.push({ name: 'ProjectTracker', params: { id: project.id } });
@@ -190,6 +194,7 @@ export function useProjectManagement() {
     }
   };
 
+  /** @param {any} project */
   const onMarkComplete = async project => {
     activeMenuId.value = null;
     const id = project?.contract_id ?? project?.id;
@@ -217,6 +222,7 @@ export function useProjectManagement() {
     }
   };
 
+  /** @param {any} project */
   const onDownloadContract = async project => {
     activeMenuId.value = null;
     const cid = project?.contract_id ?? project?.id;
@@ -257,12 +263,14 @@ export function useProjectManagement() {
     isMediaSaving,
   });
 
+  /** @param {number} page */
   const handlePageChange = page => {
     currentPage.value = page;
     window.scrollTo({ top: 0, behavior: 'smooth' });
     fetchProjects();
   };
 
+  /** @param {number} newPerPage */
   const handlePerPageChange = newPerPage => {
     perPage.value = newPerPage;
     currentPage.value = 1;

@@ -106,16 +106,19 @@ export function useAccountingDeposits() {
     if (done !== undefined) loadDepositsFollowUp();
   };
 
+  /** @param {any} deposit */
   const confirmDeposit = (deposit) => {
     selectedDeposit.value = deposit;
     showDepositModal.value = true;
   };
 
+  /** @param {any} deposit */
   const processRefund = (deposit) => {
     selectedDeposit.value = deposit;
     showDepositModal.value = true;
   };
 
+  /** @param {any} data */
   const handleDepositSubmit = async (data) => {
     const successMsg =
       data.action === 'confirm' ? 'تم تأكيد الوديعة بنجاح' : 'تم معالجة الاسترداد بنجاح';
@@ -150,6 +153,7 @@ export function useAccountingDeposits() {
   };
 
   const { formatCurrency, formatDate: _fmtDate } = useFormatters();
+  /** @param {any} dateStr */
   const formatDate = (dateStr) => (!dateStr ? 'غير محدد' : _fmtDate(dateStr));
 
   const filteredDeposits = computed(() => {

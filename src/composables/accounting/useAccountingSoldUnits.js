@@ -6,8 +6,10 @@ import { mergeSoldUnitDetail } from '@/utils/accountingSoldUnitFields';
 
 export function useAccountingSoldUnits() {
   const isLoading = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const soldUnits = ref([]);
   const soldUnitDetailView = ref('list');
+  /** @type {import('vue').Ref<any>} */
   const selectedSoldUnit = ref(null);
   const currentPage = ref(1);
   const perPage = ref(25);
@@ -31,6 +33,7 @@ export function useAccountingSoldUnits() {
     }
   };
 
+  /** @param {any} unit */
   const viewSoldUnitDetail = async (unit) => {
     selectedSoldUnit.value = unit;
     soldUnitDetailView.value = 'detail';
@@ -52,11 +55,13 @@ export function useAccountingSoldUnits() {
   };
 
 
+  /** @param {any} page */
   const handlePageChange = (page) => {
     currentPage.value = page;
     loadSoldUnits();
   };
 
+  /** @param {any} val */
   const handlePerPageChange = (val) => {
     perPage.value = val;
     currentPage.value = 1;

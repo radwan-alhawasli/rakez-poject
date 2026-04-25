@@ -11,17 +11,22 @@ export function useSalesProjects() {
   const router = useRouter();
   const { formatCurrencyAr: formatCurrency } = useFormatters();
 
+  /** @type {import('vue').ShallowRef<any[]>} */
   const projects = shallowRef([]);
   const isLoadingProjects = ref(false);
   const searchQuery = ref('');
+  /** @type {import('vue').Ref<any>} */
   const selectedProject = ref(null);
   const showProjectModal = ref(false);
   const isLoadingProjectDetails = ref(false);
+  /** @type {import('vue').ShallowRef<any[]>} */
   const projectUnits = shallowRef([]);
   const isLoadingUnits = ref(false);
+  /** @type {import('vue').Ref<string | number | null>} */
   const activeMenuId = ref(null);
   const projectsTab = ref('ready');
 
+  /** @param {any} p */
   const isProjectReady = p => {
     if (p.is_ready === true || p.is_ready === 1) return true;
     const s = String(p.status || p.contract_status || '').toLowerCase();
@@ -29,6 +34,7 @@ export function useSalesProjects() {
     return (s === 'approved' || s === 'ready' || s === 'completed') && hasUnits;
   };
 
+  /** @param {any} p */
   const _isProjectArchived = p => {
     const s = String(p.status || p.contract_status || '').toLowerCase();
     return s === 'refused' || s === 'rejected' || s === 'archived';
@@ -37,6 +43,7 @@ export function useSalesProjects() {
   const projectsList = computed(() => (Array.isArray(projects.value) ? projects.value : []));
 
   const filteredProjects = computed(() => {
+    /** @type {any[]} */
     let filtered = projectsList.value.filter(p => isProjectReady(p));
     if (searchQuery.value) {
       const q = searchQuery.value.toLowerCase();
@@ -58,13 +65,17 @@ export function useSalesProjects() {
         per_page: 100,
       };
       const response = await salesService.getProjects(params);
-      let rawData = response?.data?.data || response?.data || response;
+      /** @type {any} */
+      const res = response;
+      let rawData = res?.data?.data || res?.data || res;
       if (!Array.isArray(rawData) && rawData?.data) rawData = rawData.data;
       if (!Array.isArray(rawData)) rawData = [];
 
+      /** @param {any} p */
       const totalUnits = p => p.total_units ?? p.units_count ?? p.totalUnits ?? 0;
+      /** @param {any} p */
       const reservedUnits = p => p.reserved_units ?? p.reservedUnits ?? 0;
-      projects.value = rawData.map(p => {
+      projects.value = rawData.map((/** @type {any} */ p) => {
         const id = p.contract_id || p.id;
         const contractStatus = (
           p.contract_status || p.sales_status || p.status || 'pending'
@@ -197,10 +208,12 @@ export function useSalesProjects() {
     }
   };
 
+  /** @param {string | number} projectId */
   const viewProjectDetails = projectId => {
     router.push({ name: 'ProjectTracker', params: { id: projectId } });
   };
 
+  /** @param {string | number} projectId */
   const viewTracker = projectId => {
     router.push({ name: 'ProjectTracker', params: { id: projectId } });
   };

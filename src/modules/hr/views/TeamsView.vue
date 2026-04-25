@@ -147,7 +147,6 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue';
-import { CardSkeleton } from '@/components/ui/skeleton';
 import userService from '@/services/userService';
 import { getRoleLabel } from '@/constants/roles';
 import logger from '@/utils/logger';

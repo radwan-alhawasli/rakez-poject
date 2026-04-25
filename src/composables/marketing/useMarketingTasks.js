@@ -5,8 +5,10 @@ import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 
 export function useMarketingTasks() {
+  /** @type {import('vue').Ref<any[]>} */
   const tasks = ref([]);
   const isLoadingTasks = ref(false);
+  /** @type {import('vue').Ref<Set<any>>} */
   const knownTaskIds = ref(new Set());
   const marketingTasks = computed(() => tasks.value);
 
@@ -15,16 +17,16 @@ export function useMarketingTasks() {
     try {
       const data = await marketingService.getTasks();
       tasks.value = data?.items ?? (Array.isArray(data) ? data : []);
-      const currentIds = new Set(knownTaskIds.value);
+      const currentIds = knownTaskIds.value;
       const newTask = tasks.value.find(
-        t =>
+        (/** @type {any} */ t) =>
           !currentIds.has(t.id) &&
           ['new', 'pending'].includes(String(t.status || '').toLowerCase())
       );
       if (newTask) {
         notificationService.addNotification('تمت إضافة مهمة يومية جديدة', 'info');
       }
-      knownTaskIds.value = new Set(tasks.value.map(t => t.id));
+      knownTaskIds.value = new Set(tasks.value.map((/** @type {any} */ t) => t.id));
     } catch (error) {
       logger.error('Error loading tasks:', error);
       tasks.value = [];
@@ -33,6 +35,7 @@ export function useMarketingTasks() {
     }
   };
 
+  /** @param {any} task */
   const toggleTaskStatus = async task => {
     const current = normalizeTaskStatus(task.status);
     const newStatus = current === 'completed' ? 'in_progress' : current === 'in_progress' ? 'completed' : 'in_progress';
@@ -46,6 +49,7 @@ export function useMarketingTasks() {
     }
   };
 
+  /** @param {any} status */
   const normalizeTaskStatus = status => {
     const s = String(status || '').toLowerCase();
     if (s === 'completed' || s === 'done') return 'completed';
@@ -54,17 +58,20 @@ export function useMarketingTasks() {
     return 'pending';
   };
 
+  /** @param {any} status */
   const getTaskStatusClass = status => {
     const statusMap = { completed: 'task-completed', in_progress: 'task-in-progress', pending: 'task-pending' };
     return statusMap[normalizeTaskStatus(status)] || 'task-pending';
   };
 
+  /** @param {any} status */
   const getTaskStatusText = status => {
     const normalized = normalizeTaskStatus(status);
     const textMap = { completed: 'مكتملة', in_progress: 'قيد التنفيذ', pending: 'معلقة' };
     return textMap[normalized] || 'غير محدد';
   };
 
+  /** @param {any} dateString */
   const formatDate = dateString => {
     if (!dateString) return 'غير محدد';
     const date = new Date(dateString);

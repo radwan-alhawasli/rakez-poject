@@ -7,12 +7,18 @@ import logger from '@/utils/logger';
 export function useSalesNegotiations() {
   const { hasPermission } = usePermissions();
 
+  /** @type {import('vue').ShallowRef<any[]>} */
   const pendingNegotiations = shallowRef([]);
   const isLoadingNegotiations = ref(false);
   const showNegotiationApprovalModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const selectedNegotiation = ref(null);
   const isSavingNegotiation = ref(false);
 
+  /**
+   * @param {string} permission
+   * @param {string} [message]
+   */
   const ensurePermission = (permission, message = 'غير مصرح بهذا الإجراء') => {
     if (hasPermission(permission)) return true;
     notificationService.addNotification(message, 'warning');
@@ -32,15 +38,18 @@ export function useSalesNegotiations() {
     }
   };
 
+  /** @param {any} negotiation */
   const openNegotiationApproval = negotiation => {
     if (!ensurePermission('sales.negotiation.approve', 'غير مصرح لك بمراجعة التفاوضات')) return;
     selectedNegotiation.value = negotiation;
     showNegotiationApprovalModal.value = true;
   };
 
+  /** @param {any} data */
   const handleApproveNegotiation = async data => {
     if (!ensurePermission('sales.negotiation.approve', 'غير مصرح لك بالموافقة على التفاوضات'))
       return;
+    if (!selectedNegotiation.value) return;
     isSavingNegotiation.value = true;
     try {
       await salesService.approveNegotiation(selectedNegotiation.value.id, data);
@@ -55,8 +64,10 @@ export function useSalesNegotiations() {
     }
   };
 
+  /** @param {any} data */
   const handleRejectNegotiation = async data => {
     if (!ensurePermission('sales.negotiation.approve', 'غير مصرح لك برفض التفاوضات')) return;
+    if (!selectedNegotiation.value) return;
     isSavingNegotiation.value = true;
     try {
       await salesService.rejectNegotiation(selectedNegotiation.value.id, data);

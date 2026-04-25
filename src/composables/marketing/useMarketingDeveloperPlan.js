@@ -22,17 +22,21 @@ function emptyPlatformNumbers() {
   return DEVELOPER_PLAN_PLATFORMS.reduce((acc, { key }) => ({ ...acc, [key]: '' }), {});
 }
 
-/** مفتاح المنصة كما يريده الـ API (مثلاً x → twitter_x) */
+/** مفتاح المنصة كما يريده الـ API (مثلاً x → twitter_x) 
+ * @param {any} key */
 function toApiPlatformKey(key) {
   return key === 'x' ? 'twitter_x' : key;
 }
 
-/** من platform_key في الـ API إلى المفتاح المحلي (twitter_x → x) */
+/** من platform_key في الـ API إلى المفتاح المحلي (twitter_x → x) 
+ * @param {any} apiKey */
 function fromApiPlatformKey(apiKey) {
   return apiKey === 'twitter_x' ? 'x' : (apiKey || '');
 }
 
-/** استخراج قيمة منصة من كائن قد يأتي بمفاتيح snake_case أو camelCase أو بأحرف مختلفة */
+/** استخراج قيمة منصة من كائن قد يأتي بمفاتيح snake_case أو camelCase أو بأحرف مختلفة 
+ * @param {any} obj
+ * @param {any} platformKey */
 function getPlatformValue(obj, platformKey) {
   if (!obj || typeof obj !== 'object') return null;
   const v = obj[platformKey] ?? obj[platformKey?.toLowerCase?.()];
@@ -48,11 +52,13 @@ export function useMarketingDeveloperPlan() {
   const { formatNumber } = useFormatters();
   const formatCurrency = formatNumber;
 
+  /** @type {import('vue').Ref<any[]>} */
   const projects = ref([]);
   const isLoadingProjects = ref(false);
   const isLoadingDeveloperPlan = ref(false);
   const isCalculatingBudget = ref(false);
   const isSubmitting = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const developerPlanSummary = ref(null);
   /** 'cpm_cpc' = حساب من CPM و CPC لكل منصة | 'manual' = إدخال النقرات والمشاهدات يدوياً (لا CPM/CPC) */
   const inputMode = ref('cpm_cpc');
@@ -64,14 +70,18 @@ export function useMarketingDeveloperPlan() {
     marketing_value: '',
     /** نسبة التسويق (يدخلها موظف الماركتينج) 6%–10% */
     marketing_percent: '',
+    /** @type {any} */
     platform_cpm: emptyPlatformNumbers(),
+    /** @type {any} */
     platform_cpc: emptyPlatformNumbers(),
+    /** @type {any} */
     platform_views: emptyPlatformNumbers(),
+    /** @type {any} */
     platform_clicks: emptyPlatformNumbers(),
   });
 
   const selectedProject = computed(() =>
-    projects.value.find(x => String(x.id) === String(developerPlanForm.project_id))
+    /** @type {any} */ (projects.value.find(x => String(x.id) === String(developerPlanForm.project_id)))
   );
 
   /** نسبة السعي في العقد، متوسط سعر الوحدات (من API data.contract إن وُجد، وإلا من المشروع) */
@@ -187,7 +197,7 @@ export function useMarketingDeveloperPlan() {
       developerPlanForm.platform_clicks = emptyPlatformNumbers();
       return;
     }
-    const p = projects.value.find(x => String(x.id) === String(developerPlanForm.project_id));
+    const p = /** @type {any} */ (projects.value.find(x => String(x.id) === String(developerPlanForm.project_id)));
     if (p) {
       developerPlanForm.contract_id = String(
         p.marketing_project?.contract_id ?? p.contract_id ?? p.contractId ?? p.id ?? ''
@@ -242,7 +252,7 @@ export function useMarketingDeveloperPlan() {
     try {
       const plan = await marketingService.getDeveloperPlan(contractId);
       const contractFromApi = plan?.contract ?? plan?.data?.contract;
-      const p = projects.value.find(x => String(x.id) === String(developerPlanForm.project_id));
+      const p = /** @type {any} */ (projects.value.find(x => String(x.id) === String(developerPlanForm.project_id)));
       let contract = contractFromApi || (p ? {
         commission_percent: p.commission_percentage ?? p.commission_percent,
         average_unit_price: p.average_unit_price ?? p.avg_unit_price,
@@ -292,7 +302,7 @@ export function useMarketingDeveloperPlan() {
         const pcpc = raw.platform_cpc ?? raw.platformCpc ?? {};
         /* إن وُجد مصفوفة platforms من الـ API نعبئ منها أولاً */
         if (platformsArray.length > 0) {
-          platformsArray.forEach((p) => {
+          platformsArray.forEach((/** @type {any} */ p) => {
             const key = fromApiPlatformKey(p.platform_key ?? p.platformKey);
             if (!key) return;
             if (p.cpm != null && p.cpm !== '') developerPlanForm.platform_cpm[key] = String(p.cpm);
@@ -310,7 +320,7 @@ export function useMarketingDeveloperPlan() {
         });
         const pviews = raw.platform_views ?? raw.platformViews ?? {};
         const pclicks = raw.platform_clicks ?? raw.platformClicks ?? {};
-        const hasManualData = platformsArray.some(p => (p.views != null && p.views !== '') || (p.clicks != null && p.clicks !== '')) ||
+        const hasManualData = platformsArray.some((/** @type {any} */ p) => (p.views != null && p.views !== '') || (p.clicks != null && p.clicks !== '')) ||
           Object.keys(pviews).length > 0 || Object.keys(pclicks).length > 0;
         /* input_mode من الـ API إن وُجد؛ وإلا نستنتجه من البيانات أو نترك الوضع الحالي */
         const inputModeFromApi = raw.input_mode ?? raw.inputMode ?? null;
@@ -348,6 +358,7 @@ export function useMarketingDeveloperPlan() {
     try {
       isSubmitting.value = true;
       const results = platformResults.value || [];
+      /** @type {any} */
       const payload = {
         contract_id: Number(developerPlanForm.contract_id),
         marketing_value: Number(developerPlanForm.marketing_value),
@@ -359,8 +370,8 @@ export function useMarketingDeveloperPlan() {
       }
       payload.platforms = DEVELOPER_PLAN_PLATFORMS.map((plat, i) => {
         const r = results[i];
-        const cpm = Number(developerPlanForm.platform_cpm[plat.key]) || 0;
-        const cpc = Number(developerPlanForm.platform_cpc[plat.key]) || 0;
+        const cpm = Number(/** @type {any} */ (developerPlanForm.platform_cpm)[plat.key]) || 0;
+        const cpc = Number(/** @type {any} */ (developerPlanForm.platform_cpc)[plat.key]) || 0;
         const views = r?.views ?? 0;
         const clicks = r?.clicks ?? 0;
         return {

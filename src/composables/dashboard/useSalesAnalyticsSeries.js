@@ -7,6 +7,7 @@ import logger from '@/utils/logger';
  * Loads GET /sales/analytics/dashboard and exposes points for AreaTrendWidget.
  */
 export function useSalesAnalyticsSeries(extraParams = {}) {
+  /** @type {import('vue').Ref<any>} */
   const raw = ref(null);
   const loading = ref(false);
 

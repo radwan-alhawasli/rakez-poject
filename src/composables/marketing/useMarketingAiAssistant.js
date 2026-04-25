@@ -7,22 +7,30 @@ export function useMarketingAiAssistant() {
   const aiQuery = ref('');
   const isAiTyping = ref(false);
   const isStreaming = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const chatMessages = ref([]);
+  /** @type {import('vue').Ref<any[]>} */
   const conversations = ref([]);
   const isLoadingConversations = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const currentSessionId = ref(null);
+  /** @type {import('vue').Ref<any>} */
   const chatScrollRef = ref(null);
+  /** @type {import('vue').Ref<any[]>} */
   const aiSections = ref([]);
   const isLoadingAiSections = ref(false);
   const aiSelectedSectionKey = ref('general');
+  /** @type {any} */
   const aiContext = reactive({});
+  /** @type {AbortController | null} */
   let abortController = null;
 
   const currentAiSection = computed(() => {
     const key = aiSelectedSectionKey.value;
-    return (aiSections.value || []).find(s => String(s.key) === String(key)) || null;
+    return (/** @type {any[]} */ (aiSections.value) || []).find(s => String(s.key) === String(key)) || null;
   });
 
+  /** @param {any} chat */
   const getConversationId = chat => chat?.id || chat?.session_id || chat?._id;
 
   const loadAiDashboard = async () => {
@@ -35,7 +43,7 @@ export function useMarketingAiAssistant() {
       ]);
       conversations.value = Array.isArray(convs) ? convs : [];
       aiSections.value = Array.isArray(sections) ? sections : [];
-      const hasGeneral = aiSections.value.some(s => String(s.key) === 'general');
+      const hasGeneral = (/** @type {any[]} */ (aiSections.value)).some(s => String(s.key) === 'general');
       if (hasGeneral) aiSelectedSectionKey.value = 'general';
       else if (aiSections.value[0]?.key) aiSelectedSectionKey.value = aiSections.value[0].key;
     } catch (error) {
@@ -52,6 +60,7 @@ export function useMarketingAiAssistant() {
     aiQuery.value = '';
   };
 
+  /** @param {any} sessionId */
   const loadChatSession = async sessionId => {
     currentSessionId.value = sessionId;
     chatMessages.value = [
@@ -59,6 +68,7 @@ export function useMarketingAiAssistant() {
     ];
   };
 
+  /** @param {any} text */
   const sendPrompt = text => {
     aiQuery.value = text;
     sendAiMessage();
@@ -66,7 +76,7 @@ export function useMarketingAiAssistant() {
 
   const scrollToBottom = () => {
     nextTick(() => {
-      if (chatScrollRef.value) chatScrollRef.value.scrollTop = chatScrollRef.value.scrollHeight;
+      if (chatScrollRef.value) (/** @type {any} */ (chatScrollRef.value)).scrollTop = (/** @type {any} */ (chatScrollRef.value)).scrollHeight;
     });
   };
 
@@ -88,10 +98,10 @@ export function useMarketingAiAssistant() {
     scrollToBottom();
 
     const context = {};
-    const allowed = currentAiSection.value?.allowed_context_params || [];
-    (allowed || []).forEach(k => {
+    const allowed = (/** @type {any} */ (currentAiSection.value))?.allowed_context_params || [];
+    (allowed || []).forEach((/** @type {any} */ k) => {
       const v = aiContext[k];
-      if (v !== undefined && v !== null && String(v).trim() !== '') context[k] = v;
+      if (v !== undefined && v !== null && String(v).trim() !== '') (/** @type {any} */ (context))[k] = v;
     });
     const payload = {
       message: text,
@@ -100,6 +110,7 @@ export function useMarketingAiAssistant() {
       ...(Object.keys(context).length ? { context } : {}),
     };
 
+    /** @type {any} */
     const assistantMsg = { role: 'assistant', content: '', streaming: true };
     chatMessages.value.push(assistantMsg);
     const msgIndex = chatMessages.value.length - 1;
@@ -110,10 +121,10 @@ export function useMarketingAiAssistant() {
     try {
       const { session_id } = await aiService.chatStream(
         payload,
-        (chunk) => {
+        (/** @type {any} */ chunk) => {
           chatMessages.value[msgIndex] = {
             ...chatMessages.value[msgIndex],
-            content: chatMessages.value[msgIndex].content + chunk,
+            content: (/** @type {any} */ (chatMessages.value[msgIndex])).content + chunk,
           };
           scrollToBottom();
         },
@@ -125,8 +136,8 @@ export function useMarketingAiAssistant() {
         streaming: false,
       };
 
-      if (!chatMessages.value[msgIndex].content) {
-        chatMessages.value[msgIndex].content = 'عذراً، لم أتمكن من فهم طلبك.';
+      if (!(/** @type {any} */ (chatMessages.value[msgIndex])).content) {
+        (/** @type {any} */ (chatMessages.value[msgIndex])).content = 'عذراً، لم أتمكن من فهم طلبك.';
       }
 
       if (session_id && !currentSessionId.value) {
@@ -134,11 +145,11 @@ export function useMarketingAiAssistant() {
         loadAiDashboard();
       }
     } catch (error) {
-      if (error.name === 'AbortError') {
+      if (/** @type {any} */ (error).name === 'AbortError') {
         chatMessages.value[msgIndex] = {
           ...chatMessages.value[msgIndex],
           streaming: false,
-          content: chatMessages.value[msgIndex].content || 'تم إيقاف الاستجابة.',
+          content: (/** @type {any} */ (chatMessages.value[msgIndex])).content || 'تم إيقاف الاستجابة.',
         };
       } else {
         logger.error('Error sending AI message:', error);
@@ -156,6 +167,7 @@ export function useMarketingAiAssistant() {
     }
   };
 
+  /** @param {any} chatId */
   const deleteChat = async chatId => {
     try {
       await aiService.deleteConversation(chatId);

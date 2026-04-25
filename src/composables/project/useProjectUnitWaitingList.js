@@ -9,6 +9,7 @@ import { getApiErrorMessage } from '@/utils/errorHandler';
  */
 export function useProjectUnitWaitingList(projectId) {
   const showWaitingListModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const waitingListUnit = ref(null);
   const waitingListSaving = ref(false);
   const waitingListForm = reactive({
@@ -18,6 +19,7 @@ export function useProjectUnitWaitingList(projectId) {
     notes: '',
   });
 
+  /** @param {any} unit */
   const openWaitingListModal = async (unit) => {
     waitingListUnit.value = unit;
     waitingListForm.client_name = '';
@@ -26,7 +28,7 @@ export function useProjectUnitWaitingList(projectId) {
     waitingListForm.priority = 1;
 
     try {
-      const list = await salesService.getWaitingListByUnit(unit.id);
+      const list = /** @type {any[]} */ (await salesService.getWaitingListByUnit(unit.id));
       waitingListForm.priority = (Array.isArray(list) ? list.length : 0) + 1;
     } catch (e) {
       logger.warn('Could not fetch waiting list for priority calculation', e);

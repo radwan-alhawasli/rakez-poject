@@ -9,12 +9,18 @@ import {
   downloadProjectManagementReservationVoucher,
 } from '@/services/teamService';
 
-/** معرف الحجز من عنصر القائمة */
+/**
+ * معرف الحجز من عنصر القائمة
+ * @param {any} r
+ */
 function reservationRowId(r) {
   return r?.reservation_id ?? r?.id;
 }
 
-/** هل يمكن تأكيد الحجز من الواجهة */
+/**
+ * هل يمكن تأكيد الحجز من الواجهة
+ * @param {any} status
+ */
 function statusAllowsConfirm(status) {
   const s = String(status || '').toLowerCase();
   return (
@@ -25,18 +31,24 @@ function statusAllowsConfirm(status) {
   );
 }
 
-/** هل يمكن إلغاء الحجز */
+/**
+ * هل يمكن إلغاء الحجز
+ * @param {any} status
+ */
 function statusAllowsCancel(status) {
   const s = String(status || '').toLowerCase();
   return s !== 'cancelled' && s !== 'canceled';
 }
 
+/** @param {any} projectId */
 export function useProjectReservations(projectId) {
   const { formatCurrencyAr: formatCurrency } = useFormatters();
+  /** @type {import('vue').Ref<any[]>} */
   const projectReservations = ref([]);
   const reservationsLoading = ref(false);
 
   const showConfirmModal = ref(false);
+  /** @type {import('vue').Ref<{title: string, message: string, type: string, confirmText: string, resolve: (() => Promise<void>) | null}>} */
   const confirmModalConfig = ref({
     title: '',
     message: '',
@@ -54,6 +66,7 @@ export function useProjectReservations(projectId) {
     reservationsLoading.value = true;
     try {
       const all = await getProjectManagementReservations({ per_page: 500 });
+      /** @type {any[]} */
       const list = Array.isArray(all) ? all : [];
       const pid = projectId != null ? String(projectId) : '';
       projectReservations.value = pid
@@ -68,6 +81,7 @@ export function useProjectReservations(projectId) {
     }
   };
 
+  /** @param {any} id */
   const confirmReservation = id => {
     confirmModalConfig.value = {
       title: 'تأكيد الحجز',
@@ -88,6 +102,7 @@ export function useProjectReservations(projectId) {
     showConfirmModal.value = true;
   };
 
+  /** @param {any} id */
   const cancelReservation = id => {
     const reason = window.prompt('سبب الإلغاء (اختياري):') ?? '';
     confirmModalConfig.value = {
@@ -112,6 +127,7 @@ export function useProjectReservations(projectId) {
     showConfirmModal.value = true;
   };
 
+  /** @param {any} id */
   const downloadVoucher = async id => {
     try {
       const blob = await downloadProjectManagementReservationVoucher(id);

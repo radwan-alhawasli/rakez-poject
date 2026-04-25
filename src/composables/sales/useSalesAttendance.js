@@ -9,6 +9,7 @@ export function useSalesAttendance() {
   const { hasPermission } = usePermissions();
   const { formatDate } = useFormatters();
 
+  /** @type {import('vue').ShallowRef<any[]>} */
   const attendanceRecords = shallowRef([]);
   const isLoadingAttendance = ref(false);
   const attendanceLoadError = ref('');
@@ -38,7 +39,7 @@ export function useSalesAttendance() {
         ? await salesService.getTeamAttendance()
         : await salesService.getMyAttendance();
       const raw = Array.isArray(list) ? list : [];
-      attendanceRecords.value = raw.map(r => ({
+      attendanceRecords.value = raw.map((/** @type {any} */ r) => ({
         id: r.id ?? r.schedule_id ?? r.attendance_id,
         schedule_id: r.schedule_id ?? r.id ?? null,
         user_id: r.user_id ?? null,
@@ -71,7 +72,8 @@ export function useSalesAttendance() {
         status: r.status ?? r.attendance_status,
         hours_worked: r.hours_worked ?? r.work_hours ?? r.total_hours,
       }));
-    } catch (error) {
+    } catch (err) {
+      const error = /** @type {any} */ (err);
       logger.error('[SalesAttendance] Error loading attendance:', error);
       attendanceRecords.value = [];
       const status = error?.response?.status;
@@ -88,7 +90,9 @@ export function useSalesAttendance() {
     }
   };
 
+  /** @param {string} status */
   const getAttendanceStatusText = status => {
+    /** @type {Record<string, string>} */
     const statusMap = {
       present: 'حاضر',
       absent: 'غائب',
@@ -98,16 +102,24 @@ export function useSalesAttendance() {
     return statusMap[status] || status;
   };
 
+  /** @param {number} page */
   const handleAttendancePageChange = page => {
     attendancePage.value = page;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  /** @param {number} newPerPage */
   const handleAttendancePerPageChange = newPerPage => {
     attendancePerPage.value = newPerPage;
     attendancePage.value = 1;
   };
 
+  /**
+   * @param {import('vue').Ref<any[]>} teamMembers
+   * @param {import('vue').Ref<any[]>} teamProjects
+   * @param {Function} loadTeamMembers
+   * @param {Function} loadTeamProjects
+   */
   const openScheduleModal = async (teamMembers, teamProjects, loadTeamMembers, loadTeamProjects) => {
     if (teamMembers.value.length === 0) await loadTeamMembers();
     if (teamProjects.value.length === 0) await loadTeamProjects();

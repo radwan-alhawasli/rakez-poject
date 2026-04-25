@@ -4,12 +4,13 @@ import authService from '@/services/authService';
 import { mapManagerTasks } from '@/utils/dashboardData';
 
 export function useManagerTasksPreview() {
+  /** @type {import('vue').Ref<any[]>} */
   const items = ref([]);
 
   const load = async () => {
     const u = authService.getCurrentUser();
     const isMgr =
-      u && (u.is_manager === true || u.is_manager === 1 || u.is_manager === '1');
+      u && (u.is_manager === true || String(u.is_manager) === '1');
     if (!isMgr) {
       items.value = [];
       return;

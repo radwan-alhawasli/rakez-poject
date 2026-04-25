@@ -8,20 +8,28 @@ import appConfig from '@/config/appConfig';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 
+/**
+ * @param {any} props
+ */
 export function useUserManagement(props) {
+  /** @type {import('vue').Ref<any[]>} */
   const users = ref([]);
   const loading = ref(true);
   const showModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const selectedUser = ref(null);
   const isSaving = ref(false);
   const showConfirmModal = ref(false);
+  /** @type {import('vue').Ref<string|null>} */
   const confirmAction = ref(null);
+  /** @type {import('vue').Ref<any>} */
   const confirmData = ref(null);
   const currentPage = ref(1);
   const perPage = ref(25);
 
   const totalItems = ref(0);
 
+  /** @param {any} u */
   const normalizeUserForDisplay = u => ({
     ...u,
     id: u.id ?? u.employee_id,
@@ -33,12 +41,14 @@ export function useUserManagement(props) {
           : false,
   });
 
+  /** @param {any} user */
   const isUserDisabled = user => {
     if (user.disabled !== undefined && user.disabled !== null) return !!user.disabled;
     if (user.is_active !== undefined && user.is_active !== null) return !user.is_active;
     return false;
   };
 
+  /** @param {any} team */
   const getTeamDisplay = team => {
     if (team == null) return '-';
     if (typeof team === 'object' && team !== null && team.name) return team.name;
@@ -51,6 +61,7 @@ export function useUserManagement(props) {
     try {
       let data;
       if (props.useAdminApi) {
+        /** @type {any} */
         const res = await adminEmployeeService.listEmployees({
           page: currentPage.value,
           per_page: perPage.value,
@@ -76,12 +87,12 @@ export function useUserManagement(props) {
       users.value = [];
       totalItems.value = 0;
 
-      const errorInfo = handleError(error, {
+      const errorInfo = /** @type {any} */ (handleError(error, {
         showNotification: false,
         log: false,
-      });
+      }));
 
-      const status = error?.response?.status || error?.status;
+      const status = (/** @type {any} */ (error))?.response?.status || (/** @type {any} */ (error))?.status;
 
       if (status === 404) {
         toast.warning('المورد المطلوب غير موجود. قد يكون هذا المسار غير متاح في الخادم حالياً.');
@@ -104,6 +115,7 @@ export function useUserManagement(props) {
     showModal.value = true;
   };
 
+  /** @param {any} user */
   const editUser = async user => {
     loading.value = true;
     try {
@@ -130,6 +142,7 @@ export function useUserManagement(props) {
     selectedUser.value = null;
   };
 
+  /** @param {any} userData */
   const handleSaveUser = async userData => {
     isSaving.value = true;
     const cvFile = userData.cv_file;
@@ -143,6 +156,7 @@ export function useUserManagement(props) {
         if (userData.id) {
           await adminEmployeeService.updateEmployee(userData.id, userData);
         } else {
+          /** @type {any} */
           const result = await adminEmployeeService.addEmployee(userData);
           savedUserId = result?.id ?? result?.data?.id ?? savedUserId;
         }
@@ -150,6 +164,7 @@ export function useUserManagement(props) {
         if (userData.id) {
           await hrService.updateUser(userData.id, userData);
         } else {
+          /** @type {any} */
           const result = await hrService.createUser(userData);
           savedUserId = result?.id ?? result?.data?.id ?? savedUserId;
         }
@@ -157,6 +172,7 @@ export function useUserManagement(props) {
         if (userData.id) {
           await hrService.updateEmployee(userData.id, userData);
         } else {
+          /** @type {any} */
           const result = await hrService.createEmployee(userData);
           savedUserId = result?.id ?? result?.data?.id ?? savedUserId;
         }
@@ -188,10 +204,11 @@ export function useUserManagement(props) {
       logger.error('Error saving user:', error);
       let errMsg = 'حدث خطأ أثناء حفظ المستخدم';
 
-      if (error.response?.data?.message) {
-        errMsg = error.response.data.message;
-      } else if (error.message) {
-        errMsg = error.message;
+      const err = /** @type {any} */ (error);
+      if (err.response?.data?.message) {
+        errMsg = err.response.data.message;
+      } else if (err.message) {
+        errMsg = err.message;
       }
 
       toast.error(errMsg);
@@ -200,6 +217,7 @@ export function useUserManagement(props) {
     }
   };
 
+  /** @param {any} user */
   const toggleUserStatus = user => {
     const newStatus = !isUserDisabled(user);
     confirmData.value = { user, newStatus };
@@ -207,6 +225,7 @@ export function useUserManagement(props) {
     showConfirmModal.value = true;
   };
 
+  /** @param {any} user */
   const confirmDelete = user => {
     confirmData.value = { user };
     confirmAction.value = 'delete';
@@ -228,7 +247,7 @@ export function useUserManagement(props) {
           });
         }
 
-        const userIndex = users.value.findIndex(u => u.id === user.id);
+        const userIndex = users.value.findIndex(u => (/** @type {any} */ (u)).id === user.id);
         if (userIndex !== -1) {
           users.value[userIndex] = {
             ...users.value[userIndex],
@@ -285,10 +304,13 @@ export function useUserManagement(props) {
       confirmData.value = null;
     } catch (error) {
       const action = confirmAction.value;
-      logger.error(`Error ${action}`, error);
+      /** @type {any} */
+      const err = error;
+      logger.error(`Error ${action}`, err);
       if (action === 'toggleStatus' && confirmData.value) {
-        const { user, newStatus } = confirmData.value;
-        const idx = users.value.findIndex(u => u.id === user.id);
+        const data = /** @type {any} */ (confirmData.value);
+        const { user, newStatus } = data;
+        const idx = users.value.findIndex(u => (/** @type {any} */ (u)).id === user.id);
         if (idx !== -1) {
           users.value[idx] = {
             ...users.value[idx],
@@ -300,7 +322,7 @@ export function useUserManagement(props) {
       let errorMsg =
         action === 'delete' ? 'حدث خطأ أثناء حذف المستخدم' : 'حدث خطأ أثناء تغيير الحالة';
 
-      const errorMessage = error?.message || error?.response?.data?.message || '';
+      const errorMessage = err?.message || err?.response?.data?.message || '';
       if (action === 'delete') {
         if (
           errorMessage.includes('foreign key') ||
@@ -309,13 +331,13 @@ export function useUserManagement(props) {
         ) {
           errorMsg =
             'لا يمكن حذف هذا المستخدم لأنه مرتبط ببيانات أخرى في النظام. يمكنك تعطيل الحساب بدلاً من ذلك.';
-        } else if (error?.response?.status === 500) {
+        } else if (err?.response?.status === 500) {
           errorMsg = 'حدث خطأ في الخادم أثناء محاولة الحذف. يرجى المحاولة لاحقاً.';
-        } else if (error?.response?.data?.message) {
-          errorMsg = error.response.data.message;
+        } else if (err?.response?.data?.message) {
+          errorMsg = err.response.data.message;
         }
-      } else if (error?.response?.data?.message) {
-        errorMsg = error.response.data.message;
+      } else if (err?.response?.data?.message) {
+        errorMsg = err.response.data.message;
       }
 
       toast.error(errorMsg);
@@ -339,27 +361,30 @@ export function useUserManagement(props) {
   };
 
   const getConfirmMessage = () => {
-    if (!confirmData.value) return '';
+    const data = /** @type {any} */ (confirmData.value);
+    if (!data) return '';
 
     if (confirmAction.value === 'delete') {
       return `هل أنت متأكد من حذف المستخدم ${
-        confirmData.value.user.name || 'هذا'
+        data.user?.name || 'هذا'
       }؟ لا يمكن التراجع عن هذا الإجراء.`;
     } else if (confirmAction.value === 'toggleStatus') {
-      const { user, newStatus } = confirmData.value;
-      return `هل أنت متأكد من ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user.name}؟`;
+      const { user, newStatus } = data;
+      return `هل أنت متأكد من ${newStatus ? 'تعطيل' : 'تفعيل'} حساب ${user?.name}؟`;
     }
     return '';
   };
 
   const { formatDateISO: formatDate } = useFormatters();
 
+  /** @param {number} page */
   const handlePageChange = page => {
     currentPage.value = page;
     fetchUsers();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  /** @param {number} newPerPage */
   const handlePerPageChange = newPerPage => {
     perPage.value = newPerPage;
     currentPage.value = 1;
@@ -367,11 +392,14 @@ export function useUserManagement(props) {
   };
 
   const showAssignModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const userToAssign = ref(null);
+  /** @type {import('vue').Ref<any[]>} */
   const teamsList = ref([]);
   const selectedTeamId = ref('');
   const isAssigning = ref(false);
 
+  /** @param {any} user */
   const openAssignTeam = async user => {
     userToAssign.value = user;
     selectedTeamId.value = '';
@@ -398,14 +426,15 @@ export function useUserManagement(props) {
     isAssigning.value = true;
     try {
       await hrService.assignTeamMember(selectedTeamId.value, {
-        user_id: userToAssign.value.id,
+        user_id: (/** @type {any} */ (userToAssign.value)).id,
       });
       toast.success('تم تعيين الموظف للفريق بنجاح');
       closeAssignModal();
       await fetchUsers();
     } catch (err) {
-      logger.error('Error assigning to team:', err);
-      const msg = err?.response?.data?.message || err?.message || 'حدث خطأ أثناء التعيين';
+      const error = /** @type {any} */ (err);
+      logger.error('Error assigning to team:', error);
+      const msg = error?.response?.data?.message || error?.message || 'حدث خطأ أثناء التعيين';
       toast.error(msg);
     } finally {
       isAssigning.value = false;

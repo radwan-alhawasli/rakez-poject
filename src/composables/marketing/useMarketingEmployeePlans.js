@@ -16,13 +16,16 @@ export function useMarketingEmployeePlans() {
 
   const MARKETING_PERCENT_FIXED = 10;
 
+  /** @type {import('vue').Ref<any[]>} */
   const projects = ref([]);
   const isLoadingProjects = ref(false);
   const employeePlansProjectId = ref('');
+  /** @type {import('vue').Ref<any[]>} */
   const employeePlans = ref([]);
   const isLoadingEmployeePlans = ref(false);
   const isSubmitting = ref(false);
 
+  /** @type {any} */
   const platformDistribution = reactive({
     instagram: 25,
     snapchat: 20,
@@ -41,6 +44,7 @@ export function useMarketingEmployeePlans() {
     { key: 'other', labelAr: 'منصات اخرى (بيوت - سكني - حراج ....)' },
     { key: 'aqar', labelAr: 'منصة عقار' },
   ];
+  /** @type {any} */
   const campaignDistributionByPlatform = reactive({
     Instagram: { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
     Snapchat: { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
@@ -50,6 +54,7 @@ export function useMarketingEmployeePlans() {
     Other: { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
     Aqar: { 'Direct Communication': 25, 'Hand Raise': 25, Impression: 25, Sales: 25 },
   });
+  /** @type {import('vue').Ref<any>} */
   const budgetDistributionResult = ref(null);
   const isSuggestingAiPlan = ref(false);
   const aiSuggestionRationale = ref('');
@@ -59,11 +64,12 @@ export function useMarketingEmployeePlans() {
   });
 
   /** تفاصيل مشروع التسويق (GET …/marketing/projects/:contractId) لنسبة التسويق الرسمية وميزانية الحملة */
+  /** @type {import('vue').Ref<any>} */
   const projectBudgetContext = ref(null);
   const isLoadingProjectBudgetContext = ref(false);
 
   const employeePlanBudgetSummary = computed(() => {
-    const p = projects.value.find(x => String(x.id) === String(employeePlansProjectId.value));
+    const p = /** @type {any} */ (projects.value.find(x => String(/** @type {any} */ (x).id) === String(employeePlansProjectId.value)));
     if (!p) {
       return {
         commission_value: 0,
@@ -100,6 +106,7 @@ export function useMarketingEmployeePlans() {
   );
 
   const campaignDistributionSums = computed(() => {
+    /** @type {any} */
     const sums = {};
     for (const [platform, campaigns] of Object.entries(campaignDistributionByPlatform)) {
       sums[platform] = Object.values(campaigns).reduce((acc, v) => acc + (Number(v) || 0), 0);
@@ -108,12 +115,13 @@ export function useMarketingEmployeePlans() {
   });
 
   const selectedProject = computed(() =>
-    projects.value.find(x => String(x.id) === String(employeePlansProjectId.value))
+    /** @type {any} */ (projects.value.find(x => String(x.id) === String(employeePlansProjectId.value)))
   );
 
   const platformBreakdownTable = computed(() => {
     const marketingValue = Number(employeePlanBudgetSummary.value.marketing_value) || 0;
-    const devPlan = selectedProject.value?.developer_plan ?? selectedProject.value?.developerPlan ?? {};
+    const p = /** @type {any} */ (selectedProject.value);
+    const devPlan = p?.developer_plan ?? p?.developerPlan ?? {};
     const platformViews = devPlan.platform_views ?? devPlan.platformViews ?? {};
     const platformClicks = devPlan.platform_clicks ?? devPlan.platformClicks ?? {};
     const hasManualValues = Object.keys(platformViews).length > 0 || Object.keys(platformClicks).length > 0;
@@ -121,6 +129,7 @@ export function useMarketingEmployeePlans() {
     const defaultCpc = Number(devPlan.average_cpc ?? devPlan.averageCpc) || 2.5;
     const platformCpm = devPlan.platform_cpm ?? devPlan.platformCpm ?? {};
     const platformCpc = devPlan.platform_cpc ?? devPlan.platformCpc ?? {};
+    /** @type {any[]} */
     const rows = [];
     let totalViews = 0;
     let totalClicks = 0;
@@ -133,7 +142,7 @@ export function useMarketingEmployeePlans() {
         views = manualViews;
         clicks = manualClicks;
       } else {
-        const pct = Number(platformDistribution[key]) || 0;
+        const pct = Number(/** @type {any} */ (platformDistribution)[key]) || 0;
         const budget = marketingValue * (pct / 100);
         const cpm = Number(platformCpm[key] ?? defaultCpm) || defaultCpm;
         const cpc = Number(platformCpc[key] ?? defaultCpc) || defaultCpc;
@@ -164,7 +173,7 @@ export function useMarketingEmployeePlans() {
     projectBudgetContext.value = null;
     const pid = employeePlansProjectId.value;
     if (!pid) return;
-    const p = projects.value.find(x => String(x.id) === String(pid));
+    const p = /** @type {any} */ (projects.value.find(x => String(/** @type {any} */ (x).id) === String(pid)));
     if (!p) return;
     const contractId = p.marketing_project?.contract_id ?? p.contract_id ?? p.id;
     if (contractId == null || contractId === '') return;
@@ -197,6 +206,7 @@ export function useMarketingEmployeePlans() {
     }
   };
 
+  /** @type {any} */
   const apiPlatformKeyMap = { meta: 'instagram', youtube: 'google_youtube', linkedin: 'other' };
   const suggestAiPlan = async () => {
     try {
@@ -257,6 +267,7 @@ export function useMarketingEmployeePlans() {
   /**
    * شكل المنصات المتوقّع من الباكند (Postman / MARKETING): TikTok, Meta, Snapchat, YouTube, LinkedIn, X.
    * other + aqar من الواجهة يُدمجان في LinkedIn حتى يبقى المجموع 100%.
+   * @param {any} dist
    */
   const buildEmployeePlanPlatformDistributionForApi = dist => ({
     Meta: Number(dist.instagram) || 0,
@@ -269,6 +280,7 @@ export function useMarketingEmployeePlans() {
 
   const CAMPAIGN_DISTRIBUTION_KEYS = ['Direct Communication', 'Hand Raise', 'Impression', 'Sales'];
 
+  /** @type {any} */
   const UI_PLATFORM_TO_CAMPAIGN_BLOCK = {
     instagram: 'Instagram',
     snapchat: 'Snapchat',
@@ -279,7 +291,10 @@ export function useMarketingEmployeePlans() {
     aqar: 'Aqar',
   };
 
-  /** متوسط مرجّح لنسب الحملات لأن الـ API يتوقع campaign_distribution مسطحاً وليس حسب المنصة فقط. */
+  /** متوسط مرجّح لنسب الحملات لأن الـ API يتوقع campaign_distribution مسطحاً وليس حسب المنصة فقط.
+   * @param {any} platformDist
+   * @param {any} byPlatform
+   */
   const buildFlatCampaignDistributionForApi = (platformDist, byPlatform) => {
     const out = Object.fromEntries(CAMPAIGN_DISTRIBUTION_KEYS.map(k => [k, 0]));
     for (const [uiKey, pct] of Object.entries(platformDist)) {
@@ -307,18 +322,19 @@ export function useMarketingEmployeePlans() {
 
   /** الباكند يتطلب غالباً user_id — نربط الخطة بالمستخدم الحالي من الجلسة. */
   const resolveEmployeePlanUserId = () => {
-    const u = authService.getCurrentUser();
+    const u = /** @type {any} */ (authService.getCurrentUser());
     const raw = u?.id ?? u?.user_id;
     const n = Number(raw);
     return Number.isFinite(n) && n > 0 ? n : null;
   };
 
+  /** @param {any} error */
   const employeePlanSaveErrorMessage = error => {
     const data = error?.response?.data;
     if (data && typeof data === 'object' && data.errors && typeof data.errors === 'object') {
       const lines = [];
       for (const [field, msgs] of Object.entries(data.errors)) {
-        if (Array.isArray(msgs)) lines.push(...msgs.map(m => `${field}: ${m}`));
+        if (Array.isArray(msgs)) lines.push(...msgs.map((/** @type {any} */ m) => `${field}: ${m}`));
         else if (msgs != null) lines.push(`${field}: ${msgs}`);
       }
       if (lines.length) return lines.join(' — ');
@@ -346,7 +362,8 @@ export function useMarketingEmployeePlans() {
 
     try {
       isSubmitting.value = true;
-      const canonical = projectBudgetContext.value?.marketing_percent;
+      const ctx = /** @type {any} */ (projectBudgetContext.value);
+      const canonical = ctx?.marketing_percent;
       const rawFromApi = canonical != null && canonical !== '' ? Number(canonical) : null;
       const rawMarketingPercent =
         rawFromApi != null && Number.isFinite(rawFromApi)
@@ -377,6 +394,7 @@ export function useMarketingEmployeePlans() {
     }
   };
 
+  /** @param {any} dateString */
   const formatDate = dateString => {
     if (!dateString) return 'غير محدد';
     const date = new Date(dateString);

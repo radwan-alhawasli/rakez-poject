@@ -11,7 +11,9 @@ export function useTasksView() {
 
   const activeTab = ref('assigned');
 
+  /** @type {import('vue').Ref<any[]>} */
   const assignedTasks = ref([]);
+  /** @type {import('vue').Ref<any[]>} */
   const requestedTasks = ref([]);
   const assignedTotal = ref(0);
   const requestedTotal = ref(0);
@@ -31,8 +33,10 @@ export function useTasksView() {
     { key: 'hr', label: 'قسم الموارد البشرية' },
   ];
 
+  /** @type {import('vue').Ref<{key: string, label: string}[]>} */
   const taskSections = ref([]);
   const isLoading = ref(false);
+  /** @type {import('vue').Ref<string|null>} */
   const error = ref(null);
   const filterStatus = ref('');
   const itemsPerPage = ref(10);
@@ -49,10 +53,12 @@ export function useTasksView() {
 
   const showReasonModal = ref(false);
   const reasonForm = reactive({
+    /** @type {number|null} */
     taskId: null,
     reason: '',
   });
 
+  /** @type {import('vue').Ref<any[]>} */
   const sectionUsers = ref([]);
   const sectionUsersLoading = ref(false);
 
@@ -68,6 +74,7 @@ export function useTasksView() {
     activeTab.value === 'assigned' ? assignedTotalPages.value : requestedTotalPages.value
   );
 
+  /** @param {string} tab */
   const switchTab = tab => {
     if (activeTab.value === tab) return;
     activeTab.value = tab;
@@ -75,6 +82,7 @@ export function useTasksView() {
     loadCurrentTab(1);
   };
 
+  /** @param {string} sectionKey */
   const fetchSectionUsers = async sectionKey => {
     if (!sectionKey) {
       sectionUsers.value = [];
@@ -116,10 +124,13 @@ export function useTasksView() {
   const loadTaskSections = async () => {
     try {
       const list = await taskService.getTaskSections();
-      const normalized = (list || []).map(s => ({
-        key: s.value ?? s.key,
-        label: s.label ?? s.value ?? s.key,
-      }));
+      const normalized = (list || []).map(s => {
+        const item = /** @type {any} */ (s);
+        return {
+          key: item.value ?? item.key,
+          label: item.label ?? item.value ?? item.key,
+        };
+      });
       taskSections.value = normalized.length > 0 ? normalized : TASK_SECTIONS_FALLBACK;
     } catch (e) {
       logger.error('Failed to load task sections', e);
@@ -133,6 +144,7 @@ export function useTasksView() {
       error.value = null;
       assignedPage.value = page;
 
+      /** @type {any} */
       const params = {
         page,
         per_page: itemsPerPage.value,
@@ -140,8 +152,8 @@ export function useTasksView() {
       if (filterStatus.value) params.status = filterStatus.value;
 
       const data = await taskService.getMyTasks(params);
-      assignedTasks.value = data.items || [];
-      assignedTotal.value = data.total || 0;
+      assignedTasks.value = (/** @type {any} */ (data)).items || [];
+      assignedTotal.value = (/** @type {any} */ (data)).total || 0;
       assignedTotalPages.value = Math.ceil(assignedTotal.value / itemsPerPage.value) || 1;
     } catch (err) {
       logger.error('Failed to load assigned tasks', err);
@@ -157,6 +169,7 @@ export function useTasksView() {
       error.value = null;
       requestedPage.value = page;
 
+      /** @type {any} */
       const params = {
         page,
         per_page: itemsPerPage.value,
@@ -164,8 +177,8 @@ export function useTasksView() {
       if (filterStatus.value) params.status = filterStatus.value;
 
       const data = await taskService.getRequestedTasks(params);
-      requestedTasks.value = data.items || [];
-      requestedTotal.value = data.total || 0;
+      requestedTasks.value = (/** @type {any} */ (data)).items || [];
+      requestedTotal.value = (/** @type {any} */ (data)).total || 0;
       requestedTotalPages.value = Math.ceil(requestedTotal.value / itemsPerPage.value) || 1;
     } catch (err) {
       logger.error('Failed to load requested tasks', err);
@@ -189,14 +202,16 @@ export function useTasksView() {
         taskService.getMyTasks({ page: 1, per_page: 1 }).catch(() => ({ total: 0 })),
         taskService.getRequestedTasks({ page: 1, per_page: 1 }).catch(() => ({ total: 0 })),
       ]);
-      assignedTotal.value = assignedData.total || 0;
-      requestedTotal.value = requestedData.total || 0;
+      assignedTotal.value = (/** @type {any} */ (assignedData)).total || 0;
+      requestedTotal.value = (/** @type {any} */ (requestedData)).total || 0;
     } catch {
       void 0;
     }
   };
 
+  /** @param {string} status */
   const getStatusLabel = status => {
+    /** @type {Record<string, string>} */
     const map = {
       in_progress: 'قيد التنفيذ',
       completed: 'مكتملة',
@@ -206,6 +221,7 @@ export function useTasksView() {
     return map[status] || status;
   };
 
+  /** @param {string} sectionKey */
   const getSectionLabel = sectionKey => {
     if (!sectionKey) return '';
     const section = taskSections.value.find(s => s.key === sectionKey);
@@ -214,7 +230,10 @@ export function useTasksView() {
     return fallback ? fallback.label : sectionKey;
   };
 
-  /** تواريخ بالعربية (تقويم ميلادي) — متوافق مع واجهة عربية أولاً */
+  /**
+   * تواريخ بالعربية (تقويم ميلادي) — متوافق مع واجهة عربية أولاً
+   * @param {string} dateString
+   */
   const formatDate = dateString => {
     if (!dateString) return '';
     const d = new Date(dateString);
@@ -232,7 +251,10 @@ export function useTasksView() {
     );
   };
 
-  /** لسمة <time datetime="..."> (ISO) */
+  /**
+   * لسمة <time datetime="..."> (ISO)
+   * @param {string} dateString
+   */
   const taskDateAttr = dateString => {
     if (!dateString) return undefined;
     const d = new Date(dateString);
@@ -258,6 +280,7 @@ export function useTasksView() {
       const due_at_formatted = formatDueAtForApi(taskForm.due_at);
 
       const assignedId = Number.parseInt(String(taskForm.assigned_to), 10);
+      /** @type {any} */
       const payload = {
         task_name: taskForm.title.trim(),
         section: taskForm.section_key,
@@ -293,8 +316,14 @@ export function useTasksView() {
     }
   };
 
+  /**
+   * @param {number} taskId
+   * @param {string} status
+   * @param {string|null} [reason=null]
+   */
   const updateStatus = async (taskId, status, reason = null) => {
     try {
+      /** @type {any} */
       const data = { status };
       if (reason) {
         data.cannot_complete_reason = reason;
@@ -313,6 +342,7 @@ export function useTasksView() {
     }
   };
 
+  /** @param {number} taskId */
   const openReasonModal = taskId => {
     reasonForm.taskId = taskId;
     reasonForm.reason = '';
@@ -326,16 +356,19 @@ export function useTasksView() {
   };
 
   const submitReasonModal = async () => {
-    if (!reasonForm.reason.trim()) {
-      notificationService.addNotification('الرجاء إدخال السبب', 'error');
+    if (!reasonForm.reason?.trim()) {
+      notificationService.addNotification('يرجى كتابة سبب عدم الاكتمال', 'warning');
       return;
     }
-
     try {
-      await updateStatus(reasonForm.taskId, 'could_not_complete', reasonForm.reason);
+      await updateStatus(
+        /** @type {number} */ (reasonForm.taskId),
+        'could_not_complete',
+        reasonForm.reason
+      );
       closeReasonModal();
     } catch {
-      void 0;
+      // notification handled in updateStatus
     }
   };
 

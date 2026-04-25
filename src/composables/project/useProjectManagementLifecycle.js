@@ -5,6 +5,7 @@ import { watch, onMounted } from 'vue';
  * @param {{ searchQuery: import('vue').Ref<string>, isEditor: import('vue').ComputedRef<boolean>, currentPage: import('vue').Ref<number>, fetchProjects: () => Promise<void> }} opts
  */
 export function useProjectManagementLifecycle({ searchQuery, isEditor, currentPage, fetchProjects }) {
+  /** @type {any} */
   let searchDebounce = null;
   watch(searchQuery, () => {
     if (searchDebounce) clearTimeout(searchDebounce);

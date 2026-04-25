@@ -13,18 +13,20 @@ import {
 
 /**
  * Use permissions in a component
- * @returns {{ hasPermission: function, hasAnyPermission: function, permissions: ComputedRef<string[]> }}
+ * @returns {{ hasPermission: function, hasAnyPermission: function, permissions: import('vue').ComputedRef<string[]>, user: import('vue').ComputedRef<any> }}
  */
 export function usePermissions() {
   const user = computed(() => authService.getCurrentUser());
-  const permissions = computed(() => getUserPermissions(user.value));
+  const permissions = computed(() => getUserPermissions(/** @type {any} */ (user.value)));
 
+  /** @param {any} permission */
   const hasPermission = permission => {
-    return rbacHasPermission(user.value, permission);
+    return rbacHasPermission(/** @type {any} */ (user.value), permission);
   };
 
+  /** @param {any[]} perms */
   const hasAnyPermission = perms => {
-    return rbacHasAnyPermission(user.value, perms);
+    return rbacHasAnyPermission(/** @type {any} */ (user.value), perms);
   };
 
   return {

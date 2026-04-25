@@ -6,6 +6,7 @@ import { toast } from '@/composables/useToast';
 
 /**
  * Team assign, details, workspace, media modals + timeline helpers for project management list.
+ * @param {any} deps
  */
 export function useProjectManagementModals(deps) {
   const {
@@ -29,6 +30,7 @@ export function useProjectManagementModals(deps) {
     isMediaSaving,
   } = deps;
 
+  /** @param {any} project */
   const onAssignTeam = project => {
     activeMenuId.value = null;
     projectForAssignTeam.value = project;
@@ -72,6 +74,7 @@ export function useProjectManagementModals(deps) {
     }
   };
 
+  /** @param {any} team */
   const assignTeamRemove = async team => {
     const project = projectForAssignTeam.value;
     if (!project) return;
@@ -99,6 +102,7 @@ export function useProjectManagementModals(deps) {
     assignTeamSelectedId.value = '';
   };
 
+  /** @param {any} project */
   const openProjectDetails = async project => {
     selectedProject.value = project;
     showDetailsModal.value = true;
@@ -130,6 +134,7 @@ export function useProjectManagementModals(deps) {
 
   const closeDetailsModal = () => (showDetailsModal.value = false);
 
+  /** @param {any} project */
   const openWorkspace = project => {
     selectedProject.value = project;
     workspaceForm.url = '';
@@ -152,6 +157,7 @@ export function useProjectManagementModals(deps) {
     closeWorkspaceModal();
   };
 
+  /** @param {any} project */
   const openMediaModal = async project => {
     selectedProject.value = project;
     try {
@@ -208,7 +214,8 @@ export function useProjectManagementModals(deps) {
       closeMediaModalState();
     } catch (error) {
       logger.error('Save failed:', error);
-      const msg = error.response?.data?.message || error.message;
+      const err = /** @type {any} */ (error);
+      const msg = err.response?.data?.message || err.message;
       if (msg && msg.includes('يجب أن يكون العقد لديه معلومات')) {
         toast.warning(
           'تنبيه: لا يمكن إضافة صور لهذا المشروع لأنه يفتقر إلى بيانات العقد الأساسية. يرجى إكمال بيانات المشروع أولاً (الطرف الثاني، المعلومات المالية) في صفحة التتبع.'
@@ -221,10 +228,12 @@ export function useProjectManagementModals(deps) {
     }
   };
 
+  /** @param {any} project */
   const goToUnits = project => {
     router.push({ name: 'ProjectTracker', params: { id: project.id }, query: { tab: 'units' } });
   };
 
+  /** @param {any} status */
   const getStatusClass = status => {
     switch (status) {
       case 'available':
@@ -238,6 +247,7 @@ export function useProjectManagementModals(deps) {
     }
   };
 
+  /** @param {any} daysLeft */
   const timelineClass = daysLeft => {
     if (daysLeft === null) return '';
     if (daysLeft < 30) return 'timeline-red';
@@ -245,6 +255,7 @@ export function useProjectManagementModals(deps) {
     return 'timeline-green';
   };
 
+  /** @param {any} daysLeft */
   const timelineLabel = daysLeft => {
     if (daysLeft === null) return 'المدة غير متاحة';
     if (daysLeft < 0) return 'العقد منتهي';

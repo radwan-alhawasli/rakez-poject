@@ -20,11 +20,14 @@ export function useMarketingReports() {
   });
   const isLoadingReports = ref(false);
 
+  /** @type {import('vue').Ref<any[]>} */
   const projects = ref([]);
   const isLoadingProjects = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const marketingEmployees = ref([]);
   const isLoadingEmployees = ref(false);
 
+  /** @param {any} value */
   const formatReportSummary = value => {
     if (!value) return '—';
     if (Array.isArray(value)) return `${value.length} records`;
@@ -77,11 +80,12 @@ export function useMarketingReports() {
       const employees = await userService.getEmployees();
       const normalizedEmployees = Array.isArray(employees) ? employees : employees?.items || [];
       marketingEmployees.value = normalizedEmployees.filter(
-        e =>
+        (/** @type {any} */ e) =>
           String(e.type) === '5' || e.type === 5 || String(e.type).toLowerCase() === 'marketing'
       );
     } catch (error) {
-      logger.error('Error loading employees:', error);
+      const e = /** @type {any} */ (error);
+      logger.error('Error loading employees:', e);
       marketingEmployees.value = [];
     } finally {
       isLoadingEmployees.value = false;
@@ -162,6 +166,7 @@ export function useMarketingReports() {
       const font = await pdfDoc.embedFont(fontBytes);
       const page = pdfDoc.addPage([595, 842]);
       let y = 800;
+      /** @param {any} text */
       const draw = (text, size = 12) => {
         page.drawText(reshapeArabic(String(text)), { x: 40, y, size, font, color: rgb(0.1, 0.2, 0.3) });
         y -= size + 10;

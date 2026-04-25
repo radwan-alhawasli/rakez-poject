@@ -198,7 +198,6 @@
 </template>
 
 <script>
-import LoadingSpinner from './LoadingSpinner.vue';
 import { TableSkeleton } from '@/components/ui/skeleton';
 import AddUserModal from './AddUserModal.vue';
 import ConfirmModal from './ConfirmModal.vue';
@@ -210,7 +209,7 @@ import { useUserManagement } from '@/composables/useUserManagement';
 export default {
   name: 'UserManagement',
   components: {
-    LoadingSpinner,
+    TableSkeleton,
     AddUserModal,
     ConfirmModal,
     Pagination,

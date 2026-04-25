@@ -6,8 +6,10 @@ import logger from '@/utils/logger';
 export function useSalesDeposits() {
   const { formatCurrencyAr: formatCurrency, formatDate } = useFormatters();
 
+  /** @type {import('vue').Ref<any[]>} */
   const depositsManagement = ref([]);
   const depositsManagementTotal = ref(0);
+  /** @type {import('vue').Ref<any[]>} */
   const depositsFollowUp = ref([]);
   const depositsFollowUpTotal = ref(0);
   const depositsSubTab = ref('management');
@@ -40,6 +42,7 @@ export function useSalesDeposits() {
     }
   };
 
+  /** @param {string} tab */
   const switchSubTab = async (tab) => {
     depositsSubTab.value = tab;
     if (tab === 'management' && depositsManagement.value.length === 0) {

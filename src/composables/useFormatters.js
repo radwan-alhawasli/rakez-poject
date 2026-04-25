@@ -37,27 +37,36 @@ export function useFormatters() {
     maximumFractionDigits: 1,
   });
 
+  /** @param {any} val */
   const formatCurrency = (val) => {
     if (val == null || val === '') return '0 ر.س';
     return currencyFormatterEN.format(Number(val) || 0);
   };
 
+  /** @param {any} val */
   const formatCurrencyAr = (val) => {
     return toWesternDigits(currencyFormatterAR.format(Number(val) || 0));
   };
 
+  /** @param {any} val */
   const formatNumber = (val) => {
     return numberFormatter.format(Number(val) || 0);
   };
 
-  /** Compact number: 1500 → "1.5K", 2300000 → "2.3M" */
+  /**
+   * Compact number: 1500 → "1.5K", 2300000 → "2.3M"
+   * @param {any} val
+   */
   const formatCompact = (val) => {
     const n = Number(val) || 0;
     if (Math.abs(n) < 1000) return numberFormatter.format(n);
     return compactFormatter.format(n);
   };
 
-  /** Compact currency: 1500 → "SAR 1.5K" */
+  /**
+   * Compact currency: 1500 → "SAR 1.5K"
+   * @param {any} val
+   */
   const formatCurrencyCompact = (val) => {
     const n = Number(val) || 0;
     if (Math.abs(n) < 1000) return currencyFormatterEN.format(n);
@@ -66,6 +75,7 @@ export function useFormatters() {
 
   /**
    * للأرقام المالية في البطاقات: الرقم مع منزلة عشرية + حرف الرتبة (K/M/B)، واسم العملة منفصل للعرض أسفل الرقم.
+   * @param {any} val
    * @returns {{ main: string, currency: string }} main مثل "8.0 M" أو "1.5 K"، currency مثل "ر.س"
    */
   const formatCurrencyCompactParts = (val) => {
@@ -85,7 +95,7 @@ export function useFormatters() {
   };
 
   /**
-   * @param {string} dateStr - ISO date string
+   * @param {any} dateStr - ISO date string
    * @param {string} [fallback='—'] - Value returned for empty/invalid dates
    */
   const formatDate = (dateStr, fallback = '—') => {
@@ -99,6 +109,7 @@ export function useFormatters() {
     }
   };
 
+  /** @param {any} dateStr */
   const formatDateLong = (dateStr) => {
     if (!dateStr) return '—';
     try {
@@ -119,6 +130,7 @@ export function useFormatters() {
     }
   };
 
+  /** @param {any} dateStr */
   const formatDateISO = (dateStr) => {
     if (!dateStr) return '—';
     try {
@@ -128,7 +140,11 @@ export function useFormatters() {
     }
   };
 
-  /** Format date with time (hours + minutes) */
+  /**
+   * Format date with time (hours + minutes)
+   * @param {any} dateStr
+   * @param {string} [fallback='—']
+   */
   const formatDateTime = (dateStr, fallback = '—') => {
     if (!dateStr) return fallback;
     try {
@@ -151,6 +167,7 @@ export function useFormatters() {
     }
   };
 
+  /** @type {Record<string, string>} */
   const STATUS_LABELS_AR = {
     pending: 'معلق',
     approved: 'معتمد',
@@ -158,6 +175,7 @@ export function useFormatters() {
     rejected: 'مرفوض',
   };
 
+  /** @param {any} val */
   const statusLabelAr = (val) => {
     if (val == null || val === '') return '—';
     const v = String(val).toLowerCase();

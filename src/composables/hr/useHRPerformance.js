@@ -6,6 +6,9 @@ import { toast } from '@/composables/useToast';
 
 /**
  * استخراج رقم من كائن باستخدام قائمة مفاتيح (تطابق حقول Laravel / camelCase).
+ * @param {any} obj
+ * @param {any[]} keys
+ * @param {number} fallback
  */
 function pickNumber(obj, keys, fallback = 0) {
   if (obj == null || typeof obj !== 'object') return fallback;
@@ -19,7 +22,10 @@ function pickNumber(obj, keys, fallback = 0) {
   return fallback;
 }
 
-/** يعيد null إن لم يُوجد أي مفتاح (لتمييز «لا بيانات» عن الصفر). */
+/** يعيد null إن لم يُوجد أي مفتاح (لتمييز «لا بيانات» عن الصفر). 
+ * @param {any} obj
+ * @param {any[]} keys
+ */
 function pickNumberOptional(obj, keys) {
   if (obj == null || typeof obj !== 'object') return null;
   for (const k of keys) {
@@ -32,7 +38,10 @@ function pickNumberOptional(obj, keys) {
   return null;
 }
 
-/** نص اختياري من عدة مفاتيح (للبريد، الهاتف، اسم الفريق، إلخ). */
+/** نص اختياري من عدة مفاتيح (للبريد، الهاتف، اسم الفريق، إلخ). 
+ * @param {any} obj
+ * @param {any[]} keys
+ */
 function pickString(obj, keys) {
   if (obj == null || typeof obj !== 'object') return null;
   for (const k of keys) {
@@ -42,12 +51,14 @@ function pickString(obj, keys) {
   return null;
 }
 
+/** @param {any} n */
 function clampPct(n) {
   if (Number.isNaN(n) || n == null) return 0;
   return Math.min(100, Math.max(0, Math.round(Number(n) * 100) / 100));
 }
 
-/** نسبة تحقيق الهدف: يدعم 0–100 أو كسر عشري 0–1 كما في بعض واجهات Laravel */
+/** نسبة تحقيق الهدف: يدعم 0–100 أو كسر عشري 0–1 كما في بعض واجهات Laravel 
+ * @param {any} raw */
 function normalizeGoalPercentValue(raw) {
   if (raw == null || raw === '') return 0;
   const n = Number(raw);
@@ -59,6 +70,7 @@ function normalizeGoalPercentValue(raw) {
 /**
  * صف أداء مسوق — محاذاة مع تقرير PDF (target_achievement_rate, deposits_count, warnings_count)
  * وجميع المفاتيح البديلة الشائعة في الاستجابة.
+ * @param {any} item
  */
 function buildMarketerPerformanceRow(item) {
   const user = item?.user && typeof item.user === 'object' ? item.user : {};
@@ -159,6 +171,7 @@ function buildMarketerPerformanceRow(item) {
 
 /**
  * متوسط المبيعات من استجابة GET /hr/teams/sales-average/:teamId
+ * @param {any} payload
  */
 function salesAverageFromHrPayload(payload) {
   if (payload == null || typeof payload !== 'object') return null;
@@ -174,6 +187,7 @@ function salesAverageFromHrPayload(payload) {
 
 /**
  * دمج GET /teams/:id/performance إن وُجد (اختياري؛ قد يعيد مؤشرات إضافية).
+ * @param {any} perf
  */
 function mergeTeamPerformancePayload(perf) {
   if (perf == null || typeof perf !== 'object') return {};
@@ -183,6 +197,9 @@ function mergeTeamPerformancePayload(perf) {
 
 /**
  * صف جدول أداء الفرق — حقول متوافقة مع استجابة الفريق من HR + التحقيق من الخدمات المساعدة.
+ * @param {any} team
+ * @param {any} salesHrPayload
+ * @param {any} perfPayload
  */
 function buildTeamPerformanceRow(team, salesHrPayload, perfPayload) {
   const id = team?.id ?? null;
@@ -264,10 +281,13 @@ export function useHRPerformance() {
   const periodMonth = ref(new Date().getMonth() + 1);
 
   const performanceData = reactive({
+    /** @type {any[]} */
     teams: [],
+    /** @type {any[]} */
     employees: [],
   });
 
+  /** @type {import('vue').UnwrapNestedRefs<any[]>} */
   const marketerPerformanceData = reactive([]);
 
   /** فلتر نصي اختياري لـ GET /hr/marketers/performance (إن دعمه الخادم) */
@@ -280,14 +300,14 @@ export function useHRPerformance() {
       const params = { per_page: 100 };
       const y = periodYear.value;
       const m = periodMonth.value;
-      if (y != null && y !== '') params.year = Number(y);
-      if (m != null && m !== '') params.month = Number(m);
+      if (y != null && String(y) !== '') (/** @type {any} */ (params)).year = Number(y);
+      if (m != null && String(m) !== '') (/** @type {any} */ (params)).month = Number(m);
 
       const res = await hrService.getTeams(params);
       const items = Array.isArray(res?.items) ? res.items : Array.isArray(res) ? res : [];
 
       const rows = await Promise.all(
-        items.map(async team => {
+        items.map(async (/** @type {any} */ team) => {
           const id = team?.id;
           if (id == null) {
             return buildTeamPerformanceRow(team, {}, {});
@@ -295,7 +315,7 @@ export function useHRPerformance() {
 
           const [salesSettled, perfSettled] = await Promise.allSettled([
             hrService.getTeamSalesAverage(id),
-            teamService.getTeamPerformance(id, { year: params.year, month: params.month }),
+            teamService.getTeamPerformance(id, { year: (/** @type {any} */ (params)).year, month: (/** @type {any} */ (params)).month }),
           ]);
 
           const salesPayload = salesSettled.status === 'fulfilled' ? salesSettled.value : {};
@@ -308,7 +328,7 @@ export function useHRPerformance() {
       performanceData.teams = rows;
     } catch (err) {
       logger.error('Error loading team performance:', err);
-      error.value = 'حدث خطأ أثناء تحميل أداء الفرق';
+      error.value = (/** @type {any} */ ('حدث خطأ أثناء تحميل أداء الفرق'));
       toast.error('حدث خطأ أثناء تحميل أداء الفرق');
       performanceData.teams = [];
     } finally {
@@ -323,17 +343,17 @@ export function useHRPerformance() {
       const params = {};
       const y = periodYear.value;
       const m = periodMonth.value;
-      if (y != null && y !== '') params.year = Number(y);
-      if (m != null && m !== '') params.month = Number(m);
+      if (y != null && String(y) !== '') (/** @type {any} */ (params)).year = Number(y);
+      if (m != null && String(m) !== '') (/** @type {any} */ (params)).month = Number(m);
       const q = String(marketerSearchQuery.value || '').trim();
-      if (q) params.search = q;
+      if (q) (/** @type {any} */ (params)).search = q;
 
       const list = await hrService.listMarketerPerformance(params);
       const normalized = (Array.isArray(list) ? list : []).map(item => buildMarketerPerformanceRow(item));
       marketerPerformanceData.splice(0, marketerPerformanceData.length, ...normalized);
     } catch (e) {
       logger.error('Error loading marketer performance:', e);
-      error.value = 'تعذر تحميل أداء المسوقين';
+      error.value = (/** @type {any} */ ('تعذر تحميل أداء المسوقين'));
       toast.error('تعذر تحميل أداء المسوقين');
       marketerPerformanceData.splice(0, marketerPerformanceData.length);
     } finally {

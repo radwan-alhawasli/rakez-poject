@@ -10,6 +10,7 @@ const CLIENT_PAGE_SIZE = 50;
 export function useUnitSearch() {
   const { formatCurrency } = useFormatters();
 
+  /** @type {import('vue').Ref<any[]>} */
   const allUnits = ref([]);
   const isLoading = ref(false);
   const isLoadingFilters = ref(false);
@@ -35,8 +36,11 @@ export function useUnitSearch() {
   });
 
   const availableFilters = reactive({
+    /** @type {any[]} */
     cities: [],
+    /** @type {Record<string, any[]>} */
     districts: {},
+    /** @type {any[]} */
     unit_types: [],
     bedrooms_range: { min: 0, max: 10 },
     area_range: { min: 0, max: 1000 },
@@ -75,7 +79,7 @@ export function useUnitSearch() {
   });
 
   const buildFilterParams = () => {
-    const params = {};
+    const params = /** @type {any} */ ({});
     if (filters.city) params.city = filters.city;
     if (filters.district) params.district = filters.district;
     if (filters.min_area) params.min_area = Number(filters.min_area);
@@ -99,7 +103,7 @@ export function useUnitSearch() {
       const baseParams = { ...buildFilterParams(), per_page: API_MAX_PER_PAGE, page: 1 };
 
       // Use cache for the first page to make repeated searches instant
-      const firstResult = await salesService.searchUnits({ ...baseParams, useCache: true });
+      const firstResult = /** @type {any} */ (await salesService.searchUnits({ ...baseParams, useCache: true }));
       let collected = [...firstResult.items];
       const lastPage = firstResult.meta?.last_page ?? 1;
       const serverTotal = firstResult.meta?.total ?? collected.length;
@@ -116,7 +120,7 @@ export function useUnitSearch() {
           }
           const results = await Promise.all(promises);
           for (const r of results) {
-            collected = collected.concat(r.items);
+            collected = collected.concat((/** @type {any} */ (r)).items);
           }
           loadingProgress.value = `تم تحميل ${collected.length} من ${serverTotal} وحدة...`;
         }
@@ -137,7 +141,7 @@ export function useUnitSearch() {
     if (filtersLoaded.value) return;
     isLoadingFilters.value = true;
     try {
-      const data = await salesService.getUnitSearchFilters();
+      const data = /** @type {any} */ (await salesService.getUnitSearchFilters());
       if (data.cities) availableFilters.cities = data.cities;
       if (data.districts) availableFilters.districts = data.districts;
       if (data.unit_types) availableFilters.unit_types = data.unit_types;
@@ -198,6 +202,7 @@ export function useUnitSearch() {
     searchUnits();
   };
 
+  /** @param {number} page */
   const goToPage = (page) => {
     if (page < 1 || page > totalPages.value) return;
     clientPage.value = page;
@@ -208,14 +213,16 @@ export function useUnitSearch() {
     await searchUnits();
   };
 
+  /** @param {any} status */
   const statusLabel = (status) => {
     const map = { available: 'متاحة', reserved: 'محجوزة', sold: 'مباعة', pending: 'قيد الانتظار' };
-    return map[status] ?? status ?? '—';
+    return map[/** @type {keyof typeof map} */ (status)] ?? status ?? '—';
   };
 
+  /** @param {any} status */
   const statusClass = (status) => {
     const map = { available: 'unit-available', reserved: 'unit-reserved', sold: 'unit-sold', pending: 'unit-pending' };
-    return map[status] ?? '';
+    return map[/** @type {keyof typeof map} */ (status)] ?? '';
   };
 
   return {

@@ -5,6 +5,7 @@ import { useFormatters } from '@/composables/useFormatters';
 
 export function useCreditSoldProjects() {
   const isLoading = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const soldProjects = ref([]);
   const currentPage = ref(1);
   const perPage = ref(25);
@@ -30,15 +31,18 @@ export function useCreditSoldProjects() {
     }
   };
 
+  /** @param {any} project */
   const viewSoldProjectDetail = project => {
     logger.info('View sold project:', project);
   };
 
+  /** @param {any} page */
   const handlePageChange = page => {
     currentPage.value = page;
     loadSoldProjects();
   };
 
+  /** @param {any} val */
   const handlePerPageChange = val => {
     perPage.value = val;
     currentPage.value = 1;

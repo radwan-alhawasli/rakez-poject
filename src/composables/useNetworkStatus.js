@@ -13,14 +13,9 @@ export function useNetworkStatus() {
     isOnline.value = navigator.onLine;
 
     if (wasOnline && !isOnline.value) {
-      toast.error('انقطع الاتصال بالإنترنت. بعض الميزات قد لا تعمل بشكل صحيح.', {
-        title: 'أنت الآن خارج الاتصال',
-        duration: 0, // Keep until closed or back online
-      });
+      toast.error('انقطع الاتصال بالإنترنت. بعض الميزات قد لا تعمل بشكل صحيح.', 0);
     } else if (!wasOnline && isOnline.value) {
-      toast.success('تم استعادة الاتصال بالإنترنت بنجاح.', {
-        title: 'تمت العودة للاتصال',
-      });
+      toast.success('تم استعادة الاتصال بالإنترنت بنجاح.');
     }
   };
 

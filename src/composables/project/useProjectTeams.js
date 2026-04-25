@@ -3,6 +3,7 @@ import teamService from '@/services/teamService';
 import { useAsyncAction } from '@/composables/useAsyncAction';
 import { MSG_ERROR_LOADING } from '@/constants/messages';
 
+/** @param {any} projectId */
 export function useProjectTeams(projectId) {
   const { run: runLoad, assignedTeamsLoading } = useAsyncAction({
     loadingKey: 'assignedTeamsLoading',
@@ -11,13 +12,17 @@ export function useProjectTeams(projectId) {
     loadingKey: 'isTeamActionLoading',
   });
 
+  /** @type {import('vue').Ref<any[]>} */
   const assignedTeams = ref([]);
+  /** @type {import('vue').Ref<any[]>} */
   const availableTeams = ref([]);
   const selectedTeamId = ref('');
 
   const showConfirmModal = ref(false);
+  /** @type {import('vue').Ref<{title: string, message: string, type: string, confirmText: string, resolve: (() => Promise<void>) | null}>} */
   const confirmModalConfig = ref({ title: '', message: '', type: 'warning', confirmText: 'تأكيد', resolve: null });
   const onConfirmModalConfirm = async () => {
+    /** @type {any} */
     const fn = confirmModalConfig.value.resolve;
     if (fn) await fn();
     showConfirmModal.value = false;
@@ -32,8 +37,10 @@ export function useProjectTeams(projectId) {
     if (assignedData !== undefined) {
       assignedTeams.value = Array.isArray(assignedData) ? assignedData : assignedData.data || [];
       const allTeams = await teamService.getTeams();
+      /** @type {any[]} */
+      const teamsList = Array.isArray(allTeams) ? allTeams : [];
       const assignedIds = new Set(assignedTeams.value.map(t => t.id));
-      availableTeams.value = allTeams.filter(t => !assignedIds.has(t.id));
+      availableTeams.value = teamsList.filter(t => !assignedIds.has(t.id));
     }
   };
 
@@ -52,6 +59,7 @@ export function useProjectTeams(projectId) {
     }
   };
 
+  /** @param {any} team */
   const removeTeam = (team) => {
     confirmModalConfig.value = {
       title: 'إزالة الفريق',

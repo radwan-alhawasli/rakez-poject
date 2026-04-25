@@ -5,6 +5,7 @@ import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 
+/** @param {import('vue').Ref<any[]>} projects */
 export function useMarketingProjectBudget(projects) {
   const { formatNumber } = useFormatters();
   const formatCurrency = formatNumber;
@@ -13,6 +14,7 @@ export function useMarketingProjectBudget(projects) {
   
   const showCalculateBudgetModal = ref(false);
   const isSubmitting = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const budgetResult = ref(null);
 
   const budgetForm = reactive({
@@ -32,7 +34,7 @@ export function useMarketingProjectBudget(projects) {
       budgetForm.commission_percent = '';
       return;
     }
-    const p = projects.value.find(proj => String(proj.id) === String(budgetForm.project_id));
+    const p = /** @type {any} */ (projects.value.find((/** @type {any} */ proj) => String(proj.id) === String(budgetForm.project_id)));
     if (p) {
       budgetForm.contract_id = p.contract_number ?? p.marketing_project?.contract_id ?? p.id ?? '';
       budgetForm.unit_price = p.average_unit_price ?? '';

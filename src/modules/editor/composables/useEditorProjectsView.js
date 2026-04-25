@@ -392,12 +392,14 @@ export function useEditorProjectsView() {
   /**
    * @param {any} p
    */
+  /*
   function montageDecisionBucket(p) {
     const label = montageStatusLabel(p);
     if (label === 'معتمد') return 'approved';
     if (label === 'مرفوض') return 'rejected';
     return 'pending';
   }
+  */
 
   const afterMontageListForView = computed(() => {
     /** @type {any[]} */

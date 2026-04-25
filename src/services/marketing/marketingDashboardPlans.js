@@ -146,8 +146,9 @@ export default {
    * حساب ميزانية الحملة: عمولة = نسبة السعي × متوسط السعر، ميزانية الحملة = عمولة × نسبة التسويق (6%-10%).
    * POST /api/marketing/developer-plans/calculate-budget
    * Permission: marketing.plans.create
-    * @param {any} contractId
-    * @param {any} marketingPercent
+   * @param {any} contractId
+   * @param {any} marketingPercent
+   * @param {any} [unitPrice]
    */
   async calculateDeveloperPlanBudget(contractId, marketingPercent, unitPrice = null) {
     try {

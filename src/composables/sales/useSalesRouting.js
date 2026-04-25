@@ -24,11 +24,13 @@ const TAB_ROUTE_ENTRIES = Object.freeze([
 const TAB_ROUTE_MAP = Object.freeze(Object.fromEntries(TAB_ROUTE_ENTRIES));
 const ROUTE_NAME_MAP = Object.freeze(
   TAB_ROUTE_ENTRIES.reduce((acc, [routeName, tabId]) => {
-    if (!acc[tabId]) {
-      acc[tabId] = routeName;
+    /** @type {any} */
+    const record = acc;
+    if (!record[tabId]) {
+      record[tabId] = routeName;
     }
     return acc;
-  }, {})
+  }, /** @type {Record<string, string>} */ ({}))
 );
 
 const ALL_TABS = [
@@ -123,7 +125,12 @@ export function useSalesRouting() {
   const router = useRouter();
   const { hasPermission, hasAnyPermission } = usePermissions();
 
-  const getTabFromRoute = () => TAB_ROUTE_MAP[route.name] || 'dashboard';
+  const getTabFromRoute = () => {
+    const name = String(route.name || '');
+    /** @type {any} */
+    const map = TAB_ROUTE_MAP;
+    return map[name] || 'dashboard';
+  };
 
   const activeTab = ref(getTabFromRoute());
 
@@ -145,8 +152,11 @@ export function useSalesRouting() {
     })
   );
 
+  /** @param {any} tabId */
   const switchTab = tabId => {
-    const targetRoute = ROUTE_NAME_MAP[tabId];
+    /** @type {any} */
+    const map = ROUTE_NAME_MAP;
+    const targetRoute = map[tabId];
     if (targetRoute) router.push({ name: targetRoute });
   };
 

@@ -5,6 +5,7 @@ import { useFormatters } from '@/composables/useFormatters';
 
 export function useAccountingReleasedCommissions() {
   const isLoading = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const items = ref([]);
   const totalItems = ref(0);
   const currentPage = ref(1);
@@ -17,6 +18,7 @@ export function useAccountingReleasedCommissions() {
   const loadReleasedCommissions = async () => {
     isLoading.value = true;
     try {
+      /** @type {any} */
       const params = {
         page: currentPage.value,
         per_page: perPage.value,
@@ -35,11 +37,13 @@ export function useAccountingReleasedCommissions() {
     }
   };
 
+  /** @param {any} page */
   const handlePageChange = (page) => {
     currentPage.value = page;
     loadReleasedCommissions();
   };
 
+  /** @param {any} val */
   const handlePerPageChange = (val) => {
     perPage.value = val;
     currentPage.value = 1;

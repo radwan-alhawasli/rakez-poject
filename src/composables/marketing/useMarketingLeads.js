@@ -5,16 +5,18 @@ import { toast } from '@/composables/useToast';
 import { LEAD_SOURCES } from '@/constants/lookups';
 
 export function useMarketingLeads() {
+  /** @type {import('vue').Ref<any[]>} */
   const leads = ref([]);
   const isLoadingLeads = ref(false);
   const leadSearchQuery = ref('');
 
   const filteredLeads = computed(() => {
+    /** @type {any[]} */
     let list = leads.value;
     if (leadSearchQuery.value) {
       const q = leadSearchQuery.value.toLowerCase();
       list = list.filter(
-        l =>
+        (/** @type {any} */ l) =>
           (l.name || l.client_name || '').toLowerCase().includes(q) ||
           (l.phone || '').includes(q)
       );
@@ -33,6 +35,7 @@ export function useMarketingLeads() {
   });
 
   // Projects needed for the lead form dropdown
+  /** @type {import('vue').Ref<any[]>} */
   const projects = ref([]);
   const isLoadingProjects = ref(false);
 
@@ -94,15 +97,19 @@ export function useMarketingLeads() {
     }
   };
 
+  /** @param {any} lead */
   const openLeadDetail = lead => {
     logger.debug('View lead details:', lead?.id ?? lead);
   };
 
+  /** @param {any} source */
   const getSourceClass = source => {
+    /** @type {any} */
     const sourceMap = { Snapchat: 'source-snapchat', Instagram: 'source-instagram', Twitter: 'source-twitter', Facebook: 'source-facebook', 'Google Ads': 'source-google', Website: 'source-website', Referral: 'source-referral', Other: 'source-other' };
     return sourceMap[source] || 'source-other';
   };
 
+  /** @param {any} dateString */
   const formatDate = dateString => {
     if (!dateString) return 'غير محدد';
     const date = new Date(dateString);
