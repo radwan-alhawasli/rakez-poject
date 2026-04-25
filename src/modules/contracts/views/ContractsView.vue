@@ -65,9 +65,8 @@
     </MobileFilterSheet>
 
     <!-- حالة التحميل -->
-    <div v-if="isLoading" class="loading-state">
-      <div class="loading-spinner"></div>
-      <p class="loading-text">جاري تحميل العقود...</p>
+    <div v-if="isLoading" class="mt-6">
+      <TableSkeleton :rows="6" :columns="7" />
     </div>
 
     <!-- حالة الخطأ -->
@@ -179,6 +178,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import { TableSkeleton } from '@/components/ui/skeleton';
 import ContractModal from '@/components/ContractModal.vue';
 import EditExclusiveProjectModal from '@/components/EditExclusiveProjectModal.vue';
 import Pagination from '@/components/Pagination.vue';

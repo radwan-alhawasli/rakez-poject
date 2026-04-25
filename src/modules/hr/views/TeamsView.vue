@@ -8,10 +8,7 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="isLoading" class="loading-state">
-      <div class="spinner"></div>
-      <p>جاري تحميل الفرق...</p>
-    </div>
+    <CardSkeleton v-if="isLoading" :count="4" />
 
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
@@ -63,7 +60,7 @@
     </div>
 
     <!-- Member Details Modal (Dialog) -->
-    <Dialog :open="showModal" @update:open="showModal = $event">
+    <Dialog v-if="showModal" :open="showModal" @update:open="showModal = $event">
       <DialogContent class="teams-member-dialog max-w-[450px] rounded-2xl p-6" dir="rtl">
         <DialogHeader>
           <DialogTitle class="text-[var(--color-navy)]">بيانات العضو</DialogTitle>
@@ -150,6 +147,7 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue';
+import { CardSkeleton } from '@/components/ui/skeleton';
 import userService from '@/services/userService';
 import { getRoleLabel } from '@/constants/roles';
 import logger from '@/utils/logger';

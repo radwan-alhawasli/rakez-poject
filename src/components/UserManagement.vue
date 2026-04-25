@@ -23,7 +23,7 @@
 
     <!-- Users List Table -->
     <div class="data-table-container">
-      <LoadingSpinner v-if="loading" text="جاري تحميل البيانات..." />
+      <TableSkeleton v-if="loading" :rows="8" :columns="6" />
 
       <div v-else-if="users.length === 0" class="empty-state">
         <p>لا يوجد مستخدمين لعرضهم حالياً.</p>
@@ -199,6 +199,7 @@
 
 <script>
 import LoadingSpinner from './LoadingSpinner.vue';
+import { TableSkeleton } from '@/components/ui/skeleton';
 import AddUserModal from './AddUserModal.vue';
 import ConfirmModal from './ConfirmModal.vue';
 import Pagination from './Pagination.vue';

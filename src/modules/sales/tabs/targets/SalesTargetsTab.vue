@@ -35,7 +35,7 @@
 
     <!-- View for Sales Leader: Project Board -->
     <div v-if="isSalesLeaderView">
-      <LoadingSpinner v-if="isLoadingTeamProjects" text="جاري تحميل المشاريع..." />
+      <CardSkeleton v-if="isLoadingTeamProjects" :count="3" />
       
       <div v-else-if="teamProjectsLoadError" class="empty-state error-state">
         <p>{{ teamProjectsLoadError }}</p>
@@ -61,7 +61,7 @@
 
     <!-- View for Staff: Targets -->
     <div v-else>
-      <LoadingSpinner v-if="isLoadingTargets" text="جاري تحميل الأهداف..." />
+      <TableSkeleton v-if="isLoadingTargets" :rows="4" :columns="5" />
 
       <div v-else-if="targetsLoadError" class="empty-state error-state">
         <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -115,6 +115,7 @@
 
     <!-- Modals -->
     <SalesTargetsCreateTargetModal
+      v-if="showCreateTargetModal"
       :open="showCreateTargetModal"
       :target-form="targetForm"
       :team-members-list="teamMembersList"
@@ -182,6 +183,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, inject, unref } from 'vue';
 import { useRoute } from 'vue-router';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { CardSkeleton, TableSkeleton } from '@/components/ui/skeleton';
 import Pagination from '@/components/Pagination.vue';
 import SalesTargetsAssignMarketersModal from '@/modules/sales/tabs/targets/SalesTargetsAssignMarketersModal.vue';
 import SalesTargetsCreateTargetModal from '@/modules/sales/tabs/targets/SalesTargetsCreateTargetModal.vue';

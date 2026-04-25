@@ -1,6 +1,7 @@
 import { ref, reactive, computed, watch } from 'vue';
 import salesService from '@/services/salesService';
 import { useFormatters } from '@/composables/useFormatters';
+import { debounce } from '@/lib/utils';
 import logger from '@/utils/logger';
 
 const API_MAX_PER_PAGE = 100;
@@ -97,7 +98,8 @@ export function useUnitSearch() {
     try {
       const baseParams = { ...buildFilterParams(), per_page: API_MAX_PER_PAGE, page: 1 };
 
-      const firstResult = await salesService.searchUnits(baseParams);
+      // Use cache for the first page to make repeated searches instant
+      const firstResult = await salesService.searchUnits({ ...baseParams, useCache: true });
       let collected = [...firstResult.items];
       const lastPage = firstResult.meta?.last_page ?? 1;
       const serverTotal = firstResult.meta?.total ?? collected.length;
@@ -155,6 +157,28 @@ export function useUnitSearch() {
     clientPage.value = 1;
     searchUnits();
   };
+
+  const debouncedSearch = debounce(() => {
+    applyFilters();
+  }, 400);
+
+  // Watch for filter changes to trigger search automatically
+  watch(
+    () => [
+      filters.q,
+      filters.city,
+      filters.district,
+      filters.status,
+      filters.unit_type,
+      filters.min_area,
+      filters.max_area,
+      filters.min_price,
+      filters.max_price,
+    ],
+    () => {
+      debouncedSearch();
+    }
+  );
 
   const resetFilters = () => {
     filters.city = '';

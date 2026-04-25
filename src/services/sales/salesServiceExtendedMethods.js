@@ -183,7 +183,12 @@ export const salesServiceExtendedMethods = {
    */
   async searchUnits(params = {}) {
     try {
-      const response = await apiClient.get('/sales/units/search', { params });
+      const { useCache, cacheTTL, ...queryParams } = params;
+      const response = await apiClient.get('/sales/units/search', { 
+        params: queryParams,
+        useCache,
+        cacheTTL
+      });
       const body = response?.data ?? response;
       const items = body?.data ?? [];
       const meta = body?.meta ?? {};

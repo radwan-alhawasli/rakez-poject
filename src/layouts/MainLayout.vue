@@ -3,6 +3,7 @@
     v-model:open-mobile="isSidebarOpen"
     @update:hovered="isSidebarHovered = $event"
   >
+    <OfflineBanner />
     <!-- Overlay: click to close sidebar on mobile (only when open and below 992px) -->
     <div
       v-if="isSidebarOpen && isMobile"
@@ -64,6 +65,7 @@ import {
 } from '@/components/ui/sidebar';
 import AppHeader from './components/AppHeader.vue';
 import AppSidebar from './components/AppSidebar.vue';
+import OfflineBanner from '@/components/OfflineBanner.vue';
 import { useMainLayout } from './composables/useMainLayout.js';
 
 export default {
@@ -73,6 +75,7 @@ export default {
     SidebarInset,
     AppHeader,
     AppSidebar,
+    OfflineBanner,
   },
   setup() {
     return useMainLayout();

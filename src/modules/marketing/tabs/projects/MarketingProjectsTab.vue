@@ -74,6 +74,7 @@
     </div>
 
     <MarketingCalculateBudgetModal
+      v-if="showCalculateBudgetModal"
       :show="showCalculateBudgetModal"
       v-model:budget-form="budgetForm"
       :budget-result="budgetResult"

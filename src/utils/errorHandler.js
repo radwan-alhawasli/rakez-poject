@@ -37,37 +37,42 @@ export const ErrorSeverity = {
  */
 const errorMessages = {
   [ErrorTypes.NETWORK]: {
-    default: 'حدث خطأ في الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.',
-    timeout: 'انتهت مهلة الاتصال. يرجى المحاولة مرة أخرى.',
-    offline: 'لا يوجد اتصال بالإنترنت. يرجى التحقق من الاتصال والمحاولة مرة أخرى.',
+    default: 'تعذر الاتصال بالخادم. يرجى التأكد من اتصال الإنترنت.',
+    timeout: 'استغرق الطلب وقتاً أطول من المتوقع. يرجى المحاولة مرة أخرى.',
+    offline: 'أنت الآن خارج الاتصال (Offline). يرجى التحقق من الشبكة.',
   },
   [ErrorTypes.VALIDATION]: {
-    default: 'البيانات المدخلة غير صحيحة. يرجى التحقق والمحاولة مرة أخرى.',
-    required: 'هذا الحقل مطلوب.',
-    format: 'صيغة البيانات غير صحيحة.',
+    default: 'البيانات المدخلة غير مكتملة أو غير صحيحة.',
+    required: 'هذا الحقل مطلوب ولا يمكن تركه فارغاً.',
+    format: 'صيغة البيانات المدخلة غير مدعومة.',
+    unique: 'هذه القيمة مسجلة مسبقاً في النظام.',
   },
   [ErrorTypes.AUTHENTICATION]: {
-    default: 'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.',
-    invalid: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
-    expired: 'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+    default: 'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مجدداً.',
+    invalid: 'بيانات الدخول غير صحيحة. يرجى التأكد من البريد وكلمة المرور.',
+    expired: 'جلستك انتهت لدواعي الأمان. يرجى إعادة تسجيل الدخول.',
+    unauthorized: 'يرجى تسجيل الدخول للوصول إلى هذه الميزة.',
   },
   [ErrorTypes.AUTHORIZATION]: {
-    default: 'ليس لديك صلاحية للوصول إلى هذا المورد.',
-    forbidden:
-      'غير مصرح لك بالوصول إلى هذه الصفحة. يرجى التواصل مع المسؤول للحصول على الصلاحيات المناسبة.',
-    roles: 'ليس لديك الصلاحيات المطلوبة للوصول إلى هذا المورد.',
+    default: 'عذراً، لا تملك الصلاحيات الكافية لتنفيذ هذا الإجراء.',
+    forbidden: 'الوصول لهذا القسم مقيد لمدراء النظام فقط.',
+    roles: 'صلاحيات حسابك لا تسمح بعرض هذه البيانات.',
   },
   [ErrorTypes.SERVER]: {
-    default: 'حدث خطأ في الخادم. يرجى المحاولة مرة أخرى لاحقاً.',
-    500: 'حدث خطأ داخلي في الخادم. يرجى المحاولة لاحقاً.',
-    503: 'الخادم غير متاح حالياً. يرجى المحاولة لاحقاً.',
+    default: 'حدث خطأ فني في أنظمة الشركة. فريقنا يعمل على إصلاحه حالياً.',
+    500: 'نواجه مشكلة في معالجة طلبك (Error 500). يرجى المحاولة بعد قليل.',
+    502: 'بوابة السيرفر غير مستجيبة. يرجى تحديث الصفحة.',
+    503: 'النظام في وضع الصيانة المؤقتة. سنعود قريباً.',
+    504: 'بوابة السيرفر استغرقت وقتاً طويلاً. يرجى المحاولة لاحقاً.',
   },
   [ErrorTypes.CLIENT]: {
-    default: 'حدث خطأ في التطبيق. يرجى تحديث الصفحة والمحاولة مرة أخرى.',
-    notFound: 'المورد المطلوب غير موجود أو تم حذفه.',
+    default: 'حدث خطأ غير متوقع في المتصفح. يرجى تحديث الصفحة.',
+    notFound: 'الصفحة أو المورد الذي تبحث عنه غير موجود (404).',
+    400: 'الطلب المرسل غير صالح. يرجى التأكد من المدخلات.',
+    429: 'لقد قمت بإرسال الكثير من الطلبات. يرجى الانتظار قليلاً.',
   },
   [ErrorTypes.UNKNOWN]: {
-    default: 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.',
+    default: 'حدث خطأ غير معروف. يرجى التواصل مع الدعم الفني.',
   },
 };
 
@@ -79,10 +84,30 @@ const errorMessages = {
 function mapKnownApiUserMessage(msg) {
   if (!msg || typeof msg !== 'string') return msg;
   const t = msg.trim();
-  if (t.includes('بيانات الطرف الثاني غير موجودة')) return 'العقد غير مستكمل';
-  if (t.includes('يمكن فقط تحديث العقود الموافق عليها')) {
-    return 'يمكن تحويل المشروع إلى جاهز للتسويق فقط بعد موافقة الإدارة على العقد (حالة: معتمد).';
+  
+  // قاموس ترجمة رسائل الـ Backend الشائعة
+  const dictionary = {
+    'The email has already been taken': 'البريد الإلكتروني مسجل مسبقاً.',
+    'The phone has already been taken': 'رقم الجوال مسجل مسبقاً.',
+    'Unauthenticated': 'يرجى تسجيل الدخول للمتابعة.',
+    'Unauthorized': 'غير مصرح لك بالقيام بهذا الإجراء.',
+    'Page Not Found': 'الصفحة غير موجودة.',
+    'Server Error': 'خطأ في السيرفر الداخلي.',
+    'The given data was invalid': 'البيانات المدخلة غير صالحة.',
+    'بيانات الطرف الثاني غير موجودة': 'بيانات العقد (الطرف الثاني) غير مكتملة.',
+    'يمكن فقط تحديث العقود الموافق عليها': 'يجب اعتماد العقد من الإدارة أولاً قبل التعديل.',
+    'User does not have the right roles': 'لا تملك الصلاحية الوظيفية المطلوبة.',
+    'Token has expired': 'انتهت صلاحية رمز الدخول. يرجى إعادة الدخول.',
+    'CSRF token mismatch': 'انتهت صلاحية الصفحة. يرجى تحديث الصفحة (Refresh).',
+  };
+
+  // البحث عن مطابقة في القاموس
+  for (const [key, value] of Object.entries(dictionary)) {
+    if (t.toLowerCase().includes(key.toLowerCase())) {
+      return value;
+    }
   }
+
   return t;
 }
 
@@ -203,6 +228,7 @@ function getUserMessage(error, type = ErrorTypes.UNKNOWN) {
  */
 function getErrorType(error) {
   if (!error) return ErrorTypes.UNKNOWN;
+  if (error.isOffline || (typeof navigator !== 'undefined' && !navigator.onLine)) return ErrorTypes.NETWORK;
 
   // Network errors
   if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
@@ -278,15 +304,33 @@ function logError(error, type, severity, context = {}) {
     originalMessage: error?.message,
     originalError: error,
     statusCode: error?.response?.status || error?.status,
+    url: error?.config?.url || error?.url,
+    method: error?.config?.method || error?.method,
+    params: error?.config?.params,
+    data: error?.response?.data || error?.data,
     stack: error?.stack,
+    timestamp: new Date().toISOString(),
     ...context,
   };
 
-  // Always log errors
+  // تنسيق رسالة السجل للمطورين في الـ Console
+  if (appConfig.isDevelopment) {
+    const logLabel = `[API Error ${errorInfo.statusCode || ''}] ${errorInfo.method?.toUpperCase() || ''} ${errorInfo.url || ''}`;
+    console.groupCollapsed(`%c${logLabel}`, 'color: #ff4d4f; font-weight: bold;');
+    console.log('Type:', type);
+    console.log('Severity:', severity);
+    console.log('Context:', context);
+    console.log('Error Object:', error);
+    console.log('Response Data:', errorInfo.data);
+    console.log('Stack Trace:', errorInfo.stack);
+    console.groupEnd();
+  }
+
+  // Always log errors via logger utility
   if (severity === ErrorSeverity.CRITICAL || severity === ErrorSeverity.HIGH) {
-    logger.error('Error:', errorInfo);
+    logger.error('Critical Error:', errorInfo);
   } else if (severity === ErrorSeverity.MEDIUM) {
-    logger.warn('Error:', errorInfo);
+    logger.warn('Warning:', errorInfo);
   } else {
     logger.error('Error:', errorInfo);
   }

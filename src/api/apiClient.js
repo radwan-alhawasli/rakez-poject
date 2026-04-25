@@ -24,9 +24,14 @@ import logger from '@/utils/logger';
 import secureStorage from '@/utils/secureStorage';
 import { setupTokenRefreshInterceptor, initTokenRefresh } from '@/utils/tokenRefresh';
 import { setupCsrfInterceptor, initCsrf } from '@/utils/csrf';
+import { getApiErrorMessage } from '@/utils/errorHandler';
 
 const apiBaseUrl = appConfig.apiBaseUrl;
 const apiTimeout = appConfig.apiTimeout ?? 30000;
+
+// Simple Cache for GET requests
+const apiCache = new Map();
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 
 // Log API base URL in development
 if (appConfig.isDevelopment) {
@@ -42,6 +47,19 @@ const apiClient = axios.create({
   timeout: apiTimeout,
 });
 
+// Cache management
+export const clearApiCache = (pattern = null) => {
+  if (!pattern) {
+    apiCache.clear();
+    return;
+  }
+  for (const key of apiCache.keys()) {
+    if (key.includes(pattern)) {
+      apiCache.delete(key);
+    }
+  }
+};
+
 // Initialize utilities with apiClient instance (breaks circular dependency)
 initCsrf(apiClient);
 initTokenRefresh(apiClient);
@@ -52,6 +70,29 @@ setupCsrfInterceptor(apiClient);
 // Request Interceptor: Attach token if it exists and update activity
 apiClient.interceptors.request.use(
   config => {
+    // Proactive offline check
+    if (!navigator.onLine) {
+      const error = new Error('No internet connection');
+      error.isOffline = true;
+      return Promise.reject(error);
+    }
+
+    // Cache logic for GET requests
+    if (config.method === 'get' && config.useCache) {
+      const cacheKey = `${config.url}${JSON.stringify(config.params || {})}`;
+      const cached = apiCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < (config.cacheTTL || CACHE_TTL)) {
+        config.adapter = () => Promise.resolve({
+          data: cached.data,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+          request: {}
+        });
+      }
+    }
+
     const token = secureStorage.getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -72,7 +113,30 @@ setupTokenRefreshInterceptor(apiClient);
 
 // Response Interceptor: Standardized error handling
 apiClient.interceptors.response.use(
-  response => response,
+  response => {
+    // Cache the response if it was a GET request and useCache was enabled
+    if (response.config.method === 'get' && response.config.useCache) {
+      const cacheKey = `${response.config.url}${JSON.stringify(response.config.params || {})}`;
+      apiCache.set(cacheKey, {
+        data: response.data,
+        timestamp: Date.now()
+      });
+    }
+
+    // Invalidate cache on mutations
+    const method = (response.config.method || '').toLowerCase();
+    if (['post', 'put', 'patch', 'delete'].includes(method)) {
+      // If we know the resource, we can be more specific, but for now clear all
+      // Or clear based on URL pattern
+      const url = response.config.url || '';
+      const baseResource = url.split('/')[0] || url.split('/')[1];
+      if (baseResource) {
+        clearApiCache(baseResource);
+      }
+    }
+
+    return response;
+  },
   error => {
     const status = error.response ? error.response.status : null;
     const url = error.config?.url || '';
@@ -144,9 +208,12 @@ apiClient.interceptors.response.use(
 
     // Create a proper Error instance instead of rejecting with a plain object
     /** @type {NormalizedApiError} */
-    const apiError = /** @type {NormalizedApiError} */ (new Error(message));
+    const friendlyMessage = getApiErrorMessage(error);
+    const apiError = /** @type {NormalizedApiError} */ (new Error(friendlyMessage));
     apiError.name = 'APIError';
     apiError.status = status;
+    apiError.userMessage = friendlyMessage;
+    apiError.originalMessage = message;
     apiError.data = error.response?.data;
     // Keep a minimal, serializable `response` shape for callers that expect Axios-like errors.
     // Do NOT attach the full Axios error/response/config, as they contain non-cloneable values
