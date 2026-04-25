@@ -3,6 +3,7 @@
  * sales_leader: role 5 + (is_manager or is_leader) => use sales_leader map
  */
 /** مفتاح Bootstrap حسب المعرّف الرقمي للأدوار (1–13) */
+/** @type {Record<number, string>} */
 export const ROLE_TO_BOOTSTRAP_KEY = {
   1: 'admin',
   2: 'project_management',

@@ -14,7 +14,7 @@ class UserRepository {
   /**
    * Get all users
    * @param {Object} filters - Filters
-   * @returns {Promise<Array>} Users
+   * @returns {Promise<Array<any>>} Users
    */
   async findAll(filters = {}) {
     try {

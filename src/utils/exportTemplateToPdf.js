@@ -3,7 +3,10 @@ import { createApp } from 'vue';
 const A4_WIDTH = 595;
 const A4_HEIGHT = 842;
 
-/** Decode base64 data URL to Uint8Array */
+/** Decode base64 data URL to Uint8Array 
+ * @param {string} dataUrl
+ * @returns {Uint8Array}
+*/
 function dataUrlToBytes(dataUrl) {
   const base64 = dataUrl.includes(',') ? dataUrl.split(',')[1] : dataUrl;
   const binary = atob(base64);
@@ -14,7 +17,7 @@ function dataUrlToBytes(dataUrl) {
 
 /**
  * Export RakezWeeklyCampaignTemplate (HTML) to PDF using html2canvas + pdf-lib.
- * @param {Object} props - { logoSrc?, rows: [{ id, platform, clicks, impressions }], footer? }
+ * @param {any} props - { logoSrc?, rows: [{ id, platform, clicks, impressions }], footer? }
  * @returns {Promise<Uint8Array>} PDF bytes
  */
 /** Load Amiri TTF and return base64 for injection (main doc + clone doc in html2canvas) */
@@ -28,11 +31,19 @@ async function getAmiriBase64() {
   return btoa(binary);
 }
 
+/**
+ * @param {string|null} base64
+ * @returns {string}
+ */
 function makeAmiriFontFaceCss(base64) {
   if (!base64) return '';
   return `@font-face{font-family:'Amiri';src:url(data:font/ttf;base64,${base64}) format('truetype');font-weight:400;font-style:normal;}`;
 }
 
+/**
+ * @param {any} props
+ * @returns {Promise<Uint8Array>}
+ */
 export async function exportDeveloperPlanTemplateToPdf(props) {
   const fontBase64 = await getAmiriBase64();
   if (fontBase64) {
@@ -41,8 +52,10 @@ export async function exportDeveloperPlanTemplateToPdf(props) {
     style.textContent = makeAmiriFontFaceCss(fontBase64);
     document.head.appendChild(style);
     try {
-      await document.fonts.load('16px Amiri');
-      await document.fonts.ready;
+      /** @type {any} */
+      const df = document.fonts;
+      await df.load('16px Amiri');
+      await df.ready;
     } catch (_) {
       // Continue export even if font loading events are unavailable.
     }
@@ -52,14 +65,14 @@ export async function exportDeveloperPlanTemplateToPdf(props) {
   container.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;z-index:-1;font-family:\'Amiri\',serif;';
   document.body.appendChild(container);
 
-  const { default: RakezWeeklyCampaignTemplate } = await import(
-    '@/modules/marketing/components/RakezWeeklyCampaignTemplate.vue'
-  );
+  // @ts-ignore - dynamic import path might not be recognized by tsc in this environment
+  const { default: RakezWeeklyCampaignTemplate } = await import('@/modules/marketing/components/RakezWeeklyCampaignTemplate.vue');
   const app = createApp(RakezWeeklyCampaignTemplate, props);
   app.mount(container);
 
   await new Promise((r) => setTimeout(r, 800));
 
+  /** @type {HTMLElement|null} */
   const pageEl = container.querySelector('.a4-page');
   if (!pageEl) {
     app.unmount();
@@ -82,7 +95,8 @@ export async function exportDeveloperPlanTemplateToPdf(props) {
         style.textContent = makeAmiriFontFaceCss(fontBase64);
         clonedDoc.head.appendChild(style);
       }
-      const root = clonedNode.querySelector?.('.a4-page') || clonedNode;
+      /** @type {HTMLElement|null} */
+      const root = clonedNode.querySelector?.('.a4-page') || (clonedNode instanceof HTMLElement ? clonedNode : null);
       if (root) root.style.fontFamily = "'Amiri', serif";
     },
   });

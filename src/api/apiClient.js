@@ -15,6 +15,9 @@
  *   method?: string;
  *   code?: string | undefined;
  *   isAuthRedirect?: boolean;
+ *   isOffline?: boolean;
+ *   userMessage?: string;
+ *   originalMessage?: string;
  * }} NormalizedApiError
  */
 
@@ -70,24 +73,25 @@ setupCsrfInterceptor(apiClient);
 // Request Interceptor: Attach token if it exists and update activity
 apiClient.interceptors.request.use(
   config => {
+    const cfg = /** @type {any} */ (config);
     // Proactive offline check
     if (!navigator.onLine) {
-      const error = new Error('No internet connection');
+      const error = /** @type {any} */ (new Error('No internet connection'));
       error.isOffline = true;
       return Promise.reject(error);
     }
 
     // Cache logic for GET requests
-    if (config.method === 'get' && config.useCache) {
-      const cacheKey = `${config.url}${JSON.stringify(config.params || {})}`;
+    if (cfg.method === 'get' && cfg.useCache) {
+      const cacheKey = `${cfg.url}${JSON.stringify(cfg.params || {})}`;
       const cached = apiCache.get(cacheKey);
-      if (cached && Date.now() - cached.timestamp < (config.cacheTTL || CACHE_TTL)) {
-        config.adapter = () => Promise.resolve({
+      if (cached && Date.now() - cached.timestamp < (cfg.cacheTTL || CACHE_TTL)) {
+        cfg.adapter = () => Promise.resolve({
           data: cached.data,
           status: 200,
           statusText: 'OK',
           headers: {},
-          config,
+          config: cfg,
           request: {}
         });
       }
@@ -114,9 +118,10 @@ setupTokenRefreshInterceptor(apiClient);
 // Response Interceptor: Standardized error handling
 apiClient.interceptors.response.use(
   response => {
+    const config = /** @type {any} */ (response.config);
     // Cache the response if it was a GET request and useCache was enabled
-    if (response.config.method === 'get' && response.config.useCache) {
-      const cacheKey = `${response.config.url}${JSON.stringify(response.config.params || {})}`;
+    if (config.method === 'get' && config.useCache) {
+      const cacheKey = `${config.url}${JSON.stringify(config.params || {})}`;
       apiCache.set(cacheKey, {
         data: response.data,
         timestamp: Date.now()
@@ -124,11 +129,11 @@ apiClient.interceptors.response.use(
     }
 
     // Invalidate cache on mutations
-    const method = (response.config.method || '').toLowerCase();
+    const method = (config.method || '').toLowerCase();
     if (['post', 'put', 'patch', 'delete'].includes(method)) {
       // If we know the resource, we can be more specific, but for now clear all
       // Or clear based on URL pattern
-      const url = response.config.url || '';
+      const url = config.url || '';
       const baseResource = url.split('/')[0] || url.split('/')[1];
       if (baseResource) {
         clearApiCache(baseResource);
@@ -207,7 +212,6 @@ apiClient.interceptors.response.use(
     }
 
     // Create a proper Error instance instead of rejecting with a plain object
-    /** @type {NormalizedApiError} */
     const friendlyMessage = getApiErrorMessage(error);
     const apiError = /** @type {NormalizedApiError} */ (new Error(friendlyMessage));
     apiError.name = 'APIError';

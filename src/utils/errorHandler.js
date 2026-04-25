@@ -113,14 +113,15 @@ function mapKnownApiUserMessage(msg) {
 
 /**
  * Extract first validation error from Laravel-style errors object
- * @param {Object} errors - { field: ["msg"] } or { field: "msg" }
+ * @param {any} errors - { field: ["msg"] } or { field: "msg" }
  * @returns {string|null}
  */
 function getFirstValidationMessage(errors) {
   if (!errors || typeof errors !== 'object') return null;
-  const key = Object.keys(errors)[0];
+  const e = /** @type {Record<string, any>} */ (errors);
+  const key = Object.keys(e)[0];
   if (!key) return null;
-  const val = errors[key];
+  const val = e[key];
   if (Array.isArray(val) && val.length) return val[0];
   if (typeof val === 'string') return val;
   return null;
@@ -129,31 +130,33 @@ function getFirstValidationMessage(errors) {
 /**
  * Get user-facing message from any API/service error (used across the app in catch blocks).
  * Prefers: API message, then validation errors, then status-based defaults.
- * @param {Error|{ message?: string, response?: { data?: { message?: string, errors?: object } }, data?: { message?: string, errors?: object }, status?: number }} error
+ * @param {any} error
  * @param {string} [fallback] - Optional fallback when no specific message is found
  * @returns {string}
  */
 export function getApiErrorMessage(error, fallback) {
   if (!error) return fallback || errorMessages[ErrorTypes.UNKNOWN].default;
-  const data = error?.response?.data ?? error?.data ?? {};
+  /** @type {any} */
+  const e = error;
+  const data = e?.response?.data ?? e?.data ?? {};
   const msg =
-    error?.userMessage ||
-    error?.message ||
+    e?.userMessage ||
+    e?.message ||
     data?.message ||
     getFirstValidationMessage(data?.errors);
   if (msg && typeof msg === 'string' && msg.trim()) return mapKnownApiUserMessage(msg.trim());
-  const status = error?.response?.status ?? error?.status;
-  if (status === 401) return errorMessages[ErrorTypes.AUTHENTICATION].expired;
-  if (status === 403) return errorMessages[ErrorTypes.AUTHORIZATION].default;
-  if (status === 404) return errorMessages[ErrorTypes.CLIENT].notFound;
-  if (status === 422) return errorMessages[ErrorTypes.VALIDATION].default;
-  if (status >= 500) return errorMessages[ErrorTypes.SERVER].default;
+  const status = e?.response?.status ?? e?.status;
+  if (status === 401) return errorMessages[ErrorTypes.AUTHENTICATION].expired || '';
+  if (status === 403) return errorMessages[ErrorTypes.AUTHORIZATION].default || '';
+  if (status === 404) return errorMessages[ErrorTypes.CLIENT].notFound || '';
+  if (status === 422) return errorMessages[ErrorTypes.VALIDATION].default || '';
+  if (status >= 500) return errorMessages[ErrorTypes.SERVER].default || '';
   return fallback || errorMessages[ErrorTypes.UNKNOWN].default;
 }
 
 /**
  * Show API error to user via toast. Use in catch blocks.
- * @param {Error|object} err - Caught error
+ * @param {any} err - Caught error
  * @param {string} [fallback] - Fallback message when no specific message is found (default: MSG_ERROR_GENERIC)
  */
 export function showApiError(err, fallback = MSG_ERROR_GENERIC) {
@@ -163,84 +166,94 @@ export function showApiError(err, fallback = MSG_ERROR_GENERIC) {
 
 /**
  * Get user-friendly error message
- * @param {Error} error - Error object
+ * @param {any} error - Error object
  * @param {string} type - Error type
- * @returns {string} User-friendly message
+ * @returns {string|null} User-friendly message
  */
 function getUserMessage(error, type = ErrorTypes.UNKNOWN) {
+  /** @type {any} */
+  const e = error;
   // Prefer explicit user message
-  if (error?.userMessage) return error.userMessage;
+  if (e?.userMessage) return e.userMessage;
 
   // API message (apiClient sets error.message and error.data)
   const apiMsg =
-    error?.message ||
-    error?.response?.data?.message ||
-    error?.data?.message ||
-    getFirstValidationMessage(error?.response?.data?.errors) ||
-    getFirstValidationMessage(error?.data?.errors);
+    e?.message ||
+    e?.response?.data?.message ||
+    e?.data?.message ||
+    getFirstValidationMessage(e?.response?.data?.errors) ||
+    getFirstValidationMessage(e?.data?.errors);
   if (apiMsg && typeof apiMsg === 'string' && apiMsg.trim()) {
     // Map known network patterns
-    if (apiMsg.includes('timeout')) return errorMessages[ErrorTypes.NETWORK].timeout;
+    if (apiMsg.includes('timeout')) return errorMessages[ErrorTypes.NETWORK].timeout || null;
     if (apiMsg.includes('Network Error') || apiMsg.includes('Failed to fetch')) {
-      return errorMessages[ErrorTypes.NETWORK].offline;
+      return errorMessages[ErrorTypes.NETWORK].offline || null;
     }
     return mapKnownApiUserMessage(apiMsg.trim());
   }
 
   // Check status code
-  const status = error?.response?.status || error?.status;
+  const status = e?.response?.status || e?.status;
   if (status) {
     if (status === 401) {
-      return errorMessages[ErrorTypes.AUTHENTICATION].expired;
+      return errorMessages[ErrorTypes.AUTHENTICATION].expired || null;
     }
     if (status === 403) {
       // Check if error message mentions roles
-      const errorMsg = error?.response?.data?.message || error?.message || '';
+      const errorMsg = e?.response?.data?.message || e?.message || '';
       if (errorMsg.includes('role') || errorMsg.includes('صلاحية') || errorMsg.includes('roles')) {
-        return errorMessages[ErrorTypes.AUTHORIZATION].roles;
+        /** @type {any} */
+        const authMsgs = errorMessages[ErrorTypes.AUTHORIZATION];
+        return authMsgs.roles || null;
       }
-      return errorMessages[ErrorTypes.AUTHORIZATION].forbidden;
+      return errorMessages[ErrorTypes.AUTHORIZATION].forbidden || null;
     }
     if (status === 404) {
       // Check if it's an expected 404 (CSRF, refresh token) - don't show to user
-      const url = error?.config?.url || error?.response?.config?.url || '';
+      const url = e?.config?.url || e?.response?.config?.url || '';
       if (url.includes('/csrf-token') || url.includes('/auth/refresh')) {
         return null; // Don't show error for expected 404s
       }
-      return errorMessages[ErrorTypes.CLIENT].notFound;
+      return errorMessages[ErrorTypes.CLIENT].notFound || null;
     }
     if (status === 500) {
-      return errorMessages[ErrorTypes.SERVER]['500'];
+      return errorMessages[ErrorTypes.SERVER]['500'] || null;
     }
     if (status === 503) {
-      return errorMessages[ErrorTypes.SERVER]['503'];
+      return errorMessages[ErrorTypes.SERVER]['503'] || null;
+    }
+    if (status === 504) {
+      return errorMessages[ErrorTypes.SERVER]['504'] || null;
     }
   }
 
   // Return default message for type
-  return errorMessages[type]?.default || errorMessages[ErrorTypes.UNKNOWN].default;
+  const typeMsgs = /** @type {any} */ (errorMessages)[type];
+  return typeMsgs?.default || errorMessages[ErrorTypes.UNKNOWN].default;
 }
 
 /**
  * Determine error type from error object
- * @param {Error} error - Error object
+ * @param {any} error - Error object
  * @returns {string} Error type
  */
 function getErrorType(error) {
   if (!error) return ErrorTypes.UNKNOWN;
-  if (error.isOffline || (typeof navigator !== 'undefined' && !navigator.onLine)) return ErrorTypes.NETWORK;
+  /** @type {any} */
+  const e = error;
+  if (e.isOffline || (typeof navigator !== 'undefined' && !navigator.onLine)) return ErrorTypes.NETWORK;
 
   // Network errors
-  if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+  if (e.code === 'ECONNABORTED' || e.message?.includes('timeout')) {
     return ErrorTypes.NETWORK;
   }
 
-  if (error.message?.includes('Network Error') || error.message?.includes('Failed to fetch')) {
+  if (e.message?.includes('Network Error') || e.message?.includes('Failed to fetch')) {
     return ErrorTypes.NETWORK;
   }
 
   // HTTP status codes
-  const status = error?.response?.status || error?.status;
+  const status = e?.response?.status || e?.status;
   if (status) {
     if (status === 401) return ErrorTypes.AUTHENTICATION;
     if (status === 403) return ErrorTypes.AUTHORIZATION;
@@ -250,7 +263,7 @@ function getErrorType(error) {
   }
 
   // Validation errors
-  if (error.name === 'ValidationError' || error.type === 'validation') {
+  if (e.name === 'ValidationError' || e.type === 'validation') {
     return ErrorTypes.VALIDATION;
   }
 
@@ -259,16 +272,18 @@ function getErrorType(error) {
 
 /**
  * Determine error severity
- * @param {Error} error - Error object
+ * @param {any} error - Error object
  * @param {string} type - Error type
  * @returns {string} Error severity
  */
 function getErrorSeverity(error, type) {
-  const status = error?.response?.status || error?.status;
+  /** @type {any} */
+  const e = error;
+  const status = e?.response?.status || e?.status;
 
   // 404 errors for expected endpoints (CSRF, refresh) are low severity
   if (status === 404) {
-    const url = error?.config?.url || error?.response?.config?.url || '';
+    const url = e?.config?.url || e?.response?.config?.url || '';
     if (url.includes('/csrf-token') || url.includes('/auth/refresh')) {
       return ErrorSeverity.LOW;
     }
@@ -291,24 +306,27 @@ function getErrorSeverity(error, type) {
 
 /**
  * Log error based on severity and environment
- * @param {Error} error - Error object
+ * @param {any} error - Error object
  * @param {string} type - Error type
  * @param {string} severity - Error severity
- * @param {Object} context - Additional context
+ * @param {any} context - Additional context
  */
 function logError(error, type, severity, context = {}) {
+  /** @type {any} */
+  const e = error;
+  /** @type {any} */
   const errorInfo = {
     type,
     severity,
-    message: error?.message || 'Unknown error',
-    originalMessage: error?.message,
-    originalError: error,
-    statusCode: error?.response?.status || error?.status,
-    url: error?.config?.url || error?.url,
-    method: error?.config?.method || error?.method,
-    params: error?.config?.params,
-    data: error?.response?.data || error?.data,
-    stack: error?.stack,
+    message: e?.message || 'Unknown error',
+    originalMessage: e?.message,
+    originalError: e,
+    statusCode: e?.response?.status || e?.status,
+    url: e?.config?.url || e?.url,
+    method: e?.config?.method || e?.method,
+    params: e?.config?.params,
+    data: e?.response?.data || e?.data,
+    stack: e?.stack,
     timestamp: new Date().toISOString(),
     ...context,
   };
@@ -337,77 +355,47 @@ function logError(error, type, severity, context = {}) {
 
   // In production, send to error reporting service
   if (appConfig.isProduction && appConfig.enableErrorReporting) {
-    reportError(errorInfo);
+    try {
+      reportError(errorInfo);
+    } catch (reportErr) {
+      console.error('[ErrorHandler] Failed to report error:', reportErr);
+    }
   }
 }
 
 /**
- * Handle error with full processing
- * @param {Error} error - Error object
- * @param {Object} options - Handling options
- * @returns {Object} Error information
+ * Handle caught error: categorize, log, and show to user
+ * @param {any} error - Caught error
+ * @param {any} options - { type, severity, context, showToast, fallbackMessage }
  */
 export function handleError(error, options = {}) {
-  const { context = {}, showNotification = true, log = true, throwError = false } = options;
+  const type = options.type || getErrorType(error);
+  const severity = options.severity || getErrorSeverity(error, type);
+  const userMessage = getUserMessage(error, type) || options.fallbackMessage;
 
-  const type = getErrorType(error);
-  const severity = getErrorSeverity(error, type);
-  const userMessage = getUserMessage(error, type);
+  logError(error, type, severity, options.context);
 
-  // If userMessage is null, it means this is an expected error (e.g., CSRF 404) that shouldn't be shown
-  if (userMessage === null && !log) {
-    // Return minimal error info for expected errors
-    return {
-      type,
-      severity,
-      message: null,
-      originalError: error,
-      status: error?.response?.status || error?.status,
-      data: error?.response?.data || error?.data,
-      isExpected: true,
-    };
-  }
-
-  // Log error
-  if (log) {
-    logError(error, type, severity, context);
-  }
-
-  // Show toast notification
-  if (showNotification && userMessage) {
+  if (options.showToast !== false && userMessage) {
     toast.error(userMessage);
   }
 
-  const errorInfo = {
+  return {
     type,
     severity,
-    message: userMessage,
+    userMessage,
     originalError: error,
-    status: error?.response?.status || error?.status,
-    data: error?.response?.data || error?.data,
   };
-
-  // Throw error if requested
-  if (throwError) {
-    // Create a proper Error instance instead of throwing a plain object
-    const errorToThrow = new Error(userMessage || 'An error occurred');
-    errorToThrow.name = type;
-    errorToThrow.info = errorInfo;
-    errorToThrow.originalError = error;
-    throw errorToThrow;
-  }
-
-  return errorInfo;
 }
 
 /**
  * Create error object
  * @param {string} message - Error message
  * @param {string} type - Error type
- * @param {Object} data - Additional error data
- * @returns {Error} Error object
+ * @param {any} data - Additional error data
+ * @returns {any} Error object
  */
 export function createError(message, type = ErrorTypes.UNKNOWN, data = {}) {
+  /** @type {any} */
   const error = new Error(message);
   error.type = type;
   error.data = data;
@@ -416,21 +404,23 @@ export function createError(message, type = ErrorTypes.UNKNOWN, data = {}) {
 
 /**
  * Retry function with exponential backoff
- * @param {Function} fn - Function to retry
- * @param {Object} options - Retry options
- * @returns {Promise} Function result
+ * @param {any} fn - Function to retry
+ * @param {any} options - Retry options
+ * @returns {Promise<any>} Function result
  */
 export async function retryWithBackoff(fn, options = {}) {
+  /** @type {any} */
+  const opts = options;
   const {
     maxRetries = 3,
     initialDelay = 1000,
     maxDelay = 10000,
     backoffFactor = 2,
-    retryable = error => {
+    retryable = (/** @type {any} */ error) => {
       const type = getErrorType(error);
       return type === ErrorTypes.NETWORK || type === ErrorTypes.SERVER;
     },
-  } = options;
+  } = opts;
 
   let lastError;
   let delay = initialDelay;

@@ -13,6 +13,7 @@ export function useAccountingDeposits() {
   const { run: runSave, isSavingDeposit } = useAsyncAction({ loadingKey: 'isSavingDeposit' });
   const { run: runConfirm } = useAsyncAction({ loadingKey: 'isConfirmingCommission' });
 
+  /** @type {import('vue').Ref<any[]>} */
   const deposits = ref([]);
   const depositsSubTab = ref('manage');
   const currentPage = ref(1);
@@ -21,6 +22,7 @@ export function useAccountingDeposits() {
   const projectFilter = ref('');
 
   const showDepositModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const selectedDeposit = ref(null);
 
   const loadDeposits = async () => {
@@ -53,7 +55,7 @@ export function useAccountingDeposits() {
     if (data !== undefined) {
       const followUpItems = data?.items ?? (Array.isArray(data) ? data : []);
       deposits.value = followUpItems.filter(
-        deposit => deposit.commission_source === 'owner' && deposit.unit_emptied !== false
+        (/** @type {any} */ deposit) => deposit.commission_source === 'owner' && deposit.unit_emptied !== false
       );
       totalItems.value = deposits.value.length;
     } else {
@@ -62,6 +64,7 @@ export function useAccountingDeposits() {
     }
   };
 
+  /** @param {string} subTab */
   const setDepositsSubTab = (subTab) => {
     depositsSubTab.value = subTab;
     currentPage.value = 1;
@@ -69,6 +72,7 @@ export function useAccountingDeposits() {
     else loadDepositsFollowUp();
   };
 
+  /** @param {any} deposit */
   const generateClaimFile = async (deposit) => {
     const reservationId = deposit.reservation_id || deposit.id;
     if (!reservationId) {
@@ -85,6 +89,7 @@ export function useAccountingDeposits() {
     if (done !== undefined) loadDepositsFollowUp();
   };
 
+  /** @param {any} deposit */
   const confirmCommissionReceived = async (deposit) => {
     const reservationId = deposit.reservation_id || deposit.id;
     if (!reservationId) {
@@ -129,12 +134,14 @@ export function useAccountingDeposits() {
     }
   };
 
+  /** @param {number} page */
   const handlePageChange = (page) => {
     currentPage.value = page;
     if (depositsSubTab.value === 'manage') loadDeposits();
     else loadDepositsFollowUp();
   };
 
+  /** @param {number} val */
   const handlePerPageChange = (val) => {
     perPage.value = val;
     currentPage.value = 1;
@@ -144,16 +151,14 @@ export function useAccountingDeposits() {
 
   const { formatCurrency, formatDate: _fmtDate } = useFormatters();
   const formatDate = (dateStr) => (!dateStr ? 'غير محدد' : _fmtDate(dateStr));
-  const normalizedProjectFilter = computed(() =>
-    String(projectFilter.value ?? '').trim().toLowerCase()
-  );
+
   const filteredDeposits = computed(() => {
-    if (!normalizedProjectFilter.value) return deposits.value;
-    return deposits.value.filter((deposit) =>
-      String(deposit.project_name || '')
-        .toLowerCase()
-        .includes(normalizedProjectFilter.value)
-    );
+    if (!projectFilter.value) return deposits.value;
+    const filter = String(projectFilter.value).trim().toLowerCase();
+    return deposits.value.filter((/** @type {any} */ deposit) => {
+      const projectName = deposit.project?.name || deposit.project_name || '';
+      return projectName.toLowerCase().includes(filter);
+    });
   });
 
   return {

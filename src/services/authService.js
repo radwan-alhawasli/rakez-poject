@@ -103,7 +103,7 @@ const authService = {
 
   /**
    * Get current logged in user info
-   * @returns {Record<string, any>|null} User info or null
+   * @returns {AuthUser|null} User info or null
    */
   getCurrentUser() {
     return /** @type {AuthUser|null} */ (secureStorage.getUserInfo());
@@ -121,7 +121,7 @@ const authService = {
       const user = response.data?.data ?? response.data?.user ?? response.data;
       if (!user) return this.getCurrentUser();
 
-      const userData = { ...user };
+      const userData = /** @type {AuthUser} */ ({ ...user });
       if (typeof userData.type === 'string' && ROLE_MAP[userData.type] !== undefined) {
         userData.type = ROLE_MAP[userData.type];
       }

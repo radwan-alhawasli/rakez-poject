@@ -133,7 +133,9 @@ const salesItems = [
     icon: ICONS.target,
     permission: 'sales.targets.view',
     /** قائد المبيعات (دور 7): تسمية مختلفة في الشريط */
+    // @ts-ignore
     labelByRole: { 7: 'أهداف الفرق' },
+    // @ts-ignore
     tooltipByRole: { 7: 'أهداف الفرق' },
   },
   { to: '/sales/team', label: 'الفريق', tooltip: 'الفريق', icon: ICONS.teams, permission: 'sales.team.manage' },
@@ -144,6 +146,7 @@ const salesItems = [
     icon: ICONS.clock,
     permission: 'sales.attendance.view',
     /** مدير المبيعات / من لديه إدارة حضور الفريق — نفس منطق SalesAttendanceTab (عنوان «دوام الفرق») */
+    // @ts-ignore
     dynamicLabel: {
       permission: 'sales.attendance.manage',
       ifTrue: 'دوام الفرق',
@@ -243,7 +246,7 @@ function buildAdminNavDedupedByPath() {
   for (const { label, items } of ADMIN_NAV_BLOCKS) {
     const chunk = [];
     for (const item of items) {
-      if (item.type === 'section') continue;
+      if (/** @type {any} */ (item).type === 'section') continue;
       const path = item.to;
       if (!path) continue;
       if (seen.has(path)) continue;
@@ -262,6 +265,7 @@ function buildAdminNavDedupedByPath() {
 const adminItems = buildAdminNavDedupedByPath();
 
 /** عناصر للمديرين فقط (is_manager) — تظهر في كل الأدوار */
+/** @type {any[]} */
 const MANAGER_ONLY_ITEMS = [
   { to: '/manager/employees', label: 'التقييم', tooltip: 'التقييم والمراجعات', icon: ICONS.star, showIf: 'isManager' },
 ];
@@ -269,6 +273,7 @@ const MANAGER_ONLY_ITEMS = [
 /**
  * خريطة القوائم حسب رقم الدور
  * المفتاح = userRole (رقم 1-13)
+ * @type {Record<number, any[]>}
  */
 export const SIDEBAR_NAV_MAP = {
   1: adminItems,        // admin
@@ -289,7 +294,7 @@ export const SIDEBAR_NAV_MAP = {
 /**
  * الحصول على قائمة التنقل حسب الدور
  * @param {number} role - رقم الدور (1-13)
- * @returns {Array} قائمة عناصر التنقل
+ * @returns {any[]} قائمة عناصر التنقل
  */
 export function getNavItemsForRole(role) {
   const roleItems = SIDEBAR_NAV_MAP[role] || marketingItems;

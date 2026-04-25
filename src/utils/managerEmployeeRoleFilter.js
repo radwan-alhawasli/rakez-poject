@@ -8,21 +8,23 @@ import { normalizeRole } from '@/utils/rbac';
 import { ROLE_ADMIN } from '@/constants/roles';
 
 /**
- * @param {unknown} emp - user row from API (may have type, user_type, role, or nested user)
+ * @param {any} emp - user row from API (may have type, user_type, role, or nested user)
  * @returns {number|null}
  */
 export function getEmployeeRoleType(emp) {
   if (!emp || typeof emp !== 'object') return null;
-  const u = emp.user && typeof emp.user === 'object' ? emp.user : null;
+  /** @type {any} */
+  const e = emp;
+  const u = e.user && typeof e.user === 'object' ? e.user : null;
   return normalizeRole(
-    emp.type ?? emp.user_type ?? emp.role ?? u?.type ?? u?.role ?? u?.user_type
+    e.type ?? e.user_type ?? e.role ?? u?.type ?? u?.role ?? u?.user_type
   );
 }
 
 /**
- * @param {Array} employees
- * @param {object|null} managerUser - current user (must have .type)
- * @returns {Array}
+ * @param {any[]} employees
+ * @param {any} managerUser - current user (must have .type)
+ * @returns {any[]}
  */
 export function filterEmployeesByManagerRole(employees, managerUser) {
   if (!Array.isArray(employees)) return [];

@@ -2,8 +2,13 @@
 
 import { computeAgreementTimeline } from '@/utils/agreementTimeline.js';
 
+/**
+ * @param {any} status
+ * @returns {string}
+ */
 export function getStatusClass(status) {
   const s = String(status || '').toLowerCase();
+  /** @type {Record<string, string>} */
   const statusMap = {
     active: 'status-active',
     approved: 'status-active',
@@ -14,8 +19,13 @@ export function getStatusClass(status) {
   return statusMap[s] || 'status-pending';
 }
 
+/**
+ * @param {any} status
+ * @returns {string}
+ */
 export function getStatusText(status) {
   const s = String(status || '').toLowerCase();
+  /** @type {Record<string, string>} */
   const textMap = {
     active: 'نشط',
     approved: 'معتمد',
@@ -26,6 +36,10 @@ export function getStatusText(status) {
   return textMap[s] || 'غير محدد';
 }
 
+/**
+ * @param {any} project
+ * @returns {number | null}
+ */
 export function contractTimelineDaysLeft(project) {
   if (!project) return null;
   const m = project.marketing_project;
@@ -41,6 +55,10 @@ export function contractTimelineDaysLeft(project) {
   return daysLeft;
 }
 
+/**
+ * @param {number | null} daysLeft
+ * @returns {string}
+ */
 export function durationStatusClass(daysLeft) {
   if (daysLeft === null) return 'status-pending';
   if (daysLeft < 30) return 'status-cancelled';
@@ -48,6 +66,10 @@ export function durationStatusClass(daysLeft) {
   return 'status-active';
 }
 
+/**
+ * @param {any} project
+ * @returns {string}
+ */
 export function contractTimelineLabel(project) {
   const daysLeft = contractTimelineDaysLeft(project);
   if (daysLeft === null) return 'غير متاح';
@@ -57,6 +79,11 @@ export function contractTimelineLabel(project) {
   return `${daysLeft} يوم (أحمر)`;
 }
 
+/**
+ * @param {any} project
+ * @param {Record<string, any>} recommendedEmployeeByProjectId
+ * @returns {string}
+ */
 export function getRecommendedEmployee(project, recommendedEmployeeByProjectId) {
   if (!project) return '—';
   const id = project.id ?? project.marketing_project_id;
@@ -73,6 +100,7 @@ export function getRecommendedEmployee(project, recommendedEmployeeByProjectId) 
 }
 
 /** تسميات العرض لمفاتيح توزيع الحملة (المفاتيح الإنجليزية ثابتة للـ API) */
+/** @type {Record<string, string>} */
 export const CAMPAIGN_DISTRIBUTION_LABELS = {
   'Direct Communication': 'تواصل مباشر',
   'Hand Raise': 'Lead',
@@ -80,6 +108,10 @@ export const CAMPAIGN_DISTRIBUTION_LABELS = {
   Sales: 'subscription',
 };
 
+/**
+ * @param {any} obj
+ * @returns {string}
+ */
 export function formatDistribution(obj) {
   if (!obj || typeof obj !== 'object') return '—';
   const entries = Object.entries(obj);
@@ -89,9 +121,14 @@ export function formatDistribution(obj) {
     .join(' • ');
 }
 
-/** أعضاء مضمّنة في كائن الفريق من استجابة GET /marketing/projects/:id */
+/**
+ * أعضاء مضمّنة في كائن الفريق من استجابة GET /marketing/projects/:id
+ * @param {any} team
+ * @returns {any[]}
+ */
 export function extractEmbeddedTeamMembers(team) {
   if (!team || typeof team !== 'object') return [];
+  const t = /** @type {Record<string, any>} */ (team);
   const keys = [
     'members',
     'users',
@@ -103,7 +140,7 @@ export function extractEmbeddedTeamMembers(team) {
     'marketers',
   ];
   for (const k of keys) {
-    const arr = team[k];
+    const arr = t[k];
     if (Array.isArray(arr) && arr.length) return arr;
   }
   return [];
@@ -111,19 +148,23 @@ export function extractEmbeddedTeamMembers(team) {
 
 /**
  * قائمة فرق التسويق المعروضة في تفاصيل المشروع: يُفضّل responsible_sales_teams ثم marketing_project.teams.
- * @param {Record<string, unknown> | null | undefined} project
- * @returns {unknown[]}
+ * @param {any} project
+ * @returns {any[]}
  */
 export function getProjectMarketingTeamsList(project) {
   if (!project || typeof project !== 'object') return [];
   const responsible = project.responsible_sales_teams;
   if (Array.isArray(responsible) && responsible.length) return responsible;
-  const mp = project.marketing_project;
+  const mp = /** @type {Record<string, any> | null} */ (project.marketing_project);
   const legacy = mp && typeof mp === 'object' ? mp.teams : null;
   if (Array.isArray(legacy) && legacy.length) return legacy;
   return [];
 }
 
+/**
+ * @param {any} team
+ * @returns {string}
+ */
 export function marketingTeamDisplayName(team) {
   if (!team || typeof team !== 'object') return '—';
   return (
@@ -136,12 +177,20 @@ export function marketingTeamDisplayName(team) {
   );
 }
 
+/**
+ * @param {any} m
+ * @returns {string}
+ */
 export function marketingMemberDisplayName(m) {
   if (!m || typeof m !== 'object') return '—';
   return m.name ?? m.user?.name ?? m.user_name ?? `عضو #${m.id ?? m.user_id ?? '—'}`;
 }
 
-/** تقييم العضو (حقول شائعة من الـ API) */
+/**
+ * تقييم العضو (حقول شائعة من الـ API)
+ * @param {any} m
+ * @returns {number | null}
+ */
 export function marketingMemberRatingScore(m) {
   if (!m || typeof m !== 'object') return null;
   const raw =
@@ -155,29 +204,34 @@ export function marketingMemberRatingScore(m) {
   return Number.isFinite(n) ? n : null;
 }
 
+/**
+ * @param {any} m
+ * @returns {string}
+ */
 export function marketingMemberRatingLabel(m) {
   const s = marketingMemberRatingScore(m);
   return s != null ? String(s) : '—';
 }
 
-/** @param {unknown} error */
+/** @param {any} error */
 export function firstMarketingPercentValidationMessage(error) {
   const data =
     error && typeof error === 'object' && 'response' in error && error.response && typeof error.response === 'object'
-      ? error.response.data
+      ? (/** @type {any} */ (error.response)).data
       : null;
   if (!data || typeof data !== 'object' || !data.errors || typeof data.errors !== 'object') return null;
   const mp = /** @type {Record<string, unknown>} */ (data.errors).marketing_percent;
   return Array.isArray(mp) && typeof mp[0] === 'string' ? mp[0] : null;
 }
 
-/** @param {Record<string, unknown>|null|undefined} d */
+/** @param {any} d */
 export function resolveContractIdForMarketingPatch(d) {
   if (!d) return null;
   const v = d.marketing_project?.contract_id ?? d.contract_id ?? d.id;
   return v != null && v !== '' ? v : null;
 }
 
+/** @param {any} project */
 export function resolveProjectPlanAttachmentUrl(project) {
   const raw = project?.project_plans || project?.marketing_project?.project_plans || project?.plan_url || '';
   if (typeof raw !== 'string' || !raw.trim()) return '';
@@ -185,6 +239,7 @@ export function resolveProjectPlanAttachmentUrl(project) {
   return u.startsWith('http') ? u : `${window.location.origin}${u.startsWith('/') ? u : `/${u}`}`;
 }
 
+/** @param {any} plan */
 export function developerPlanLooksPresent(plan) {
   if (!plan || typeof plan !== 'object') return false;
   if (plan.raw_plan || plan.rawPlan) return true;

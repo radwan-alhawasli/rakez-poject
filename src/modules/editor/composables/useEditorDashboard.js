@@ -10,6 +10,7 @@ import { isAfterMontageListProject } from '@/utils/editorMontageCard';
 export function useEditorDashboard() {
   const searchQuery = ref('');
   const isLoading = ref(true);
+  /** @type {import('vue').Ref<any[]>} */
   const allContracts = ref([]);
 
   const isAfterMontage = isAfterMontageListProject;

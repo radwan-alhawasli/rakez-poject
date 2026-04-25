@@ -4,6 +4,7 @@ import { twMerge } from 'tailwind-merge';
 /**
  * Merge class names with Tailwind conflict resolution.
  * Used by shadcn-vue components and UI wrappers.
+ * @param {any[]} inputs
  */
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -16,8 +17,9 @@ export function cn(...inputs) {
  * @returns {Function} Debounced function
  */
 export function debounce(fn, delay = 300) {
+  /** @type {any} */
   let timeoutId;
-  return (...args) => {
+  return (/** @type {any[]} */ ...args) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn(...args), delay);
   };

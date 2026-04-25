@@ -1,5 +1,5 @@
 /**
- * Re-exports the router from core for backward compatibility (e.g. tests importing @/router).
+ * Re-exports the router from core for backward compatibility.
  * @module router
  */
 export { default } from '@/core/router';

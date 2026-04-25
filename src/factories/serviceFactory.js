@@ -23,6 +23,7 @@ import photographyDepartmentService from '@/services/photographyDepartmentServic
 
 /**
  * Service registry
+ * @type {Record<string, any>}
  */
 const services = {
   contract: contractService,

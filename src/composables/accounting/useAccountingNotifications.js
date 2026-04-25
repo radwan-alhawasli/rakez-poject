@@ -6,6 +6,7 @@ import { useFormatters } from '@/composables/useFormatters';
 
 export function useAccountingNotifications() {
   const isLoading = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const notifications = ref([]);
   const notificationTypeFilter = ref('');
   const currentPage = ref(1);
@@ -13,12 +14,14 @@ export function useAccountingNotifications() {
   const totalItems = ref(0);
 
   const showNotificationModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const selectedNotification = ref(null);
   const isSavingNotification = ref(false);
 
   const loadNotifications = async () => {
     isLoading.value = true;
     try {
+      /** @type {any} */
       const params = { page: currentPage.value, per_page: perPage.value };
       if (notificationTypeFilter.value) params.type = notificationTypeFilter.value;
       const data = await accountingService.getNotifications(params);
@@ -33,6 +36,7 @@ export function useAccountingNotifications() {
     }
   };
 
+  /** @param {string | number} id */
   const markAsRead = async (id) => {
     try {
       await accountingService.markNotificationAsRead(id);
@@ -54,6 +58,7 @@ export function useAccountingNotifications() {
     }
   };
 
+  /** @param {any} notification */
   const viewNotificationDetail = (notification) => {
     selectedNotification.value = notification;
     showNotificationModal.value = true;
@@ -74,11 +79,13 @@ export function useAccountingNotifications() {
     }
   };
 
+  /** @param {number} page */
   const handlePageChange = (page) => {
     currentPage.value = page;
     loadNotifications();
   };
 
+  /** @param {number} val */
   const handlePerPageChange = (val) => {
     perPage.value = val;
     currentPage.value = 1;
@@ -93,9 +100,11 @@ export function useAccountingNotifications() {
     commission_confirmed: 'تم تأكيد عمولة',
     commission_received: 'تم استلام عمولة من المالك',
   };
-  const getNotificationTypeLabel = (type) => (!type ? 'عام' : NOTIFICATION_TYPE_LABELS[type] || type);
+  /** @param {string} type */
+  const getNotificationTypeLabel = (type) => (!type ? 'عام' : /** @type {any} */ (NOTIFICATION_TYPE_LABELS)[type] || type);
 
   const { formatDate: _fmtDate } = useFormatters();
+  /** @param {string} dateStr */
   const formatDate = (dateStr) => (!dateStr ? 'غير محدد' : _fmtDate(dateStr));
 
   return {

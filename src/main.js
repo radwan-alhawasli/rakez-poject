@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import './assets/app.css';
+// @ts-ignore
 import App from './App.vue';
 import router from '@/core/router';
 import i18n from '@/core/i18n';
@@ -20,6 +21,9 @@ if (typeof document !== 'undefined') {
 }
 
 // Helper: treat 401/Unauthenticated as expected (redirect to login), not a runtime error
+/**
+ * @param {any} reason
+ */
 function isAuthError(reason) {
   if (!reason) return false;
   return (
@@ -54,6 +58,9 @@ window.addEventListener(
 const app = createApp(App);
 
 // Suppress Vue's error overlay for 401/Unauthenticated (redirect is handled by apiClient)
+/**
+ * @param {any} err
+ */
 app.config.errorHandler = err => {
   if (isAuthError(err)) return;
   // Rethrow so dev overlay still shows for real errors
@@ -89,9 +96,11 @@ app.mount('#app');
 // Accordion toggle for .table-mobile-stacked rows on mobile (<768px)
 document.addEventListener('click', (e) => {
   if (window.innerWidth >= 768) return;
-  const tr = e.target.closest('.table-mobile-stacked tr');
+  const target = /** @type {HTMLElement} */ (e.target);
+  if (!target) return;
+  const tr = target.closest('.table-mobile-stacked tr');
   if (!tr) return;
   if (tr.querySelector('td[colspan]')) return;
-  if (e.target.closest('button, a, input, select, textarea, [role="menuitem"]')) return;
+  if (target.closest('button, a, input, select, textarea, [role="menuitem"]')) return;
   tr.classList.toggle('expanded');
 });

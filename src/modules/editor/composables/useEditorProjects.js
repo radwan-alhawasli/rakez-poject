@@ -14,15 +14,19 @@ import {
 } from '@/utils/editorMontageCard';
 
 export function useEditorProjects() {
+  /** @type {import('vue').Ref<any[]>} */
   const contracts = ref([]);
   const isLoading = ref(true);
+  /** @type {import('vue').Ref<any>} */
   const detail = ref(null);
   const detailLoading = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const montageData = ref(null);
   const montageLoading = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const teams = ref([]);
   const teamsLoading = ref(false);
-  /** Map contractId -> true/false for manager: has montage links (from montage-department/show) */
+  /** @type {import('vue').Ref<Record<string, any>>} */
   const montageHasLinksMap = ref({});
   /** يمنع تداخل طلبات متوازية لنفس الدفعة (يحدّث عند كل استدعاء جديد) */
   let montageLinksFetchGeneration = 0;
@@ -33,6 +37,9 @@ export function useEditorProjects() {
    */
   const optimisticAfterMontageIds = ref(/** @type {Set<number>} */ (new Set()));
 
+  /**
+   * @param {any} contractId
+   */
   function addOptimisticAfterMontage(contractId) {
     const n = Number(contractId);
     if (Number.isNaN(n)) return;
@@ -41,6 +48,9 @@ export function useEditorProjects() {
     optimisticAfterMontageIds.value = s;
   }
 
+  /**
+   * @param {any} contractId
+   */
   function removeOptimisticAfterMontage(contractId) {
     const n = Number(contractId);
     const s = new Set(optimisticAfterMontageIds.value);
@@ -57,7 +67,10 @@ export function useEditorProjects() {
     optimisticAfterMontageIds.value = s;
   }
 
-  /** بعد المونتاج: ثلاثي مكتمل أو حفظ ناجح حديثاً، وليس مرفوضاً من المدير. */
+  /**
+   * بعد المونتاج: ثلاثي مكتمل أو حفظ ناجح حديثاً، وليس مرفوضاً من المدير.
+   * @param {any} p
+   */
   function isAfterMontageRow(p) {
     if (!p || typeof p !== 'object') return false;
     if (isMontageManagerRejected(p)) return false;
@@ -75,7 +88,7 @@ export function useEditorProjects() {
   );
 
   /**
-   * @param {{ silent?: boolean }} [options] — silent: لا تعطل الواجهة بشاشة التحميل (بعد إجراءات المستخدم)
+   * @param {{ silent?: boolean }} [options] - silent: لا تعطل الواجهة بشاشة التحميل (بعد إجراءات المستخدم)
    */
   async function fetchContracts(options = {}) {
     const silent = options.silent === true;
@@ -91,7 +104,10 @@ export function useEditorProjects() {
     }
   }
 
-  /** دمج تفاصيل العقد + المونتاج لصف واحد (بعد أن يستبدل الفهرس الصفوف دون حقول متداخلة) */
+  /**
+   * دمج تفاصيل العقد + المونتاج لصف واحد (بعد أن يستبدل الفهرس الصفوف دون حقول متداخلة)
+   * @param {any} contractId
+   */
   async function refreshContractRow(contractId) {
     if (!contractId) return;
     try {
@@ -123,6 +139,8 @@ export function useEditorProjects() {
 
   /**
    * Merge contract detail (from editor/contracts/show/:id) into the list so the card displays the same data.
+   * @param {any} contractId
+   * @param {any} data
    */
   function mergeContractDetail(contractId, data) {
     if (!contractId || !data || typeof data !== 'object') return;
@@ -162,7 +180,10 @@ export function useEditorProjects() {
     contracts.value = list;
   }
 
-  /** يوحّد أشكال استجابة الباكند (data، montage بدل montage_department، إلخ). */
+  /**
+   * يوحّد أشكال استجابة الباكند (data، montage بدل montage_department، إلخ).
+   * @param {any} raw
+   */
   function normalizeMontageShowResponse(raw) {
     if (!raw || typeof raw !== 'object') return raw;
     const out = { ...raw };
@@ -187,7 +208,11 @@ export function useEditorProjects() {
     return out;
   }
 
-  /** Merge montage-department/show into list row so status / approved / comment match API. */
+  /**
+   * Merge montage-department/show into list row so status / approved / comment match API.
+   * @param {any} contractId
+   * @param {any} showData
+   */
   function mergeMontageShowIntoContract(contractId, showData) {
     if (!contractId || !showData || typeof showData !== 'object') return;
     const normalized = normalizeMontageShowResponse(showData);
@@ -211,6 +236,8 @@ export function useEditorProjects() {
 
   /**
    * يضمن ظهور المشروع في «بعد المونتاج» حتى لو كان GET show يعيد {} أو شكلاً لا يُدمج.
+   * @param {any} contractId
+   * @param {any} payload
    */
   function mergeMontagePayloadIntoContract(contractId, payload) {
     if (!contractId || !payload || typeof payload !== 'object') return;
@@ -252,7 +279,7 @@ export function useEditorProjects() {
       while (true) {
         const i = cursor++;
         if (i >= list.length) break;
-        const c = list[i];
+        const c = /** @type {any} */ (list[i]);
         try {
           const [showRes, montRes] = await Promise.allSettled([
             editorService.getContractById(c.id),
@@ -277,6 +304,9 @@ export function useEditorProjects() {
     await Promise.all(Array.from({ length: concurrency }, () => worker()));
   }
 
+  /**
+   * @param {any} id
+   */
   async function fetchDetail(id) {
     if (!id) return;
     detailLoading.value = true;
@@ -292,6 +322,9 @@ export function useEditorProjects() {
     }
   }
 
+  /**
+   * @param {any} contractId
+   */
   async function fetchMontage(contractId) {
     if (!contractId) return;
     montageLoading.value = true;
@@ -307,7 +340,15 @@ export function useEditorProjects() {
     }
   }
 
+  /**
+   * @param {any} contractId
+   * @param {any} payload
+   * @param {boolean} [isUpdate]
+   */
   async function saveMontage(contractId, payload, isUpdate = false) {
+    /**
+     * @param {any} update
+     */
     const save = async (update) =>
       update
         ? editorService.updateMontage(contractId, payload)
@@ -315,7 +356,8 @@ export function useEditorProjects() {
     try {
       await save(isUpdate);
     } catch (e) {
-      const msg = String(e?.message || '');
+      const err = /** @type {any} */ (e);
+      const msg = String(err?.message || '');
       if (
         !isUpdate &&
         (msg.includes('معلومات') || msg.includes('العقد') || msg.includes('الطرف الثاني'))
@@ -362,8 +404,14 @@ export function useEditorProjects() {
     }
   }
 
+  /**
+   * @param {any} id
+   * @param {string} status
+   * @param {string} [rejectionReason]
+   */
   async function approveMontage(id, status, rejectionReason = '') {
     const approved = status === 'approved' ? '1' : '0';
+    /** @type {any} */
     const body = { approved };
     if (approved === '0') {
       body.comment = String(rejectionReason || '').trim() || '';
@@ -394,7 +442,7 @@ export function useEditorProjects() {
     await preloadDetails();
     const idxAfter = contracts.value.findIndex(c => Number(c.id) === Number(id));
     if (idxAfter !== -1) {
-      const row = contracts.value[idxAfter];
+      const row = /** @type {any} */ (contracts.value[idxAfter]);
       const hasFinal =
         row.montage_status || row.approval_status || row.montage_department?.status;
       if (!hasFinal) {
@@ -413,6 +461,7 @@ export function useEditorProjects() {
   /**
    * Fetch montage data for given contract ids and set montageHasLinksMap (for manager accept/reject).
    * Call when isManager and showing after-montage list.
+   * @param {any[]} contractIds
    */
   async function fetchMontageLinksForProjects(contractIds) {
     const ids = Array.isArray(contractIds) ? contractIds : [];

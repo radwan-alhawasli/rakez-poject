@@ -72,6 +72,9 @@ export function useMainLayout() {
     showNotifications.value = !showNotifications.value;
   };
 
+  /**
+   * @param {any} id
+   */
   const markAsRead = id => {
     notificationService.markAsRead(id);
   };
@@ -82,7 +85,7 @@ export function useMainLayout() {
 
   const userRole = computed(() => {
     const rawType = user.value?.type;
-    const normalized = normalizeRole(rawType);
+    const normalized = normalizeRole(/** @type {any} */ (rawType));
     return normalized !== null ? normalized : 0;
   });
 
@@ -92,11 +95,11 @@ export function useMainLayout() {
     if (userRole.value === 6 || userRole.value === 7) {
       const isLeader =
         u.is_leader === true ||
-        u.is_leader === 1 ||
-        u.is_leader === '1' ||
+        /** @type {any} */ (u.is_leader) === 1 ||
+        /** @type {any} */ (u.is_leader) === '1' ||
         u.is_manager === true ||
-        u.is_manager === 1 ||
-        u.is_manager === '1';
+        /** @type {any} */ (u.is_manager) === 1 ||
+        /** @type {any} */ (u.is_manager) === '1';
       return isLeader ? 'قائد المبيعات / Sales Leader' : 'المبيعات / Sales';
     }
     return getRoleLabel(u.type, u.is_manager) || '';

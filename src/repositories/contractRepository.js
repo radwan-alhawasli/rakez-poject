@@ -11,7 +11,7 @@ class ContractRepository {
   /**
    * Get all contracts
    * @param {Object} filters - Filters
-   * @returns {Promise<Array>} Contracts
+   * @returns {Promise<Array<any>>} Contracts
    */
   async findAll(filters = {}) {
     try {
@@ -99,7 +99,7 @@ class ContractRepository {
   /**
    * Get contract units
    * @param {number} id - Contract ID
-   * @returns {Promise<Array>} Units
+   * @returns {Promise<Array<any>>} Units
    */
   async getUnits(id) {
     try {

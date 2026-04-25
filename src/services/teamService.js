@@ -646,8 +646,9 @@ export const fetchProjectManagementReservationVoucherDataBlob = async reservatio
   if (!(blob instanceof Blob)) {
     throw new Error('استجابة السند غير صالحة');
   }
-  const contentType = response.headers?.['content-type'] || blob.type || '';
-  const contentDisposition = response.headers?.['content-disposition'] || '';
+  const headers = /** @type {any} */ (response.headers);
+  const contentType = headers?.['content-type'] || blob.type || '';
+  const contentDisposition = headers?.['content-disposition'] || '';
   return { blob, contentType, contentDisposition };
 };
 

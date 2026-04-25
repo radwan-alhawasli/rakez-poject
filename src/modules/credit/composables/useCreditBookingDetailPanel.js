@@ -9,11 +9,12 @@ import {
 
 /**
  * State for CreditBookingDetailPanel.vue (split to satisfy max-lines-per-file).
- * @param {{ booking: import('vue').Ref | { value: object | null }, financingTracker: import('vue').Ref | { value: object | null } }} props
+ * @param {{ booking: any, financingTracker: any }} props
  */
 export function useCreditBookingDetailPanel(props) {
   const { formatCurrencyAr: formatCurrency, formatDate } = useFormatters();
   const tick = ref(0);
+  /** @type {any} */
   let tickTimer;
   onMounted(() => {
     tickTimer = setInterval(() => {
@@ -61,6 +62,7 @@ export function useCreditBookingDetailPanel(props) {
     if (b?.credit_status_label_ar && String(b.credit_status_label_ar).trim())
       return b.credit_status_label_ar;
     const status = b?.credit_status ?? b?.status ?? 'approved';
+    /** @type {Record<string, string>} */
     const map = {
       approved: 'Approved',
       مؤكد: 'Approved',

@@ -1,6 +1,10 @@
 /**
  * Whether manager has already approved/rejected montage for this contract (no further action).
  */
+/**
+ * @param {any} v
+ * @returns {string}
+ */
 function norm(v) {
   if (v == null || v === '') return '';
   return String(v).toLowerCase().trim();
@@ -8,17 +12,19 @@ function norm(v) {
 
 /**
  * Derive list-row fields from GET /editor/montage-department/show/:id (status may be top-level, Arabic, or approved "0"/"1").
- * @param {Object} raw - API body (data or root)
- * @returns {Object} Patch: { montage_department?, montage_status?, approval_status?, montage_approval_status? }
+ * @param {any} raw - API body (data or root)
+ * @returns {any} Patch: { montage_department?, montage_status?, approval_status?, montage_approval_status? }
  */
 export function buildContractPatchFromMontageShow(raw) {
   if (!raw || typeof raw !== 'object') return {};
+  /** @type {any} */
+  const r = raw;
   const nested =
-    raw.montage_department && typeof raw.montage_department === 'object'
-      ? { ...raw.montage_department }
+    r.montage_department && typeof r.montage_department === 'object'
+      ? { ...r.montage_department }
       : {};
-  const statusRaw = raw.status ?? nested.status;
-  const approvedIn = raw.approved ?? nested.approved;
+  const statusRaw = r.status ?? nested.status;
+  const approvedIn = r.approved ?? nested.approved;
 
   let approved = null;
   if (approvedIn === '1' || approvedIn === 1 || approvedIn === true) approved = '1';
@@ -44,8 +50,8 @@ export function buildContractPatchFromMontageShow(raw) {
   }
 
   const comment =
-    raw.comment ??
-    raw.rejection_reason ??
+    r.comment ??
+    r.rejection_reason ??
     nested.comment ??
     nested.rejection_reason;
   const md = {
@@ -53,23 +59,24 @@ export function buildContractPatchFromMontageShow(raw) {
     status: statusRaw ?? nested.status,
     approved: approved ?? nested.approved,
     image_url:
-      raw.image_url ??
-      raw.image_link ??
+      r.image_url ??
+      r.image_link ??
       nested.image_url ??
       nested.image_link,
     video_url:
-      raw.video_url ??
-      raw.video_link ??
+      r.video_url ??
+      r.video_link ??
       nested.video_url ??
       nested.video_link,
-    description: raw.description ?? nested.description,
+    description: r.description ?? nested.description,
   };
   if (comment != null && String(comment).trim()) {
     const t = String(comment).trim();
     md.comment = t;
-    md.rejection_reason = nested.rejection_reason || raw.rejection_reason || t;
+    md.rejection_reason = nested.rejection_reason || r.rejection_reason || t;
   }
 
+  /** @type {any} */
   const patch = { montage_department: md };
   if (approved === '1') {
     patch.montage_status = 'approved';
@@ -96,6 +103,11 @@ export function buildContractPatchFromMontageShow(raw) {
   return patch;
 }
 
+/**
+ * @param {any} project
+ * @param {string} [statusLabelFromParent]
+ * @returns {boolean}
+ */
 export function isMontageDecisionFinal(project, statusLabelFromParent = '') {
   if (!project || typeof project !== 'object') return false;
   if (statusLabelFromParent === 'معتمد' || statusLabelFromParent === 'مرفوض') return true;

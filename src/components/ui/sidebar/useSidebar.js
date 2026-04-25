@@ -32,14 +32,17 @@ export function createSidebarContext() {
     isMobile.value = typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT;
   };
 
+  /** @param {boolean} v */
   const setOpen = (v) => {
     open.value = v;
   };
 
+  /** @param {boolean} v */
   const setOpenMobile = (v) => {
     openMobile.value = v;
   };
 
+  /** @param {boolean} v */
   const setHovered = (v) => {
     hovered.value = v;
   };

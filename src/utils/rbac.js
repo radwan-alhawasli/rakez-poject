@@ -6,13 +6,14 @@
  * @typedef {Object} User - User object from auth
  * @property {number|string} type - Role type
  * @property {string[]} [permissions]
- * @property {boolean} [is_leader]
- * @property {boolean} [is_manager]
+ * @property {boolean|number|string} [is_leader]
+ * @property {boolean|number|string} [is_manager]
  * @property {string} [email]
  * @typedef {Object} RouteMeta
  * @property {boolean} [public]
  * @property {number|string|Array<number|string>} [roles]
  * @property {string|string[]} [permissions]
+ * @property {boolean} [requiresManager]
  */
 
 import {
@@ -37,21 +38,23 @@ import {
   SALES_LEADER_EXTRA_PERMISSIONS,
 } from '@/constants/permissions';
 
+/** @param {any} value */
 const isTruthyLeaderFlag = value => value === true || value === 1 || value === '1';
 
-/** قائد المبيعات: إما دور 7 (sales_leader) أو دور 6 (sales) مع is_manager/is_leader — نفس واجهة المبيعات. */
+/** قائد المبيعات: إما دور 7 (sales_leader) أو دور 6 (sales) مع is_manager/is_leader — نفس واجهة المبيعات. 
+ * @param {User} user
+*/
 export function isSalesLeader(user) {
   if (!user) return false;
   const role = normalizeRole(user.type);
   if (role === ROLE_SALES_LEADER) return true;
-  if (role === ROLE_SALES) return isTruthyLeaderFlag(user.is_leader) || isTruthyLeaderFlag(user.is_manager);
-  return false;
+  return isTruthyLeaderFlag(user.is_leader) || isTruthyLeaderFlag(user.is_manager);
 }
 
 /**
  * Normalize role type to numeric value
  * @param {string|number} roleType - Role type (string or number)
- * @returns {number} Normalized role type
+ * @returns {number|null} Normalized role type
  */
 export function normalizeRole(roleType) {
   if (roleType === null || roleType === undefined) return null;
@@ -66,8 +69,10 @@ export function normalizeRole(roleType) {
 
     // Support role keys from backend (case-insensitive)
     const key = trimmed.toLowerCase();
-    if (ROLE_MAP[key] !== undefined) {
-      return ROLE_MAP[key];
+    /** @type {Record<string, number>} */
+    const roleMap = ROLE_MAP;
+    if (roleMap[key] !== undefined) {
+      return roleMap[key];
     }
 
     // Support numeric strings (e.g. "7")
@@ -102,7 +107,7 @@ export function hasRole(user, allowedRoles) {
 
 /**
  * Check if user is admin
- * @param {Object} user - User object
+ * @param {User} user - User object
  * @returns {boolean} True if user is admin
  */
 export function isAdmin(user) {
@@ -111,25 +116,31 @@ export function isAdmin(user) {
 
 /**
  * Check if user is manager (admin or PM manager)
- * @param {Object} user - User object
+ * @param {User} user - User object
  * @returns {boolean} True if user is manager
  */
 export function isManager(user) {
   if (!user) return false;
-  return isAdmin(user) || (hasRole(user, ROLE_PROJECT_MANAGEMENT) && user.is_manager === true);
+  return isAdmin(user) || (hasRole(user, ROLE_PROJECT_MANAGEMENT) && isTruthyLeaderFlag(user.is_manager));
 }
 
+/**
+ * @param {User} user
+ * @returns {string}
+ */
 export function getEffectiveRoleKey(user) {
   if (!user) return 'default';
   const userRole = normalizeRole(user.type);
   if (userRole === ROLE_SALES_LEADER || (userRole === ROLE_SALES && isSalesLeader(user))) return 'sales_leader';
   // type 5 = marketing (حسب constants/roles.js) — لا حاجة لتوافق عكسي
-  return ROLE_TO_BOOTSTRAP_KEY[userRole] || 'default';
+  /** @type {Record<number, string>} */
+  const roleToKey = ROLE_TO_BOOTSTRAP_KEY;
+  return (userRole !== null ? roleToKey[userRole] : null) || 'default';
 }
 
 /**
  * Get user's permissions (from API or derived from role via bootstrap map)
- * @param {Object} user - User object
+ * @param {User} user - User object
  * @returns {string[]} Array of permission keys
  */
 export function getUserPermissions(user) {
@@ -152,7 +163,9 @@ export function getUserPermissions(user) {
     return user.permissions;
   }
   const bootstrapKey = getEffectiveRoleKey(user);
-  const perms = BOOTSTRAP_ROLE_MAP[bootstrapKey] || BOOTSTRAP_ROLE_MAP.default || [];
+  /** @type {Record<string, string[]>} */
+  const bootstrapMap = BOOTSTRAP_ROLE_MAP;
+  const perms = bootstrapMap[bootstrapKey] || bootstrapMap.default || [];
   return Array.isArray(perms) ? perms : [];
 }
 
@@ -177,7 +190,7 @@ if (!import.meta.env.PROD) {
 
 /**
  * Check if user has a specific permission
- * @param {Object} user - User object
+ * @param {User} user - User object
  * @param {string} permission - Permission key (e.g. 'contracts.view')
  * @returns {boolean} True if user has the permission
  */
@@ -190,7 +203,7 @@ export function hasPermission(user, permission) {
 
 /**
  * Check if user has any of the given permissions
- * @param {Object} user - User object
+ * @param {User} user - User object
  * @param {string|string[]} permissions - Permission key or array of keys
  * @returns {boolean} True if user has at least one permission
  */
@@ -218,7 +231,7 @@ export function canAccessRoute(user, routeMeta) {
   // If requiresManager is set, user must have is_manager flag — الإدمن يتجاوز هذا القيد
   if (routeMeta?.requiresManager) {
     if (isAdmin(user)) return true;
-    return user.is_manager === true || user.is_manager === 1 || user.is_manager === '1';
+    return isTruthyLeaderFlag(user.is_manager);
   }
 
   // If no roles or permissions specified, allow authenticated users

@@ -5,12 +5,13 @@ import { useFormatters } from '@/composables/useFormatters';
 
 export function useAccountingConfirmations() {
   const isLoading = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const confirmations = ref([]);
   const currentPage = ref(1);
   const perPage = ref(25);
   const totalItems = ref(0);
 
-  const showConfirmationHistoryModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const selectedReservationId = ref(null);
 
   const loadConfirmations = async () => {
@@ -31,16 +32,19 @@ export function useAccountingConfirmations() {
     }
   };
 
+  /** @param {any} confirmation */
   const viewConfirmationHistory = (confirmation) => {
     selectedReservationId.value = confirmation.booking_number ?? confirmation.reservation_id;
     showConfirmationHistoryModal.value = true;
   };
 
+  /** @param {number} page */
   const handlePageChange = (page) => {
     currentPage.value = page;
     loadConfirmations();
   };
 
+  /** @param {number} val */
   const handlePerPageChange = (val) => {
     perPage.value = val;
     currentPage.value = 1;
@@ -48,6 +52,7 @@ export function useAccountingConfirmations() {
   };
 
   const { formatCurrency, formatDate: _fmtDate } = useFormatters();
+  /** @param {string} dateStr */
   const formatDate = (dateStr) => (!dateStr ? 'غير محدد' : _fmtDate(dateStr));
 
   return {

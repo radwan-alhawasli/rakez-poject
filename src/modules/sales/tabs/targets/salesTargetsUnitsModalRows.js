@@ -1,4 +1,4 @@
-/** @param {Record<string, unknown>} t @param {Record<string, unknown>|null} u */
+/** @param {any} t @param {any} u */
 export function pickUnitLabel(t, u) {
   const raw =
     (u && (u.unit_number ?? u.unit_no ?? u.number)) ?? (t && (t.unit_number ?? t.unit_no ?? t.number));
@@ -6,7 +6,7 @@ export function pickUnitLabel(t, u) {
   return s || '—';
 }
 
-/** @param {Record<string, unknown>} t @param {Record<string, unknown>|null} u */
+/** @param {any} t @param {any} u */
 export function pickUnitCardFields(t, u) {
   const id =
     (u && (u.id ?? u.unit_id ?? u.contract_unit_id)) ??
@@ -41,31 +41,32 @@ export function pickUnitCardFields(t, u) {
 }
 
 /**
- * @param {unknown[]} list
- * @param {(x: unknown) => unknown} normalizeSalesTargetItem
+ * @param {any[]} list
+ * @param {(x: any) => any} normalizeSalesTargetItem
  */
 export function buildUnitsModalRows(list, normalizeSalesTargetItem) {
   return list.map(normalizeSalesTargetItem).flatMap((t) => {
-    const units = Array.isArray(t.units) ? t.units : [];
+    const obj = /** @type {any} */ (t);
+    const units = Array.isArray(obj.units) ? obj.units : [];
     if (units.length === 0) {
-      const card = pickUnitCardFields(t, null);
+      const card = pickUnitCardFields(obj, null);
       return [
         {
           unit_id: card.id,
-          unit_number: pickUnitLabel(t, null),
-          marketer_id: t.marketer_id,
-          marketer_name: t.marketer_name ?? '—',
+          unit_number: pickUnitLabel(obj, null),
+          marketer_id: obj.marketer_id,
+          marketer_name: obj.marketer_name ?? '—',
           ...card,
         },
       ];
     }
-    return units.map((u) => {
-      const card = pickUnitCardFields(t, u);
+    return units.map((/** @type {any} */ u) => {
+      const card = pickUnitCardFields(obj, u);
       return {
         unit_id: card.id ?? u.unit_id ?? u.id ?? u.contract_unit_id,
-        unit_number: pickUnitLabel(t, u),
-        marketer_id: t.marketer_id,
-        marketer_name: t.marketer_name ?? '—',
+        unit_number: pickUnitLabel(obj, u),
+        marketer_id: obj.marketer_id,
+        marketer_name: obj.marketer_name ?? '—',
         ...card,
       };
     });

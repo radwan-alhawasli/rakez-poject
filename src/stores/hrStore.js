@@ -5,6 +5,7 @@ import logger from '@/utils/logger';
 
 export const useHRStore = defineStore('hr', () => {
   // ─── Employees ────────────────────────────────────────────────────────────
+  /** @type {import('vue').ShallowRef<any[]>} */
   const employees = shallowRef([]);
   const isLoadingEmployees = ref(false);
   const employeesTotal = ref(0);
@@ -19,9 +20,11 @@ export const useHRStore = defineStore('hr', () => {
         per_page: employeesPerPage.value,
         ...params,
       });
-      const data = response?.data?.data || response?.data || response;
+      // @ts-ignore - defensive check for various API response shapes
+      const data = response?.items || response?.data?.data || response?.data || response;
       if (Array.isArray(data)) {
         employees.value = data;
+        employeesTotal.value = response?.total ?? data.length;
       } else if (data?.data) {
         employees.value = data.data;
         employeesTotal.value = data.total ?? data.data.length;
@@ -34,6 +37,7 @@ export const useHRStore = defineStore('hr', () => {
   }
 
   // ─── Teams ────────────────────────────────────────────────────────────────
+  /** @type {import('vue').ShallowRef<any[]>} */
   const teams = shallowRef([]);
   const isLoadingTeams = ref(false);
 
@@ -41,7 +45,9 @@ export const useHRStore = defineStore('hr', () => {
     isLoadingTeams.value = true;
     try {
       const response = await hrService.getTeams();
-      teams.value = response?.data?.data || response?.data || response || [];
+      // @ts-ignore - defensive check for various API response shapes
+      const data = response?.items || response?.data?.data || response?.data || response || [];
+      teams.value = Array.isArray(data) ? data : [];
     } catch (error) {
       logger.error('hrStore: error fetching teams', error);
     } finally {
@@ -50,6 +56,7 @@ export const useHRStore = defineStore('hr', () => {
   }
 
   // ─── Performance / Targets ────────────────────────────────────────────────
+  /** @type {import('vue').ShallowRef<any[]>} */
   const performanceRecords = shallowRef([]);
   const isLoadingPerformance = ref(false);
   const performanceFilters = ref({ from: '', to: '', user_id: '' });
@@ -57,8 +64,10 @@ export const useHRStore = defineStore('hr', () => {
   async function fetchPerformance(params = {}) {
     isLoadingPerformance.value = true;
     try {
-      const response = await hrService.getPerformance({ ...performanceFilters.value, ...params });
-      performanceRecords.value = response?.data?.data || response?.data || response || [];
+      const response = await hrService.getMarketerPerformance({ ...performanceFilters.value, ...params });
+      // @ts-ignore - defensive check for various API response shapes
+      const data = response?.items || response?.data?.data || response?.data || response || [];
+      performanceRecords.value = Array.isArray(data) ? data : [];
     } catch (error) {
       logger.error('hrStore: error fetching performance', error);
     } finally {

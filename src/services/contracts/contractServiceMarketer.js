@@ -38,7 +38,7 @@ export const contractServiceMarketerMethods = {
       const { items, total } = extractPaginatedData(response, []);
       const list = Array.isArray(items) ? items : [];
       return {
-        items: list.map(p => normalizeContractItem(p)),
+        items: list.map(p => normalizeContractItem(/** @type {any} */ (p))),
         total: typeof total === 'number' ? total : parseInt(total, 10) || list.length,
       };
     } catch (error) {

@@ -8,12 +8,14 @@ import { getStatusClass } from '@/utils/statusHelpers';
 
 export function useAccountingCommissions() {
   const isLoading = ref(false);
+  /** @type {import('vue').Ref<any[]>} */
   const commissions = ref([]);
   const currentPage = ref(1);
   const perPage = ref(25);
   const totalItems = ref(0);
 
   const showCommissionModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const selectedCommission = ref(null);
   const isSavingCommission = ref(false);
 
@@ -35,12 +37,15 @@ export function useAccountingCommissions() {
     }
   };
 
+  /** @param {any} commission */
   const viewCommissionDetail = (commission) => {
     selectedCommission.value = commission;
     showCommissionModal.value = true;
   };
 
+  /** @param {any} data */
   const handleCommissionUpdate = async (data) => {
+    if (!selectedCommission.value) return;
     isSavingCommission.value = true;
     try {
       if (data.action === 'update') await accountingService.updateDistributions(selectedCommission.value.id, data);
@@ -59,11 +64,13 @@ export function useAccountingCommissions() {
     }
   };
 
+  /** @param {number} page */
   const handlePageChange = (page) => {
     currentPage.value = page;
     loadCommissions();
   };
 
+  /** @param {number} val */
   const handlePerPageChange = (val) => {
     perPage.value = val;
     currentPage.value = 1;

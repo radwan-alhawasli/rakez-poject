@@ -29,10 +29,17 @@ const COMMISSION_TYPE_LABELS = {
   other: 'أخرى',
 };
 
+/**
+ * @param {any} props
+ * @param {{ emit: any }} context
+ */
 export function useSoldUnitDetailView(props, { emit }) {
   const { formatCurrency, formatNumber } = useFormatters();
+  /** @type {import('vue').Ref<any[]>} */
   const employees = ref([]);
+  /** @type {import('vue').Ref<any>} */
   const commissionSummary = ref(null);
+  /** @type {import('vue').Ref<any[]>} */
   const distributions = ref([]);
   const isSaving = ref(false);
 
@@ -94,6 +101,9 @@ export function useSoldUnitDetailView(props, { emit }) {
     rejected: 'مرفوض',
   };
 
+  /**
+   * @param {any} s
+   */
   const normalizeCommissionStatus = s => {
     if (s === null || s === undefined || s === '') return null;
     return String(s).toLowerCase().trim();
@@ -111,7 +121,7 @@ export function useSoldUnitDetailView(props, { emit }) {
     const raw = commissionStatusRaw.value;
     if (raw === null || raw === undefined || raw === '') return null;
     const key = normalizeCommissionStatus(raw);
-    if (key && COMMISSION_STATUS_LABELS[key]) return COMMISSION_STATUS_LABELS[key];
+    if (key && (/** @type {any} */ (COMMISSION_STATUS_LABELS))[key]) return (/** @type {any} */ (COMMISSION_STATUS_LABELS))[key];
     return String(raw);
   });
 
@@ -131,21 +141,30 @@ export function useSoldUnitDetailView(props, { emit }) {
   const companyAmount = computed(() => {
     const net = commissionSummary.value?.net_amount || 0;
     const distTotal = distributions.value.reduce(
-      (sum, d) => sum + (parseFloat(d.amount) || 0),
+      (sum, d) => sum + (parseFloat(/** @type {any} */ (d).amount) || 0),
       0
     );
     return Math.max(0, net - distTotal);
   });
 
-  const getTypeLabel = type => COMMISSION_TYPE_LABELS[type] || type || '—';
+  /**
+   * @param {any} type
+   */
+  const getTypeLabel = type => (/** @type {any} */ (COMMISSION_TYPE_LABELS))[type] || type || '—';
 
+  /**
+   * @param {any} dist
+   */
   const getBeneficiaryName = dist => {
     const name =
       dist.employee_name ?? dist.user_name ?? dist.external_name ?? '';
     return name && String(name).trim() ? String(name).trim() : '—';
   };
 
-  /** معرّف التوزيعة في الـ API (قد يكون id أو distribution_id) */
+  /**
+   * معرّف التوزيعة في الـ API (قد يكون id أو distribution_id)
+   * @param {any} dist
+   */
   const getDistributionId = dist => {
     if (!dist || typeof dist !== 'object') return null;
     const raw = dist.id ?? dist.distribution_id ?? dist.commission_distribution_id;
@@ -153,12 +172,18 @@ export function useSoldUnitDetailView(props, { emit }) {
     return raw;
   };
 
+  /**
+   * @param {any} dist
+   */
   const canConfirmDistribution = dist =>
     !dist.confirmed &&
     dist.status !== 'confirmed' &&
     dist.status !== 'paid' &&
     getDistributionId(dist) != null;
 
+  /**
+   * @param {any} pct
+   */
   const calcAmount = pct => {
     const net = commissionSummary.value?.net_amount || 0;
     return (net * (parseFloat(pct) || 0)) / 100;
@@ -167,7 +192,7 @@ export function useSoldUnitDetailView(props, { emit }) {
   const loadEmployees = async () => {
     try {
       const list = await accountingService.getMarketers();
-      employees.value = (list || []).map(e => ({ id: e.id, name: e.name || e.email || '' }));
+      employees.value = (/** @type {any[]} */ (list) || []).map(e => ({ id: e.id, name: e.name || e.email || '' }));
     } catch (e) {
       logger.error('Error loading marketers:', e);
     }
@@ -185,7 +210,7 @@ export function useSoldUnitDetailView(props, { emit }) {
         leadGenRows.length = 0;
         persuasionRows.length = 0;
         closingRows.length = 0;
-        distributions.value.forEach(d => {
+        distributions.value.forEach((/** @type {any} */ d) => {
           const type = d.type || d.commission_type;
           const row = { user_id: d.user_id, percentage: parseFloat(d.percentage) || 0 };
           if (type === 'lead_generation') leadGenRows.push(row);
@@ -297,7 +322,7 @@ export function useSoldUnitDetailView(props, { emit }) {
 
   const handleSaveDistributions = async () => {
     const dists = buildDistributionsPayload();
-    const total = dists.reduce((s, d) => s + (d.percentage || 0), 0);
+    const total = dists.reduce((/** @type {number} */ s, /** @type {any} */ d) => s + (d.percentage || 0), 0);
     if (Math.abs(total - 100) > 0.01) {
       toast.warning('مجموع النسب يجب أن يساوي 100%');
       return;
@@ -311,10 +336,10 @@ export function useSoldUnitDetailView(props, { emit }) {
           ...commissionForm,
           contract_unit_id: commissionForm.contract_unit_id || props.unit?.id || 1,
         };
-        const newComm = await accountingService.createManualCommission(
+        const newComm = /** @type {any} */ (await accountingService.createManualCommission(
           props.unit.reservation_id || props.unit.id,
           payload
-        );
+        ));
         if (newComm?.id) {
           // Update props.unit locally if possible? Better to wait for summary
           // But we need the ID for the next call
@@ -342,6 +367,9 @@ export function useSoldUnitDetailView(props, { emit }) {
     }
   };
 
+  /**
+   * @param {any} dist
+   */
   const handleConfirmPayment = async dist => {
     const distId = getDistributionId(dist);
     if (!commissionId.value || distId == null) {

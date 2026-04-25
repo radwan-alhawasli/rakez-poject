@@ -8,7 +8,11 @@ import logger from './logger';
 /**
  * Sanitize string input - removes potentially dangerous characters
  * @param {string} input - Input string to sanitize
- * @param {Object} options - Sanitization options
+ * @param {Object} [options] - Sanitization options
+ * @param {boolean} [options.allowHTML] - Whether to allow HTML
+ * @param {number|null} [options.maxLength] - Maximum length
+ * @param {boolean} [options.trim] - Whether to trim whitespace
+ * @param {boolean} [options.removeSpecialChars] - Whether to remove special characters
  * @returns {string} Sanitized string
  */
 export function sanitizeString(input, options = {}) {
@@ -62,6 +66,7 @@ export function escapeHtml(text) {
     return text;
   }
 
+  /** @type {Record<string, string>} */
   const map = {
     '&': '&amp;',
     '<': '&lt;',
@@ -131,7 +136,11 @@ export function sanitizePhone(phone) {
 /**
  * Sanitize numeric input
  * @param {*} input - Input to sanitize
- * @param {Object} options - Options { min, max, integer, allowNegative }
+ * @param {Object} [options] - Options
+ * @param {number|null} [options.min] - Minimum value
+ * @param {number|null} [options.max] - Maximum value
+ * @param {boolean} [options.integer] - Whether integer is required
+ * @param {boolean} [options.allowNegative] - Whether to allow negative numbers
  * @returns {number|null} Sanitized number or null if invalid
  */
 export function sanitizeNumber(input, options = {}) {
@@ -174,7 +183,9 @@ export function sanitizeNumber(input, options = {}) {
 /**
  * Sanitize URL
  * @param {string} url - URL to sanitize
- * @param {Object} options - Options { allowedProtocols, requireProtocol }
+ * @param {Object} [options] - Options
+ * @param {string[]} [options.allowedProtocols] - Allowed protocols
+ * @param {boolean} [options.requireProtocol] - Whether to require protocol
  * @returns {string} Sanitized URL or empty string if invalid
  */
 export function sanitizeUrl(url, options = {}) {
@@ -216,7 +227,7 @@ export function sanitizeUrl(url, options = {}) {
 /**
  * Sanitize object recursively
  * @param {Object} obj - Object to sanitize
- * @param {Object} options - Sanitization options
+ * @param {Object} [options] - Sanitization options
  * @returns {Object} Sanitized object
  */
 export function sanitizeObject(obj, options = {}) {
@@ -228,6 +239,7 @@ export function sanitizeObject(obj, options = {}) {
     return sanitizeValue(obj, options);
   }
 
+  /** @type {Record<string, any>} */
   const sanitized = {};
 
   for (const key in obj) {
@@ -236,7 +248,7 @@ export function sanitizeObject(obj, options = {}) {
       const sanitizedKey = sanitizeString(key, { allowHTML: false });
 
       // Sanitize value
-      sanitized[sanitizedKey] = sanitizeValue(obj[key], options);
+      sanitized[sanitizedKey] = sanitizeValue(obj[/** @type {keyof typeof obj} */ (key)], options);
     }
   }
 
@@ -245,9 +257,9 @@ export function sanitizeObject(obj, options = {}) {
 
 /**
  * Sanitize array
- * @param {Array} arr - Array to sanitize
- * @param {Object} options - Sanitization options
- * @returns {Array} Sanitized array
+ * @param {any[]} arr - Array to sanitize
+ * @param {Object} [options] - Sanitization options
+ * @returns {any[]} Sanitized array
  */
 export function sanitizeArray(arr, options = {}) {
   if (!Array.isArray(arr)) {
@@ -260,7 +272,7 @@ export function sanitizeArray(arr, options = {}) {
 /**
  * Sanitize value based on type
  * @param {*} value - Value to sanitize
- * @param {Object} options - Sanitization options
+ * @param {Object} [options] - Sanitization options
  * @returns {*} Sanitized value
  */
 export function sanitizeValue(value, options = {}) {
@@ -289,11 +301,12 @@ export function sanitizeValue(value, options = {}) {
 
 /**
  * Sanitize form data
- * @param {Object} formData - Form data object
- * @param {Object} schema - Schema defining sanitization rules per field
- * @returns {Object} Sanitized form data
+ * @param {Record<string, any>} formData - Form data object
+ * @param {Record<string, any>} [schema] - Schema defining sanitization rules per field
+ * @returns {Record<string, any>} Sanitized form data
  */
 export function sanitizeFormData(formData, schema = {}) {
+  /** @type {Record<string, any>} */
   const sanitized = {};
 
   for (const field in formData) {

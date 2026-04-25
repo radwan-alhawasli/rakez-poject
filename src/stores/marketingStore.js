@@ -9,21 +9,26 @@ export const useMarketingStore = defineStore('marketing', () => {
   const isLoadingDashboard = ref(false);
 
   // ─── Projects ─────────────────────────────────────────────────────────────
+  /** @type {import('vue').ShallowRef<any[]>} */
   const projects = shallowRef([]);
   const isLoadingProjects = ref(false);
 
   // ─── Leads ────────────────────────────────────────────────────────────────
+  /** @type {import('vue').ShallowRef<any[]>} */
   const leads = shallowRef([]);
   const isLoadingLeads = ref(false);
   const leadsTotal = ref(0);
 
   // ─── Plans ────────────────────────────────────────────────────────────────
+  /** @type {import('vue').ShallowRef<any[]>} */
   const developerPlans = shallowRef([]);
   const isLoadingDeveloperPlans = ref(false);
+  /** @type {import('vue').ShallowRef<any[]>} */
   const employeePlans = shallowRef([]);
   const isLoadingEmployeePlans = ref(false);
 
   // ─── Expected Sales ───────────────────────────────────────────────────────
+  /** @type {import('vue').ShallowRef<any[]>} */
   const expectedSales = shallowRef([]);
   const isLoadingExpectedSales = ref(false);
 

@@ -26,20 +26,20 @@ export function isTaskDoneStatus(status) {
 
 /**
  * Month bucket YYYY-MM for grouping (due date preferred).
- * @param {Record<string, unknown>} task
+ * @param {any} task
  * @returns {string}
  */
 export function taskMonthKey(task) {
   const raw = task.due_at || task.created_at || task.updated_at || task.completed_at;
   if (!raw) return 'unknown';
-  const d = new Date(raw);
+  const d = new Date(/** @type {any} */ (raw));
   if (Number.isNaN(d.getTime())) return 'unknown';
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
 /**
- * @param {Record<string, unknown>[]} tasks
- * @returns {Array<[string, Record<string, unknown>[]]>}
+ * @param {any[]} tasks
+ * @returns {Array<[string, any[]]>}
  */
 export function groupTasksByMonth(tasks) {
   const map = new Map();
@@ -55,7 +55,7 @@ export function groupTasksByMonth(tasks) {
     return b[0].localeCompare(a[0]);
   });
   for (const [, arr] of entries) {
-    arr.sort((a, b) => {
+    arr.sort((/** @type {any} */ a, /** @type {any} */ b) => {
       const da = new Date(a.due_at || a.created_at || 0).getTime();
       const db = new Date(b.due_at || b.created_at || 0).getTime();
       return db - da;
@@ -92,7 +92,7 @@ export function taskStatusBucket(status) {
 
 /**
  * أعداد ونسب لكل حالة (لعرضها لكل موظف أو للقائمة).
- * @param {Record<string, unknown>[]} tasks
+ * @param {any[]} tasks
  */
 export function buildTaskStatusBreakdown(tasks) {
   const list = Array.isArray(tasks) ? tasks : [];
@@ -108,6 +108,7 @@ export function buildTaskStatusBreakdown(tasks) {
     else if (b === 'in_progress') inProgress++;
     else other++;
   }
+  /** @param {number} n */
   const pct = n => (total ? Math.min(100, Math.round((n / total) * 100)) : 0);
   return {
     total,

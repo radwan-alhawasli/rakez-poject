@@ -9,16 +9,26 @@ import { ROLE_MAP } from '@/constants/roles';
  * Base strategy interface
  */
 class RoleStrategy {
-  canAccessRoute() {
-    throw new Error('canAccessRoute must be implemented');
+  /**
+   * @param {any} route
+   * @returns {boolean}
+   */
+  canAccessRoute(route) {
+    return false;
   }
 
+  /**
+   * @returns {string}
+   */
   getDefaultRoute() {
-    throw new Error('getDefaultRoute must be implemented');
+    return '/';
   }
 
+  /**
+   * @returns {any[]}
+   */
   getAvailableRoutes() {
-    throw new Error('getAvailableRoutes must be implemented');
+    return [];
   }
 }
 
@@ -26,6 +36,10 @@ class RoleStrategy {
  * Marketing role strategy
  */
 class MarketingStrategy extends RoleStrategy {
+  /**
+   * @param {any} route
+   * @returns {boolean}
+   */
   canAccessRoute(route) {
     const allowedRoutes = [
       '/marketing',
@@ -60,6 +74,10 @@ class MarketingStrategy extends RoleStrategy {
  * Sales role strategy
  */
 class SalesStrategy extends RoleStrategy {
+  /**
+   * @param {any} route
+   * @returns {boolean}
+   */
   canAccessRoute(route) {
     const allowedRoutes = [
       '/sales',
@@ -95,6 +113,10 @@ class SalesStrategy extends RoleStrategy {
  * HR role strategy
  */
 class HRStrategy extends RoleStrategy {
+  /**
+   * @param {any} route
+   * @returns {boolean}
+   */
   canAccessRoute(route) {
     const allowedRoutes = [
       '/hr',
@@ -128,7 +150,11 @@ class HRStrategy extends RoleStrategy {
  * Admin role strategy
  */
 class AdminStrategy extends RoleStrategy {
-  canAccessRoute() {
+  /**
+   * @param {any} _route
+   * @returns {boolean}
+   */
+  canAccessRoute(_route) {
     // Admins can access all routes
     return true;
   }
@@ -152,6 +178,10 @@ class AdminStrategy extends RoleStrategy {
  * Project Management role strategy
  */
 class ProjectManagementStrategy extends RoleStrategy {
+  /**
+   * @param {any} route
+   * @returns {boolean}
+   */
   canAccessRoute(route) {
     const allowedRoutes = [
       '/dashboard',
@@ -182,6 +212,7 @@ class ProjectManagementStrategy extends RoleStrategy {
  */
 class RoleStrategyFactory {
   constructor() {
+    /** @type {Record<string, RoleStrategy>} */
     this.strategies = {
       [ROLE_MAP.marketing]: new MarketingStrategy(),
       [ROLE_MAP.sales]: new SalesStrategy(),

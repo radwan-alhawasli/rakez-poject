@@ -3,28 +3,47 @@ import teamService from '@/services/teamService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 
+/**
+ * @param {Function} [fetchTeamsCallback]
+ */
 export function useTeamMembers(fetchTeamsCallback) {
   const showAddMembersModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const addMembersTeam = ref(null);
+  /** @type {import('vue').Ref<any[]>} */
   const availableSalesWithoutTeam = ref([]);
   const addMembersSearch = ref('');
   const addMembersLoading = ref(false);
 
   const showRemoveMembersModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const removeMembersTeam = ref(null);
+  /** @type {import('vue').Ref<any[]>} */
   const removeMembersList = ref([]);
   const removeMembersLoading = ref(false);
   const removeMembersSearch = ref('');
   const selectedRemoveUserId = ref('');
   const removeMembersDeleting = ref(false);
 
+  /**
+   * @param {any} m
+   * @returns {string}
+   */
   const memberUserId = m => {
     if (m == null) return '';
     const v = m.user_id ?? m.id ?? m.user?.id;
     return v != null && v !== '' ? String(v) : '';
   };
 
+  /**
+   * @param {any} m
+   * @returns {string}
+   */
   const memberRowKey = m => memberUserId(m) || `m-${JSON.stringify(m).slice(0, 40)}`;
+  /**
+   * @param {any} e
+   * @returns {string}
+   */
   const salesRowKey = e => String(memberUserId(e) || e.email || JSON.stringify(e).slice(0, 30));
 
   const filteredSalesWithoutTeam = computed(() => {
@@ -47,6 +66,9 @@ export function useTeamMembers(fetchTeamsCallback) {
     });
   });
 
+  /**
+   * @param {any} team
+   */
   const openAddMembersModal = async team => {
     addMembersTeam.value = team;
     showAddMembersModal.value = true;
@@ -71,6 +93,9 @@ export function useTeamMembers(fetchTeamsCallback) {
     addMembersSearch.value = '';
   };
 
+  /**
+   * @param {any} emp
+   */
   const addMemberToTeam = async emp => {
     const team = addMembersTeam.value;
     const userId = memberUserId(emp);
@@ -81,11 +106,15 @@ export function useTeamMembers(fetchTeamsCallback) {
       availableSalesWithoutTeam.value = availableSalesWithoutTeam.value.filter(e => memberUserId(e) !== userId);
       if (fetchTeamsCallback) fetchTeamsCallback();
     } catch (err) {
-      logger.error('Error assigning member:', err);
-      toast.error('فشل إضافة العضو: ' + (err.response?.data?.message || err.message));
+      const error = /** @type {any} */ (err);
+      logger.error('Error assigning member:', error);
+      toast.error('فشل إضافة العضو: ' + (error.response?.data?.message || error.message));
     }
   };
 
+  /**
+   * @param {any} team
+   */
   const openRemoveMembersModal = async team => {
     removeMembersTeam.value = team;
     showRemoveMembersModal.value = true;

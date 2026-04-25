@@ -31,7 +31,7 @@ export function registerErrorReporter(instance) {
 
 /**
  * Report an error to the configured reporting service.
- * @param {Object} errorInfo - Structured error information from errorHandler.js
+ * @param {any} errorInfo - Structured error information from errorHandler.js
  */
 export function reportError(errorInfo) {
   if (!appConfig.isProduction || !appConfig.enableErrorReporting) return;
@@ -39,7 +39,7 @@ export function reportError(errorInfo) {
   if (_reporter) {
     try {
       if (typeof _reporter.withScope === 'function') {
-        _reporter.withScope(scope => {
+        _reporter.withScope((/** @type {any} */ scope) => {
           scope.setTag?.('error_type', errorInfo.type);
           scope.setTag?.('error_severity', errorInfo.severity);
           scope.setContext?.('error_info', {
@@ -48,15 +48,15 @@ export function reportError(errorInfo) {
             statusCode: errorInfo.statusCode,
           });
           if (errorInfo.originalError instanceof Error) {
-            _reporter.captureException(errorInfo.originalError);
+            /** @type {any} */ (_reporter).captureException(errorInfo.originalError);
           } else {
-            _reporter.captureMessage(errorInfo.message, errorInfo.severity);
+            /** @type {any} */ (_reporter).captureMessage(errorInfo.message, errorInfo.severity);
           }
         });
       } else if (errorInfo.originalError instanceof Error) {
-        _reporter.captureException(errorInfo.originalError);
+        /** @type {any} */ (_reporter).captureException(errorInfo.originalError);
       } else {
-        _reporter.captureMessage(errorInfo.message);
+        /** @type {any} */ (_reporter).captureMessage(errorInfo.message);
       }
     } catch (e) {
       logger.warn('[ErrorReporter] Failed to report error:', e);

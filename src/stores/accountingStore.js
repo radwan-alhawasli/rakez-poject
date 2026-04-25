@@ -9,6 +9,7 @@ export const useAccountingStore = defineStore('accounting', () => {
   const isLoadingDashboard = ref(false);
 
   // ─── Transactions ─────────────────────────────────────────────────────────
+  /** @type {import('vue').ShallowRef<any[]>} */
   const transactions = shallowRef([]);
   const isLoadingTransactions = ref(false);
   const transactionsTotal = ref(0);
@@ -22,15 +23,17 @@ export const useAccountingStore = defineStore('accounting', () => {
   });
 
   // ─── Sold Unit Confirmations ──────────────────────────────────────────────
+  /** @type {import('vue').ShallowRef<any[]>} */
   const confirmations = shallowRef([]);
   const isLoadingConfirmations = ref(false);
   const selectedConfirmation = ref(null);
 
   // ─── Notifications ────────────────────────────────────────────────────────
+  /** @type {import('vue').ShallowRef<any[]>} */
   const accountingNotifications = shallowRef([]);
   const isLoadingAccountingNotifications = ref(false);
   const unreadAccountingNotifications = computed(
-    () => accountingNotifications.value.filter(n => !n.read_at).length
+    () => (accountingNotifications.value || []).filter((/** @type {any} */ n) => !n.read_at).length
   );
 
   // ─── Reports ──────────────────────────────────────────────────────────────
@@ -52,9 +55,10 @@ export const useAccountingStore = defineStore('accounting', () => {
   async function fetchConfirmations(params = {}) {
     isLoadingConfirmations.value = true;
     try {
-      const response = await accountingService.getConfirmations(params);
-      const data = response?.data?.data || response?.data || response;
-      confirmations.value = Array.isArray(data) ? data : data?.data || [];
+      const response = await accountingService.getPendingConfirmations(params);
+      // @ts-ignore - defensive check for various API response shapes
+      const data = response?.items || response?.data || response;
+      confirmations.value = Array.isArray(data) ? data : [];
     } catch (error) {
       logger.error('accountingStore: error fetching confirmations', error);
     } finally {
@@ -66,8 +70,9 @@ export const useAccountingStore = defineStore('accounting', () => {
     isLoadingAccountingNotifications.value = true;
     try {
       const response = await accountingService.getNotifications(params);
-      const data = response?.data?.data || response?.data || response;
-      accountingNotifications.value = Array.isArray(data) ? data : data?.data || [];
+      // @ts-ignore - defensive check for various API response shapes
+      const data = response?.items || response?.data || response;
+      accountingNotifications.value = Array.isArray(data) ? data : [];
     } catch (error) {
       logger.error('accountingStore: error fetching notifications', error);
     } finally {

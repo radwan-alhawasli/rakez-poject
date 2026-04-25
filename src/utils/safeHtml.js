@@ -11,9 +11,9 @@ import { escapeHtml } from './sanitizer';
  * Sanitize HTML content using DOMPurify
  * @param {string} html - HTML string to sanitize
  * @param {Object} options - Sanitization options
- * @param {Array<string>} options.allowTags - Allowed HTML tags (default: common safe tags)
- * @param {Array<string>} options.allowAttributes - Allowed HTML attributes (default: safe attributes)
- * @param {boolean} options.allowLinks - Allow anchor tags with href (default: true)
+ * @param {string[]} [options.allowTags] - Allowed HTML tags (default: common safe tags)
+ * @param {string[]} [options.allowAttributes] - Allowed HTML attributes (default: safe attributes)
+ * @param {boolean} [options.allowLinks] - Allow anchor tags with href (default: true)
  * @returns {string} Sanitized HTML
  */
 export function sanitizeHtml(html, options = {}) {
@@ -67,8 +67,8 @@ export function sanitizeHtml(html, options = {}) {
 /**
  * Create safe HTML renderer component data
  * @param {string} html - HTML string
- * @param {Object} options - Sanitization options
- * @returns {Object} Vue component data for safe rendering
+ * @param {Object} [options] - Sanitization options
+ * @returns {{__html: string}} Vue component data for safe rendering
  */
 export function createSafeHtml(html, options = {}) {
   return {
@@ -146,6 +146,7 @@ export function getDOMPurifyConfig() {
 }
 
 /** Options for sanitizing markdown-derived HTML (AI assistant answers). */
+/** @type {{ allowTags: string[], allowAttributes: string[], allowLinks: boolean }} */
 export const RICH_CHAT_HTML_OPTIONS = {
   allowTags: [
     'p',
@@ -193,6 +194,8 @@ export function sanitizeMarkdown(markdown) {
  * Sanitize trusted inline SVG fragments (nav icons, toast icons) for injection inside a host SVG element.
  * DOMPurify strips bare path/rect fragments in HTML context (empty result). Wrapping in an SVG
  * namespace and USE_PROFILES.svg keeps geometry while blocking scripts/event handlers.
+ * @param {string} svgHtml - The SVG string to sanitize
+ * @returns {string} Sanitized SVG fragment
  */
 export function sanitizeNavIconSvg(svgHtml) {
   const raw = typeof svgHtml === 'string' ? svgHtml.trim() : '';

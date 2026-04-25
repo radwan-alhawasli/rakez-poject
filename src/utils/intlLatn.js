@@ -13,7 +13,10 @@ export function localeOpts(options = {}) {
 const AR_INDIC = /[\u0660-\u0669]/g;
 const FA_INDIC = /[\u06F0-\u06F9]/g;
 
-/** Normalize any stray Arabic- or Persian-indic digits to Latin (safety net for mixed strings). */
+/** Normalize any stray Arabic- or Persian-indic digits to Latin (safety net for mixed strings). 
+ * @param {string|number} str - String to normalize
+ * @returns {string}
+*/
 export function toWesternDigits(str) {
   return String(str)
     .replace(AR_INDIC, (d) => String(d.charCodeAt(0) - 0x0660))

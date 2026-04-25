@@ -2,6 +2,7 @@
  * عرض قيم الحجز للمستخدم (عربي) — تطابق منطق UnitReservationModal حيث ينطبق.
  */
 
+/** @type {Record<string, string>} */
 const PAYMENT_METHOD_LABELS = {
   bank_transfer: 'تحويل بنكي',
   'Bank Transfer': 'تحويل بنكي',
@@ -15,6 +16,7 @@ const PAYMENT_METHOD_LABELS = {
   Cheque: 'شيك',
 };
 
+/** @type {Record<string, string>} */
 const PURCHASE_MECHANISM_LABELS = {
   cash: 'كاش',
   Cash: 'كاش',
@@ -30,6 +32,7 @@ const PURCHASE_MECHANISM_LABELS = {
   Installment: 'أقساط',
 };
 
+/** @type {Record<string, string>} */
 const NATIONALITY_LABELS = {
   Saudi: 'سعودي',
   Other: 'أخرى',
@@ -57,6 +60,7 @@ const NATIONALITY_LABELS = {
   British: 'بريطاني',
 };
 
+/** @type {Record<string, string>} */
 const RESERVATION_TYPE_LABELS = {
   negotiation: 'حجز بغرض التفاوض',
   confirmed_reservation: 'حجز مؤكد',

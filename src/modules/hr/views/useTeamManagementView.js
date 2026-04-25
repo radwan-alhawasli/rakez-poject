@@ -5,23 +5,29 @@ import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
 
 export function useTeamManagementView() {
+  /** @type {import('vue').Ref<any[]>} */
   const teams = ref([]);
   const isLoading = ref(false);
   const searchQuery = ref('');
+  /** @type {ReturnType<typeof setTimeout> | null} */
   let searchTimeout = null;
 
   const showModal = ref(false);
   const isEditing = ref(false);
   const isSaving = ref(false);
-  const teamForm = reactive({ id: null, name: '', description: '' });
+  const teamForm = reactive({ id: /** @type {any} */ (null), name: '', description: '' });
 
   const showDetailModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const detailTeam = ref(null);
+  /** @type {import('vue').Ref<any[]>} */
   const detailMembers = ref([]);
+  /** @type {import('vue').Ref<any[]>} */
   const detailContracts = ref([]);
   const isLoadingDetail = ref(false);
 
   const showConfirmModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const confirmModalConfig = ref({
     title: '',
     message: '',
@@ -31,27 +37,43 @@ export function useTeamManagementView() {
   });
 
   const showAddMembersModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const addMembersTeam = ref(null);
+  /** @type {import('vue').Ref<any[]>} */
   const availableSalesWithoutTeam = ref([]);
   const addMembersSearch = ref('');
   const addMembersLoading = ref(false);
 
   const showRemoveMembersModal = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const removeMembersTeam = ref(null);
+  /** @type {import('vue').Ref<any[]>} */
   const removeMembersList = ref([]);
   const removeMembersLoading = ref(false);
   const removeMembersSearch = ref('');
   const selectedRemoveUserId = ref('');
   const removeMembersDeleting = ref(false);
 
-  /** Stable user id for PM team APIs (POST/DELETE members). */
+  /**
+   * Stable user id for PM team APIs (POST/DELETE members).
+   * @param {any} m
+   * @returns {string}
+   */
   const memberUserId = m => {
     if (m == null) return '';
     const v = m.user_id ?? m.id ?? m.user?.id;
     return v != null && v !== '' ? String(v) : '';
   };
 
+  /**
+   * @param {any} m
+   * @returns {string}
+   */
   const memberRowKey = m => memberUserId(m) || `m-${JSON.stringify(m).slice(0, 40)}`;
+  /**
+   * @param {any} e
+   * @returns {string}
+   */
   const salesRowKey = e => String(memberUserId(e) || e.email || JSON.stringify(e).slice(0, 30));
 
   const filteredSalesWithoutTeam = computed(() => {
@@ -74,6 +96,9 @@ export function useTeamManagementView() {
     });
   });
 
+  /**
+   * @param {any} team
+   */
   const resolveTeamMembersCount = async team => {
     const existingCount = Number(
       team?.members_count ??
@@ -93,10 +118,14 @@ export function useTeamManagementView() {
     }
   };
 
+  /**
+   * @param {string} search
+   */
   const fetchTeams = async (search = '') => {
     isLoading.value = true;
     try {
-      const data = await teamService.getTeams(search);
+      const data = /** @type {any} */ (await teamService.getTeams(search));
+      /** @type {any[]} */
       const rawTeams = Array.isArray(data) ? data : data?.items ?? [];
       teams.value = await Promise.all(rawTeams.map(resolveTeamMembersCount));
     } catch (error) {
@@ -108,7 +137,7 @@ export function useTeamManagementView() {
   };
 
   const debouncedSearch = () => {
-    clearTimeout(searchTimeout);
+    if (searchTimeout) clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => fetchTeams(searchQuery.value), 300);
   };
 
@@ -118,6 +147,9 @@ export function useTeamManagementView() {
     showModal.value = true;
   };
 
+  /**
+   * @param {any} team
+   */
   const openEditModal = team => {
     isEditing.value = true;
     Object.assign(teamForm, { id: team.id, name: team.name, description: team.description || '' });
@@ -133,7 +165,7 @@ export function useTeamManagementView() {
     try {
       const payload = { name: teamForm.name, description: teamForm.description };
       if (isEditing.value) {
-        await teamService.updateTeam(teamForm.id, payload);
+        await teamService.updateTeam(/** @type {any} */ (teamForm.id), payload);
         toast.success('تم تحديث الفريق بنجاح');
       } else {
         await teamService.createTeam(payload);
@@ -142,13 +174,17 @@ export function useTeamManagementView() {
       closeModal();
       fetchTeams(searchQuery.value);
     } catch (error) {
-      logger.error('Error saving team:', error);
-      toast.error('حدث خطأ أثناء الحفظ: ' + (error.response?.data?.message || error.message));
+      const err = /** @type {any} */ (error);
+      logger.error('Error saving team:', err);
+      toast.error('حدث خطأ أثناء الحفظ: ' + (err.response?.data?.message || err.message));
     } finally {
       isSaving.value = false;
     }
   };
 
+  /**
+   * @param {any} team
+   */
   const viewTeamDetails = async team => {
     detailTeam.value = team;
     detailMembers.value = [];
@@ -162,7 +198,7 @@ export function useTeamManagementView() {
       ]);
       const raw = members.status === 'fulfilled' ? (Array.isArray(members.value) ? members.value : []) : [];
       detailMembers.value = raw;
-      const cRaw = contracts.status === 'fulfilled' ? contracts.value : [];
+      const cRaw = /** @type {any} */ (contracts.status === 'fulfilled' ? contracts.value : []);
       detailContracts.value = Array.isArray(cRaw) ? cRaw : cRaw?.items ?? [];
     } catch (error) {
       logger.error('Error loading team details:', error);
@@ -178,6 +214,9 @@ export function useTeamManagementView() {
     addMembersSearch.value = '';
   };
 
+  /**
+   * @param {any} team
+   */
   const openAddMembersModal = async team => {
     addMembersTeam.value = team;
     showAddMembersModal.value = true;
@@ -198,6 +237,9 @@ export function useTeamManagementView() {
     }
   };
 
+  /**
+   * @param {any} emp
+   */
   const addMemberToTeam = async emp => {
     const team = addMembersTeam.value;
     const userId = memberUserId(emp);
@@ -214,8 +256,9 @@ export function useTeamManagementView() {
       }
       fetchTeams(searchQuery.value);
     } catch (err) {
-      logger.error('Error assigning member:', err);
-      toast.error('فشل إضافة العضو: ' + (err.response?.data?.message || err.message));
+      const error = /** @type {any} */ (err);
+      logger.error('Error assigning member:', error);
+      toast.error('فشل إضافة العضو: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -228,6 +271,9 @@ export function useTeamManagementView() {
     removeMembersDeleting.value = false;
   };
 
+  /**
+   * @param {any} team
+   */
   const openRemoveMembersModal = async team => {
     removeMembersTeam.value = team;
     showRemoveMembersModal.value = true;
@@ -272,8 +318,9 @@ export function useTeamManagementView() {
           }
           fetchTeams(searchQuery.value);
         } catch (err) {
-          logger.error('Error removing member:', err);
-          toast.error('فشل إزالة العضو: ' + (err.response?.data?.message || err.message));
+          const error = /** @type {any} */ (err);
+          logger.error('Error removing member:', error);
+          toast.error('فشل إزالة العضو: ' + (error.response?.data?.message || error.message));
         } finally {
           removeMembersDeleting.value = false;
         }
@@ -282,6 +329,9 @@ export function useTeamManagementView() {
     showConfirmModal.value = true;
   };
 
+  /**
+   * @param {any} member
+   */
   const confirmRemoveMember = member => {
     const team = detailTeam.value;
     if (!team) return;
@@ -303,14 +353,18 @@ export function useTeamManagementView() {
           }
           fetchTeams(searchQuery.value);
         } catch (err) {
-          logger.error('Error removing member:', err);
-          toast.error('فشل إزالة العضو: ' + (err.response?.data?.message || err.message));
+          const error = /** @type {any} */ (err);
+          logger.error('Error removing member:', error);
+          toast.error('فشل إزالة العضو: ' + (error.response?.data?.message || error.message));
         }
       },
     };
     showConfirmModal.value = true;
   };
 
+  /**
+   * @param {any} team
+   */
   const confirmDelete = team => {
     confirmModalConfig.value = {
       title: 'تأكيد الحذف',
@@ -323,8 +377,9 @@ export function useTeamManagementView() {
           toast.success('تم حذف الفريق بنجاح');
           fetchTeams(searchQuery.value);
         } catch (error) {
-          logger.error('Error deleting team:', error);
-          const msg = error?.response?.data?.message || error?.message || 'حدث خطأ أثناء الحذف';
+          const err = /** @type {any} */ (error);
+          logger.error('Error deleting team:', err);
+          const msg = err?.response?.data?.message || err?.message || 'حدث خطأ أثناء الحذف';
           toast.error(msg);
         }
       },
@@ -339,6 +394,10 @@ export function useTeamManagementView() {
 
   const { formatDateISO: formatDate } = useFormatters();
 
+  /**
+   * @param {any} id
+   * @returns {string}
+   */
   const chipColor = id => {
     const colors = ['#2ecc71', '#3498db', '#9b59b6', '#e67e22', '#1abc9c', '#e74c3c', '#f39c12'];
     return colors[(id || 0) % colors.length];

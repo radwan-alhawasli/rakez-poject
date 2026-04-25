@@ -31,7 +31,9 @@ export function sanitizeMediaUrl(url) {
   return t;
 }
 
-/** لا نعرض مسار تطبيق Vue كوصف نصي (التصوير الأصلي فقط) */
+/** لا نعرض مسار تطبيق Vue كوصف نصي (التصوير الأصلي فقط) 
+ * @param {any} s
+*/
 function sanitizeDescriptionText(s) {
   const t = pickTrim(s);
   if (!t) return '';
@@ -54,13 +56,15 @@ function montageOutputUrl(url) {
   return t;
 }
 
-/** وصف المونتاج: نص المستخدم كما هو (قد يكون رابطاً نصياً) */
+/** وصف المونتاج: نص المستخدم كما هو (قد يكون رابطاً نصياً) 
+ * @param {any} s
+*/
 function montageOutputDescription(s) {
   return pickTrim(s);
 }
 
 /**
- * @param {Record<string, unknown>|null|undefined} obj
+ * @param {any} obj
  * @param {string[]} keys
  * @returns {string}
  */
@@ -75,12 +79,12 @@ function firstPick(obj, keys) {
 
 /**
  * بيانات التصوير الأصلية فقط (قبل المونتاج) — من photography_department دون دمج المونتاج.
- * @param {Record<string, unknown>|null|undefined} p
+ * @param {any} p
  * @returns {{ image: string, video: string, description: string }}
  */
 export function getPhotographyTripletFromContract(p) {
   if (!p || typeof p !== 'object') return { image: '', video: '', description: '' };
-  const photo = /** @type {Record<string, unknown>} */ (p.photography_department) || {};
+  const photo = /** @type {any} */ (p).photography_department || {};
   const imageRaw =
     firstPick(photo, ['image_url', 'image_link', 'photo_url', 'image']) ||
     pickTrim(p.photography_link ?? p.photography_url);
@@ -97,16 +101,18 @@ export function getPhotographyTripletFromContract(p) {
 
 /**
  * روابط قسم المونتاج فقط — من الحقل `montage_department` دون حقول جذرية (لتصفية تبويب «بعد المونتاج»).
- * @param {Record<string, unknown>|null|undefined} p
- * @returns {{ image: string, video: string, description: string }}
  */
 const MONTAGE_IMAGE_KEYS = ['image_url', 'image_link', 'photo_url', 'image', 'montage_image_url', 'link'];
 const MONTAGE_VIDEO_KEYS = ['video_url', 'video_link', 'montage_video_url', 'video', 'montage_video'];
 const MONTAGE_DESC_KEYS = ['description', 'notes', 'note', 'desc', 'content', 'text'];
 
+/**
+ * @param {any} p
+ * @returns {{ image: string, video: string, description: string }}
+ */
 export function getMontageDepartmentTripletOnly(p) {
   if (!p || typeof p !== 'object') return { image: '', video: '', description: '' };
-  const mont = /** @type {Record<string, unknown>} */ (p.montage_department) || {};
+  const mont = /** @type {any} */ (p).montage_department || {};
   const imageRaw = firstPick(mont, MONTAGE_IMAGE_KEYS);
   const image = montageOutputUrl(imageRaw);
   const videoRaw = firstPick(mont, MONTAGE_VIDEO_KEYS);
@@ -117,12 +123,12 @@ export function getMontageDepartmentTripletOnly(p) {
 
 /**
  * مخرجات المونتاج للعرض — يفضّل `montage_department` ثم حقول احتياطية على العقد (بطاقات، إلخ).
- * @param {Record<string, unknown>|null|undefined} p
+ * @param {any} p
  * @returns {{ image: string, video: string, description: string }}
  */
 export function getMontageOutputTripletFromContract(p) {
   if (!p || typeof p !== 'object') return { image: '', video: '', description: '' };
-  const mont = /** @type {Record<string, unknown>} */ (p.montage_department) || {};
+  const mont = /** @type {any} */ (p).montage_department || {};
   const imageRaw =
     firstPick(mont, MONTAGE_IMAGE_KEYS) ||
     pickTrim(p.montage_image_url ?? p.montage_image_link);
@@ -139,7 +145,7 @@ export function getMontageOutputTripletFromContract(p) {
 
 /**
  * @deprecated استخدم getMontageOutputTripletFromContract — كان يدمج التصوير والمونتاج.
- * @param {Record<string, unknown>|null|undefined} p
+ * @param {any} p
  */
 export function getMontageTripletFromContract(p) {
   return getMontageOutputTripletFromContract(p);
@@ -147,7 +153,7 @@ export function getMontageTripletFromContract(p) {
 
 /**
  * ثلاثي مكتمل من حقول `montage_department` فقط (تصفية تبويب «بعد المونتاج»).
- * @param {Record<string, unknown>|null|undefined} p
+ * @param {any} p
  */
 export function contractHasCompleteMontageDepartmentTriplet(p) {
   const { image, video, description } = getMontageDepartmentTripletOnly(p);
@@ -156,7 +162,7 @@ export function contractHasCompleteMontageDepartmentTriplet(p) {
 
 /**
  * بعد المونتاج: إكمال الثلاثي من مخرجات المونتاج (يشمل حقول احتياطية على العقد لسيناريوهات العرض).
- * @param {Record<string, unknown>|null|undefined} p
+ * @param {any} p
  */
 export function contractHasCompleteMontageTriplet(p) {
   const { image, video, description } = getMontageOutputTripletFromContract(p);
@@ -165,12 +171,12 @@ export function contractHasCompleteMontageTriplet(p) {
 
 /**
  * رفض المدير لمخرجات المونتاج → يُعاد المشروع إلى «قبل المونتاج» حتى التحديث.
- * @param {Record<string, unknown>|null|undefined} p
+ * @param {any} p
  * @returns {boolean}
  */
 export function isMontageManagerRejected(p) {
   if (!p || typeof p !== 'object') return false;
-  const md = p.montage_department;
+  const md = /** @type {any} */ (p).montage_department;
   if (md && typeof md === 'object') {
     const ap = md.approved;
     if (ap === '0' || ap === 0 || ap === false) return true;
@@ -200,7 +206,7 @@ export function isMontageManagerRejected(p) {
 /**
  * تبويب «بعد المونتاج»: روابط مونتاج كاملة (من `montage_department` أو حقول المونتاج على العقد) وليست مرفوضة.
  * يُستخدم الثلاثي الواسع حتى تنتقل المشاريع من «قبل» إلى «بعد» حتى لو كان الفهرس بدون تداخل كامل لـ `montage_department`.
- * @param {Record<string, unknown>|null|undefined} p
+ * @param {any} p
  * @returns {boolean}
  */
 export function isAfterMontageListProject(p) {
@@ -210,11 +216,11 @@ export function isAfterMontageListProject(p) {
 }
 
 /**
- * @param {Record<string, unknown>|null|undefined} p
+ * @param {any} p
  * @returns {{ label: string, class: string, empty?: boolean }}
  */
 export function getPhotographyApprovalSummary(p) {
-  const ph = p && typeof p === 'object' ? p.photography_department : null;
+  const ph = p && typeof p === 'object' ? (/** @type {any} */ (p)).photography_department : null;
   if (!ph || typeof ph !== 'object') {
     return { label: '—', class: 'status-pending', empty: true };
   }

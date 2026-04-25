@@ -12,8 +12,8 @@ import { getPhotographyApprovalSummary, pickTrim } from '@/utils/editorMontageCa
 export function useEditorProjectsView() {
   const route = useRoute();
   const router = useRouter();
-  const user = authService.getCurrentUser();
-  const isManager = computed(() => user?.is_manager === true || user?.is_manager === 1);
+  const user = /** @type {any} */ (authService.getCurrentUser());
+  const isManager = computed(() => user?.is_manager === true || Number(user?.is_manager) === 1);
 
   const {
     isLoading,
@@ -35,17 +35,23 @@ export function useEditorProjectsView() {
   } = useEditorProjects();
 
   const activeTab = ref('before');
+  /** @type {import('vue').Ref<any>} */
   const selectedProject = ref(null);
 
   /** صف «قبول الوسائط»: مشاريع بعد المونتاج وبانتظار اعتماد المدير فقط */
   const isPendingQueueOnly = computed(() => route.query.filter === 'pending');
+  /** @type {import('vue').Ref<{image_url: string, video_url: string, description: string}>} */
   const montageForm = ref({ image_url: '', video_url: '', description: '' });
   const montageSaving = ref(false);
+  /** @type {import('vue').Ref<any>} */
   const rejectTargetId = ref(null);
   const rejectReason = ref('');
 
+  /** @type {import('vue').Ref<any>} */
   const seeMoreProject = ref(null);
+  /** @type {import('vue').Ref<any>} */
   const seeMoreDetail = ref(null);
+  /** @type {import('vue').Ref<any>} */
   const seeMoreMontage = ref(null);
   const seeMoreLoading = ref(false);
   const seeMoreExpanded = ref({
@@ -56,6 +62,9 @@ export function useEditorProjectsView() {
     units: false,
   });
 
+  /**
+   * @param {any} m
+   */
   function isMontageApiRejected(m) {
     if (!m || typeof m !== 'object') return false;
     if (m.approved === '0' || m.approved === 0 || m.approved === false) return true;
@@ -89,6 +98,9 @@ export function useEditorProjectsView() {
     return st || '';
   });
 
+  /**
+   * @param {any} contract
+   */
   function contractDisplayFromApi(contract) {
     if (!contract || typeof contract !== 'object') return null;
     const second = contract.second_party_data || {};
@@ -209,6 +221,7 @@ export function useEditorProjectsView() {
   /** مفتاح ثابت لقائمة «بعد المونتاج» — بدون deep watch لتجنب حلقة: دمج المونتاج → تحديث العقود → إعادة جلب لكل المعرفات */
   const afterMontageIdsKey = computed(() =>
     afterMontage.value
+      // @ts-ignore
       .map(p => p.id)
       .filter(id => id != null && String(id).trim() !== '')
       .sort((a, b) => Number(a) - Number(b))
@@ -217,6 +230,7 @@ export function useEditorProjectsView() {
 
   watch([activeTab, afterMontageIdsKey, isManager], ([tab, idsKey, mgr]) => {
     if (tab !== 'after' || !mgr || !idsKey) return;
+    // @ts-ignore
     fetchMontageLinksForProjects(afterMontage.value.map(p => p.id));
   });
 
@@ -232,8 +246,8 @@ export function useEditorProjectsView() {
 
   function applyMontageFormFromDetail() {
     if (!selectedProject.value) return;
-    const d = detail.value || {};
-    const m = montageData.value || {};
+    const d = /** @type {any} */ (detail.value || {});
+    const m = /** @type {any} */ (montageData.value || {});
     const md =
       d.montage_department && typeof d.montage_department === 'object' ? d.montage_department : {};
     const rootM = m && typeof m === 'object' ? m : {};
@@ -284,7 +298,7 @@ export function useEditorProjectsView() {
         ]);
         const data = showRes.status === 'fulfilled' ? showRes.value : null;
         const mont = montRes.status === 'fulfilled' ? montRes.value : null;
-        const hasData = data && typeof data === 'object' && (data.id != null || Object.keys(data).length);
+        const hasData = data && typeof data === 'object' && (/** @type {any} */ (data).id != null || Object.keys(data).length);
         seeMoreDetail.value = hasData ? data : { ...p };
         mergeContractDetail(p.id, seeMoreDetail.value);
         seeMoreMontage.value = mont && typeof mont === 'object' && Object.keys(mont).length ? mont : null;
@@ -306,15 +320,24 @@ export function useEditorProjectsView() {
     preloadDetails();
   });
 
+  /**
+   * @param {string} tab
+   */
   function goProjectsTab(tab) {
     activeTab.value = tab;
-    router.replace({ query: { tab } });
+    router.replace({ query: { ...route.query, tab } });
   }
 
+  /**
+   * @param {any} p
+   */
   function openDetail(p) {
     selectedProject.value = p;
   }
 
+  /**
+   * @param {any} p
+   */
   function openSeeMore(p) {
     seeMoreProject.value = p;
   }
@@ -329,29 +352,46 @@ export function useEditorProjectsView() {
     selectedProject.value = null;
   }
 
-  function isLongContent(str, max = 60) {
-    return typeof str === 'string' && str.length > max;
+  /**
+   * @param {string} str
+   * @returns {boolean}
+   */
+  function isLongContent(str) {
+    return str != null && String(str).length > 200;
   }
 
-  function truncateText(str, max = 80) {
-    if (str == null || str === '') return null;
+  /**
+   * @param {string} str
+   * @returns {string}
+   */
+  function truncateText(str) {
+    if (!str) return '';
     const s = String(str);
-    return s.length <= max ? s : s.slice(0, max) + '...';
+    return s.length > 200 ? s.slice(0, 197) + '...' : s;
   }
 
-  function truncateUrl(url, max = 50) {
+  /**
+   * @param {string} url
+   * @returns {string}
+   */
+  function truncateUrl(url) {
     if (!url) return '';
     const s = String(url);
-    return s.length <= max ? s : s.slice(0, max) + '...';
+    return s.length > 40 ? s.slice(0, 37) + '...' : s;
   }
 
+  /**
+   * @param {any} n
+   * @returns {string}
+   */
   function formatPrice(n) {
     if (n == null) return '—';
-    const num = Number(n);
-    if (Number.isNaN(num)) return '—';
-    return new Intl.NumberFormat('ar-SA', localeOpts({ style: 'decimal' })).format(num);
+    return Number(n).toLocaleString('en-US', localeOpts());
   }
 
+  /**
+   * @param {any} p
+   */
   function montageDecisionBucket(p) {
     const label = montageStatusLabel(p);
     if (label === 'معتمد') return 'approved';
@@ -360,41 +400,39 @@ export function useEditorProjectsView() {
   }
 
   const afterMontageListForView = computed(() => {
+    /** @type {any[]} */
     const list = afterMontage.value;
     if (!isPendingQueueOnly.value) return list;
-    return list.filter(x => montageDecisionBucket(x) === 'pending');
+    return list.filter(p => {
+      const s = String(p.montage_status ?? p.approval_status ?? '').toLowerCase();
+      return s === 'pending';
+    });
   });
 
+  /**
+   * @param {any} p
+   * @returns {string}
+   */
   function montageStatusLabel(p) {
-    const md = p.montage_department;
-    if (md?.approved === '1' || md?.approved === 1) return 'معتمد';
-    if (md?.approved === '0' || md?.approved === 0) return 'مرفوض';
-    const mst = md?.status != null ? String(md.status) : '';
-    if (mst.includes('معتمد')) return 'معتمد';
-    if (mst.includes('مرفوض') || mst.includes('رفض')) return 'مرفوض';
-    const slo = mst.toLowerCase();
-    if (slo.includes('approv') || slo.includes('accept')) return 'معتمد';
-    if (slo.includes('reject') || slo.includes('refus')) return 'مرفوض';
-    const status = p.montage_status ?? p.approval_status ?? p.status;
-    if (status === 'approved') return 'معتمد';
-    if (status === 'rejected') return 'مرفوض';
-    return 'قيد المراجعة';
+    if (!p) return '—';
+    const s = String(p.montage_status ?? p.approval_status ?? '').toLowerCase();
+    if (s === 'approved') return 'معتمد';
+    if (s === 'rejected') return 'مرفوض';
+    if (s === 'pending') return 'بانتظار الاعتماد';
+    return 'غير معروف';
   }
 
+  /**
+   * @param {any} p
+   * @returns {string}
+   */
   function montageStatusClass(p) {
-    const md = p.montage_department;
-    if (md?.approved === '1' || md?.approved === 1) return 'status-approved';
-    if (md?.approved === '0' || md?.approved === 0) return 'status-rejected';
-    const mst = md?.status != null ? String(md.status) : '';
-    if (mst.includes('معتمد')) return 'status-approved';
-    if (mst.includes('مرفوض') || mst.includes('رفض')) return 'status-rejected';
-    const slo = mst.toLowerCase();
-    if (slo.includes('approv') || slo.includes('accept')) return 'status-approved';
-    if (slo.includes('reject') || slo.includes('refus')) return 'status-rejected';
-    const status = p.montage_status ?? p.approval_status ?? p.status;
-    if (status === 'approved') return 'status-approved';
-    if (status === 'rejected') return 'status-rejected';
-    return 'status-pending';
+    if (!p) return '';
+    const s = String(p.montage_status ?? p.approval_status ?? '').toLowerCase();
+    if (s === 'approved') return 'status-active';
+    if (s === 'rejected') return 'status-cancelled';
+    if (s === 'pending') return 'status-pending';
+    return '';
   }
 
   async function submitMontage() {
@@ -419,12 +457,16 @@ export function useEditorProjectsView() {
         fetchMontageLinksForProjects(afterMontage.value.map(p => p.id));
       }
     } catch (e) {
-      toast.error(e?.message || 'فشل الحفظ');
+      const error = /** @type {any} */ (e);
+      toast.error(error?.message || 'فشل الحفظ');
     } finally {
       montageSaving.value = false;
     }
   }
 
+  /**
+   * @param {any} id
+   */
   async function doApprove(id) {
     try {
       await approveMontage(id, 'approved');
@@ -438,10 +480,14 @@ export function useEditorProjectsView() {
       }
       closeDetail();
     } catch (e) {
-      toast.error(e?.message || 'فشل');
+      const error = /** @type {any} */ (e);
+      toast.error(error?.message || 'فشل');
     }
   }
 
+  /**
+   * @param {any} id
+   */
   function openRejectModal(id) {
     rejectTargetId.value = id;
     rejectReason.value = '';
@@ -469,7 +515,8 @@ export function useEditorProjectsView() {
       activeTab.value = 'before';
       router.replace({ query: { tab: 'before' } });
     } catch (e) {
-      toast.error(e?.message || 'فشل');
+      const error = /** @type {any} */ (e);
+      toast.error(error?.message || 'فشل');
     }
   }
 

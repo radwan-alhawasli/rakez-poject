@@ -12,11 +12,18 @@ import { sanitizeEmail, sanitizePhone, sanitizeNumber, sanitizeUrl } from './san
  * Validation result object
  */
 export class ValidationResult {
+  /**
+   * @param {boolean} isValid
+   * @param {string|string[]} [errors]
+   */
   constructor(isValid, errors = []) {
     this.isValid = isValid;
     this.errors = Array.isArray(errors) ? errors : [errors];
   }
 
+  /**
+   * @param {string} error
+   */
   addError(error) {
     this.errors.push(error);
     this.isValid = false;
@@ -317,10 +324,10 @@ export function validatePassword(password, options = {}) {
  * Validate form data against schema
  * @param {Record<string, any>} formData - Form data to validate
  * @param {Record<string, any>} schema - Validation schema
- * @returns {Object} { isValid, errors } - Validation result
+ * @returns {{ isValid: boolean, errors: Record<string, string[]> }} - Validation result
  */
 export function validateForm(formData, schema) {
-
+  /** @type {Record<string, string[]>} */
   const errors = {};
   let isValid = true;
 

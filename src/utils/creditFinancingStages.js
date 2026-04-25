@@ -19,7 +19,7 @@ export const CREDIT_CASH_STAGE_LABELS = [
 const LIMIT_DAYS_FIRST_FIVE = [2, 3, 3, 2, 5];
 
 /**
- * @param {string|undefined} purchaseMechanism - من العقد: supported_bank | unsupported_bank | cash | ...
+ * @param {any} booking - من العقد: supported_bank | unsupported_bank | cash | ...
  */
 export function getPurchaseMechanismKey(booking) {
   const p = String(booking?.purchase_mechanism ?? '').toLowerCase();
@@ -27,17 +27,24 @@ export function getPurchaseMechanismKey(booking) {
   return 'supported_bank';
 }
 
-/** آلية الشراء كاش أو دفع كاش (لا يُعرض مسار الائتمان البنكي الكامل) */
+/** آلية الشراء كاش أو دفع كاش (لا يُعرض مسار الائتمان البنكي الكامل) 
+ * @param {any} booking
+*/
 export function isCashReservation(booking) {
   const p = String(booking?.purchase_mechanism ?? '').toLowerCase();
   return p === 'cash' || p === 'كاش';
 }
 
-/** عدد مراحل التتبع في الواجهة: 2 لكاش، 6 لغيره */
+/** عدد مراحل التتبع في الواجهة: 2 لكاش، 6 لغيره 
+ * @param {any} booking
+*/
 export function getTrackerStageCount(booking) {
   return isCashReservation(booking) ? CREDIT_CASH_STAGE_LABELS.length : CREDIT_FINANCING_STAGE_LABELS.length;
 }
 
+/**
+ * @param {any} booking
+ */
 export function getTrackerLabels(booking) {
   return isCashReservation(booking) ? CREDIT_CASH_STAGE_LABELS : CREDIT_FINANCING_STAGE_LABELS;
 }
@@ -46,6 +53,7 @@ export function getTrackerLabels(booking) {
  * عدد أيام المهلة لكل مرحلة (المرحلة الأخيرة في مسار البنك تعتمد على نوع البنك).
  * كاش: المرحلة 0 = يومان، المرحلة 1 = خمسة أيام.
  * @param {number} stageIndex فهرس ضمن المسار الحالي (0..1 لكاش، 0..5 للبنك)
+ * @param {any} booking
  */
 export function getStageDayLimit(stageIndex, booking) {
   if (isCashReservation(booking)) {
@@ -58,6 +66,9 @@ export function getStageDayLimit(stageIndex, booking) {
   return mech === 'unsupported_bank' ? 10 : 5;
 }
 
+/**
+ * @param {any} bookingId
+ */
 function storageKey(bookingId) {
   return `creditFinStageStarts:${bookingId}`;
 }
@@ -65,7 +76,7 @@ function storageKey(bookingId) {
 /**
  * أوقات بدء كل مرحلة (ISO) — [0] من تاريخ الحجز/التأكيد، ثم بعد كل advance.
  * @param {string|number} bookingId
- * @param {{ created_at?: string, confirmed_at?: string, booking_date?: string }} booking
+ * @param {any} booking
  */
 export function getStageStartTimes(bookingId, booking) {
   if (bookingId == null) return [];
@@ -90,6 +101,7 @@ export function getStageStartTimes(bookingId, booking) {
  * بعد نجاح advance: نسجّل وقت دخول المرحلة النشطة الحالية (index = عدد المكتمل).
  * @param {string|number} bookingId
  * @param {number} completedStagesAfter - عدد المراحل المكتملة بعد الاستجابة
+ * @param {any} booking
  */
 export function recordAfterAdvance(bookingId, completedStagesAfter, booking) {
   if (bookingId == null) return;
@@ -108,20 +120,20 @@ export function recordAfterAdvance(bookingId, completedStagesAfter, booking) {
   }
 }
 
+/**
+ * @param {any} isoStr
+ * @param {any} days
+ */
 function addDays(isoStr, days) {
   const d = new Date(isoStr);
   if (Number.isNaN(d.getTime())) return null;
-  d.setDate(d.getDate() + days);
+  d.setDate(d.getDate() + Number(days));
   return d;
 }
 
 /**
  * نص السطر تحت كل مرحلة: موعد الاستحقاق، متبقي، أو متأخر.
- * @param {object} opts
- * @param {number} opts.stageIndex
- * @param {boolean} opts.done
- * @param {string|null} opts.apiDueDate - إن أعادها الـ API
- * @param {string|null} opts.apiCompletedAt
+ * @param {any} opts
  */
 export function formatStageDueLine(opts) {
   const { stageIndex, done, booking, bookingId, apiDueDate, apiCompletedAt } = opts;
@@ -166,6 +178,7 @@ export function formatStageDueLine(opts) {
 
 /**
  * هل المرحلة متأخرة (للشارة الحمراء).
+ * @param {any} opts
  */
 export function isStageOverdue(opts) {
   const line = formatStageDueLine(opts);

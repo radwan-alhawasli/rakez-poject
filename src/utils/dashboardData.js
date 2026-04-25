@@ -8,26 +8,27 @@ export const defaultWidgetColors = ['#27374d', '#b5a99a', '#4a6fa5', '#c4a574', 
 
 /**
  * Walk unknown API objects and try to build { x, y, label }[] with at least 2 points.
- * @param {unknown} raw
+ * @param {any} raw
  * @returns {Array<{ x: number, y: number, label: string }>}
  */
 export function extractTimeSeriesFromUnknown(raw) {
   if (raw == null) return [];
   if (typeof raw !== 'object') return [];
 
+  const r = /** @type {any} */ (raw);
   const candidates = [
-    raw.monthly_series,
-    raw.monthlySeries,
-    raw.revenue_series,
-    raw.revenueSeries,
-    raw.revenue_by_month,
-    raw.series,
-    raw.trend,
-    raw.chart?.area,
-    raw.charts?.area,
-    raw.time_series,
-    raw.timeseries,
-    raw.data,
+    r.monthly_series,
+    r.monthlySeries,
+    r.revenue_series,
+    r.revenueSeries,
+    r.revenue_by_month,
+    r.series,
+    r.trend,
+    r.chart?.area,
+    r.charts?.area,
+    r.time_series,
+    r.timeseries,
+    r.data,
   ];
 
   for (const c of candidates) {
@@ -35,10 +36,12 @@ export function extractTimeSeriesFromUnknown(raw) {
     if (pts.length >= 2) return pts;
   }
 
-  if (Array.isArray(raw.labels) && Array.isArray(raw.values) && raw.labels.length === raw.values.length) {
-    return raw.labels.map((l, i) => ({
+  if (Array.isArray(r.labels) && Array.isArray(r.values) && r.labels.length === r.values.length) {
+    /** @type {any[]} */
+    const labels = r.labels;
+    return labels.map((l, i) => ({
       x: i,
-      y: Number(raw.values[i]) || 0,
+      y: Number(r.values[i]) || 0,
       label: String(l),
     }));
   }
@@ -46,55 +49,64 @@ export function extractTimeSeriesFromUnknown(raw) {
   return [];
 }
 
+/**
+ * @param {any} c
+ */
 function coalesceToPoints(c) {
   if (c == null) return [];
   if (typeof c === 'object' && !Array.isArray(c)) {
-    const keys = Object.keys(c).filter((k) => !/^_/.test(k));
-    if (keys.length >= 2 && keys.every((k) => typeof c[k] === 'number' || (typeof c[k] === 'string' && !Number.isNaN(Number(c[k]))))) {
+    const obj = /** @type {any} */ (c);
+    const keys = Object.keys(obj).filter((k) => !/^_/.test(k));
+    if (keys.length >= 2 && keys.every((k) => typeof obj[k] === 'number' || (typeof obj[k] === 'string' && !Number.isNaN(Number(obj[k]))))) {
       return keys.map((k, i) => ({
         x: i,
-        y: Number(c[k]) || 0,
+        y: Number(obj[k]) || 0,
         label: k,
       }));
     }
   }
   if (!Array.isArray(c)) return [];
-  return c
+  /** @type {any[]} */
+  const arr = c;
+  const points = arr
     .map((row, i) => {
       if (row == null) return null;
       if (typeof row === 'number') return { x: i, y: row, label: String(i + 1) };
-      const y = row.y ?? row.value ?? row.total ?? row.count ?? row.amount ?? row.revenue;
+      const r = /** @type {any} */ (row);
+      const y = r.y ?? r.value ?? r.total ?? r.count ?? r.amount ?? r.revenue;
       if (y == null && y !== 0) return null;
-      const label = row.label ?? row.month ?? row.name ?? row.date ?? row.period ?? String(i + 1);
+      const label = r.label ?? r.month ?? r.name ?? r.date ?? r.period ?? String(i + 1);
       return {
         x: i,
         y: Number(y) || 0,
         label: String(label),
       };
     })
-    .filter(Boolean);
+    .filter((p) => p !== null);
+  return /** @type {Array<{ x: number, y: number, label: string }>} */ (points);
 }
 
 /**
- * @param {Record<string, unknown>} metrics - credit dashboardMetrics reactive object
+ * أعداد الحجوزات من GET /credit/dashboard (الدونات والأعمدة)
+ * @param {any} metrics - credit dashboardMetrics reactive object
  */
-/** أعداد الحجوزات من GET /credit/dashboard (الدونات والأعمدة) */
 export function creditBookingSegments(metrics) {
   if (!metrics) return [];
+  const m = /** @type {any} */ (metrics);
   return [
-    { label: 'مؤكدة', value: Number(metrics.confirmedBookings) || 0 },
-    { label: 'تفاوض', value: Number(metrics.pendingNegotiations) || 0 },
-    { label: 'انتظار', value: Number(metrics.waitingBookings) || 0 },
-    { label: 'تحتاج مراجعة', value: Number(metrics.requiresReview) || 0 },
+    { label: 'مؤكدة', value: Number(m.confirmedBookings) || 0 },
+    { label: 'تفاوض', value: Number(m.pendingNegotiations) || 0 },
+    { label: 'انتظار', value: Number(m.waitingBookings) || 0 },
+    { label: 'تحتاج مراجعة', value: Number(m.requiresReview) || 0 },
     {
       label: 'مرفوضة + عربون',
-      value: Number(metrics.rejectedWithDownPayment) || 0,
+      value: Number(m.rejectedWithDownPayment) || 0,
     },
   ];
 }
 
 /**
- * @param {object} d - normalized sales dashboard payload
+ * @param {any} d - normalized sales dashboard payload
  */
 export function salesInventorySegments(d) {
   if (!d) return [];
@@ -107,29 +119,43 @@ export function salesInventorySegments(d) {
   ];
 }
 
+/**
+ * @param {any} m
+ */
 export function accountingProgressRows(m) {
   if (!m) return [];
+  const metrics = /** @type {any} */ (m);
   return [
-    { label: 'وحدات مباعة', value: Number(m.totalUnitsSold) || 0 },
-    { label: 'عربون مستلم', value: Number(m.totalDeposits) || 0 },
-    { label: 'عربون مسترد', value: Number(m.totalDepositsRefunded) || 0 },
-    { label: 'قيمة مشاريع', value: Number(m.totalProjectsValue) || 0 },
-    { label: 'قيمة مبيعات', value: Number(m.totalSalesValue) || 0 },
-    { label: 'عمولات', value: Number(m.totalCommissions) || 0 },
+    { label: 'وحدات مباعة', value: Number(metrics.totalUnitsSold) || 0 },
+    { label: 'عربون مستلم', value: Number(metrics.totalDeposits) || 0 },
+    { label: 'عربون مسترد', value: Number(metrics.totalDepositsRefunded) || 0 },
+    { label: 'قيمة مشاريع', value: Number(metrics.totalProjectsValue) || 0 },
+    { label: 'قيمة مبيعات', value: Number(metrics.totalSalesValue) || 0 },
+    { label: 'عمولات', value: Number(metrics.totalCommissions) || 0 },
   ];
 }
 
+/**
+ * @param {any} m
+ */
 export function hrProgressRows(m) {
   if (!m) return [];
+  const metrics = /** @type {any} */ (m);
   return [
-    { label: 'متوسط بيع الفريق (شهري)', value: Number(m.avgTeamMonthlySales) || 0 },
-    { label: 'وحدات (إجمالي)', value: Number(m.totalUnits) || 0 },
-    { label: 'موظفو مبيعات', value: Number(m.salesEmployeesCount) || 0 },
-    { label: 'الموظفون الحاليون', value: Number(m.currentEmployeesCount) || 0 },
-    { label: 'متوسط تحقيق الأهداف', value: Number(m.avgEmployeeSales) || 0 },
+    { label: 'متوسط بيع الفريق (شهري)', value: Number(metrics.avgTeamMonthlySales) || 0 },
+    { label: 'وحدات (إجمالي)', value: Number(metrics.totalUnits) || 0 },
+    { label: 'موظفو مبيعات', value: Number(metrics.salesEmployeesCount) || 0 },
+    { label: 'الموظفون الحاليون', value: Number(metrics.currentEmployeesCount) || 0 },
+    { label: 'متوسط تحقيق الأهداف', value: Number(metrics.avgEmployeeSales) || 0 },
   ];
 }
 
+/**
+ * @param {any} available
+ * @param {any} totalProjects
+ * @param {any} ready
+ * @param {any} notReady
+ */
 export function inventoryProjectSegments(available, totalProjects, ready, notReady) {
   return [
     { label: 'وحدات متاحة', value: Number(available) || 0 },
@@ -139,6 +165,10 @@ export function inventoryProjectSegments(available, totalProjects, ready, notRea
   ];
 }
 
+/**
+ * @param {any} ready
+ * @param {any} notReady
+ */
 export function editorProjectSegments(ready, notReady) {
   return [
     { label: 'بعد المونتاج', value: Number(ready) || 0 },
@@ -146,18 +176,22 @@ export function editorProjectSegments(ready, notReady) {
   ];
 }
 
+/**
+ * @param {any} metrics
+ */
 export function marketingCountSegments(metrics) {
   if (!metrics) return [];
+  const m = /** @type {any} */ (metrics);
   return [
-    { label: 'عملاء محتملون', value: Number(metrics.total_leads) || 0 },
-    { label: 'حجوزات متوقعة', value: Number(metrics.total_expected_bookings) || 0 },
-    { label: 'عربون يومي', value: Number(metrics.daily_deposits_count) || 0 },
+    { label: 'عملاء محتملون', value: Number(m.total_leads) || 0 },
+    { label: 'حجوزات متوقعة', value: Number(m.total_expected_bookings) || 0 },
+    { label: 'عربون يومي', value: Number(m.daily_deposits_count) || 0 },
   ];
 }
 
 /**
  * Map manager task rows for TaskListWidget
- * @param {Array<object>} items
+ * @param {Array<any>} items
  */
 export function mapManagerTasks(items) {
   if (!Array.isArray(items)) return [];
@@ -172,7 +206,7 @@ export function mapManagerTasks(items) {
 /**
  * Maps a deposit row from GET /accounting/deposits/follow-up or /pending to ActivityListWidget item shape.
  * Field names vary by backend — only real fields are read.
- * @param {object} row
+ * @param {any} row
  * @param {number} index
  * @returns {{ id: string|number, title: string, subtitle?: string, amount?: number, date?: string }}
  */
@@ -180,18 +214,19 @@ export function mapDepositRecordToActivityItem(row, index = 0) {
   if (!row || typeof row !== 'object') {
     return { id: index, title: '—', subtitle: '' };
   }
-  const id = row.id ?? row.deposit_id ?? row.reservation_id ?? `dep-${index}`;
-  const amountRaw = row.amount ?? row.total_amount ?? row.deposit_amount ?? row.value;
+  const r = /** @type {any} */ (row);
+  const id = r.id ?? r.deposit_id ?? r.reservation_id ?? `dep-${index}`;
+  const amountRaw = r.amount ?? r.total_amount ?? r.deposit_amount ?? r.value;
   const amount = amountRaw != null && !Number.isNaN(Number(amountRaw)) ? Number(amountRaw) : undefined;
   const title =
-    row.project_name ??
-    row.contract_name ??
-    row.client_name ??
-    (row.reservation_id != null ? `حجز #${row.reservation_id}` : null) ??
+    r.project_name ??
+    r.contract_name ??
+    r.client_name ??
+    (r.reservation_id != null ? `حجز #${r.reservation_id}` : null) ??
     `عربون #${id}`;
-  const parts = [row.status, row.bank_reference, row.reference].filter(Boolean);
-  const subtitle = parts.length ? parts.join(' · ') : row.notes ?? row.note ?? '';
-  const date = row.updated_at ?? row.created_at ?? row.confirmed_at ?? row.due_date;
+  const parts = [r.status, r.bank_reference, r.reference].filter(Boolean);
+  const subtitle = parts.length ? parts.join(' · ') : r.notes ?? r.note ?? '';
+  const date = r.updated_at ?? r.created_at ?? r.confirmed_at ?? r.due_date;
 
   return {
     id,
@@ -203,14 +238,15 @@ export function mapDepositRecordToActivityItem(row, index = 0) {
 }
 
 /**
- * @param {object} n - normalized notification from notificationService.fetchAll
+ * @param {any} n - normalized notification from notificationService.fetchAll
  */
 export function mapNotificationToActivityItem(n, index = 0) {
   if (!n) return { id: index, title: '—' };
+  const notification = /** @type {any} */ (n);
   return {
-    id: n.id ?? index,
-    title: String(n.title || n.message || 'إشعار'),
-    subtitle: n.type || n.eventType || undefined,
-    date: n.time || n.created_at,
+    id: notification.id ?? index,
+    title: String(notification.title || notification.message || 'إشعار'),
+    subtitle: notification.type || notification.eventType || undefined,
+    date: notification.time || notification.created_at,
   };
 }
