@@ -15,6 +15,9 @@
  *   method?: string;
  *   code?: string | undefined;
  *   isAuthRedirect?: boolean;
+ *   userMessage?: string;
+ *   originalMessage?: string;
+ *   isOffline?: boolean;
  * }} NormalizedApiError
  */
 
@@ -30,8 +33,46 @@ const apiBaseUrl = appConfig.apiBaseUrl;
 const apiTimeout = appConfig.apiTimeout ?? 30000;
 
 // Simple Cache for GET requests
+/** @type {Map<string, {data: any, timestamp: number}>} */
 const apiCache = new Map();
-const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes (Memory Cache)
+const PERSISTENT_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours (Local Storage)
+
+/**
+ * Load persistent cache from localStorage
+ * @param {string} key
+ * @returns {any}
+ */
+const loadPersistentCache = key => {
+  try {
+    const cached = localStorage.getItem(`api_cache_${key}`);
+    if (!cached) return null;
+    const { data, timestamp } = JSON.parse(cached);
+    if (Date.now() - timestamp < PERSISTENT_CACHE_TTL) {
+      return data;
+    }
+    localStorage.removeItem(`api_cache_${key}`);
+  } catch (_) {
+    return null;
+  }
+  return null;
+};
+
+/**
+ * Save persistent cache to localStorage
+ * @param {string} key
+ * @param {any} data
+ */
+const savePersistentCache = (key, data) => {
+  try {
+    localStorage.setItem(
+      `api_cache_${key}`,
+      JSON.stringify({ data, timestamp: Date.now() })
+    );
+  } catch (_) {
+    // Storage full or restricted
+  }
+};
 
 // Log API base URL in development
 if (appConfig.isDevelopment) {
@@ -47,7 +88,9 @@ const apiClient = axios.create({
   timeout: apiTimeout,
 });
 
-// Cache management
+/**
+ * @param {string|null} pattern
+ */
 export const clearApiCache = (pattern = null) => {
   if (!pattern) {
     apiCache.clear();
@@ -71,17 +114,20 @@ setupCsrfInterceptor(apiClient);
 apiClient.interceptors.request.use(
   config => {
     // Proactive offline check
-    if (!navigator.onLine) {
-      const error = new Error('No internet connection');
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      const error = /** @type {NormalizedApiError} */ (new Error('No internet connection'));
       error.isOffline = true;
       return Promise.reject(error);
     }
 
     // Cache logic for GET requests
-    if (config.method === 'get' && config.useCache) {
+    const cfg = /** @type {any} */ (config);
+    if (config.method === 'get' && cfg.useCache) {
       const cacheKey = `${config.url}${JSON.stringify(config.params || {})}`;
+
+      // 1. Try Memory Cache
       const cached = apiCache.get(cacheKey);
-      if (cached && Date.now() - cached.timestamp < (config.cacheTTL || CACHE_TTL)) {
+      if (cached && Date.now() - cached.timestamp < (cfg.cacheTTL || CACHE_TTL)) {
         config.adapter = () => Promise.resolve({
           data: cached.data,
           status: 200,
@@ -90,6 +136,23 @@ apiClient.interceptors.request.use(
           config,
           request: {}
         });
+        return config;
+      }
+
+      // 2. Try Persistent Cache for specific resources (e.g., lookups, settings)
+      if (cfg.usePersistentCache) {
+        const pData = loadPersistentCache(cacheKey);
+        if (pData) {
+          config.adapter = () => Promise.resolve({
+            data: pData,
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config,
+            request: {}
+          });
+          return config;
+        }
       }
     }
 
@@ -114,13 +177,21 @@ setupTokenRefreshInterceptor(apiClient);
 // Response Interceptor: Standardized error handling
 apiClient.interceptors.response.use(
   response => {
+    const cfg = /** @type {any} */ (response.config);
     // Cache the response if it was a GET request and useCache was enabled
-    if (response.config.method === 'get' && response.config.useCache) {
+    if (response.config.method === 'get' && cfg.useCache) {
       const cacheKey = `${response.config.url}${JSON.stringify(response.config.params || {})}`;
+
+      // Save to memory cache
       apiCache.set(cacheKey, {
         data: response.data,
         timestamp: Date.now()
       });
+
+      // Save to persistent cache if requested
+      if (cfg.usePersistentCache) {
+        savePersistentCache(cacheKey, response.data);
+      }
     }
 
     // Invalidate cache on mutations
@@ -207,7 +278,6 @@ apiClient.interceptors.response.use(
     }
 
     // Create a proper Error instance instead of rejecting with a plain object
-    /** @type {NormalizedApiError} */
     const friendlyMessage = getApiErrorMessage(error);
     const apiError = /** @type {NormalizedApiError} */ (new Error(friendlyMessage));
     apiError.name = 'APIError';

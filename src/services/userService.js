@@ -10,7 +10,12 @@ const userService = {
    */
   async getEmployees(params = {}) {
     try {
-      const response = await apiClient.get('/hr/users', { params });
+      const response = await apiClient.get('/hr/users', {
+        params,
+        useCache: true,
+        usePersistentCache: true,
+        cacheTTL: 15 * 60 * 1000, // 15 minutes memory cache for employees
+      });
       const { items, total } = extractPaginatedData(response, []);
       const list = /** @type {any[]} */ (items);
       const employees = list.map(emp => ({

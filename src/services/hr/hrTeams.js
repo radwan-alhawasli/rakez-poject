@@ -15,14 +15,24 @@ import { getCaughtStatus } from '@/utils/caughtError';
  */
 export const getTeams = async (params = {}) => {
   try {
-    const response = await apiClient.get('/hr/teams', { params });
+    const response = await apiClient.get('/hr/teams', {
+      params,
+      useCache: true,
+      usePersistentCache: true,
+      cacheTTL: 10 * 60 * 1000, // 10 minutes
+    });
     const { items, total } = extractPaginatedData(response, []);
     return { items: items ?? [], total: total ?? 0 };
   } catch (error) {
     const status = getCaughtStatus(error);
     if (status === 404) {
       try {
-        const fallback = await apiClient.get('/project_management/teams/index', { params });
+        const fallback = await apiClient.get('/project_management/teams/index', {
+          params,
+          useCache: true,
+          usePersistentCache: true,
+          cacheTTL: 10 * 60 * 1000,
+        });
         const { items, total } = extractPaginatedData(fallback, []);
         return { items: items ?? [], total: total ?? 0 };
       } catch (_) {
