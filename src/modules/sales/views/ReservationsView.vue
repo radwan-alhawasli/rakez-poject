@@ -40,6 +40,14 @@
         تفاوضات
         <span v-if="activeCounts.negotiations" class="tab-count">{{ activeCounts.negotiations }}</span>
       </button>
+      <button
+        v-if="showEvacuatedTab"
+        :class="['tab-btn', { active: activeTab === 'evacuated' }]"
+        @click="switchTab('evacuated')"
+      >
+        الوحدات المفرغة
+        <span v-if="activeCounts.evacuated" class="tab-count">{{ activeCounts.evacuated }}</span>
+      </button>
     </div>
 
     <!-- Loading -->
@@ -300,6 +308,54 @@
       </div>
     </template>
 
+    <!-- EVACUATED UNITS TAB -->
+    <template v-else-if="activeTab === 'evacuated'">
+      <div v-if="filteredReservations.length === 0" class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <p>لا توجد وحدات مفرغة</p>
+      </div>
+      <div v-else class="reservations-list">
+        <div
+          v-for="reservation in filteredReservations"
+          :key="reservation.reservation_id || reservation.id"
+          class="reservation-card"
+        >
+          <div class="card-status-badge sold">مباع</div>
+          <div class="card-body">
+            <div class="card-meta-block">
+              <div class="res-line res-line--title">
+                <span class="card-label">وحدة</span>
+                <span class="card-value">{{ reservation.unit_number || reservation.unitNumber || '—' }}</span>
+              </div>
+              <div class="res-line">
+                <span class="card-label">مشروع</span>
+                <span class="card-value">{{ reservation.project_name || reservation.projectName || '—' }}</span>
+              </div>
+              <div class="res-line">
+                <span class="card-label">العميل</span>
+                <span class="card-value">{{ reservation.client_name || reservation.clientName || '—' }}</span>
+              </div>
+              <div class="res-line">
+                <span class="card-label">تاريخ الحجز</span>
+                <span class="card-value">{{ formatDate(reservation.contract_date || reservation.created_at || reservation.date) }}</span>
+              </div>
+            </div>
+            <div class="card-actions">
+              <button type="button" class="btn-details" @click="openDetails(reservation)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                عرض التفاصيل
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
     <ReservationDetailModal
       v-if="detailItem"
       :item="detailItem"
@@ -332,6 +388,7 @@ const {
   confirmModalConfig,
   waitingList,
   negotiations,
+  showEvacuatedTab,
   canConfirm,
   canConvert,
   canApproveNeg,

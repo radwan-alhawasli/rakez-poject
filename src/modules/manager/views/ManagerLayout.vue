@@ -7,7 +7,6 @@
       >
         الموظفون والتقييم
       </router-link>
-      <router-link :to="{ name: 'ManagerTasks' }" class="nav-link" active-class="active">المهام</router-link>
     </nav>
     <div class="manager-content">
       <router-view />

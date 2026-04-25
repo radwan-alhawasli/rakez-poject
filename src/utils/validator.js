@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Validation Utility
  * Client-side validation for forms and inputs
@@ -5,6 +6,7 @@
 
 import logger from './logger';
 import { sanitizeEmail, sanitizePhone, sanitizeNumber, sanitizeUrl } from './sanitizer';
+
 
 /**
  * Validation result object
@@ -53,10 +55,11 @@ export function validateEmail(email) {
 /**
  * Validate phone number
  * @param {string} phone - Phone to validate
- * @param {Object} options - Options { required, minLength, maxLength }
+ * @param {Record<string, any>} options - Options { required, minLength, maxLength }
  * @returns {ValidationResult} Validation result
  */
 export function validatePhone(phone, options = {}) {
+
   const { required = true, minLength = 7, maxLength = 15 } = options;
   const result = new ValidationResult(true);
 
@@ -111,11 +114,12 @@ export function validateRequired(value, fieldName = 'الحقل') {
 /**
  * Validate string length
  * @param {string} value - String to validate
- * @param {Object} options - Options { min, max, required }
+ * @param {Record<string, any>} options - Options { min, max, required }
  * @param {string} fieldName - Field name for error message
  * @returns {ValidationResult} Validation result
  */
 export function validateLength(value, options = {}, fieldName = 'الحقل') {
+
   const { min = 0, max = null, required = false } = options;
   const result = new ValidationResult(true);
 
@@ -144,11 +148,12 @@ export function validateLength(value, options = {}, fieldName = 'الحقل') {
 /**
  * Validate number
  * @param {*} value - Value to validate
- * @param {Object} options - Options { min, max, integer, required, allowNegative }
+ * @param {Record<string, any>} options - Options { min, max, integer, required, allowNegative }
  * @param {string} fieldName - Field name for error message
  * @returns {ValidationResult} Validation result
  */
 export function validateNumber(value, options = {}, fieldName = 'الحقل') {
+
   const {
     min = null,
     max = null,
@@ -189,11 +194,12 @@ export function validateNumber(value, options = {}, fieldName = 'الحقل') {
 /**
  * Validate URL
  * @param {string} url - URL to validate
- * @param {Object} options - Options { required, allowedProtocols }
+ * @param {Record<string, any>} options - Options { required, allowedProtocols }
  * @param {string} fieldName - Field name for error message
  * @returns {ValidationResult} Validation result
  */
 export function validateUrl(url, options = {}, fieldName = 'الرابط') {
+
   const { required = false, allowedProtocols = ['http:', 'https:'] } = options;
   const result = new ValidationResult(true);
 
@@ -217,11 +223,12 @@ export function validateUrl(url, options = {}, fieldName = 'الرابط') {
 /**
  * Validate date
  * @param {string|Date} date - Date to validate
- * @param {Object} options - Options { required, min, max }
+ * @param {Record<string, any>} options - Options { required, min, max }
  * @param {string} fieldName - Field name for error message
  * @returns {ValidationResult} Validation result
  */
 export function validateDate(date, options = {}, fieldName = 'التاريخ') {
+
   const { required = false, min = null, max = null } = options;
   const result = new ValidationResult(true);
 
@@ -255,10 +262,11 @@ export function validateDate(date, options = {}, fieldName = 'التاريخ') {
 /**
  * Validate password
  * @param {string} password - Password to validate
- * @param {Object} options - Options { required, minLength, requireUppercase, requireLowercase, requireNumber, requireSpecial }
+ * @param {Record<string, any>} options - Options { required, minLength, requireUppercase, requireLowercase, requireNumber, requireSpecial }
  * @returns {ValidationResult} Validation result
  */
 export function validatePassword(password, options = {}) {
+
   const {
     required = true,
     minLength = 8,
@@ -307,11 +315,12 @@ export function validatePassword(password, options = {}) {
 
 /**
  * Validate form data against schema
- * @param {Object} formData - Form data to validate
- * @param {Object} schema - Validation schema
+ * @param {Record<string, any>} formData - Form data to validate
+ * @param {Record<string, any>} schema - Validation schema
  * @returns {Object} { isValid, errors } - Validation result
  */
 export function validateForm(formData, schema) {
+
   const errors = {};
   let isValid = true;
 

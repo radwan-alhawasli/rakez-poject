@@ -116,8 +116,9 @@ const secureStorage = {
 
   /**
    * Set user info
-   * @param {Object} userInfo - User information object
+   * @param {Record<string, any>} userInfo - User information object
    */
+
   setUserInfo(userInfo) {
     if (!userInfo) {
       this.removeUserInfo();
@@ -133,8 +134,9 @@ const secureStorage = {
 
   /**
    * Get user info
-   * @returns {Object|null} User info or null
+   * @returns {Record<string, any>|null} User info or null
    */
+
   getUserInfo() {
     try {
       const userStr = localStorage.getItem(USER_INFO_KEY);

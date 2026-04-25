@@ -181,6 +181,7 @@ const creditItems = [
   { ...COMMON_ITEMS.notifications, hasBadge: true },
   { ...COMMON_ITEMS.tasks },
   { to: '/credit/bookings', label: 'إدارة الحجوزات', tooltip: 'إدارة الحجوزات', icon: ICONS.tasks },
+  { to: '/credit/marketing-requests', label: 'طلب تسويق', tooltip: 'طلب تسويق', icon: ICONS.tasks },
   COMMON_ITEMS.exclusiveRequest,
   COMMON_ITEMS.aiAssistant,
   COMMON_ITEMS.profile,

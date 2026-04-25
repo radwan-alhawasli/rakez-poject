@@ -1,3 +1,4 @@
+// @ts-check
 import apiClient from '@/api/apiClient';
 import logger from '@/utils/logger';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
@@ -15,16 +16,18 @@ import {
   hasSecondPartyTrackerRecord,
 } from '@/utils/projectProgressSteps';
 
+
 export const contractServiceMarketerMethods = {
   // --- Marketer / User Endpoints ---
 
   /**
    * جلب قائمة العقود بنفس تفاصيل GET /contracts/show (notes, project_progress, project_name, ...)
    * GET /contracts/index — يدعم التصفح بالصفحات (page, per_page)
-   * @param {any} filters - Optional: page (1-based), per_page (default 15), status, user_id (تصفية طلبات مستخدم — طلباتي للموظفين), إلخ.
-   * @returns {Promise<{ items: unknown[], total: number }>} items normalized, total from API
+   * @param {Record<string, any>} filters - Optional: page (1-based), per_page (default 15), status, user_id (تصفية طلبات مستخدم — طلباتي للموظفين), إلخ.
+   * @returns {Promise<{ items: any[], total: number }>} items normalized, total from API
    */
   async getContracts(filters = {}) {
+
     try {
       const params = {
         page: filters.page ?? 1,
@@ -49,8 +52,10 @@ export const contractServiceMarketerMethods = {
   /**
    * جلب المشاريع للمحرر
    * GET /editor/contracts/index
+   * @returns {Promise<any[]>}
    */
   async getEditorContracts() {
+
     try {
       const response = await apiClient.get('/editor/contracts/index');
       const res = response.data;
@@ -73,7 +78,8 @@ export const contractServiceMarketerMethods = {
   /**
    * جلب تفاصيل مشروع للمحرر
    * GET /editor/contracts/show/:id
-    * @param {any} id
+   * @param {string|number} id
+   * @returns {Promise<Record<string, any>>}
    */
   async getEditorContractById(id) {
     try {
@@ -88,9 +94,11 @@ export const contractServiceMarketerMethods = {
    * جلب تفاصيل عقد — المصدر الموحد لجميع بيانات العقد (مستكمل أو غير مستكمل).
    * GET /contracts/show/:id — يُستدعى من: تعديل العقد (EditExclusiveProjectModal)، تعديل بيانات استكمال العقد (EditContractInfoModal)، استكمال العقد (ContractFormView)، وعرض التفاصيل.
    * الاستجابة: { success, message, data: { id, project_name, units, commission_percent, commission_from, second_party_data, ... } }
-    * @param {any} id
+   * @param {string|number} id
+   * @returns {Promise<Record<string, any>|null>}
    */
   async getContractById(id) {
+
     try {
       const response = await apiClient.get(`/contracts/show/${id}`);
       let raw = response.data?.data ?? response.data;
@@ -115,9 +123,10 @@ export const contractServiceMarketerMethods = {
    * ملاحظة: لكي تظهر صورة المشروع في بطاقات إدارة المشاريع، يجب أن يرجع الـ API عند جلب
    * القائمة (GET /contracts/index) أو التفاصيل (GET /contracts/show/:id) حقل project_image_url
    * (أو image) في كل عقد.
-    * @param {any} payload
+   * @param {Record<string, any>} payload
    */
   async createContract(payload) {
+
     try {
       const body = normalizeContractWritePayload(payload);
       logger.debug('Creating contract (POST /contracts/store):', body);
@@ -131,10 +140,11 @@ export const contractServiceMarketerMethods = {
   /**
    * تحديث أولي للعقد (إذا لزم الأمر)
    * PUT /contracts/update/:id
-    * @param {any} id
-    * @param {any} payload
+   * @param {string|number} id
+   * @param {Record<string, any>} payload
    */
   async updateContract(id, payload) {
+
     try {
       const body = normalizeContractWritePayload(payload);
       const response = await apiClient.put(`/contracts/update/${id}`, body);
@@ -148,10 +158,11 @@ export const contractServiceMarketerMethods = {
    * استكمال بيانات العقد (الطرف الثاني، التواريخ..)
    * POST /contracts/store/info/:id
    * Payload (مثال): address, total_area, building_count, latitude, longitude — أو بيانات الطرف الثاني كاملة
-    * @param {any} id
-    * @param {any} payload
+   * @param {string|number} id
+   * @param {Record<string, any>} payload
    */
   async storeContractInfo(id, payload) {
+
     try {
       logger.debug(`Storing contract info for ${id}:`, payload);
       const response = await apiClient.post(`/contracts/store/info/${id}`, payload);
@@ -164,20 +175,22 @@ export const contractServiceMarketerMethods = {
   /**
    * Alias: استكمال بيانات العقد (نفس storeContractInfo)
    * POST /contracts/store/info/:id
-    * @param {any} id
-    * @param {any} payload
+   * @param {string|number} id
+   * @param {Record<string, any>} payload
    */
   async completeContractInfo(id, payload) {
+
     return this.storeContractInfo(id, payload);
   },
 
   /**
    * تحديث بيانات استكمال العقد (نفس حقول الاستكمال)
    * PUT /contracts/update/info/:id
-    * @param {any} id
-    * @param {any} payload
+   * @param {string|number} id
+   * @param {Record<string, any>} payload
    */
   async updateContractInfo(id, payload) {
+
     try {
       const body =
         payload && typeof payload === 'object' ? normalizeContractWritePayload({ ...payload }) : payload;
@@ -192,10 +205,11 @@ export const contractServiceMarketerMethods = {
   /**
    * حفظ بيانات الطرف الثاني (المتتبع)
    * POST /second-party-data/store/:id
-    * @param {any} id
-    * @param {any} payload
+   * @param {string|number} id
+   * @param {Record<string, any>} payload
    */
   async storeSecondPartyData(id, payload) {
+
     try {
       const response = await apiClient.post(`/second-party-data/store/${id}`, payload);
       return response.data;
@@ -207,10 +221,11 @@ export const contractServiceMarketerMethods = {
   /**
    * تحديث بيانات الطرف الثاني
    * PUT /second-party-data/update/:id
-    * @param {any} id
-    * @param {any} payload
+   * @param {string|number} id
+   * @param {Record<string, any>} payload
    */
   async updateSecondPartyData(id, payload) {
+
     try {
       const response = await apiClient.put(`/second-party-data/update/${id}`, payload);
       return response.data;
@@ -236,9 +251,11 @@ export const contractServiceMarketerMethods = {
   /**
    * جلب بيانات الطرف الثاني (المتتبع)
    * GET /second-party-data/show/:id
-   * @param {any} id
+   * @param {string|number} id
+   * @returns {Promise<Record<string, any>>}
    */
   async getSecondPartyData(id) {
+
     try {
       const response = await apiClient.get(`/second-party-data/show/${id}`);
       return response.data;

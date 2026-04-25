@@ -1,3 +1,4 @@
+// @ts-check
 import apiClient from '@/api/apiClient';
 import logger from '@/utils/logger';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
@@ -5,15 +6,17 @@ import { extractPaginatedData } from '@/utils/paginationUtils';
 import { getCaughtStatus, toThrowable } from '@/utils/caughtError';
 
 export const contractServiceAdminMethods = {
+
   // --- Admin Endpoints ---
 
   /**
    * جلب جميع العقود (للمسؤول)
    * GET /contracts/admin-index (aligned with API collection)
-   * @param {any} params - page, per_page, status (pending|approved|rejected)
-   * @returns {Promise<{ items: unknown[], total: number }>}
+   * @param {Record<string, any>} params - page, per_page, status (pending|approved|rejected)
+   * @returns {Promise<{ items: any[], total: number }>}
    */
   async getAllContracts(params = {}) {
+
     try {
       const response = await apiClient.get('/contracts/admin-index', { params });
       const { items, total } = extractPaginatedData(response, []);
@@ -29,10 +32,11 @@ export const contractServiceAdminMethods = {
   /**
    * List contracts for Project Management
    * GET /contracts/admin-index
-   * @param {any} params - Query parameters
-   * @returns {Promise<unknown[]>} List of contracts
+   * @param {Record<string, any>} params - Query parameters
+   * @returns {Promise<any[]>} List of contracts
    */
   async listContractsPM(params = {}) {
+
     try {
       const response = await apiClient.get('/contracts/admin-index', { params });
       const res = response.data;
@@ -55,19 +59,21 @@ export const contractServiceAdminMethods = {
    * تحديث حالة العقد (قبول/رفض) — يحفظ في API
    * PATCH /admin/contracts/adminUpdateStatus/:id
    * Payload: { status: 'approved' | 'rejected' }
-    * @param {any} contractId
-    * @param {any} status
+   * @param {string|number} contractId
+   * @param {string} status
    */
   async updateContractStatus(contractId, status) {
+
     return this.updateContractStatusAdmin(contractId, status);
   },
 
   /**
    * أرشفة عقد
    * PATCH /contracts/:id/archive
-    * @param {any} contractId
+   * @param {string|number} contractId
    */
   async archiveContract(contractId) {
+
     try {
       const response = await apiClient.patch(`/contracts/${contractId}/archive`);
       return response.data;
@@ -79,9 +85,10 @@ export const contractServiceAdminMethods = {
   /**
    * تحديد عقد كمكتمل (جاهز للتسويق) — يحفظ عبر PATCH /contracts/update-status/:id
    * مع { status: 'ready', is_complete_second: true } عندما يدعم الخادم الحقل.
-   * @param {any} contractId
+   * @param {string|number} contractId
    */
   async markContractComplete(contractId) {
+
     const id = contractId != null ? String(contractId).trim() : '';
     if (!id) {
       const err = new Error('معرف العقد مطلوب');
@@ -92,27 +99,32 @@ export const contractServiceAdminMethods = {
   },
 
   /**
-   * @param {any} contractId
+   * @param {string|number} contractId
+   * @param {string} [notes]
    */
   async approveContract(contractId, notes = '') {
+
     return this.updateContractStatusAdmin(contractId, 'approved', notes);
   },
 
   /**
-   * @param {any} contractId
+   * @param {string|number} contractId
+   * @param {string} [notes]
    */
   async rejectContract(contractId, notes = '') {
+
     return this.updateContractStatusAdmin(contractId, 'rejected', notes);
   },
 
   /**
    * تحديث حالة العقد (لمدير المشاريع)
    * PATCH /contracts/update-status/:id — Body: { status: 'ready' | 'rejected', ...extra }
-   * @param {any} contractId
-   * @param {any} status
-   * @param {Record<string, unknown>} [extra] - e.g. { is_complete_second: true }
+   * @param {string|number} contractId
+   * @param {string} status
+   * @param {Record<string, any>} [extra] - e.g. { is_complete_second: true }
    */
   async updateContractStatusProjectManager(contractId, status, extra = {}) {
+
     try {
       const response = await apiClient.patch(`/contracts/update-status/${contractId}`, {
         status,
@@ -127,10 +139,12 @@ export const contractServiceAdminMethods = {
   /**
    * تحديث حالة العقد (للمسؤول) — مطابق لـ API: PATCH /admin/contracts/adminUpdateStatus/:id
    * Body: { status: 'approved' | 'rejected', notes?: string }
-    * @param {any} contractId
-    * @param {any} status
+   * @param {string|number} contractId
+   * @param {string} status
+   * @param {string} [notes]
    */
   async updateContractStatusAdmin(contractId, status, notes = '') {
+
     try {
       const id = contractId != null ? String(contractId).trim() : '';
       if (!id) {
@@ -138,8 +152,9 @@ export const contractServiceAdminMethods = {
         err.response = { status: 400, data: { message: 'معرف العقد مطلوب' } };
         throw err;
       }
-      /** @type {{ status: any, notes?: string }} */
+      /** @type {Record<string, any>} */
       const body = { status };
+
       const notesStr = notes != null ? String(notes).trim() : '';
       if (notesStr) body.notes = notesStr;
       const response = await apiClient.patch(`/admin/contracts/adminUpdateStatus/${id}`, body);

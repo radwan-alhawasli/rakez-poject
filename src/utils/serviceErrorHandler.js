@@ -1,9 +1,11 @@
+// @ts-check
 /**
  * Standardized Service Error Handler
  * Provides consistent error handling across all service files
  *
  * @module utils/serviceErrorHandler
  */
+
 
 import logger from './logger';
 import appConfig from '@/config/appConfig';

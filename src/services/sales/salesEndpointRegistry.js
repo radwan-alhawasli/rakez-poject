@@ -73,7 +73,7 @@ export const SALES_API_ENDPOINT_REGISTRY = {
     endpoint: '/sales/units/{unit_id}/reservation-context',
     source: 'preferred_249',
   },
-  getReservations: { method: 'GET', endpoint: '/sales/reservations', source: 'preferred_249' },
+  getReservations: { method: 'POST', endpoint: '/sales/reservations/filter', source: 'preferred_249', fallback: { method: 'GET', endpoint: '/sales/reservations' } },
   createReservation: { method: 'POST', endpoint: '/sales/reservations', source: 'preferred_249' },
   confirmReservation: {
     method: 'POST',

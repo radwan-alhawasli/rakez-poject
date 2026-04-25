@@ -582,6 +582,76 @@ const creditService = {
     }
   },
 
+  // --- Marketing Requests ---
+  async getMarketingRequests(params = {}) {
+    try {
+      const response = await apiClient.get('/credit/order-marketing-developers', { params });
+      const data = response.data?.data || response.data || [];
+      const items = Array.isArray(data) ? data : (data.data || []);
+      const total = data.total || items.length;
+      return { items, total };
+    } catch (error) {
+      return handleServiceError(error, 'Error fetching marketing requests', 'get') || { items: [], total: 0 };
+    }
+  },
+  /**
+   * Get a single marketing request by ID
+   * GET /credit/order-marketing-developers/:id
+   * @param {number|string} id - Marketing request ID
+   */
+  async getMarketingRequestById(id) {
+    try {
+      const response = await apiClient.get(`/credit/order-marketing-developers/${id}`);
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      logger.error(`Error fetching marketing request ${id}:`, error);
+      throw error;
+    }
+  },
+  /**
+   * Create a new marketing request
+   * POST /credit/order-marketing-developers
+   * @param {Record<string, unknown>} data - Marketing request payload
+   */
+  async createMarketingRequest(data) {
+    try {
+      const response = await apiClient.post('/credit/order-marketing-developers', data);
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      logger.error('Error creating marketing request:', error);
+      throw error;
+    }
+  },
+  /**
+   * Update an existing marketing request
+   * PUT /credit/order-marketing-developers/:id
+   * @param {number|string} id - Marketing request ID
+   * @param {Record<string, unknown>} data - Update payload
+   */
+  async updateMarketingRequest(id, data) {
+    try {
+      const response = await apiClient.put(`/credit/order-marketing-developers/${id}`, data);
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      logger.error(`Error updating marketing request ${id}:`, error);
+      throw error;
+    }
+  },
+  /**
+   * Delete a marketing request
+   * DELETE /credit/order-marketing-developers/:id
+   * @param {number|string} id - Marketing request ID
+   */
+  async deleteMarketingRequest(id) {
+    try {
+      const response = await apiClient.delete(`/credit/order-marketing-developers/${id}`);
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      logger.error(`Error deleting marketing request ${id}:`, error);
+      throw error;
+    }
+  },
+
   // --- Sold Projects ---
 
   /**
