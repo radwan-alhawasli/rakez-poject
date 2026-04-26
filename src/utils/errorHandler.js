@@ -142,6 +142,7 @@ export function getApiErrorMessage(error, fallback) {
   const data = e?.response?.data ?? e?.data ?? {};
   const msg =
     error?.userMessage ||
+    e?.userMessage ||
     data?.message ||
     getFirstValidationMessage(data?.errors) ||
     error?.message;

@@ -637,5 +637,8 @@ export function useReservationsView() {
     downloadVoucher,
     downloadVoucherFile,
     isDownloadingReservation,
+    downloadPmVoucherFromDataEndpoint,
+    closeModal,
+    onConfirmModalConfirm,
   };
 }
