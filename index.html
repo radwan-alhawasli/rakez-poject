@@ -146,6 +146,7 @@
     <script>
       window.addEventListener('load', function() {
         setTimeout(function() {
+          document.documentElement.classList.add('loaded');
           document.body.classList.add('loaded');
           var loadingScreen = document.getElementById('loading-screen');
           if (loadingScreen) {
