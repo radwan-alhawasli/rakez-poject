@@ -38,7 +38,7 @@ export const contractServiceMarketerMethods = {
       const { items, total } = extractPaginatedData(response, []);
       const list = Array.isArray(items) ? items : [];
       return {
-        items: list.map(p => normalizeContractItem(p)),
+        items: list.map(p => normalizeContractItem(/** @type {Record<string, any>} */ (p))),
         total: typeof total === 'number' ? total : parseInt(total, 10) || list.length,
       };
     } catch (error) {
@@ -241,7 +241,7 @@ export const contractServiceMarketerMethods = {
    */
   async saveSecondPartyTracker(contractId, payload) {
     const snap = await this.getSecondPartyData(contractId);
-    const row = extractSecondPartyShowRow(snap);
+    const row = extractSecondPartyShowRow(/** @type {Record<string, any>} */ (snap || {}));
     if (hasSecondPartyTrackerRecord(row)) {
       return this.updateSecondPartyData(contractId, payload);
     }

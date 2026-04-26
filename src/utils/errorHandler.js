@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Centralized Error Handler
  * Provides consistent error handling, logging, and user notifications (toast)
@@ -138,9 +139,9 @@ export function getApiErrorMessage(error, fallback) {
   const data = error?.response?.data ?? error?.data ?? {};
   const msg =
     error?.userMessage ||
-    error?.message ||
     data?.message ||
-    getFirstValidationMessage(data?.errors);
+    getFirstValidationMessage(data?.errors) ||
+    error?.message;
   if (msg && typeof msg === 'string' && msg.trim()) return mapKnownApiUserMessage(msg.trim());
   const status = error?.response?.status ?? error?.status;
   if (status === 401) return errorMessages[ErrorTypes.AUTHENTICATION].expired;

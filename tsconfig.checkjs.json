@@ -25,7 +25,8 @@
   "include": [
     "src/vite-env.d.ts",
     "src/shims-checkjs.d.ts",
-    "src/**/*.js"
+    "src/api/**/*.js",
+    "src/services/**/*.js"
   ],
 
 

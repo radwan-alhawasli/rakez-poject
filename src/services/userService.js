@@ -10,10 +10,11 @@ const userService = {
    */
   async getEmployees(params = {}) {
     try {
+      const shouldCache = !import.meta.env.VITEST;
       const response = await apiClient.get('/hr/users', {
         params,
-        useCache: true,
-        usePersistentCache: true,
+        useCache: shouldCache,
+        usePersistentCache: shouldCache,
         cacheTTL: 15 * 60 * 1000, // 15 minutes memory cache for employees
       });
       const { items, total } = extractPaginatedData(response, []);

@@ -162,6 +162,7 @@ import {
 export default {
   name: 'TeamsView',
   components: {
+    CardSkeleton,
     Dialog,
     DialogContent,
     DialogFooter,

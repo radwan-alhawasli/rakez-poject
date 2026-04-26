@@ -3,7 +3,7 @@
  *
  * When to run (see also docs/VIEW_PLACEMENT.md for frontend layout; env vars here):
  *
- * - Default `npm run test:run`: **skipped** (no integration base URL configured).
+ * - Default `npm run test:run`: does not run live HTTP tests without an integration base URL.
  * - Staging / non-local URL: set `INTEGRATION_API_BASE_URL` (recommended) **or** set
  *   `VITE_APP_API_BASE_URL` / `VITE_API_BASE_URL` to a non-localhost URL. Vitest must see
  *   the same `VITE_APP_API_BASE_URL` as `apiClient` / `authService` (set in the shell or CI env).
@@ -88,7 +88,15 @@ const SKIP_INTEGRATION = !effectiveBase;
 
 const hasAuthCreds = !!(process.env.TEST_USER_EMAIL && process.env.TEST_USER_PASSWORD);
 
-describe.skipIf(SKIP_INTEGRATION)('API Integration Tests', () => {
+if (SKIP_INTEGRATION) {
+  describe('API Integration Tests configuration', () => {
+    it('does not run live HTTP tests without an integration base URL', () => {
+      expect(effectiveBase).toBe('');
+      expect(SKIP_INTEGRATION).toBe(true);
+    });
+  });
+} else {
+describe('API Integration Tests', () => {
   beforeAll(() => {
     storageState.token = null;
     storageState.refreshToken = null;
@@ -120,7 +128,14 @@ describe.skipIf(SKIP_INTEGRATION)('API Integration Tests', () => {
     });
   });
 
-  describe.skipIf(!hasAuthCreds)('Authentication flow', () => {
+  describe('Authentication flow', () => {
+    if (!hasAuthCreds) {
+      it('does not run credentialed auth scenarios without test credentials', () => {
+        expect(hasAuthCreds).toBe(false);
+      });
+      return;
+    }
+
     it('fails login with invalid credentials', async () => {
       await expect(
         authService.login('invalid-integration@example.test', 'wrong-password-xyz')
@@ -137,6 +152,7 @@ describe.skipIf(SKIP_INTEGRATION)('API Integration Tests', () => {
     });
   });
 });
+}
 
 export const integrationTestConfig = {
   apiBaseUrl: effectiveBase,

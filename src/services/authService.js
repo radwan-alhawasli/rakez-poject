@@ -119,9 +119,9 @@ const authService = {
     try {
       const response = await apiClient.get('/user');
       const user = response.data?.data ?? response.data?.user ?? response.data;
-      if (!user) return this.getCurrentUser();
+      if (!user) return /** @type {AuthUser|null} */ (this.getCurrentUser());
 
-      const userData = { ...user };
+      const userData = /** @type {AuthUser} */ ({ ...user });
       if (typeof userData.type === 'string' && ROLE_MAP[userData.type] !== undefined) {
         userData.type = ROLE_MAP[userData.type];
       }
@@ -140,7 +140,7 @@ const authService = {
         this.clearSession();
       }
       handleServiceError(error, 'Fetch current user', 'get', null);
-      return this.getCurrentUser();
+      return /** @type {AuthUser|null} */ (this.getCurrentUser());
     }
   },
 
