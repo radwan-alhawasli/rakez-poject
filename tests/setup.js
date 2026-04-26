@@ -6,6 +6,12 @@
 import { vi } from 'vitest';
 import { config } from '@vue/test-utils';
 
+const originalConsoleError = console.error.bind(console);
+vi.spyOn(console, 'error').mockImplementation((...args) => {
+  if (String(args[0] || '').includes('Could not parse CSS stylesheet')) return;
+  originalConsoleError(...args);
+});
+
 // jsdom: @unovis axis may call .node().getBBox() on non-SVG nodes — stub on Element
 if (typeof Element !== 'undefined' && typeof Element.prototype.getBBox !== 'function') {
   Element.prototype.getBBox = function rakezTestGetBBox() {

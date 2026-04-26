@@ -67,14 +67,14 @@
     </script>
 
     <style>
-      /* Prevent Flash of Unstyled Content */
-      body {
-        opacity: 0;
-        transition: opacity 0.3s ease-in;
+      /* Prevent Flash of Unstyled Content while maintaining perceived performance */
+      html:not(.loaded) body {
+        visibility: hidden;
       }
 
-      body.loaded {
+      body {
         opacity: 1;
+        transition: opacity 0.3s ease-in;
       }
 
       /* Loading Screen */
@@ -146,6 +146,7 @@
     <script>
       window.addEventListener('load', function() {
         setTimeout(function() {
+          document.documentElement.classList.add('loaded');
           document.body.classList.add('loaded');
           var loadingScreen = document.getElementById('loading-screen');
           if (loadingScreen) {

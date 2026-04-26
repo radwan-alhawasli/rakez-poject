@@ -19,6 +19,8 @@ export async function getCities(params = {}) {
   try {
     const response = await apiClient.get('/cities', {
       params: { ...params, per_page: LOCATIONS_PER_PAGE, page: 1 },
+      useCache: true,
+      usePersistentCache: true,
     });
     const { items } = extractPaginatedData(response, []);
     const list = /** @type {CityRow[]} */ (Array.isArray(items) ? items : []);
@@ -31,6 +33,8 @@ export async function getCities(params = {}) {
     for (let page = 2; page <= totalPages && page <= 50; page += 1) {
       const r = await apiClient.get('/cities', {
         params: { ...params, per_page: LOCATIONS_PER_PAGE, page },
+        useCache: true,
+        usePersistentCache: true,
       });
       const { items: nextItems } = extractPaginatedData(r, []);
       if (!Array.isArray(nextItems) || nextItems.length === 0) break;
@@ -51,6 +55,8 @@ export async function getDistricts(params = {}) {
   try {
     const response = await apiClient.get('/districts', {
       params: { ...params, per_page: LOCATIONS_PER_PAGE, page: 1 },
+      useCache: true,
+      usePersistentCache: true,
     });
     const { items } = extractPaginatedData(response, []);
     const list = /** @type {DistrictRow[]} */ (Array.isArray(items) ? items : []);
@@ -63,6 +69,8 @@ export async function getDistricts(params = {}) {
     for (let page = 2; page <= totalPages && page <= 50; page += 1) {
       const r = await apiClient.get('/districts', {
         params: { ...params, per_page: LOCATIONS_PER_PAGE, page },
+        useCache: true,
+        usePersistentCache: true,
       });
       const { items: nextItems } = extractPaginatedData(r, []);
       if (!Array.isArray(nextItems) || nextItems.length === 0) break;

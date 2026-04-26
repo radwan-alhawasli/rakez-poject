@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div class="app-shell">
     <div class="logo-container">
       <div class="rakez-logo"></div>
     </div>
@@ -37,6 +37,11 @@ body {
   min-height: 100vh;
   position: relative;
   z-index: 1;
+}
+
+.app-shell {
+  min-height: 100vh;
+  position: relative;
 }
 
 /* Luxury Overlay for better content visibility */
