@@ -138,4 +138,5 @@ const marketingDonutSegments = computed(() => marketingCountSegments(dashboardMe
   gap: 12px;
   color: var(--color-dark-gray);
 }
+
 </style>

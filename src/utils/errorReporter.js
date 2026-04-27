@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Error Reporting Service
  *

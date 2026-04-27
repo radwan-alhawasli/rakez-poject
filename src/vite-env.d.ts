@@ -8,6 +8,14 @@ declare module '*.vue' {
   export default component;
 }
 
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    useCache?: boolean;
+    usePersistentCache?: boolean;
+    cacheTTL?: number;
+  }
+}
+
 /** Axios/API-normalized errors in services (checkJs; optional fields). */
 declare global {
   interface Error {
@@ -17,6 +25,11 @@ declare global {
     code?: string;
     originalError?: unknown;
     isAuthRedirect?: boolean;
+    userMessage?: string;
+    isOffline?: boolean;
+    config?: { url?: string; method?: string; params?: unknown };
+    info?: unknown;
+    type?: string;
     url?: string;
     method?: string;
   }

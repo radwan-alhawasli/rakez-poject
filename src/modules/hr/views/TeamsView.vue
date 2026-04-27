@@ -147,6 +147,7 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue';
+import CardSkeleton from '@/components/ui/skeleton/CardSkeleton.vue';
 import userService from '@/services/userService';
 import { getRoleLabel } from '@/constants/roles';
 import logger from '@/utils/logger';
@@ -161,6 +162,7 @@ import {
 export default {
   name: 'TeamsView',
   components: {
+    CardSkeleton,
     Dialog,
     DialogContent,
     DialogFooter,

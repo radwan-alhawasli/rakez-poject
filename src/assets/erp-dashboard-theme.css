@@ -114,8 +114,8 @@
 
 .rakez-kpi-dashboard .kpi-top-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: clamp(18px, 2vw, 28px);
 }
 
 .rakez-kpi-dashboard .kpi-main-grid {
@@ -282,8 +282,14 @@
   -webkit-backdrop-filter: blur(16px) saturate(160%);
   border: 1px solid rgba(181, 169, 154, 0.2);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-  border-radius: 20px;
+  min-height: 150px;
+  border-radius: 32px;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.rakez-kpi-dashboard article.luxury-stat-card .luxury-stat-card__inner {
+  min-height: 150px;
+  padding: 26px 30px;
 }
 
 .rakez-kpi-dashboard article.luxury-stat-card:hover {

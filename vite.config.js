@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import viteCompression from 'vite-plugin-compression';
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'path';
 
@@ -11,6 +12,19 @@ export default defineConfig(({ mode }) => ({
     tailwindcss(),
     viteCompression({ algorithm: 'gzip', ext: '.gz' }),
     viteCompression({ algorithm: 'brotliCompress', ext: '.br' }),
+    ViteImageOptimizer({
+      png: { quality: 80 },
+      jpeg: { quality: 80 },
+      jpg: { quality: 80 },
+      webp: { lossy: true, quality: 80 },
+      svg: {
+        multipass: true,
+        plugins: [
+          { name: 'removeViewBox', active: false },
+          { name: 'sortAttrs', active: true },
+        ],
+      },
+    }),
     mode === 'analyze' &&
       visualizer({
         filename: 'dist/stats.html',
