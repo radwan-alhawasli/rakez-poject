@@ -176,18 +176,19 @@ const accountingService = {
   },
 
   /**
-   * كل الوحدات المباعة للمشروع (مع أو بدون ملف مطالبة).
-   * GET /accounting/claim-files/sold-units?contract_id={id}
+   * الوحدات المباعة للمشروع مع فلترة ملف المطالبة.
+   * GET /accounting/claim-files/sold-units?contract_id={id}&has_claim_file={0|1}
    * API ref 2.1 — كل عنصر: reservation_id, unit_number, claim_amount, has_claim_file, has_pdf, download_path
-   * @param {string|number} contractId - contract_id (مثل projectId)
+   * @param {Record<string, any>} params - { contract_id, has_claim_file }
    * @returns {Promise<any[]>} data array
    */
-  async getClaimFileSoldUnits(contractId) {
+  async getClaimFileSoldUnits(params = {}) {
+    const queryParams = typeof params === 'object' && params !== null 
+      ? params 
+      : { contract_id: params };
 
     try {
-      const response = await apiClient.get('/accounting/claim-files/sold-units', {
-        params: { contract_id: contractId },
-      });
+      const response = await apiClient.get('/accounting/claim-files/sold-units', { params: queryParams });
       const { items } = extractPaginatedData(response, []);
       return Array.isArray(items) ? items : [];
     } catch (error) {
@@ -200,6 +201,69 @@ const accountingService = {
       return [];
     }
   },
+
+  /**
+   * Get list of claim files
+   * GET /accounting/claim-files
+   * @param {Record<string, any>} params
+   * @returns {Promise<{ items: any[], total: number }>}
+   */
+  async getClaimFiles(params = {}) {
+    try {
+      const response = await apiClient.get('/accounting/claim-files', { params });
+      const { items, total } = extractPaginatedData(response, []);
+      return { items, total };
+    } catch (error) {
+      return (
+        handleServiceError(error, 'Error fetching claim files', 'get') || { items: [], total: 0 }
+      );
+    }
+  },
+
+  async createCombinedClaimFile(payload) {
+    try {
+      const response = await apiClient.post('/accounting/claim-files/combined', payload);
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      logger.error('Error creating combined claim file:', error);
+      throw error;
+    }
+  },
+
+
+  /**
+   * Update claim file status
+   * PATCH /accounting/claim-files/:id
+   * @param {number|string} id
+   * @param {string} status - 'pending' or 'completed'
+   * @returns {Promise<Object>}
+   */
+  async updateClaimFileStatus(id, status) {
+    try {
+      const response = await apiClient.patch(`/accounting/claim-files/${id}`, { status });
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      logger.error(`Error updating claim file ${id} status:`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * Generate PDF for claim file
+   * POST /accounting/claim-files/:id/pdf
+   * @param {number|string} id
+   * @returns {Promise<Object>} { pdf_path, download_url, status, status_label_ar }
+   */
+  async generateClaimFilePdf(id) {
+    try {
+      const response = await apiClient.post(`/accounting/claim-files/${id}/pdf`);
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      logger.error(`Error generating PDF for claim file ${id}:`, error);
+      throw error;
+    }
+  },
+
 
   /**
    * تحميل PDF لملف مطالبة حجز — يُنشأ الملف عند الطلب إن لم يكن موجوداً.

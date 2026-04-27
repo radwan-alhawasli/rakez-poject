@@ -31,28 +31,9 @@
     <template v-else>
       <!-- Mode & Create -->
       <div class="toolbar">
-        <div class="mode-toggle">
-          <button
-            type="button"
-            :class="['mode-btn', { active: mode === 'combined' }]"
-            @click="mode = 'combined'"
-          >
-            ملف مطالبة مجمّع
-          </button>
-          <button
-            type="button"
-            :class="['mode-btn', { active: mode === 'individual' }]"
-            @click="mode = 'individual'"
-          >
-            ملف لكل حجز
-          </button>
-        </div>
         <div class="selection-summary" v-if="selectedIds.length > 0">
           <span class="badge">{{ selectedIds.length }}</span>
           وحدة محددة
-          <span v-if="mode === 'combined' && selectedIds.length < 2" class="min-warn">
-            (يلزم حجزين على الأقل للملف المجمّع)
-          </span>
         </div>
         <button
           type="button"
@@ -61,18 +42,14 @@
           @click="handleSubmit"
         >
           <span v-if="!isSubmitting">
-            {{
-              mode === 'combined'
-                ? `إنشاء ملف مجمّع (${selectedIds.length})`
-                : `إنشاء ${selectedIds.length} ملف`
-            }}
+            إنشاء ملف مطالبة ({{ selectedIds.length }})
           </span>
           <span v-else>جاري الإنشاء...</span>
         </button>
       </div>
 
-      <!-- Notes (combined only) -->
-      <div class="form-group" v-if="mode === 'combined' && selectedIds.length >= 2">
+      <!-- Notes -->
+      <div class="form-group" v-if="selectedIds.length >= 1">
         <label class="form-label">ملاحظات (اختياري)</label>
         <textarea
           v-model="notes"
@@ -286,9 +263,7 @@ export default {
     );
 
     const canSubmit = computed(() => {
-      if (selectedIds.value.length === 0) return false;
-      if (mode.value === 'combined' && selectedIds.value.length < 2) return false;
-      return true;
+      return selectedIds.value.length > 0;
     });
 
     function isSelected(candidate) {
@@ -341,7 +316,8 @@ export default {
 
         // Optionally supplement with soldUnits if candidates is empty or for full status
         if (pid && candidates.value.length === 0) {
-          const units = await accountingService.getClaimFileSoldUnits(pid);
+          // Pass as object { contract_id: pid } to match API expectation and avoid 'target must be an object' error
+          const units = await accountingService.getClaimFileSoldUnits({ contract_id: pid });
           soldUnits.value = Array.isArray(units) ? [...units] : [];
         } else {
           soldUnits.value = [];
@@ -373,45 +349,23 @@ export default {
       isSubmitting.value = true;
       bulkResult.value = null;
       try {
-        if (mode.value === 'combined') {
-          const result = await creditService.createCombinedClaimFile({
-            booking_ids: [...selectedIds.value],
-            claim_type: 'commission',
-            notes: notes.value.trim() || undefined,
-          });
-          const fileId = result?.id ?? '';
-          toast.success(
-            fileId ? `تم إنشاء ملف المطالبة المجمّع رقم ${fileId}` : 'تم إنشاء ملف المطالبة المجمّع بنجاح'
-          );
-          selectedIds.value = [];
-          await loadCandidates();
-        } else {
-          const result = await creditService.generateBulkClaimFiles({
-            reservation_ids: [...selectedIds.value],
-          });
-          const created = result?.created ?? {};
-          const errors = result?.errors ?? {};
-          const createdCount = Object.keys(created).length;
-          const errorCount = Object.keys(errors).length;
-          bulkResult.value = {
-            createdCount,
-            errorCount,
-            errors,
-          };
-          if (createdCount > 0 && errorCount === 0) {
-            toast.success(`تم إنشاء ${createdCount} ملف مطالبة بنجاح`);
-            selectedIds.value = [];
-            await loadCandidates();
-          } else if (createdCount > 0) {
-            toast.warning(`تم إنشاء ${createdCount} ملف، فشل ${errorCount}`);
-            selectedIds.value = selectedIds.value.filter(id => !(id in created));
-          } else {
-            toast.error('فشل إنشاء ملفات المطالبة');
-          }
-        }
+        // Use accountingService for all claims as requested
+        const result = await accountingService.createCombinedClaimFile({
+          booking_ids: [...selectedIds.value],
+          claim_type: 'commissions',
+          notes: notes.value.trim() || undefined,
+          contract_id: projectId.value || undefined
+        });
+
+        const fileId = result?.id ?? '';
+        toast.success(
+          fileId ? `تم إنشاء ملف المطالبة رقم ${fileId}` : 'تم إنشاء ملف المطالبة بنجاح'
+        );
+        selectedIds.value = [];
+        await loadCandidates();
       } catch (error) {
-        logger.error('Error creating claim file(s)', error);
-        showApiError(error, 'حدث خطأ أثناء إنشاء ملف/ملفات المطالبة');
+        logger.error('Error creating claim file', error);
+        showApiError(error, 'حدث خطأ أثناء إنشاء ملف المطالبة');
       } finally {
         isSubmitting.value = false;
       }
@@ -443,7 +397,23 @@ export default {
       const projId = projectId.value;
       if (!devId || !projId) return;
       try {
-        const raw = await contractService.getDeveloperDetail(devId);
+        let raw;
+        // If devId is an email, try fetching by email first to get contracts and potentially the numeric ID
+        if (devId.includes('@')) {
+          const emailRes = await contractService.getDeveloperContractsByEmail(devId);
+          // If the response contains developer info (sometimes nested in contracts or as a separate key)
+          if (emailRes?.developer) {
+            raw = emailRes.developer;
+          } else if (Array.isArray(emailRes) && emailRes.length > 0 && emailRes[0].developer) {
+            raw = emailRes[0].developer;
+          } else {
+            // Fallback to getDeveloperDetail but handle potential numeric ID vs email
+            raw = await contractService.getDeveloperDetail(devId);
+          }
+        } else {
+          raw = await contractService.getDeveloperDetail(devId);
+        }
+
         if (raw && typeof raw === 'object') {
           developer.value = normalizeDeveloper(raw);
           developerName.value = developer.value?.name || '';
@@ -463,7 +433,7 @@ export default {
         }
       } catch (e) {
         logger.error('Failed to load developer/project for units view', e);
-        if (!projectName.value) projectName.value = '\u0645\u0634\u0631\u0648\u0631\u0639 \u0631\u0642\u0645 ' + projId;
+        if (!projectName.value) projectName.value = 'مشروع رقم ' + projId;
       }
     }
 

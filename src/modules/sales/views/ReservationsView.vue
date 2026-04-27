@@ -341,8 +341,18 @@
                 <span class="card-label">تاريخ الحجز</span>
                 <span class="card-value">{{ formatDate(reservation.contract_date || reservation.created_at || reservation.date) }}</span>
               </div>
+              <div v-if="reservation.trace" class="card-commission-mini">
+                <span class="tracker-title">تتبع العمولة:</span>
+                <div class="tracker-steps-mini">
+                  <div class="step-mini" :class="{ completed: reservation.trace.has_claim_file }" title="رفع المطالبة"></div>
+                  <div class="step-mini" :class="{ completed: reservation.trace.claim_file_completed }" title="اكتمال الملف"></div>
+                  <div class="step-mini" :class="{ completed: reservation.trace.has_commission }" title="تجهيز العمولة"></div>
+                  <div class="step-mini" :class="{ completed: reservation.trace.distribution_approved }" title="اعتماد الصرف"></div>
+                </div>
+              </div>
             </div>
             <div class="card-actions">
+
               <button type="button" class="btn-details" @click="openDetails(reservation)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>

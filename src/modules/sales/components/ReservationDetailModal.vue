@@ -91,6 +91,17 @@
             </div>
           </section>
 
+          <section v-if="item.trace" class="detail-section">
+            <h4 class="detail-section-title">تتبع العمولات</h4>
+            <div class="commission-tracker">
+              <UiStepper
+                :steps="commissionSteps"
+                :model-value="currentStepIndex"
+                completed-label="تم"
+              />
+            </div>
+          </section>
+
           <section class="detail-section detail-section--last">
             <h4 class="detail-section-title">المسوق</h4>
             <dl class="detail-dl">
@@ -107,7 +118,9 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { useFormatters } from '@/composables/useFormatters';
+import UiStepper from '@/components/ui/Stepper.vue';
 import {
   downPaymentStatusLabel,
   nationalityLabel,
@@ -116,7 +129,7 @@ import {
   reservationTypeLabel,
 } from '@/utils/reservationDisplayLabels';
 
-defineProps({
+const props = defineProps({
   item: {
     type: Object,
     required: true,
@@ -126,6 +139,28 @@ defineProps({
 const emit = defineEmits(['close']);
 
 const { formatDate, formatNumber } = useFormatters();
+
+/** Commission tracker steps mapping */
+const commissionSteps = computed(() => {
+  const t = props.item.trace || {};
+  return [
+    { name: 'رفع المطالبة', status: t.has_claim_file ? 'completed' : 'pending' },
+    { name: 'اكتمال الملف', status: t.claim_file_completed ? 'completed' : 'pending' },
+    { name: 'تجهيز العمولة', status: t.has_commission ? 'completed' : 'pending' },
+    { name: 'اعتماد الصرف', status: t.distribution_approved ? 'completed' : 'pending' },
+  ];
+});
+
+/** Active step index (last completed or current pending) */
+const currentStepIndex = computed(() => {
+  const t = props.item.trace || {};
+  if (t.distribution_approved) return 3;
+  if (t.has_commission) return 3;
+  if (t.claim_file_completed) return 2;
+  if (t.has_claim_file) return 1;
+  return 0;
+});
 </script>
+
 
 <style src="./styles/ReservationDetailModal.css"></style>

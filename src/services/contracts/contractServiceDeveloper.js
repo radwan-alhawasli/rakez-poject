@@ -70,8 +70,7 @@ export const contractServiceDeveloperMethods = {
       // إرسال الـ id كما هو (رقم أو نص)؛ إذا كان شبيه برقم هاتف يبدأ بـ + نزيل الـ + للتوافق مع الـ backend
       const pathParam =
         param.startsWith('+') && /^\+?\d+$/.test(param) ? param.slice(1) : param;
-      const encoded = encodeURIComponent(pathParam);
-      const response = await apiClient.get(`/developers/${encoded}`);
+      const response = await apiClient.get(`/developers/${pathParam}`);
       const res = response.data;
       return res?.data ?? res ?? null;
     } catch (error) {
