@@ -368,22 +368,36 @@ function logError(error, type, severity, context = {}) {
 /**
  * Handle caught error: categorize, log, and show to user
  * @param {any} error - Caught error
- * @param {any} options - { type, severity, context, showToast, fallbackMessage }
+ * @param {any} options - { type, severity, context, showNotification/showToast, log, throwError, fallbackMessage }
  */
 export function handleError(error, options = {}) {
-  const type = options.type || getErrorType(error);
-  const severity = options.severity || getErrorSeverity(error, type);
-  const userMessage = getUserMessage(error, type) || options.fallbackMessage;
+  /** @type {any} */
+  const opts = options || {};
+  const type = opts.type || getErrorType(error);
+  const severity = opts.severity || getErrorSeverity(error, type);
+  const userMessage = getUserMessage(error, type) || opts.fallbackMessage;
 
-  logError(error, type, severity, options.context);
+  const shouldLog = opts.log !== false;
+  if (shouldLog) {
+    logError(error, type, severity, opts.context);
+  }
 
-  if (options.showToast !== false && userMessage) {
+  // Backward compatible: allow either `showNotification` (preferred) or `showToast`.
+  const showNotification =
+    opts.showNotification !== undefined ? opts.showNotification : opts.showToast;
+  if (showNotification !== false && userMessage) {
     toast.error(userMessage);
+  }
+
+  if (opts.throwError) {
+    throw error instanceof Error ? error : new Error(userMessage || MSG_ERROR_GENERIC);
   }
 
   return {
     type,
     severity,
+    // Test/backward compatibility: callers historically expect either `message` or `userMessage`.
+    message: userMessage,
     userMessage,
     originalError: error,
   };
