@@ -31,11 +31,7 @@ export function useReservationsView() {
   const isPmReservationsList = computed(() => usePmReservationsApi());
 
   /** الوحدات المفرغة visible only for Sales (6) and Sales Leader (7) */
-  const showEvacuatedTab = computed(() => {
-    const u = authService.getCurrentUser();
-    const t = Number(u?.type);
-    return t === ROLE_SALES || t === ROLE_SALES_LEADER;
-  });
+  // showEvacuatedTab is defined after evacuatedUnits for data-dependent visibility.
 
   const activeTab = ref('active');
   const isLoading = ref(false);
@@ -59,6 +55,17 @@ export function useReservationsView() {
   const negotiations = ref([]);
   /** @type {import('vue').Ref<any[]>} */
   const evacuatedUnits = ref([]);
+
+  /**
+   * Ø§Ù„ÙˆØ­Ø¯Ø§Øª Ø§Ù„Ù…ÙØ±ØºØ©: ØªØ¨ÙˆÙŠØ¨ Ø¥Ø¶Ø§ÙÙŠ Ù„Ù„Ù…Ø¨ÙŠØ¹Ø§Øª.
+   * نُظهر التبويب فقط عندما يوجد بيانات فعلية لتجنّب تغيير UI بلا داعي.
+   */
+  const showEvacuatedTab = computed(() => {
+    const u = authService.getCurrentUser();
+    const t = Number(u?.type);
+    const isSales = t === ROLE_SALES || t === ROLE_SALES_LEADER;
+    return isSales && evacuatedUnits.value.length > 0;
+  });
 
   const canConfirm = computed(
     () => isPmReservationsList.value || hasPermission('sales.reservations.confirm')
