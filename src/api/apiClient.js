@@ -203,6 +203,7 @@ setupTokenRefreshInterceptor(apiClient);
 apiClient.interceptors.response.use(
   response => {
     const cfg = /** @type {any} */ (response.config);
+
     // Cache the response if it was a GET request and useCache was enabled
     if (response.config.method === 'get' && cfg.useCache) {
       const cacheKey = getCacheKey(response.config);
