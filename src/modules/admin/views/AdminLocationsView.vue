@@ -1,237 +1,462 @@
 <template>
-  <div class="admin-locations-view">
-    <header class="page-head">
-      <h1 class="page-title">المدن والأحياء</h1>
-      <p class="page-desc">إدارة المدن ورموزها والأحياء المرتبطة بكل مدينة (حساب المسؤول فقط).</p>
+  <div class="mx-auto max-w-6xl p-6" dir="rtl">
+    <header class="mb-6">
+      <h1 class="text-2xl font-extrabold text-[var(--color-navy)]">المدن والأحياء</h1>
+      <p class="mt-1 text-sm text-[var(--color-dark-gray)]">
+        لوحة إدارة المدن ورموزها والأحياء المرتبطة بكل مدينة (حساب المدير فقط).
+      </p>
     </header>
 
-    <div class="tabs" role="tablist">
+    <!-- Tabs -->
+    <div class="mb-5 flex flex-wrap gap-2">
       <button
         type="button"
-        role="tab"
-        :aria-selected="activeTab === 'cities'"
-        class="tab"
-        :class="{ active: activeTab === 'cities' }"
-        @click="activeTab = 'cities'"
+        class="rounded-xl border px-4 py-2 text-sm font-bold transition"
+        :class="
+          activeTab === 'cities'
+            ? 'border-[var(--color-gold)] bg-[color-mix(in_srgb,var(--color-gold)_10%,white)] text-[var(--color-navy)]'
+            : 'border-[var(--color-medium-gray)] bg-white text-[var(--color-dark-gray)] hover:border-[var(--color-gold)]'
+        "
+        @click="setTab('cities')"
       >
         المدن
       </button>
       <button
         type="button"
-        role="tab"
-        :aria-selected="activeTab === 'districts'"
-        class="tab"
-        :class="{ active: activeTab === 'districts' }"
-        @click="activeTab = 'districts'"
+        class="rounded-xl border px-4 py-2 text-sm font-bold transition"
+        :class="
+          activeTab === 'districts'
+            ? 'border-[var(--color-gold)] bg-[color-mix(in_srgb,var(--color-gold)_10%,white)] text-[var(--color-navy)]'
+            : 'border-[var(--color-medium-gray)] bg-white text-[var(--color-dark-gray)] hover:border-[var(--color-gold)]'
+        "
+        @click="setTab('districts')"
       >
         الأحياء
       </button>
     </div>
 
-    <section v-if="activeTab === 'cities'" class="panel" aria-labelledby="cities-heading">
-      <div class="panel-toolbar">
-        <h2 id="cities-heading" class="panel-title">قائمة المدن</h2>
-        <button type="button" class="btn-primary" @click="openCityModal(null)">إضافة مدينة</button>
-      </div>
-      <div v-if="citiesLoading" class="muted">جاري التحميل...</div>
-      <div v-else class="table-wrap">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>الاسم</th>
-              <th>الرمز</th>
-              <th>إجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="c in cities" :key="c.id">
-              <td>{{ c.id }}</td>
-              <td>{{ c.name }}</td>
-              <td>{{ c.code ?? '—' }}</td>
-              <td class="actions">
-                <button type="button" class="btn-link" @click="openCityModal(c)">تعديل</button>
-                <button type="button" class="btn-link danger" @click="confirmDeleteCity(c)">حذف</button>
-              </td>
-            </tr>
-            <tr v-if="!cities.length">
-              <td colspan="4" class="muted center">لا توجد مدن</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+    <AdminCitiesPanel
+      v-if="activeTab === 'cities'"
+      :items="cities"
+      :total="citiesTotal"
+      :loading="citiesLoading"
+      :error="citiesError"
+      :filters="citiesFiltersLocal"
+      :page="citiesPage"
+      :per-page="citiesPerPage"
+      @set-filter="({ key, value }) => (citiesFiltersLocal[key] = value)"
+      @create="goCreateCity"
+      @view="c => openCityModal('view', c)"
+      @edit="c => openCityModal('edit', c)"
+      @delete="askDeleteCity"
+      @reset="resetCitiesFilters"
+      @page="p => updateCitiesQuery({ page: p })"
+      @per-page="pp => updateCitiesQuery({ per_page: pp, page: 1 })"
+    />
 
-    <section v-else class="panel" aria-labelledby="districts-heading">
-      <div class="panel-toolbar">
-        <h2 id="districts-heading" class="panel-title">قائمة الأحياء</h2>
-        <button type="button" class="btn-primary" @click="openDistrictModal(null)">إضافة حي</button>
-      </div>
-      <div v-if="districtsLoading" class="muted">جاري التحميل...</div>
-      <div v-else class="table-wrap">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>المدينة</th>
-              <th>اسم الحي</th>
-              <th>إجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="d in districts" :key="d.id">
-              <td>{{ d.id }}</td>
-              <td>{{ cityNameById(d.city_id) }}</td>
-              <td>{{ d.name }}</td>
-              <td class="actions">
-                <button type="button" class="btn-link" @click="openDistrictModal(d)">تعديل</button>
-                <button type="button" class="btn-link danger" @click="confirmDeleteDistrict(d)">حذف</button>
-              </td>
-            </tr>
-            <tr v-if="!districts.length">
-              <td colspan="4" class="muted center">لا توجد أحياء</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+    <AdminDistrictsPanel
+      v-else
+      :items="districts"
+      :total="districtsTotal"
+      :loading="districtsLoading"
+      :error="districtsError"
+      :filters="districtsFiltersLocal"
+      :page="districtsPage"
+      :per-page="districtsPerPage"
+      :cities-lookup="citiesLookup"
+      @set-filter="({ key, value }) => (districtsFiltersLocal[key] = value)"
+      @create="goCreateDistrict"
+      @view="d => openDistrictModal('view', d)"
+      @edit="d => openDistrictModal('edit', d)"
+      @delete="askDeleteDistrict"
+      @reset="resetDistrictsFilters"
+      @page="p => updateDistrictsQuery({ page: p })"
+      @per-page="pp => updateDistrictsQuery({ per_page: pp, page: 1 })"
+    />
 
     <!-- City modal -->
-    <div v-if="cityModal.open" class="modal-overlay" @click.self="cityModal.open = false">
-      <div class="modal-box" role="dialog" aria-labelledby="city-modal-title">
-        <h3 id="city-modal-title">{{ cityModal.editingId ? 'تعديل مدينة' : 'مدينة جديدة' }}</h3>
-        <label class="field">
-          <span>الاسم</span>
-          <input v-model="cityModal.name" type="text" class="input" placeholder="مثال: وسط الرياض" />
-        </label>
-        <label class="field">
-          <span>الرمز (code)</span>
-          <input v-model="cityModal.code" type="text" class="input" placeholder="مثال: mrd" />
-        </label>
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" @click="cityModal.open = false">إلغاء</button>
-          <button type="button" class="btn-primary" :disabled="citySaving" @click="saveCity">
-            {{ citySaving ? 'جاري الحفظ...' : 'حفظ' }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <Dialog v-model:open="cityModal.open">
+      <DialogContent class="max-w-lg rounded-2xl" dir="rtl">
+        <DialogHeader>
+          <DialogTitle class="text-[var(--color-navy)]">
+            {{ cityModal.modeTitle }}
+          </DialogTitle>
+        </DialogHeader>
+
+        <form class="space-y-4" @submit.prevent="submitCity">
+          <div class="space-y-1">
+            <Label>الاسم</Label>
+            <Input v-model="cityModal.form.name" :disabled="cityModal.isView" placeholder="مثال: وسط الرياض" />
+          </div>
+          <div class="space-y-1">
+            <Label>الرمز (code)</Label>
+            <Input v-model="cityModal.form.code" :disabled="cityModal.isView" placeholder="مثال: riy" />
+          </div>
+
+          <DialogFooter class="gap-2">
+            <Button type="button" variant="secondary" class="rounded-xl" @click="cityModal.open = false">إغلاق</Button>
+            <Button v-if="!cityModal.isView" type="submit" class="rounded-xl" :disabled="cityModal.saving">
+              {{ cityModal.saving ? 'جاري الحفظ...' : 'حفظ' }}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
 
     <!-- District modal -->
-    <div v-if="districtModal.open" class="modal-overlay" @click.self="districtModal.open = false">
-      <div class="modal-box" role="dialog" aria-labelledby="district-modal-title">
-        <h3 id="district-modal-title">{{ districtModal.editingId ? 'تعديل حي' : 'حي جديد' }}</h3>
-        <label class="field">
-          <span>المدينة</span>
-          <select v-model.number="districtModal.city_id" class="input">
-            <option :value="0" disabled>اختر المدينة</option>
-            <option v-for="c in cities" :key="c.id" :value="c.id">{{ c.name }}</option>
-          </select>
-        </label>
-        <label class="field">
-          <span>اسم الحي</span>
-          <input v-model="districtModal.name" type="text" class="input" placeholder="مثال: حي ريع ذاخر" />
-        </label>
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" @click="districtModal.open = false">إلغاء</button>
-          <button type="button" class="btn-primary" :disabled="districtSaving" @click="saveDistrict">
-            {{ districtSaving ? 'جاري الحفظ...' : 'حفظ' }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <Dialog v-model:open="districtModal.open">
+      <DialogContent class="max-w-lg rounded-2xl" dir="rtl">
+        <DialogHeader>
+          <DialogTitle class="text-[var(--color-navy)]">
+            {{ districtModal.modeTitle }}
+          </DialogTitle>
+        </DialogHeader>
+
+        <form class="space-y-4" @submit.prevent="submitDistrict">
+          <div class="space-y-1">
+            <Label>المدينة</Label>
+            <UiSelect v-model="districtModal.form.city_id" :disabled="districtModal.isView">
+              <option value="" disabled>اختر مدينة</option>
+              <option v-for="c in citiesLookup" :key="c.id" :value="String(c.id)">{{ c.name }}</option>
+            </UiSelect>
+          </div>
+          <div class="space-y-1">
+            <Label>اسم الحي</Label>
+            <Input v-model="districtModal.form.name" :disabled="districtModal.isView" placeholder="مثال: الياسمين" />
+          </div>
+
+          <DialogFooter class="gap-2">
+            <Button type="button" variant="secondary" class="rounded-xl" @click="districtModal.open = false">إغلاق</Button>
+            <Button v-if="!districtModal.isView" type="submit" class="rounded-xl" :disabled="districtModal.saving">
+              {{ districtModal.saving ? 'جاري الحفظ...' : 'حفظ' }}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+
+    <!-- Delete confirm -->
+    <ConfirmModal
+      v-if="deleteConfirm.open"
+      v-model:open="deleteConfirm.open"
+      :type="deleteConfirm.type"
+      :title="deleteConfirm.title"
+      :message="deleteConfirm.message"
+      :is-loading="deleteConfirm.loading"
+      confirm-text="حذف"
+      cancel-text="إلغاء"
+      @confirm="performDelete"
+      @cancel="deleteConfirm.open = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import adminLocationsService from '@/services/adminLocationsService';
-import { toast } from '@/composables/useToast';
-import { showApiError } from '@/utils/errorHandler';
+import ConfirmModal from '@/components/ConfirmModal.vue';
+import { useToast } from '@/composables/useToast';
 
-const activeTab = ref('cities');
+import AdminCitiesPanel from '@/modules/admin/components/AdminCitiesPanel.vue';
+import AdminDistrictsPanel from '@/modules/admin/components/AdminDistrictsPanel.vue';
+
+import { Button } from '@/components/ui/button';
+import Input from '@/components/ui/Input.vue';
+import { Label } from '@/components/ui/label';
+import UiSelect from '@/components/ui/Select.vue';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+
+const route = useRoute();
+const router = useRouter();
+const toast = useToast();
+
+function asString(v) {
+  return v == null ? '' : String(v);
+}
+
+function toInt(v, fallback) {
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+function cleanQuery(query) {
+  const out = { ...query };
+  for (const [k, v] of Object.entries(out)) {
+    if (v === undefined || v === null) delete out[k];
+    else if (typeof v === 'string' && v.trim() === '') delete out[k];
+  }
+  return out;
+}
+
+const activeTab = computed(() => (route.query.tab === 'districts' ? 'districts' : 'cities'));
+
+function setTab(tab) {
+  const next = cleanQuery({ ...route.query, tab, page: 1 });
+  router.replace({ query: next });
+}
+
+function goCreateCity() {
+  router.push('/admin/locations/cities/new');
+}
+
+function goCreateDistrict() {
+  router.push('/admin/locations/districts/new');
+}
+
+// -------------------- Cities state --------------------
 const cities = ref([]);
-const districts = ref([]);
+const citiesTotal = ref(0);
 const citiesLoading = ref(false);
-const districtsLoading = ref(false);
-const citySaving = ref(false);
-const districtSaving = ref(false);
+const citiesError = ref('');
 
-const cityModal = reactive({
-  open: false,
-  editingId: null,
-  name: '',
-  code: '',
+const citiesLookup = ref([]);
+
+const citiesPage = computed(() => toInt(route.query.page, 1));
+const citiesPerPage = computed(() => toInt(route.query.per_page, 25));
+
+const citiesFiltersLocal = reactive({
+  q: asString(route.query.q),
+  has_districts: asString(route.query.has_districts),
+  created_from: asString(route.query.created_from),
+  created_to: asString(route.query.created_to),
+  sort: asString(route.query.sort || 'created_at'),
+  direction: asString(route.query.direction || 'desc'),
+  per_page: asString(route.query.per_page || '25'),
 });
 
-const districtModal = reactive({
-  open: false,
-  editingId: null,
-  city_id: 0,
-  name: '',
-});
+function updateCitiesQuery(patch) {
+  const next = cleanQuery({
+    ...route.query,
+    tab: 'cities',
+    ...patch,
+  });
+  router.replace({ query: next });
+}
 
-const cityNameById = computed(() => {
-  const map = new Map(cities.value.map(c => [Number(c.id), c.name]));
-  return id => map.get(Number(id)) ?? '—';
-});
+function resetCitiesFilters() {
+  router.replace({
+    query: cleanQuery({
+      tab: 'cities',
+      page: 1,
+      per_page: 25,
+      sort: 'created_at',
+      direction: 'desc',
+    }),
+  });
+}
 
-async function loadCities() {
+let citiesQTimer = 0;
+watch(
+  () => citiesFiltersLocal.q,
+  () => {
+    window.clearTimeout(citiesQTimer);
+    citiesQTimer = window.setTimeout(() => {
+      updateCitiesQuery({ q: citiesFiltersLocal.q, page: 1 });
+    }, 350);
+  }
+);
+watch(
+  () => [citiesFiltersLocal.has_districts, citiesFiltersLocal.created_from, citiesFiltersLocal.created_to, citiesFiltersLocal.sort, citiesFiltersLocal.direction, citiesFiltersLocal.per_page],
+  () => {
+    updateCitiesQuery({
+      has_districts: citiesFiltersLocal.has_districts,
+      created_from: citiesFiltersLocal.created_from,
+      created_to: citiesFiltersLocal.created_to,
+      sort: citiesFiltersLocal.sort,
+      direction: citiesFiltersLocal.direction,
+      per_page: Number(citiesFiltersLocal.per_page) || 25,
+      page: 1,
+    });
+  }
+);
+
+async function fetchCities() {
   citiesLoading.value = true;
+  citiesError.value = '';
   try {
-    const list = await adminLocationsService.listAdminCities();
-    cities.value = Array.isArray(list) ? list : [];
+    const { items, total } = await adminLocationsService.listAdminCities({
+      q: route.query.q,
+      has_districts: route.query.has_districts,
+      created_from: route.query.created_from,
+      created_to: route.query.created_to,
+      sort: route.query.sort,
+      direction: route.query.direction,
+      per_page: route.query.per_page,
+      page: route.query.page,
+    });
+    cities.value = Array.isArray(items) ? items : [];
+    citiesTotal.value = Number(total || 0);
+
+    // light-weight lookup for district form
+    if (Array.isArray(items)) {
+      citiesLookup.value = items.map(c => ({ id: c.id, name: c.name, code: c.code }));
+    }
+  } catch (e) {
+    citiesError.value = e?.message || 'تعذر تحميل المدن';
   } finally {
     citiesLoading.value = false;
   }
 }
 
-async function loadDistricts() {
+// -------------------- Districts state --------------------
+const districts = ref([]);
+const districtsTotal = ref(0);
+const districtsLoading = ref(false);
+const districtsError = ref('');
+
+const districtsPage = computed(() => toInt(route.query.page, 1));
+const districtsPerPage = computed(() => toInt(route.query.per_page, 25));
+
+const districtsFiltersLocal = reactive({
+  q: asString(route.query.q),
+  city_id: asString(route.query.city_id),
+  city_code: asString(route.query.city_code),
+  created_from: asString(route.query.created_from),
+  created_to: asString(route.query.created_to),
+  sort: asString(route.query.sort || 'created_at'),
+  direction: asString(route.query.direction || 'desc'),
+  per_page: asString(route.query.per_page || '25'),
+});
+
+function updateDistrictsQuery(patch) {
+  const next = cleanQuery({
+    ...route.query,
+    tab: 'districts',
+    ...patch,
+  });
+  router.replace({ query: next });
+}
+
+function resetDistrictsFilters() {
+  router.replace({
+    query: cleanQuery({
+      tab: 'districts',
+      page: 1,
+      per_page: 25,
+      sort: 'created_at',
+      direction: 'desc',
+    }),
+  });
+}
+
+let districtsQTimer = 0;
+watch(
+  () => districtsFiltersLocal.q,
+  () => {
+    window.clearTimeout(districtsQTimer);
+    districtsQTimer = window.setTimeout(() => {
+      updateDistrictsQuery({ q: districtsFiltersLocal.q, page: 1 });
+    }, 350);
+  }
+);
+watch(
+  () => [districtsFiltersLocal.city_id, districtsFiltersLocal.city_code, districtsFiltersLocal.created_from, districtsFiltersLocal.created_to, districtsFiltersLocal.sort, districtsFiltersLocal.direction, districtsFiltersLocal.per_page],
+  () => {
+    updateDistrictsQuery({
+      city_id: districtsFiltersLocal.city_id,
+      city_code: districtsFiltersLocal.city_code,
+      created_from: districtsFiltersLocal.created_from,
+      created_to: districtsFiltersLocal.created_to,
+      sort: districtsFiltersLocal.sort,
+      direction: districtsFiltersLocal.direction,
+      per_page: Number(districtsFiltersLocal.per_page) || 25,
+      page: 1,
+    });
+  }
+);
+
+async function fetchDistricts() {
   districtsLoading.value = true;
+  districtsError.value = '';
   try {
-    const list = await adminLocationsService.listAdminDistricts();
-    districts.value = Array.isArray(list) ? list : [];
+    const { items, total } = await adminLocationsService.listAdminDistricts({
+      q: route.query.q,
+      city_id: route.query.city_id,
+      city_code: route.query.city_code,
+      created_from: route.query.created_from,
+      created_to: route.query.created_to,
+      sort: route.query.sort,
+      direction: route.query.direction,
+      per_page: route.query.per_page,
+      page: route.query.page,
+    });
+    districts.value = Array.isArray(items) ? items : [];
+    districtsTotal.value = Number(total || 0);
+  } catch (e) {
+    districtsError.value = e?.message || 'تعذر تحميل الأحياء';
   } finally {
     districtsLoading.value = false;
   }
 }
 
-function openCityModal(row) {
-  if (row) {
-    cityModal.editingId = row.id;
-    cityModal.name = row.name ?? '';
-    cityModal.code = row.code ?? '';
-  } else {
-    cityModal.editingId = null;
-    cityModal.name = '';
-    cityModal.code = '';
+// Shared watchers: refetch on URL changes for current tab
+watch(
+  () => [activeTab.value, route.query.q, route.query.has_districts, route.query.city_id, route.query.city_code, route.query.created_from, route.query.created_to, route.query.sort, route.query.direction, route.query.per_page, route.query.page],
+  async () => {
+    if (activeTab.value === 'cities') await fetchCities();
+    else await fetchDistricts();
+  },
+  { immediate: true }
+);
+
+// Ensure we always have cities lookup for district create/edit
+onMounted(async () => {
+  if (!citiesLookup.value.length) {
+    try {
+      const { items } = await adminLocationsService.listAdminCities({ per_page: 100, page: 1, sort: 'name', direction: 'asc' });
+      citiesLookup.value = (Array.isArray(items) ? items : []).map(c => ({ id: c.id, name: c.name, code: c.code }));
+    } catch {
+      // ignore; dropdown will still work if districts endpoint embeds city object
+    }
   }
+});
+
+// -------------------- City modal --------------------
+const cityModal = reactive({
+  open: false,
+  mode: /** @type {'create'|'edit'|'view'} */ ('create'),
+  editingId: null,
+  saving: false,
+  form: {
+    name: '',
+    code: '',
+  },
+  get isView() {
+    return this.mode === 'view';
+  },
+  get modeTitle() {
+    if (this.mode === 'create') return 'مدينة جديدة';
+    if (this.mode === 'edit') return 'تعديل مدينة';
+    return 'عرض مدينة';
+  },
+});
+
+function openCityModal(mode, city) {
+  cityModal.mode = mode;
   cityModal.open = true;
+  cityModal.editingId = city?.id ?? null;
+  cityModal.form.name = city?.name ?? '';
+  cityModal.form.code = city?.code ?? '';
 }
 
-function openDistrictModal(row) {
-  if (row) {
-    districtModal.editingId = row.id;
-    districtModal.city_id = Number(row.city_id) || 0;
-    districtModal.name = row.name ?? '';
-  } else {
-    districtModal.editingId = null;
-    districtModal.city_id = cities.value[0]?.id ? Number(cities.value[0].id) : 0;
-    districtModal.name = '';
-  }
-  districtModal.open = true;
-}
-
-async function saveCity() {
-  const name = String(cityModal.name || '').trim();
-  const code = String(cityModal.code || '').trim();
-  if (!name || !code) {
-    toast.warning('أدخل الاسم والرمز');
+async function submitCity() {
+  const name = String(cityModal.form.name || '').trim();
+  const code = String(cityModal.form.code || '').trim();
+  if (!name) {
+    toast.warning('أدخل اسم المدينة');
     return;
   }
-  citySaving.value = true;
+
+  cityModal.saving = true;
   try {
-    if (cityModal.editingId) {
+    if (cityModal.mode === 'edit' && cityModal.editingId != null) {
       await adminLocationsService.updateAdminCity(cityModal.editingId, { name, code });
       toast.success('تم تحديث المدينة');
     } else {
@@ -239,225 +464,135 @@ async function saveCity() {
       toast.success('تم إنشاء المدينة');
     }
     cityModal.open = false;
-    await loadCities();
+    await fetchCities();
+    if (activeTab.value === 'districts') await fetchDistricts();
   } catch (e) {
-    showApiError(e, 'تعذّر حفظ المدينة');
+    toast.error(e?.response?.data?.message || e?.message || 'تعذر حفظ المدينة');
   } finally {
-    citySaving.value = false;
+    cityModal.saving = false;
   }
 }
 
-async function saveDistrict() {
-  const name = String(districtModal.name || '').trim();
-  const city_id = Number(districtModal.city_id);
+// -------------------- District modal --------------------
+const districtModal = reactive({
+  open: false,
+  mode: /** @type {'create'|'edit'|'view'} */ ('create'),
+  editingId: null,
+  saving: false,
+  form: {
+    city_id: '',
+    name: '',
+  },
+  get isView() {
+    return this.mode === 'view';
+  },
+  get modeTitle() {
+    if (this.mode === 'create') return 'حي جديد';
+    if (this.mode === 'edit') return 'تعديل حي';
+    return 'عرض حي';
+  },
+});
+
+function openDistrictModal(mode, district) {
+  districtModal.mode = mode;
+  districtModal.open = true;
+  districtModal.editingId = district?.id ?? null;
+  districtModal.form.name = district?.name ?? '';
+  districtModal.form.city_id = district?.city_id != null ? String(district.city_id) : String(district?.city?.id ?? '');
+}
+
+async function submitDistrict() {
+  const name = String(districtModal.form.name || '').trim();
+  const city_id = Number(districtModal.form.city_id);
   if (!name || !city_id) {
     toast.warning('اختر المدينة وأدخل اسم الحي');
     return;
   }
-  districtSaving.value = true;
+
+  districtModal.saving = true;
   try {
-    if (districtModal.editingId) {
-      await adminLocationsService.updateAdminDistrict(districtModal.editingId, { city_id, name });
+    if (districtModal.mode === 'edit' && districtModal.editingId != null) {
+      await adminLocationsService.updateAdminDistrict(districtModal.editingId, { name, city_id });
       toast.success('تم تحديث الحي');
     } else {
-      await adminLocationsService.createAdminDistrict({ city_id, name });
+      await adminLocationsService.createAdminDistrict({ name, city_id });
       toast.success('تم إنشاء الحي');
     }
     districtModal.open = false;
-    await loadDistricts();
+    await fetchDistricts();
   } catch (e) {
-    showApiError(e, 'تعذّر حفظ الحي');
+    toast.error(e?.response?.data?.message || e?.message || 'تعذر حفظ الحي');
   } finally {
-    districtSaving.value = false;
+    districtModal.saving = false;
   }
 }
 
-async function confirmDeleteCity(c) {
-  if (!window.confirm(`حذف المدينة «${c.name}»؟ قد يؤثر ذلك على الأحياء المرتبطة.`)) return;
-  try {
-    await adminLocationsService.deleteAdminCity(c.id);
-    toast.success('تم حذف المدينة');
-    await loadCities();
-    await loadDistricts();
-  } catch (e) {
-    showApiError(e, 'تعذّر حذف المدينة');
-  }
-}
-
-async function confirmDeleteDistrict(d) {
-  if (!window.confirm(`حذف الحي «${d.name}»؟`)) return;
-  try {
-    await adminLocationsService.deleteAdminDistrict(d.id);
-    toast.success('تم حذف الحي');
-    await loadDistricts();
-  } catch (e) {
-    showApiError(e, 'تعذّر حذف الحي');
-  }
-}
-
-watch(activeTab, tab => {
-  if (tab === 'districts' && !districts.value.length && !districtsLoading.value) loadDistricts();
+// -------------------- Delete (optimistic) --------------------
+const deleteConfirm = reactive({
+  open: false,
+  type: /** @type {'warning'|'danger'|'info'} */ ('danger'),
+  title: '',
+  message: '',
+  loading: false,
+  payload: /** @type {null | { kind: 'city', item: any } | { kind: 'district', item: any }} */ (null),
 });
 
-onMounted(async () => {
-  await loadCities();
-});
+function askDeleteCity(city) {
+  deleteConfirm.open = true;
+  deleteConfirm.type = 'danger';
+  deleteConfirm.title = 'حذف مدينة';
+  deleteConfirm.message = `حذف المدينة «${city?.name || ''}»؟ سيتم حذف/تأثير الأحياء المرتبطة بهذه المدينة (Cascade).`;
+  deleteConfirm.payload = { kind: 'city', item: city };
+}
+
+function askDeleteDistrict(district) {
+  deleteConfirm.open = true;
+  deleteConfirm.type = 'danger';
+  deleteConfirm.title = 'حذف حي';
+  deleteConfirm.message = `حذف الحي «${district?.name || ''}»؟`;
+  deleteConfirm.payload = { kind: 'district', item: district };
+}
+
+async function performDelete() {
+  if (!deleteConfirm.payload) return;
+  deleteConfirm.loading = true;
+
+  const payload = deleteConfirm.payload;
+
+  // optimistic remove
+  let rollback = null;
+  if (payload.kind === 'city') {
+    const prev = cities.value;
+    cities.value = prev.filter(x => x.id !== payload.item.id);
+    rollback = () => {
+      cities.value = prev;
+    };
+  } else {
+    const prev = districts.value;
+    districts.value = prev.filter(x => x.id !== payload.item.id);
+    rollback = () => {
+      districts.value = prev;
+    };
+  }
+
+  try {
+    if (payload.kind === 'city') {
+      await adminLocationsService.deleteAdminCity(payload.item.id);
+      toast.success('تم حذف المدينة');
+      await fetchCities();
+      await fetchDistricts();
+    } else {
+      await adminLocationsService.deleteAdminDistrict(payload.item.id);
+      toast.success('تم حذف الحي');
+      await fetchDistricts();
+    }
+    deleteConfirm.open = false;
+    deleteConfirm.payload = null;
+  } catch (e) {
+    rollback?.();
+    toast.error(e?.response?.data?.message || e?.message || 'تعذر الحذف');
+  } finally {
+    deleteConfirm.loading = false;
+  }
+}
 </script>
-
-<style scoped>
-.admin-locations-view {
-  padding: 24px;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-.page-head {
-  margin-bottom: 24px;
-}
-.page-title {
-  margin: 0 0 8px;
-  font-size: 1.5rem;
-  color: #1e3a5f;
-}
-.page-desc {
-  margin: 0;
-  color: #64748b;
-  font-size: 0.95rem;
-}
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-.tab {
-  padding: 10px 18px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  background: #fff;
-  cursor: pointer;
-  font-weight: 600;
-  color: #475569;
-}
-.tab.active {
-  border-color: #b1a28f;
-  color: #1e3a5f;
-  background: #faf8f5;
-}
-.panel-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-.panel-title {
-  margin: 0;
-  font-size: 1.15rem;
-}
-.table-wrap {
-  overflow-x: auto;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  background: #fff;
-}
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-.data-table th,
-.data-table td {
-  padding: 12px 14px;
-  text-align: right;
-  border-bottom: 1px solid #f1f5f9;
-}
-.data-table th {
-  background: #f8fafc;
-  font-weight: 700;
-  color: #334155;
-}
-.actions {
-  white-space: nowrap;
-}
-.btn-link {
-  background: none;
-  border: none;
-  color: #b1a28f;
-  font-weight: 700;
-  cursor: pointer;
-  margin-inline-start: 10px;
-  text-decoration: underline;
-}
-.btn-link.danger {
-  color: #dc2626;
-}
-.btn-primary {
-  background: #b1a28f;
-  color: #fff;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 10px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-.btn-secondary {
-  background: #f1f5f9;
-  color: #334155;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.muted {
-  color: #94a3b8;
-}
-.center {
-  text-align: center;
-}
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-.modal-box {
-  background: #fff;
-  border-radius: 14px;
-  padding: 24px;
-  width: 100%;
-  max-width: 420px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
-}
-.modal-box h3 {
-  margin: 0 0 16px;
-}
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 14px;
-  font-size: 0.9rem;
-  color: #475569;
-}
-.input {
-  padding: 10px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 1rem;
-}
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-</style>

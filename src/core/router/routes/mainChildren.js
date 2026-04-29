@@ -64,6 +64,24 @@ export default [
     component: () => import('@/modules/admin/views/AdminLocationsView.vue'),
     meta: { roles: [ROLE_ADMIN] },
   },
+  {
+    path: 'admin/imports',
+    name: 'AdminImports',
+    component: () => import('@/modules/admin/views/AdminImportsView.vue'),
+    meta: { roles: [ROLE_ADMIN] },
+  },
+  {
+    path: 'admin/locations/cities/new',
+    name: 'AdminCityCreate',
+    component: () => import('@/modules/admin/views/AdminCityCreateView.vue'),
+    meta: { roles: [ROLE_ADMIN] },
+  },
+  {
+    path: 'admin/locations/districts/new',
+    name: 'AdminDistrictCreate',
+    component: () => import('@/modules/admin/views/AdminDistrictCreateView.vue'),
+    meta: { roles: [ROLE_ADMIN] },
+  },
   { path: 'exclusive-request', name: 'ExclusiveRequest', component: () => import('@/modules/projects/views/ExclusiveProjectView.vue') },
   { path: 'my-requests', name: 'MyRequests', component: () => import('@/modules/projects/views/MyRequestsView.vue') },
   {

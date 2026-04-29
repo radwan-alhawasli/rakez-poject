@@ -3,17 +3,19 @@ import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
 
 /**
- * Normalize list responses from GET /admin/cities and GET /admin/districts.
- * @param {import('axios').AxiosResponse} response
- * @returns {unknown[]}
+ * Remove empty/undefined query params so we don't send noise to the backend.
+ * @param {Record<string, unknown>} params
  */
-function listFromResponse(response) {
-  const { items } = extractPaginatedData(response, []);
-  if (Array.isArray(items) && items.length) return items;
-  const raw = response?.data;
-  if (Array.isArray(raw)) return raw;
-  if (Array.isArray(raw?.data)) return raw.data;
-  return [];
+function cleanQueryParams(params = {}) {
+  /** @type {Record<string, unknown>} */
+  const out = {};
+  for (const [key, value] of Object.entries(params || {})) {
+    if (value === undefined || value === null) continue;
+    if (typeof value === 'string' && value.trim() === '') continue;
+    if (Array.isArray(value) && value.length === 0) continue;
+    out[key] = value;
+  }
+  return out;
 }
 
 /**
@@ -29,12 +31,16 @@ function oneFromResponse(response) {
 
 // ——— Cities: POST/GET /admin/cities, GET/PUT/DELETE /admin/cities/:id ———
 
-export async function listAdminCities() {
+/**
+ * @param {Record<string, unknown>} [params]
+ * @returns {Promise<{ items: unknown[], total: number }>}
+ */
+export async function listAdminCities(params = {}) {
   try {
-    const r = await apiClient.get('/admin/cities');
-    return listFromResponse(r);
+    const r = await apiClient.get('/admin/cities', { params: cleanQueryParams(params) });
+    return extractPaginatedData(r, []);
   } catch (error) {
-    return handleServiceError(error, 'List admin cities', 'get', []);
+    return handleServiceError(error, 'List admin cities', 'get', { items: [], total: 0 });
   }
 }
 
@@ -89,12 +95,16 @@ export async function deleteAdminCity(cityId) {
 
 // ——— Districts: POST/GET /admin/districts, GET/PATCH/DELETE /admin/districts/:id ———
 
-export async function listAdminDistricts() {
+/**
+ * @param {Record<string, unknown>} [params]
+ * @returns {Promise<{ items: unknown[], total: number }>}
+ */
+export async function listAdminDistricts(params = {}) {
   try {
-    const r = await apiClient.get('/admin/districts');
-    return listFromResponse(r);
+    const r = await apiClient.get('/admin/districts', { params: cleanQueryParams(params) });
+    return extractPaginatedData(r, []);
   } catch (error) {
-    return handleServiceError(error, 'List admin districts', 'get', []);
+    return handleServiceError(error, 'List admin districts', 'get', { items: [], total: 0 });
   }
 }
 
