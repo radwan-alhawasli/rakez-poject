@@ -25,25 +25,55 @@ async function uploadCsv(client, path, file, onProgress) {
 }
 
 export const adminCsvImportsService = {
+  /**
+   * @param {File} file
+   * @param {(pct: number) => void} [onProgress]
+   */
   importCitiesDistricts(file, onProgress) {
     return uploadCsv('api', '/admin/csv/cities/import_csv', file, onProgress);
   },
+  /**
+   * @param {File} file
+   * @param {(pct: number) => void} [onProgress]
+   */
   importDistricts(file, onProgress) {
     return uploadCsv('api', '/admin/csv/districts/import_csv', file, onProgress);
   },
+  /**
+   * @param {File} file
+   * @param {(pct: number) => void} [onProgress]
+   */
   importTeams(file, onProgress) {
     return uploadCsv('api', '/admin/csv/teams/import_csv', file, onProgress);
   },
+  /**
+   * @param {File} file
+   * @param {(pct: number) => void} [onProgress]
+   */
   importEmployees(file, onProgress) {
     // IMPORTANT: this uses SERVER_URL (not api base_url)
     return uploadCsv('server', '/admin/csv/employees/import_employees_csv', file, onProgress);
   },
+  /**
+   * @param {File} file
+   * @param {(pct: number) => void} [onProgress]
+   */
   importContracts(file, onProgress) {
     return uploadCsv('api', '/admin/csv/contracts/import_csv', file, onProgress);
   },
+  /**
+   * @param {string|number} contractId
+   * @param {File} file
+   * @param {(pct: number) => void} [onProgress]
+   */
   importContractInfo(contractId, file, onProgress) {
     return uploadCsv('api', `/admin/csv/contracts/import_info_csv/${contractId}`, file, onProgress);
   },
+  /**
+   * @param {string|number} contractId
+   * @param {File} file
+   * @param {(pct: number) => void} [onProgress]
+   */
   importSecondPartyData(contractId, file, onProgress) {
     return uploadCsv('api', `/admin/csv/second-party-data/import_csv/${contractId}`, file, onProgress);
   },
