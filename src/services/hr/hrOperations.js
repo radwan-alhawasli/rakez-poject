@@ -29,7 +29,7 @@ export const createHRTeam = async teamData => {
   try {
     const response = await apiClient.post('/hr/teams/store', teamData);
     return response.data?.data || response.data || {};
-  } catch (error) {
+  } catch (_error) {
     try {
       const fallback = await apiClient.post('/hr/teams', teamData);
       return fallback.data?.data || fallback.data || {};
@@ -51,7 +51,7 @@ export const updateHRTeam = async (teamId, teamData) => {
   try {
     const response = await apiClient.put(`/hr/teams/update/${teamId}`, teamData);
     return response.data?.data || response.data || {};
-  } catch (error) {
+  } catch (_error) {
     try {
       const fallback = await apiClient.post(`/hr/teams/update/${teamId}`, teamData);
       return fallback.data?.data || fallback.data || {};
@@ -77,7 +77,7 @@ export const deleteHRTeam = async teamId => {
   try {
     const response = await apiClient.delete(`/hr/teams/delete/${teamId}`);
     return response.data?.data || response.data || {};
-  } catch (error) {
+  } catch (_error) {
     try {
       const fallback = await apiClient.delete(`/hr/teams/${teamId}`);
       return fallback.data?.data || fallback.data || {};
@@ -104,7 +104,7 @@ export const assignTeamMember = async (teamId, data) => {
       team_group_id: teamGroupId,
     });
     return response.data?.data || response.data || {};
-  } catch (error) {
+  } catch (_error) {
     try {
       const fallback = await apiClient.post(`/hr/teams/members/${teamId}`, {
         user_id: userId,
@@ -128,7 +128,7 @@ export const removeTeamMember = async (teamId, userId) => {
   try {
     const response = await apiClient.delete(`/hr/teams/${teamId}/members/${userId}`);
     return response.data?.data || response.data || {};
-  } catch (error) {
+  } catch (_error) {
     try {
       const fallback = await apiClient.delete(`/hr/teams/members/${teamId}/${userId}`);
       return fallback.data?.data || fallback.data || {};

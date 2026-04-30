@@ -161,7 +161,6 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import accountingService from '@/services/accountingService';
-import creditService from '@/services/creditService';
 import contractService from '@/services/contractService';
 import { normalizeDeveloper } from '@/utils/developerMapper';
 import { useFormatters } from '@/composables/useFormatters';
