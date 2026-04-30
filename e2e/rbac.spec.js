@@ -88,7 +88,7 @@ test.describe('RBAC – Non-admin denied from /users', () => {
     });
     await page.goto('/users');
     // Should be redirected to the sales dashboard (role-based fallback)
-    await page.waitForURL(/sales\/dashboard|dashboard/);
+    await page.waitForURL(/\/sales\/dashboard(?:$|[?#])/);
     expect(page.url()).not.toContain('/users');
   });
 
@@ -103,7 +103,7 @@ test.describe('RBAC – Non-admin denied from /users', () => {
       ],
     });
     await page.goto('/users');
-    await page.waitForURL(/marketing\/dashboard|dashboard/);
+    await page.waitForURL(/\/marketing\/dashboard(?:$|[?#])/);
     expect(page.url()).not.toContain('/users');
   });
 });
@@ -140,7 +140,7 @@ test.describe('RBAC – Sales user access', () => {
     });
     await page.goto('/accounting/dashboard');
     // Should be redirected away from accounting
-    await page.waitForURL(/sales\/dashboard|dashboard/);
+    await page.waitForURL(/\/sales\/dashboard(?:$|[?#])/);
     expect(page.url()).not.toContain('/accounting');
   });
 
@@ -154,7 +154,7 @@ test.describe('RBAC – Sales user access', () => {
       ],
     });
     await page.goto('/hr/dashboard');
-    await page.waitForURL(/sales\/dashboard|dashboard/);
+    await page.waitForURL(/\/sales\/dashboard(?:$|[?#])/);
     expect(page.url()).not.toContain('/hr');
   });
 });
@@ -190,7 +190,7 @@ test.describe('RBAC – Marketing user access', () => {
       ],
     });
     await page.goto('/sales/dashboard');
-    await page.waitForURL(/marketing\/dashboard|dashboard/);
+    await page.waitForURL(/\/marketing\/dashboard(?:$|[?#])/);
     expect(page.url()).not.toContain('/sales');
   });
 
@@ -204,7 +204,7 @@ test.describe('RBAC – Marketing user access', () => {
       ],
     });
     await page.goto('/accounting/sold-units');
-    await page.waitForURL(/marketing\/dashboard|dashboard/);
+    await page.waitForURL(/\/marketing\/dashboard(?:$|[?#])/);
     expect(page.url()).not.toContain('/accounting');
   });
 });
@@ -238,7 +238,7 @@ test.describe('RBAC – Accounting user access', () => {
       ],
     });
     await page.goto('/project-management');
-    await page.waitForURL(/accounting\/dashboard|dashboard/);
+    await page.waitForURL(/\/accounting\/dashboard(?:$|[?#])/);
     expect(page.url()).not.toContain('/project-management');
   });
 });

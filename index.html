@@ -144,19 +144,29 @@
 
     <!-- Remove Loading Screen After App Loads -->
     <script>
-      window.addEventListener('load', function() {
-        setTimeout(function() {
+      (function () {
+        var didReveal = false;
+
+        function reveal() {
+          if (didReveal) return;
+          didReveal = true;
           document.documentElement.classList.add('loaded');
           document.body.classList.add('loaded');
           var loadingScreen = document.getElementById('loading-screen');
           if (loadingScreen) {
             loadingScreen.classList.add('hidden');
-            setTimeout(function() {
+            setTimeout(function () {
               loadingScreen.style.display = 'none';
             }, 500);
           }
-        }, 300);
-      });
+        }
+
+        // Preferred: reveal as soon as the Vue app reports it's mounted.
+        window.addEventListener('rakez:app-mounted', reveal, { once: true });
+
+        // Fallback: if the event never fires, keep previous behavior (but without extra delay).
+        window.addEventListener('load', reveal, { once: true });
+      })();
     </script>
   </body>
 </html>

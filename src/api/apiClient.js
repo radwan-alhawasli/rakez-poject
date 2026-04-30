@@ -35,6 +35,31 @@ const apiTimeout = appConfig.apiTimeout ?? 30000;
 // Simple Cache for GET requests
 /** @type {Map<string, {data: any, timestamp: number}>} */
 const apiCache = new Map();
+
+/**
+ * Stable stringify for cache keys (avoids cache misses due to key order differences).
+ * @param {any} value
+ * @returns {string}
+ */
+function stableStringify(value) {
+  if (value === null || value === undefined) return String(value);
+  if (typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+  const keys = Object.keys(value).sort();
+  const entries = keys.map(k => `${JSON.stringify(k)}:${stableStringify(value[k])}`);
+  return `{${entries.join(',')}}`;
+}
+
+/**
+ * @param {import('axios').InternalAxiosRequestConfig<any>} config
+ * @returns {string}
+ */
+function getCacheKey(config) {
+  const url = config.url || '';
+  const params = /** @type {any} */ (config.params) || {};
+  return `${url}?${stableStringify(params)}`;
+}
+
 const CACHE_TTL = 2 * 60 * 1000; // 2 minutes (Memory Cache)
 const PERSISTENT_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours (Local Storage)
 
@@ -123,10 +148,7 @@ apiClient.interceptors.request.use(
 
     // Cache logic for GET requests
     if (config.method === 'get' && cfg.useCache) {
-      // Re-declaring to satisfy "no deletion" rule without syntax error
-      // @ts-ignore
-      const _cfg = /** @type {any} */ (config); 
-      const cacheKey = `${config.url}${JSON.stringify(config.params || {})}`;
+      const cacheKey = getCacheKey(config);
 
       // 1. Try Memory Cache
       const cached = apiCache.get(cacheKey);
@@ -137,7 +159,7 @@ apiClient.interceptors.request.use(
           statusText: 'OK',
           headers: {},
           config: cfg,
-          request: {}
+          request: {},
         });
         return config;
       }
@@ -151,8 +173,8 @@ apiClient.interceptors.request.use(
             status: 200,
             statusText: 'OK',
             headers: {},
-            config,
-            request: {}
+            config: cfg,
+            request: {},
           });
           return config;
         }
@@ -162,7 +184,7 @@ apiClient.interceptors.request.use(
     const token = secureStorage.getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      // Update last activity on each requestimage.png
+      // Update last activity on each request
       secureStorage.updateLastActivity();
     }
     // When sending FormData, do not set Content-Type so the browser sends multipart/form-data with boundary
@@ -181,14 +203,15 @@ setupTokenRefreshInterceptor(apiClient);
 apiClient.interceptors.response.use(
   response => {
     const cfg = /** @type {any} */ (response.config);
+
     // Cache the response if it was a GET request and useCache was enabled
     if (response.config.method === 'get' && cfg.useCache) {
-      const cacheKey = `${response.config.url}${JSON.stringify(response.config.params || {})}`;
+      const cacheKey = getCacheKey(response.config);
 
       // Save to memory cache
       apiCache.set(cacheKey, {
         data: response.data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       // Save to persistent cache if requested

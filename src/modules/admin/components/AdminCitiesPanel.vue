@@ -1,0 +1,173 @@
+<template>
+  <section class="rounded-2xl border border-[var(--color-light-gray)] bg-white p-5 shadow-sm">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h2 class="text-lg font-extrabold text-[var(--color-navy)]">قائمة المدن</h2>
+        <p class="mt-0.5 text-xs text-[var(--color-dark-gray)]">مع فلاتر متزامنة مع الرابط + ترقيم صفحات.</p>
+      </div>
+      <Button class="rounded-xl" @click="$emit('create')">إضافة مدينة</Button>
+    </div>
+
+    <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-12">
+      <div class="md:col-span-4">
+        <Label class="mb-1 block text-xs">بحث</Label>
+        <Input
+          :model-value="filters.q"
+          placeholder="ابحث بالاسم أو الرمز..."
+          @update:modelValue="v => setFilter('q', v)"
+        />
+      </div>
+
+      <div class="md:col-span-3">
+        <Label class="mb-1 block text-xs">بها أحياء؟</Label>
+        <UiSelect :model-value="filters.has_districts" @update:modelValue="v => setFilter('has_districts', v)">
+          <option value="">الكل</option>
+          <option value="1">نعم</option>
+          <option value="0">لا</option>
+        </UiSelect>
+      </div>
+
+      <div class="md:col-span-2">
+        <Label class="mb-1 block text-xs">من</Label>
+        <Input :model-value="filters.created_from" type="date" @update:modelValue="v => setFilter('created_from', v)" />
+      </div>
+
+      <div class="md:col-span-2">
+        <Label class="mb-1 block text-xs">إلى</Label>
+        <Input :model-value="filters.created_to" type="date" @update:modelValue="v => setFilter('created_to', v)" />
+      </div>
+
+      <div class="md:col-span-1">
+        <Label class="mb-1 block text-xs">لكل صفحة</Label>
+        <UiSelect :model-value="filters.per_page" @update:modelValue="v => setFilter('per_page', v)">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </UiSelect>
+      </div>
+    </div>
+
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="w-44">
+          <Label class="mb-1 block text-xs">الترتيب</Label>
+          <UiSelect :model-value="filters.sort" @update:modelValue="v => setFilter('sort', v)">
+            <option value="created_at">تاريخ الإنشاء</option>
+            <option value="name">الاسم</option>
+            <option value="code">الرمز</option>
+            <option value="districts_count">عدد الأحياء</option>
+            <option value="id">المعرّف</option>
+          </UiSelect>
+        </div>
+
+        <div class="w-36">
+          <Label class="mb-1 block text-xs">الاتجاه</Label>
+          <UiSelect :model-value="filters.direction" @update:modelValue="v => setFilter('direction', v)">
+            <option value="desc">تنازلي</option>
+            <option value="asc">تصاعدي</option>
+          </UiSelect>
+        </div>
+
+        <Button variant="secondary" class="rounded-xl" @click="$emit('reset')">إعادة تعيين</Button>
+      </div>
+
+      <div class="text-xs text-[var(--color-dark-gray)]">
+        الإجمالي: <span class="font-extrabold text-[var(--color-navy)]">{{ total }}</span>
+      </div>
+    </div>
+
+    <div v-if="loading" class="py-10 text-center text-sm text-[var(--color-dark-gray)]">جاري التحميل...</div>
+    <div v-else-if="error" class="py-10 text-center text-sm text-red-600">{{ error }}</div>
+    <div v-else-if="items.length === 0" class="py-10 text-center text-sm text-[var(--color-dark-gray)]">
+      لا توجد مدن بهذه الفلاتر.
+    </div>
+
+    <div v-else class="overflow-x-auto rounded-2xl border border-[var(--color-light-gray)]">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead class="text-right">#</TableHead>
+            <TableHead class="text-right">الاسم</TableHead>
+            <TableHead class="text-right">الرمز</TableHead>
+            <TableHead class="text-right">عدد الأحياء</TableHead>
+            <TableHead class="text-right">تاريخ الإنشاء</TableHead>
+            <TableHead class="text-right">إجراءات</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow v-for="c in items" :key="c.id">
+            <TableCell class="font-bold">{{ c.id }}</TableCell>
+            <TableCell>{{ c.name }}</TableCell>
+            <TableCell>
+              <Badge variant="secondary">{{ c.code ?? '—' }}</Badge>
+            </TableCell>
+            <TableCell>
+              <Badge :variant="Number(c.districts_count || 0) > 0 ? 'default' : 'outline'">
+                {{ Number(c.districts_count || 0) }}
+              </Badge>
+            </TableCell>
+            <TableCell>{{ formatDate(c.created_at) }}</TableCell>
+            <TableCell class="whitespace-nowrap">
+              <div class="flex flex-wrap items-center gap-2">
+                <Button size="sm" variant="secondary" class="rounded-xl" @click="$emit('view', c)">عرض</Button>
+                <Button size="sm" class="rounded-xl" @click="$emit('edit', c)">تعديل</Button>
+                <Button size="sm" variant="destructive" class="rounded-xl" @click="$emit('delete', c)">حذف</Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </div>
+
+    <Pagination
+      v-if="total > 0 && !loading"
+      class="mt-4"
+      :current-page="page"
+      :total-items="total"
+      :per-page="perPage"
+      @page-change="p => $emit('page', p)"
+      @per-page-change="pp => $emit('per-page', pp)"
+    />
+  </section>
+</template>
+
+<script setup>
+import Pagination from '@/components/Pagination.vue';
+import { Button } from '@/components/ui/button';
+import Input from '@/components/ui/Input.vue';
+import UiSelect from '@/components/ui/Select.vue';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+
+defineProps({
+  items: { type: Array, default: () => [] },
+  total: { type: Number, default: 0 },
+  loading: { type: Boolean, default: false },
+  error: { type: String, default: '' },
+  filters: { type: Object, required: true },
+  page: { type: Number, default: 1 },
+  perPage: { type: Number, default: 25 },
+});
+
+const emit = defineEmits(['create', 'view', 'edit', 'delete', 'reset', 'page', 'per-page', 'set-filter']);
+
+function setFilter(key, value) {
+  emit('set-filter', { key, value });
+}
+
+function formatDate(value) {
+  if (!value) return '—';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleString('ar-SA', { year: 'numeric', month: '2-digit', day: '2-digit' });
+}
+</script>

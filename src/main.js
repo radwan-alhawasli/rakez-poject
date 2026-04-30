@@ -93,6 +93,14 @@ if (sentryDsn && import.meta.env.PROD) {
 
 app.mount('#app');
 
+// Notify index.html that the app is mounted so the loading overlay can be hidden
+// as soon as possible (without waiting for full window load).
+try {
+  window.dispatchEvent(new Event('rakez:app-mounted'));
+} catch (_) {
+  // Ignore environments where Event constructor isn't available.
+}
+
 // Accordion toggle for .table-mobile-stacked rows on mobile (<768px)
 document.addEventListener('click', (e) => {
   if (window.innerWidth >= 768) return;

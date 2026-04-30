@@ -62,5 +62,9 @@ export const toast = {
 };
 
 export function useToast() {
-  return { toasts, toast, removeToast };
+  // Backward-compatible return shape:
+  // - Some callers expect: `const { toast } = useToast(); toast.error(...)`
+  // - Others historically did: `const toast = useToast(); toast.error(...)`
+  // Provide both: direct methods + nested `toast` + `toasts` list.
+  return { toasts, toast, removeToast, ...toast };
 }
