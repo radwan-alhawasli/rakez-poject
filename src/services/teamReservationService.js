@@ -19,6 +19,9 @@ export const getProjectManagementReservations = async (params = {}) => {
   }
 };
 
+/**
+ * @param {number|string} unitId
+ */
 export const getProjectManagementUnitReservationContext = async unitId => {
   try {
     const response = await apiClient.get(`/project_management/units/${unitId}/reservation-context`);
@@ -29,6 +32,9 @@ export const getProjectManagementUnitReservationContext = async unitId => {
   }
 };
 
+/**
+ * @param {Record<string, unknown>} body
+ */
 export const createProjectManagementReservation = async body => {
   try {
     const response = await apiClient.post('/project_management/reservations', body);
@@ -39,6 +45,10 @@ export const createProjectManagementReservation = async body => {
   }
 };
 
+/**
+ * @param {number|string} reservationId
+ * @param {Record<string, unknown>} [data]
+ */
 export const confirmProjectManagementReservation = async (reservationId, data = {}) => {
   try {
     const response = await apiClient.post(
@@ -52,6 +62,10 @@ export const confirmProjectManagementReservation = async (reservationId, data = 
   }
 };
 
+/**
+ * @param {number|string} reservationId
+ * @param {Record<string, unknown>} [data]
+ */
 export const cancelProjectManagementReservation = async (reservationId, data = {}) => {
   try {
     const response = await apiClient.post(
@@ -65,6 +79,10 @@ export const cancelProjectManagementReservation = async (reservationId, data = {
   }
 };
 
+/**
+ * @param {number|string} reservationId
+ * @param {Record<string, unknown>} data
+ */
 export const logProjectManagementReservationAction = async (reservationId, data) => {
   try {
     const response = await apiClient.post(
@@ -78,6 +96,9 @@ export const logProjectManagementReservationAction = async (reservationId, data)
   }
 };
 
+/**
+ * @param {number|string} reservationId
+ */
 export const downloadProjectManagementReservationVoucher = async reservationId => {
   const response = await apiClient.get(`/project_management/reservations/${reservationId}/voucher`, {
     responseType: 'blob',
@@ -85,6 +106,9 @@ export const downloadProjectManagementReservationVoucher = async reservationId =
   return ensurePdfBlob(response);
 };
 
+/**
+ * @param {number|string} reservationId
+ */
 export const getProjectManagementReservationVoucherData = async reservationId => {
   try {
     const response = await apiClient.get(
@@ -103,6 +127,9 @@ export const getProjectManagementReservationVoucherData = async reservationId =>
   }
 };
 
+/**
+ * @param {number|string} reservationId
+ */
 export const fetchProjectManagementReservationVoucherDataBlob = async reservationId => {
   const response = await apiClient.get(
     `/project_management/reservations/${reservationId}/voucher-data`,

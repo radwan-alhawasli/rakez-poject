@@ -220,6 +220,9 @@ const accountingService = {
     }
   },
 
+  /**
+   * @param {Record<string, unknown>} payload
+   */
   async createCombinedClaimFile(payload) {
     try {
       const response = await apiClient.post('/accounting/claim-files/combined', payload);

@@ -57,7 +57,7 @@ export function useReservationsView() {
   const evacuatedUnits = ref([]);
 
   /**
-   * Ø§Ù„ÙˆØ­Ø¯Ø§Øª Ø§Ù„Ù…ÙØ±ØºØ©: ØªØ¨ÙˆÙŠØ¨ Ø¥Ø¶Ø§ÙÙŠ Ù„Ù„Ù…Ø¨ÙŠØ¹Ø§Øª.
+   * الوحدات المفرغة: تبويب إضافي للمبيعات.
    * نُظهر التبويب فقط عندما يوجد بيانات فعلية لتجنّب تغيير UI بلا داعي.
    */
   const showEvacuatedTab = computed(() => {

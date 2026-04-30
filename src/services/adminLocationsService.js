@@ -19,6 +19,21 @@ function cleanQueryParams(params = {}) {
 }
 
 /**
+ * Normalize list responses.
+ * @param {import('axios').AxiosResponse} response
+ * @returns {unknown[]}
+ */
+function listFromResponse(response) {
+  const { items } = extractPaginatedData(response, []);
+  if (Array.isArray(items) && items.length) return items;
+  const raw = response?.data;
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw?.data)) return raw.data;
+  if (Array.isArray(raw?.items)) return raw.items;
+  return [];
+}
+
+/**
  * Normalize single-resource responses.
  * @param {import('axios').AxiosResponse} response
  * @returns {unknown}
@@ -200,7 +215,10 @@ export async function updateAdminOrderMarketingDeveloperStatus(id, isApproved) {
   for (const method of methods) {
     for (const payload of payloads) {
       try {
-        const response = await apiClient[method](endpoint, payload);
+        let response;
+        if (method === 'patch') response = await apiClient.patch(endpoint, payload);
+        else if (method === 'put') response = await apiClient.put(endpoint, payload);
+        else response = await apiClient.post(endpoint, payload);
         return response?.data?.data ?? response?.data ?? {};
       } catch (_error) {
         // try next combination

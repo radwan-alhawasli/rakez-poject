@@ -96,6 +96,7 @@ export function useMainLayout() {
       getRoleLabel(u.type, {
         is_manager: u.is_manager,
         is_executive_director: u.is_executive_director,
+        is_leader: u.is_leader,
       }) || ''
     );
   });

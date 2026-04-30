@@ -60,12 +60,12 @@ class MarketingStrategy extends RoleStrategy {
 
   getAvailableRoutes() {
     return [
-      { path: '/marketing/dashboard', name: 'MarketingDashboard', label: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…' },
-      { path: '/marketing/projects', name: 'MarketingProjects', label: 'Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹' },
-      { path: '/marketing/tasks', name: 'MarketingTasks', label: 'Ø§Ù„Ù…Ù‡Ø§Ù…' },
-      { path: '/marketing/leads', name: 'MarketingLeads', label: 'Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡ Ø§Ù„Ù…Ø­ØªÙ…Ù„ÙˆÙ†' },
-      { path: '/marketing/plans', name: 'MarketingPlans', label: 'Ø§Ù„Ø®Ø·Ø·' },
-      { path: '/marketing/ai-assistant', name: 'MarketingAiAssistant', label: 'Ø§Ù„Ù…Ø³Ø§Ø¹Ø¯ Ø§Ù„Ø°ÙƒÙŠ' },
+      { path: '/marketing/dashboard', name: 'MarketingDashboard', label: 'لوحة التحكم' },
+      { path: '/marketing/projects', name: 'MarketingProjects', label: 'المشاريع' },
+      { path: '/marketing/tasks', name: 'MarketingTasks', label: 'المهام' },
+      { path: '/marketing/leads', name: 'MarketingLeads', label: 'العملاء المحتملون' },
+      { path: '/marketing/plans', name: 'MarketingPlans', label: 'الخطط' },
+      { path: '/marketing/ai-assistant', name: 'MarketingAiAssistant', label: 'المساعد الذكي' },
     ];
   }
 }
@@ -98,13 +98,13 @@ class SalesStrategy extends RoleStrategy {
 
   getAvailableRoutes() {
     return [
-      { path: '/sales/dashboard', name: 'SalesDashboard', label: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…' },
-      { path: '/sales/projects', name: 'SalesProjects', label: 'Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹' },
-      { path: '/sales/reservations', name: 'SalesReservations', label: 'Ø§Ù„Ø­Ø¬ÙˆØ²Ø§Øª' },
-      { path: '/sales/targets', name: 'SalesTargets', label: 'Ø£Ù‡Ø¯Ø§Ù Ø§Ù„ÙØ±ÙŠÙ‚' },
-      { path: '/sales/attendance', name: 'SalesAttendance', label: 'Ø§Ù„Ø­Ø¶ÙˆØ±' },
-      { path: '/sales/team', name: 'SalesTeam', label: 'Ø§Ù„ÙØ±ÙŠÙ‚' },
-      { path: '/sales/tasks', name: 'SalesTasks', label: 'Ø§Ù„Ù…Ù‡Ø§Ù…' },
+      { path: '/sales/dashboard', name: 'SalesDashboard', label: 'لوحة التحكم' },
+      { path: '/sales/projects', name: 'SalesProjects', label: 'المشاريع' },
+      { path: '/sales/reservations', name: 'SalesReservations', label: 'الحجوزات' },
+      { path: '/sales/targets', name: 'SalesTargets', label: 'أهداف الفريق' },
+      { path: '/sales/attendance', name: 'SalesAttendance', label: 'الحضور' },
+      { path: '/sales/team', name: 'SalesTeam', label: 'الفريق' },
+      { path: '/sales/tasks', name: 'SalesTasks', label: 'المهام' },
     ];
   }
 }
@@ -136,12 +136,12 @@ class HRStrategy extends RoleStrategy {
 
   getAvailableRoutes() {
     return [
-      { path: '/hr/dashboard', name: 'HRDashboard', label: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…' },
-      { path: '/hr/teams', name: 'HRTeams', label: 'Ø§Ù„ÙÙØ±Ù‚' },
-      { path: '/hr/team-performance', name: 'HRTeamPerformance', label: 'Ø£Ø¯Ø§Ø¡ Ø§Ù„ÙÙØ±Ù‚' },
-      { path: '/hr/employee-performance', name: 'HREmployeePerformance', label: 'Ø£Ø¯Ø§Ø¡ Ø§Ù„Ù…ÙˆØ¸ÙÙŠÙ†' },
-      { path: '/hr/users', name: 'HRUsers', label: 'Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙˆÙ†' },
-      { path: '/hr/reports', name: 'HRReports', label: 'Ø§Ù„ØªÙ‚Ø§Ø±ÙŠØ±' },
+      { path: '/hr/dashboard', name: 'HRDashboard', label: 'لوحة التحكم' },
+      { path: '/hr/teams', name: 'HRTeams', label: 'الفِرق' },
+      { path: '/hr/team-performance', name: 'HRTeamPerformance', label: 'أداء الفِرق' },
+      { path: '/hr/employee-performance', name: 'HREmployeePerformance', label: 'أداء الموظفين' },
+      { path: '/hr/users', name: 'HRUsers', label: 'المستخدمون' },
+      { path: '/hr/reports', name: 'HRReports', label: 'التقارير' },
     ];
   }
 }
@@ -165,10 +165,10 @@ class AdminStrategy extends RoleStrategy {
 
   getAvailableRoutes() {
     return [
-      { path: '/dashboard', name: 'Dashboard', label: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…' },
-      { path: '/users', name: 'Users', label: 'Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙˆÙ†' },
-      { path: '/contracts', name: 'Contracts', label: 'Ø§Ù„Ø¹Ù‚ÙˆØ¯' },
-      { path: '/project-management', name: 'ProjectManagement', label: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹' },
+      { path: '/dashboard', name: 'Dashboard', label: 'لوحة التحكم' },
+      { path: '/users', name: 'Users', label: 'المستخدمون' },
+      { path: '/contracts', name: 'Contracts', label: 'العقود' },
+      { path: '/project-management', name: 'ProjectManagement', label: 'إدارة المشاريع' },
       { path: '/teams', name: 'Teams', label: 'الفرق' },
       { path: '/admin/locations', name: 'AdminLocations', label: 'إدارة المدن والأحياء' },
       { path: '/admin/order-marketing-developers', name: 'AdminOrderMarketingDevelopers', label: 'طلبات مطوري التسويق' },
@@ -201,10 +201,10 @@ class ProjectManagementStrategy extends RoleStrategy {
 
   getAvailableRoutes() {
     return [
-      { path: '/dashboard', name: 'Dashboard', label: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…' },
-      { path: '/project-management', name: 'ProjectManagement', label: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹' },
-      { path: '/contracts', name: 'Contracts', label: 'Ø§Ù„Ø¹Ù‚ÙˆØ¯' },
-      { path: '/notifications', name: 'Notifications', label: 'Ø§Ù„Ø¥Ø´Ø¹Ø§Ø±Ø§Øª' },
+      { path: '/dashboard', name: 'Dashboard', label: 'لوحة التحكم' },
+      { path: '/project-management', name: 'ProjectManagement', label: 'إدارة المشاريع' },
+      { path: '/contracts', name: 'Contracts', label: 'العقود' },
+      { path: '/notifications', name: 'Notifications', label: 'الإشعارات' },
     ];
   }
 }

@@ -48,7 +48,7 @@ export function isSalesLeader(user) {
   if (!user) return false;
   const role = normalizeRole(user.type);
   if (role === ROLE_SALES_LEADER) return true;
-  return role === ROLE_SALES && isTruthyLeaderFlag(user.is_leader);
+  return role === ROLE_SALES && (isTruthyLeaderFlag(user.is_leader) || isTruthyLeaderFlag(user.is_manager));
 }
 
 /**

@@ -764,13 +764,8 @@ const creditService = {
    * @returns {Promise<Object>} { created: { "123": 1, ... }, errors: { "125": "..." } }
    */
   async generateBulkClaimFiles(data) {
-    // Redirect to the working combined endpoint as per user instruction
-    const payload = {
-      booking_ids: data.reservation_ids || data.booking_ids,
-      claim_type: 'commissions'
-    };
     try {
-      const response = await apiClient.post('/accounting/claim-files/combined', payload);
+      const response = await apiClient.post('/credit/claim-files/generate-bulk', data);
       return response.data?.data ?? response.data ?? {};
     } catch (error) {
       logger.error('Error generating bulk claim files:', error);
@@ -785,13 +780,8 @@ const creditService = {
    * @returns {Promise<Object>} Combined claim file with items array
    */
   async createCombinedClaimFile(data) {
-    const payload = {
-      booking_ids: data.booking_ids,
-      claim_type: 'commissions',
-      notes: data.notes
-    };
     try {
-      const response = await apiClient.post('/accounting/claim-files/combined', payload);
+      const response = await apiClient.post('/credit/claim-files/combined', data);
       return response.data?.data || response.data || {};
     } catch (error) {
       logger.error('Error creating combined claim file:', error);

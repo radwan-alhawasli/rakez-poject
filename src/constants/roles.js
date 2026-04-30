@@ -95,12 +95,15 @@ export const getRoleLabel = (type, isManager = false) => {
   if (roleKey === ROLE_SALES) {
     const flags = /** @type {any} */ (isManager);
     if (flags && typeof flags === 'object') {
+      const isLeader =
+        flags.is_leader === true || flags.is_leader === 1 || flags.is_leader === '1';
       const isMgr =
         flags.is_manager === true || flags.is_manager === 1 || flags.is_manager === '1';
       const isExec =
         flags.is_executive_director === true ||
         flags.is_executive_director === 1 ||
         flags.is_executive_director === '1';
+      if (isLeader) return 'قائد المبيعات';
       if (isMgr && !isExec) return 'مدير المبيعات';
       if (isExec && !isMgr) return 'المدير التنفيذي للمبيعات';
     } else if (isManager === true) {
