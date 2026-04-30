@@ -13,6 +13,18 @@ import {
   getProjectManagementReservationVoucherData,
   fetchProjectManagementReservationVoucherDataBlob,
 } from '@/services/teamReservationService';
+
+export {
+  getProjectManagementReservations,
+  getProjectManagementUnitReservationContext,
+  createProjectManagementReservation,
+  confirmProjectManagementReservation,
+  cancelProjectManagementReservation,
+  logProjectManagementReservationAction,
+  downloadProjectManagementReservationVoucher,
+  getProjectManagementReservationVoucherData,
+  fetchProjectManagementReservationVoucherDataBlob,
+};
 // --- Project Management Dashboard ---
 export const getProjectManagementDashboard = async (params = {}) => {
   try {
