@@ -245,6 +245,54 @@
   white-space: nowrap;
 }
 
+.team-groups {
+  margin: 8px 0 12px;
+  padding: 10px 12px;
+  background: rgba(39, 55, 77, 0.03);
+  border: 1px solid rgba(39, 55, 77, 0.08);
+  border-radius: 12px;
+}
+
+.team-groups-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.team-groups-count {
+  background: rgba(181, 169, 154, 0.2);
+  color: #475569;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.team-groups-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.team-group-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(39, 55, 77, 0.14);
+  background: #fff;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.team-group-chip--muted {
+  background: #f8fafc;
+  color: #64748b;
+}
+
 .mini-icon {
   width: 14px;
   height: 14px;

@@ -11,6 +11,7 @@
  * @property {string[]} [permissions]
  * @property {boolean} [is_leader]
  * @property {boolean} [is_manager]
+ * @property {boolean} [is_executive_director]
  */
 
 import apiClient from '@/api/apiClient';
@@ -67,6 +68,9 @@ const authService = {
             userData.is_leader = user.is_leader ?? user.isLeader;
           if ('is_manager' in user || 'isManager' in user)
             userData.is_manager = user.is_manager ?? user.isManager;
+          if ('is_executive_director' in user || 'isExecutiveDirector' in user)
+            userData.is_executive_director =
+              user.is_executive_director ?? user.isExecutiveDirector;
         }
 
         secureStorage.setUserInfo(userData);
@@ -132,6 +136,9 @@ const authService = {
         userData.is_leader = user.is_leader ?? user.isLeader;
       if ('is_manager' in user || 'isManager' in user)
         userData.is_manager = user.is_manager ?? user.isManager;
+      if ('is_executive_director' in user || 'isExecutiveDirector' in user)
+        userData.is_executive_director =
+          user.is_executive_director ?? user.isExecutiveDirector;
 
       secureStorage.setUserInfo(userData);
       return userData;

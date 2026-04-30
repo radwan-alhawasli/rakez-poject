@@ -76,7 +76,20 @@
 <script>
 import { ref, computed, onMounted } from 'vue';
 import userService from '@/services/userService';
+import teamService from '@/services/teamService';
 import logger from '@/utils/logger';
+
+const isTruthyFlag = value => value === true || value === 1 || value === '1';
+
+const isDisallowedSalesRole = user => {
+  const role = Number(user?.type ?? user?.user?.type ?? user?.employee_type);
+  if (role !== 6) return false;
+  const isManager = isTruthyFlag(user?.is_manager ?? user?.user?.is_manager);
+  const isExecutive = isTruthyFlag(
+    user?.is_executive_director ?? user?.user?.is_executive_director
+  );
+  return isManager || isExecutive;
+};
 
 export default {
   name: 'LinkMarketersModal',
@@ -98,9 +111,18 @@ export default {
 
     const fetchMarketers = async () => {
       try {
-        // Fetch only marketers (type 0)
-        const data = await userService.getEmployees({ type: 0 });
-        allMarketers.value = Array.isArray(data) ? data : data?.items || [];
+        let raw = [];
+        try {
+          const data = await userService.getEmployees({ type: 6 });
+          raw = Array.isArray(data) ? data : data?.items || [];
+        } catch (_) {
+          raw = [];
+        }
+        if (!Array.isArray(raw) || raw.length === 0) {
+          const fallback = await teamService.getSalesWithoutTeam();
+          raw = Array.isArray(fallback) ? fallback : [];
+        }
+        allMarketers.value = raw.filter(m => !isDisallowedSalesRole(m));
       } catch (error) {
         logger.error('Failed to fetch marketers:', error);
         // Mock if fails

@@ -1,16 +1,16 @@
-/**
- * تكوين القائمة الجانبية حسب الدور — مصدر واحد للبيانات
- * كل عنصر: { to, label, tooltip, icon (SVG path string), permission?, showIf? }
- * أو عنوان قسم: { type: 'section', label } — يُستخدم في قائمة الإدمن لعناوين الأقسام المدمجة.
- * الإدمن (دور 1): دمج قوائم الأقسام بالترتيب + «إحضار المشاريع»، مع إزالة الروابط المكررة لنفس المسار (to).
+﻿/**
+ * ØªÙƒÙˆÙŠÙ† Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø¬Ø§Ù†Ø¨ÙŠØ© Ø­Ø³Ø¨ Ø§Ù„Ø¯ÙˆØ± â€” Ù…ØµØ¯Ø± ÙˆØ§Ø­Ø¯ Ù„Ù„Ø¨ÙŠØ§Ù†Ø§Øª
+ * ÙƒÙ„ Ø¹Ù†ØµØ±: { to, label, tooltip, icon (SVG path string), permission?, showIf? }
+ * Ø£Ùˆ Ø¹Ù†ÙˆØ§Ù† Ù‚Ø³Ù…: { type: 'section', label } â€” ÙŠÙØ³ØªØ®Ø¯Ù… ÙÙŠ Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø¥Ø¯Ù…Ù† Ù„Ø¹Ù†Ø§ÙˆÙŠÙ† Ø§Ù„Ø£Ù‚Ø³Ø§Ù… Ø§Ù„Ù…Ø¯Ù…Ø¬Ø©.
+ * Ø§Ù„Ø¥Ø¯Ù…Ù† (Ø¯ÙˆØ± 1): Ø¯Ù…Ø¬ Ù‚ÙˆØ§Ø¦Ù… Ø§Ù„Ø£Ù‚Ø³Ø§Ù… Ø¨Ø§Ù„ØªØ±ØªÙŠØ¨ + Â«Ø¥Ø­Ø¶Ø§Ø± Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹Â»ØŒ Ù…Ø¹ Ø¥Ø²Ø§Ù„Ø© Ø§Ù„Ø±ÙˆØ§Ø¨Ø· Ø§Ù„Ù…ÙƒØ±Ø±Ø© Ù„Ù†ÙØ³ Ø§Ù„Ù…Ø³Ø§Ø± (to).
  *
- * الأدوار:
+ * Ø§Ù„Ø£Ø¯ÙˆØ§Ø±:
  * 1: admin, 2: project_management, 3: editor, 4: developer, 5: marketing,
  * 6: sales, 7: sales_leader, 8: hr, 9: credit, 10: accounting, 11: inventory,
  * 12: default, 13: accountant
  */
 
-// ── أيقونات SVG (paths فقط — يُرسم داخل viewBox 0 0 24 24) ──
+// â”€â”€ Ø£ÙŠÙ‚ÙˆÙ†Ø§Øª SVG (paths ÙÙ‚Ø· â€” ÙŠÙØ±Ø³Ù… Ø¯Ø§Ø®Ù„ viewBox 0 0 24 24) â”€â”€
 export const ICONS = {
   dashboard: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>',
   notifications: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>',
@@ -44,58 +44,58 @@ export const ICONS = {
   pulse: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>',
 };
 
-// ── عناصر مشتركة (تظهر في عدة أدوار) ──
+// â”€â”€ Ø¹Ù†Ø§ØµØ± Ù…Ø´ØªØ±ÙƒØ© (ØªØ¸Ù‡Ø± ÙÙŠ Ø¹Ø¯Ø© Ø£Ø¯ÙˆØ§Ø±) â”€â”€
 const COMMON_ITEMS = {
-  myRequests: { to: '/my-requests', label: 'طلباتي', tooltip: 'طلباتي', icon: ICONS.help },
-  exclusiveRequest: { to: '/exclusive-request', label: 'طلب مشروع حصري', tooltip: 'طلب مشروع حصري', icon: ICONS.exclusive },
-  aiAssistant: { to: '/ai-assistant', label: 'المساعد الذكي', tooltip: 'المساعد الذكي', icon: ICONS.agents },
-  profile: { to: '/profile', label: 'الملف الشخصي', tooltip: 'الملف الشخصي', icon: ICONS.profile },
-  tasks: { to: '/tasks', label: 'إدارة المهام', tooltip: 'إدارة المهام', icon: ICONS.tasks },
-  notifications: { to: '/notifications', label: 'الإشعارات', tooltip: 'الإشعارات', icon: ICONS.notifications, hasBadge: true },
-  dashboard: { to: '/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard },
-  chat: { to: '/chat', label: 'الدردشة', tooltip: 'المحادثات الفورية', icon: ICONS.agents },
+  myRequests: { to: '/my-requests', label: 'Ø·Ù„Ø¨Ø§ØªÙŠ', tooltip: 'Ø·Ù„Ø¨Ø§ØªÙŠ', icon: ICONS.help },
+  exclusiveRequest: { to: '/exclusive-request', label: 'Ø·Ù„Ø¨ Ù…Ø´Ø±ÙˆØ¹ Ø­ØµØ±ÙŠ', tooltip: 'Ø·Ù„Ø¨ Ù…Ø´Ø±ÙˆØ¹ Ø­ØµØ±ÙŠ', icon: ICONS.exclusive },
+  aiAssistant: { to: '/ai-assistant', label: 'Ø§Ù„Ù…Ø³Ø§Ø¹Ø¯ Ø§Ù„Ø°ÙƒÙŠ', tooltip: 'Ø§Ù„Ù…Ø³Ø§Ø¹Ø¯ Ø§Ù„Ø°ÙƒÙŠ', icon: ICONS.agents },
+  profile: { to: '/profile', label: 'Ø§Ù„Ù…Ù„Ù Ø§Ù„Ø´Ø®ØµÙŠ', tooltip: 'Ø§Ù„Ù…Ù„Ù Ø§Ù„Ø´Ø®ØµÙŠ', icon: ICONS.profile },
+  tasks: { to: '/tasks', label: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ù‡Ø§Ù…', tooltip: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ù‡Ø§Ù…', icon: ICONS.tasks },
+  notifications: { to: '/notifications', label: 'Ø§Ù„Ø¥Ø´Ø¹Ø§Ø±Ø§Øª', tooltip: 'Ø§Ù„Ø¥Ø´Ø¹Ø§Ø±Ø§Øª', icon: ICONS.notifications, hasBadge: true },
+  dashboard: { to: '/dashboard', label: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', tooltip: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', icon: ICONS.dashboard },
+  chat: { to: '/chat', label: 'Ø§Ù„Ø¯Ø±Ø¯Ø´Ø©', tooltip: 'Ø§Ù„Ù…Ø­Ø§Ø¯Ø«Ø§Øª Ø§Ù„ÙÙˆØ±ÙŠØ©', icon: ICONS.agents },
 };
 
-// ── تعريف القوائم حسب الدور ──
+// â”€â”€ ØªØ¹Ø±ÙŠÙ Ø§Ù„Ù‚ÙˆØ§Ø¦Ù… Ø­Ø³Ø¨ Ø§Ù„Ø¯ÙˆØ± â”€â”€
 
-/** إدارة المشاريع (دور 2) */
+/** Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹ (Ø¯ÙˆØ± 2) */
 const pmItems = [
   COMMON_ITEMS.dashboard,
   COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications },
-  { to: '/project-management', label: 'إدارة المشاريع', tooltip: 'إدارة المشاريع', icon: ICONS.projects },
+  { to: '/project-management', label: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹', tooltip: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹', icon: ICONS.projects },
   { ...COMMON_ITEMS.tasks },
-  { to: '/image-approval', label: 'الموافقة على الصور', tooltip: 'الموافقة على الصور', icon: ICONS.image, showIf: 'isManager' },
-  { to: '/team-management', label: 'إدارة الفرق', tooltip: 'إدارة الفرق', icon: ICONS.teams },
-  { to: '/developers', label: 'المطورون', tooltip: 'المطورون', icon: ICONS.teams },
-  { to: '/reservations', label: 'حجوزاتي', tooltip: 'حجوزاتي — إدارة المشاريع', icon: ICONS.check },
+  { to: '/image-approval', label: 'Ø§Ù„Ù…ÙˆØ§ÙÙ‚Ø© Ø¹Ù„Ù‰ Ø§Ù„ØµÙˆØ±', tooltip: 'Ø§Ù„Ù…ÙˆØ§ÙÙ‚Ø© Ø¹Ù„Ù‰ Ø§Ù„ØµÙˆØ±', icon: ICONS.image, showIf: 'isManager' },
+  { to: '/team-management', label: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„ÙØ±Ù‚', tooltip: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„ÙØ±Ù‚', icon: ICONS.teams },
+  { to: '/developers', label: 'Ø§Ù„Ù…Ø·ÙˆØ±ÙˆÙ†', tooltip: 'Ø§Ù„Ù…Ø·ÙˆØ±ÙˆÙ†', icon: ICONS.teams },
+  { to: '/reservations', label: 'Ø­Ø¬ÙˆØ²Ø§ØªÙŠ', tooltip: 'Ø­Ø¬ÙˆØ²Ø§ØªÙŠ â€” Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹', icon: ICONS.check },
   COMMON_ITEMS.myRequests,
   COMMON_ITEMS.exclusiveRequest,
   COMMON_ITEMS.aiAssistant,
   COMMON_ITEMS.profile,
 ];
 
-/** المونتاج / المحرر (دور 3) */
+/** Ø§Ù„Ù…ÙˆÙ†ØªØ§Ø¬ / Ø§Ù„Ù…Ø­Ø±Ø± (Ø¯ÙˆØ± 3) */
 const editorItems = [
-  { to: '/editor/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard },
-  { to: '/chat', label: 'الدردشة', tooltip: 'الدردشة', icon: ICONS.agents },
+  { to: '/editor/dashboard', label: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', tooltip: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', icon: ICONS.dashboard },
+  { to: '/chat', label: 'Ø§Ù„Ø¯Ø±Ø¯Ø´Ø©', tooltip: 'Ø§Ù„Ø¯Ø±Ø¯Ø´Ø©', icon: ICONS.agents },
   { ...COMMON_ITEMS.notifications, hasBadge: true },
   { ...COMMON_ITEMS.tasks },
-  { to: '/editor/projects', label: 'المشاريع', tooltip: 'المشاريع (قبل / بعد المونتاج)', icon: ICONS.contracts },
+  { to: '/editor/projects', label: 'Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹', tooltip: 'Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹ (Ù‚Ø¨Ù„ / Ø¨Ø¹Ø¯ Ø§Ù„Ù…ÙˆÙ†ØªØ§Ø¬)', icon: ICONS.contracts },
   {
     to: '/editor/projects?filter=pending',
-    label: 'قبول الوسائط',
-    tooltip: 'مشاريع بانتظار اعتماد المونتاج (قيد المراجعة)',
+    label: 'Ù‚Ø¨ÙˆÙ„ Ø§Ù„ÙˆØ³Ø§Ø¦Ø·',
+    tooltip: 'Ù…Ø´Ø§Ø±ÙŠØ¹ Ø¨Ø§Ù†ØªØ¸Ø§Ø± Ø§Ø¹ØªÙ…Ø§Ø¯ Ø§Ù„Ù…ÙˆÙ†ØªØ§Ø¬ (Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©)',
     icon: ICONS.teamCheck,
     showIf: 'isManager',
   },
-  { to: '/ai-assistant', label: 'الذكاء الاصطناعي', tooltip: 'الذكاء الاصطناعي', icon: ICONS.ai },
-  { to: '/editor/teams', label: 'الفرق', tooltip: 'الفرق', icon: ICONS.teams },
-  { to: '/editor/ratings', label: 'التقييمات', tooltip: 'تقييمات الموظفين', icon: ICONS.star, showIf: 'isManager' },
+  { to: '/ai-assistant', label: 'Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ', tooltip: 'Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ', icon: ICONS.ai },
+  { to: '/editor/teams', label: 'Ø§Ù„ÙØ±Ù‚', tooltip: 'Ø§Ù„ÙØ±Ù‚', icon: ICONS.teams },
+  { to: '/editor/ratings', label: 'Ø§Ù„ØªÙ‚ÙŠÙŠÙ…Ø§Øª', tooltip: 'ØªÙ‚ÙŠÙŠÙ…Ø§Øª Ø§Ù„Ù…ÙˆØ¸ÙÙŠÙ†', icon: ICONS.star, showIf: 'isManager' },
   COMMON_ITEMS.profile,
 ];
 
-/** المطور (دور 4) */
+/** Ø§Ù„Ù…Ø·ÙˆØ± (Ø¯ÙˆØ± 4) */
 const developerItems = [
   COMMON_ITEMS.dashboard,
   COMMON_ITEMS.chat,
@@ -104,141 +104,154 @@ const developerItems = [
   COMMON_ITEMS.profile,
 ];
 
-/** التسويق (دور 5) — بدون «طلباتي» و«طلب مشروع حصري» (مخصص لأدوار أخرى) */
+/** Ø§Ù„ØªØ³ÙˆÙŠÙ‚ (Ø¯ÙˆØ± 5) â€” Ø¨Ø¯ÙˆÙ† Â«Ø·Ù„Ø¨Ø§ØªÙŠÂ» ÙˆÂ«Ø·Ù„Ø¨ Ù…Ø´Ø±ÙˆØ¹ Ø­ØµØ±ÙŠÂ» (Ù…Ø®ØµØµ Ù„Ø£Ø¯ÙˆØ§Ø± Ø£Ø®Ø±Ù‰) */
 const marketingItems = [
-  { to: '/marketing/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard, permission: 'marketing.dashboard.view' },
+  { to: '/marketing/dashboard', label: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', tooltip: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', icon: ICONS.dashboard, permission: 'marketing.dashboard.view' },
   COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications, hasBadge: true },
   { ...COMMON_ITEMS.tasks },
-  { to: '/marketing/projects', label: 'مشاريع التسويق', tooltip: 'مشاريع التسويق', icon: ICONS.market, permission: 'marketing.projects.view' },
-  { to: '/marketing/developer-plan', label: 'خطة المطور', tooltip: 'خطة المطور', icon: ICONS.calendar, permission: 'marketing.plans.create' },
-  { to: '/marketing/employee-plans', label: 'خطط الموظفين', tooltip: 'خطط الموظفين', icon: ICONS.teams, permission: 'marketing.plans.create' },
+  { to: '/marketing/projects', label: 'Ù…Ø´Ø§Ø±ÙŠØ¹ Ø§Ù„ØªØ³ÙˆÙŠÙ‚', tooltip: 'Ù…Ø´Ø§Ø±ÙŠØ¹ Ø§Ù„ØªØ³ÙˆÙŠÙ‚', icon: ICONS.market, permission: 'marketing.projects.view' },
+  { to: '/marketing/developer-plan', label: 'Ø®Ø·Ø© Ø§Ù„Ù…Ø·ÙˆØ±', tooltip: 'Ø®Ø·Ø© Ø§Ù„Ù…Ø·ÙˆØ±', icon: ICONS.calendar, permission: 'marketing.plans.create' },
+  { to: '/marketing/employee-plans', label: 'Ø®Ø·Ø· Ø§Ù„Ù…ÙˆØ¸ÙÙŠÙ†', tooltip: 'Ø®Ø·Ø· Ø§Ù„Ù…ÙˆØ¸ÙÙŠÙ†', icon: ICONS.teams, permission: 'marketing.plans.create' },
   COMMON_ITEMS.aiAssistant,
   COMMON_ITEMS.profile,
 ];
 
-/** المبيعات (دور 6) وقائد المبيعات (دور 7) — نفس الواجهة */
+/** Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª (Ø¯ÙˆØ± 6) ÙˆÙ‚Ø§Ø¦Ø¯ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª (Ø¯ÙˆØ± 7) â€” Ù†ÙØ³ Ø§Ù„ÙˆØ§Ø¬Ù‡Ø© */
 const salesItems = [
-  { to: '/sales/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard, permission: 'sales.dashboard.view' },
+  { to: '/sales/dashboard', label: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', tooltip: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', icon: ICONS.dashboard, permission: 'sales.dashboard.view' },
   COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications, permission: 'notifications.view', hasBadge: true },
   { ...COMMON_ITEMS.tasks },
-  { to: '/sales/projects', label: 'المشاريع', tooltip: 'المشاريع', icon: ICONS.projects, permission: 'sales.projects.view' },
-  { to: '/sales/unit-search', label: 'بحث الوحدات', tooltip: 'بحث الوحدات', icon: ICONS.search, permission: 'sales.projects.view' },
-  { to: '/sales/reservations', label: 'الحجوزات', tooltip: 'الحجوزات', icon: ICONS.calendar, permission: 'sales.reservations.view' },
+  { to: '/sales/projects', label: 'Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹', tooltip: 'Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹', icon: ICONS.projects, permission: 'sales.projects.view' },
+  { to: '/sales/unit-search', label: 'Ø¨Ø­Ø« Ø§Ù„ÙˆØ­Ø¯Ø§Øª', tooltip: 'Ø¨Ø­Ø« Ø§Ù„ÙˆØ­Ø¯Ø§Øª', icon: ICONS.search, permission: 'sales.projects.view' },
+  { to: '/sales/reservations', label: 'Ø§Ù„Ø­Ø¬ÙˆØ²Ø§Øª', tooltip: 'Ø§Ù„Ø­Ø¬ÙˆØ²Ø§Øª', icon: ICONS.calendar, permission: 'sales.reservations.view' },
   {
     to: '/sales/targets',
-    label: 'أهدافي',
-    tooltip: 'أهدافي',
+    label: 'Ø£Ù‡Ø¯Ø§ÙÙŠ',
+    tooltip: 'Ø£Ù‡Ø¯Ø§ÙÙŠ',
     icon: ICONS.target,
     permission: 'sales.targets.view',
-    /** قائد المبيعات (دور 7): تسمية مختلفة في الشريط */
+    /** Ù‚Ø§Ø¦Ø¯ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª (Ø¯ÙˆØ± 7): ØªØ³Ù…ÙŠØ© Ù…Ø®ØªÙ„ÙØ© ÙÙŠ Ø§Ù„Ø´Ø±ÙŠØ· */
     // @ts-ignore
-    labelByRole: { 7: 'أهداف الفرق' },
+    labelByRole: { 7: 'Ø£Ù‡Ø¯Ø§Ù Ø§Ù„ÙØ±Ù‚' },
     // @ts-ignore
-    tooltipByRole: { 7: 'أهداف الفرق' },
+    tooltipByRole: { 7: 'Ø£Ù‡Ø¯Ø§Ù Ø§Ù„ÙØ±Ù‚' },
   },
-  { to: '/sales/team', label: 'الفريق', tooltip: 'الفريق', icon: ICONS.teams, permission: 'sales.team.manage' },
+  { to: '/sales/team', label: 'Ø§Ù„ÙØ±ÙŠÙ‚', tooltip: 'Ø§Ù„ÙØ±ÙŠÙ‚', icon: ICONS.teams, permission: 'sales.team.manage' },
   {
     to: '/sales/attendance',
-    label: 'دوامي',
-    tooltip: 'دوامي',
+    label: 'Ø¯ÙˆØ§Ù…ÙŠ',
+    tooltip: 'Ø¯ÙˆØ§Ù…ÙŠ',
     icon: ICONS.clock,
     permission: 'sales.attendance.view',
-    /** مدير المبيعات / من لديه إدارة حضور الفريق — نفس منطق SalesAttendanceTab (عنوان «دوام الفرق») */
+    /** Ù…Ø¯ÙŠØ± Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª / Ù…Ù† Ù„Ø¯ÙŠÙ‡ Ø¥Ø¯Ø§Ø±Ø© Ø­Ø¶ÙˆØ± Ø§Ù„ÙØ±ÙŠÙ‚ â€” Ù†ÙØ³ Ù…Ù†Ø·Ù‚ SalesAttendanceTab (Ø¹Ù†ÙˆØ§Ù† Â«Ø¯ÙˆØ§Ù… Ø§Ù„ÙØ±Ù‚Â») */
     // @ts-ignore
     dynamicLabel: {
       permission: 'sales.attendance.manage',
-      ifTrue: 'دوام الفرق',
-      ifFalse: 'دوامي',
+      ifTrue: 'Ø¯ÙˆØ§Ù… Ø§Ù„ÙØ±Ù‚',
+      ifFalse: 'Ø¯ÙˆØ§Ù…ÙŠ',
     },
   },
-  { to: '/sales/project-schedules', label: 'إدارة دوام المشاريع', tooltip: 'إدارة دوام المشاريع', icon: ICONS.calendarDots, permission: 'sales.attendance.manage' },
+  { to: '/sales/project-schedules', label: 'Ø¥Ø¯Ø§Ø±Ø© Ø¯ÙˆØ§Ù… Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹', tooltip: 'Ø¥Ø¯Ø§Ø±Ø© Ø¯ÙˆØ§Ù… Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹', icon: ICONS.calendarDots, permission: 'sales.attendance.manage' },
   COMMON_ITEMS.myRequests,
   COMMON_ITEMS.exclusiveRequest,
   COMMON_ITEMS.aiAssistant,
   COMMON_ITEMS.profile,
 ];
 
-/** الموارد البشرية (دور 8) */
+/** Ø§Ù„Ù…ÙˆØ§Ø±Ø¯ Ø§Ù„Ø¨Ø´Ø±ÙŠØ© (Ø¯ÙˆØ± 8) */
 const hrItems = [
-  { to: '/hr/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard, permission: 'hr.dashboard.view' },
+  { to: '/hr/dashboard', label: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', tooltip: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', icon: ICONS.dashboard, permission: 'hr.dashboard.view' },
   COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications, permission: 'notifications.view', hasBadge: true },
   { ...COMMON_ITEMS.tasks },
-  { to: '/hr/teams', label: 'إدارة الفرق', tooltip: 'إدارة الفرق', icon: ICONS.teams, permission: 'hr.teams.manage' },
-  { to: '/hr/team-performance', label: 'أداء الفِرق', tooltip: 'أداء الفِرق', icon: ICONS.analytics, permission: 'hr.performance.view' },
-  { to: '/hr/employee-performance', label: 'أداء المسوقين', tooltip: 'أداء المسوقين', icon: ICONS.pie, permission: 'hr.performance.view' },
-  { to: '/hr/users', label: 'إدارة المستخدمين', tooltip: 'إدارة المستخدمين', icon: ICONS.users, permission: 'hr.users.create' },
-  { to: '/hr/reports', label: 'التقارير', tooltip: 'التقارير', icon: ICONS.contracts, permission: 'hr.reports.view' },
+  { to: '/hr/teams', label: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„ÙØ±Ù‚', tooltip: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„ÙØ±Ù‚', icon: ICONS.teams, permission: 'hr.teams.manage' },
+  { to: '/hr/team-performance', label: 'Ø£Ø¯Ø§Ø¡ Ø§Ù„ÙÙØ±Ù‚', tooltip: 'Ø£Ø¯Ø§Ø¡ Ø§Ù„ÙÙØ±Ù‚', icon: ICONS.analytics, permission: 'hr.performance.view' },
+  { to: '/hr/employee-performance', label: 'Ø£Ø¯Ø§Ø¡ Ø§Ù„Ù…Ø³ÙˆÙ‚ÙŠÙ†', tooltip: 'Ø£Ø¯Ø§Ø¡ Ø§Ù„Ù…Ø³ÙˆÙ‚ÙŠÙ†', icon: ICONS.pie, permission: 'hr.performance.view' },
+  { to: '/hr/users', label: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ†', tooltip: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ†', icon: ICONS.users, permission: 'hr.users.create' },
+  { to: '/hr/reports', label: 'Ø§Ù„ØªÙ‚Ø§Ø±ÙŠØ±', tooltip: 'Ø§Ù„ØªÙ‚Ø§Ø±ÙŠØ±', icon: ICONS.contracts, permission: 'hr.reports.view' },
   COMMON_ITEMS.myRequests,
   COMMON_ITEMS.exclusiveRequest,
   COMMON_ITEMS.aiAssistant,
   COMMON_ITEMS.profile,
 ];
 
-/** الائتمان (دور 9) */
+/** Ø§Ù„Ø§Ø¦ØªÙ…Ø§Ù† (Ø¯ÙˆØ± 9) */
 const creditItems = [
-  { to: '/credit/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard },
+  { to: '/credit/dashboard', label: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', tooltip: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', icon: ICONS.dashboard },
   COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications, hasBadge: true },
   { ...COMMON_ITEMS.tasks },
-  { to: '/credit/bookings', label: 'إدارة الحجوزات', tooltip: 'إدارة الحجوزات', icon: ICONS.tasks },
-  { to: '/credit/marketing-requests', label: 'طلب تسويق', tooltip: 'طلب تسويق', icon: ICONS.tasks },
+  { to: '/credit/bookings', label: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø­Ø¬ÙˆØ²Ø§Øª', tooltip: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø­Ø¬ÙˆØ²Ø§Øª', icon: ICONS.tasks },
+  { to: '/credit/marketing-requests', label: 'Ø·Ù„Ø¨ ØªØ³ÙˆÙŠÙ‚', tooltip: 'Ø·Ù„Ø¨ ØªØ³ÙˆÙŠÙ‚', icon: ICONS.tasks },
   COMMON_ITEMS.exclusiveRequest,
   COMMON_ITEMS.aiAssistant,
   COMMON_ITEMS.profile,
 ];
 
-/** المحاسبة (دور 10) والمحاسب (دور 13) */
+/** Ø§Ù„Ù…Ø­Ø§Ø³Ø¨Ø© (Ø¯ÙˆØ± 10) ÙˆØ§Ù„Ù…Ø­Ø§Ø³Ø¨ (Ø¯ÙˆØ± 13) */
 const accountingItems = [
-  { to: '/accounting/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard },
+  { to: '/accounting/dashboard', label: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', tooltip: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', icon: ICONS.dashboard },
   COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications, to: '/accounting/notifications', hasBadge: true },
   { ...COMMON_ITEMS.tasks },
-  { to: '/accounting/projects', label: 'ملفات المطالبه', tooltip: 'ملفات المطالبه', icon: ICONS.projects },
-  { to: '/accounting/sold-units', label: 'الوحدات المباعة', tooltip: 'الوحدات المباعة', icon: ICONS.projects },
-  { to: '/accounting/deposits', label: 'العربون', tooltip: 'تأكيد وإرجاع العربون', icon: ICONS.calendar, permission: 'accounting.deposits.view' },
-  { to: '/accounting/salaries', label: 'الرواتب وتوزيع العمولات', tooltip: 'الرواتب وتوزيع العمولات', icon: ICONS.teams },
-  { to: '/developers', label: 'عرض المطورين', tooltip: 'عرض المطورين', icon: ICONS.teams },
+  { to: '/accounting/projects', label: 'Ù…Ù„ÙØ§Øª Ø§Ù„Ù…Ø·Ø§Ù„Ø¨Ù‡', tooltip: 'Ù…Ù„ÙØ§Øª Ø§Ù„Ù…Ø·Ø§Ù„Ø¨Ù‡', icon: ICONS.projects },
+  { to: '/accounting/sold-units', label: 'Ø§Ù„ÙˆØ­Ø¯Ø§Øª Ø§Ù„Ù…Ø¨Ø§Ø¹Ø©', tooltip: 'Ø§Ù„ÙˆØ­Ø¯Ø§Øª Ø§Ù„Ù…Ø¨Ø§Ø¹Ø©', icon: ICONS.projects },
+  { to: '/accounting/deposits', label: 'Ø§Ù„Ø¹Ø±Ø¨ÙˆÙ†', tooltip: 'ØªØ£ÙƒÙŠØ¯ ÙˆØ¥Ø±Ø¬Ø§Ø¹ Ø§Ù„Ø¹Ø±Ø¨ÙˆÙ†', icon: ICONS.calendar, permission: 'accounting.deposits.view' },
+  { to: '/accounting/salaries', label: 'Ø§Ù„Ø±ÙˆØ§ØªØ¨ ÙˆØªÙˆØ²ÙŠØ¹ Ø§Ù„Ø¹Ù…ÙˆÙ„Ø§Øª', tooltip: 'Ø§Ù„Ø±ÙˆØ§ØªØ¨ ÙˆØªÙˆØ²ÙŠØ¹ Ø§Ù„Ø¹Ù…ÙˆÙ„Ø§Øª', icon: ICONS.teams },
+  { to: '/developers', label: 'Ø¹Ø±Ø¶ Ø§Ù„Ù…Ø·ÙˆØ±ÙŠÙ†', tooltip: 'Ø¹Ø±Ø¶ Ø§Ù„Ù…Ø·ÙˆØ±ÙŠÙ†', icon: ICONS.teams },
   COMMON_ITEMS.exclusiveRequest,
   COMMON_ITEMS.aiAssistant,
   COMMON_ITEMS.profile,
 ];
 
-/** المخزون (دور 11) */
+/** Ø§Ù„Ù…Ø®Ø²ÙˆÙ† (Ø¯ÙˆØ± 11) */
 const inventoryItems = [
-  { to: '/inventory/dashboard', label: 'لوحة التحكم', tooltip: 'لوحة التحكم', icon: ICONS.dashboard },
+  { to: '/inventory/dashboard', label: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', tooltip: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…', icon: ICONS.dashboard },
   COMMON_ITEMS.chat,
-  { to: '/inventory/projects', label: 'المشاريع', tooltip: 'المشاريع على الخريطة', icon: ICONS.projects },
-  { to: '/inventory/contracts', label: 'العقود', tooltip: 'العقود', icon: ICONS.contracts },
-  { to: '/inventory/ai-suggestions', label: 'اقتراحات الذكاء الاصطناعي', tooltip: 'اقتراحات الذكاء الاصطناعي', icon: ICONS.ai },
+  { to: '/inventory/projects', label: 'Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹', tooltip: 'Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹ Ø¹Ù„Ù‰ Ø§Ù„Ø®Ø±ÙŠØ·Ø©', icon: ICONS.projects },
+  { to: '/inventory/contracts', label: 'Ø§Ù„Ø¹Ù‚ÙˆØ¯', tooltip: 'Ø§Ù„Ø¹Ù‚ÙˆØ¯', icon: ICONS.contracts },
+  { to: '/inventory/ai-suggestions', label: 'Ø§Ù‚ØªØ±Ø§Ø­Ø§Øª Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ', tooltip: 'Ø§Ù‚ØªØ±Ø§Ø­Ø§Øª Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ', icon: ICONS.ai },
   { ...COMMON_ITEMS.notifications },
   { ...COMMON_ITEMS.tasks },
   COMMON_ITEMS.profile,
 ];
 
-/** إدارة عامة — إحضار المشاريع (إدمن فقط؛ يُدرَج بين قسم إدارة المشاريع والمونتاج) */
+/** Ø¥Ø¯Ø§Ø±Ø© Ø¹Ø§Ù…Ø© â€” Ø¥Ø­Ø¶Ø§Ø± Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹ (Ø¥Ø¯Ù…Ù† ÙÙ‚Ø·Ø› ÙŠÙØ¯Ø±ÙŽØ¬ Ø¨ÙŠÙ† Ù‚Ø³Ù… Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹ ÙˆØ§Ù„Ù…ÙˆÙ†ØªØ§Ø¬) */
 const ADMIN_CONTRACT_FORM_ITEM = {
   to: '/contract-form',
-  label: 'إحضار المشاريع',
-  tooltip: 'إحضار المشاريع',
+  label: 'Ø¥Ø­Ø¶Ø§Ø± Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹',
+  tooltip: 'Ø¥Ø­Ø¶Ø§Ø± Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹',
   icon: ICONS.edit,
+};
+const ADMIN_LOCATIONS_ITEM = {
+  to: '/admin/locations',
+  label: 'إدارة المدن والأحياء',
+  tooltip: 'إدارة المدن والأحياء',
+  icon: ICONS.projects,
+};
+const ADMIN_ORDER_MARKETING_DEVELOPERS_ITEM = {
+  to: '/admin/order-marketing-developers',
+  label: 'طلبات مطوري التسويق',
+  tooltip: 'طلبات مطوري التسويق',
+  icon: ICONS.tasks,
 };
 
 /**
- * كتل قائمة الإدمن — يُزال التكرار حسب `to` مع الإبقاء على أول ظهور (تسميات قسم إدارة المشاريع أولاً).
+ * ÙƒØªÙ„ Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø¥Ø¯Ù…Ù† â€” ÙŠÙØ²Ø§Ù„ Ø§Ù„ØªÙƒØ±Ø§Ø± Ø­Ø³Ø¨ `to` Ù…Ø¹ Ø§Ù„Ø¥Ø¨Ù‚Ø§Ø¡ Ø¹Ù„Ù‰ Ø£ÙˆÙ„ Ø¸Ù‡ÙˆØ± (ØªØ³Ù…ÙŠØ§Øª Ù‚Ø³Ù… Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹ Ø£ÙˆÙ„Ø§Ù‹).
  */
 const ADMIN_NAV_BLOCKS = [
-  { label: 'إدارة المشاريع', items: [...pmItems, ADMIN_CONTRACT_FORM_ITEM] },
-  { label: 'المونتاج', items: editorItems },
-  { label: 'المطور', items: developerItems },
-  { label: 'التسويق', items: marketingItems },
-  { label: 'المبيعات', items: salesItems },
-  { label: 'الموارد البشرية', items: hrItems },
-  { label: 'الائتمان', items: creditItems },
-  { label: 'المحاسبة', items: accountingItems },
-  { label: 'المخزون', items: inventoryItems },
+  { label: 'الإدارة', items: [ADMIN_LOCATIONS_ITEM, ADMIN_ORDER_MARKETING_DEVELOPERS_ITEM] },
+  { label: 'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹', items: [...pmItems, ADMIN_CONTRACT_FORM_ITEM] },
+  { label: 'Ø§Ù„Ù…ÙˆÙ†ØªØ§Ø¬', items: editorItems },
+  { label: 'Ø§Ù„Ù…Ø·ÙˆØ±', items: developerItems },
+  { label: 'Ø§Ù„ØªØ³ÙˆÙŠÙ‚', items: marketingItems },
+  { label: 'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª', items: salesItems },
+  { label: 'Ø§Ù„Ù…ÙˆØ§Ø±Ø¯ Ø§Ù„Ø¨Ø´Ø±ÙŠØ©', items: hrItems },
+  { label: 'Ø§Ù„Ø§Ø¦ØªÙ…Ø§Ù†', items: creditItems },
+  { label: 'Ø§Ù„Ù…Ø­Ø§Ø³Ø¨Ø©', items: accountingItems },
+  { label: 'Ø§Ù„Ù…Ø®Ø²ÙˆÙ†', items: inventoryItems },
 ];
 
 function buildAdminNavDedupedByPath() {
@@ -262,18 +275,18 @@ function buildAdminNavDedupedByPath() {
   return out;
 }
 
-/** Admin (دور 1) — دمج أقسام + إحضار المشاريع، بدون تبويبات مكررة لنفس المسار */
+/** Admin (Ø¯ÙˆØ± 1) â€” Ø¯Ù…Ø¬ Ø£Ù‚Ø³Ø§Ù… + Ø¥Ø­Ø¶Ø§Ø± Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹ØŒ Ø¨Ø¯ÙˆÙ† ØªØ¨ÙˆÙŠØ¨Ø§Øª Ù…ÙƒØ±Ø±Ø© Ù„Ù†ÙØ³ Ø§Ù„Ù…Ø³Ø§Ø± */
 const adminItems = buildAdminNavDedupedByPath();
 
-/** عناصر للمديرين فقط (is_manager) — تظهر في كل الأدوار */
+/** Ø¹Ù†Ø§ØµØ± Ù„Ù„Ù…Ø¯ÙŠØ±ÙŠÙ† ÙÙ‚Ø· (is_manager) â€” ØªØ¸Ù‡Ø± ÙÙŠ ÙƒÙ„ Ø§Ù„Ø£Ø¯ÙˆØ§Ø± */
 /** @type {any[]} */
 const MANAGER_ONLY_ITEMS = [
-  { to: '/manager/employees', label: 'التقييم', tooltip: 'التقييم والمراجعات', icon: ICONS.star, showIf: 'isManager' },
+  { to: '/manager/employees', label: 'Ø§Ù„ØªÙ‚ÙŠÙŠÙ…', tooltip: 'Ø§Ù„ØªÙ‚ÙŠÙŠÙ… ÙˆØ§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø§Øª', icon: ICONS.star, showIf: 'isManager' },
 ];
 
 /**
- * خريطة القوائم حسب رقم الدور
- * المفتاح = userRole (رقم 1-13)
+ * Ø®Ø±ÙŠØ·Ø© Ø§Ù„Ù‚ÙˆØ§Ø¦Ù… Ø­Ø³Ø¨ Ø±Ù‚Ù… Ø§Ù„Ø¯ÙˆØ±
+ * Ø§Ù„Ù…ÙØªØ§Ø­ = userRole (Ø±Ù‚Ù… 1-13)
  * @type {Record<number, any[]>}
  */
 export const SIDEBAR_NAV_MAP = {
@@ -283,25 +296,26 @@ export const SIDEBAR_NAV_MAP = {
   4: developerItems,    // developer
   5: marketingItems,    // marketing
   6: salesItems,        // sales
-  7: salesItems,        // sales_leader (نفس واجهة المبيعات)
+  7: salesItems,        // sales_leader (Ù†ÙØ³ ÙˆØ§Ø¬Ù‡Ø© Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª)
   8: hrItems,           // hr
   9: creditItems,       // credit
   10: accountingItems,  // accounting
   11: inventoryItems,   // inventory
-  12: marketingItems,   // default (يعرض واجهة التسويق)
-  13: accountingItems,  // accountant (نفس واجهة المحاسبة)
+  12: marketingItems,   // default (ÙŠØ¹Ø±Ø¶ ÙˆØ§Ø¬Ù‡Ø© Ø§Ù„ØªØ³ÙˆÙŠÙ‚)
+  13: accountingItems,  // accountant (Ù†ÙØ³ ÙˆØ§Ø¬Ù‡Ø© Ø§Ù„Ù…Ø­Ø§Ø³Ø¨Ø©)
 };
 
 /**
- * الحصول على قائمة التنقل حسب الدور
- * @param {number} role - رقم الدور (1-13)
- * @returns {any[]} قائمة عناصر التنقل
+ * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„ØªÙ†Ù‚Ù„ Ø­Ø³Ø¨ Ø§Ù„Ø¯ÙˆØ±
+ * @param {number} role - Ø±Ù‚Ù… Ø§Ù„Ø¯ÙˆØ± (1-13)
+ * @returns {any[]} Ù‚Ø§Ø¦Ù…Ø© Ø¹Ù†Ø§ØµØ± Ø§Ù„ØªÙ†Ù‚Ù„
  */
 export function getNavItemsForRole(role) {
   const roleItems = SIDEBAR_NAV_MAP[role] || marketingItems;
-  // الإدمن (1): بدون رابط «التقييم» /manager/employees
+  // Ø§Ù„Ø¥Ø¯Ù…Ù† (1): Ø¨Ø¯ÙˆÙ† Ø±Ø§Ø¨Ø· Â«Ø§Ù„ØªÙ‚ÙŠÙŠÙ…Â» /manager/employees
   if (role === 1) {
     return roleItems;
   }
   return [...MANAGER_ONLY_ITEMS, ...roleItems];
 }
+

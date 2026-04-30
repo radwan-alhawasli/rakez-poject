@@ -41,14 +41,42 @@ import {
 /** @param {any} value */
 const isTruthyLeaderFlag = value => value === true || value === 1 || value === '1';
 
-/** قائد المبيعات: إما دور 7 (sales_leader) أو دور 6 (sales) مع is_manager/is_leader — نفس واجهة المبيعات. 
+/** قائد المبيعات: إما دور 7 (sales_leader) أو دور 6 (sales) مع is_leader فقط.
  * @param {User} user
 */
 export function isSalesLeader(user) {
   if (!user) return false;
   const role = normalizeRole(user.type);
   if (role === ROLE_SALES_LEADER) return true;
-  return isTruthyLeaderFlag(user.is_leader) || isTruthyLeaderFlag(user.is_manager);
+  return role === ROLE_SALES && isTruthyLeaderFlag(user.is_leader);
+}
+
+/**
+ * Sales Manager: role sales + is_manager=true + not executive director.
+ * @param {User} user
+ * @returns {boolean}
+ */
+export function isSalesManager(user) {
+  if (!user) return false;
+  const role = normalizeRole(user.type);
+  if (role !== ROLE_SALES) return false;
+  const isMgr = isTruthyLeaderFlag(user.is_manager);
+  const isExec = isTruthyLeaderFlag(/** @type {any} */ (user).is_executive_director);
+  return isMgr && !isExec;
+}
+
+/**
+ * Sales Executive: role sales + is_executive_director=true + not manager.
+ * @param {User} user
+ * @returns {boolean}
+ */
+export function isSalesExecutive(user) {
+  if (!user) return false;
+  const role = normalizeRole(user.type);
+  if (role !== ROLE_SALES) return false;
+  const isMgr = isTruthyLeaderFlag(user.is_manager);
+  const isExec = isTruthyLeaderFlag(/** @type {any} */ (user).is_executive_director);
+  return isExec && !isMgr;
 }
 
 /**

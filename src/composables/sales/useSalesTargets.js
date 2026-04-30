@@ -4,7 +4,7 @@ import notificationService from '@/services/notificationService';
 import { usePermissions } from '@/composables/usePermissions';
 import { useFormatters } from '@/composables/useFormatters';
 import authService from '@/services/authService';
-import { isSalesLeader } from '@/utils/rbac';
+import { isSalesExecutive, isSalesLeader, isSalesManager } from '@/utils/rbac';
 import logger from '@/utils/logger';
 
 import { 
@@ -26,12 +26,15 @@ export function useSalesTargets() {
   const isLoadingTargets = ref(false);
   const targetsLoadError = ref('');
   const showCreateTargetModal = ref(false);
+  const salesTargetMode = ref('legacy');
   const targetForm = reactive({
     assignee_marketer_id: '',
     contract_id: '',
     /** @type {any[]} */
     contract_unit_ids: [],
     assigned_target_value: 0,
+    line_type: '',
+    value: '',
     deadline: '',
   });
   /** @type {import('vue').Ref<any[]>} */
@@ -50,6 +53,13 @@ export function useSalesTargets() {
     perPage: 25,
     currentPage: 1,
   });
+
+  const resolveSalesTargetMode = () => {
+    const user = /** @type {any} */ (authService.getCurrentUser());
+    if (isSalesManager(user)) return 'manager';
+    if (isSalesExecutive(user)) return 'executive';
+    return 'legacy';
+  };
 
   /** @param {any} [options] */
   const loadTargets = async (options = {}) => {
@@ -71,7 +81,12 @@ export function useSalesTargets() {
     isLoadingTargets.value = true;
     try {
       let result;
-      if (contractScope) {
+      salesTargetMode.value = resolveSalesTargetMode();
+      if (salesTargetMode.value === 'manager') {
+        result = await salesService.getManagerTargets(params);
+      } else if (salesTargetMode.value === 'executive') {
+        result = await salesService.getExecutiveTargets(params);
+      } else if (contractScope) {
         result = await salesService.getTargetsByProject(contractScope, params);
         logger.info('[SalesTargets] by-project API:', { contractId: contractScope, total: result?.total });
       } else {
@@ -158,7 +173,16 @@ export function useSalesTargets() {
     }
     updatingTargetId.value = targetId;
     try {
-      await salesService.updateTarget(targetId, { status: mapStatusForApiPatch(statusNorm) });
+      salesTargetMode.value = resolveSalesTargetMode();
+      if (salesTargetMode.value === 'manager') {
+        notificationService.addNotification('Manager cannot update target status from this screen.', 'warning');
+        return;
+      }
+      if (salesTargetMode.value === 'executive') {
+        await salesService.updateExecutiveTarget(targetId, { status: mapStatusForApiPatch(statusNorm) });
+      } else {
+        await salesService.updateTarget(targetId, { status: mapStatusForApiPatch(statusNorm) });
+      }
       notificationService.addNotification('تم تحديث حالة الهدف', 'success');
       await loadTargets();
     } catch (err) {
@@ -283,6 +307,7 @@ export function useSalesTargets() {
   watch(
     () => targetForm.contract_id,
     (newContractId) => {
+      if (resolveSalesTargetMode() !== 'legacy') return;
       nextTick(() => {
         targetForm.contract_unit_ids = [];
         if (newContractId) {
@@ -302,6 +327,13 @@ export function useSalesTargets() {
    * @param {Function} loadTeamProjects 
    */
   const openCreateTargetModal = async (teamMembers, teamProjects, loadTeamMembers, loadTeamProjects) => {
+    salesTargetMode.value = resolveSalesTargetMode();
+    if (salesTargetMode.value === 'executive') {
+      targetForm.line_type = targetForm.line_type || '';
+      targetForm.value = targetForm.value || '';
+      showCreateTargetModal.value = true;
+      return;
+    }
     if (teamMembers.value.length === 0) await loadTeamMembers({ with_ratings: true });
     if (teamProjects.value.length === 0) await loadTeamProjects();
     targetFormUnits.value = [];
@@ -315,6 +347,53 @@ export function useSalesTargets() {
    * المرجع: docs/SALES_TARGETS_API_SUMMARY.md
    */
   const createTarget = async () => {
+    salesTargetMode.value = resolveSalesTargetMode();
+
+    if (salesTargetMode.value === 'manager') {
+      notificationService.addNotification('Sales manager cannot create targets from this screen.', 'warning');
+      return;
+    }
+
+    if (salesTargetMode.value === 'executive') {
+      try {
+        const lineType = String(targetForm.line_type || '').trim();
+        const valueRaw = targetForm.value ?? targetForm.assigned_target_value;
+        const valueNum = Number(valueRaw);
+        if (!lineType) {
+          notificationService.addNotification('Line type is required.', 'warning');
+          return;
+        }
+        if (!Number.isFinite(valueNum) || valueNum <= 0) {
+          notificationService.addNotification('Target value must be greater than zero.', 'warning');
+          return;
+        }
+
+        await salesService.createExecutiveTarget({
+          line_type: lineType,
+          value: String(valueNum),
+        });
+        notificationService.addNotification('Target created successfully.', 'success');
+        showCreateTargetModal.value = false;
+        await loadTargets();
+
+        Object.assign(targetForm, {
+          assignee_marketer_id: '',
+          contract_id: '',
+          contract_unit_ids: [],
+          assigned_target_value: 0,
+          line_type: '',
+          value: '',
+          deadline: '',
+        });
+      } catch (err) {
+        const error = /** @type {any} */ (err);
+        logger.error('Error creating executive target:', error);
+        const msg = error?.response?.data?.message || error?.message || 'Failed to create target';
+        notificationService.addNotification(msg, 'error');
+      }
+      return;
+    }
+
     const user = /** @type {any} */ (authService.getCurrentUser());
     const canManageTeam = hasPermission('sales.team.manage') || isSalesLeader(user);
     if (!canManageTeam) {
@@ -361,6 +440,8 @@ export function useSalesTargets() {
         contract_id: '',
         contract_unit_ids: [],
         assigned_target_value: 0,
+        line_type: '',
+        value: '',
         deadline: '',
       });
       targetFormUnits.value = [];
@@ -372,9 +453,34 @@ export function useSalesTargets() {
     }
   };
 
+  /**
+   * Sales Executive only: delete target line.
+   * @param {any} target
+   */
+  const deleteTarget = async target => {
+    salesTargetMode.value = resolveSalesTargetMode();
+    if (salesTargetMode.value !== 'executive') return;
+    const targetId = getSalesTargetPatchId(target);
+    if (targetId == null || targetId === '') {
+      notificationService.addNotification('Missing target id.', 'error');
+      return;
+    }
+    try {
+      await salesService.deleteExecutiveTarget(targetId);
+      notificationService.addNotification('Target deleted successfully.', 'success');
+      await loadTargets();
+    } catch (err) {
+      logger.error('Error deleting executive target:', err);
+      const error = /** @type {any} */ (err);
+      const msg = error?.response?.data?.message || error?.message || 'Failed to delete target';
+      notificationService.addNotification(msg, 'error');
+    }
+  };
+
   return {
     targets,
     targetsMeta,
+    salesTargetMode,
     activeContractId,
     updatingTargetId,
     patchTargetStatus,
@@ -395,6 +501,7 @@ export function useSalesTargets() {
     onTargetFullProjectChange,
     toggleTargetUnit,
     createTarget,
+    deleteTarget,
     formatCurrency,
     formatDate,
     hasPermission,

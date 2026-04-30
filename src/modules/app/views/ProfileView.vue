@@ -156,7 +156,7 @@ const jobRoleLabel = computed(() => {
   const u = user.value;
   if (!u) return 'غير محدد';
   return (
-    getRoleLabel(u.type, u.is_manager) || (typeof u.type === 'string' ? u.type : 'غير محدد')
+    getRoleLabel(u.type, { is_manager: u.is_manager, is_executive_director: u.is_executive_director }) || (typeof u.type === 'string' ? u.type : 'غير محدد')
   );
 });
 

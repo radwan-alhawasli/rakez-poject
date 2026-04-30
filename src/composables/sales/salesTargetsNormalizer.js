@@ -15,7 +15,8 @@ export function normalizeTargetStatus(raw) {
   const s = rawStatus.toLowerCase().replace(/-/g, '_');
   const ar = String(raw?.status_label_ar ?? '').trim();
   if (['completed', 'achieved', 'done', 'complete', 'closed'].includes(s)) return 'completed';
-  if (['in_progress', 'inprogress', 'progress', 'active'].includes(s)) return 'in_progress';
+  if (['in_progress', 'inprogress', 'progress', 'active', 'assigned', 'distributed'].includes(s))
+    return 'in_progress';
   if (['new', 'pending', 'draft', 'open'].includes(s)) return 'new';
   if (ar === 'منجز' || ar === 'مكتمل') return 'completed';
   if (ar === 'جديد') return 'new';
@@ -105,10 +106,12 @@ export function extractSalesTargetRowId(raw) {
 /** @param {any} raw */
 export function normalizeSalesTargetItem(raw) {
   if (!raw || typeof raw !== 'object') return raw;
+  const lineType = raw.line_type ?? raw.lineType ?? raw.type ?? '';
   const project = raw.project || raw.contract || {};
   const projectName =
     raw.project_name ??
     raw.project_title ??
+    lineType ??
     project.project_name ??
     project.name ??
     project.title ??
@@ -135,6 +138,7 @@ export function normalizeSalesTargetItem(raw) {
     mid != null && mid !== '' && Number.isFinite(Number(mid)) ? Number(mid) : mid;
 
   const targetValue = num(
+    raw.value ??
     raw.target_value ??
       raw.goal_amount ??
       raw.goal ??
@@ -158,6 +162,8 @@ export function normalizeSalesTargetItem(raw) {
   const endDate =
     raw.end_date ??
     raw.deadline ??
+    raw.updated_at ??
+    raw.created_at ??
     raw.period_end ??
     raw.target_end_date ??
     raw.ends_at ??
@@ -179,6 +185,12 @@ export function normalizeSalesTargetItem(raw) {
     end_date: resolvedEnd,
     deadline: raw.deadline ?? resolvedEnd,
     status: normalizedStatus,
+    line_type: lineType || raw.line_type || null,
+    team_ids: Array.isArray(raw.team_ids) ? raw.team_ids : [],
+    team_group_ids: Array.isArray(raw.team_group_ids) ? raw.team_group_ids : [],
+    teams: Array.isArray(raw.teams) ? raw.teams : [],
+    team_groups: Array.isArray(raw.team_groups) ? raw.team_groups : [],
+    member_users: Array.isArray(raw.member_users) ? raw.member_users : [],
   };
 }
 

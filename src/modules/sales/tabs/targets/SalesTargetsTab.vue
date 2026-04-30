@@ -1,3 +1,4 @@
+<!-- eslint-disable max-lines -->
 <template>
   <div class="targets-tab">
     <div class="welcome-header targets-hero">
@@ -24,7 +25,7 @@
           {{ targetsMeta.total === 1 ? 'هدف واحد في القائمة' : `${targetsMeta.total} أهداف في القائمة` }}
         </p>
       </div>
-      <button v-if="isSalesLeaderView || hasPermission('sales.team.manage')" @click="openCreateTargetModalClick" class="btn-add">
+      <button v-if="canCreateTarget" @click="openCreateTargetModalClick" class="btn-add">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -61,6 +62,32 @@
 
     <!-- View for Staff: Targets -->
     <div v-else>
+      <div v-if="isSalesExecutiveView" class="empty-state" style="margin-bottom: 16px;">
+        <div v-if="isLoadingExecutiveUnits">Loading available units...</div>
+        <div v-else-if="executiveUnitsError" class="error-state">
+          <p>{{ executiveUnitsError }}</p>
+          <button type="button" class="btn-add" @click="loadExecutiveAvailableUnits">Retry</button>
+        </div>
+        <div v-else>
+          <p style="margin-bottom: 8px; font-weight: 600;">Executive available units</p>
+          <div v-if="executiveUnitsRows.length === 0">No available-units data found.</div>
+          <div v-else class="targets-grid">
+            <div v-for="(row, idx) in executiveUnitsRows" :key="row.key || idx" class="target-card">
+              <div class="target-card-surface">
+                <div class="target-header">
+                  <div class="target-info">
+                    <h3 class="target-project-name">{{ row.label }}</h3>
+                  </div>
+                  <div class="target-value-block">
+                    <span class="target-value">{{ row.value }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <TableSkeleton v-if="isLoadingTargets" :rows="4" :columns="5" />
 
       <div v-else-if="targetsLoadError" class="empty-state error-state">
@@ -87,7 +114,7 @@
         :display-targets="displayTargets"
         :open-menu-id="openMenuId"
         :is-sales-leader-view="isSalesLeaderView"
-        :is-manager="isSalesLeaderView || hasPermission('sales.team.manage')"
+        :is-manager="isSalesManagerView || isSalesLeaderView || hasPermission('sales.team.manage')"
         :is-target-updating="isTargetUpdating"
         :get-target-status-class="getTargetStatusClass"
         :get-target-status-text="getTargetStatusText"
@@ -96,10 +123,15 @@
         :can-update-target="canUpdateTarget"
         :format-currency="formatCurrency"
         :format-date="formatDate"
+        :assign-action-label="assignActionLabel"
+        :allow-delete="isSalesExecutiveView"
+        :can-view-target-details="isSalesExecutiveView"
         @open-units-modal="openUnitsModal"
         @toggle-card-menu="toggleCardMenu"
         @assign-marketers="openAssignMarketers"
         @update-target-status="updateTargetStatus"
+        @delete-target="deleteTarget"
+        @view-target-details="openExecutiveTargetDetails"
       />
 
       <Pagination
@@ -117,6 +149,7 @@
     <SalesTargetsCreateTargetModal
       v-if="showCreateTargetModal"
       :open="showCreateTargetModal"
+      :mode="salesTargetMode"
       :target-form="targetForm"
       :team-members-list="teamMembersList"
       :team-projects-list="teamProjectsList"
@@ -133,10 +166,14 @@
     <SalesTargetsAssignMarketersModal
       v-if="assignTarget"
       v-model:selected-marketer-ids="selectedMarketerIds"
+      :title="assignModalTitle"
       :project-name="assignTarget.project_name || 'هدف مبيعات'"
-      :team-members-list="teamMembersList"
-      :loading-team-members="loadingTeamMembers"
+      :items-list="assignmentCandidates"
+      :loading-team-members="assignModalLoading"
       :assign-saving="assignSaving"
+      :empty-text="assignModalEmptyText"
+      :loading-text="assignModalLoadingText"
+      :save-label="assignActionLabel"
       @close="closeAssignMarketers"
       @save="saveAssignMarketers"
     />
@@ -176,11 +213,87 @@
       @submit="handleProjectAssignSubmit"
     />
 
+    <div
+      v-if="showExecutiveTargetModal"
+      class="assign-overlay"
+      dir="rtl"
+      lang="ar"
+      @click.self="closeExecutiveTargetModal"
+    >
+      <div class="assign-modal create-target-modal" role="dialog" aria-modal="true">
+        <div class="assign-modal-header">
+          <h3>Target details</h3>
+          <button type="button" class="assign-close" aria-label="Close" @click="closeExecutiveTargetModal">&times;</button>
+        </div>
+        <div class="create-target-form">
+          <div v-if="isLoadingExecutiveTargetDetails">Loading target details...</div>
+          <template v-else>
+            <div class="form-row">
+              <label class="form-label" for="exec-target-line-type">Line type</label>
+              <input
+                id="exec-target-line-type"
+                v-model="executiveTargetForm.line_type"
+                type="text"
+                class="form-input"
+                placeholder="line type"
+              />
+            </div>
+
+            <div class="form-row">
+              <label class="form-label" for="exec-target-value">Value</label>
+              <input
+                id="exec-target-value"
+                v-model.number="executiveTargetForm.value"
+                type="number"
+                min="0"
+                step="1"
+                class="form-input"
+                placeholder="0"
+              />
+            </div>
+
+            <div class="form-row">
+              <label class="form-label">Status</label>
+              <input :value="executiveTargetDetails?.status || '-'" type="text" class="form-input" disabled />
+            </div>
+
+            <div class="form-row">
+              <label class="form-label">Team IDs</label>
+              <input
+                :value="(executiveTargetDetails?.team_ids || []).join(', ') || '-'"
+                type="text"
+                class="form-input"
+                disabled
+              />
+            </div>
+
+            <div class="form-row">
+              <label class="form-label">Group IDs</label>
+              <input
+                :value="(executiveTargetDetails?.team_group_ids || []).join(', ') || '-'"
+                type="text"
+                class="form-input"
+                disabled
+              />
+            </div>
+
+            <div class="create-target-actions">
+              <button type="button" class="btn-add" :disabled="isSavingExecutiveTargetDetails" @click="saveExecutiveTargetDetails">
+                {{ isSavingExecutiveTargetDetails ? 'Saving...' : 'Save changes' }}
+              </button>
+              <button type="button" class="btn-secondary" @click="closeExecutiveTargetModal">Close</button>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, inject, unref } from 'vue';
+/* eslint-disable max-lines */
+import { ref, reactive, computed, onMounted, onUnmounted, watch, inject, unref } from 'vue';
 import { useRoute } from 'vue-router';
 import { CardSkeleton, TableSkeleton } from '@/components/ui/skeleton';
 import Pagination from '@/components/Pagination.vue';
@@ -192,7 +305,11 @@ import ProjectBoardCard from '@/modules/sales/components/ProjectBoardCard.vue';
 import ProjectDetailsModal from '@/modules/sales/components/ProjectDetailsModal.vue';
 import ProjectUnitsDetailsModal from '@/modules/sales/components/ProjectUnitsDetailsModal.vue';
 import SalesTargetList from '@/modules/sales/tabs/targets/components/SalesTargetList.vue';
-import { useSalesTargets, normalizeSalesTargetItem } from '@/composables/sales/useSalesTargets';
+import {
+  useSalesTargets,
+  normalizeSalesTargetItem,
+  getSalesTargetPatchId,
+} from '@/composables/sales/useSalesTargets';
 
 
 
@@ -201,7 +318,7 @@ import { useSalesTeam } from '@/composables/sales/useSalesTeam';
 import authService from '@/services/authService';
 import salesService from '@/services/salesService';
 import notificationService from '@/services/notificationService';
-import { isSalesLeader } from '@/utils/rbac';
+import { isSalesExecutive, isSalesLeader, isSalesManager } from '@/utils/rbac';
 
 const route = useRoute();
 /** أولوية على query: لوحة المشروع تمرّر ref معرّف العقد */
@@ -214,6 +331,7 @@ const {
   getTargetStatusClass, getTargetStatusText, getProgressPercentage, getDisplayedAchievedValue,
   loadTargets, patchTargetStatus, isTargetUpdating,
   openCreateTargetModal, onTargetFullProjectChange, toggleTargetUnit, createTarget,
+  salesTargetMode, deleteTarget,
 } = useSalesTargets();
 const { teamMembers, teamProjects, loadTeamMembers, loadTeamProjects, isLoadingTeamProjects, teamProjectsLoadError } = useSalesTeam();
 
@@ -265,6 +383,146 @@ async function handleProjectAssignSubmit(data) {
   }
 }
 
+async function loadManagerTeams() {
+  loadingManagerTeams.value = true;
+  try {
+    const list = await salesService.getSalesTeams();
+    managerTeams.value = Array.isArray(list) ? list : [];
+  } catch (err) {
+    managerTeams.value = [];
+    const msg = err?.response?.data?.message || err?.message || 'فشل تحميل الفرق.';
+    notificationService.addNotification(msg, 'error');
+  } finally {
+    loadingManagerTeams.value = false;
+  }
+}
+
+function normalizeExecutiveUnitsRows(payload) {
+  const data = payload?.data ?? payload;
+  if (Array.isArray(data)) {
+    return data.map((item, index) => ({
+      key: item?.id ?? item?.key ?? `item-${index}`,
+      label: item?.label ?? item?.line_type ?? item?.name ?? `Item ${index + 1}`,
+      value:
+        item?.count ??
+        item?.value ??
+        item?.available_units ??
+        item?.units_count ??
+        item?.total ??
+        0,
+    }));
+  }
+
+  if (data && typeof data === 'object') {
+    const buckets = [
+      data.available_units,
+      data.units,
+      data.items,
+      data.line_types,
+      data.types,
+    ];
+    for (const bucket of buckets) {
+      if (Array.isArray(bucket)) return normalizeExecutiveUnitsRows(bucket);
+    }
+
+    return Object.entries(data)
+      .filter(([, value]) => ['number', 'string'].includes(typeof value))
+      .map(([key, value]) => ({
+        key,
+        label: key.replace(/_/g, ' '),
+        value,
+      }));
+  }
+
+  return [];
+}
+
+async function loadExecutiveAvailableUnits() {
+  if (!isSalesExecutiveView.value) return;
+  isLoadingExecutiveUnits.value = true;
+  executiveUnitsError.value = '';
+  try {
+    const result = await salesService.getExecutiveAvailableUnits();
+    executiveUnitsRows.value = normalizeExecutiveUnitsRows(result);
+  } catch (err) {
+    executiveUnitsRows.value = [];
+    executiveUnitsError.value =
+      err?.response?.data?.message || err?.message || 'Failed to load available units';
+  } finally {
+    isLoadingExecutiveUnits.value = false;
+  }
+}
+
+async function openExecutiveTargetDetails(target) {
+  if (!isSalesExecutiveView.value) return;
+  const targetId = getSalesTargetPatchId(target);
+  if (!targetId) {
+    notificationService.addNotification('Missing target id.', 'error');
+    return;
+  }
+
+  openMenuId.value = null;
+  showExecutiveTargetModal.value = true;
+  isLoadingExecutiveTargetDetails.value = true;
+  try {
+    const result = await salesService.getExecutiveTarget(targetId);
+    const normalized = normalizeSalesTargetItem(result);
+    executiveTargetDetails.value = normalized;
+    executiveTargetForm.line_type = normalized?.line_type || '';
+    executiveTargetForm.value =
+      normalized?.value ?? normalized?.target_value ?? normalized?.assigned_target_value ?? '';
+  } catch (err) {
+    showExecutiveTargetModal.value = false;
+    const msg = err?.response?.data?.message || err?.message || 'Failed to load target details';
+    notificationService.addNotification(msg, 'error');
+  } finally {
+    isLoadingExecutiveTargetDetails.value = false;
+  }
+}
+
+function closeExecutiveTargetModal() {
+  showExecutiveTargetModal.value = false;
+  executiveTargetDetails.value = null;
+  executiveTargetForm.line_type = '';
+  executiveTargetForm.value = '';
+}
+
+async function saveExecutiveTargetDetails() {
+  const targetId = getSalesTargetPatchId(executiveTargetDetails.value);
+  if (!targetId) {
+    notificationService.addNotification('Missing target id.', 'error');
+    return;
+  }
+
+  const lineType = String(executiveTargetForm.line_type || '').trim();
+  const valueNumber = Number(executiveTargetForm.value);
+  if (!lineType) {
+    notificationService.addNotification('Line type is required.', 'warning');
+    return;
+  }
+  if (!Number.isFinite(valueNumber) || valueNumber <= 0) {
+    notificationService.addNotification('Target value must be greater than zero.', 'warning');
+    return;
+  }
+
+  isSavingExecutiveTargetDetails.value = true;
+  try {
+    await salesService.updateExecutiveTarget(targetId, {
+      line_type: lineType,
+      value: String(valueNumber),
+    });
+    const refreshed = await salesService.getExecutiveTarget(targetId);
+    executiveTargetDetails.value = normalizeSalesTargetItem(refreshed);
+    notificationService.addNotification('Target updated successfully.', 'success');
+    await loadTargets();
+  } catch (err) {
+    const msg = err?.response?.data?.message || err?.message || 'Failed to update target';
+    notificationService.addNotification(msg, 'error');
+  } finally {
+    isSavingExecutiveTargetDetails.value = false;
+  }
+}
+
 
 function resolveContractScopeFromContext() {
   const inj = unref(injectedContractId);
@@ -294,10 +552,65 @@ const unitsModalLoading = ref(false);
 const unitsModalError = ref('');
 const unitsModalRows = ref([]);
 const unitsModalUnfilteredCount = ref(0);
+const managerTeams = ref([]);
+const loadingManagerTeams = ref(false);
+const executiveUnitsRows = ref([]);
+const isLoadingExecutiveUnits = ref(false);
+const executiveUnitsError = ref('');
+const showExecutiveTargetModal = ref(false);
+const isLoadingExecutiveTargetDetails = ref(false);
+const isSavingExecutiveTargetDetails = ref(false);
+const executiveTargetDetails = ref(null);
+const executiveTargetForm = reactive({
+  line_type: '',
+  value: '',
+});
 
 const teamMembersList = computed(() => Array.isArray(teamMembers.value) ? teamMembers.value : []);
 const teamProjectsList = computed(() => Array.isArray(teamProjects.value) ? teamProjects.value : []);
 const isSalesLeaderView = computed(() => isSalesLeader(authService.getCurrentUser()));
+const isSalesManagerView = computed(() => isSalesManager(authService.getCurrentUser()));
+const isSalesExecutiveView = computed(() => isSalesExecutive(authService.getCurrentUser()));
+watch(
+  isSalesExecutiveView,
+  (isExecutive) => {
+    if (isExecutive) {
+      loadExecutiveAvailableUnits();
+      return;
+    }
+    executiveUnitsRows.value = [];
+    executiveUnitsError.value = '';
+  },
+  { immediate: true }
+);
+const canCreateTarget = computed(
+  () => !isSalesManagerView.value && (isSalesExecutiveView.value || isSalesLeaderView.value || hasPermission('sales.team.manage'))
+);
+const assignmentCandidates = computed(() => {
+  if (isSalesManagerView.value) {
+    return (Array.isArray(managerTeams.value) ? managerTeams.value : []).map(t => ({
+      id: t.id ?? t.team_id,
+      name: t.name || t.team_name || `Team #${t.id ?? t.team_id}`,
+    }));
+  }
+  return teamMembersList.value;
+});
+const assignModalTitle = computed(() =>
+  isSalesManagerView.value ? 'تعيين الهدف على الفرق' : 'إضافة مسوقين للمشروع'
+);
+const assignActionLabel = computed(() =>
+  isSalesManagerView.value ? 'تعيين فرق للهدف' : 'إضافة مسوقين للمشروع'
+);
+
+const assignModalLoading = computed(() =>
+  isSalesManagerView.value ? loadingManagerTeams.value : loadingTeamMembers.value
+);
+const assignModalEmptyText = computed(() =>
+  isSalesManagerView.value ? 'لا توجد فرق متاحة.' : 'لا يوجد مسوقون متاحون.'
+);
+const assignModalLoadingText = computed(() =>
+  isSalesManagerView.value ? 'جاري تحميل الفرق...' : 'جاري تحميل أعضاء الفريق...'
+);
 
 const filteredUnitsModalRows = computed(() => {
   const rows = unitsModalRows.value;
@@ -317,7 +630,14 @@ const currentUserId = computed(() => {
 const displayTargets = computed(() => {
   const list = Array.isArray(targets.value) ? targets.value : [];
   // قائد المبيعات يرى كل شيء؛ أو من لديه صلاحية إدارة الفريق.
-  if (isSalesLeaderView.value || hasPermission('sales.team.manage')) return list;
+  if (
+    isSalesLeaderView.value ||
+    isSalesManagerView.value ||
+    isSalesExecutiveView.value ||
+    hasPermission('sales.team.manage')
+  ) {
+    return list;
+  }
   
   if (currentUserId.value == null) return [];
   
@@ -332,6 +652,8 @@ const displayTargets = computed(() => {
 
 function canUpdateTarget(target) {
   if (!target) return false;
+  if (isSalesManagerView.value) return false;
+  if (isSalesExecutiveView.value) return true;
   const isManager = isSalesLeaderView.value || hasPermission('sales.team.manage');
   /** قائد الفريق / مدير الفريق: يحدّث أهداف أي مسوق — لا يعتمد على sales.targets.update أو تعرّف المستخدم إن نقصا من الـ API */
   if (isManager) return true;
@@ -385,7 +707,7 @@ async function openUnitsModal(target) {
   unitsModalLoading.value = true;
   try {
     const data = await salesService.getTargetsByProject(contractId);
-    const list = Array.isArray(data) ? data : [];
+    const list = Array.isArray(data) ? data : data?.items ?? [];
     const rows = buildUnitsModalRows(list, normalizeSalesTargetItem);
     unitsModalRows.value = rows;
     unitsModalUnfilteredCount.value = rows.length;
@@ -417,9 +739,14 @@ function toggleCardMenu(id) {
 
 function openAssignMarketers(target) {
   openMenuId.value = null;
-  if (!target.contract_id) return;
   assignTarget.value = target;
   selectedMarketerIds.value = [];
+  if (isSalesManagerView.value) {
+    if (assignmentCandidates.value.length === 0) {
+      loadManagerTeams();
+    }
+    return;
+  }
   if (teamMembersList.value.length === 0) {
     loadingTeamMembers.value = true;
     loadTeamMembers().finally(() => { loadingTeamMembers.value = false; });
@@ -432,7 +759,26 @@ function closeAssignMarketers() {
 }
 
 async function saveAssignMarketers() {
-  if (!assignTarget.value?.contract_id || selectedMarketerIds.value.length === 0 || (!isSalesLeaderView.value && !hasPermission('sales.team.manage'))) return;
+  if (!assignTarget.value || selectedMarketerIds.value.length === 0) return;
+
+  if (isSalesManagerView.value) {
+    const targetId = getSalesTargetPatchId(assignTarget.value);
+    if (!targetId) return;
+    assignSaving.value = true;
+    try {
+      await salesService.assignTargetToTeams(targetId, selectedMarketerIds.value);
+      notificationService.addNotification('تم تعيين الهدف على الفرق بنجاح', 'success');
+      closeAssignMarketers();
+      await loadTargets();
+    } catch (err) {
+      notificationService.addNotification(err?.response?.data?.message || 'فشل حفظ التعيين', 'error');
+    } finally {
+      assignSaving.value = false;
+    }
+    return;
+  }
+
+  if (!assignTarget.value?.contract_id || (!isSalesLeaderView.value && !hasPermission('sales.team.manage'))) return;
   const contractId = assignTarget.value.contract_id;
   const startDate = new Date().toISOString().split('T')[0];
   const endDate = assignTarget.value.end_date || assignTarget.value.deadline || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0];
@@ -479,7 +825,9 @@ function onDocumentClick(e) {
 
 onMounted(() => {
   document.addEventListener('click', onDocumentClick);
-  if (isSalesLeaderView.value || hasPermission('sales.team.manage')) {
+  if (isSalesManagerView.value) {
+    loadManagerTeams();
+  } else if (isSalesLeaderView.value || hasPermission('sales.team.manage')) {
     loadTeamMembers({ with_ratings: true });
     loadTeamProjects();
   }

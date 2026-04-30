@@ -64,6 +64,12 @@ export default [
     component: () => import('@/modules/admin/views/AdminLocationsView.vue'),
     meta: { roles: [ROLE_ADMIN] },
   },
+  {
+    path: 'admin/order-marketing-developers',
+    name: 'AdminOrderMarketingDevelopers',
+    component: () => import('@/modules/admin/views/AdminLocationsView.vue'),
+    meta: { roles: [ROLE_ADMIN] },
+  },
   { path: 'exclusive-request', name: 'ExclusiveRequest', component: () => import('@/modules/projects/views/ExclusiveProjectView.vue') },
   { path: 'my-requests', name: 'MyRequests', component: () => import('@/modules/projects/views/MyRequestsView.vue') },
   {

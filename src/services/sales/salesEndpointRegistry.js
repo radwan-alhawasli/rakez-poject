@@ -93,6 +93,51 @@ export const SALES_API_ENDPOINT_REGISTRY = {
     endpoint: '/sales/targets/{target_id}',
     source: 'preferred_249',
   },
+  getExecutiveAvailableUnits: {
+    method: 'GET',
+    endpoint: '/sales/executive/available-units',
+    source: 'phase1_sales_roles',
+  },
+  getExecutiveTargets: {
+    method: 'GET',
+    endpoint: '/sales/executive-director-lines',
+    source: 'phase1_sales_roles',
+  },
+  getExecutiveTarget: {
+    method: 'GET',
+    endpoint: '/sales/executive-director-lines/{target_id}',
+    source: 'phase1_sales_roles',
+  },
+  createExecutiveTarget: {
+    method: 'POST',
+    endpoint: '/sales/executive-director-lines',
+    source: 'phase1_sales_roles',
+  },
+  updateExecutiveTarget: {
+    method: 'PUT',
+    endpoint: '/sales/executive-director-lines/{target_id}',
+    source: 'phase1_sales_roles',
+  },
+  deleteExecutiveTarget: {
+    method: 'DELETE',
+    endpoint: '/sales/executive-director-lines/{target_id}',
+    source: 'phase1_sales_roles',
+  },
+  getManagerTargets: {
+    method: 'GET',
+    endpoint: '/sales/executive/targets',
+    source: 'phase1_sales_roles',
+  },
+  getSalesTeams: {
+    method: 'GET',
+    endpoint: '/sales/team/index',
+    source: 'phase1_sales_roles',
+  },
+  assignTargetToTeams: {
+    method: 'POST',
+    endpoint: '/sales/executive-director-lines/{target_id}/teams',
+    source: 'phase1_sales_roles',
+  },
   getMyAttendance: { method: 'GET', endpoint: '/sales/attendance/my', source: 'preferred_249' },
   getTeamAttendance: { method: 'GET', endpoint: '/sales/attendance/team', source: 'preferred_249' },
   createSchedule: {

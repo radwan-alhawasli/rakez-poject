@@ -28,6 +28,7 @@ export const VIEW_DOMAIN_MAP = {
   hr: ['UsersView', 'TeamsView', 'TeamManagementView'],
   inventory: ['InventoryView'],
   accounting: ['AccountingView'],
+  admin: ['AdminLocationsView'],
   editor: ['ImageApprovalView'],
   manager: [
     'ManagerLayout',

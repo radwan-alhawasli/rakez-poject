@@ -28,6 +28,37 @@ function unwrapSalesTargetsList(response) {
 }
 
 /**
+ * @param {import('axios').AxiosResponse|any} response
+ * @returns {{ items: unknown[]; total: number }}
+ */
+function unwrapExecutiveTargetsList(response) {
+  const { items, total } = extractPaginatedData(response, []);
+  if (Array.isArray(items) && items.length > 0) return { items, total };
+
+  const data = response?.data ?? response;
+  if (Array.isArray(data)) return { items: data, total: data.length };
+  if (Array.isArray(data?.data)) return { items: data.data, total: data.total ?? data.data.length };
+  if (Array.isArray(data?.items)) return { items: data.items, total: data.total ?? data.items.length };
+  if (Array.isArray(data?.targets))
+    return { items: data.targets, total: data.total ?? data.targets.length };
+  if (Array.isArray(data?.lines)) return { items: data.lines, total: data.total ?? data.lines.length };
+
+  const nested = data?.data;
+  if (nested && typeof nested === 'object') {
+    if (Array.isArray(nested.items))
+      return { items: nested.items, total: nested.total ?? nested.items.length };
+    if (Array.isArray(nested.lines))
+      return { items: nested.lines, total: nested.total ?? nested.lines.length };
+    if (Array.isArray(nested.targets))
+      return { items: nested.targets, total: nested.total ?? nested.targets.length };
+    if (Array.isArray(nested.data))
+      return { items: nested.data, total: nested.total ?? nested.data.length };
+  }
+
+  return { items: [], total: 0 };
+}
+
+/**
  * PATCH {apiClient baseURL}/sales/targets/{id}
  * يطابق طلب المتصفح مثل: https://api.rakez.com.sa/api/sales/targets/4 (طريقة PATCH، حالة 200)
  * يُستخدم لتحديث حالة الهدف للمسوق العادي وقائد المبيعات بنفس المسار.
@@ -44,6 +75,21 @@ function patchSalesTargetRecord(targetId, data) {
 export const salesServiceCoreMethods = {
   getDashboard(params = {}) {
     return apiClient.get('/sales/dashboard', { params });
+  },
+
+  /**
+   * Executive dashboard/available units.
+   * GET /sales/executive/available-units
+   * @param {any} params
+   * @returns {Promise<Object>}
+   */
+  async getExecutiveAvailableUnits(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/executive/available-units', { params });
+      return response.data?.data ?? response.data ?? {};
+    } catch (error) {
+      return handleServiceError(error, 'Fetch executive available units', 'get', {});
+    }
   },
 
   // Projects
@@ -302,6 +348,117 @@ export const salesServiceCoreMethods = {
    */
   createTarget(data) {
     return apiClient.post('sales/targets', data);
+  },
+
+  /**
+   * Sales Executive: list own targets/lines.
+   * GET /sales/executive-director-lines
+   * @param {any} params
+   * @returns {Promise<{ items: unknown[]; total: number }>}
+   */
+  async getExecutiveTargets(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/executive-director-lines', { params });
+      return unwrapExecutiveTargetsList(response);
+    } catch (error) {
+      return handleServiceError(error, 'Fetch executive targets', 'get', { items: [], total: 0 });
+    }
+  },
+
+  /**
+   * Sales Executive: show a target/line.
+   * GET /sales/executive-director-lines/{targetId}
+   * @param {number|string} targetId
+   * @returns {Promise<Object>}
+   */
+  async getExecutiveTarget(targetId) {
+    const response = await apiClient.get(`/sales/executive-director-lines/${targetId}`);
+    return response.data?.data ?? response.data ?? {};
+  },
+
+  /**
+   * Sales Executive: create target/line.
+   * POST /sales/executive-director-lines
+   * @param {{ line_type?: string; value?: string|number; [key: string]: any }} data
+   * @returns {Promise<Object>}
+   */
+  async createExecutiveTarget(data) {
+    const response = await apiClient.post('/sales/executive-director-lines', data);
+    return response.data?.data ?? response.data ?? {};
+  },
+
+  /**
+   * Sales Executive: update target/line.
+   * PUT /sales/executive-director-lines/{targetId}
+   * @param {number|string} targetId
+   * @param {Record<string, any>} data
+   * @returns {Promise<Object>}
+   */
+  async updateExecutiveTarget(targetId, data) {
+    const response = await apiClient.put(`/sales/executive-director-lines/${targetId}`, data);
+    return response.data?.data ?? response.data ?? {};
+  },
+
+  /**
+   * Sales Executive: delete target/line.
+   * DELETE /sales/executive-director-lines/{targetId}
+   * @param {number|string} targetId
+   * @returns {Promise<Object>}
+   */
+  async deleteExecutiveTarget(targetId) {
+    const response = await apiClient.delete(`/sales/executive-director-lines/${targetId}`);
+    return response.data?.data ?? response.data ?? {};
+  },
+
+  /**
+   * Sales Manager: list all executive targets.
+   * GET /sales/executive/targets
+   * @param {any} params
+   * @returns {Promise<{ items: unknown[]; total: number }>}
+   */
+  async getManagerTargets(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/executive/targets', { params });
+      return unwrapExecutiveTargetsList(response);
+    } catch (error) {
+      return handleServiceError(error, 'Fetch manager targets', 'get', { items: [], total: 0 });
+    }
+  },
+
+  /**
+   * Sales Manager: list teams.
+   * GET /sales/team/index
+   * @param {any} params
+   * @returns {Promise<unknown[]>}
+   */
+  async getSalesTeams(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/team/index', { params });
+      const { items } = extractPaginatedData(response, []);
+      if (Array.isArray(items) && items.length > 0) return items;
+      const data = response?.data?.data ?? response?.data ?? [];
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data?.items)) return data.items;
+      if (Array.isArray(data?.teams)) return data.teams;
+      return [];
+    } catch (error) {
+      return handleServiceError(error, 'Fetch sales teams', 'get', []);
+    }
+  },
+
+  /**
+   * Sales Manager: assign executive target to team(s).
+   * POST /sales/executive-director-lines/{targetId}/teams
+   * @param {number|string} targetId
+   * @param {Array<number|string>} teamIds
+   * @returns {Promise<Object>}
+   */
+  async assignTargetToTeams(targetId, teamIds = []) {
+    const ids = Array.isArray(teamIds) ? teamIds.map(x => Number(x)).filter(x => Number.isFinite(x)) : [];
+    const response = await apiClient.post(`/sales/executive-director-lines/${targetId}/teams`, {
+      team_ids: ids,
+    });
+    return response.data?.data ?? response.data ?? {};
   },
 
   // Attendance

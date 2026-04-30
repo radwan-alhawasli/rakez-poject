@@ -16,7 +16,6 @@
       @keydown.space.prevent="target.contract_id && openUnitsModal(target)"
     >
       <div class="target-card-surface">
-        <!-- شارة إنجاز — شريط علوي أنيق -->
         <div v-if="isTargetCompleted(target)" class="target-card-ribbon" aria-hidden="true">
           <span class="target-card-ribbon__icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -26,7 +25,6 @@
           <span class="target-card-ribbon__text">مكتمل</span>
         </div>
 
-        <!-- زر ثلاث نقاط — أعلى يسار البطاقة -->
         <div class="card-menu-wrap" @click.stop>
           <button
             type="button"
@@ -44,12 +42,20 @@
           </button>
           <div v-if="openMenuId === getTargetStableId(target, targetIndex)" class="card-dropdown" @click.stop>
             <button
+              v-if="canViewTargetDetails"
+              type="button"
+              class="card-dropdown-item"
+              @click="$emit('view-target-details', target)"
+            >
+              View target details
+            </button>
+            <button
               v-if="isManager"
               type="button"
               class="card-dropdown-item"
               @click="$emit('assign-marketers', target)"
             >
-              إضافة مسوقين للمشروع
+              {{ assignActionLabel }}
             </button>
             <template v-if="canUpdateTarget(target)">
               <div class="card-dropdown-status">
@@ -75,6 +81,14 @@
                 جعل منجز (تحقق)
               </button>
             </template>
+            <button
+              v-if="allowDelete"
+              type="button"
+              class="card-dropdown-item"
+              @click="$emit('delete-target', target)"
+            >
+              حذف الهدف
+            </button>
           </div>
         </div>
 
@@ -82,15 +96,14 @@
           <div class="target-header">
             <div class="target-info">
               <h3 class="target-project-name">{{ target.project_name || 'هدف مبيعات' }}</h3>
-              
-              <!-- عرض الموقع إن وُجد -->
+
               <div v-if="target.project_location" class="target-location">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                   <circle cx="12" cy="10" r="3"></circle>
                 </svg>
                 <span>
-                  {{ target.project_location.city_name || 'الرياض' }} 
+                  {{ target.project_location.city_name || 'الرياض' }}
                   {{ target.project_location.district_name ? ` - ${target.project_location.district_name}` : '' }}
                 </span>
               </div>
@@ -130,20 +143,19 @@
             </div>
           </div>
 
-          <!-- خيار تحديد الحالة للمسوق -->
           <div class="target-card-actions" v-if="canUpdateTarget(target)" @click.stop>
-            <button 
-              type="button" 
-              class="btn-status-toggle" 
+            <button
+              type="button"
+              class="btn-status-toggle"
               :class="{ 'active': target.status === 'in_progress' }"
               :disabled="isTargetUpdating(target)"
               @click="updateTargetStatus(target, 'in_progress')"
             >
               قيد التنفيذ
             </button>
-            <button 
-              type="button" 
-              class="btn-status-toggle btn-success" 
+            <button
+              type="button"
+              class="btn-status-toggle btn-success"
               :class="{ 'active': target.status === 'completed' }"
               :disabled="isTargetUpdating(target)"
               @click="updateTargetStatus(target, 'completed')"
@@ -151,7 +163,7 @@
               مكتمل
             </button>
           </div>
-          
+
           <span v-else class="target-status" :class="getTargetStatusClass(target)">
             {{ target.status_label_ar || getTargetStatusText(target) }}
           </span>
@@ -172,55 +184,74 @@ import {
 defineProps({
   displayTargets: {
     type: Array,
-    required: true
+    required: true,
   },
   openMenuId: {
     type: [String, Number],
-    default: null
+    default: null,
   },
   isSalesLeaderView: {
     type: Boolean,
-    default: false
+    default: false,
   },
   isManager: {
     type: Boolean,
-    default: false
+    default: false,
   },
   isTargetUpdating: {
     type: Function,
-    required: true
+    required: true,
   },
   getTargetStatusClass: {
     type: Function,
-    required: true
+    required: true,
   },
   getTargetStatusText: {
     type: Function,
-    required: true
+    required: true,
   },
   getProgressPercentage: {
     type: Function,
-    required: true
+    required: true,
   },
   getDisplayedAchievedValue: {
     type: Function,
-    required: true
+    required: true,
   },
   canUpdateTarget: {
     type: Function,
-    required: true
+    required: true,
   },
   formatCurrency: {
     type: Function,
-    required: true
+    required: true,
   },
   formatDate: {
     type: Function,
-    required: true
-  }
+    required: true,
+  },
+  assignActionLabel: {
+    type: String,
+    default: 'إضافة مسوقين للمشروع',
+  },
+  allowDelete: {
+    type: Boolean,
+    default: false,
+  },
+  canViewTargetDetails: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emit = defineEmits(['open-units-modal', 'toggle-card-menu', 'assign-marketers', 'update-target-status']);
+const emit = defineEmits([
+  'open-units-modal',
+  'toggle-card-menu',
+  'assign-marketers',
+  'update-target-status',
+  'delete-target',
+  'view-target-details',
+]);
 
 const TARGET_STATUS_OPTIONS = [
   { value: 'new', label: 'جديد' },

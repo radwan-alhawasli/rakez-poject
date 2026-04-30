@@ -1,5 +1,5 @@
 /**
- * أدوار المستخدمين — معرّفات رقمية ومفاتيح النص كما في الـ API
+ * User roles constants and labels.
  * 1: admin, 2: project_management, 3: editor, 4: developer, 5: marketing,
  * 6: sales, 7: sales_leader, 8: hr, 9: credit, 10: accounting, 11: inventory,
  * 12: default, 13: accountant
@@ -18,7 +18,6 @@ export const ROLE_INVENTORY = 11;
 export const ROLE_DEFAULT = 12;
 export const ROLE_ACCOUNTANT = 13;
 
-/** مفتاح النص ← المعرّف الرقمي (للاستجابة من الـ API) */
 /** @type {Record<string, number>} */
 export const ROLE_MAP = {
   admin: ROLE_ADMIN,
@@ -36,7 +35,6 @@ export const ROLE_MAP = {
   accountant: ROLE_ACCOUNTANT,
 };
 
-/** المعرّف الرقمي ← { label عربي احترافي، key، class للـ badge } */
 /** @type {Record<number, { label: string; key: string; class: string }>} */
 export const ROLES = {
   [ROLE_ADMIN]: { label: 'الإدارة', key: 'admin', class: 'role-admin' },
@@ -54,10 +52,6 @@ export const ROLES = {
   [ROLE_ACCOUNTANT]: { label: 'المحاسب', key: 'accountant', class: 'role-accountant' },
 };
 
-/**
- * قائمة الأدوار لاستخدامها في نموذج إضافة/تعديل المستخدم (القسم / الإدارة).
- * ترتيب احترافي: الإدارة أولاً، ثم الأقسام التشغيلية.
- */
 export const ROLE_OPTIONS = [
   { value: ROLE_ADMIN, label: 'الإدارة' },
   { value: ROLE_PROJECT_MANAGEMENT, label: 'إدارة المشاريع' },
@@ -97,6 +91,21 @@ export const getRoleLabel = (type, isManager = false) => {
   const roleKey = resolveRoleKey(type);
   if (roleKey === ROLE_PROJECT_MANAGEMENT && isManager) {
     return 'مدير إدارة المشاريع';
+  }
+  if (roleKey === ROLE_SALES) {
+    const flags = /** @type {any} */ (isManager);
+    if (flags && typeof flags === 'object') {
+      const isMgr =
+        flags.is_manager === true || flags.is_manager === 1 || flags.is_manager === '1';
+      const isExec =
+        flags.is_executive_director === true ||
+        flags.is_executive_director === 1 ||
+        flags.is_executive_director === '1';
+      if (isMgr && !isExec) return 'مدير المبيعات';
+      if (isExec && !isMgr) return 'المدير التنفيذي للمبيعات';
+    } else if (isManager === true) {
+      return 'مدير المبيعات';
+    }
   }
   const entry = roleKey != null ? ROLES[roleKey] : undefined;
   return entry?.label ?? (type != null && type !== '' ? `دور ${type}` : 'غير محدد');
