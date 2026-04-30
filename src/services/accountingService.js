@@ -89,7 +89,7 @@ const accountingService = {
         unread_notifications: raw.unread_notifications,
       };
     } catch (error) {
-      return handleServiceError(error, 'Error fetching accounting dashboard', 'get', {}) || {};
+      return handleServiceError(error, 'Error , fetching accounting dashboard', 'get', {}) || {};
     }
   },
 
