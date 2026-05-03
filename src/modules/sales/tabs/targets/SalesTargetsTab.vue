@@ -88,6 +88,25 @@
         </div>
       </div>
 
+      <div v-if="showMemberOverviewCards" class="member-overview-grid">
+        <div class="member-overview-card">
+          <span class="member-overview-label">إجمالي الأهداف</span>
+          <strong class="member-overview-value">{{ targetsOverview.assigned_lines_count }}</strong>
+        </div>
+        <div class="member-overview-card">
+          <span class="member-overview-label">قيد التنفيذ</span>
+          <strong class="member-overview-value">{{ targetsOverview.in_progress_lines_count }}</strong>
+        </div>
+        <div class="member-overview-card">
+          <span class="member-overview-label">مكتمل</span>
+          <strong class="member-overview-value">{{ targetsOverview.completed_lines_count }}</strong>
+        </div>
+        <div class="member-overview-card">
+          <span class="member-overview-label">معدل الإنجاز</span>
+          <strong class="member-overview-value">{{ Number(targetsOverview.completion_rate || 0).toFixed(1) }}%</strong>
+        </div>
+      </div>
+
       <TableSkeleton v-if="isLoadingTargets" :rows="4" :columns="5" />
 
       <div v-else-if="targetsLoadError" class="empty-state error-state">
@@ -114,7 +133,7 @@
         :display-targets="displayTargets"
         :open-menu-id="openMenuId"
         :is-sales-leader-view="isSalesLeaderView"
-        :is-manager="isSalesManagerView || isSalesLeaderView || hasPermission('sales.team.manage')"
+        :is-manager="isSalesManagerView || isSalesLeaderView || isGroupLeaderView || hasPermission('sales.team.manage')"
         :is-target-updating="isTargetUpdating"
         :get-target-status-class="getTargetStatusClass"
         :get-target-status-text="getTargetStatusText"
@@ -166,6 +185,7 @@
     <SalesTargetsAssignMarketersModal
       v-if="assignTarget"
       v-model:selected-marketer-ids="selectedMarketerIds"
+      v-model:selected-assignments="selectedAssignments"
       :title="assignModalTitle"
       :project-name="assignTarget.project_name || 'هدف مبيعات'"
       :items-list="assignmentCandidates"
@@ -174,6 +194,10 @@
       :empty-text="assignModalEmptyText"
       :loading-text="assignModalLoadingText"
       :save-label="assignActionLabel"
+      :available-value="availableAssignmentValue"
+      :show-totals="showAssignmentTotals"
+      :show-value-inputs="showAssignmentTotals"
+      :require-full-distribution="distributionValidation.requireExactDistribution"
       @close="closeAssignMarketers"
       @save="saveAssignMarketers"
     />
@@ -309,6 +333,7 @@ import {
   useSalesTargets,
   normalizeSalesTargetItem,
   getSalesTargetPatchId,
+  num,
 } from '@/composables/sales/useSalesTargets';
 
 
@@ -319,6 +344,7 @@ import authService from '@/services/authService';
 import salesService from '@/services/salesService';
 import notificationService from '@/services/notificationService';
 import { isSalesExecutive, isSalesLeader, isSalesManager } from '@/utils/rbac';
+import { normalizeRole } from '@/constants/roles';
 
 const route = useRoute();
 /** أولوية على query: لوحة المشروع تمرّر ref معرّف العقد */
@@ -327,6 +353,7 @@ const injectedContractId = inject('salesTargetsContractId', ref(null));
 const {
   targets, targetsMeta, isLoadingTargets, targetsLoadError, showCreateTargetModal,
   targetForm, targetFormUnits, isLoadingTargetFormUnits, targetFormUnitsError,
+  targetsOverview, distributionValidation,
   hasPermission, formatCurrency, formatDate,
   getTargetStatusClass, getTargetStatusText, getProgressPercentage, getDisplayedAchievedValue,
   loadTargets, patchTargetStatus, isTargetUpdating,
@@ -543,8 +570,15 @@ watch(
 const openMenuId = ref(null);
 const assignTarget = ref(null);
 const selectedMarketerIds = ref([]);
+const selectedAssignments = ref([]);
 const assignSaving = ref(false);
 const loadingTeamMembers = ref(false);
+const leaderTeamGroups = ref([]);
+const loadingLeaderTeamGroups = ref(false);
+const groupLeaderMembers = ref([]);
+const loadingGroupLeaderMembers = ref(false);
+const ledTeam = ref(null);
+const ledGroups = ref([]);
 
 const showUnitsModal = ref(false);
 const unitsModalProjectName = ref('');
@@ -568,9 +602,27 @@ const executiveTargetForm = reactive({
 
 const teamMembersList = computed(() => Array.isArray(teamMembers.value) ? teamMembers.value : []);
 const teamProjectsList = computed(() => Array.isArray(teamProjects.value) ? teamProjects.value : []);
-const isSalesLeaderView = computed(() => isSalesLeader(authService.getCurrentUser()));
-const isSalesManagerView = computed(() => isSalesManager(authService.getCurrentUser()));
-const isSalesExecutiveView = computed(() => isSalesExecutive(authService.getCurrentUser()));
+const currentUser = computed(() => /** @type {any} */ (authService.getCurrentUser() || {}));
+const isTruthyFlag = v => v === true || v === 1 || v === '1';
+const isSalesManagerView = computed(() => isSalesManager(currentUser.value));
+const isSalesExecutiveView = computed(() => isSalesExecutive(currentUser.value));
+const isGroupLeaderView = computed(() =>
+  isTruthyFlag(currentUser.value?.is_group_leader) ||
+  isTruthyFlag(currentUser.value?.is_team_group_leader) ||
+  String(currentUser.value?.role_key || '').toLowerCase() === 'group_leader'
+);
+const isSalesLeaderView = computed(() => {
+  if (isSalesManagerView.value || isSalesExecutiveView.value || isGroupLeaderView.value) return false;
+  const role = normalizeRole(currentUser.value?.type);
+  if (role === 7) return true;
+  return isSalesLeader(currentUser.value);
+});
+const assignmentRoleMode = computed(() => {
+  if (isSalesManagerView.value) return 'manager';
+  if (isSalesLeaderView.value) return 'leader';
+  if (isGroupLeaderView.value) return 'group_leader';
+  return 'member';
+});
 watch(
   isSalesExecutiveView,
   (isExecutive) => {
@@ -584,39 +636,114 @@ watch(
   { immediate: true }
 );
 const canCreateTarget = computed(
-  () => !isSalesManagerView.value && (isSalesExecutiveView.value || isSalesLeaderView.value || hasPermission('sales.team.manage'))
+  () =>
+    (isSalesExecutiveView.value || isSalesLeaderView.value) &&
+    !isSalesManagerView.value &&
+    !isGroupLeaderView.value
 );
 const assignmentCandidates = computed(() => {
-  if (isSalesManagerView.value) {
+  if (assignmentRoleMode.value === 'manager') {
     return (Array.isArray(managerTeams.value) ? managerTeams.value : []).map(t => ({
       id: t.id ?? t.team_id,
       name: t.name || t.team_name || `Team #${t.id ?? t.team_id}`,
     }));
   }
-  return teamMembersList.value;
+  if (assignmentRoleMode.value === 'leader') {
+    return (Array.isArray(leaderTeamGroups.value) ? leaderTeamGroups.value : []).map(group => ({
+      id: group.id ?? group.team_group_id,
+      name: group.name || group.group_name || `Group #${group.id ?? group.team_group_id}`,
+    }));
+  }
+  if (assignmentRoleMode.value === 'group_leader') {
+    return (Array.isArray(groupLeaderMembers.value) ? groupLeaderMembers.value : []).map(member => ({
+      id: member.id ?? member.user_id,
+      name: member.name || member.full_name || member.email || `User #${member.id ?? member.user_id}`,
+    }));
+  }
+  return [];
 });
-const assignModalTitle = computed(() =>
-  isSalesManagerView.value ? 'تعيين الهدف على الفرق' : 'إضافة مسوقين للمشروع'
-);
-const assignActionLabel = computed(() =>
-  isSalesManagerView.value ? 'تعيين فرق للهدف' : 'إضافة مسوقين للمشروع'
+const assignModalTitle = computed(() => {
+  if (assignmentRoleMode.value === 'manager') return '????? ????? ??? ?????';
+  if (assignmentRoleMode.value === 'leader') return '????? ????? ??? ?????????';
+  if (assignmentRoleMode.value === 'group_leader') return '????? ????? ??? ???????';
+  return '????? ?????';
+});
+const assignActionLabel = computed(() => {
+  if (assignmentRoleMode.value === 'manager') return '????? ?????';
+  if (assignmentRoleMode.value === 'leader') return '????? ?????????';
+  if (assignmentRoleMode.value === 'group_leader') return '????? ???????';
+  return '???';
+});
+
+const assignModalLoading = computed(() => {
+  if (assignmentRoleMode.value === 'manager') return loadingManagerTeams.value;
+  if (assignmentRoleMode.value === 'leader') return loadingLeaderTeamGroups.value;
+  if (assignmentRoleMode.value === 'group_leader') return loadingGroupLeaderMembers.value;
+  return loadingTeamMembers.value;
+});
+const assignModalEmptyText = computed(() => {
+  if (assignmentRoleMode.value === 'manager') return '?? ???? ??? ?????.';
+  if (assignmentRoleMode.value === 'leader') return '?? ???? ??????? ?????.';
+  if (assignmentRoleMode.value === 'group_leader') return '?? ???? ????? ??????.';
+  return '?? ???? ????? ?????.';
+});
+const assignModalLoadingText = computed(() => {
+  if (assignmentRoleMode.value === 'manager') return '???? ????? ?????...';
+  if (assignmentRoleMode.value === 'leader') return '???? ????? ?????????...';
+  if (assignmentRoleMode.value === 'group_leader') return '???? ????? ???????...';
+  return '???? ???????...';
+});
+
+const showAssignmentTotals = computed(() =>
+  ['manager', 'leader', 'group_leader'].includes(assignmentRoleMode.value)
 );
 
-const assignModalLoading = computed(() =>
-  isSalesManagerView.value ? loadingManagerTeams.value : loadingTeamMembers.value
-);
-const assignModalEmptyText = computed(() =>
-  isSalesManagerView.value ? 'لا توجد فرق متاحة.' : 'لا يوجد مسوقون متاحون.'
-);
-const assignModalLoadingText = computed(() =>
-  isSalesManagerView.value ? 'جاري تحميل الفرق...' : 'جاري تحميل أعضاء الفريق...'
-);
+function resolveAvailableAssignmentValue(target) {
+  if (!target || typeof target !== 'object') return 0;
+  const directValue = num(target?.value_target ?? target?.target_value ?? target?.value ?? 0, 0);
+  if (assignmentRoleMode.value === 'manager') return directValue;
 
+  if (assignmentRoleMode.value === 'leader') {
+    const myTeamId = ledTeam.value?.id ?? ledTeam.value?.team_id ?? null;
+    if (myTeamId != null && Array.isArray(target?.teams)) {
+      const found = target.teams.find(team => Number(team?.id ?? team?.team_id) === Number(myTeamId));
+      if (found) return num(found?.value_target ?? found?.target_value ?? 0, 0);
+    }
+    return directValue;
+  }
+
+  if (assignmentRoleMode.value === 'group_leader') {
+    const groups = Array.isArray(ledGroups.value) ? ledGroups.value : [];
+    const ledGroupIds = new Set(
+      groups
+        .map(group => Number(group?.id ?? group?.team_group_id))
+        .filter(id => Number.isFinite(id)),
+    );
+    if (ledGroupIds.size > 0 && Array.isArray(target?.team_groups)) {
+      const found = target.team_groups.find(group =>
+        ledGroupIds.has(Number(group?.id ?? group?.team_group_id)),
+      );
+      if (found) return num(found?.value_target ?? found?.target_value ?? 0, 0);
+    }
+    return directValue;
+  }
+
+  return directValue;
+}
+
+const availableAssignmentValue = computed(() => resolveAvailableAssignmentValue(assignTarget.value));
 const filteredUnitsModalRows = computed(() => {
   const rows = unitsModalRows.value;
   if (isSalesLeaderView.value || currentUserId.value == null) return rows;
   return rows.filter((r) => Number(r.marketer_id) === currentUserId.value);
 });
+
+const showMemberOverviewCards = computed(() =>
+  assignmentRoleMode.value === 'member' &&
+  !isLoadingTargets.value &&
+  !targetsLoadError.value &&
+  Number(targetsOverview.assigned_lines_count || 0) > 0
+);
 
 
 const currentUserId = computed(() => {
@@ -737,80 +864,144 @@ function toggleCardMenu(id) {
   openMenuId.value = openMenuId.value === id ? null : id;
 }
 
+async function loadLeaderTeamContext() {
+  if (loadingLeaderTeamGroups.value) return;
+  loadingLeaderTeamGroups.value = true;
+  try {
+    const [teamInfo, groups] = await Promise.all([
+      salesService.getLedTeam().catch(() => null),
+      salesService.getTeamGroups().catch(() => []),
+    ]);
+    ledTeam.value = teamInfo || null;
+
+    const list = Array.isArray(groups) ? groups : [];
+    const myTeamId = teamInfo?.id ?? teamInfo?.team_id ?? null;
+    leaderTeamGroups.value = myTeamId == null
+      ? list
+      : list.filter(group => Number(group?.team_id) === Number(myTeamId));
+  } catch (err) {
+    leaderTeamGroups.value = [];
+    notificationService.addNotification(err?.response?.data?.message || '??? ????? ??????? ??????', 'error');
+  } finally {
+    loadingLeaderTeamGroups.value = false;
+  }
+}
+
+async function loadGroupLeaderContext() {
+  if (loadingGroupLeaderMembers.value) return;
+  loadingGroupLeaderMembers.value = true;
+  try {
+    const [teamInfo, groups, members] = await Promise.all([
+      salesService.getGroupLeaderLedTeam().catch(() => null),
+      salesService.getGroupLeaderLedGroups().catch(() => []),
+      salesService.getGroupLeaderMembers().catch(() => []),
+    ]);
+    ledTeam.value = teamInfo || null;
+    ledGroups.value = Array.isArray(groups) ? groups : [];
+    groupLeaderMembers.value = Array.isArray(members) ? members : [];
+  } catch (err) {
+    groupLeaderMembers.value = [];
+    ledGroups.value = [];
+    notificationService.addNotification(err?.response?.data?.message || '??? ????? ????? ????????', 'error');
+  } finally {
+    loadingGroupLeaderMembers.value = false;
+  }
+}
+
 function openAssignMarketers(target) {
   openMenuId.value = null;
   assignTarget.value = target;
   selectedMarketerIds.value = [];
-  if (isSalesManagerView.value) {
-    if (assignmentCandidates.value.length === 0) {
-      loadManagerTeams();
-    }
+  selectedAssignments.value = [];
+
+  if (assignmentRoleMode.value === 'manager') {
+    if (assignmentCandidates.value.length === 0) loadManagerTeams();
     return;
   }
-  if (teamMembersList.value.length === 0) {
-    loadingTeamMembers.value = true;
-    loadTeamMembers().finally(() => { loadingTeamMembers.value = false; });
+
+  if (assignmentRoleMode.value === 'leader') {
+    if (assignmentCandidates.value.length === 0) loadLeaderTeamContext();
+    return;
+  }
+
+  if (assignmentRoleMode.value === 'group_leader') {
+    if (assignmentCandidates.value.length === 0) loadGroupLeaderContext();
   }
 }
 
 function closeAssignMarketers() {
   assignTarget.value = null;
   selectedMarketerIds.value = [];
+  selectedAssignments.value = [];
+}
+
+function buildSelectedAssignmentRows() {
+  const selectedSet = new Set((Array.isArray(selectedMarketerIds.value) ? selectedMarketerIds.value : []).map(id => Number(id)));
+  return (Array.isArray(selectedAssignments.value) ? selectedAssignments.value : [])
+    .filter(row => selectedSet.has(Number(row?.id)))
+    .map(row => ({ id: Number(row?.id), value_target: Number(row?.value_target ?? 0) }))
+    .filter(row => Number.isFinite(row.id) && row.id > 0 && Number.isFinite(row.value_target) && row.value_target > 0);
 }
 
 async function saveAssignMarketers() {
   if (!assignTarget.value || selectedMarketerIds.value.length === 0) return;
 
-  if (isSalesManagerView.value) {
-    const targetId = getSalesTargetPatchId(assignTarget.value);
-    if (!targetId) return;
-    assignSaving.value = true;
-    try {
-      await salesService.assignTargetToTeams(targetId, selectedMarketerIds.value);
-      notificationService.addNotification('تم تعيين الهدف على الفرق بنجاح', 'success');
-      closeAssignMarketers();
-      await loadTargets();
-    } catch (err) {
-      notificationService.addNotification(err?.response?.data?.message || 'فشل حفظ التعيين', 'error');
-    } finally {
-      assignSaving.value = false;
-    }
+  const selectedRows = buildSelectedAssignmentRows();
+  if (selectedRows.length === 0) {
+    notificationService.addNotification('???? ???? ????? ??? ???? ????.', 'warning');
     return;
   }
 
-  if (!assignTarget.value?.contract_id || (!isSalesLeaderView.value && !hasPermission('sales.team.manage'))) return;
-  const contractId = assignTarget.value.contract_id;
-  const startDate = new Date().toISOString().split('T')[0];
-  const endDate = assignTarget.value.end_date || assignTarget.value.deadline || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0];
-  const targetValue = assignTarget.value.target_value ?? 0;
+  const availableValue = availableAssignmentValue.value;
+  const assignedTotal = selectedRows.reduce((sum, row) => sum + Number(row.value_target || 0), 0);
+  if (assignedTotal > availableValue) {
+    notificationService.addNotification('?????? ?????? ?????? ?????? ???????.', 'warning');
+    return;
+  }
+  if (distributionValidation.requireExactDistribution && availableValue > 0 && Math.abs(assignedTotal - availableValue) > 0.000001) {
+    notificationService.addNotification('??? ?? ????? ?????? ?????? ?????? ???????.', 'warning');
+    return;
+  }
+
+  const targetId = getSalesTargetPatchId(assignTarget.value) ?? assignTarget.value?.line_id ?? assignTarget.value?.id;
+  if (!targetId) {
+    notificationService.addNotification('???? ????? ???? ?????.', 'error');
+    return;
+  }
 
   assignSaving.value = true;
   try {
-    let created = 0;
-    for (const marketerId of selectedMarketerIds.value) {
-      await salesService.createTarget({
-        assignee_marketer_id: marketerId,
-        contract_id: contractId,
-        target_type: 'reservation',
-        start_date: startDate,
-        end_date: endDate,
-        assigned_target_value: targetValue,
-      });
-      created++;
+    if (assignmentRoleMode.value === 'manager') {
+      await salesService.assignTargetToTeams(
+        targetId,
+        selectedRows.map(row => ({ team_id: row.id, value_target: row.value_target })),
+      );
+      notificationService.addNotification('?? ????? ????? ??? ????? ?????', 'success');
+    } else if (assignmentRoleMode.value === 'leader') {
+      await salesService.assignTargetToTeamGroups(
+        targetId,
+        selectedRows.map(row => ({ team_group_id: row.id, value_target: row.value_target })),
+      );
+      notificationService.addNotification('?? ????? ????? ??? ????????? ?????', 'success');
+    } else if (assignmentRoleMode.value === 'group_leader') {
+      await salesService.assignTargetToMembers(
+        targetId,
+        selectedRows.map(row => ({ user_id: row.id, value_target: row.value_target })),
+      );
+      notificationService.addNotification('?? ????? ????? ??? ??????? ?????', 'success');
+    } else {
+      notificationService.addNotification('??? ????? ?? ???? ??????? ?? ??? ??????.', 'warning');
+      return;
     }
-    notificationService.addNotification(
-      created === 1 ? 'تم تعيين المسوق للمشروع بنجاح' : `تم تعيين ${created} مسوقين للمشروع بنجاح`,
-      'success'
-    );
+
     closeAssignMarketers();
-    loadTargets();
+    await loadTargets();
   } catch (err) {
-    notificationService.addNotification(err?.response?.data?.message || 'فشل حفظ التعيين', 'error');
+    notificationService.addNotification(err?.response?.data?.message || '??? ??? ???????', 'error');
   } finally {
     assignSaving.value = false;
   }
 }
-
 /**
  * إغلاق عند النقر خارج القائمة فقط.
  * تأجيل الإغلاق لدورة لاحقة حتى يُكمِل المتصفح حدث change على قائمة الحالة (قائمة النظام قد تُطلق click على document قبل change).
@@ -830,6 +1021,9 @@ onMounted(() => {
   } else if (isSalesLeaderView.value || hasPermission('sales.team.manage')) {
     loadTeamMembers({ with_ratings: true });
     loadTeamProjects();
+    loadLeaderTeamContext();
+  } else if (isGroupLeaderView.value) {
+    loadGroupLeaderContext();
   }
 });
 
@@ -838,7 +1032,38 @@ onUnmounted(() => {
 });
 </script>
 
+<style scoped>
+.member-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.member-overview-card {
+  padding: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 12px;
+  background: var(--surface-color, #fff);
+}
+
+.member-overview-label {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.member-overview-value {
+  display: block;
+  margin-top: 6px;
+  color: #0f172a;
+  font-size: 18px;
+}
+</style>
+
 <style scoped src="./styles/SalesTargetsTab.scoped.s1.css"></style>
 <style scoped src="./styles/SalesTargetsTab.scoped.s2.css"></style>
+
+
 
 

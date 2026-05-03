@@ -5,6 +5,7 @@ import { usePermissions } from '@/composables/usePermissions';
 import { useFormatters } from '@/composables/useFormatters';
 import authService from '@/services/authService';
 import { isSalesExecutive, isSalesLeader, isSalesManager } from '@/utils/rbac';
+import { normalizeRole } from '@/constants/roles';
 import logger from '@/utils/logger';
 
 import { 
@@ -54,11 +55,46 @@ export function useSalesTargets() {
     currentPage: 1,
   });
 
+  const targetsOverview = reactive({
+    assigned_lines_count: 0,
+    in_progress_lines_count: 0,
+    completed_lines_count: 0,
+    completion_rate: 0,
+    target_total_value: 0,
+    achieved_total_value: 0,
+    value_achievement_rate: 0,
+    ranking_position: null,
+    ranking_total: null,
+  });
+
+  const distributionValidation = reactive({
+    requireExactDistribution: true,
+  });
+
+  const isTruthyFlag = value => value === true || value === 1 || value === '1';
+
   const resolveSalesTargetMode = () => {
-    const user = /** @type {any} */ (authService.getCurrentUser());
-    if (isSalesManager(user)) return 'manager';
+    const user = /** @type {any} */ (authService.getCurrentUser()) || {};
     if (isSalesExecutive(user)) return 'executive';
-    return 'legacy';
+    if (isSalesManager(user)) return 'manager';
+
+    const role = normalizeRole(user.type);
+    const isGroupLeader =
+      isTruthyFlag(user.is_group_leader) ||
+      isTruthyFlag(user.is_team_group_leader) ||
+      String(user.role_key || '').toLowerCase() === 'group_leader';
+    if (isGroupLeader) return 'group_leader';
+
+    const pureSalesLeader =
+      role === 7 ||
+      (role === 6 &&
+        isTruthyFlag(user.is_leader) &&
+        !isTruthyFlag(user.is_manager) &&
+        !isTruthyFlag(user.is_executive_director));
+    if (pureSalesLeader) return 'leader';
+
+    if (isSalesLeader(user)) return 'leader';
+    return 'member';
   };
 
   /** @param {any} [options] */
@@ -86,16 +122,35 @@ export function useSalesTargets() {
         result = await salesService.getManagerTargets(params);
       } else if (salesTargetMode.value === 'executive') {
         result = await salesService.getExecutiveTargets(params);
+      } else if (salesTargetMode.value === 'leader') {
+        result = await salesService.getTeamLeaderTargets(params);
+      } else if (salesTargetMode.value === 'group_leader') {
+        result = await salesService.getGroupLeaderTargets(params);
       } else if (contractScope) {
         result = await salesService.getTargetsByProject(contractScope, params);
         logger.info('[SalesTargets] by-project API:', { contractId: contractScope, total: result?.total });
       } else {
-        result = await salesService.getMyTargets(params);
+        result = await salesService.getMemberTargets(params);
         logger.info('[SalesTargets] my API response:', { total: result?.total });
       }
 
       const list = result?.items || (Array.isArray(result) ? result : []);
       targetsMeta.total = result?.total ?? list.length;
+      const meta = result?.meta && typeof result.meta === 'object' ? result.meta : {};
+      const overview = meta.member_overview && typeof meta.member_overview === 'object'
+        ? meta.member_overview
+        : {};
+      const ranking = meta.ranking && typeof meta.ranking === 'object' ? meta.ranking : {};
+
+      targetsOverview.assigned_lines_count = num(overview.assigned_lines_count, 0);
+      targetsOverview.in_progress_lines_count = num(overview.in_progress_lines_count, 0);
+      targetsOverview.completed_lines_count = num(overview.completed_lines_count, 0);
+      targetsOverview.completion_rate = num(overview.completion_rate, 0);
+      targetsOverview.target_total_value = num(overview.target_total_value, 0);
+      targetsOverview.achieved_total_value = num(overview.achieved_total_value, 0);
+      targetsOverview.value_achievement_rate = num(overview.value_achievement_rate, 0);
+      targetsOverview.ranking_position = ranking.position ?? ranking.rank ?? null;
+      targetsOverview.ranking_total = ranking.total_sales_staff ?? ranking.total ?? null;
 
       targets.value = list.map((/** @type {any} */ item) => {
         const normalized = normalizeSalesTargetItem(item);
@@ -124,6 +179,15 @@ export function useSalesTargets() {
           ? `فشل تحميل الأهداف: ${msg}`
           : 'فشل تحميل الأهداف. تحقق من الاتصال ثم أعد المحاولة.';
       }
+      targetsOverview.assigned_lines_count = 0;
+      targetsOverview.in_progress_lines_count = 0;
+      targetsOverview.completed_lines_count = 0;
+      targetsOverview.completion_rate = 0;
+      targetsOverview.target_total_value = 0;
+      targetsOverview.achieved_total_value = 0;
+      targetsOverview.value_achievement_rate = 0;
+      targetsOverview.ranking_position = null;
+      targetsOverview.ranking_total = null;
     } finally {
       isLoadingTargets.value = false;
     }
@@ -307,7 +371,7 @@ export function useSalesTargets() {
   watch(
     () => targetForm.contract_id,
     (newContractId) => {
-      if (resolveSalesTargetMode() !== 'legacy') return;
+      if (resolveSalesTargetMode() !== 'leader') return;
       nextTick(() => {
         targetForm.contract_unit_ids = [];
         if (newContractId) {
@@ -334,6 +398,7 @@ export function useSalesTargets() {
       showCreateTargetModal.value = true;
       return;
     }
+    if (salesTargetMode.value !== 'leader') return;
     if (teamMembers.value.length === 0) await loadTeamMembers({ with_ratings: true });
     if (teamProjects.value.length === 0) await loadTeamProjects();
     targetFormUnits.value = [];
@@ -349,8 +414,8 @@ export function useSalesTargets() {
   const createTarget = async () => {
     salesTargetMode.value = resolveSalesTargetMode();
 
-    if (salesTargetMode.value === 'manager') {
-      notificationService.addNotification('Sales manager cannot create targets from this screen.', 'warning');
+    if (salesTargetMode.value === 'manager' || salesTargetMode.value === 'group_leader' || salesTargetMode.value === 'member') {
+      notificationService.addNotification('لا يمكن إنشاء هدف من هذه الشاشة لهذا الدور.', 'warning');
       return;
     }
 
@@ -395,7 +460,7 @@ export function useSalesTargets() {
     }
 
     const user = /** @type {any} */ (authService.getCurrentUser());
-    const canManageTeam = hasPermission('sales.team.manage') || isSalesLeader(user);
+    const canManageTeam = salesTargetMode.value === 'leader' && (hasPermission('sales.team.manage') || isSalesLeader(user));
     if (!canManageTeam) {
       notificationService.addNotification('غير مصرح لك بإنشاء أهداف', 'warning');
       return;
@@ -480,6 +545,8 @@ export function useSalesTargets() {
   return {
     targets,
     targetsMeta,
+    targetsOverview,
+    distributionValidation,
     salesTargetMode,
     activeContractId,
     updatingTargetId,

@@ -137,9 +137,23 @@ export function normalizeSalesTargetItem(raw) {
   const marketerId =
     mid != null && mid !== '' && Number.isFinite(Number(mid)) ? Number(mid) : mid;
 
+  const lineValue = num(
+    raw.line_value ??
+      raw.lineValue ??
+      raw.value ??
+      raw.target_value ??
+      raw.goal_amount ??
+      raw.goal ??
+      raw.target_amount ??
+      raw.amount,
+    0
+  );
   const targetValue = num(
-    raw.value ??
     raw.target_value ??
+      raw.value_target ??
+      raw.value ??
+      lineValue ??
+      raw.target_value ??
       raw.goal_amount ??
       raw.goal ??
       raw.target_amount ??
@@ -150,11 +164,13 @@ export function normalizeSalesTargetItem(raw) {
 
   const achievedValue = num(
     raw.achieved_value ??
+      raw.achievedValue ??
       raw.achieved_amount ??
       raw.current_amount ??
       raw.progress_value ??
       raw.realized_amount ??
       raw.sales_achieved ??
+      raw.total_achieved_value ??
       raw.total_achieved,
     0,
   );
@@ -173,6 +189,31 @@ export function normalizeSalesTargetItem(raw) {
   const resolvedEnd = endDate ?? raw.end_date ?? raw.deadline ?? null;
   const normalizedStatus = normalizeTargetStatus(raw);
 
+  const remainingValue = num(
+    raw.remaining_value ??
+      raw.remainingValue ??
+      raw.total_remaining_value ??
+      Math.max(targetValue - achievedValue, 0),
+    Math.max(targetValue - achievedValue, 0)
+  );
+
+  /** @param {any[]} list */
+  const normalizeNestedAssignments = list =>
+    (Array.isArray(list) ? list : []).map(item => {
+      const id = item?.id ?? item?.team_id ?? item?.team_group_id ?? item?.user_id ?? null;
+      return {
+        ...item,
+        id,
+        value_target: num(item?.value_target ?? item?.target_value ?? item?.value ?? 0, 0),
+        target_value: num(item?.target_value ?? item?.value_target ?? item?.value ?? 0, 0),
+        team_status: item?.team_status ?? item?.status ?? null,
+        group_status: item?.group_status ?? item?.status ?? null,
+        member_status: item?.member_status ?? item?.status ?? null,
+        completed_at: item?.completed_at ?? null,
+        line_type_flag: item?.line_type_flag ?? null,
+      };
+    });
+
   return {
     ...raw,
     project_name: projectName || raw.project_name || '',
@@ -180,17 +221,26 @@ export function normalizeSalesTargetItem(raw) {
     id: targetId ?? raw.id,
     target_id: targetId ?? raw.target_id,
     marketer_id: marketerId ?? raw.marketer_id,
+    line_value: lineValue,
     target_value: targetValue,
+    value_target: num(raw.value_target ?? targetValue, targetValue),
     achieved_value: achievedValue,
+    remaining_value: remainingValue,
     end_date: resolvedEnd,
     deadline: raw.deadline ?? resolvedEnd,
     status: normalizedStatus,
     line_type: lineType || raw.line_type || null,
     team_ids: Array.isArray(raw.team_ids) ? raw.team_ids : [],
     team_group_ids: Array.isArray(raw.team_group_ids) ? raw.team_group_ids : [],
-    teams: Array.isArray(raw.teams) ? raw.teams : [],
-    team_groups: Array.isArray(raw.team_groups) ? raw.team_groups : [],
-    member_users: Array.isArray(raw.member_users) ? raw.member_users : [],
+    line_id: raw.line_id ?? raw.id ?? targetId ?? raw.target_id ?? null,
+    line_status: raw.line_status ?? raw.status ?? normalizedStatus,
+    member_status: raw.member_status ?? raw.status ?? normalizedStatus,
+    assigned_at: raw.assigned_at ?? raw.created_at ?? null,
+    completed_at: raw.completed_at ?? null,
+    line_type_flag: raw.line_type_flag ?? null,
+    teams: normalizeNestedAssignments(raw.teams),
+    team_groups: normalizeNestedAssignments(raw.team_groups),
+    member_users: normalizeNestedAssignments(raw.member_users),
   };
 }
 
