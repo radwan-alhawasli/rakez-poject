@@ -114,7 +114,7 @@
             <div class="field col-4">
               <label>الطابق (floor)</label>
               <div class="with-clear">
-                <input v-model="form.floor" class="input mono" type="number" min="0" placeholder="اختياري" />
+                <input v-model="form.floor" class="input mono" type="text" inputmode="numeric" placeholder="اختياري" />
                 <button v-if="mode === 'edit'" type="button" class="btn-clear" @click="clearField('floor')" :disabled="busy">مسح</button>
               </div>
               <p v-if="errors.floor" class="err">{{ errors.floor }}</p>
@@ -355,7 +355,7 @@ watch(
   }
 );
 
-function buildCreatePayload() {
+  function buildCreatePayload() {
   /** @type {Record<string, any>} */
   const payload = {};
   const assign = (key, value, coerce) => {
@@ -376,7 +376,7 @@ function buildCreatePayload() {
   assign('district_id', form.district_id, Number);
   assign('project_id', form.project_id, Number);
   assign('unit_type', form.unit_type);
-  assign('floor', form.floor, Number);
+  assign('floor', form.floor);
   assign('min_price', form.min_price, Number);
   assign('max_price', form.max_price, Number);
   assign('min_area', form.min_area, Number);
@@ -390,7 +390,7 @@ function buildCreatePayload() {
   return payload;
 }
 
-function buildPatchPayload() {
+  function buildPatchPayload() {
   const original = props.initial || {};
   /** @type {Record<string, any>} */
   const patch = {};
@@ -420,7 +420,7 @@ function buildPatchPayload() {
   const normalize = (key, v) => {
     if (v === '' || v === undefined) return undefined;
     if (v === null) return null;
-    if (key.endsWith('_id') || ['floor', 'min_price', 'max_price', 'min_area', 'max_area', 'min_bedrooms', 'max_bedrooms'].includes(key)) {
+    if (key.endsWith('_id') || ['min_price', 'max_price', 'min_area', 'max_area', 'min_bedrooms', 'max_bedrooms'].includes(key)) {
       return v === '' ? undefined : Number(v);
     }
     if (key === 'client_sms_opt_in') return Boolean(v);

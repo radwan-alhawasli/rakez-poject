@@ -3,9 +3,11 @@ import { useRoute, useRouter } from 'vue-router';
 import salesService from '@/services/salesService';
 import { usePermissions } from '@/composables/usePermissions';
 import { PERMISSIONS } from '@/constants/permissions';
+import { ROLE_ADMIN, ROLE_SALES, ROLE_SALES_LEADER } from '@/constants/roles';
 import { extractPaginatedData } from '@/utils/paginationUtils';
 import { getApiErrorMessage } from '@/utils/errorHandler';
 import { useToast } from '@/composables/useToast';
+import { hasRole, isAdmin } from '@/utils/rbac';
 
 /**
  * Sales: Unit search alerts (طلب وحدات)
@@ -17,9 +19,18 @@ export function useSalesSearchAlerts() {
   const route = useRoute();
   const router = useRouter();
   const toast = useToast();
-  const { hasPermission } = usePermissions();
+  const { user, hasPermission } = usePermissions();
 
-  const canView = computed(() => hasPermission(PERMISSIONS.SALES_SEARCH_ALERTS_VIEW));
+  const hasAllowedRole = computed(() => {
+    const u = user.value;
+    if (!u) return false;
+    if (isAdmin(u)) return true;
+    return hasRole(u, [ROLE_ADMIN, ROLE_SALES, ROLE_SALES_LEADER]);
+  });
+
+  const canView = computed(
+    () => hasAllowedRole.value && hasPermission(PERMISSIONS.SALES_SEARCH_ALERTS_VIEW)
+  );
 
   const list = ref([]);
   const total = ref(0);
