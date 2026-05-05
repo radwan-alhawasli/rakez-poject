@@ -343,8 +343,7 @@ import { useSalesTeam } from '@/composables/sales/useSalesTeam';
 import authService from '@/services/authService';
 import salesService from '@/services/salesService';
 import notificationService from '@/services/notificationService';
-import { isSalesExecutive, isSalesLeader, isSalesManager } from '@/utils/rbac';
-import { normalizeRole } from '@/constants/roles';
+import { isSalesExecutive, isSalesLeader, isSalesManager, normalizeRole } from '@/utils/rbac';
 
 const route = useRoute();
 /** أولوية على query: لوحة المشروع تمرّر ref معرّف العقد */

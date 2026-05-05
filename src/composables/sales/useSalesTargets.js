@@ -4,8 +4,7 @@ import notificationService from '@/services/notificationService';
 import { usePermissions } from '@/composables/usePermissions';
 import { useFormatters } from '@/composables/useFormatters';
 import authService from '@/services/authService';
-import { isSalesExecutive, isSalesLeader, isSalesManager } from '@/utils/rbac';
-import { normalizeRole } from '@/constants/roles';
+import { isSalesExecutive, isSalesLeader, isSalesManager, normalizeRole } from '@/utils/rbac';
 import logger from '@/utils/logger';
 
 import { 
