@@ -8,6 +8,38 @@
   accent-color: var(--color-navy);
 }
 
+/* Assign teams modal: keep it wide and prevent fallback deep rules from collapsing layout */
+:deep(.assign-modal.assign-modal--teams) {
+  width: min(760px, calc(100vw - 28px));
+  max-width: min(760px, calc(100vw - 28px));
+  max-height: calc(100vh - 28px);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+}
+
+:deep(.assign-modal.assign-modal--teams .assign-marketers-list) {
+  max-height: none;
+}
+
+:deep(.assign-modal.assign-modal--teams .assign-marketer-row) {
+  display: grid;
+  grid-template-columns: auto 1fr minmax(140px, 200px);
+  align-items: center;
+  gap: 12px;
+}
+
+:deep(.assign-modal.assign-modal--teams .assign-modal-body) {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+:deep(.assign-modal.assign-modal--teams .assign-modal-actions) {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+}
+
 /* مودال إضافة هدف جديد (المكوّن فرعي — يحتاج :deep) */
 :deep(.create-target-modal.assign-modal) {
   max-width: min(560px, calc(100vw - 32px));

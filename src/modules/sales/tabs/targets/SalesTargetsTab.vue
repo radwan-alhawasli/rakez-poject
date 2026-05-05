@@ -34,59 +34,30 @@
       </button>
     </div>
 
-    <!-- View for Sales Leader: Project Board -->
-    <div v-if="isSalesLeaderView">
-      <CardSkeleton v-if="isLoadingTeamProjects" :count="3" />
-      
-      <div v-else-if="teamProjectsLoadError" class="empty-state error-state">
-        <p>{{ teamProjectsLoadError }}</p>
-        <button type="button" class="btn-add" @click="loadTeamProjects()">إعادة المحاولة</button>
-      </div>
-
-      <div v-else-if="teamProjects.length === 0" class="empty-state">
-        <p>لا توجد مشاريع مخصصة للفريق حالياً.</p>
-      </div>
-
-      <div v-else class="targets-grid">
-        <ProjectBoardCard 
-          v-for="project in teamProjects"
-          :key="project.contract_id"
-          :project="project"
-          @view-details="openProjectDetails"
-          @view-units="openUnitsDetails"
-          @assign-target="openAssignProjectTargets"
-        />
-      </div>
-
-    </div>
-
-    <!-- View for Staff: Targets -->
-    <div v-else>
-      <div v-if="isSalesExecutiveView" class="empty-state" style="margin-bottom: 16px;">
-        <div v-if="isLoadingExecutiveUnits">Loading available units...</div>
-        <div v-else-if="executiveUnitsError" class="error-state">
+    <div>
+      <section v-if="isSalesExecutiveView" class="executive-units-panel">
+        <div class="executive-units-panel__header">
+          <h3 class="executive-units-panel__title">الوحدات المتاحة للمسؤول التنفيذي</h3>
+        </div>
+        <div v-if="isLoadingExecutiveUnits" class="executive-units-panel__state">جاري تحميل الوحدات المتاحة...</div>
+        <div v-else-if="executiveUnitsError" class="executive-units-panel__state executive-units-panel__state--error">
           <p>{{ executiveUnitsError }}</p>
-          <button type="button" class="btn-add" @click="loadExecutiveAvailableUnits">Retry</button>
+          <button type="button" class="btn-add" @click="loadExecutiveAvailableUnits">إعادة المحاولة</button>
         </div>
-        <div v-else>
-          <p style="margin-bottom: 8px; font-weight: 600;">Executive available units</p>
-          <div v-if="executiveUnitsRows.length === 0">No available-units data found.</div>
-          <div v-else class="targets-grid">
-            <div v-for="(row, idx) in executiveUnitsRows" :key="row.key || idx" class="target-card">
-              <div class="target-card-surface">
-                <div class="target-header">
-                  <div class="target-info">
-                    <h3 class="target-project-name">{{ row.label }}</h3>
-                  </div>
-                  <div class="target-value-block">
-                    <span class="target-value">{{ row.value }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div v-else-if="executiveUnitsRows.length === 0" class="executive-units-panel__state">
+          لا توجد بيانات للوحدات المتاحة حالياً.
         </div>
-      </div>
+        <div v-else class="executive-units-grid">
+          <article
+            v-for="(row, idx) in executiveUnitsRows"
+            :key="row.key || idx"
+            class="executive-units-card"
+          >
+            <span class="executive-units-card__label">{{ row.label }}</span>
+            <strong class="executive-units-card__value">{{ row.value }}</strong>
+          </article>
+        </div>
+      </section>
 
       <div v-if="showMemberOverviewCards" class="member-overview-grid">
         <div class="member-overview-card">
@@ -133,12 +104,16 @@
         :display-targets="displayTargets"
         :open-menu-id="openMenuId"
         :is-sales-leader-view="isSalesLeaderView"
-        :is-manager="isSalesManagerView || isSalesLeaderView || isGroupLeaderView || hasPermission('sales.team.manage')"
+        :is-manager="['manager', 'leader', 'group_leader'].includes(assignmentRoleMode)"
+        :assignment-role-mode="assignmentRoleMode"
         :is-target-updating="isTargetUpdating"
         :get-target-status-class="getTargetStatusClass"
         :get-target-status-text="getTargetStatusText"
         :get-progress-percentage="getProgressPercentage"
         :get-displayed-achieved-value="getDisplayedAchievedValue"
+        :get-assigned-value-for-target="getAssignedValueForTarget"
+        :get-remaining-value-for-target="getRemainingValueForTarget"
+        :get-distribution-line-for-target="getDistributionLineForTarget"
         :can-update-target="canUpdateTarget"
         :format-currency="formatCurrency"
         :format-date="formatDate"
@@ -193,7 +168,10 @@
       :assign-saving="assignSaving"
       :empty-text="assignModalEmptyText"
       :loading-text="assignModalLoadingText"
-      :save-label="assignActionLabel"
+      save-label="حفظ الهدف"
+      :target-type-name="assignTargetTypeLabel"
+      :total-target-value="assignTargetTotalValue"
+      :already-assigned-value="assignTargetAlreadyAssignedValue"
       :available-value="availableAssignmentValue"
       :show-totals="showAssignmentTotals"
       :show-value-inputs="showAssignmentTotals"
@@ -213,30 +191,6 @@
       @close="closeUnitsModal"
     />
 
-    <ProjectUnitsDetailsModal
-      v-if="selectedProjectForUnits"
-      :open="!!selectedProjectForUnits"
-      :project="selectedProjectForUnits"
-      @close="selectedProjectForUnits = null"
-    />
-
-    <ProjectDetailsModal
-      v-if="selectedProjectForDetails"
-      :open="!!selectedProjectForDetails"
-      :project="selectedProjectForDetails"
-      @close="selectedProjectForDetails = null"
-    />
-
-    <SalesTargetsProjectAssignModal
-      v-if="projectForAssign"
-      :open="!!projectForAssign"
-      :project="projectForAssign"
-      :team-members="teamMembersList"
-      :loading="isAssigningProjectTargets"
-      @close="projectForAssign = null"
-      @submit="handleProjectAssignSubmit"
-    />
-
     <div
       v-if="showExecutiveTargetModal"
       class="assign-overlay"
@@ -246,25 +200,25 @@
     >
       <div class="assign-modal create-target-modal" role="dialog" aria-modal="true">
         <div class="assign-modal-header">
-          <h3>Target details</h3>
-          <button type="button" class="assign-close" aria-label="Close" @click="closeExecutiveTargetModal">&times;</button>
+          <h3>تفاصيل الهدف</h3>
+          <button type="button" class="assign-close" aria-label="إغلاق" @click="closeExecutiveTargetModal">&times;</button>
         </div>
         <div class="create-target-form">
-          <div v-if="isLoadingExecutiveTargetDetails">Loading target details...</div>
+          <div v-if="isLoadingExecutiveTargetDetails">جاري تحميل تفاصيل الهدف...</div>
           <template v-else>
             <div class="form-row">
-              <label class="form-label" for="exec-target-line-type">Line type</label>
+              <label class="form-label" for="exec-target-line-type">نوع الهدف</label>
               <input
                 id="exec-target-line-type"
                 v-model="executiveTargetForm.line_type"
                 type="text"
                 class="form-input"
-                placeholder="line type"
+                placeholder="نوع الهدف"
               />
             </div>
 
             <div class="form-row">
-              <label class="form-label" for="exec-target-value">Value</label>
+              <label class="form-label" for="exec-target-value">القيمة</label>
               <input
                 id="exec-target-value"
                 v-model.number="executiveTargetForm.value"
@@ -277,12 +231,12 @@
             </div>
 
             <div class="form-row">
-              <label class="form-label">Status</label>
+              <label class="form-label">الحالة</label>
               <input :value="executiveTargetDetails?.status || '-'" type="text" class="form-input" disabled />
             </div>
 
             <div class="form-row">
-              <label class="form-label">Team IDs</label>
+              <label class="form-label">معرفات الفرق</label>
               <input
                 :value="(executiveTargetDetails?.team_ids || []).join(', ') || '-'"
                 type="text"
@@ -292,7 +246,7 @@
             </div>
 
             <div class="form-row">
-              <label class="form-label">Group IDs</label>
+              <label class="form-label">معرفات المجموعات</label>
               <input
                 :value="(executiveTargetDetails?.team_group_ids || []).join(', ') || '-'"
                 type="text"
@@ -303,9 +257,9 @@
 
             <div class="create-target-actions">
               <button type="button" class="btn-add" :disabled="isSavingExecutiveTargetDetails" @click="saveExecutiveTargetDetails">
-                {{ isSavingExecutiveTargetDetails ? 'Saving...' : 'Save changes' }}
+                {{ isSavingExecutiveTargetDetails ? 'جاري الحفظ...' : 'حفظ التعديلات' }}
               </button>
-              <button type="button" class="btn-secondary" @click="closeExecutiveTargetModal">Close</button>
+              <button type="button" class="btn-secondary" @click="closeExecutiveTargetModal">إغلاق</button>
             </div>
           </template>
         </div>
@@ -319,15 +273,11 @@
 /* eslint-disable max-lines */
 import { ref, reactive, computed, onMounted, onUnmounted, watch, inject, unref } from 'vue';
 import { useRoute } from 'vue-router';
-import { CardSkeleton, TableSkeleton } from '@/components/ui/skeleton';
+import { TableSkeleton } from '@/components/ui/skeleton';
 import Pagination from '@/components/Pagination.vue';
 import SalesTargetsAssignMarketersModal from '@/modules/sales/tabs/targets/SalesTargetsAssignMarketersModal.vue';
 import SalesTargetsCreateTargetModal from '@/modules/sales/tabs/targets/SalesTargetsCreateTargetModal.vue';
 import SalesTargetsUnitsModal from '@/modules/sales/tabs/targets/SalesTargetsUnitsModal.vue';
-import SalesTargetsProjectAssignModal from '@/modules/sales/tabs/targets/SalesTargetsProjectAssignModal.vue';
-import ProjectBoardCard from '@/modules/sales/components/ProjectBoardCard.vue';
-import ProjectDetailsModal from '@/modules/sales/components/ProjectDetailsModal.vue';
-import ProjectUnitsDetailsModal from '@/modules/sales/components/ProjectUnitsDetailsModal.vue';
 import SalesTargetList from '@/modules/sales/tabs/targets/components/SalesTargetList.vue';
 import {
   useSalesTargets,
@@ -359,55 +309,7 @@ const {
   openCreateTargetModal, onTargetFullProjectChange, toggleTargetUnit, createTarget,
   salesTargetMode, deleteTarget,
 } = useSalesTargets();
-const { teamMembers, teamProjects, loadTeamMembers, loadTeamProjects, isLoadingTeamProjects, teamProjectsLoadError } = useSalesTeam();
-
-const selectedProjectForDetails = ref(null);
-const selectedProjectForUnits = ref(null);
-
-function openProjectDetails(project) {
-  selectedProjectForDetails.value = project;
-}
-
-function openUnitsDetails(project) {
-  selectedProjectForUnits.value = project;
-}
-
-const projectForAssign = ref(null);
-const isAssigningProjectTargets = ref(false);
-
-function openAssignProjectTargets(project) {
-  projectForAssign.value = project;
-}
-
-async function handleProjectAssignSubmit(data) {
-  isAssigningProjectTargets.value = true;
-  try {
-    const { marketer_ids, ...rest } = data;
-    let successCount = 0;
-    
-    for (const marketer_id of marketer_ids) {
-      await salesService.createTarget({
-        marketer_id,
-        ...rest
-      });
-      successCount++;
-    }
-    
-    notificationService.addNotification(
-      successCount > 1 
-        ? `تم تعيين الأهداف لـ ${successCount} مسوقين بنجاح` 
-        : 'تم تعيين الهدف للمسوق بنجاح', 
-      'success'
-    );
-    projectForAssign.value = null;
-    loadTargets({ contractId: resolveContractScopeFromContext() });
-  } catch (err) {
-    const msg = err?.response?.data?.message || err?.message || 'فشل تعيين الأهداف';
-    notificationService.addNotification(msg, 'error');
-  } finally {
-    isAssigningProjectTargets.value = false;
-  }
-}
+const { teamMembers, teamProjects, loadTeamMembers, loadTeamProjects } = useSalesTeam();
 
 async function loadManagerTeams() {
   loadingManagerTeams.value = true;
@@ -428,7 +330,7 @@ function normalizeExecutiveUnitsRows(payload) {
   if (Array.isArray(data)) {
     return data.map((item, index) => ({
       key: item?.id ?? item?.key ?? `item-${index}`,
-      label: item?.label ?? item?.line_type ?? item?.name ?? `Item ${index + 1}`,
+      label: item?.label ?? item?.line_type ?? item?.name ?? `عنصر ${index + 1}`,
       value:
         item?.count ??
         item?.value ??
@@ -473,7 +375,7 @@ async function loadExecutiveAvailableUnits() {
   } catch (err) {
     executiveUnitsRows.value = [];
     executiveUnitsError.value =
-      err?.response?.data?.message || err?.message || 'Failed to load available units';
+      err?.response?.data?.message || err?.message || 'فشل تحميل الوحدات المتاحة';
   } finally {
     isLoadingExecutiveUnits.value = false;
   }
@@ -483,7 +385,7 @@ async function openExecutiveTargetDetails(target) {
   if (!isSalesExecutiveView.value) return;
   const targetId = getSalesTargetPatchId(target);
   if (!targetId) {
-    notificationService.addNotification('Missing target id.', 'error');
+    notificationService.addNotification('معرف الهدف غير متوفر.', 'error');
     return;
   }
 
@@ -499,7 +401,7 @@ async function openExecutiveTargetDetails(target) {
       normalized?.value ?? normalized?.target_value ?? normalized?.assigned_target_value ?? '';
   } catch (err) {
     showExecutiveTargetModal.value = false;
-    const msg = err?.response?.data?.message || err?.message || 'Failed to load target details';
+    const msg = err?.response?.data?.message || err?.message || 'فشل تحميل تفاصيل الهدف';
     notificationService.addNotification(msg, 'error');
   } finally {
     isLoadingExecutiveTargetDetails.value = false;
@@ -516,18 +418,18 @@ function closeExecutiveTargetModal() {
 async function saveExecutiveTargetDetails() {
   const targetId = getSalesTargetPatchId(executiveTargetDetails.value);
   if (!targetId) {
-    notificationService.addNotification('Missing target id.', 'error');
+    notificationService.addNotification('معرف الهدف غير متوفر.', 'error');
     return;
   }
 
   const lineType = String(executiveTargetForm.line_type || '').trim();
   const valueNumber = Number(executiveTargetForm.value);
   if (!lineType) {
-    notificationService.addNotification('Line type is required.', 'warning');
+    notificationService.addNotification('نوع الهدف مطلوب.', 'warning');
     return;
   }
   if (!Number.isFinite(valueNumber) || valueNumber <= 0) {
-    notificationService.addNotification('Target value must be greater than zero.', 'warning');
+    notificationService.addNotification('قيمة الهدف يجب أن تكون أكبر من صفر.', 'warning');
     return;
   }
 
@@ -539,10 +441,10 @@ async function saveExecutiveTargetDetails() {
     });
     const refreshed = await salesService.getExecutiveTarget(targetId);
     executiveTargetDetails.value = normalizeSalesTargetItem(refreshed);
-    notificationService.addNotification('Target updated successfully.', 'success');
+    notificationService.addNotification('تم تحديث الهدف بنجاح.', 'success');
     await loadTargets();
   } catch (err) {
-    const msg = err?.response?.data?.message || err?.message || 'Failed to update target';
+    const msg = err?.response?.data?.message || err?.message || 'فشل تحديث الهدف';
     notificationService.addNotification(msg, 'error');
   } finally {
     isSavingExecutiveTargetDetails.value = false;
@@ -662,16 +564,16 @@ const assignmentCandidates = computed(() => {
   return [];
 });
 const assignModalTitle = computed(() => {
-  if (assignmentRoleMode.value === 'manager') return '????? ????? ??? ?????';
-  if (assignmentRoleMode.value === 'leader') return '????? ????? ??? ?????????';
-  if (assignmentRoleMode.value === 'group_leader') return '????? ????? ??? ???????';
-  return '????? ?????';
+  if (assignmentRoleMode.value === 'manager') return 'تعيين الهدف لفريق';
+  if (assignmentRoleMode.value === 'leader') return 'تعيين الهدف للمجموعات';
+  if (assignmentRoleMode.value === 'group_leader') return 'تعيين الهدف للأعضاء';
+  return 'تعيين الهدف';
 });
 const assignActionLabel = computed(() => {
-  if (assignmentRoleMode.value === 'manager') return '????? ?????';
-  if (assignmentRoleMode.value === 'leader') return '????? ?????????';
-  if (assignmentRoleMode.value === 'group_leader') return '????? ???????';
-  return '???';
+  if (assignmentRoleMode.value === 'manager') return 'تعيين الهدف لفريق';
+  if (assignmentRoleMode.value === 'leader') return 'تعيين الهدف للمجموعات';
+  if (assignmentRoleMode.value === 'group_leader') return 'تعيين الهدف للأعضاء';
+  return 'تعيين الهدف';
 });
 
 const assignModalLoading = computed(() => {
@@ -681,16 +583,16 @@ const assignModalLoading = computed(() => {
   return loadingTeamMembers.value;
 });
 const assignModalEmptyText = computed(() => {
-  if (assignmentRoleMode.value === 'manager') return '?? ???? ??? ?????.';
-  if (assignmentRoleMode.value === 'leader') return '?? ???? ??????? ?????.';
-  if (assignmentRoleMode.value === 'group_leader') return '?? ???? ????? ??????.';
-  return '?? ???? ????? ?????.';
+  if (assignmentRoleMode.value === 'manager') return 'لا توجد فرق متاحة.';
+  if (assignmentRoleMode.value === 'leader') return 'لا توجد مجموعات متاحة.';
+  if (assignmentRoleMode.value === 'group_leader') return 'لا يوجد أعضاء متاحون.';
+  return 'لا توجد عناصر متاحة.';
 });
 const assignModalLoadingText = computed(() => {
-  if (assignmentRoleMode.value === 'manager') return '???? ????? ?????...';
-  if (assignmentRoleMode.value === 'leader') return '???? ????? ?????????...';
-  if (assignmentRoleMode.value === 'group_leader') return '???? ????? ???????...';
-  return '???? ???????...';
+  if (assignmentRoleMode.value === 'manager') return 'جاري تحميل الفرق...';
+  if (assignmentRoleMode.value === 'leader') return 'جاري تحميل المجموعات...';
+  if (assignmentRoleMode.value === 'group_leader') return 'جاري تحميل الأعضاء...';
+  return 'جاري التحميل...';
 });
 
 const showAssignmentTotals = computed(() =>
@@ -730,7 +632,159 @@ function resolveAvailableAssignmentValue(target) {
   return directValue;
 }
 
+function findLeaderTeamAssignment(target) {
+  const myTeamId = ledTeam.value?.id ?? ledTeam.value?.team_id ?? null;
+  if (myTeamId == null || !Array.isArray(target?.teams)) return null;
+  return (
+    target.teams.find(team => Number(team?.id ?? team?.team_id) === Number(myTeamId)) || null
+  );
+}
+
+function findGroupLeaderAssignment(target) {
+  if (!Array.isArray(target?.team_groups)) return null;
+  const groups = Array.isArray(ledGroups.value) ? ledGroups.value : [];
+  const ledGroupIds = new Set(
+    groups
+      .map(group => Number(group?.id ?? group?.team_group_id))
+      .filter(id => Number.isFinite(id))
+  );
+  if (ledGroupIds.size === 0) return null;
+  return (
+    target.team_groups.find(group => ledGroupIds.has(Number(group?.id ?? group?.team_group_id))) || null
+  );
+}
+
+function findMemberAssignment(target) {
+  const userId = currentUserId.value;
+  if (userId == null || !Array.isArray(target?.member_users)) return null;
+  return (
+    target.member_users.find(member => Number(member?.id ?? member?.user_id) === Number(userId)) || null
+  );
+}
+
+function getAssignedValueForTarget(target) {
+  if (!target || typeof target !== 'object') return 0;
+  const targetTotal = num(target?.target_value ?? target?.value_target ?? target?.value ?? 0, 0);
+
+  if (assignmentRoleMode.value === 'leader') {
+    const teamAssignment = findLeaderTeamAssignment(target);
+    const scopedValue = resolveAvailableAssignmentValue(target);
+    return num(
+      teamAssignment?.value_target ?? teamAssignment?.target_value ?? scopedValue,
+      scopedValue,
+    );
+  }
+
+  if (assignmentRoleMode.value === 'group_leader') {
+    const groupAssignment = findGroupLeaderAssignment(target);
+    const scopedValue = resolveAvailableAssignmentValue(target);
+    return num(
+      groupAssignment?.value_target ?? groupAssignment?.target_value ?? scopedValue,
+      scopedValue,
+    );
+  }
+
+  if (assignmentRoleMode.value === 'member') {
+    const memberAssignment = findMemberAssignment(target);
+    return num(
+      memberAssignment?.value_target ?? memberAssignment?.target_value ?? target?.value_target ?? targetTotal,
+      num(target?.value_target ?? targetTotal, targetTotal),
+    );
+  }
+
+  return targetTotal;
+}
+
+function getRemainingValueForTarget(target) {
+  if (!target || typeof target !== 'object') return 0;
+  const achieved = num(target?.achieved_value, 0);
+  const assignedValue = getAssignedValueForTarget(target);
+
+  if (assignmentRoleMode.value === 'leader') {
+    const teamAssignment = findLeaderTeamAssignment(target);
+    return num(
+      teamAssignment?.remaining_value ?? teamAssignment?.total_remaining_value,
+      Math.max(assignedValue - achieved, 0),
+    );
+  }
+
+  if (assignmentRoleMode.value === 'group_leader') {
+    const groupAssignment = findGroupLeaderAssignment(target);
+    return num(
+      groupAssignment?.remaining_value ?? groupAssignment?.total_remaining_value,
+      Math.max(assignedValue - achieved, 0),
+    );
+  }
+
+  if (assignmentRoleMode.value === 'member') {
+    const memberAssignment = findMemberAssignment(target);
+    return num(
+      memberAssignment?.remaining_value ?? memberAssignment?.total_remaining_value,
+      Math.max(assignedValue - achieved, 0),
+    );
+  }
+
+  return num(
+    target?.remaining_value ?? target?.total_remaining_value,
+    Math.max(assignedValue - achieved, 0),
+  );
+}
+
+function getDistributionLineForTarget(target) {
+  if (!target || typeof target !== 'object') return '';
+
+  let label = '';
+  let list = [];
+
+  if (assignmentRoleMode.value === 'leader') {
+    label = 'المجموعات المسندة';
+    list = Array.isArray(target?.team_groups) ? target.team_groups : [];
+  } else if (assignmentRoleMode.value === 'group_leader') {
+    label = 'الأعضاء المسند لهم';
+    list = Array.isArray(target?.member_users) ? target.member_users : [];
+  } else if (assignmentRoleMode.value === 'manager') {
+    label = 'الفرق المسندة';
+    list = Array.isArray(target?.teams) ? target.teams : [];
+  } else {
+    return '';
+  }
+
+  const names = list
+    .map(item => String(item?.name || item?.group_name || item?.team_name || item?.full_name || '').trim())
+    .filter(Boolean);
+
+  if (names.length === 0) return '';
+  const preview = names.slice(0, 3).join('، ');
+  if (names.length <= 3) return `${label}: ${preview}`;
+  return `${label}: ${preview} (+${names.length - 3})`;
+}
+
 const availableAssignmentValue = computed(() => resolveAvailableAssignmentValue(assignTarget.value));
+const assignTargetTotalValue = computed(() =>
+  num(assignTarget.value?.target_value ?? assignTarget.value?.value_target ?? assignTarget.value?.value ?? 0, 0)
+);
+const assignTargetTypeLabel = computed(() =>
+  String(
+    assignTarget.value?.line_type ||
+    assignTarget.value?.target_type ||
+    assignTarget.value?.project_name ||
+    'هدف المبيعات'
+  ).trim()
+);
+const assignTargetAlreadyAssignedValue = computed(() => {
+  const explicit = num(
+    assignTarget.value?.already_assigned_value ??
+      assignTarget.value?.assigned_value ??
+      assignTarget.value?.distributed_value ??
+      assignTarget.value?.assigned_target_value ??
+      NaN,
+    NaN
+  );
+  if (Number.isFinite(explicit) && explicit >= 0) return explicit;
+  const total = assignTargetTotalValue.value;
+  const available = num(availableAssignmentValue.value, 0);
+  return total > 0 && available >= 0 ? Math.max(total - available, 0) : 0;
+});
 const filteredUnitsModalRows = computed(() => {
   const rows = unitsModalRows.value;
   if (isSalesLeaderView.value || currentUserId.value == null) return rows;
@@ -760,6 +814,7 @@ const displayTargets = computed(() => {
     isSalesLeaderView.value ||
     isSalesManagerView.value ||
     isSalesExecutiveView.value ||
+    isGroupLeaderView.value ||
     hasPermission('sales.team.manage')
   ) {
     return list;
@@ -768,6 +823,15 @@ const displayTargets = computed(() => {
   if (currentUserId.value == null) return [];
   
   return list.filter((t) => {
+    const directMemberId = Number(t?.user_id ?? t?.member_id ?? t?.assignee_id);
+    if (Number.isFinite(directMemberId) && directMemberId === currentUserId.value) return true;
+
+    const memberUsers = Array.isArray(t?.member_users) ? t.member_users : [];
+    const hasMemberRow = memberUsers.some(member =>
+      Number(member?.id ?? member?.user_id) === currentUserId.value,
+    );
+    if (hasMemberRow) return true;
+
     // إذا كان معرّف المسوّق موجوداً في العنصر، نتأكد أنه يطابق المستخدم الحالي (منعاً لأي تداخل).
     // إذا لم يكن موجوداً، نثق في أن الـ API أرجع فقط أهداف هذا المستخدم (خاصة في مسار /my).
     const mId = t.marketer_id != null && t.marketer_id !== '' ? Number(t.marketer_id) : null;
@@ -880,7 +944,7 @@ async function loadLeaderTeamContext() {
       : list.filter(group => Number(group?.team_id) === Number(myTeamId));
   } catch (err) {
     leaderTeamGroups.value = [];
-    notificationService.addNotification(err?.response?.data?.message || '??? ????? ??????? ??????', 'error');
+    notificationService.addNotification(err?.response?.data?.message || 'فشل تحميل مجموعات الفريق', 'error');
   } finally {
     loadingLeaderTeamGroups.value = false;
   }
@@ -901,7 +965,7 @@ async function loadGroupLeaderContext() {
   } catch (err) {
     groupLeaderMembers.value = [];
     ledGroups.value = [];
-    notificationService.addNotification(err?.response?.data?.message || '??? ????? ????? ????????', 'error');
+    notificationService.addNotification(err?.response?.data?.message || 'فشل تحميل أعضاء المجموعة', 'error');
   } finally {
     loadingGroupLeaderMembers.value = false;
   }
@@ -934,37 +998,52 @@ function closeAssignMarketers() {
   selectedAssignments.value = [];
 }
 
-function buildSelectedAssignmentRows() {
-  const selectedSet = new Set((Array.isArray(selectedMarketerIds.value) ? selectedMarketerIds.value : []).map(id => Number(id)));
-  return (Array.isArray(selectedAssignments.value) ? selectedAssignments.value : [])
-    .filter(row => selectedSet.has(Number(row?.id)))
-    .map(row => ({ id: Number(row?.id), value_target: Number(row?.value_target ?? 0) }))
-    .filter(row => Number.isFinite(row.id) && row.id > 0 && Number.isFinite(row.value_target) && row.value_target > 0);
-}
-
 async function saveAssignMarketers() {
-  if (!assignTarget.value || selectedMarketerIds.value.length === 0) return;
+  if (!assignTarget.value) return;
 
-  const selectedRows = buildSelectedAssignmentRows();
-  if (selectedRows.length === 0) {
-    notificationService.addNotification('???? ???? ????? ??? ???? ????.', 'warning');
+  const selectedIds = (Array.isArray(selectedMarketerIds.value) ? selectedMarketerIds.value : [])
+    .map(id => Number(id))
+    .filter(id => Number.isFinite(id) && id > 0);
+
+  if (selectedIds.length === 0) {
+    notificationService.addNotification('يرجى اختيار فريق واحد على الأقل.', 'warning');
     return;
   }
 
-  const availableValue = availableAssignmentValue.value;
+  const assignmentsMap = new Map(
+    (Array.isArray(selectedAssignments.value) ? selectedAssignments.value : [])
+      .map(row => [Number(row?.id), Number(row?.value_target ?? 0)])
+      .filter(([id]) => Number.isFinite(id))
+  );
+
+  const hasMissingOrInvalidValue = selectedIds.some(id => {
+    const value = assignmentsMap.get(id);
+    return !Number.isFinite(value) || value <= 0;
+  });
+  if (hasMissingOrInvalidValue) {
+    notificationService.addNotification('please put a target in the field', 'warning');
+    return;
+  }
+
+  const selectedRows = selectedIds.map(id => ({ id, value_target: Number(assignmentsMap.get(id)) }));
+  const availableValue = num(availableAssignmentValue.value, 0);
   const assignedTotal = selectedRows.reduce((sum, row) => sum + Number(row.value_target || 0), 0);
   if (assignedTotal > availableValue) {
-    notificationService.addNotification('?????? ?????? ?????? ?????? ???????.', 'warning');
+    notificationService.addNotification('إجمالي المخصص يتجاوز قيمة الهدف المتاحة.', 'warning');
     return;
   }
-  if (distributionValidation.requireExactDistribution && availableValue > 0 && Math.abs(assignedTotal - availableValue) > 0.000001) {
-    notificationService.addNotification('??? ?? ????? ?????? ?????? ?????? ???????.', 'warning');
+  if (
+    distributionValidation.requireExactDistribution &&
+    availableValue > 0 &&
+    Math.abs(assignedTotal - availableValue) > 0.000001
+  ) {
+    notificationService.addNotification('يجب أن يساوي إجمالي المخصص قيمة الهدف المتاحة.', 'warning');
     return;
   }
 
   const targetId = getSalesTargetPatchId(assignTarget.value) ?? assignTarget.value?.line_id ?? assignTarget.value?.id;
   if (!targetId) {
-    notificationService.addNotification('???? ????? ???? ?????.', 'error');
+    notificationService.addNotification('تعذر تحديد معرف الهدف.', 'error');
     return;
   }
 
@@ -975,28 +1054,28 @@ async function saveAssignMarketers() {
         targetId,
         selectedRows.map(row => ({ team_id: row.id, value_target: row.value_target })),
       );
-      notificationService.addNotification('?? ????? ????? ??? ????? ?????', 'success');
+      notificationService.addNotification('تم تعيين الهدف للفرق بنجاح', 'success');
     } else if (assignmentRoleMode.value === 'leader') {
       await salesService.assignTargetToTeamGroups(
         targetId,
         selectedRows.map(row => ({ team_group_id: row.id, value_target: row.value_target })),
       );
-      notificationService.addNotification('?? ????? ????? ??? ????????? ?????', 'success');
+      notificationService.addNotification('تم تعيين الهدف للمجموعات بنجاح', 'success');
     } else if (assignmentRoleMode.value === 'group_leader') {
       await salesService.assignTargetToMembers(
         targetId,
         selectedRows.map(row => ({ user_id: row.id, value_target: row.value_target })),
       );
-      notificationService.addNotification('?? ????? ????? ??? ??????? ?????', 'success');
+      notificationService.addNotification('تم تعيين الهدف للأعضاء بنجاح', 'success');
     } else {
-      notificationService.addNotification('??? ????? ?? ???? ??????? ?? ??? ??????.', 'warning');
+      notificationService.addNotification('لا يمكن تنفيذ التعيين لهذا الدور.', 'warning');
       return;
     }
 
     closeAssignMarketers();
     await loadTargets();
   } catch (err) {
-    notificationService.addNotification(err?.response?.data?.message || '??? ??? ???????', 'error');
+    notificationService.addNotification(err?.response?.data?.message || 'فشل حفظ الهدف', 'error');
   } finally {
     assignSaving.value = false;
   }
@@ -1017,9 +1096,7 @@ onMounted(() => {
   document.addEventListener('click', onDocumentClick);
   if (isSalesManagerView.value) {
     loadManagerTeams();
-  } else if (isSalesLeaderView.value || hasPermission('sales.team.manage')) {
-    loadTeamMembers({ with_ratings: true });
-    loadTeamProjects();
+  } else if (isSalesLeaderView.value) {
     loadLeaderTeamContext();
   } else if (isGroupLeaderView.value) {
     loadGroupLeaderContext();
@@ -1057,6 +1134,66 @@ onUnmounted(() => {
   margin-top: 6px;
   color: #0f172a;
   font-size: 18px;
+}
+
+.executive-units-panel {
+  margin-bottom: 18px;
+  border: 1px solid rgba(39, 55, 77, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 16px;
+}
+
+.executive-units-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.executive-units-panel__title {
+  margin: 0;
+  color: var(--color-navy, #27374d);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.executive-units-panel__state {
+  color: #475569;
+  font-weight: 600;
+}
+
+.executive-units-panel__state--error {
+  color: #b91c1c;
+}
+
+.executive-units-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.executive-units-card {
+  border: 1px solid rgba(39, 55, 77, 0.12);
+  border-radius: 12px;
+  padding: 12px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.executive-units-card__label {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.executive-units-card__value {
+  color: var(--color-navy, #27374d);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
 }
 </style>
 

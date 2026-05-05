@@ -308,7 +308,7 @@ async function handleCreateClaim() {
     // booking_ids instead of reservation_ids
     // claim_type: commission
     const payload = {
-      booking_ids: selectedReservationIds.value,
+      booking_ids: selectedReservationIds.value,          
       claim_type: 'commission'
     };
     

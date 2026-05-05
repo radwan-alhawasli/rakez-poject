@@ -47,7 +47,7 @@
               class="card-dropdown-item"
               @click="$emit('view-target-details', target)"
             >
-              View target details
+              عرض تفاصيل الهدف
             </button>
             <button
               v-if="isManager"
@@ -96,6 +96,7 @@
           <div class="target-header">
             <div class="target-info">
               <h3 class="target-project-name">{{ target.project_name || 'هدف مبيعات' }}</h3>
+              <p class="target-type">{{ target.line_type || target.target_type || 'هدف مبيعات' }}</p>
 
               <div v-if="target.project_location" class="target-location">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -110,10 +111,25 @@
 
               <p class="target-marketer">{{ getTargetAssigneeLine(target, isSalesLeaderView) }}</p>
               <p class="target-marketer target-assigned-units">{{ getAssignedUnitsLine(target, isSalesLeaderView) }}</p>
+              <p
+                v-if="['leader', 'group_leader', 'member'].includes(assignmentRoleMode)"
+                class="target-marketer target-assigned-meta"
+              >
+                قيمة الهدف المسندة: {{ formatCurrency(getAssignedValueForTarget(target)) }}
+              </p>
+              <p
+                v-if="['leader', 'group_leader', 'member'].includes(assignmentRoleMode)"
+                class="target-marketer target-assigned-meta"
+              >
+                المتبقي: {{ formatCurrency(getRemainingValueForTarget(target)) }}
+              </p>
+              <p v-if="getDistributionLineForTarget(target)" class="target-marketer target-assigned-meta">
+                {{ getDistributionLineForTarget(target) }}
+              </p>
             </div>
             <div class="target-value-block">
               <span class="target-value">{{ formatCurrency(target.target_value) }}</span>
-              <span class="target-value-label">الهدف</span>
+              <span class="target-value-label">قيمة الهدف</span>
             </div>
           </div>
 
@@ -143,11 +159,15 @@
             </div>
           </div>
 
+          <span class="target-status" :class="getTargetStatusClass(target)">
+            {{ target.status_label_ar || getTargetStatusText(target) }}
+          </span>
+
           <div class="target-card-actions" v-if="canUpdateTarget(target)" @click.stop>
             <button
               type="button"
               class="btn-status-toggle"
-              :class="{ 'active': target.status === 'in_progress' }"
+              :class="{ active: target.status === 'in_progress' }"
               :disabled="isTargetUpdating(target)"
               @click="updateTargetStatus(target, 'in_progress')"
             >
@@ -156,17 +176,13 @@
             <button
               type="button"
               class="btn-status-toggle btn-success"
-              :class="{ 'active': target.status === 'completed' }"
+              :class="{ active: target.status === 'completed' }"
               :disabled="isTargetUpdating(target)"
               @click="updateTargetStatus(target, 'completed')"
             >
               مكتمل
             </button>
           </div>
-
-          <span v-else class="target-status" :class="getTargetStatusClass(target)">
-            {{ target.status_label_ar || getTargetStatusText(target) }}
-          </span>
         </div>
       </div>
     </div>
@@ -198,6 +214,10 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  assignmentRoleMode: {
+    type: String,
+    default: 'member',
+  },
   isTargetUpdating: {
     type: Function,
     required: true,
@@ -218,6 +238,18 @@ defineProps({
     type: Function,
     required: true,
   },
+  getAssignedValueForTarget: {
+    type: Function,
+    required: true,
+  },
+  getRemainingValueForTarget: {
+    type: Function,
+    required: true,
+  },
+  getDistributionLineForTarget: {
+    type: Function,
+    required: true,
+  },
   canUpdateTarget: {
     type: Function,
     required: true,
@@ -232,7 +264,7 @@ defineProps({
   },
   assignActionLabel: {
     type: String,
-    default: 'إضافة مسوقين للمشروع',
+    default: 'تعيين الهدف لفريق',
   },
   allowDelete: {
     type: Boolean,
