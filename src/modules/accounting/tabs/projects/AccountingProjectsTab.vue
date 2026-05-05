@@ -197,23 +197,32 @@
 
                   <td>{{ claim.reservation_ids?.length || 0 }}</td>
                   <td>
-                    <select 
-                      v-model="claim.status" 
-                      class="status-select"
-                      :class="claim.status"
-                      @change="handleStatusUpdate(claim.id, claim.status)"
-                    >
-                      <option value="pending">قيد الانتظار</option>
-                      <option value="completed">مكتمل</option>
-                    </select>
+                    <span class="status-badge" :class="claim.status">
+                      {{ getClaimStatusText(claim.status) }}
+                    </span>
                   </td>
                   <td>
                     <div class="claim-actions">
-                      <button class="btn-generate-pdf" @click="handleGeneratePdf(claim.id)">
-                        إنشاء PDF
+                      <button
+                        class="btn-generate-pdf"
+                        :disabled="isClaimActionLoading(claim.id)"
+                        @click="handleSendClaimFileToDeveloper(claim)"
+                      >
+                        {{ sendingClaimId === claim.id ? '\u062c\u0627\u0631\u064a \u0627\u0644\u0625\u0631\u0633\u0627\u0644...' : '\u0625\u0631\u0633\u0627\u0644 \u0645\u0644\u0641 \u0627\u0644\u0645\u0637\u0627\u0644\u0628\u0629 \u0644\u0644\u0645\u0637\u0648\u0631' }}
                       </button>
-                      <button v-if="claim.download_url" class="btn-download" @click="openPdf(claim.download_url)">
-                        تحميل
+                      <button
+                        class="btn-download"
+                        :disabled="isClaimActionLoading(claim.id)"
+                        @click="handleViewClaimFile(claim)"
+                      >
+                        {{ viewingClaimId === claim.id ? '\u062c\u0627\u0631\u064a \u0627\u0644\u0639\u0631\u0636...' : '\u0639\u0631\u0636 \u0645\u0644\u0641 \u0627\u0644\u0645\u0637\u0627\u0644\u0628\u0647' }}
+                      </button>
+                      <button
+                        class="btn-pdf"
+                        :disabled="isClaimActionLoading(claim.id) || claim.status === 'completed'"
+                        @click="handleConfirmCommissionReceived(claim)"
+                      >
+                        {{ confirmingClaimId === claim.id ? '\u062c\u0627\u0631\u064a \u0627\u0644\u062a\u0623\u0643\u064a\u062f...' : '\u062a\u0627\u0643\u064a\u062f \u0627\u0633\u062a\u0644\u0627\u0645 \u0627\u0644\u0639\u0645\u0648\u0644\u0647' }}
                       </button>
                     </div>
                   </td>
@@ -231,6 +240,7 @@
 import { ref, onMounted, computed } from 'vue';
 import accountingService from '@/services/accountingService';
 import { contractServiceMarketerMethods } from '@/services/contracts/contractServiceMarketer';
+import notificationService from '@/services/notificationService';
 import logger from '@/utils/logger';
 
 
@@ -243,6 +253,9 @@ const projects = ref([]);
 const soldUnits = ref([]);
 const claimFiles = ref([]);
 const selectedReservationIds = ref([]);
+const sendingClaimId = ref(null);
+const viewingClaimId = ref(null);
+const confirmingClaimId = ref(null);
 
 const searchQuery = ref('');
 
@@ -332,24 +345,90 @@ async function handleCreateClaim() {
 
 
 
-async function handleStatusUpdate(id, status) {
+function isClaimActionLoading(claimId) {
+  return (
+    sendingClaimId.value === claimId ||
+    viewingClaimId.value === claimId ||
+    confirmingClaimId.value === claimId
+  );
+}
+
+async function handleSendClaimFileToDeveloper(claim) {
+  const claimId = claim?.id;
+  if (!claimId) return;
+  sendingClaimId.value = claimId;
   try {
-    await accountingService.updateClaimFileStatus(id, status);
-  } catch (error) {
-    logger.error('Failed to update status:', error);
+    const res = await accountingService.generateClaimFilePdf(claimId);
+    if (res?.download_url) claim.download_url = res.download_url;
+    notificationService.addNotification(
+      '\u062a\u0645 \u0625\u0631\u0633\u0627\u0644 \u0645\u0644\u0641 \u0627\u0644\u0645\u0637\u0627\u0644\u0628\u0629 \u0644\u0644\u0645\u0637\u0648\u0631 \u0628\u0646\u062c\u0627\u062d',
+      'success',
+    );
     await loadClaimFiles();
+  } catch (error) {
+    logger.error('Failed to send claim file to developer:', error);
+    notificationService.addNotification(
+      '\u062a\u0639\u0630\u0631 \u0625\u0631\u0633\u0627\u0644 \u0645\u0644\u0641 \u0627\u0644\u0645\u0637\u0627\u0644\u0628\u0629 \u0644\u0644\u0645\u0637\u0648\u0631',
+      'error',
+    );
+  } finally {
+    sendingClaimId.value = null;
   }
 }
 
-async function handleGeneratePdf(id) {
+async function handleViewClaimFile(claim) {
+  const claimId = claim?.id;
+  if (!claimId) return;
+  viewingClaimId.value = claimId;
   try {
-    const res = await accountingService.generateClaimFilePdf(id);
-    if (res.download_url) {
-      window.open(res.download_url, '_blank');
+    const res = await accountingService.generateClaimFilePdf(claimId);
+    const pdfPath = res?.download_url || res?.download_path || res?.pdf_path || claim?.download_url;
+    if (res?.download_url) claim.download_url = res.download_url;
+    if (pdfPath) {
+      openPdf(pdfPath);
+      notificationService.addNotification(
+        '\u062a\u0645 \u0641\u062a\u062d \u0645\u0644\u0641 \u0627\u0644\u0645\u0637\u0627\u0644\u0628\u0629',
+        'success',
+      );
+    } else {
+      notificationService.addNotification(
+        '\u0644\u0645 \u064a\u062a\u0645 \u0627\u0644\u0639\u062b\u0648\u0631 \u0639\u0644\u0649 \u0631\u0627\u0628\u0637 \u0645\u0644\u0641 \u0627\u0644\u0645\u0637\u0627\u0644\u0628\u0629',
+        'warning',
+      );
     }
     await loadClaimFiles();
   } catch (error) {
-    logger.error('Failed to generate PDF:', error);
+    logger.error('Failed to view claim file:', error);
+    notificationService.addNotification(
+      '\u062a\u0639\u0630\u0631 \u0639\u0631\u0636 \u0645\u0644\u0641 \u0627\u0644\u0645\u0637\u0627\u0644\u0628\u0629',
+      'error',
+    );
+  } finally {
+    viewingClaimId.value = null;
+  }
+}
+
+async function handleConfirmCommissionReceived(claim) {
+  const claimId = claim?.id;
+  if (!claimId) return;
+  confirmingClaimId.value = claimId;
+  try {
+    await accountingService.updateClaimFileStatus(claimId, 'completed');
+    claim.status = 'completed';
+    await loadClaimFiles();
+    notificationService.addNotification(
+      '\u062a\u0645 \u062a\u0627\u0643\u064a\u062f \u0627\u0633\u062a\u0644\u0627\u0645 \u0627\u0644\u0639\u0645\u0648\u0644\u0647 \u0628\u0646\u062c\u0627\u062d',
+      'success',
+    );
+  } catch (error) {
+    logger.error('Failed to confirm commission received:', error);
+    notificationService.addNotification(
+      '\u062a\u0639\u0630\u0631 \u062a\u0627\u0643\u064a\u062f \u0627\u0633\u062a\u0644\u0627\u0645 \u0627\u0644\u0639\u0645\u0648\u0644\u0647',
+      'error',
+    );
+    await loadClaimFiles();
+  } finally {
+    confirmingClaimId.value = null;
   }
 }
 
@@ -365,6 +444,12 @@ function openPdf(url) {
 function formatCurrency(val) {
   if (!val) return '0.00 ريال';
   return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR' }).format(val);
+}
+
+function getClaimStatusText(status) {
+  return status === 'completed'
+    ? '\u0645\u0643\u062a\u0645\u0644'
+    : '\u0642\u064a\u062f \u0627\u0644\u0627\u0646\u062a\u0638\u0627\u0631';
 }
 
 const currentProjectName = computed(() => {
