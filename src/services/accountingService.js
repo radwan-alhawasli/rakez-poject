@@ -239,7 +239,8 @@ const accountingService = {
         return response.data?.data || response.data || {};
       } catch (error) {
         lastError = error;
-        const claimTypeErrors = error?.response?.data?.errors?.claim_type;
+        const err = /** @type {any} */ (error);
+        const claimTypeErrors = err?.response?.data?.errors?.claim_type;
         const message = String(getCaughtMessage(error) || '');
         const isClaimTypeInvalid =
           (Array.isArray(claimTypeErrors) && claimTypeErrors.length > 0) ||

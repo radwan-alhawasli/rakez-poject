@@ -385,6 +385,15 @@ export default {
       }
     }
 
+    function toAbsoluteFileUrl(rawUrl) {
+      if (!rawUrl) return '';
+      const url = String(rawUrl).trim();
+      if (!url) return '';
+      if (url.startsWith('http://') || url.startsWith('https://')) return url;
+      const baseUrl = String(import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+      return `${baseUrl}/${url.replace(/^\//, '')}`;
+    }
+
     async function handleSubmit() {
       if (!canSubmit.value) return;
       isSubmitting.value = true;
@@ -429,7 +438,11 @@ export default {
       if (!claimFileId) return;
       sendingClaimId.value = claimFileId;
       try {
-        await accountingService.generateClaimFilePdf(claimFileId);
+        const res = await accountingService.generateClaimFilePdf(claimFileId);
+        const fileUrl = toAbsoluteFileUrl(res?.download_url || res?.pdf_path || res?.url);
+        if (fileUrl) {
+          window.open(fileUrl, '_blank', 'noopener,noreferrer');
+        }
         toast.success('تم إرسال ملف المطالبة للمطور بنجاح');
       } catch (error) {
         logger.error('Error sending claim file to developer', error);
