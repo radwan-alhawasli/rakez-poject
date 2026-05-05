@@ -224,13 +224,33 @@ const accountingService = {
    * @param {Record<string, unknown>} payload
    */
   async createCombinedClaimFile(payload) {
-    try {
-      const response = await apiClient.post('/accounting/claim-files/combined', payload);
-      return response.data?.data || response.data || {};
-    } catch (error) {
-      logger.error('Error creating combined claim file:', error);
-      throw error;
+    const requestedType = payload?.claim_type;
+    const claimTypesToTry = [];
+    if (requestedType) claimTypesToTry.push(String(requestedType));
+    if (!claimTypesToTry.includes('commission')) claimTypesToTry.push('commission');
+    if (!claimTypesToTry.includes('commissions')) claimTypesToTry.push('commissions');
+
+    /** @type {any} */
+    let lastError = null;
+    for (const claimType of claimTypesToTry) {
+      try {
+        const body = { ...(payload || {}), claim_type: claimType };
+        const response = await apiClient.post('/accounting/claim-files/combined', body);
+        return response.data?.data || response.data || {};
+      } catch (error) {
+        lastError = error;
+        const claimTypeErrors = error?.response?.data?.errors?.claim_type;
+        const message = String(getCaughtMessage(error) || '');
+        const isClaimTypeInvalid =
+          (Array.isArray(claimTypeErrors) && claimTypeErrors.length > 0) ||
+          message.includes('claim_type') ||
+          message.includes('نوع المطالبة');
+        if (!isClaimTypeInvalid) break;
+      }
     }
+
+    logger.error('Error creating combined claim file:', lastError);
+    throw lastError;
   },
 
 

@@ -306,10 +306,10 @@ async function handleCreateClaim() {
   try {
     // Correct payload for combined claim as per user request:
     // booking_ids instead of reservation_ids
-    // claim_type: commissions
+    // claim_type: commission
     const payload = {
       booking_ids: selectedReservationIds.value,
-      claim_type: 'commissions'
+      claim_type: 'commission'
     };
     
     if (filters.value.contract_id) {

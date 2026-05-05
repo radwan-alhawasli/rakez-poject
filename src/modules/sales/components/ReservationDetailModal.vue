@@ -144,10 +144,10 @@ const { formatDate, formatNumber } = useFormatters();
 const commissionSteps = computed(() => {
   const t = props.item.trace || {};
   return [
-    { name: 'رفع المطالبة', status: t.has_claim_file ? 'completed' : 'pending' },
-    { name: 'اكتمال الملف', status: t.claim_file_completed ? 'completed' : 'pending' },
-    { name: 'تجهيز العمولة', status: t.has_commission ? 'completed' : 'pending' },
-    { name: 'اعتماد الصرف', status: t.distribution_approved ? 'completed' : 'pending' },
+    { name: '\u0631\u0641\u0639 \u0627\u0644\u0645\u0637\u0627\u0644\u0628\u0629', status: t.has_claim_file ? 'completed' : 'pending' },
+    { name: '\u062a\u0645 \u0627\u0644\u062a\u062d\u0648\u064a\u0644 \u0645\u0646 \u0627\u0644\u0645\u0637\u0648\u0631', status: t.claim_file_completed ? 'completed' : 'pending' },
+    { name: '\u062a\u0645 \u062a\u0648\u0632\u064a\u0639 \u0627\u0644\u0646\u0633\u0628', status: t.has_commission ? 'completed' : 'pending' },
+    { name: '\u062a\u0645 \u0627\u0644\u062a\u062d\u0648\u064a\u0644 \u0625\u0644\u0649 \u062d\u0633\u0627\u0628\u064a', status: t.distribution_approved ? 'completed' : 'pending' },
   ];
 });
 
@@ -164,3 +164,5 @@ const currentStepIndex = computed(() => {
 
 
 <style src="./styles/ReservationDetailModal.css"></style>
+
+

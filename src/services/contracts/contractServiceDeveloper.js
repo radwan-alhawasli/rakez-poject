@@ -32,6 +32,28 @@ export const contractServiceDeveloperMethods = {
   },
 
   /**
+   * List second parties with pagination (source requested for accounting developers list).
+   * GET /second-party-data/second-parties?page=4
+   * @param {Record<string, any>} params - { page, per_page, search }
+   * @returns {Promise<{ data: any[], meta: Record<string, any> }>}
+   */
+  async getSecondPartiesList(params = {}) {
+    try {
+      const response = await apiClient.get('/second-party-data/second-parties', { params });
+      const res = response.data ?? {};
+      const data =
+        (Array.isArray(res?.data) && res.data) ||
+        (Array.isArray(res?.data?.data) && res.data.data) ||
+        (Array.isArray(res?.items) && res.items) ||
+        [];
+      const meta = res?.meta ?? res?.data?.meta ?? {};
+      return { data, meta };
+    } catch (error) {
+      return handleServiceError(error, 'Fetch second parties list', 'get', { data: [], meta: {} });
+    }
+  },
+
+  /**
    * List developers (Accounting Module API) – نفس المصدر المستخدم في "عرض المطورين" بقسم المحاسبة.
    * GET /developers?search=&per_page=15&page=1
    * Accessible by accounting, project_management, admin.

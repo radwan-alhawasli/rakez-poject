@@ -344,10 +344,10 @@
               <div v-if="reservation.trace" class="card-commission-mini">
                 <span class="tracker-title">تتبع العمولة:</span>
                 <div class="tracker-steps-mini">
-                  <div class="step-mini" :class="{ completed: reservation.trace.has_claim_file }" title="رفع المطالبة"></div>
-                  <div class="step-mini" :class="{ completed: reservation.trace.claim_file_completed }" title="اكتمال الملف"></div>
-                  <div class="step-mini" :class="{ completed: reservation.trace.has_commission }" title="تجهيز العمولة"></div>
-                  <div class="step-mini" :class="{ completed: reservation.trace.distribution_approved }" title="اعتماد الصرف"></div>
+                  <div class="step-mini" :class="{ completed: reservation.trace.has_claim_file }" :title="'\u0631\u0641\u0639 \u0627\u0644\u0645\u0637\u0627\u0644\u0628\u0629'"></div>
+                  <div class="step-mini" :class="{ completed: reservation.trace.claim_file_completed }" :title="'\u062a\u0645 \u0627\u0644\u062a\u062d\u0648\u064a\u0644 \u0645\u0646 \u0627\u0644\u0645\u0637\u0648\u0631'"></div>
+                  <div class="step-mini" :class="{ completed: reservation.trace.has_commission }" :title="'\u062a\u0645 \u062a\u0648\u0632\u064a\u0639 \u0627\u0644\u0646\u0633\u0628'"></div>
+                  <div class="step-mini" :class="{ completed: reservation.trace.distribution_approved }" :title="'\u062a\u0645 \u0627\u0644\u062a\u062d\u0648\u064a\u0644 \u0625\u0644\u0649 \u062d\u0633\u0627\u0628\u064a'"></div>
                 </div>
               </div>
             </div>
@@ -425,3 +425,5 @@ const {
 
 <style scoped src="./styles/ReservationsView.scoped.s1.css"></style>
 <style scoped src="./styles/ReservationsView.scoped.s2.css"></style>
+
+

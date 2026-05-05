@@ -39,7 +39,7 @@
           </div>
           <p class="developers-loading-caption">جاري تحميل المطورين...</p>
         </div>
-        <div v-else-if="filteredDevelopers.length === 0" class="empty-state developers-empty">
+        <div v-else-if="allDevelopers.length === 0" class="empty-state developers-empty">
           <div class="developers-empty-icon" aria-hidden="true">
             <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -57,7 +57,7 @@
         </div>
         <div v-else class="projects-grid developers-cards-grid">
           <article
-            v-for="dev in filteredDevelopers"
+            v-for="dev in allDevelopers"
             :key="developerRowKey(dev)"
             class="developer-pm-card rakez-card"
           >
@@ -97,61 +97,58 @@
             </div>
           </article>
         </div>
+        <Pagination
+          v-if="totalItems > 0 && !isLoading"
+          :current-page="currentPage"
+          :total-items="totalItems"
+          :per-page="perPage"
+          @page-change="handlePageChange"
+          @per-page-change="handlePerPageChange"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import contractService from '@/services/contractService';
 import logger from '@/utils/logger';
 import { normalizeDeveloper } from '@/utils/developerMapper';
+import Pagination from '@/components/Pagination.vue';
 
 const SEARCH_DEBOUNCE_MS = 350;
 
 export default {
   name: 'DevelopersView',
+  components: { Pagination },
   setup() {
     const router = useRouter();
     const searchQuery = ref('');
-    const searchDebounced = ref('');
     const allDevelopers = ref([]);
     const isLoading = ref(true);
+    const currentPage = ref(1);
+    const perPage = ref(15);
+    const totalItems = ref(0);
     let searchDebounce = null;
-
-    const filteredDevelopers = computed(() => {
-      const q = searchDebounced.value.trim().toLowerCase();
-      const list = allDevelopers.value;
-      if (!q) return list;
-      return list.filter(dev => {
-        const hay = [
-          dev.name,
-          dev.email,
-          dev.commercialRecord,
-          dev.phone,
-          dev.location,
-          dev.representative,
-          dev.role,
-        ]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase();
-        return hay.includes(q);
-      });
-    });
 
     const fetchDevelopers = async () => {
       isLoading.value = true;
       try {
-        // GET /second-party-data/second-parties — قائمة المطورين لكل قسم يملك تبويب المطورين
-        const raw = await contractService.getDevelopers();
-        const list = Array.isArray(raw) ? raw : [];
+        // GET /second-party-data/second-parties?page=4
+        const { data, meta } = await contractService.getSecondPartiesList({
+          search: searchQuery.value?.trim() || undefined,
+          page: currentPage.value,
+          per_page: perPage.value,
+        });
+        const list = Array.isArray(data) ? data : [];
         allDevelopers.value = list.map(d => normalizeDeveloper(d));
+        totalItems.value = Number(meta?.total ?? list.length ?? 0);
       } catch (e) {
-        logger.error('Failed to fetch second parties (developers)', e);
+        logger.error('Failed to fetch developers list', e);
         allDevelopers.value = [];
+        totalItems.value = 0;
       } finally {
         isLoading.value = false;
       }
@@ -160,9 +157,21 @@ export default {
     watch(searchQuery, () => {
       if (searchDebounce) clearTimeout(searchDebounce);
       searchDebounce = setTimeout(() => {
-        searchDebounced.value = searchQuery.value;
+        currentPage.value = 1;
+        fetchDevelopers();
       }, SEARCH_DEBOUNCE_MS);
     });
+
+    const handlePageChange = page => {
+      currentPage.value = page;
+      fetchDevelopers();
+    };
+
+    const handlePerPageChange = value => {
+      perPage.value = value;
+      currentPage.value = 1;
+      fetchDevelopers();
+    };
 
     const developerRowKey = dev => {
       if (dev?.id != null && dev.id !== '') return String(dev.id);
@@ -186,18 +195,21 @@ export default {
     };
 
     onMounted(() => {
-      searchDebounced.value = searchQuery.value;
       fetchDevelopers();
     });
 
     return {
       searchQuery,
       allDevelopers,
-      filteredDevelopers,
       isLoading,
+      currentPage,
+      perPage,
+      totalItems,
       developerRowKey,
       developerInitial,
       goToDeveloperDetail,
+      handlePageChange,
+      handlePerPageChange,
     };
   },
 };
@@ -205,3 +217,4 @@ export default {
 
 <style scoped src="./styles/DevelopersView.scoped.s1.css"></style>
 <style scoped src="./styles/DevelopersView.scoped.s2.css"></style>
+

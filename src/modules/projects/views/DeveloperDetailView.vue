@@ -90,9 +90,12 @@
             role="button"
             @click="openProjectUnits(p)"
           >
-            <span class="project-name">{{
-              p.project_name || p.name || p.title || 'مشروع بدون اسم'
-            }}</span>
+                        <div class="project-meta">
+              <span class="project-name">{{
+                p.project_name || p.name || p.title || 'مشروع بدون اسم'
+              }}</span>
+              <span class="project-developer-name">&#1575;&#1604;&#1605;&#1591;&#1608;&#1585;: {{ developer?.name || '-' }}</span>
+            </div>
             <span v-if="p.status" class="project-status">{{ statusLabelAr(p.status) }}</span>
             <span class="project-arrow" aria-hidden="true">←</span>
           </li>
@@ -225,3 +228,4 @@ export default {
 </script>
 
 <style scoped src="./styles/DeveloperDetailView.scoped.s1.css"></style>
+
