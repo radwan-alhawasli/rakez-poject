@@ -201,13 +201,22 @@ export function sanitizeNavIconSvg(svgHtml) {
   const raw = typeof svgHtml === 'string' ? svgHtml.trim() : '';
   if (!raw) return '';
   const wrapped = `<svg xmlns="http://www.w3.org/2000/svg">${raw}</svg>`;
-  const clean = DOMPurify.sanitize(wrapped, { USE_PROFILES: { svg: true } });
-  const openEnd = clean.indexOf('>');
-  const closeStart = clean.toLowerCase().lastIndexOf('</svg>');
-  if (openEnd === -1 || closeStart === -1 || closeStart <= openEnd) {
-    return '';
+  const sanitizeConfig = {
+    USE_PROFILES: { svg: true, svgFilters: true },
+    FORBID_TAGS: ['script', 'foreignObject'],
+    FORBID_ATTR: ['onerror', 'onload', 'onclick'],
+  };
+
+  const cleanWrapped = DOMPurify.sanitize(wrapped, sanitizeConfig);
+  const openEnd = cleanWrapped.indexOf('>');
+  const closeStart = cleanWrapped.toLowerCase().lastIndexOf('</svg>');
+  if (openEnd !== -1 && closeStart !== -1 && closeStart > openEnd) {
+    const fragment = cleanWrapped.slice(openEnd + 1, closeStart).trim();
+    if (fragment) return fragment;
   }
-  return clean.slice(openEnd + 1, closeStart);
+
+  // Fallback for environments that sanitize wrapped SVG too aggressively.
+  return DOMPurify.sanitize(raw, sanitizeConfig).trim();
 }
 
 export default {

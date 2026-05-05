@@ -3,7 +3,7 @@
     <div class="tab-content custom-scrollbar">
       <HRDashboardTab v-if="activeTab === 'dashboard'" />
 
-      <HRTeamsTab v-else-if="activeTab === 'teams'" :is-h-r="isHR" />
+      <TeamManagementView v-else-if="activeTab === 'teams'" />
 
       <HRPerformanceTab v-else-if="activeTab === 'team-performance'" />
 
@@ -19,11 +19,10 @@
 <script setup>
 import { computed, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
-import authService from '@/services/authService';
 import '../styles/hr-shell.css';
 
 const HRDashboardTab = defineAsyncComponent(() => import('@/modules/hr/tabs/dashboard/HRDashboardTab.vue'));
-const HRTeamsTab = defineAsyncComponent(() => import('@/modules/hr/tabs/teams/HRTeamsTab.vue'));
+const TeamManagementView = defineAsyncComponent(() => import('@/modules/hr/views/TeamManagementView.vue'));
 const HRPerformanceTab = defineAsyncComponent(() =>
   import('@/modules/hr/tabs/team-performance/HRPerformanceTab.vue')
 );
@@ -34,12 +33,6 @@ const HRUsersTab = defineAsyncComponent(() => import('@/modules/hr/tabs/users/HR
 const HRReportsTab = defineAsyncComponent(() => import('@/modules/hr/tabs/reports/HRReportsTab.vue'));
 
 const route = useRoute();
-const user = authService.getCurrentUser();
-const isHR = computed(() => {
-  const type = String(user?.type || '').toLowerCase();
-  return type === 'hr' || type === '8' || Number(user?.type) === 8;
-});
-
 const activeTab = computed(() => {
   const name = route.name;
   if (name === 'HRDashboard') return 'dashboard';

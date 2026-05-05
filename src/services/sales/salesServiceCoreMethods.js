@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import apiClient from '@/api/apiClient';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
@@ -28,6 +29,102 @@ function unwrapSalesTargetsList(response) {
 }
 
 /**
+ * @param {import('axios').AxiosResponse|any} response
+ * @returns {{ items: unknown[]; total: number }}
+ */
+function unwrapExecutiveTargetsList(response) {
+  const { items, total } = extractPaginatedData(response, []);
+  if (Array.isArray(items) && items.length > 0) return { items, total };
+
+  const data = response?.data ?? response;
+  if (Array.isArray(data)) return { items: data, total: data.length };
+  if (Array.isArray(data?.data)) return { items: data.data, total: data.total ?? data.data.length };
+  if (Array.isArray(data?.items)) return { items: data.items, total: data.total ?? data.items.length };
+  if (Array.isArray(data?.targets))
+    return { items: data.targets, total: data.total ?? data.targets.length };
+  if (Array.isArray(data?.lines)) return { items: data.lines, total: data.total ?? data.lines.length };
+
+  const nested = data?.data;
+  if (nested && typeof nested === 'object') {
+    if (Array.isArray(nested.items))
+      return { items: nested.items, total: nested.total ?? nested.items.length };
+    if (Array.isArray(nested.lines))
+      return { items: nested.lines, total: nested.total ?? nested.lines.length };
+    if (Array.isArray(nested.targets))
+      return { items: nested.targets, total: nested.total ?? nested.targets.length };
+    if (Array.isArray(nested.data))
+      return { items: nested.data, total: nested.total ?? nested.data.length };
+  }
+
+  return { items: [], total: 0 };
+}
+
+/**
+ * @param {import('axios').AxiosResponse|any} response
+ * @returns {{ items: unknown[]; total: number; meta: Record<string, any> }}
+ */
+function unwrapSalesHierarchyList(response) {
+  const { items, total } = extractPaginatedData(response, []);
+  const root = response?.data ?? response ?? {};
+  const topMeta = root?.meta && typeof root.meta === 'object' ? root.meta : {};
+  const nested = root?.data && typeof root.data === 'object' ? root.data : null;
+  const nestedMeta = nested?.meta && typeof nested.meta === 'object' ? nested.meta : {};
+
+  if (Array.isArray(items) && items.length > 0) {
+    return { items, total, meta: { ...nestedMeta, ...topMeta } };
+  }
+
+  if (Array.isArray(root)) {
+    return { items: root, total: root.length, meta: { ...nestedMeta, ...topMeta } };
+  }
+  if (Array.isArray(root?.data)) {
+    return {
+      items: root.data,
+      total: root.total ?? root.data.length,
+      meta: { ...nestedMeta, ...topMeta },
+    };
+  }
+  if (Array.isArray(root?.items)) {
+    return {
+      items: root.items,
+      total: root.total ?? root.items.length,
+      meta: { ...nestedMeta, ...topMeta },
+    };
+  }
+  if (Array.isArray(root?.lines)) {
+    return {
+      items: root.lines,
+      total: root.total ?? root.lines.length,
+      meta: { ...nestedMeta, ...topMeta },
+    };
+  }
+  if (nested) {
+    if (Array.isArray(nested.data)) {
+      return {
+        items: nested.data,
+        total: nested.total ?? nested.data.length,
+        meta: { ...nestedMeta, ...topMeta },
+      };
+    }
+    if (Array.isArray(nested.items)) {
+      return {
+        items: nested.items,
+        total: nested.total ?? nested.items.length,
+        meta: { ...nestedMeta, ...topMeta },
+      };
+    }
+    if (Array.isArray(nested.lines)) {
+      return {
+        items: nested.lines,
+        total: nested.total ?? nested.lines.length,
+        meta: { ...nestedMeta, ...topMeta },
+      };
+    }
+  }
+  return { items: [], total: 0, meta: { ...nestedMeta, ...topMeta } };
+}
+
+/**
  * PATCH {apiClient baseURL}/sales/targets/{id}
  * يطابق طلب المتصفح مثل: https://api.rakez.com.sa/api/sales/targets/4 (طريقة PATCH، حالة 200)
  * يُستخدم لتحديث حالة الهدف للمسوق العادي وقائد المبيعات بنفس المسار.
@@ -44,6 +141,21 @@ function patchSalesTargetRecord(targetId, data) {
 export const salesServiceCoreMethods = {
   getDashboard(params = {}) {
     return apiClient.get('/sales/dashboard', { params });
+  },
+
+  /**
+   * Executive dashboard/available units.
+   * GET /sales/executive/available-units
+   * @param {any} params
+   * @returns {Promise<Object>}
+   */
+  async getExecutiveAvailableUnits(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/executive/available-units', { params });
+      return response.data?.data ?? response.data ?? {};
+    } catch (error) {
+      return handleServiceError(error, 'Fetch executive available units', 'get', {});
+    }
   },
 
   // Projects
@@ -302,6 +414,351 @@ export const salesServiceCoreMethods = {
    */
   createTarget(data) {
     return apiClient.post('sales/targets', data);
+  },
+
+  /**
+   * Sales Executive: list own targets/lines.
+   * GET /sales/executive-director-lines
+   * @param {any} params
+   * @returns {Promise<{ items: unknown[]; total: number }>}
+   */
+  async getExecutiveTargets(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/executive-director-lines', { params });
+      return unwrapExecutiveTargetsList(response);
+    } catch (error) {
+      return handleServiceError(error, 'Fetch executive targets', 'get', { items: [], total: 0 });
+    }
+  },
+
+  /**
+   * Sales Executive: show a target/line.
+   * GET /sales/executive-director-lines/{targetId}
+   * @param {number|string} targetId
+   * @returns {Promise<Object>}
+   */
+  async getExecutiveTarget(targetId) {
+    const response = await apiClient.get(`/sales/executive-director-lines/${targetId}`);
+    return response.data?.data ?? response.data ?? {};
+  },
+
+  /**
+   * Sales Executive: create target/line.
+   * POST /sales/executive-director-lines
+   * @param {{ line_type?: string; value?: string|number; [key: string]: any }} data
+   * @returns {Promise<Object>}
+   */
+  async createExecutiveTarget(data) {
+    const response = await apiClient.post('/sales/executive-director-lines', data);
+    return response.data?.data ?? response.data ?? {};
+  },
+
+  /**
+   * Sales Executive: update target/line.
+   * PUT /sales/executive-director-lines/{targetId}
+   * @param {number|string} targetId
+   * @param {Record<string, any>} data
+   * @returns {Promise<Object>}
+   */
+  async updateExecutiveTarget(targetId, data) {
+    const response = await apiClient.put(`/sales/executive-director-lines/${targetId}`, data);
+    return response.data?.data ?? response.data ?? {};
+  },
+
+  /**
+   * Sales Executive: delete target/line.
+   * DELETE /sales/executive-director-lines/{targetId}
+   * @param {number|string} targetId
+   * @returns {Promise<Object>}
+   */
+  async deleteExecutiveTarget(targetId) {
+    const response = await apiClient.delete(`/sales/executive-director-lines/${targetId}`);
+    return response.data?.data ?? response.data ?? {};
+  },
+
+  /**
+   * Sales Manager: list all executive targets.
+   * GET /sales/executive/targets
+   * @param {any} params
+   * @returns {Promise<{ items: unknown[]; total: number }>}
+   */
+  async getManagerTargets(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/executive/targets', { params });
+      return unwrapExecutiveTargetsList(response);
+    } catch (error) {
+      return handleServiceError(error, 'Fetch manager targets', 'get', { items: [], total: 0 });
+    }
+  },
+
+  /**
+   * Sales Manager: list teams.
+   * GET /sales/team/index
+   * @param {any} params
+   * @returns {Promise<unknown[]>}
+   */
+  async getSalesTeams(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/team/index', { params });
+      const { items } = extractPaginatedData(response, []);
+      if (Array.isArray(items) && items.length > 0) return items;
+      const data = response?.data?.data ?? response?.data ?? [];
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data?.items)) return data.items;
+      if (Array.isArray(data?.teams)) return data.teams;
+      return [];
+    } catch (error) {
+      return handleServiceError(error, 'Fetch sales teams', 'get', []);
+    }
+  },
+
+  /**
+   * Sales Manager: assign executive target to team(s).
+   * POST /sales/executive-director-lines/{targetId}/teams
+   * @param {number|string} targetId
+   * @param {Array<{ team_id?: number|string; id?: number|string; value_target?: number|string; target_value?: number|string }>} teams
+   * @returns {Promise<Object>}
+   */
+  async assignTargetToTeams(targetId, teams = []) {
+    const mappedTeams = Array.isArray(teams)
+      ? teams
+          .map((/** @type {any} */ row) => ({
+            team_id: Number(row?.team_id ?? row?.id),
+            value_target: Number(row?.value_target ?? row?.target_value ?? 0),
+          }))
+          .filter(row => Number.isFinite(row.team_id) && row.team_id > 0)
+      : [];
+    const response = await apiClient.post(`/sales/executive-director-lines/${targetId}/teams`, {
+      teams: mappedTeams,
+    });
+    return response.data?.data ?? response.data ?? {};
+  },
+
+  /**
+   * Sales Manager: show assigned targets for one sales member.
+   * GET /sales/manager/executive-director-lines/{member_user_id}
+   * @param {number|string} memberUserId
+   * @param {any} params
+   * @returns {Promise<{ items: unknown[]; total: number; meta: Record<string, any> }>}
+   */
+  async getManagerMemberTargets(memberUserId, params = {}) {
+    try {
+      const response = await apiClient.get(`/sales/manager/executive-director-lines/${memberUserId}`, {
+        params,
+      });
+      return unwrapSalesHierarchyList(response);
+    } catch (error) {
+      return handleServiceError(error, 'Fetch manager member targets', 'get', {
+        items: [],
+        total: 0,
+        meta: {},
+      });
+    }
+  },
+
+  /**
+   * Sales Leader: list targets assigned to my team.
+   * GET /sales/team/executive-director-lines
+   * @param {any} params
+   * @returns {Promise<{ items: unknown[]; total: number; meta: Record<string, any> }>}
+   */
+  async getTeamLeaderTargets(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/team/executive-director-lines', { params });
+      return unwrapSalesHierarchyList(response);
+    } catch (error) {
+      return handleServiceError(error, 'Fetch team leader targets', 'get', {
+        items: [],
+        total: 0,
+        meta: {},
+      });
+    }
+  },
+
+  /**
+   * Sales Leader: assign target line to team groups.
+   * POST /sales/team/executive-director-lines/{line_id}/team-groups
+   * @param {number|string} lineId
+   * @param {Array<{ team_group_id: number|string; value_target: number|string }>} teamGroups
+   * @returns {Promise<Object>}
+   */
+  async assignTargetToTeamGroups(lineId, teamGroups = []) {
+    const mapped = Array.isArray(teamGroups)
+      ? teamGroups
+          .map(row => ({
+            team_group_id: Number(row?.team_group_id),
+            value_target: Number(row?.value_target ?? 0),
+          }))
+          .filter(row => Number.isFinite(row.team_group_id) && row.team_group_id > 0)
+      : [];
+    const response = await apiClient.post(`/sales/team/executive-director-lines/${lineId}/team-groups`, {
+      team_groups: mapped,
+    });
+    return response.data?.data ?? response.data ?? {};
+  },
+
+  /**
+   * Sales Leader: list group leaders.
+   * GET /sales/team/group-leaders
+   * @param {any} params
+   * @returns {Promise<unknown[]>}
+   */
+  async getTeamGroupLeaders(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/team/group-leaders', { params });
+      const { items } = extractPaginatedData(response, []);
+      if (Array.isArray(items) && items.length > 0) return items;
+      const raw = response?.data?.data ?? response?.data ?? [];
+      if (Array.isArray(raw)) return raw;
+      if (Array.isArray(raw?.items)) return raw.items;
+      if (Array.isArray(raw?.leaders)) return raw.leaders;
+      return [];
+    } catch (error) {
+      return handleServiceError(error, 'Fetch team group leaders', 'get', []);
+    }
+  },
+
+  /**
+   * Sales Leader: list groups in my team scope.
+   * GET /sales/team/groups
+   * @param {any} params
+   * @returns {Promise<unknown[]>}
+   */
+  async getTeamGroups(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/team/groups', { params });
+      const { items } = extractPaginatedData(response, []);
+      if (Array.isArray(items) && items.length > 0) return items;
+      const raw = response?.data?.data ?? response?.data ?? [];
+      if (Array.isArray(raw)) return raw;
+      if (Array.isArray(raw?.items)) return raw.items;
+      if (Array.isArray(raw?.groups)) return raw.groups;
+      return [];
+    } catch (error) {
+      return handleServiceError(error, 'Fetch team groups', 'get', []);
+    }
+  },
+
+  /**
+   * Sales Leader: get my led team.
+   * GET /sales/team/led
+   * @returns {Promise<Object>}
+   */
+  async getLedTeam() {
+    const response = await apiClient.get('/sales/team/led');
+    return response.data?.data ?? response.data ?? {};
+  },
+
+  /**
+   * Group Leader: list assigned lines.
+   * GET /sales/team-group/executive-director-lines
+   * @param {any} params
+   * @returns {Promise<{ items: unknown[]; total: number; meta: Record<string, any> }>}
+   */
+  async getGroupLeaderTargets(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/team-group/executive-director-lines', { params });
+      return unwrapSalesHierarchyList(response);
+    } catch (error) {
+      return handleServiceError(error, 'Fetch group leader targets', 'get', {
+        items: [],
+        total: 0,
+        meta: {},
+      });
+    }
+  },
+
+  /**
+   * Group Leader: get led team.
+   * GET /sales/team-group/led-team
+   * @returns {Promise<Object>}
+   */
+  async getGroupLeaderLedTeam() {
+    const response = await apiClient.get('/sales/team-group/led-team');
+    return response.data?.data ?? response.data ?? {};
+  },
+
+  /**
+   * Group Leader: get led groups.
+   * GET /sales/team-group/led-groups
+   * @param {any} params
+   * @returns {Promise<unknown[]>}
+   */
+  async getGroupLeaderLedGroups(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/team-group/led-groups', { params });
+      const { items } = extractPaginatedData(response, []);
+      if (Array.isArray(items) && items.length > 0) return items;
+      const raw = response?.data?.data ?? response?.data ?? [];
+      if (Array.isArray(raw)) return raw;
+      if (Array.isArray(raw?.items)) return raw.items;
+      if (Array.isArray(raw?.groups)) return raw.groups;
+      return [];
+    } catch (error) {
+      return handleServiceError(error, 'Fetch group leader led groups', 'get', []);
+    }
+  },
+
+  /**
+   * Group Leader: list group members.
+   * GET /sales/team-group/members
+   * @param {any} params
+   * @returns {Promise<unknown[]>}
+   */
+  async getGroupLeaderMembers(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/team-group/members', { params });
+      const { items } = extractPaginatedData(response, []);
+      if (Array.isArray(items) && items.length > 0) return items;
+      const raw = response?.data?.data ?? response?.data ?? [];
+      if (Array.isArray(raw)) return raw;
+      if (Array.isArray(raw?.items)) return raw.items;
+      if (Array.isArray(raw?.members)) return raw.members;
+      return [];
+    } catch (error) {
+      return handleServiceError(error, 'Fetch group leader members', 'get', []);
+    }
+  },
+
+  /**
+   * Group Leader: assign target line to members.
+   * POST /sales/team-group/executive-director-lines/{line_id}/members
+   * @param {number|string} lineId
+   * @param {Array<{ user_id: number|string; value_target: number|string }>} members
+   * @returns {Promise<Object>}
+   */
+  async assignTargetToMembers(lineId, members = []) {
+    const mapped = Array.isArray(members)
+      ? members
+          .map(row => ({
+            user_id: Number(row?.user_id),
+            value_target: Number(row?.value_target ?? 0),
+          }))
+          .filter(row => Number.isFinite(row.user_id) && row.user_id > 0)
+      : [];
+    const response = await apiClient.post(`/sales/team-group/executive-director-lines/${lineId}/members`, {
+      members: mapped,
+    });
+    return response.data?.data ?? response.data ?? {};
+  },
+
+  /**
+   * Sales Member: list assigned targets.
+   * GET /sales/member/executive-director-lines
+   * @param {any} params
+   * @returns {Promise<{ items: unknown[]; total: number; meta: Record<string, any> }>}
+   */
+  async getMemberTargets(params = {}) {
+    try {
+      const response = await apiClient.get('/sales/member/executive-director-lines', { params });
+      return unwrapSalesHierarchyList(response);
+    } catch (error) {
+      return handleServiceError(error, 'Fetch member targets', 'get', {
+        items: [],
+        total: 0,
+        meta: {},
+      });
+    }
   },
 
   // Attendance

@@ -1,30 +1,31 @@
+﻿// @ts-nocheck
 import apiClient from '@/api/apiClient';
-import { ensurePdfBlob } from '@/services/hr/hrPdfBlob';
-import logger from '@/utils/logger';
-import { normalizeVoucherDataPayload } from '@/utils/reservationVoucherNormalize';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
+import {
+  getProjectManagementReservations,
+  getProjectManagementUnitReservationContext,
+  createProjectManagementReservation,
+  confirmProjectManagementReservation,
+  cancelProjectManagementReservation,
+  logProjectManagementReservationAction,
+  downloadProjectManagementReservationVoucher,
+  getProjectManagementReservationVoucherData,
+  fetchProjectManagementReservationVoucherDataBlob,
+} from '@/services/teamReservationService';
 
-/**
- * Team Service - Manages team operations
- *
- * POSTMAN HAS THREE TEAM MODULES:
- * 1. Project Management Teams: /project_management/teams/* (index, store, show, update, delete, add, remove, contracts, contracts/locations)
- *    - Use for: Project Tracker, assigning teams to contracts, team CRUD
- * 2. HR Teams: /hr/teams/* (paginated list, members) - Use hrService.getTeams(), hrService.getHRTeamMembers()
- *    - Use for: HR dashboard, performance metrics, staff teams
- * 3. Teams Management: /teams/* (list, contracts, locations, members, stats, performance, sales-average)
- *    - Use for: Standalone teams module, team analytics
- */
-
+export {
+  getProjectManagementReservations,
+  getProjectManagementUnitReservationContext,
+  createProjectManagementReservation,
+  confirmProjectManagementReservation,
+  cancelProjectManagementReservation,
+  logProjectManagementReservationAction,
+  downloadProjectManagementReservationVoucher,
+  getProjectManagementReservationVoucherData,
+  fetchProjectManagementReservationVoucherDataBlob,
+};
 // --- Project Management Dashboard ---
-
-/**
- * Get project management dashboard
- * GET /project_management/dashboard
- * @param {any} params - Query parameters (date ranges, filters)
- * @returns {Promise<Object>} Dashboard data with KPIs and statistics
- */
 export const getProjectManagementDashboard = async (params = {}) => {
   try {
     const response = await apiClient.get('/project_management/dashboard', { params });
@@ -33,13 +34,6 @@ export const getProjectManagementDashboard = async (params = {}) => {
     return handleServiceError(error, 'Fetch project management dashboard', 'get', {});
   }
 };
-
-/**
- * Get units statistics
- * GET /project_management/dashboard/units-statistics
- * @param {any} params - Query parameters (date ranges, filters)
- * @returns {Promise<Object>} Units statistics data
- */
 export const getUnitsStatistics = async (params = {}) => {
   try {
     const response = await apiClient.get('/project_management/dashboard/units-statistics', {
@@ -50,14 +44,25 @@ export const getUnitsStatistics = async (params = {}) => {
     return handleServiceError(error, 'Fetch units statistics', 'get', {});
   }
 };
+const resolveTeamsSource = options => (options?.source === 'hr' ? 'hr' : 'project_management');
+const teamsBasePath = source => (source === 'hr' ? '/hr' : '/project_management');
+const normalizeList = response => {
+  const { items } = extractPaginatedData(response, []);
+  if (Array.isArray(items) && items.length > 0) return items;
+  const data = response?.data?.data ?? response?.data ?? [];
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.items)) return data.items;
+  if (Array.isArray(data?.teams)) return data.teams;
+  if (Array.isArray(data?.groups)) return data.groups;
+  if (Array.isArray(data?.leaders)) return data.leaders;
+  if (Array.isArray(data?.members)) return data.members;
+  return [];
+};
 
-/**
- * Get all teams (Project Management module) – used for dropdown / list of teams to assign
- * GET {{base_url}}/project_management/teams/index
- * @param {string|Object} searchOrParams - Search string or params object { search, page, per_page }
- * @returns {Promise<unknown[]>} List of teams
- */
-export const getTeams = async (searchOrParams = '') => {
+const normalizeDetail = response => response?.data?.data ?? response?.data ?? null;
+
+export const getTeams = async (searchOrParams = '', options = {}) => {
+  const source = resolveTeamsSource(options);
   try {
     const params =
       typeof searchOrParams === 'string'
@@ -65,112 +70,273 @@ export const getTeams = async (searchOrParams = '') => {
           ? { search: searchOrParams }
           : {}
         : { ...searchOrParams };
-    const response = await apiClient.get('/project_management/teams/index', { params });
-    const { items } = extractPaginatedData(response, []);
-    let list = Array.isArray(items) ? items : [];
-    if (list.length === 0) {
-      const data = response?.data ?? response;
-      if (Array.isArray(data)) list = data;
-      else if (Array.isArray(data?.data)) list = data.data;
-      else if (Array.isArray(data?.teams)) list = data.teams;
+
+    if (source === 'hr') {
+      const hasSearch = Boolean(params?.search);
+      const response = hasSearch
+        ? await apiClient.get('/teams/index', { params })
+        : await apiClient.get('/hr/teams', { params });
+      return normalizeList(response);
     }
-    return list;
+
+    const response = await apiClient.get('/project_management/teams/index', { params });
+    return normalizeList(response);
   } catch (error) {
     return handleServiceError(error, 'Fetch teams', 'get', []);
   }
 };
 
-/**
- * Create a new team
- * POST /project_management/teams/store
- * @param {any} teamData - Team data (name, description, etc.)
- * @returns {Promise<Object>} Created team
- */
-export const createTeam = async teamData => {
+export const createTeam = async (teamData, options = {}) => {
+  const source = resolveTeamsSource(options);
   try {
-    const response = await apiClient.post('/project_management/teams/store', teamData);
+    const response =
+      source === 'hr'
+        ? await apiClient.post('/hr/teams', teamData)
+        : await apiClient.post('/project_management/teams/store', teamData);
     return response.data;
   } catch (error) {
     return handleServiceError(error, 'Create team', 'post');
   }
 };
 
-/**
- * Update an existing team
- * PUT /project_management/teams/update/:id
- * @param {number|string} id - Team ID
- * @param {any} teamData - Update data (name, description, etc.)
- * @returns {Promise<Object>} Updated team
- */
-export const updateTeam = async (id, teamData) => {
+export const updateTeam = async (id, teamData, options = {}) => {
+  const source = resolveTeamsSource(options);
+  if (source === 'hr') {
+    try {
+      const response = await apiClient.put(`/hr/teams/${id}`, teamData);
+      return response.data;
+    } catch (error) {
+      return handleServiceError(error, `Update team ${id}`, 'put');
+    }
+  }
+
   try {
     const response = await apiClient.put(`/project_management/teams/update/${id}`, teamData);
     return response.data;
-  } catch (error) {
-    return handleServiceError(error, `Update team ${id}`, 'put');
+  } catch (_error) {
+    try {
+      const fallback = await apiClient.post(`/project_management/teams/update/${id}`, teamData);
+      return fallback.data;
+    } catch (fallbackError) {
+      return handleServiceError(fallbackError, `Update team ${id}`, 'put');
+    }
   }
 };
 
-/**
- * Get team details by ID
- * GET /project_management/teams/show/:id
-  * @param {any} id
- */
-export const getTeamById = async id => {
+export const getTeamById = async (id, options = {}) => {
+  const source = resolveTeamsSource(options);
   try {
+    if (source === 'hr') {
+      let response;
+      try {
+        response = await apiClient.get(`/teams/show/${id}`);
+      } catch (_) {
+        response = await apiClient.get(`/hr/teams/${id}`);
+      }
+      return normalizeDetail(response);
+    }
+
     const response = await apiClient.get(`/project_management/teams/show/${id}`);
-    return response.data.data || response.data;
+    return normalizeDetail(response);
   } catch (error) {
     return handleServiceError(error, `Fetch team ${id}`, 'get', null);
   }
 };
 
-/**
- * Delete a team
- * DELETE /project_management/teams/delete/:id
-  * @param {any} id
- */
-export const deleteTeam = async id => {
+export const deleteTeam = async (id, options = {}) => {
+  const source = resolveTeamsSource(options);
   try {
-    const response = await apiClient.delete(`/project_management/teams/delete/${id}`);
+    const response =
+      source === 'hr'
+        ? await apiClient.delete(`/hr/teams/${id}`)
+        : await apiClient.delete(`/project_management/teams/delete/${id}`);
     return response.data;
   } catch (error) {
     return handleServiceError(error, `Delete team ${id}`, 'delete');
   }
 };
 
-/**
- * Sales users not assigned to a PM team (picker for "add member")
- * GET /project_management/teams/sales-without-team
- * @returns {Promise<unknown[]>}
- */
-export const getSalesWithoutTeam = async () => {
+export const createTeamGroup = async (data, options = {}) => {
+  const source = resolveTeamsSource(options);
   try {
-    const response = await apiClient.get('/project_management/teams/sales-without-team');
-    const { items } = extractPaginatedData(response, []);
-    if (Array.isArray(items) && items.length) return items;
-    const data = response.data?.data ?? response.data;
-    if (Array.isArray(data)) return data;
-    if (Array.isArray(data?.data)) return data.data;
-    if (Array.isArray(data?.users)) return data.users;
-    if (Array.isArray(data?.items)) return data.items;
-    if (Array.isArray(data?.members)) return data.members;
-    return [];
+    const response = await apiClient.post(`${teamsBasePath(source)}/team-groups`, data);
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    return handleServiceError(error, 'Create team group', 'post');
+  }
+};
+
+export const getTeamGroups = async (params = {}, options = {}) => {
+  const source = resolveTeamsSource(options);
+  try {
+    const response = await apiClient.get(`${teamsBasePath(source)}/team-groups`, { params });
+    return normalizeList(response);
+  } catch (error) {
+    return handleServiceError(error, 'Fetch team groups', 'get', []);
+  }
+};
+
+export const getTeamGroupById = async (teamGroupId, options = {}) => {
+  const source = resolveTeamsSource(options);
+  try {
+    const response = await apiClient.get(`${teamsBasePath(source)}/team-groups/${teamGroupId}`);
+    return normalizeDetail(response);
+  } catch (error) {
+    return handleServiceError(error, `Fetch team group ${teamGroupId}`, 'get', null);
+  }
+};
+
+export const getTeamGroupMembers = async (teamGroupId, options = {}) => {
+  const source = resolveTeamsSource(options);
+  try {
+    const response = await apiClient.get(`${teamsBasePath(source)}/team-groups/${teamGroupId}/members`);
+    return normalizeList(response);
+  } catch (error) {
+    return handleServiceError(error, `Fetch team group ${teamGroupId} members`, 'get', []);
+  }
+};
+
+export const removeTeamGroupMember = async (teamGroupId, userId, options = {}) => {
+  const source = resolveTeamsSource(options);
+  try {
+    const response = await apiClient.delete(
+      `${teamsBasePath(source)}/team-groups/${teamGroupId}/members/${userId}`
+    );
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    return handleServiceError(error, `Remove member ${userId} from team group ${teamGroupId}`, 'delete');
+  }
+};
+
+export const addTeamGroupMember = async (teamGroupId, userId, options = {}) => {
+  const source = resolveTeamsSource(options);
+  try {
+    const response = await apiClient.post(`${teamsBasePath(source)}/team-groups/${teamGroupId}/members`, {
+      user_id: Number(userId),
+    });
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    return handleServiceError(error, `Add member ${userId} to team group ${teamGroupId}`, 'post');
+  }
+};
+
+export const updateTeamGroup = async (teamGroupId, data, options = {}) => {
+  const source = resolveTeamsSource(options);
+  try {
+    const response = await apiClient.put(`${teamsBasePath(source)}/team-groups/${teamGroupId}`, data);
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    return handleServiceError(error, `Update team group ${teamGroupId}`, 'put');
+  }
+};
+
+export const deleteTeamGroup = async (teamGroupId, options = {}) => {
+  const source = resolveTeamsSource(options);
+  try {
+    const response = await apiClient.delete(`${teamsBasePath(source)}/team-groups/${teamGroupId}`);
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    return handleServiceError(error, `Delete team group ${teamGroupId}`, 'delete');
+  }
+};
+
+export const setTeamGroupLeader = async (teamGroupId, userId, options = {}) => {
+  const source = resolveTeamsSource(options);
+  try {
+    const response = await apiClient.post(`${teamsBasePath(source)}/team-groups/${teamGroupId}/leader`, {
+      user_id: Number(userId),
+    });
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    return handleServiceError(error, `Set team group ${teamGroupId} leader`, 'post');
+  }
+};
+
+export const getTeamGroupLeaders = async (params = {}, options = {}) => {
+  const source = resolveTeamsSource(options);
+  try {
+    const response = await apiClient.get(`${teamsBasePath(source)}/team-group-leaders`, { params });
+    return normalizeList(response);
+  } catch (error) {
+    return handleServiceError(error, 'Fetch team group leaders', 'get', []);
+  }
+};
+
+export const removeTeamGroupLeader = async (teamGroupId, options = {}) => {
+  const source = resolveTeamsSource(options);
+  try {
+    const response = await apiClient.delete(`${teamsBasePath(source)}/team-groups/${teamGroupId}/leader`);
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    return handleServiceError(error, `Remove team group ${teamGroupId} leader`, 'delete');
+  }
+};
+
+export const assignSalesLeaderToTeam = async (teamId, userId, options = {}) => {
+  const source = resolveTeamsSource(options);
+  try {
+    const response = await apiClient.post(`${teamsBasePath(source)}/teams/${teamId}/sales-leader`, {
+      user_id: Number(userId),
+    });
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    return handleServiceError(error, `Assign sales leader to team ${teamId}`, 'post');
+  }
+};
+
+export const removeSalesLeaderFromTeam = async (teamId, userId, options = {}) => {
+  const source = resolveTeamsSource(options);
+  try {
+    const response = await apiClient.delete(
+      `${teamsBasePath(source)}/teams/${teamId}/sales-leader/${userId}`
+    );
+    return response.data?.data ?? response.data ?? {};
+  } catch (error) {
+    return handleServiceError(error, `Remove sales leader ${userId} from team ${teamId}`, 'delete');
+  }
+};
+
+export const getSalesLeaders = async (params = {}, options = {}) => {
+  const source = resolveTeamsSource(options);
+  try {
+    const response = await apiClient.get(`${teamsBasePath(source)}/teams/sales-leaders`, { params });
+    return normalizeList(response);
+  } catch (error) {
+    return handleServiceError(error, 'Fetch sales leaders', 'get', []);
+  }
+};
+
+export const getSalesWithoutTeam = async (options = {}) => {
+  const source = resolveTeamsSource(options);
+  try {
+    const response = await apiClient.get(`${teamsBasePath(source)}/teams/sales-without-team`);
+    return normalizeList(response);
   } catch (error) {
     return handleServiceError(error, 'Fetch sales without team', 'get', []);
   }
 };
 
-/**
- * List team members (project management)
- * GET /project_management/teams/members/:teamId
- * @param {number|string} teamId
- * @returns {Promise<unknown[]>}
- */
-export const getProjectManagementTeamMembers = async teamId => {
+export const getProjectManagementTeamMembers = async (teamId, options = {}) => {
+  const source = resolveTeamsSource(options);
   try {
+    if (source === 'hr') {
+      let response;
+      try {
+        response = await apiClient.get(`/hr/teams/${teamId}`);
+      } catch (_) {
+        response = await apiClient.get(`/hr/teams/members/${teamId}`);
+      }
+      const data = response?.data?.data ?? response?.data ?? {};
+      const raw =
+        data?.members ??
+        data?.users ??
+        data?.items ??
+        (Array.isArray(data) ? data : []);
+      return Array.isArray(raw) ? raw : [];
+    }
+
     const response = await apiClient.get(`/project_management/teams/members/${teamId}`);
-    const data = response.data?.data ?? response.data;
+    const data = response?.data?.data ?? response?.data ?? {};
     const raw =
       data?.members ??
       data?.users ??
@@ -178,51 +344,42 @@ export const getProjectManagementTeamMembers = async teamId => {
       (Array.isArray(data) ? data : []);
     return Array.isArray(raw) ? raw : [];
   } catch (error) {
-    return handleServiceError(error, `Fetch PM team ${teamId} members`, 'get', []);
+    return handleServiceError(error, `Fetch team ${teamId} members`, 'get', []);
   }
 };
 
-/**
- * Add sales member to team (project management)
- * POST /project_management/teams/members/:teamId — body: { user_id: string|number }
- * @param {number|string} teamId
- * @param {number|string} userId
- */
-export const addProjectManagementTeamMember = async (teamId, userId) => {
+export const addProjectManagementTeamMember = async (teamId, userId, teamGroupId = null, options = {}) => {
+  const source = resolveTeamsSource(options);
   try {
-    const response = await apiClient.post(`/project_management/teams/members/${teamId}`, {
+    const payload = {
       user_id: userId != null ? String(userId) : '',
-    });
+    };
+    if (teamGroupId != null && teamGroupId !== '') {
+      payload.team_group_id = String(teamGroupId);
+    }
+
+    const response =
+      source === 'hr'
+        ? await apiClient.post(`/hr/teams/${teamId}/members`, payload)
+        : await apiClient.post(`/project_management/teams/members/${teamId}`, payload);
     return response.data?.data ?? response.data ?? {};
   } catch (error) {
-    return handleServiceError(error, `Add member to PM team ${teamId}`, 'post');
+    return handleServiceError(error, `Add member to team ${teamId}`, 'post');
   }
 };
 
-/**
- * Remove member from team (project management)
- * DELETE /project_management/teams/members/:teamId/:userId
- * @param {number|string} teamId
- * @param {number|string} userId
- */
-export const removeProjectManagementTeamMember = async (teamId, userId) => {
+export const removeProjectManagementTeamMember = async (teamId, userId, options = {}) => {
+  const source = resolveTeamsSource(options);
   try {
-    const response = await apiClient.delete(
-      `/project_management/teams/members/${teamId}/${userId}`
-    );
+    const response =
+      source === 'hr'
+        ? await apiClient.delete(`/hr/teams/${teamId}/members/${userId}`)
+        : await apiClient.delete(`/project_management/teams/members/${teamId}/${userId}`);
     return response.data?.data ?? response.data ?? {};
   } catch (error) {
-    return handleServiceError(error, `Remove member from PM team ${teamId}`, 'delete');
+    return handleServiceError(error, `Remove member from team ${teamId}`, 'delete');
   }
 };
-
-/**
- * Get contracts assigned to a specific team
- * GET /project_management/teams/contracts/:id
- * @param {number|string} id - Team ID
- * @param {any} params - Query parameters
- * @returns {Promise<unknown[]>} List of contracts
- */
 export const getTeamContracts = async (id, params = {}) => {
   try {
     const response = await apiClient.get(`/project_management/teams/contracts/${id}`, { params });
@@ -231,14 +388,6 @@ export const getTeamContracts = async (id, params = {}) => {
     return handleServiceError(error, `Fetch contracts for team ${id}`, 'get', []);
   }
 };
-
-/**
- * Get contract locations for a specific team
- * GET /project_management/teams/contracts/locations/:id
- * @param {number|string} id - Team ID
- * @param {any} params - Query parameters
- * @returns {Promise<unknown[]>} List of contract locations
- */
 export const getTeamContractLocations = async (id, params = {}) => {
   try {
     const response = await apiClient.get(`/project_management/teams/contracts/locations/${id}`, {
@@ -249,14 +398,6 @@ export const getTeamContractLocations = async (id, params = {}) => {
     return handleServiceError(error, `Fetch contract locations for team ${id}`, 'get', []);
   }
 };
-
-/**
- * Add teams to a contract
- * POST /project_management/teams/add/:contract_id
- * @param {number|string} contractId - Contract ID
- * @param {Array<number|string>} teamIds - Array of team IDs
- * @returns {Promise<Object>} Assignment result
- */
 export const addTeamsToContract = async (contractId, teamIds) => {
   try {
     const response = await apiClient.post(`/project_management/teams/add/${contractId}`, {
@@ -267,14 +408,6 @@ export const addTeamsToContract = async (contractId, teamIds) => {
     return handleServiceError(error, `Add teams to contract ${contractId}`, 'post');
   }
 };
-
-/**
- * Remove teams from a contract
- * POST /project_management/teams/remove/:contract_id
- * @param {number|string} contractId - Contract ID
- * @param {Array<number|string>} teamIds - Array of team IDs to remove
- * @returns {Promise<Object>} Removal result
- */
 export const removeTeamsFromContract = async (contractId, teamIds) => {
   try {
     const response = await apiClient.post(`/project_management/teams/remove/${contractId}`, {
@@ -285,19 +418,8 @@ export const removeTeamsFromContract = async (contractId, teamIds) => {
     return handleServiceError(error, `Remove teams from contract ${contractId}`, 'post');
   }
 };
-
-/**
- * Get teams assigned to a specific contract
- * Tries project_management first (same source as add/remove), then fallback to project_teams
- * GET /project_management/teams/index/:contractId | GET /project_teams/teams/:contractId
- * @param {number|string} contractId - Contract ID
- * @returns {Promise<unknown[]>} List of teams assigned to contract
- */
 export const getContractTeams = async contractId => {
-  /**
-   * @param {any} response
-   */
-  const toItems = response => {
+    const toItems = response => {
     const { items } = extractPaginatedData(response, []);
     return Array.isArray(items) ? items : [];
   };
@@ -308,26 +430,8 @@ export const getContractTeams = async contractId => {
     return handleServiceError(error, `Fetch teams for contract ${contractId}`, 'get', []);
   }
 };
-
 // --- Project Teams API (assign project to team) ---
-
-/**
- * Get teams assigned to a project (by contract/project id)
- * GET {{base_url}}/project_management/teams/index/:contract_id
- * يستخدم نفس تطبيع الاستجابة مثل getContractTeams (مصفوفة / ترقيم / teams)
- * @param {number|string} contractId - Project/contract ID
- * @returns {Promise<unknown[]>} List of assigned teams (items may include project_team_id for remove)
- */
 export const getProjectTeams = async contractId => getContractTeams(contractId);
-
-/**
- * Assign teams to a project
- * POST {{server}}/project_teams/teams/add/:projectId
- * Body: { team_ids: [1] }
- * @param {number|string} projectId - Project ID
- * @param {Array<number|string>} teamIds - Team IDs to assign
- * @returns {Promise<Object>}
- */
 export const addProjectTeams = async (projectId, teamIds) => {
   try {
     const response = await apiClient.post(`/project_teams/teams/add/${projectId}`, {
@@ -338,13 +442,6 @@ export const addProjectTeams = async (projectId, teamIds) => {
     return handleServiceError(error, `Add teams to project ${projectId}`, 'post');
   }
 };
-
-/**
- * Remove a team assignment from a project
- * DELETE {{server}}/project_teams/teams/remove/:projectTeamId
- * @param {number|string} projectTeamId - Project-team assignment ID (from getProjectTeams item.id or project_team_id)
- * @returns {Promise<Object>}
- */
 export const removeProjectTeam = async projectTeamId => {
   try {
     const response = await apiClient.delete(`/project_teams/teams/remove/${projectTeamId}`);
@@ -353,12 +450,6 @@ export const removeProjectTeam = async projectTeamId => {
     return handleServiceError(error, `Remove project team ${projectTeamId}`, 'delete');
   }
 };
-
-/**
- * Get team contracts (api.php: GET project_management/teams/contracts/{teamId})
- * @param {number|string} teamId - Team ID
- * @param {any} params - Query parameters
- */
 export const getTeamContractsByTeamId = async (teamId, params = {}) => {
   try {
     const response = await apiClient.get(`/project_management/teams/contracts/${teamId}`, {
@@ -370,12 +461,6 @@ export const getTeamContractsByTeamId = async (teamId, params = {}) => {
     return handleServiceError(error, `Fetch contracts for team ${teamId}`, 'get', []);
   }
 };
-
-/**
- * Get contract count for team
- * GET /teams/contracts/count/:teamId
- * @param {number|string} teamId - Team ID
- */
 export const getContractCount = async teamId => {
   try {
     const response = await apiClient.get(`/teams/${teamId}/contracts/count`);
@@ -384,13 +469,6 @@ export const getContractCount = async teamId => {
     return handleServiceError(error, `Fetch contract count for team ${teamId}`, 'get', {});
   }
 };
-
-/**
- * Get team locations
- * GET /teams/locations/:teamId
- * @param {number|string} teamId - Team ID
- * @param {any} params - Query parameters
- */
 export const getTeamLocations = async (teamId, params = {}) => {
   try {
     const response = await apiClient.get(`/teams/${teamId}/locations`, { params });
@@ -400,13 +478,6 @@ export const getTeamLocations = async (teamId, params = {}) => {
     return handleServiceError(error, `Fetch locations for team ${teamId}`, 'get', []);
   }
 };
-
-/**
- * Assign location to team
- * POST /teams/locations
- * @param {number|string} teamId - Team ID
- * @param {any} data - Location assignment data
- */
 export const assignLocation = async (teamId, data) => {
   try {
     const response = await apiClient.post(`/teams/${teamId}/locations`, data);
@@ -415,13 +486,6 @@ export const assignLocation = async (teamId, data) => {
     return handleServiceError(error, `Assign location to team ${teamId}`, 'post');
   }
 };
-
-/**
- * Get sales average for team
- * GET /teams/sales-average/:teamId
- * @param {number|string} teamId - Team ID
- * @param {any} params - Query parameters
- */
 export const getSalesAverage = async (teamId, params = {}) => {
   try {
     const response = await apiClient.get(`/teams/${teamId}/sales-average`, { params });
@@ -430,13 +494,6 @@ export const getSalesAverage = async (teamId, params = {}) => {
     return handleServiceError(error, `Fetch sales average for team ${teamId}`, 'get', {});
   }
 };
-
-/**
- * Get team performance
- * GET /teams/performance/:teamId
- * @param {number|string} teamId - Team ID
- * @param {any} params - Query parameters
- */
 export const getTeamPerformance = async (teamId, params = {}) => {
   try {
     const response = await apiClient.get(`/teams/${teamId}/performance`, { params });
@@ -445,13 +502,6 @@ export const getTeamPerformance = async (teamId, params = {}) => {
     return handleServiceError(error, `Fetch performance for team ${teamId}`, 'get', {});
   }
 };
-
-/**
- * Get team members
- * GET /teams/members/:teamId
- * @param {number|string} teamId - Team ID
- * @param {any} params - Query parameters
- */
 export const getTeamMembers = async (teamId, params = {}) => {
   try {
     const response = await apiClient.get(`/teams/${teamId}/members`, { params });
@@ -461,13 +511,6 @@ export const getTeamMembers = async (teamId, params = {}) => {
     return handleServiceError(error, `Fetch members for team ${teamId}`, 'get', []);
   }
 };
-
-/**
- * Get team statistics
- * GET /teams/stats/:teamId
- * @param {number|string} teamId - Team ID
- * @param {any} params - Query parameters
- */
 export const getTeamStats = async (teamId, params = {}) => {
   try {
     const response = await apiClient.get(`/teams/${teamId}/stats`, { params });
@@ -476,181 +519,6 @@ export const getTeamStats = async (teamId, params = {}) => {
     return handleServiceError(error, `Fetch stats for team ${teamId}`, 'get', {});
   }
 };
-
-// --- Project Management: Reservations (متتبع المشروع / إدارة المشاريع) ---
-
-/**
- * List reservations
- * GET /project_management/reservations
- * @param {Record<string, unknown>} [params]
- * @returns {Promise<unknown[]>}
- */
-export const getProjectManagementReservations = async (params = {}) => {
-  try {
-    const response = await apiClient.get('/project_management/reservations', { params });
-    const data = response.data?.data ?? response.data;
-    if (Array.isArray(data)) return data;
-    const { items } = extractPaginatedData(response, []);
-    if (Array.isArray(items) && items.length) return items;
-    if (data && typeof data === 'object' && Array.isArray(data.items)) return data.items;
-    return [];
-  } catch (error) {
-    return handleServiceError(error, 'PM reservations list', 'get', []);
-  }
-};
-
-/**
- * Reservation context for a unit (lookups + snapshot)
- * GET /project_management/units/:unitId/reservation-context
- * @param {number|string} unitId
- */
-export const getProjectManagementUnitReservationContext = async unitId => {
-  try {
-    const response = await apiClient.get(`/project_management/units/${unitId}/reservation-context`);
-    return response.data?.data ?? response.data ?? {};
-  } catch (error) {
-    logger.error(`PM reservation context ${unitId}:`, error);
-    throw error;
-  }
-};
-
-/**
- * Create reservation
- * POST /project_management/reservations
- * @param {Record<string, unknown>} body
- * @returns {Promise<Record<string, unknown>>}
- */
-export const createProjectManagementReservation = async body => {
-  try {
-    const response = await apiClient.post('/project_management/reservations', body);
-    return response.data?.data ?? response.data ?? {};
-  } catch (error) {
-    logger.error('PM create reservation:', error);
-    throw error;
-  }
-};
-
-/**
- * Confirm reservation
- * POST /project_management/reservations/:id/confirm
- * @param {string|number} reservationId
- * @param {Record<string, unknown>} [data]
- * @returns {Promise<Record<string, unknown>>}
- */
-export const confirmProjectManagementReservation = async (
-  reservationId,
-  data = {}
-) => {
-  try {
-    const response = await apiClient.post(
-      `/project_management/reservations/${reservationId}/confirm`,
-      data
-    );
-    return response.data?.data ?? response.data ?? {};
-  } catch (error) {
-    logger.error(`PM confirm reservation ${reservationId}:`, error);
-    throw error;
-  }
-};
-
-/**
- * Cancel reservation
- * POST /project_management/reservations/:id/cancel
- * @param {string|number} reservationId
- * @param {Record<string, unknown>} [data]
- * @returns {Promise<Record<string, unknown>>}
- */
-export const cancelProjectManagementReservation = async (reservationId, data = {}) => {
-  try {
-    const response = await apiClient.post(
-      `/project_management/reservations/${reservationId}/cancel`,
-      data
-    );
-    return response.data?.data ?? response.data ?? {};
-  } catch (error) {
-    logger.error(`PM cancel reservation ${reservationId}:`, error);
-    throw error;
-  }
-};
-
-/**
- * Log reservation action
- * POST /project_management/reservations/:id/actions
- * @param {string|number} reservationId
- * @param {Record<string, unknown>} data
- * @returns {Promise<Record<string, unknown>>}
- */
-export const logProjectManagementReservationAction = async (reservationId, data) => {
-  try {
-    const response = await apiClient.post(
-      `/project_management/reservations/${reservationId}/actions`,
-      data
-    );
-    return response.data?.data ?? response.data ?? {};
-  } catch (error) {
-    logger.error(`PM reservation action ${reservationId}:`, error);
-    throw error;
-  }
-};
-
-/**
- * Download voucher PDF
- * GET /project_management/reservations/:id/voucher
- * @param {string|number} reservationId
- * @returns {Promise<Blob>}
- */
-export const downloadProjectManagementReservationVoucher = async reservationId => {
-  const response = await apiClient.get(`/project_management/reservations/${reservationId}/voucher`, {
-    responseType: 'blob',
-  });
-  return ensurePdfBlob(response);
-};
-
-/**
- * Voucher payload for client PDF fallback
- * GET /project_management/reservations/:id/voucher-data
- * @param {string|number} reservationId
- * @returns {Promise<Record<string, unknown>>}
- */
-export const getProjectManagementReservationVoucherData = async reservationId => {
-  try {
-    const response = await apiClient.get(
-      `/project_management/reservations/${reservationId}/voucher-data`
-    );
-    const payload = response.data?.data ?? response.data ?? {};
-    const base = payload && typeof payload === 'object' && !Array.isArray(payload) ? payload : {};
-    const normalized = normalizeVoucherDataPayload(base);
-    /** دمج الخام مع التطبيع حتى لا تُفقد حقول مثل روابط الصور الجاهزة */
-    if (normalized?.reservation != null) {
-      return { ...base, ...normalized };
-    }
-    return base;
-  } catch (error) {
-    logger.error(`PM voucher-data ${reservationId}:`, error);
-    throw error;
-  }
-};
-
-/**
- * Raw GET voucher-data (binary or JSON body) — same URL as JSON helper, responseType blob.
- * GET /project_management/reservations/:id/voucher-data
- * @param {string|number} reservationId
- * @returns {Promise<{ blob: Blob, contentType: string, contentDisposition: string }>}
- */
-export const fetchProjectManagementReservationVoucherDataBlob = async reservationId => {
-  const response = await apiClient.get(
-    `/project_management/reservations/${reservationId}/voucher-data`,
-    { responseType: 'blob' }
-  );
-  const blob = response?.data;
-  if (!(blob instanceof Blob)) {
-    throw new Error('استجابة السند غير صالحة');
-  }
-  const contentType = String(response.headers?.['content-type'] || blob.type || '');
-  const contentDisposition = String(response.headers?.['content-disposition'] || '');
-  return { blob, contentType, contentDisposition };
-};
-
 export default {
   // Project Management Dashboard
   getProjectManagementDashboard,
@@ -661,6 +529,20 @@ export default {
   updateTeam,
   getTeamById,
   deleteTeam,
+  createTeamGroup,
+  getTeamGroups,
+  getTeamGroupById,
+  getTeamGroupMembers,
+  addTeamGroupMember,
+  removeTeamGroupMember,
+  updateTeamGroup,
+  deleteTeamGroup,
+  setTeamGroupLeader,
+  getTeamGroupLeaders,
+  removeTeamGroupLeader,
+  assignSalesLeaderToTeam,
+  removeSalesLeaderFromTeam,
+  getSalesLeaders,
   getSalesWithoutTeam,
   getProjectManagementTeamMembers,
   addProjectManagementTeamMember,
@@ -691,3 +573,9 @@ export default {
   getProjectManagementReservationVoucherData,
   fetchProjectManagementReservationVoucherDataBlob,
 };
+
+
+
+
+
+

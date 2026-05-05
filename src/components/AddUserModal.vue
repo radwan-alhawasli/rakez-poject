@@ -204,20 +204,44 @@
               ></textarea>
             </div>
 
-            <!-- Team: من API عرض أسماء الفرق -->
+            <!-- Team / Sales role controls -->
             <div class="form-row">
               <div class="form-group">
-                <label class="label">الفريق</label>
-                <select v-model="form.team" class="input select">
+                <label class="label">الفريق <span v-if="isTeamRequired">*</span></label>
+                <select v-model="form.team" class="input select" :required="isTeamRequired">
                   <option value="">لا يوجد فريق</option>
                   <option v-for="t in teamsList" :key="t.id" :value="t.id">{{ t.name }}</option>
                 </select>
                 <small v-if="teamsList.length === 0" class="hint">جاري تحميل الفرق...</small>
+                <span v-if="getFieldError('team')" class="field-error">{{ getFieldError('team') }}</span>
               </div>
+              <div class="form-group" v-if="showTeamGroupField">
+                <label class="label">المجموعة <span v-if="isTeamGroupRequired">*</span></label>
+                <select
+                  v-model="form.team_group_id"
+                  class="input select"
+                  :required="isTeamGroupRequired"
+                  :disabled="!form.team || isLoadingTeamGroups"
+                >
+                  <option value="">اختر المجموعة</option>
+                  <option v-for="g in teamGroupsList" :key="g.id" :value="g.id">{{ g.name }}</option>
+                </select>
+                <small v-if="isLoadingTeamGroups" class="hint">جاري تحميل المجموعات...</small>
+                <span v-if="getFieldError('team_group_id')" class="field-error">{{ getFieldError('team_group_id') }}</span>
+              </div>
+            </div>
+
+            <div class="form-row" v-if="isSalesType">
               <div class="form-group d-flex-center">
                 <label class="checkbox-label mt-20">
                   <input type="checkbox" v-model="form.is_manager" class="checkbox" />
-                  <span class="fw-bold">هل هذا الموظف مدير (Manager)؟</span>
+                  <span class="fw-bold">مدير مبيعات</span>
+                </label>
+              </div>
+              <div class="form-group d-flex-center">
+                <label class="checkbox-label mt-20">
+                  <input type="checkbox" v-model="form.is_executive_director" class="checkbox" />
+                  <span class="fw-bold">مدير تنفيذي للمبيعات</span>
                 </label>
               </div>
             </div>

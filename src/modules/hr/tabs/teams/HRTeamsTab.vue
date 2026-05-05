@@ -43,6 +43,24 @@
           </div>
           <div class="team-member-count">{{ team.members?.length || 0 }} مسوقين</div>
         </div>
+        <div class="team-groups" v-if="(team.groupsCount || 0) > 0 || (team.groups || []).length > 0">
+          <div class="team-groups-title">
+            <span>Groups</span>
+            <span class="team-groups-count">{{ team.groupsCount || (team.groups || []).length }}</span>
+          </div>
+          <div class="team-groups-list">
+            <span
+              v-for="(g, gi) in (team.groups || []).slice(0, 4)"
+              :key="(g?.id ?? 'g') + '-' + gi"
+              class="team-group-chip"
+            >
+              {{ g?.name || 'Group' }}
+            </span>
+            <span v-if="(team.groups || []).length > 4" class="team-group-chip team-group-chip--muted">
+              +{{ (team.groups || []).length - 4 }}
+            </span>
+          </div>
+        </div>
 
         <div class="team-marketers-list" @click="openMarketersModal(team)" style="cursor: pointer">
           <div class="marketers-row">
@@ -140,6 +158,8 @@
         </div>
       </div>
     </div>
+
+    <TeamGroupsManagementPanel :teams="teamsData" source="hr" />
 
     <!-- Team Modal -->
     <TeamModal
@@ -252,16 +272,12 @@
               class="marketer-item-full"
             >
               <div class="marketer-item-avatar">
-                {{
-                  (marketer != null && typeof marketer === 'string'
-                    ? marketer
-                    : marketer != null
-                    ? String(marketer)
-                    : ''
-                  ).charAt(0) || '؟'
-                }}
+                {{ (marketer?.__name || (marketer != null ? String(marketer) : '')).charAt(0) || '؟' }}
               </div>
-              <span class="marketer-name-full">{{ marketer != null ? marketer : '' }}</span>
+              <span class="marketer-name-full">
+                {{ marketer?.__name || (marketer != null ? String(marketer) : '') }}
+                <small v-if="marketer?.__groupLabel" style="display:block;color:#64748b;">Group: {{ marketer.__groupLabel }}</small>
+              </span>
             </div>
           </div>
         </div>
@@ -287,13 +303,14 @@ import { useHRTeams } from '@/composables/hr/useHRTeams';
 import TeamModal from '@/components/TeamModal.vue';
 import LinkMarketersModal from '@/components/LinkMarketersModal.vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
+import TeamGroupsManagementPanel from '@/modules/hr/tabs/teams/TeamGroupsManagementPanel.vue';
 
 const props = defineProps({
   isHR: { type: Boolean, default: false },
 });
 
 const {
-  teamSearchQuery, filteredTeams, formatSalesAverage, memberName, formatCurrency,
+  teamSearchQuery, teamsData, filteredTeams, formatSalesAverage, memberName, formatCurrency,
   showTeamModal, editingTeam, openAddTeamModal, openEditTeamModal,
   handleTeamSubmit, handleDeleteTeam, showConfirmModal, confirmModalConfig,
   onConfirmModalConfirm, handleLinkMarketers, showLinkModal, selectedTeamToLink,
@@ -308,3 +325,4 @@ onMounted(() => {
 </script>
 
 <style scoped src="./styles/HRTeamsTab.scoped.s1.css"></style>
+

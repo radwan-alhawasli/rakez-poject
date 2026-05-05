@@ -193,7 +193,10 @@ describe('useChatbot streaming', () => {
 
   it('copyMessageContent calls clipboard API', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.assign(navigator, { clipboard: { writeText } });
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
 
     await chatbot.copyMessageContent('test content');
     expect(writeText).toHaveBeenCalledWith('test content');

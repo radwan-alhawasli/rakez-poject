@@ -92,17 +92,13 @@ export function useMainLayout() {
   const sidebarRoleLabel = computed(() => {
     const u = user.value;
     if (!u) return '';
-    if (userRole.value === 6 || userRole.value === 7) {
-      const isLeader =
-        u.is_leader === true ||
-        /** @type {any} */ (u.is_leader) === 1 ||
-        /** @type {any} */ (u.is_leader) === '1' ||
-        u.is_manager === true ||
-        /** @type {any} */ (u.is_manager) === 1 ||
-        /** @type {any} */ (u.is_manager) === '1';
-      return isLeader ? 'قائد المبيعات / Sales Leader' : 'المبيعات / Sales';
-    }
-    return getRoleLabel(u.type, u.is_manager) || '';
+    return (
+      getRoleLabel(u.type, {
+        is_manager: u.is_manager,
+        is_executive_director: u.is_executive_director,
+        is_leader: u.is_leader,
+      }) || ''
+    );
   });
 
   const handleLogout = async () => {
@@ -156,3 +152,4 @@ export function useMainLayout() {
     handleLogout,
   };
 }
+

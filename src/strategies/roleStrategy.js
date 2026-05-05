@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Role Strategy Pattern
  * Implements different behaviors based on user roles
  */
@@ -169,7 +169,9 @@ class AdminStrategy extends RoleStrategy {
       { path: '/users', name: 'Users', label: 'المستخدمون' },
       { path: '/contracts', name: 'Contracts', label: 'العقود' },
       { path: '/project-management', name: 'ProjectManagement', label: 'إدارة المشاريع' },
-      { path: '/teams', name: 'Teams', label: 'الفِرق' },
+      { path: '/teams', name: 'Teams', label: 'الفرق' },
+      { path: '/admin/locations', name: 'AdminLocations', label: 'إدارة المدن والأحياء' },
+      { path: '/admin/order-marketing-developers', name: 'AdminOrderMarketingDevelopers', label: 'طلبات مطوري التسويق' },
     ];
   }
 }
@@ -244,3 +246,4 @@ class RoleStrategyFactory {
 
 // Export singleton instance
 export default new RoleStrategyFactory();
+

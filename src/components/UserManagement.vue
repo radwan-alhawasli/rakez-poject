@@ -54,7 +54,7 @@
             </td>
             <td data-label="الدور">
               <div class="role-badge" :class="getRoleClass(user.type)">
-                {{ getRoleLabel(user.type, user.is_manager) }}
+                {{ getRoleLabel(user.type, { is_manager: user.is_manager, is_executive_director: user.is_executive_director }) }}
               </div>
             </td>
             <td data-label="الفريق">{{ getTeamDisplay(user.team) }}</td>

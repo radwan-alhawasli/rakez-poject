@@ -1,4 +1,4 @@
-/**
+﻿/**
  * تكوين القائمة الجانبية حسب الدور — مصدر واحد للبيانات
  * كل عنصر: { to, label, tooltip, icon (SVG path string), permission?, showIf? }
  * أو عنوان قسم: { type: 'section', label } — يُستخدم في قائمة الإدمن لعناوين الأقسام المدمجة.
@@ -41,10 +41,6 @@ export const ICONS = {
   ai: '<path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"></path>',
   calendarDots: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"></path>',
   market: '<path d="M3 21h18"></path><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4"></path><line x1="5" y1="21" x2="5" y2="10"></line><line x1="9" y1="21" x2="9" y2="10"></line><line x1="13" y1="21" x2="13" y2="10"></line><line x1="17" y1="21" x2="17" y2="10"></line>',
-  locations:
-    '<path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle>',
-  csv:
-    '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M8 13h8"></path><path d="M8 17h8"></path><path d="M8 9h2"></path>',
   pulse: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>',
 };
 
@@ -201,6 +197,7 @@ const accountingItems = [
   COMMON_ITEMS.chat,
   { ...COMMON_ITEMS.notifications, to: '/accounting/notifications', hasBadge: true },
   { ...COMMON_ITEMS.tasks },
+  { to: '/accounting/projects', label: 'ملفات المطالبه', tooltip: 'ملفات المطالبه', icon: ICONS.projects },
   { to: '/accounting/sold-units', label: 'الوحدات المباعة', tooltip: 'الوحدات المباعة', icon: ICONS.projects },
   { to: '/accounting/deposits', label: 'العربون', tooltip: 'تأكيد وإرجاع العربون', icon: ICONS.calendar, permission: 'accounting.deposits.view' },
   { to: '/accounting/salaries', label: 'الرواتب وتوزيع العمولات', tooltip: 'الرواتب وتوزيع العمولات', icon: ICONS.teams },
@@ -229,26 +226,25 @@ const ADMIN_CONTRACT_FORM_ITEM = {
   tooltip: 'إحضار المشاريع',
   icon: ICONS.edit,
 };
-
 const ADMIN_LOCATIONS_ITEM = {
   to: '/admin/locations',
-  label: 'إضافة مدن و أحياء',
-  tooltip: 'إضافة مدن و أحياء',
-  icon: ICONS.locations,
+  label: 'إدارة المدن والأحياء',
+  tooltip: 'إدارة المدن والأحياء',
+  icon: ICONS.projects,
 };
-
-const ADMIN_IMPORTS_ITEM = {
-  to: '/admin/imports',
-  label: 'إضافة ملفات CSV',
-  tooltip: 'إضافة ملفات CSV (استيراد دفعات)',
-  icon: ICONS.csv,
+const ADMIN_ORDER_MARKETING_DEVELOPERS_ITEM = {
+  to: '/admin/order-marketing-developers',
+  label: 'طلبات مطوري التسويق',
+  tooltip: 'طلبات مطوري التسويق',
+  icon: ICONS.tasks,
 };
 
 /**
  * كتل قائمة الإدمن — يُزال التكرار حسب `to` مع الإبقاء على أول ظهور (تسميات قسم إدارة المشاريع أولاً).
  */
 const ADMIN_NAV_BLOCKS = [
-  { label: 'إدارة المشاريع', items: [...pmItems, ADMIN_CONTRACT_FORM_ITEM, ADMIN_LOCATIONS_ITEM, ADMIN_IMPORTS_ITEM] },
+  { label: 'الإدارة', items: [ADMIN_LOCATIONS_ITEM, ADMIN_ORDER_MARKETING_DEVELOPERS_ITEM] },
+  { label: 'إدارة المشاريع', items: [...pmItems, ADMIN_CONTRACT_FORM_ITEM] },
   { label: 'المونتاج', items: editorItems },
   { label: 'المطور', items: developerItems },
   { label: 'التسويق', items: marketingItems },

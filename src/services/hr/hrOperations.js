@@ -20,70 +20,107 @@ export const refreshDashboard = async () => {
 };
 
 /**
- * Create team (HR endpoint)
- * POST /hr/teams
+ * Create team.
+ * Primary: POST /project_management/teams/store
+ * Fallback: POST /hr/teams
   * @param {any} teamData
  */
 export const createHRTeam = async teamData => {
   try {
-    const response = await apiClient.post('/hr/teams', teamData);
+    const response = await apiClient.post('/hr/teams/store', teamData);
     return response.data?.data || response.data || {};
-  } catch (error) {
-    logger.error('Error creating HR team:', error);
-    throw error;
+  } catch (_error) {
+    try {
+      const fallback = await apiClient.post('/hr/teams', teamData);
+      return fallback.data?.data || fallback.data || {};
+    } catch (fallbackError) {
+      logger.error('Error creating HR team:', fallbackError);
+      throw fallbackError;
+    }
   }
 };
 
 /**
- * Update team (HR endpoint)
- * PUT /hr/teams/:id
+ * Update team.
+ * Primary: PUT /project_management/teams/update/:id
+ * Fallbacks: POST /project_management/teams/update/:id, then PUT /hr/teams/:id
   * @param {any} teamId
   * @param {any} teamData
  */
 export const updateHRTeam = async (teamId, teamData) => {
   try {
-    const response = await apiClient.put(`/hr/teams/${teamId}`, teamData);
+    const response = await apiClient.put(`/hr/teams/update/${teamId}`, teamData);
     return response.data?.data || response.data || {};
-  } catch (error) {
-    logger.error(`Error updating HR team ${teamId}:`, error);
-    throw error;
+  } catch (_error) {
+    try {
+      const fallback = await apiClient.post(`/hr/teams/update/${teamId}`, teamData);
+      return fallback.data?.data || fallback.data || {};
+    } catch (_) {
+      try {
+        const legacy = await apiClient.put(`/hr/teams/${teamId}`, teamData);
+        return legacy.data?.data || legacy.data || {};
+      } catch (legacyError) {
+        logger.error(`Error updating HR team ${teamId}:`, legacyError);
+        throw legacyError;
+      }
+    }
   }
 };
 
 /**
- * Delete team (HR endpoint)
- * DELETE /hr/teams/:id
+ * Delete team.
+ * Primary: DELETE /project_management/teams/delete/:id
+ * Fallback: DELETE /hr/teams/:id
   * @param {any} teamId
  */
 export const deleteHRTeam = async teamId => {
   try {
-    const response = await apiClient.delete(`/hr/teams/${teamId}`);
+    const response = await apiClient.delete(`/hr/teams/delete/${teamId}`);
     return response.data?.data || response.data || {};
-  } catch (error) {
-    logger.error(`Error deleting HR team ${teamId}:`, error);
-    throw error;
+  } catch (_error) {
+    try {
+      const fallback = await apiClient.delete(`/hr/teams/${teamId}`);
+      return fallback.data?.data || fallback.data || {};
+    } catch (fallbackError) {
+      logger.error(`Error deleting HR team ${teamId}:`, fallbackError);
+      throw fallbackError;
+    }
   }
 };
 
 /**
  * Assign member to team
- * POST /hr/teams/:id/members
+ * Primary: POST /project_management/teams/members/:id
+ * Fallback: POST /hr/teams/:id/members
  * @param {number|string} teamId - Team ID
  * @param {any} data - Body (e.g. user_id, role)
  */
 export const assignTeamMember = async (teamId, data) => {
+  const userId = data?.user_id ?? data?.id;
+  const teamGroupId = data?.team_group_id ?? null;
   try {
-    const response = await apiClient.post(`/hr/teams/${teamId}/members`, data);
+    const response = await apiClient.post(`/hr/teams/${teamId}/members`, {
+      user_id: userId,
+      team_group_id: teamGroupId,
+    });
     return response.data?.data || response.data || {};
-  } catch (error) {
-    logger.error('Error assigning team member:', error);
-    throw error;
+  } catch (_error) {
+    try {
+      const fallback = await apiClient.post(`/hr/teams/members/${teamId}`, {
+        user_id: userId,
+      });
+      return fallback.data?.data || fallback.data || {};
+    } catch (fallbackError) {
+      logger.error('Error assigning team member:', fallbackError);
+      throw fallbackError;
+    }
   }
 };
 
 /**
  * Remove member from team
- * DELETE /hr/teams/:id/members/:userId
+ * Primary: DELETE /project_management/teams/members/:id/:userId
+ * Fallback: DELETE /hr/teams/:id/members/:userId
  * @param {number|string} teamId - Team ID
  * @param {number|string} userId - User ID to remove
  */
@@ -91,9 +128,14 @@ export const removeTeamMember = async (teamId, userId) => {
   try {
     const response = await apiClient.delete(`/hr/teams/${teamId}/members/${userId}`);
     return response.data?.data || response.data || {};
-  } catch (error) {
-    logger.error('Error removing team member:', error);
-    throw error;
+  } catch (_error) {
+    try {
+      const fallback = await apiClient.delete(`/hr/teams/members/${teamId}/${userId}`);
+      return fallback.data?.data || fallback.data || {};
+    } catch (fallbackError) {
+      logger.error('Error removing team member:', fallbackError);
+      throw fallbackError;
+    }
   }
 };
 

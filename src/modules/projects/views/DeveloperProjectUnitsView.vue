@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="developer-project-units-view">
     <div class="welcome-header">
       <div class="header-content">
@@ -23,56 +23,50 @@
       </button>
     </div>
 
-    <div v-if="!projectId && !isLoadingCandidates" class="empty-state">
+    <div v-if="!projectId && !isLoadingUnits && !isLoadingClaimFiles" class="empty-state">
       <p>لم يتم تحديد المشروع. افتح الصفحة من تفاصيل المطور.</p>
       <router-link :to="developerDetailRoute" class="link-back">العودة لتفاصيل المطور</router-link>
     </div>
 
     <template v-else>
-      <!-- Mode & Create -->
       <div class="toolbar">
-        <div class="mode-toggle">
+        <div class="mode-toggle" role="tablist" aria-label="حالات ملفات المطالبة">
           <button
             type="button"
-            :class="['mode-btn', { active: mode === 'combined' }]"
-            @click="mode = 'combined'"
+            class="mode-btn"
+            :class="{ active: activeTab === 'claimed' }"
+            @click="activeTab = 'claimed'"
           >
-            ملف مطالبة مجمّع
+            الوحدات المطالب بها
           </button>
           <button
             type="button"
-            :class="['mode-btn', { active: mode === 'individual' }]"
-            @click="mode = 'individual'"
+            class="mode-btn"
+            :class="{ active: activeTab === 'unclaimed' }"
+            @click="activeTab = 'unclaimed'"
           >
-            ملف لكل حجز
+            الوحدات غير المطالب بها
           </button>
         </div>
-        <div class="selection-summary" v-if="selectedIds.length > 0">
+
+        <div class="selection-summary" v-if="activeTab === 'unclaimed' && selectedIds.length > 0">
           <span class="badge">{{ selectedIds.length }}</span>
           وحدة محددة
-          <span v-if="mode === 'combined' && selectedIds.length < 2" class="min-warn">
-            (يلزم حجزين على الأقل للملف المجمّع)
-          </span>
         </div>
+
         <button
+          v-if="activeTab === 'unclaimed'"
           type="button"
           class="btn-primary create-btn"
           :disabled="!canSubmit || isSubmitting"
           @click="handleSubmit"
         >
-          <span v-if="!isSubmitting">
-            {{
-              mode === 'combined'
-                ? `إنشاء ملف مجمّع (${selectedIds.length})`
-                : `إنشاء ${selectedIds.length} ملف`
-            }}
-          </span>
+          <span v-if="!isSubmitting">إنشاء ملف مطالبة ({{ selectedIds.length }})</span>
           <span v-else>جاري الإنشاء...</span>
         </button>
       </div>
 
-      <!-- Notes (combined only) -->
-      <div class="form-group" v-if="mode === 'combined' && selectedIds.length >= 2">
+      <div class="form-group" v-if="activeTab === 'unclaimed' && selectedIds.length >= 1">
         <label class="form-label">ملاحظات (اختياري)</label>
         <textarea
           v-model="notes"
@@ -83,33 +77,23 @@
         ></textarea>
       </div>
 
-      <!-- Result message -->
-      <div v-if="bulkResult" class="bulk-result">
-        <div v-if="bulkResult.createdCount > 0" class="bulk-success">
-          تم إنشاء {{ bulkResult.createdCount }} ملف مطالبة بنجاح.
-        </div>
-        <div v-if="bulkResult.errorCount > 0" class="bulk-errors">
-          <p>فشل إنشاء {{ bulkResult.errorCount }} ملف:</p>
-          <ul>
-            <li v-for="(msg, resId) in bulkResult.errors" :key="resId">
-              حجز {{ resId }}: {{ msg }}
-            </li>
-          </ul>
-        </div>
-      </div>
-
       <section class="units-section">
-        <h2 class="section-title">الوحدات المباعة — كل المشروع</h2>
-        <div v-if="isLoadingCandidates" class="loading-state">
+        <h2 class="section-title">{{ activeTab === 'claimed' ? 'الوحدات المطالب بها' : 'الوحدات غير المطالب بها' }}</h2>
+
+        <div v-if="isLoadingUnits || isLoadingClaimFiles" class="loading-state">
           <span class="spinner"></span>
-          <p>جاري تحميل الوحدات...</p>
+          <p v-if="isLoadingUnits">جاري تحميل الوحدات...</p>
+          <p v-else>جاري تحميل ملفات المطالبة...</p>
         </div>
-        <div v-else-if="claimFilesForbidden" class="empty-state permission-state">
-          <p>لا تملك صلاحية الوصول لملفات المطالبة. يرجى التأكد من منح صلاحية المحاسبة في النظام الخلفي (Backend).</p>
+
+        <div v-else-if="activeTab === 'unclaimed' && filteredUnclaimedUnits.length === 0" class="empty-state">
+          <p>{{ searchTerm ? 'لا توجد نتائج مطابقة' : 'لا توجد وحدات غير مطالب بها لهذا المشروع.' }}</p>
         </div>
-        <div v-else-if="filteredCandidates.length === 0" class="empty-state">
-          <p>{{ searchTerm ? 'لا توجد نتائج مطابقة' : 'لا توجد وحدات مباعة لهذا المشروع.' }}</p>
+
+        <div v-else-if="activeTab === 'claimed' && claimFilesForProject.length === 0" class="empty-state">
+          <p>لا توجد ملفات مطالبة حالياً لهذا المشروع.</p>
         </div>
+
         <div v-else class="table-wrapper table-responsive">
           <div class="search-box-mini">
             <input
@@ -119,10 +103,11 @@
               class="search-input-mini"
             />
           </div>
-          <table class="metrics-table">
+
+          <table v-if="activeTab === 'unclaimed'" class="metrics-table">
             <thead>
               <tr>
-                <th class="th-checkbox" v-if="hasClaimFileColumn">
+                <th class="th-checkbox">
                   <input
                     type="checkbox"
                     :checked="allVisibleSelected"
@@ -133,34 +118,27 @@
                 <th>رقم الحجز</th>
                 <th>الوحدة</th>
                 <th>مبلغ المطالبة</th>
-                <th>ملف مطالبة</th>
                 <th>تحميل</th>
               </tr>
             </thead>
             <tbody>
               <tr
-                v-for="row in filteredCandidates"
+                v-for="row in filteredUnclaimedUnits"
                 :key="row.reservation_id"
-                :class="{ 'row-selected': isSelectable(row) && isSelected(row) }"
-                @click="isSelectable(row) ? toggleCandidate(row) : null"
+                :class="{ 'row-selected': isSelected(row) }"
+                @click="toggleCandidate(row)"
               >
-                <td class="td-checkbox" v-if="hasClaimFileColumn">
+                <td class="td-checkbox">
                   <input
-                    v-if="isSelectable(row)"
                     type="checkbox"
                     :checked="isSelected(row)"
                     @click.stop
                     @change="toggleCandidate(row)"
                   />
-                  <span v-else>—</span>
                 </td>
                 <td>{{ row.reservation_id || row.booking_id || row.id }}</td>
-                <td>{{ row.unit_number || row.unit_name || '\u2014' }}</td>
+                <td>{{ row.unit_number || row.unit_name || '—' }}</td>
                 <td>{{ formatCurrency(row.claim_amount || row.amount || 0) }}</td>
-                <td>
-                  <span v-if="row.has_claim_file || row.has_pdf || row.claim_file_id" class="status-tag good">نعم</span>
-                  <span v-else class="status-tag">\u2014</span>
-                </td>
                 <td>
                   <button
                     type="button"
@@ -169,6 +147,50 @@
                     @click.stop="openDownload(row)"
                   >
                     {{ isDownloading === row.reservation_id ? 'جاري...' : 'تحميل' }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <table v-else class="metrics-table">
+            <thead>
+              <tr>
+                <th>رقم الملف</th>
+                <th>الوحدات</th>
+                <th>الحالة</th>
+                <th>تم استلام العمولة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="claim in claimFilesForProject" :key="claim.id">
+                <td>#{{ claim.id }}</td>
+                <td>{{ formatClaimUnits(claim) }}</td>
+                <td>
+                  <span class="status-tag" :class="claim.status === 'completed' ? 'good' : ''">
+                    {{ claim.status === 'completed' ? 'مكتمل' : 'قيد الانتظار' }}
+                  </span>
+                </td>
+                <td>
+                  <label class="claim-received-label">
+                    <input
+                      type="checkbox"
+                      :checked="claim.status === 'completed'"
+                      :disabled="claim.status === 'completed' || updatingClaimId === claim.id"
+                      @change="markCommissionReceived(claim)"
+                    />
+                    <span>{{ updatingClaimId === claim.id ? 'جاري التحديث...' : 'تم استلام العمولة' }}</span>
+                  </label>
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn-download-mini"
+                    :disabled="sendingClaimId === claim.id"
+                    @click="sendClaimFileToDeveloper(claim.id)"
+                  >
+                    {{ sendingClaimId === claim.id ? 'جاري الإرسال...' : 'إرسال ملف المطالبة للمطور' }}
                   </button>
                 </td>
               </tr>
@@ -184,7 +206,6 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import accountingService from '@/services/accountingService';
-import creditService from '@/services/creditService';
 import contractService from '@/services/contractService';
 import { normalizeDeveloper } from '@/utils/developerMapper';
 import { useFormatters } from '@/composables/useFormatters';
@@ -197,21 +218,26 @@ export default {
   setup() {
     const router = useRouter();
     const route = useRoute();
+
     const developer = ref(null);
     const project = ref(null);
     const projectName = ref('');
     const developerName = ref('');
-    const candidates = ref([]);
+
     const soldUnits = ref([]);
-    const isLoadingCandidates = ref(false);
-    const claimFilesForbidden = ref(false);
+    const claimFiles = ref([]);
+
+    const isLoadingUnits = ref(false);
+    const isLoadingClaimFiles = ref(false);
+    const updatingClaimId = ref(null);
+    const sendingClaimId = ref(null);
+
     const isDownloading = ref(null);
     const selectedIds = ref([]);
     const notes = ref('');
     const searchTerm = ref('');
-    const mode = ref('combined');
-    const bulkResult = ref(null);
     const isSubmitting = ref(false);
+    const activeTab = ref('unclaimed');
 
     const { formatCurrency } = useFormatters();
 
@@ -222,137 +248,128 @@ export default {
       developerId.value ? { name: 'DeveloperDetail', params: { id: developerId.value } } : { name: 'Developers' }
     );
 
-    const candidatesRequestedWithContractId = ref(false);
-
-    const projectCandidates = computed(() => {
-      let list = [];
-      if (soldUnits.value.length > 0) {
-        list = soldUnits.value;
-      } else {
-        list = candidates.value || [];
-      }
-      
-      if (!list.length) return [];
-      
-      const pid = projectId.value;
-      const pName = (project.value?.project_name || project.value?.name || project.value?.title || '').trim();
-
-      // If we specifically requested this project's candidates, return them all
-      if (pid && candidatesRequestedWithContractId.value) {
-        return list;
-      }
-
-      return list.filter(c => {
-        const c_id = c.contract_id ?? c.project_id ?? c.id;
-        if (pid && c_id != null && c_id !== '') {
-          return String(c_id) === String(pid);
-        }
-        if (pName && (c.project_name || '').trim()) {
-          return (c.project_name || '').trim() === pName;
-        }
-        return !pid; // If no pid, show all
+    const soldUnitsForProject = computed(() => {
+      const pid = String(projectId.value || '').trim();
+      const list = Array.isArray(soldUnits.value) ? soldUnits.value : [];
+      if (!pid) return list;
+      return list.filter(u => {
+        const unitPid = u.contract_id ?? u.project_id;
+        if (unitPid == null || unitPid === '') return true;
+        return String(unitPid) === pid;
       });
     });
 
-    const hasClaimFileColumn = computed(() =>
-      projectCandidates.value.some(r => !r.has_claim_file)
+    const reservationIdToUnit = computed(() => {
+      const map = new Map();
+      soldUnitsForProject.value.forEach(u => {
+        map.set(String(u.reservation_id), u);
+      });
+      return map;
+    });
+
+    const unclaimedUnits = computed(() =>
+      soldUnitsForProject.value.filter(u => !u.has_claim_file && !u.claim_file_id)
     );
 
-    function isSelectable(row) {
-      return !row.has_claim_file;
-    }
+    const claimFilesForProject = computed(() => {
+      const pid = String(projectId.value || '').trim();
+      const soldIds = new Set(soldUnitsForProject.value.map(u => String(u.reservation_id)));
+      const list = Array.isArray(claimFiles.value) ? claimFiles.value : [];
 
-    const filteredCandidates = computed(() => {
-      if (!searchTerm.value.trim()) return projectCandidates.value;
+      return list.filter(claim => {
+        if (pid && claim?.contract_id != null && claim.contract_id !== '') {
+          return String(claim.contract_id) === pid;
+        }
+        const ids = Array.isArray(claim?.reservation_ids) ? claim.reservation_ids : [];
+        return ids.some(id => soldIds.has(String(id)));
+      });
+    });
+
+    const filteredUnclaimedUnits = computed(() => {
+      const list = unclaimedUnits.value;
       const q = searchTerm.value.trim().toLowerCase();
-      return projectCandidates.value.filter(c => {
-        const unit = (c.unit_number || '').toLowerCase();
-        const id = String(c.reservation_id || '');
-        return unit.includes(q) || id.includes(q);
+      if (!q) return list;
+      return list.filter(u => {
+        const unit = String(u.unit_number || u.unit_name || '').toLowerCase();
+        const reservation = String(u.reservation_id || '');
+        return unit.includes(q) || reservation.includes(q);
       });
     });
 
-    const selectableCandidates = computed(() =>
-      filteredCandidates.value.filter(c => !c.has_claim_file)
-    );
+    const selectableUnits = computed(() => filteredUnclaimedUnits.value);
 
     const allVisibleSelected = computed(() => {
-      if (selectableCandidates.value.length === 0) return false;
-      return selectableCandidates.value.every(c => selectedIds.value.includes(c.reservation_id));
+      if (selectableUnits.value.length === 0) return false;
+      return selectableUnits.value.every(u => selectedIds.value.includes(u.reservation_id));
     });
 
     const someVisibleSelected = computed(() =>
-      selectableCandidates.value.some(c => selectedIds.value.includes(c.reservation_id))
+      selectableUnits.value.some(u => selectedIds.value.includes(u.reservation_id))
     );
 
-    const canSubmit = computed(() => {
-      if (selectedIds.value.length === 0) return false;
-      if (mode.value === 'combined' && selectedIds.value.length < 2) return false;
-      return true;
-    });
+    const canSubmit = computed(() => selectedIds.value.length > 0);
 
-    function isSelected(candidate) {
-      return selectedIds.value.includes(candidate.reservation_id);
+    function isSelected(unit) {
+      return selectedIds.value.includes(unit.reservation_id);
     }
 
-    function toggleCandidate(candidate) {
-      bulkResult.value = null;
-      const idx = selectedIds.value.indexOf(candidate.reservation_id);
-      if (idx >= 0) {
-        selectedIds.value.splice(idx, 1);
-      } else {
-        selectedIds.value.push(candidate.reservation_id);
-      }
+    function toggleCandidate(unit) {
+      const id = unit.reservation_id;
+      const idx = selectedIds.value.indexOf(id);
+      if (idx >= 0) selectedIds.value.splice(idx, 1);
+      else selectedIds.value.push(id);
     }
 
     function toggleSelectAll() {
-      bulkResult.value = null;
-      const selectable = selectableCandidates.value;
       if (allVisibleSelected.value) {
-        const visibleIds = new Set(selectable.map(c => c.reservation_id));
+        const visibleIds = new Set(selectableUnits.value.map(u => u.reservation_id));
         selectedIds.value = selectedIds.value.filter(id => !visibleIds.has(id));
       } else {
         const current = new Set(selectedIds.value);
-        selectable.forEach(c => current.add(c.reservation_id));
+        selectableUnits.value.forEach(u => current.add(u.reservation_id));
         selectedIds.value = [...current];
       }
     }
 
-    async function loadCandidates() {
-      isLoadingCandidates.value = true;
-      claimFilesForbidden.value = false;
-      const pid = projectId.value;
+    async function loadSoldUnits() {
+      isLoadingUnits.value = true;
       try {
-        // We call candidates API as requested by the user for contract_id filter
-        const params = { per_page: 500 };
+        const pid = projectId.value;
+        const params = {};
+        if (pid) params.contract_id = pid;
+        const units = await accountingService.getClaimFileSoldUnits(params);
+        soldUnits.value = Array.isArray(units) ? units : [];
+      } catch (error) {
+        logger.error('Error loading sold units', error);
+        soldUnits.value = [];
+        showApiError(error, 'حدث خطأ أثناء تحميل الوحدات المباعة');
+      } finally {
+        isLoadingUnits.value = false;
+      }
+    }
+
+    async function loadClaimFiles() {
+      isLoadingClaimFiles.value = true;
+      try {
+        const pid = projectId.value;
+        const params = {};
         if (pid) {
           params.contract_id = pid;
-          candidatesRequestedWithContractId.value = true;
-        } else {
-          candidatesRequestedWithContractId.value = false;
+          params.project_id = pid;
         }
-
-        const res = await accountingService.getClaimFileCandidates(params);
-        claimFilesForbidden.value = !!res?.forbidden;
-        
-        // Handle both {items, total} and raw array
-        const rawItems = res?.items ?? (Array.isArray(res) ? res : []);
-        candidates.value = rawItems;
-
-        // Optionally supplement with soldUnits if candidates is empty or for full status
-        if (pid && candidates.value.length === 0) {
-          const units = await accountingService.getClaimFileSoldUnits(pid);
-          soldUnits.value = Array.isArray(units) ? [...units] : [];
-        } else {
-          soldUnits.value = [];
-        }
+        const res = await accountingService.getClaimFiles(params);
+        claimFiles.value = Array.isArray(res?.items) ? res.items : [];
       } catch (error) {
-        logger.error('Error loading claim file units', error);
-        candidates.value = [];
-        showApiError(error, '\u062d\u062f\u062b \u062e\u0637\u0623 \u0623\u062b\u0646\u0627\u0621 \u062a\u062d\u0645\u064a\u0644 \u0627\u0644\u0648\u062d\u062f\u0627\u062a');
+        logger.error('Error loading claim files', error);
+        claimFiles.value = [];
+        showApiError(error, 'حدث خطأ أثناء تحميل ملفات المطالبة');
       } finally {
-        isLoadingCandidates.value = false;
+        isLoadingClaimFiles.value = false;
       }
+    }
+
+    async function refreshAll() {
+      await Promise.all([loadSoldUnits(), loadClaimFiles()]);
     }
 
     async function openDownload(row) {
@@ -361,60 +378,89 @@ export default {
       isDownloading.value = rid;
       try {
         await accountingService.openClaimFileDownload(rid);
-      } catch (_e) {
-        showApiError(_e, 'فشل تحميل ملف المطالبة');
+      } catch (error) {
+        showApiError(error, 'فشل تحميل ملف المطالبة');
       } finally {
         isDownloading.value = null;
       }
     }
 
+    function toAbsoluteFileUrl(rawUrl) {
+      if (!rawUrl) return '';
+      const url = String(rawUrl).trim();
+      if (!url) return '';
+      if (url.startsWith('http://') || url.startsWith('https://')) return url;
+      const baseUrl = String(import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+      return `${baseUrl}/${url.replace(/^\//, '')}`;
+    }
+
     async function handleSubmit() {
       if (!canSubmit.value) return;
       isSubmitting.value = true;
-      bulkResult.value = null;
       try {
-        if (mode.value === 'combined') {
-          const result = await creditService.createCombinedClaimFile({
-            booking_ids: [...selectedIds.value],
-            claim_type: 'commission',
-            notes: notes.value.trim() || undefined,
-          });
-          const fileId = result?.id ?? '';
-          toast.success(
-            fileId ? `تم إنشاء ملف المطالبة المجمّع رقم ${fileId}` : 'تم إنشاء ملف المطالبة المجمّع بنجاح'
-          );
-          selectedIds.value = [];
-          await loadCandidates();
-        } else {
-          const result = await creditService.generateBulkClaimFiles({
-            reservation_ids: [...selectedIds.value],
-          });
-          const created = result?.created ?? {};
-          const errors = result?.errors ?? {};
-          const createdCount = Object.keys(created).length;
-          const errorCount = Object.keys(errors).length;
-          bulkResult.value = {
-            createdCount,
-            errorCount,
-            errors,
-          };
-          if (createdCount > 0 && errorCount === 0) {
-            toast.success(`تم إنشاء ${createdCount} ملف مطالبة بنجاح`);
-            selectedIds.value = [];
-            await loadCandidates();
-          } else if (createdCount > 0) {
-            toast.warning(`تم إنشاء ${createdCount} ملف، فشل ${errorCount}`);
-            selectedIds.value = selectedIds.value.filter(id => !(id in created));
-          } else {
-            toast.error('فشل إنشاء ملفات المطالبة');
-          }
-        }
+        const result = await accountingService.createCombinedClaimFile({
+          booking_ids: [...selectedIds.value],
+          claim_type: 'commission',
+          notes: notes.value.trim() || undefined,
+          contract_id: projectId.value || undefined,
+        });
+
+        const fileId = result?.id ?? '';
+        toast.success(fileId ? `تم إنشاء ملف المطالبة رقم ${fileId}` : 'تم إنشاء ملف المطالبة بنجاح');
+        selectedIds.value = [];
+        notes.value = '';
+        activeTab.value = 'claimed';
+        await refreshAll();
       } catch (error) {
-        logger.error('Error creating claim file(s)', error);
-        showApiError(error, 'حدث خطأ أثناء إنشاء ملف/ملفات المطالبة');
+        logger.error('Error creating claim file', error);
+        showApiError(error, 'حدث خطأ أثناء إنشاء ملف المطالبة');
       } finally {
         isSubmitting.value = false;
       }
+    }
+
+    async function markCommissionReceived(claim) {
+      if (!claim?.id || claim.status === 'completed') return;
+      updatingClaimId.value = claim.id;
+      try {
+        await accountingService.updateClaimFileStatus(claim.id, 'completed');
+        toast.success('تم تحديث حالة ملف المطالبة بنجاح');
+        await loadClaimFiles();
+      } catch (error) {
+        logger.error('Error updating claim file status', error);
+        showApiError(error, 'حدث خطأ أثناء تحديث حالة ملف المطالبة');
+      } finally {
+        updatingClaimId.value = null;
+      }
+    }
+
+    async function sendClaimFileToDeveloper(claimFileId) {
+      if (!claimFileId) return;
+      sendingClaimId.value = claimFileId;
+      try {
+        const res = await accountingService.generateClaimFilePdf(claimFileId);
+        const fileUrl = toAbsoluteFileUrl(res?.download_url || res?.pdf_path || res?.url);
+        if (fileUrl) {
+          window.open(fileUrl, '_blank', 'noopener,noreferrer');
+        }
+        toast.success('تم إرسال ملف المطالبة للمطور بنجاح');
+      } catch (error) {
+        logger.error('Error sending claim file to developer', error);
+        showApiError(error, 'حدث خطأ أثناء إرسال ملف المطالبة للمطور');
+      } finally {
+        sendingClaimId.value = null;
+      }
+    }
+
+    function formatClaimUnits(claim) {
+      const ids = Array.isArray(claim?.reservation_ids) ? claim.reservation_ids : [];
+      if (!ids.length) return '—';
+      return ids
+        .map(id => {
+          const row = reservationIdToUnit.value.get(String(id));
+          return row?.unit_number || `حجز ${id}`;
+        })
+        .join('، ');
     }
 
     const goBack = () => {
@@ -443,27 +489,37 @@ export default {
       const projId = projectId.value;
       if (!devId || !projId) return;
       try {
-        const raw = await contractService.getDeveloperDetail(devId);
+        let raw;
+        if (devId.includes('@')) {
+          const emailRes = await contractService.getDeveloperContractsByEmail(devId);
+          if (emailRes?.developer) {
+            raw = emailRes.developer;
+          } else if (Array.isArray(emailRes) && emailRes.length > 0 && emailRes[0].developer) {
+            raw = emailRes[0].developer;
+          } else {
+            raw = await contractService.getDeveloperDetail(devId);
+          }
+        } else {
+          raw = await contractService.getDeveloperDetail(devId);
+        }
+
         if (raw && typeof raw === 'object') {
           developer.value = normalizeDeveloper(raw);
           developerName.value = developer.value?.name || '';
           const list = Array.isArray(raw.projects) ? raw.projects : [];
           const found =
-            list.find(
-              p => String(p.contract_id ?? p.id) === String(projId)
-            ) ||
+            list.find(p => String(p.contract_id ?? p.id) === String(projId)) ||
             list.find(p => String(p.id) === String(projId));
           if (found) {
             project.value = found;
-            projectName.value =
-              found.project_name || found.name || found.title || 'المشروع';
+            projectName.value = found.project_name || found.name || found.title || 'المشروع';
           } else {
             projectName.value = 'المشروع';
           }
         }
       } catch (e) {
         logger.error('Failed to load developer/project for units view', e);
-        if (!projectName.value) projectName.value = '\u0645\u0634\u0631\u0648\u0631\u0639 \u0631\u0642\u0645 ' + projId;
+        if (!projectName.value) projectName.value = 'مشروع رقم ' + projId;
       }
     }
 
@@ -476,7 +532,7 @@ export default {
         projectName.value =
           project.value?.project_name || project.value?.name || project.value?.title || 'المشروع';
       }
-      await loadCandidates();
+      await refreshAll();
     });
 
     watch(
@@ -485,7 +541,7 @@ export default {
         initFromState();
         if (newPid) {
           if (!projectName.value) loadDeveloperAndProject();
-          loadCandidates();
+          refreshAll();
         }
       },
       { immediate: false }
@@ -495,30 +551,32 @@ export default {
       developerName,
       projectName,
       developerDetailRoute,
-      candidates: projectCandidates,
-      filteredCandidates,
-      isLoadingCandidates,
-      claimFilesForbidden,
-      hasClaimFileColumn,
-      isSelectable,
-      isDownloading,
-      openDownload,
+      projectId,
+      activeTab,
       selectedIds,
       notes,
       searchTerm,
-      mode,
-      bulkResult,
       isSubmitting,
-      canSubmit,
+      isLoadingUnits,
+      isLoadingClaimFiles,
+      isDownloading,
+      updatingClaimId,
+      sendingClaimId,
+      filteredUnclaimedUnits,
+      claimFilesForProject,
       allVisibleSelected,
       someVisibleSelected,
+      canSubmit,
+      formatCurrency,
       isSelected,
       toggleCandidate,
       toggleSelectAll,
-      formatCurrency,
+      openDownload,
       handleSubmit,
+      markCommissionReceived,
+      sendClaimFileToDeveloper,
+      formatClaimUnits,
       goBack,
-      projectId,
     };
   },
 };

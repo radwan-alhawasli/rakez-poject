@@ -282,3 +282,43 @@
     font-size: 20px;
   }
 }
+
+/* ── Commission Mini Tracker ── */
+.card-commission-mini {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: rgba(30, 58, 95, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(181, 169, 154, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tracker-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-gold-dark, #9a8d7d);
+}
+
+.tracker-steps-mini {
+  display: flex;
+  gap: 4px;
+}
+
+.step-mini {
+  flex: 1;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  transition: background 0.3s ease;
+}
+
+.step-mini.completed {
+  background: var(--color-gold, #b5a99a);
+}
+
+.step-mini.completed:last-child {
+  background: #0f766e; /* Success color for final step */
+}
+

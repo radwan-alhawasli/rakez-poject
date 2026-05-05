@@ -19,6 +19,21 @@ function cleanQueryParams(params = {}) {
 }
 
 /**
+ * Normalize list responses.
+ * @param {import('axios').AxiosResponse} response
+ * @returns {unknown[]}
+ */
+function listFromResponse(response) {
+  const { items } = extractPaginatedData(response, []);
+  if (Array.isArray(items) && items.length) return items;
+  const raw = response?.data;
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw?.data)) return raw.data;
+  if (Array.isArray(raw?.items)) return raw.items;
+  return [];
+}
+
+/**
  * Normalize single-resource responses.
  * @param {import('axios').AxiosResponse} response
  * @returns {unknown}
@@ -157,6 +172,68 @@ export async function deleteAdminDistrict(districtId) {
   }
 }
 
+// ——— Order Marketing Developers: GET /admin/order-marketing-developers, GET /admin/order-marketing-developers/:id ———
+
+export async function listAdminOrderMarketingDevelopers() {
+  try {
+    const r = await apiClient.get('/admin/order-marketing-developers');
+    return listFromResponse(r);
+  } catch (error) {
+    return handleServiceError(error, 'List admin order marketing developers', 'get', []);
+  }
+}
+
+/**
+ * @param {string|number} id
+ */
+export async function getAdminOrderMarketingDeveloper(id) {
+  try {
+    const r = await apiClient.get(`/admin/order-marketing-developers/${id}`);
+    return oneFromResponse(r);
+  } catch (error) {
+    return handleServiceError(error, 'Get admin order marketing developer', 'get', null);
+  }
+}
+
+/**
+ * Update approval status for order marketing developer request.
+ * Endpoint: /admin/order-marketing-developers/:id/status
+ * Backend method/payload can vary, so we try common combinations.
+ * @param {string|number} id
+ * @param {boolean} isApproved
+ */
+export async function updateAdminOrderMarketingDeveloperStatus(id, isApproved) {
+  const endpoint = `/admin/order-marketing-developers/${id}/status`;
+  const payloads = [
+    { status: isApproved ? 1 : 0 },
+    { status: isApproved ? 'approved' : 'pending' },
+    { approved: isApproved },
+    { is_approved: isApproved ? 1 : 0 },
+  ];
+  const methods = ['patch', 'put', 'post'];
+
+  for (const method of methods) {
+    for (const payload of payloads) {
+      try {
+        let response;
+        if (method === 'patch') response = await apiClient.patch(endpoint, payload);
+        else if (method === 'put') response = await apiClient.put(endpoint, payload);
+        else response = await apiClient.post(endpoint, payload);
+        return response?.data?.data ?? response?.data ?? {};
+      } catch (_error) {
+        // try next combination
+      }
+    }
+  }
+
+  return handleServiceError(
+    new Error('Unable to update order marketing developer status'),
+    'Update admin order marketing developer status',
+    'patch',
+    null
+  );
+}
+
 const adminLocationsService = {
   listAdminCities,
   createAdminCity,
@@ -168,6 +245,9 @@ const adminLocationsService = {
   getAdminDistrict,
   updateAdminDistrict,
   deleteAdminDistrict,
+  listAdminOrderMarketingDevelopers,
+  getAdminOrderMarketingDeveloper,
+  updateAdminOrderMarketingDeveloperStatus,
 };
 
 export default adminLocationsService;

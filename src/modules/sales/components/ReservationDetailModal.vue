@@ -91,6 +91,17 @@
             </div>
           </section>
 
+          <section v-if="item.trace" class="detail-section">
+            <h4 class="detail-section-title">تتبع العمولات</h4>
+            <div class="commission-tracker">
+              <UiStepper
+                :steps="commissionSteps"
+                :model-value="currentStepIndex"
+                completed-label="تم"
+              />
+            </div>
+          </section>
+
           <section class="detail-section detail-section--last">
             <h4 class="detail-section-title">المسوق</h4>
             <dl class="detail-dl">
@@ -107,7 +118,9 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { useFormatters } from '@/composables/useFormatters';
+import UiStepper from '@/components/ui/Stepper.vue';
 import {
   downPaymentStatusLabel,
   nationalityLabel,
@@ -116,7 +129,7 @@ import {
   reservationTypeLabel,
 } from '@/utils/reservationDisplayLabels';
 
-defineProps({
+const props = defineProps({
   item: {
     type: Object,
     required: true,
@@ -126,6 +139,30 @@ defineProps({
 const emit = defineEmits(['close']);
 
 const { formatDate, formatNumber } = useFormatters();
+
+/** Commission tracker steps mapping */
+const commissionSteps = computed(() => {
+  const t = props.item.trace || {};
+  return [
+    { name: '\u0631\u0641\u0639 \u0627\u0644\u0645\u0637\u0627\u0644\u0628\u0629', status: t.has_claim_file ? 'completed' : 'pending' },
+    { name: '\u062a\u0645 \u0627\u0644\u062a\u062d\u0648\u064a\u0644 \u0645\u0646 \u0627\u0644\u0645\u0637\u0648\u0631', status: t.claim_file_completed ? 'completed' : 'pending' },
+    { name: '\u062a\u0645 \u062a\u0648\u0632\u064a\u0639 \u0627\u0644\u0646\u0633\u0628', status: t.has_commission ? 'completed' : 'pending' },
+    { name: '\u062a\u0645 \u0627\u0644\u062a\u062d\u0648\u064a\u0644 \u0625\u0644\u0649 \u062d\u0633\u0627\u0628\u064a', status: t.distribution_approved ? 'completed' : 'pending' },
+  ];
+});
+
+/** Active step index (last completed or current pending) */
+const currentStepIndex = computed(() => {
+  const t = props.item.trace || {};
+  if (t.distribution_approved) return 3;
+  if (t.has_commission) return 3;
+  if (t.claim_file_completed) return 2;
+  if (t.has_claim_file) return 1;
+  return 0;
+});
 </script>
 
+
 <style src="./styles/ReservationDetailModal.css"></style>
+
+

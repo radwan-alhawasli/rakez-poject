@@ -1,5 +1,6 @@
 import { ref, computed, watch, shallowRef } from 'vue';
 import hrService from '@/services/hrService';
+import teamService from '@/services/teamService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
 import { useFormatters } from '@/composables/useFormatters';
@@ -119,18 +120,44 @@ export function useHRTeams(_isHR) {
     if (team.id == null) return;
     isLoadingMarketers.value = true;
     try {
-      const membersList = await hrService.getHRTeamMembers(team.id);
+      const [membersList, groups] = await Promise.all([
+        hrService.getHRTeamMembers(team.id),
+        teamService.getTeamGroups({ team_id: team.id }),
+      ]);
       const list = Array.isArray(membersList) ? membersList : [];
-      const names = list
-        .map((/** @type {any} */ m) => {
-          if (typeof m === 'string') return m.trim() || null;
-          return memberName(m) || (m?.id != null ? String(m.id) : null) || null;
+      const groupList = Array.isArray(groups) ? groups : [];
+      const groupPairs = await Promise.all(
+        groupList.map(async g => {
+          const gid = g?.id ?? g?.team_group_id ?? g?.group_id;
+          if (!gid) return { gid: null, label: '', ids: [] };
+          const m = await teamService.getTeamGroupMembers(gid);
+          const ids = (Array.isArray(m) ? m : [])
+            .map(x => String(x?.user_id ?? x?.id ?? x?.user?.id ?? ''))
+            .filter(Boolean);
+          return {
+            gid,
+            label: g?.name || g?.group_name || `#${gid}`,
+            ids,
+          };
         })
-        .filter(Boolean);
-      teamMarketers.value = names;
+      );
+      const groupByUser = new Map();
+      groupPairs.forEach(g => g.ids.forEach(uid => groupByUser.set(uid, g.label)));
+      const marketerRows = list.map((/** @type {any} */ m) => {
+        const uid = String(m?.user_id ?? m?.id ?? m?.user?.id ?? '');
+        return {
+          ...m,
+          __name: memberName(m) || uid,
+          __groupLabel: groupByUser.get(uid) || null,
+        };
+      });
+      teamMarketers.value =
+        marketerRows.length > 0
+          ? marketerRows
+          : (Array.isArray(team?.members) ? team.members : []).map(m => ({ __name: memberName(m), __groupLabel: null }));
     } catch (err) {
       logger.error('Error loading team marketers:', err);
-      teamMarketers.value = [];
+      teamMarketers.value = (Array.isArray(team?.members) ? team.members : []).map(m => ({ __name: memberName(m), __groupLabel: null }));
     } finally {
       isLoadingMarketers.value = false;
     }
@@ -275,6 +302,10 @@ export function useHRTeams(_isHR) {
           locations: locationsStr,
           goalProgress: team.goal_progress ?? 0,
           members: Array.isArray(members) ? members : [],
+          groups: Array.isArray(team.groups) ? team.groups : [],
+          groupsCount: Number(
+            team.groups_count ?? team.team_groups_count ?? (Array.isArray(team.groups) ? team.groups.length : 0)
+          ) || 0,
           color: team.color || '#B1A28F',
         };
       });
@@ -287,6 +318,7 @@ export function useHRTeams(_isHR) {
           hrService.getTeamSalesAverage(team.id),
           hrService.getTeamContractLocations(team.id),
           hrService.getHRTeamMembers(team.id),
+          teamService.getTeamGroups({ team_id: team.id }),
         ]);
 
         if (teamsLoadId.value !== currentLoadId) return;
@@ -295,6 +327,7 @@ export function useHRTeams(_isHR) {
         const salesAvg = results[1].status === 'fulfilled' ? results[1].value : {};
         const locations = results[2].status === 'fulfilled' ? results[2].value : [];
         const membersList = results[3].status === 'fulfilled' ? results[3].value : [];
+        const groupsList = results[4].status === 'fulfilled' ? results[4].value : [];
 
         const contractsArray = Array.isArray(contracts) ? contracts : contracts?.data || [];
         const avgValue =
@@ -310,6 +343,12 @@ export function useHRTeams(_isHR) {
 
         const memberNames = Array.isArray(membersList)
           ? membersList.map((/** @type {any} */ m) => memberName(m) || String(m?.id ?? '')).filter(Boolean)
+          : [];
+        const mappedGroups = Array.isArray(groupsList)
+          ? groupsList.map((/** @type {any} */ g) => ({
+              id: g?.id ?? g?.team_group_id ?? g?.group_id,
+              name: g?.name || g?.group_name || `Group #${g?.id ?? g?.team_group_id ?? g?.group_id}`,
+            }))
           : [];
 
         const current = (/** @type {any[]} */ (teamsData.value))[index];
@@ -327,6 +366,8 @@ export function useHRTeams(_isHR) {
           salesAverage: avgValue,
           salesAverageFormatted: formatSalesAverage(avgValue),
           locations: locationsText,
+          groups: mappedGroups,
+          groupsCount: mappedGroups.length,
           members:
             Array.isArray(memberNames) && memberNames.length
               ? memberNames
