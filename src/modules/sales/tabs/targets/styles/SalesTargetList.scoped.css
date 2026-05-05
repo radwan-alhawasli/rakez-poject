@@ -262,8 +262,20 @@
   font-weight: 500;
 }
 
+.target-type {
+  margin: 0 0 7px;
+  font-size: 0.8rem;
+  color: #475569;
+  font-weight: 700;
+}
+
 .target-assigned-units {
   margin-top: 2px;
+}
+
+.target-assigned-meta {
+  margin-top: 4px;
+  font-size: 0.78rem;
 }
 
 .target-value-block {
@@ -454,16 +466,17 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  opacity: 0.95;
 }
 
 .btn-status-toggle {
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: 8px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(39, 55, 77, 0.15);
+  border: 1px solid rgba(39, 55, 77, 0.12);
   background: #fff;
   color: #64748b;
 }
