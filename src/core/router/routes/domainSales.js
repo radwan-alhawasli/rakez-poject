@@ -3,7 +3,7 @@
  * @module core/router/routes/domainSales
  */
 
-import { ROLE_SALES, ROLE_SALES_LEADER } from '@/constants/roles';
+import { ROLE_ADMIN, ROLE_SALES, ROLE_SALES_LEADER } from '@/constants/roles';
 import { PERMISSIONS } from '@/constants/permissions';
 
 export default {
@@ -16,6 +16,18 @@ export default {
     { path: 'targets', name: 'SalesTargets', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_TARGETS_VIEW] } },
     { path: 'projects', name: 'SalesProjects', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_PROJECTS_VIEW] } },
     { path: 'unit-search', name: 'SalesUnitSearch', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_PROJECTS_VIEW] } },
+    {
+      path: 'unit-requests',
+      name: 'SalesUnitRequests',
+      component: () => import('@/modules/sales/views/SalesViewExtended.vue'),
+      meta: { roles: [ROLE_ADMIN, ROLE_SALES, ROLE_SALES_LEADER] },
+    },
+    {
+      path: 'unit-requests/:alertId',
+      name: 'SalesUnitRequestDetail',
+      component: () => import('@/modules/sales/views/SalesViewExtended.vue'),
+      meta: { roles: [ROLE_ADMIN, ROLE_SALES, ROLE_SALES_LEADER] },
+    },
     { path: 'reservations', name: 'SalesReservations', component: () => import('@/modules/sales/views/ReservationsView.vue'), meta: { permissions: [PERMISSIONS.SALES_RESERVATIONS_VIEW] } },
     { path: 'attendance', name: 'SalesAttendance', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_ATTENDANCE_VIEW] } },
     { path: 'negotiations', name: 'SalesNegotiations', redirect: { name: 'SalesReservations' } },

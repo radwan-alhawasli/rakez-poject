@@ -129,6 +129,7 @@ const salesItems = [
   { ...COMMON_ITEMS.tasks },
   { to: '/sales/projects', label: 'المشاريع', tooltip: 'المشاريع', icon: ICONS.projects, permission: 'sales.projects.view' },
   { to: '/sales/unit-search', label: 'بحث الوحدات', tooltip: 'بحث الوحدات', icon: ICONS.search, permission: 'sales.projects.view' },
+  { to: '/sales/unit-requests', label: 'طلب وحدات', tooltip: 'طلب وحدات', icon: ICONS.notifications, permission: 'sales.search_alerts.view' },
   { to: '/sales/reservations', label: 'الحجوزات', tooltip: 'الحجوزات', icon: ICONS.calendar, permission: 'sales.reservations.view' },
   {
     to: '/sales/targets',
