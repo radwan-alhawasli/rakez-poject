@@ -98,23 +98,37 @@
               <div class="card full">
                 <div class="card-title">آخر وحدة مطابقة</div>
                 <div class="state-text">{{ matchedUnitText(alert) }}</div>
+                <div v-if="String(alert.status || '').toLowerCase() === 'matched'" class="hint">
+                  توفرت وحدة مطابقة لهذا الطلب.
+                </div>
               </div>
 
               <div class="card full">
-                <div class="card-title">deliveries (SMS)</div>
+                <div class="card-title">سجل الإشعارات (داخلي / SMS)</div>
                 <div v-if="deliveries.length === 0" class="state-text muted">لا يوجد</div>
                 <div v-else class="deliveries">
                   <div v-for="(d, idx) in deliveries" :key="idx" class="delivery-row">
                     <div class="delivery-main">
-                      <span class="pill">{{ String(d.status ?? d.state ?? d.delivery_status ?? 'unknown') }}</span>
+                      <span class="pill pill-type">{{ deliveryTypeLabel(d.type ?? d.channel ?? d.delivery_type) }}</span>
+                      <span class="pill" :class="deliveryStatusClass(d.status ?? d.state ?? d.delivery_status)">
+                        {{ deliveryStatusLabel(d.status ?? d.state ?? d.delivery_status) }}
+                      </span>
                       <span class="mono muted">{{ fmtDate(d.created_at ?? d.sent_at ?? d.updated_at) }}</span>
                     </div>
                     <div class="delivery-sub mono muted">
-                      {{ d.to ? `to: ${d.to}` : '' }}{{ d.provider ? ` • provider: ${d.provider}` : '' }}
+                      <span v-if="d.to">to: {{ d.to }}</span>
+                      <span v-if="d.provider"> • provider: {{ d.provider }}</span>
+                    </div>
+                    <div v-if="skipReasonLabel(d.skip_reason ?? d.reason)" class="delivery-skip">
+                      <span class="pill pill-skip">تم التخطي</span>
+                      <span class="muted">{{ skipReasonLabel(d.skip_reason ?? d.reason) }}</span>
+                    </div>
+                    <div v-if="shouldShowFailedHint(d)" class="delivery-failed muted">
+                      فشل إرسال الرسالة. (لا يتم عرض تفاصيل تقنية)
                     </div>
                   </div>
                   <div class="hint">
-                    هذه حالة فرعية (deliveries) ولا تعتبر المعيار الأساسي لنجاح التنبيه.
+                    الإشعار الداخلي هو مصدر الحقيقة. SMS اختياري ومعلومة فرعية.
                   </div>
                 </div>
               </div>
@@ -152,6 +166,54 @@ const deliveries = computed(() => {
 
 const smsOptIn = computed(() => Boolean(props.alert?.client_sms_opt_in));
 const smsLocale = computed(() => (props.alert?.client_sms_locale ? String(props.alert.client_sms_locale) : ''));
+
+function deliveryTypeLabel(type) {
+  const t = String(type || '').toLowerCase();
+  if (t === 'system_notification' || t === 'internal' || t === 'in_app') return 'إشعار داخلي';
+  if (t === 'sms' || t.includes('twilio')) return 'رسالة SMS';
+  return type ? String(type) : '—';
+}
+
+function deliveryStatusLabel(status) {
+  const s = String(status || '').toLowerCase();
+  if (s === 'pending' || s === 'processing') return 'قيد المعالجة';
+  if (s === 'sent' || s === 'delivered') return 'تم الإرسال';
+  if (s === 'skipped') return 'تم التخطي';
+  if (s === 'failed' || s === 'error') return 'فشل';
+  return status ? String(status) : '—';
+}
+
+function deliveryStatusClass(status) {
+  const s = String(status || '').toLowerCase();
+  if (s === 'sent' || s === 'delivered') return 'pill-sent';
+  if (s === 'pending' || s === 'processing') return 'pill-pending';
+  if (s === 'skipped') return 'pill-skipped';
+  if (s === 'failed' || s === 'error') return 'pill-failed';
+  return '';
+}
+
+function skipReasonLabel(reason) {
+  const r = String(reason || '').toLowerCase();
+  if (!r) return '';
+  const map = {
+    sms_disabled: 'SMS غير مفعّل حالياً',
+    twilio_not_configured: 'خدمة SMS غير متوفرة',
+    sms_opt_in_missing: 'العميل لم يوافق على استقبال SMS',
+    invalid_phone: 'رقم الهاتف غير صحيح',
+    outside_sms_sending_window: 'خارج نافذة الإرسال المسموح بها',
+    sms_throttled: 'تم إرسال SMS مؤخراً لهذا التنبيه',
+    unit_not_available: 'الوحدة لم تعد متاحة عند محاولة الإرسال',
+    alert_deleted: 'التنبيه تم حذفه',
+    alert_cancelled: 'التنبيه ملغى',
+    alert_expired: 'التنبيه منتهي الصلاحية',
+  };
+  return map[r] ?? String(reason);
+}
+
+function shouldShowFailedHint(d) {
+  const s = String(d?.status ?? d?.state ?? d?.delivery_status ?? '').toLowerCase();
+  return s === 'failed' || s === 'error';
+}
 
 function statusAr(status) {
   const map = {
@@ -432,6 +494,45 @@ function matchedUnitText(a) {
   background: rgba(148, 163, 184, 0.18);
 }
 
+.pill-type {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.22);
+  color: #1d4ed8;
+}
+
+.pill-pending {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.22);
+  color: #92400e;
+}
+
+.pill-sent {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.22);
+  color: #047857;
+}
+
+.pill-skipped,
+.pill-skip {
+  background: rgba(148, 163, 184, 0.16);
+  border-color: rgba(148, 163, 184, 0.22);
+  color: #334155;
+}
+
+.pill-failed {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.22);
+  color: #b91c1c;
+}
+
+.delivery-skip,
+.delivery-failed {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .status-row {
   display: flex;
   align-items: center;
@@ -556,4 +657,3 @@ function matchedUnitText(a) {
   }
 }
 </style>
-

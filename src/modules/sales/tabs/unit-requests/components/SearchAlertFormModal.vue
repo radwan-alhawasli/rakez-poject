@@ -335,12 +335,48 @@ function loadDefaults() {
   resetErrors({});
 }
 
+function applyPrefillFromInitial() {
+  if (!props.initial || typeof props.initial !== 'object') return;
+  const a = props.initial;
+
+  if (a.client_name != null) form.client_name = a.client_name ?? '';
+  if (a.client_mobile != null) form.client_mobile = a.client_mobile ?? '';
+  if (a.client_email != null) form.client_email = a.client_email ?? '';
+  if (a.client_sms_opt_in != null) form.client_sms_opt_in = Boolean(a.client_sms_opt_in);
+  if (a.client_sms_locale != null) form.client_sms_locale = a.client_sms_locale ?? '';
+
+  const keys = [
+    'city_id',
+    'district_id',
+    'project_id',
+    'unit_type',
+    'floor',
+    'min_price',
+    'max_price',
+    'min_area',
+    'max_area',
+    'min_bedrooms',
+    'max_bedrooms',
+    'query_text',
+    'status',
+    'expires_at',
+  ];
+  for (const k of keys) {
+    if (a[k] == null) continue;
+    form[k] = a[k];
+  }
+}
+
 watch(
   () => props.open,
   isOpen => {
     if (!isOpen) return;
-    if (props.mode === 'edit') loadFromInitial();
-    else loadDefaults();
+    if (props.mode === 'edit') {
+      loadFromInitial();
+      return;
+    }
+    loadDefaults();
+    applyPrefillFromInitial();
   }
 );
 
@@ -464,6 +500,41 @@ async function submit() {
   if (!String(form.client_mobile || '').trim()) {
     errors.client_mobile = 'رقم الجوال مطلوب';
     return;
+  }
+
+  const toNum = v => (v === '' || v == null ? null : Number(v));
+  const minPrice = toNum(form.min_price);
+  const maxPrice = toNum(form.max_price);
+  const minArea = toNum(form.min_area);
+  const maxArea = toNum(form.max_area);
+  const minBedrooms = toNum(form.min_bedrooms);
+  const maxBedrooms = toNum(form.max_bedrooms);
+
+  if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
+    errors.min_price = 'يجب أن يكون الحد الأدنى أقل من أو يساوي الحد الأعلى';
+    errors.max_price = 'يجب أن يكون الحد الأعلى أكبر من أو يساوي الحد الأدنى';
+    return;
+  }
+  if (minArea != null && maxArea != null && minArea > maxArea) {
+    errors.min_area = 'يجب أن يكون الحد الأدنى أقل من أو يساوي الحد الأعلى';
+    errors.max_area = 'يجب أن يكون الحد الأعلى أكبر من أو يساوي الحد الأدنى';
+    return;
+  }
+  if (minBedrooms != null && maxBedrooms != null && minBedrooms > maxBedrooms) {
+    errors.min_bedrooms = 'يجب أن يكون الحد الأدنى أقل من أو يساوي الحد الأعلى';
+    errors.max_bedrooms = 'يجب أن يكون الحد الأعلى أكبر من أو يساوي الحد الأدنى';
+    return;
+  }
+
+  if (form.expires_at) {
+    const ex = new Date(String(form.expires_at));
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const expiresDay = new Date(ex.getFullYear(), ex.getMonth(), ex.getDate());
+    if (Number.isNaN(expiresDay.getTime()) || expiresDay <= today) {
+      errors.expires_at = 'يجب أن يكون تاريخ الانتهاء في المستقبل';
+      return;
+    }
   }
 
   const setErrors = next => resetErrors(next);

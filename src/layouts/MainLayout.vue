@@ -27,6 +27,7 @@
         @toggle-notifications="toggleNotifications"
         @mark-as-read="markAsRead"
         @mark-all-read="markAllAsRead"
+        @item-click="handleNotificationItemClick"
       />
     </header>
 

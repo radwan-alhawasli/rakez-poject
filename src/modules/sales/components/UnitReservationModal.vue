@@ -172,7 +172,58 @@
                   <option v-for="n in nationalities" :key="n.value" :value="n.value">{{ n.label }}</option>
                 </select>
               </div>
+          </div>
+
+          <!-- معلومات المشتركين في البيعة (قبل العربون/الدفع) -->
+          <div class="rsv-block">
+            <h3 class="rsv-block-title">معلومات المشتركين في البيعة</h3>
+
+            <div class="rsv-row rsv-row-2">
+              <div class="rsv-field">
+                <label class="rsv-label">عمليتي في البيعة</label>
+                <select v-model="form.my_sale_operation" class="rsv-input">
+                  <option value="">اختر</option>
+                  <option v-for="op in saleOperations" :key="op.value" :value="op.value">{{ op.label }}</option>
+                </select>
+              </div>
+
+              <div class="rsv-field">
+                <label class="rsv-label">المشروع مسند إلى:</label>
+                <div class="rsv-static">{{ contextDisplay.projectTeam }}</div>
+              </div>
             </div>
+
+            <div class="rsv-participants">
+              <div class="rsv-participants-head">
+                <div class="rsv-participants-title">مشاركون آخرون</div>
+                <button type="button" class="rsv-btn-secondary" @click="addParticipantRow">إضافة مشارك</button>
+              </div>
+
+              <div v-if="form.other_sale_participants.length === 0" class="rsv-empty-mini">لا يوجد</div>
+
+              <div v-else class="rsv-participants-list">
+                <div v-for="(row, idx) in form.other_sale_participants" :key="idx" class="rsv-participant-row">
+                  <select v-model="row.employee_id" class="rsv-input">
+                    <option value="">اختر الموظف</option>
+                    <option v-for="e in participantEmployees" :key="e.id" :value="String(e.id)">
+                      {{ e.name }}
+                    </option>
+                  </select>
+
+                  <select v-model="row.operation" class="rsv-input">
+                    <option value="">اختر العملية</option>
+                    <option v-for="op in saleOperations" :key="op.value" :value="op.value">{{ op.label }}</option>
+                  </select>
+
+                  <button type="button" class="rsv-btn-danger" @click="removeParticipantRow(idx)">إزالة</button>
+                </div>
+              </div>
+
+              <div class="rsv-note">
+                ملاحظة: سيتم ربط الإرسال للباك إند عند توفر الحقول/الأسماء النهائية في الـ API.
+              </div>
+            </div>
+          </div>
 
             <!-- قيمة العربون + طريقة الدفع + IBAN -->
             <div class="rsv-row rsv-row-3">
@@ -316,6 +367,10 @@ export default {
       client_mobile: '',
       client_nationality: 'Saudi',
       client_iban: '',
+      // --- Sale participants (UI only for now; see TODO in payload normalizer) ---
+      my_sale_operation: '',
+      /** @type {{ employee_id: string; operation: string }[]} */
+      other_sale_participants: [],
       payment_method: 'bank_transfer',
       down_payment_amount: 0,
       down_payment_status: 'refundable',
@@ -558,6 +613,33 @@ export default {
       return list.map(s => ({ ...s, label: arabicLabel(DOWN_PAYMENT_LABELS, s) }));
     });
 
+    const saleOperations = [
+      { value: 'bring', label: 'جلب' },
+      { value: 'convince', label: 'إقناع' },
+      { value: 'close', label: 'إقفال' },
+      { value: 'half_bring', label: 'نصف جلب' },
+      { value: 'half_convince', label: 'نصف إقناع' },
+      { value: 'half_close', label: 'نصف إقفال' },
+      { value: 'quarter_bring', label: 'ربع جلب' },
+      { value: 'quarter_convince', label: 'ربع إقناع' },
+      { value: 'quarter_close', label: 'ربع إقفال' },
+    ];
+
+    const participantEmployees = computed(() => {
+      const li = props.lookups?.participants_employees;
+      return Array.isArray(li) ? li : [];
+    });
+
+    const addParticipantRow = () => {
+      form.other_sale_participants.push({ employee_id: '', operation: '' });
+    };
+
+    /** @param {number} idx */
+    const removeParticipantRow = (idx) => {
+      if (idx < 0 || idx >= form.other_sale_participants.length) return;
+      form.other_sale_participants.splice(idx, 1);
+    };
+
     function onSubmit() {
       emit('submit', { ...form });
     }
@@ -572,6 +654,10 @@ export default {
       paymentMethods,
       purchaseMechanisms,
       downPaymentStatuses,
+      saleOperations,
+      participantEmployees,
+      addParticipantRow,
+      removeParticipantRow,
       fileName,
       filePreview,
       onFileChange,

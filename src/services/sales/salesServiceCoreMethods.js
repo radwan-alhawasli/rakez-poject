@@ -220,6 +220,7 @@ export const salesServiceCoreMethods = {
    * GET /sales/units/:unitId/reservation-context
    * @param {number|string} unitId - Unit ID
    * @param {any} [params] - اختياري: query مثل include أو with إن دعمها الباكند (مثال: { include: 'teams' })
+   * @todo(api) Ensure reservation-context includes assigned project team + members for "sale participants" UX.
    * @returns {Promise<Object>} Reservation context data
    */
   getReservationContext(unitId, params = {}) {

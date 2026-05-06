@@ -81,7 +81,7 @@
               v-for="notification in notifications"
               :key="notification.id"
               :class="['notification-item', { unread: !notification.read }]"
-              @click="$emit('mark-as-read', notification.id)"
+              @click="$emit('item-click', notification)"
             >
               <div class="notification-icon-bg" :class="notification.type || 'info'">
                 <svg
@@ -165,7 +165,7 @@ const chatBadgeLabel = computed(() => {
   return String(n);
 });
 
-const emit = defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read']);
+const emit = defineEmits(['toggle-notifications', 'mark-as-read', 'mark-all-read', 'item-click']);
 
 const notificationWrapperRef = ref(null);
 const dropdownRef = ref(null);

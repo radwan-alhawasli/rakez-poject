@@ -1,0 +1,175 @@
+import { ref, reactive, computed, watch } from 'vue';
+import salesService from '@/services/salesService';
+import { usePermissions } from '@/composables/usePermissions';
+import { PERMISSIONS } from '@/constants/permissions';
+import { ROLE_ADMIN, ROLE_SALES, ROLE_SALES_LEADER } from '@/constants/roles';
+import { extractPaginatedData } from '@/utils/paginationUtils';
+import { getApiErrorMessage } from '@/utils/errorHandler';
+import { hasRole, isAdmin } from '@/utils/rbac';
+
+/**
+ * Embedded sales: unit search alerts list + detail (no router coupling).
+ * - List (GET), detail (GET), create (POST), patch (PATCH), cancel (DELETE)
+ * - Pagination: page + per_page only
+ * - Status filter: active|paused|matched|cancelled
+ */
+export function useSalesSearchAlertsEmbedded() {
+  const { user, hasPermission } = usePermissions();
+
+  const hasAllowedRole = computed(() => {
+    const u = user.value;
+    if (!u) return false;
+    if (isAdmin(u)) return true;
+    return hasRole(u, [ROLE_ADMIN, ROLE_SALES, ROLE_SALES_LEADER]);
+  });
+
+  const canView = computed(
+    () => hasAllowedRole.value && hasPermission(PERMISSIONS.SALES_SEARCH_ALERTS_VIEW)
+  );
+
+  const list = ref([]);
+  const total = ref(0);
+  const meta = reactive({
+    current_page: 1,
+    last_page: 1,
+    per_page: 20,
+    total: 0,
+  });
+
+  const filters = reactive({
+    status: '',
+    page: 1,
+    per_page: 20,
+  });
+
+  const loadingList = ref(false);
+  const listError = ref('');
+
+  const selectedId = ref('');
+  const loadingDetail = ref(false);
+  const detailError = ref('');
+  const detail = ref(null);
+
+  function normalizeMeta(body) {
+    const data = body?.data ?? body;
+    const m = data?.meta ?? data?.pagination ?? data?.data?.meta ?? data?.data?.pagination ?? {};
+    const current_page = Number(m.current_page ?? m.page ?? filters.page ?? 1) || 1;
+    const per_page = Number(m.per_page ?? filters.per_page ?? 20) || 20;
+    const totalCount = Number(m.total ?? m.total_count ?? total.value ?? 0) || 0;
+    const last_page = Number(m.last_page ?? (per_page ? Math.ceil(totalCount / per_page) : 1)) || 1;
+    meta.current_page = current_page;
+    meta.per_page = per_page;
+    meta.total = totalCount;
+    meta.last_page = last_page;
+  }
+
+  async function fetchList() {
+    if (!canView.value) return;
+    loadingList.value = true;
+    listError.value = '';
+    try {
+      const body = await salesService.listUnitSearchAlerts({
+        page: filters.page,
+        per_page: filters.per_page,
+        status: filters.status || undefined,
+      });
+      const { items, total: t } = extractPaginatedData(body, []);
+      list.value = Array.isArray(items) ? items : [];
+      total.value = t || 0;
+      normalizeMeta(body);
+    } catch (e) {
+      list.value = [];
+      total.value = 0;
+      listError.value = getApiErrorMessage(e, 'تعذر تحميل قائمة التنبيهات');
+    } finally {
+      loadingList.value = false;
+    }
+  }
+
+  async function fetchDetail(id) {
+    if (!canView.value) return;
+    if (!id) return;
+    loadingDetail.value = true;
+    detailError.value = '';
+    try {
+      const data = await salesService.getUnitSearchAlert(id);
+      detail.value = data || null;
+    } catch (e) {
+      detail.value = null;
+      detailError.value = getApiErrorMessage(e, 'تعذر تحميل تفاصيل التنبيه');
+    } finally {
+      loadingDetail.value = false;
+    }
+  }
+
+  function openDetail(id) {
+    selectedId.value = id ? String(id) : '';
+  }
+
+  function closeDetail() {
+    selectedId.value = '';
+    detail.value = null;
+    detailError.value = '';
+  }
+
+  async function createAlert(payload) {
+    const created = await salesService.createUnitSearchAlert(payload);
+    await fetchList();
+    const newId = created?.id ?? created?.alert_id ?? created?.data?.id;
+    if (newId != null) {
+      openDetail(String(newId));
+    }
+    return created;
+  }
+
+  async function patchAlert(alertId, patch) {
+    const updated = await salesService.updateUnitSearchAlert(alertId, patch);
+    await fetchList();
+    await fetchDetail(String(alertId));
+    return updated;
+  }
+
+  async function cancelAlert(alertId) {
+    await salesService.deleteUnitSearchAlert(alertId);
+    closeDetail();
+    await fetchList();
+  }
+
+  watch(
+    () => [filters.status, filters.page, filters.per_page, canView.value],
+    () => {
+      fetchList();
+    },
+    { immediate: true }
+  );
+
+  watch(
+    () => selectedId.value,
+    id => {
+      if (!id) return;
+      fetchDetail(id);
+    }
+  );
+
+  return {
+    canView,
+    filters,
+    list,
+    total,
+    meta,
+    loadingList,
+    listError,
+    selectedId,
+    detail,
+    loadingDetail,
+    detailError,
+    fetchList,
+    fetchDetail,
+    createAlert,
+    patchAlert,
+    cancelAlert,
+    openDetail,
+    closeDetail,
+  };
+}
+

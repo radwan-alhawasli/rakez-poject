@@ -5,7 +5,6 @@
       <SalesTargetsTab v-else-if="activeTab === 'targets'" />
       <SalesProjectsTab v-else-if="activeTab === 'projects'" />
       <SalesUnitSearchTab v-else-if="activeTab === 'unit-search'" />
-      <SalesUnitRequestsTab v-else-if="activeTab === 'unit-requests'" />
 
       <div v-else-if="activeTab === 'reservations' || activeTab === 'negotiations' || activeTab === 'waiting-list'">
         <ReservationsView />
@@ -57,9 +56,6 @@ const SalesSoldUnitsTab = defineAsyncComponent(() =>
 const SalesUnitSearchTab = defineAsyncComponent(() =>
   import('@/modules/sales/tabs/unit-search/SalesUnitSearchTab.vue')
 );
-const SalesUnitRequestsTab = defineAsyncComponent(() =>
-  import('@/modules/sales/tabs/unit-requests/SalesUnitRequestsTab.vue')
-);
 
 export default {
   name: 'SalesViewExtended',
@@ -76,7 +72,6 @@ export default {
     SalesProjectSchedulesTab,
     SalesSoldUnitsTab,
     SalesUnitSearchTab,
-    SalesUnitRequestsTab,
   },
   setup() {
     const { activeTab, visibleTabs, switchTab } = useSalesRouting();

@@ -125,7 +125,6 @@ const salesItems = [
   { ...COMMON_ITEMS.tasks },
   { to: '/sales/projects', label: 'المشاريع', tooltip: 'المشاريع', icon: ICONS.projects, permission: 'sales.projects.view' },
   { to: '/sales/unit-search', label: 'بحث الوحدات', tooltip: 'بحث الوحدات', icon: ICONS.search, permission: 'sales.projects.view' },
-  { to: '/sales/unit-requests', label: 'طلب وحدات', tooltip: 'طلب وحدات', icon: ICONS.notifications, permission: 'sales.search_alerts.view' },
   { to: '/sales/reservations', label: 'الحجوزات', tooltip: 'الحجوزات', icon: ICONS.calendar, permission: 'sales.reservations.view' },
   {
     to: '/sales/targets',
@@ -232,6 +231,12 @@ const ADMIN_LOCATIONS_ITEM = {
   tooltip: 'إدارة المدن والأحياء',
   icon: ICONS.projects,
 };
+const ADMIN_COMMISSION_RULES_ITEM = {
+  to: '/admin/commission-rules',
+  label: 'العمولات والنسب',
+  tooltip: 'العمولات والنسب',
+  icon: ICONS.money,
+};
 const ADMIN_ORDER_MARKETING_DEVELOPERS_ITEM = {
   to: '/admin/order-marketing-developers',
   label: 'طلبات مطوري التسويق',
@@ -243,7 +248,7 @@ const ADMIN_ORDER_MARKETING_DEVELOPERS_ITEM = {
  * كتل قائمة الإدمن — يُزال التكرار حسب `to` مع الإبقاء على أول ظهور (تسميات قسم إدارة المشاريع أولاً).
  */
 const ADMIN_NAV_BLOCKS = [
-  { label: 'الإدارة', items: [ADMIN_LOCATIONS_ITEM, ADMIN_ORDER_MARKETING_DEVELOPERS_ITEM] },
+  { label: 'الإدارة', items: [ADMIN_LOCATIONS_ITEM, ADMIN_COMMISSION_RULES_ITEM, ADMIN_ORDER_MARKETING_DEVELOPERS_ITEM] },
   { label: 'إدارة المشاريع', items: [...pmItems, ADMIN_CONTRACT_FORM_ITEM] },
   { label: 'المونتاج', items: editorItems },
   { label: 'المطور', items: developerItems },

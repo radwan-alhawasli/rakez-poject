@@ -83,6 +83,29 @@ export function useMainLayout() {
     notificationService.markAllAsRead();
   };
 
+  /**
+   * Open deep-links from notifications when possible (e.g. search alert matched).
+   * @param {any} notification
+   */
+  const handleNotificationItemClick = notification => {
+    if (!notification) return;
+    if (notification.id != null) {
+      notificationService.markAsRead(notification.id);
+    }
+
+    // Close dropdown for better UX.
+    showNotifications.value = false;
+
+    const eventType = String(notification.eventType || notification.type || '').toLowerCase();
+    const ctx = notification.context && typeof notification.context === 'object' ? notification.context : {};
+    const alertId = ctx.alert_id ?? ctx.alertId ?? ctx.search_alert_id ?? ctx.unit_search_alert_id;
+
+    if (eventType === 'unit_search_alert_matched' && alertId != null && String(alertId).trim() !== '') {
+      router.push({ name: 'SalesUnitSearch', query: { section: 'alerts', alertId: String(alertId) } });
+      return;
+    }
+  };
+
   const userRole = computed(() => {
     const rawType = user.value?.type;
     const normalized = normalizeRole(/** @type {any} */ (rawType));
@@ -149,6 +172,7 @@ export function useMainLayout() {
     toggleNotifications,
     markAsRead,
     markAllAsRead,
+    handleNotificationItemClick,
     handleLogout,
   };
 }

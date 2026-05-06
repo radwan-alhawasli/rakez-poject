@@ -33,6 +33,8 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
   const reservationLookups = ref(null);
   /** @type {import('vue').Ref<any>} */
   const reservationContextRef = ref(null);
+  /** @type {import('vue').Ref<any[]>} */
+  const participantsEmployees = ref([]);
 
   const reservationLookupsForModal = computed(() => {
     const l = reservationLookups.value?.nationalities;
@@ -45,6 +47,7 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
       payment_methods: reservationLookups.value?.payment_methods ?? [],
       down_payment_statuses: reservationLookups.value?.down_payment_statuses ?? [],
       purchase_mechanisms: reservationLookups.value?.purchase_mechanisms ?? [],
+      participants_employees: participantsEmployees.value,
     };
   });
 
@@ -329,6 +332,15 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
     } catch (e) {
       logger.error('Reservation context', e);
       reservationLookups.value = null;
+    }
+
+    // Best-effort: load team members for "sale participants" dropdown (leader permission only).
+    participantsEmployees.value = [];
+    try {
+      const members = await salesService.getTeamMembers({ with_ratings: false });
+      participantsEmployees.value = Array.isArray(members) ? members : [];
+    } catch {
+      participantsEmployees.value = [];
     }
 
     /** @type {any[]} */

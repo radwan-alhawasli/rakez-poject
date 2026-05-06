@@ -32,6 +32,10 @@ export function normalizeReservationPayload(data) {
     down_payment_status: data?.down_payment_status ?? data?.downPaymentStatus ?? 'refundable',
     purchase_mechanism: data?.purchase_mechanism ?? data?.purchaseMechanism ?? 'cash',
   };
+
+  // TODO(api): Sales reservation "sale participants" field name(s) are not confirmed yet.
+  // UI collects: `my_sale_operation` + `other_sale_participants` (see UnitReservationModal).
+  // When backend contract is ready, map and include them here (e.g. `sale_participants`).
   if (data?.evacuation_date) payload.evacuation_date = data.evacuation_date;
   if (reservation_type === 'negotiation') {
     payload.negotiation_notes = data?.negotiation_notes ?? '';
