@@ -169,7 +169,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useSalesSearchAlertsEmbedded } from '@/composables/sales/useSalesSearchAlertsEmbedded';
 import { toast } from '@/composables/useToast';
 import { getApiErrorMessage } from '@/utils/errorHandler';
@@ -375,4 +375,3 @@ function matchedUnitText(a) {
   font-weight: 500;
 }
 </style>
-

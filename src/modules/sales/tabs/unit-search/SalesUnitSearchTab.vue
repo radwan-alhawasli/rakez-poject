@@ -249,7 +249,7 @@ import { getApiErrorMessage } from '@/utils/errorHandler';
 
 const {
   units, isLoading, isLoadingFilters, loadingProgress,
-  filters, availableFilters, filteredDistricts, hasActiveFilters,
+  filters, availableFilters, filteredDistricts,
   meta, totalPages, totalUnits,
   applyFilters, resetFilters, goToPage, init,
   formatCurrency, statusLabel, statusClass,
