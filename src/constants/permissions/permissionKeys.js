@@ -51,6 +51,8 @@ export const PERMISSIONS = {
   SALES_PROJECTS_ALLOCATE_SHIFTS: 'sales.projects.allocate_shifts',
   SALES_PAYMENT_PLAN_MANAGE: 'sales.payment_plan.manage',
   SALES_SOLD_UNITS_VIEW: 'sales.sold_units.view',
+  /** Sales: manage unit search alerts (طلب وحدات) */
+  SALES_SEARCH_ALERTS_VIEW: 'sales.search_alerts.view',
   SALES_DEPOSITS_VIEW: 'sales.deposits.view',
   SALES_ANALYTICS_VIEW: 'sales.analytics.view',
   CREDIT_DASHBOARD_VIEW: 'credit.dashboard.view',
@@ -63,6 +65,7 @@ export const PERMISSIONS = {
   ACCOUNTING_DASHBOARD_VIEW: 'accounting.dashboard.view',
   ACCOUNTING_NOTIFICATIONS_VIEW: 'accounting.notifications.view',
   ACCOUNTING_SOLD_UNITS_VIEW: 'accounting.sold-units.view',
+  ACCOUNTING_SOLD_UNITS_MANAGE: 'accounting.sold-units.manage',
   ACCOUNTING_COMMISSIONS_APPROVE: 'accounting.commissions.approve',
   ACCOUNTING_DEPOSITS_VIEW: 'accounting.deposits.view',
   ACCOUNTING_SALARIES_VIEW: 'accounting.salaries.view',

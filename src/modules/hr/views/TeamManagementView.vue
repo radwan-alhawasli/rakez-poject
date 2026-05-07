@@ -401,7 +401,6 @@ const {
   addMembersSearch,
   filteredSalesWithoutTeam,
   addMembersLoading,
-  openAddMembersModal,
   closeAddMembersModal,
   addMemberToTeam,
   salesRowKey,

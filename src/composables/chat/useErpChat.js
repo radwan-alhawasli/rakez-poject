@@ -5,12 +5,13 @@
  */
 
 import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue';
-import chatService from '@/services/chatService';
+import chatService, { normalizeMessage } from '@/services/chatService';
 import authService from '@/services/authService';
 import notificationService from '@/services/notificationService';
 import { createPusher } from '@/plugins/pusher';
 import logger from '@/utils/logger';
 import { localeOpts } from '@/utils/intlLatn';
+import { getApiErrorMessage } from '@/utils/errorHandler';
 
 
 const EMOJI_LIST = [
@@ -64,11 +65,30 @@ export function useErpChat() {
   let searchDebounce = null;
   /** @type {any} */
   let recordingTimer = null;
+  /** @type {any} */
+  let activePollTimer = null;
 
   const currentUserId = computed(() => {
-     const user = authService.getCurrentUser();
-     return user?.id || (/** @type {any} */ (user))?.user_id;
-   });
+    const user = /** @type {any} */ (authService.getCurrentUser());
+    const raw =
+      user?.id ??
+      user?.user_id ??
+      user?.userId ??
+      user?.data?.id ??
+      user?.user?.id ??
+      null;
+    const n = raw != null ? Number(raw) : NaN;
+    return Number.isFinite(n) ? n : undefined;
+  });
+
+  const ensureCurrentUserLoaded = async () => {
+    if (currentUserId.value != null) return;
+    try {
+      await authService.fetchCurrentUser();
+    } catch (_) {
+      // ignore: apiClient handles 401 redirect; UI will still work without "mine/theirs" styling
+    }
+  };
 
   const emojiList = EMOJI_LIST;
 
@@ -156,14 +176,23 @@ export function useErpChat() {
     }
   };
 
+  /** @param {any[]} incoming */
+  const mergeIncomingMessages = (incoming = []) => {
+    if (!Array.isArray(incoming) || incoming.length === 0) return;
+    messages.value = sortAndDedupeMessages([...messages.value, ...incoming]);
+  };
+
   const loadConversations = async () => {
     isLoadingConversations.value = true;
     try {
       const data = await chatService.getConversations();
       conversations.value = Array.isArray(data) ? data : [];
+      if (pusher) {
+        conversations.value.forEach(c => subscribeToConversation(c.id));
+      }
     } catch (e) {
       logger.error('loadConversations', e);
-      notificationService.addNotification('تعذر تحميل المحادثات', 'error');
+      notificationService.addNotification(getApiErrorMessage(e, 'تعذر تحميل المحادثات'), 'error');
       conversations.value = [];
     } finally {
       isLoadingConversations.value = false;
@@ -178,9 +207,15 @@ export function useErpChat() {
     if (!pusher || !convId) return;
     
     // Laravel private channels use the private-* prefix; try private first (required for Broadcast::channel auth).
-    const channelsToTry = [`private-conversation.${convId}`, `conversation.${convId}`];
+    const channelsToTry = [
+      `private-conversation.${convId}`,
+      `conversation.${convId}`,
+      `private-conversations.${convId}`,
+      `private-chat.${convId}`,
+      `private-chat.conversation.${convId}`,
+    ];
     // Common event names in Laravel/Pusher setups
-    const eventsToTry = ['message.sent', 'MessageSent', 'message-sent'];
+    const eventsToTry = ['message.sent', 'MessageSent', 'message-sent', 'NewMessage', 'new-message'];
 
     channelsToTry.forEach(channelName => {
       if (pusherSubscriptions.some(s => s.channelName === channelName)) return;
@@ -195,11 +230,16 @@ export function useErpChat() {
             
             // Normalize data (handle both root object and nested .message)
             const msgData = data.message ? data.message : data;
+            const msg = normalizeMessage(msgData) || msgData;
             
-            if (activeConversation.value?.id === convId && Number(msgData.sender_id) !== currentUserId.value) {
-              const exists = messages.value.find(m => m.id === msgData.id);
+            if (
+              Number(activeConversation.value?.id) === Number(convId) &&
+              currentUserId.value != null &&
+              Number(msg.sender_id) !== Number(currentUserId.value)
+            ) {
+              const exists = messages.value.find(m => m.id === msg.id);
               if (!exists) {
-                messages.value = sortAndDedupeMessages([...messages.value, msgData]);
+                messages.value = sortAndDedupeMessages([...messages.value, msg]);
                 nextTick(scrollToBottom);
                 // Mark as read in backend if it's the active conversation
                 chatService.markAsRead(convId).catch(() => {});
@@ -207,11 +247,15 @@ export function useErpChat() {
             }
             
             // Update preview and unread count in sidebar
-            const c = conversations.value.find(x => x.id === convId);
+            const c = conversations.value.find(x => String(x.id) === String(convId));
             if (c) {
-              c._lastPreview = msgData.message || msgData.body || msgData.text || '';
+              c._lastPreview = msg.message || msg.body || msg.text || '';
               c.last_message_at = new Date().toISOString();
-              if (Number(msgData.sender_id) !== currentUserId.value && activeConversation.value?.id !== convId) {
+              if (
+                currentUserId.value != null &&
+                Number(msg.sender_id) !== Number(currentUserId.value) &&
+                Number(activeConversation.value?.id) !== Number(convId)
+              ) {
                 c.unread_count = (c.unread_count || 0) + 1;
               }
             }
@@ -302,17 +346,29 @@ export function useErpChat() {
     if (!convId) return;
     isLoadingMessages.value = true;
     try {
-      const response = await chatService.getMessages(convId, 1);
-      const data = response?.data || response;
-      const list = Array.isArray(data) ? data : (data?.items || []);
+      const result = await chatService.getMessages(convId, 1, 50);
+      const list = Array.isArray(result?.messages) ? result.messages : [];
       messages.value = sortAndDedupeMessages(list);
-      hasMoreMessages.value = !!(data?.next_page_url || data?.has_more);
+      hasMoreMessages.value = !!(result?.meta?.has_more_pages);
       currentPage.value = 1;
     } catch (e) {
       logger.error('loadMessages', e);
-      notificationService.addNotification('تعذر تحميل الرسائل', 'error');
+      notificationService.addNotification(getApiErrorMessage(e, 'تعذر تحميل الرسائل'), 'error');
     } finally {
       isLoadingMessages.value = false;
+    }
+  };
+
+  const pollActiveConversation = async () => {
+    const convId = activeConversation.value?.id;
+    if (!convId) return;
+    if (isLoadingMessages.value) return;
+    try {
+      const result = await chatService.getMessages(convId, 1, 50);
+      const list = Array.isArray(result?.messages) ? result.messages : [];
+      mergeIncomingMessages(list);
+    } catch (_) {
+      // silent
     }
   };
 
@@ -323,14 +379,13 @@ export function useErpChat() {
     const nextPage = currentPage.value + 1;
     
     try {
-      const response = await chatService.getMessages(convId, nextPage);
-      const data = response?.data || response;
-      const list = Array.isArray(data) ? data : (data?.items || []);
+      const result = await chatService.getMessages(convId, nextPage, 50);
+      const list = Array.isArray(result?.messages) ? result.messages : [];
       
       if (list.length > 0) {
         messages.value = sortAndDedupeMessages([...list, ...messages.value]);
         currentPage.value = nextPage;
-        hasMoreMessages.value = !!(data?.next_page_url || data?.has_more);
+        hasMoreMessages.value = !!(result?.meta?.has_more_pages);
       } else {
         hasMoreMessages.value = false;
       }
@@ -346,6 +401,11 @@ export function useErpChat() {
 
     const convId = activeConversation.value.id;
     isSending.value = true;
+
+    // Ensure we can distinguish mine/theirs for optimistic message
+    if (currentUserId.value == null) {
+      await ensureCurrentUserLoaded();
+    }
     
     // Optimistic update
     const tempId = `temp-${Date.now()}`;
@@ -357,6 +417,7 @@ export function useErpChat() {
       is_read: false,
       created_at: new Date().toISOString(),
       _optimistic: true,
+      _mine: true,
       attachment_type: file ? (file.type.startsWith('image/') ? 'image' : 'file') : null,
       _isUploading: !!file,
       attachment: file ? URL.createObjectURL(file) : null
@@ -369,29 +430,31 @@ export function useErpChat() {
 
     try {
       /** @type {any} */
-      let response;
+      let realMsg;
       if (file) {
         const formData = new FormData();
         formData.append('message', text);
         formData.append('attachment', file);
-        response = await chatService.sendAttachment(convId, formData);
+        realMsg = await chatService.sendAttachment(convId, formData);
       } else {
-        response = await chatService.sendMessage(convId, text);
+        realMsg = await chatService.sendMessage(convId, text);
       }
-      const realMsg = response?.data || response;
+      if (!realMsg || !realMsg.id) {
+        throw new Error('Invalid message response');
+      }
       
-      // Replace optimistic message with real one
-      messages.value = messages.value.map(m => m.id === tempId ? realMsg : m);
+      // Replace optimistic message with real one (keep mine flag for UI if needed)
+      messages.value = messages.value.map(m => (m.id === tempId ? { ...realMsg, _mine: true } : m));
       
       // Update sidebar preview
       const c = conversations.value.find(x => x.id === convId);
       if (c) {
         c._lastPreview = text || (file ? 'مرفق' : '');
-        c.last_message_at = realMsg.created_at;
+        c.last_message_at = realMsg.created_at || new Date().toISOString();
       }
     } catch (e) {
       logger.error('sendMessage', e);
-      notificationService.addNotification('فشل إرسال الرسالة', 'error');
+      notificationService.addNotification(getApiErrorMessage(e, 'فشل إرسال الرسالة'), 'error');
       // Mark optimistic message as failed or remove it
       messages.value = messages.value.filter(m => m.id !== tempId);
     } finally {
@@ -431,7 +494,7 @@ export function useErpChat() {
       }, 1000);
     } catch (err) {
       logger.error('startRecording', err);
-      notificationService.addNotification('تعذر الوصول إلى الميكروفون', 'error');
+      notificationService.addNotification(getApiErrorMessage(err, 'تعذر الوصول إلى الميكروفون'), 'error');
     }
   };
 
@@ -501,22 +564,21 @@ export function useErpChat() {
     }
   };
 
-  /** @param {any} e */
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
-
-  const searchUsers = async () => {
-    if (userSearchQuery.value.trim().length < 2) {
+  /**
+   * Search employees/users for starting a new conversation.
+   * Some backends require 2+ chars; others return a default list when empty.
+   * @param {{ allowEmpty?: boolean }} [opts]
+   */
+  const searchUsers = async (opts = {}) => {
+    const q = userSearchQuery.value.trim();
+    const allowEmpty = Boolean(opts?.allowEmpty);
+    if (q.length < 2 && !allowEmpty) {
       searchedUsers.value = [];
       return;
     }
     isSearchingUsers.value = true;
     try {
-      const data = await chatService.listUsers({ search: userSearchQuery.value });
+      const data = await chatService.listUsers(q ? { search: q } : {});
       searchedUsers.value = (Array.isArray(data) ? data : []).filter((/** @type {any} */ u) => u.id !== currentUserId.value);
     } catch (e) {
       logger.error('searchUsers', e);
@@ -528,8 +590,10 @@ export function useErpChat() {
   /** @param {any} userId */
   const startNewConversation = async userId => {
     try {
-      const response = await chatService.getOrCreateConversation(userId);
-      const conv = response?.data || response;
+      const conv = await chatService.getOrCreateConversation(userId);
+      if (!conv || !conv.id) {
+        throw new Error('Invalid conversation response');
+      }
       
       const exists = conversations.value.find(c => c.id === conv.id);
       if (!exists) {
@@ -543,16 +607,52 @@ export function useErpChat() {
       
       await selectConversation(conv);
     } catch (e) {
-      const err = (/** @type {any} */ (e));
       logger.error('startNewConversation', e);
-      notificationService.addNotification(err.response?.data?.message || 'تعذر بدء المحادثة', 'error');
+      notificationService.addNotification(getApiErrorMessage(e, 'تعذر بدء المحادثة'), 'error');
     }
+  };
+
+  const closeNewChatModal = () => {
+    showNewChatModal.value = false;
+    userSearchQuery.value = '';
+    searchedUsers.value = [];
+  };
+
+  /** @param {any} conv */
+  const openConversation = conv => selectConversation(conv);
+
+  /**
+   * Remove conversation from the sidebar list (UI-only).
+   * @param {string|number} conversationId
+   */
+  const removeConversation = conversationId => {
+    const id = String(conversationId);
+    conversations.value = conversations.value.filter(c => String(c.id) !== id);
+    if (activeConversation.value && String(activeConversation.value.id) === id) {
+      activeConversation.value = null;
+      messages.value = [];
+    }
+  };
+
+  const uploadFile = file => handleFileUpload(file);
+  const clearSelectedFile = () => {
+    selectedFile.value = null;
   };
 
   watch(userSearchQuery, () => {
     if (searchDebounce) clearTimeout(searchDebounce);
-    searchDebounce = setTimeout(searchUsers, 500);
+    searchDebounce = setTimeout(() => searchUsers(), 450);
   });
+
+  watch(
+    showNewChatModal,
+    open => {
+      if (open) {
+        // Load an initial list when opening the modal (better UX than empty screen).
+        searchUsers({ allowEmpty: true });
+      }
+    }
+  );
 
   /** @param {any} convId */
   const isActive = convId => activeConversation.value?.id === convId;
@@ -560,9 +660,11 @@ export function useErpChat() {
   const getConversation = convId => conversations.value.find(c => c.id === convId);
 
   onMounted(() => {
-    loadConversations().then(() => {
+    ensureCurrentUserLoaded().then(() =>
+      loadConversations().then(() => {
       initPusher();
-    });
+      })
+    );
 
     window.addEventListener('click', closeContextMenu);
   });
@@ -574,7 +676,21 @@ export function useErpChat() {
     }
     window.removeEventListener('click', closeContextMenu);
     if (recordingTimer) clearInterval(recordingTimer);
+    if (activePollTimer) clearInterval(activePollTimer);
   });
+
+  watch(
+    () => [activeConversation.value?.id, isPusherConnected.value],
+    () => {
+      if (activePollTimer) {
+        clearInterval(activePollTimer);
+        activePollTimer = null;
+      }
+      if (activeConversation.value?.id && !isPusherConnected.value) {
+        activePollTimer = setInterval(pollActiveConversation, 8000);
+      }
+    }
+  );
 
   return {
     conversations,
@@ -605,20 +721,24 @@ export function useErpChat() {
     avatarColor,
     relativeTime,
     formatMsgTime,
-    selectConversation,
+    isPusherConnected,
+
+    // Aliases expected by ChatView.vue
+    openConversation,
     loadMoreMessages,
     sendMessage,
-    handleFileUpload,
-    startRecording,
-    stopRecording,
-    openContextMenu,
-    closeContextMenu,
-    deleteMessage,
-    copyMessageText,
-    handleMessageLongPress,
-    onEmojiSelect,
-    handleKeyDown,
-    startNewConversation,
+    deleteMsg: deleteMessage,
+    copyMsg: copyMessageText,
+    onMessageContext: handleMessageLongPress,
+    insertEmoji: onEmojiSelect,
+    searchUsers,
+    startConversation: startNewConversation,
+    closeNewChatModal,
+    removeConversation,
+    uploadFile,
+    clearSelectedFile,
+    startVoiceRecording: startRecording,
+    stopVoiceRecording: stopRecording,
     isActive,
     getConversation
   };

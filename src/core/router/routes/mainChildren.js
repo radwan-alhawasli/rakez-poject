@@ -65,9 +65,21 @@ export default [
     meta: { roles: [ROLE_ADMIN] },
   },
   {
+    path: 'admin/contracts',
+    name: 'AdminContracts',
+    component: () => import('@/modules/contracts/views/ContractsView.vue'),
+    meta: { roles: [ROLE_ADMIN] },
+  },
+  {
     path: 'admin/order-marketing-developers',
     name: 'AdminOrderMarketingDevelopers',
     component: () => import('@/modules/admin/views/AdminLocationsView.vue'),
+    meta: { roles: [ROLE_ADMIN] },
+  },
+  {
+    path: 'admin/commission-rules',
+    name: 'AdminCommissionRules',
+    component: () => import('@/modules/admin/views/AdminCommissionRulesPage.vue'),
     meta: { roles: [ROLE_ADMIN] },
   },
   { path: 'exclusive-request', name: 'ExclusiveRequest', component: () => import('@/modules/projects/views/ExclusiveProjectView.vue') },

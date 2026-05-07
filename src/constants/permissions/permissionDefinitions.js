@@ -52,6 +52,7 @@ export const PERMISSION_DEFINITIONS = {
   'sales.negotiation.approve': 'Approve or reject negotiation requests.',
   'sales.payment_plan.manage': 'Create and manage off-plan payment plans.',
   'sales.sold_units.view': 'View sold units list and commission summaries.',
+  'sales.search_alerts.view': 'Manage unit search alerts (طلب وحدات) for clients.',
   'sales.deposits.view': 'View deposit management and follow-up data.',
   'sales.analytics.view': 'View sales analytics dashboard and commission reports.',
   'tasks.create':

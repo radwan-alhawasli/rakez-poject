@@ -171,7 +171,7 @@ const validationMessage = computed(() => {
 
 function formatAmount(value) {
   const n = Number(value || 0);
-  return Number.isFinite(n) ? n.toLocaleString('ar-SA') : '0';
+  return Number.isFinite(n) ? n.toLocaleString('en-US') : '0';
 }
 
 function isSelected(id) {

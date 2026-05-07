@@ -3,7 +3,7 @@
  * @module core/router/routes/domainSales
  */
 
-import { ROLE_SALES, ROLE_SALES_LEADER } from '@/constants/roles';
+import { ROLE_ADMIN, ROLE_SALES, ROLE_SALES_LEADER } from '@/constants/roles';
 import { PERMISSIONS } from '@/constants/permissions';
 
 export default {
@@ -17,6 +17,28 @@ export default {
     { path: 'my-rating', name: 'SalesMyRating', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_TARGETS_VIEW] } },
     { path: 'projects', name: 'SalesProjects', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_PROJECTS_VIEW] } },
     { path: 'unit-search', name: 'SalesUnitSearch', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_PROJECTS_VIEW] } },
+    {
+      path: 'unit-requests',
+      name: 'SalesUnitRequests',
+      /**
+       * Legacy route: search alerts are now embedded inside "بحث الوحدات".
+       * Keep the URL working for old bookmarks and deep-links.
+       */
+      redirect: { name: 'SalesUnitSearch', query: { section: 'alerts' } },
+      meta: { roles: [ROLE_ADMIN, ROLE_SALES, ROLE_SALES_LEADER] },
+    },
+    {
+      path: 'unit-requests/:alertId',
+      name: 'SalesUnitRequestDetail',
+      /**
+       * Legacy route: open alert details inside the embedded alerts panel in "بحث الوحدات".
+       */
+      redirect: to => ({
+        name: 'SalesUnitSearch',
+        query: { section: 'alerts', alertId: String(to.params?.alertId ?? '') },
+      }),
+      meta: { roles: [ROLE_ADMIN, ROLE_SALES, ROLE_SALES_LEADER] },
+    },
     { path: 'reservations', name: 'SalesReservations', component: () => import('@/modules/sales/views/ReservationsView.vue'), meta: { permissions: [PERMISSIONS.SALES_RESERVATIONS_VIEW] } },
     { path: 'attendance', name: 'SalesAttendance', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_ATTENDANCE_VIEW] } },
     { path: 'negotiations', name: 'SalesNegotiations', redirect: { name: 'SalesReservations' } },

@@ -1,4 +1,4 @@
-﻿.accounting-view .deposits-sub-tabs { display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; }
+.accounting-view .deposits-sub-tabs { display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; }
 .accounting-view .sub-tab-btn { padding: 10px 20px; border: 2px solid #e2e8f0; border-radius: 12px; background: white; color: #64748b; font-weight: 600; cursor: pointer; transition: all 0.2s; }
 .accounting-view .sub-tab-btn:hover { border-color: #b1a28f; color: #b1a28f; }
 .accounting-view .sub-tab-btn.active { background: linear-gradient(135deg, #b1a28f 0%, #8c7851 100%); border-color: #b1a28f; color: white; }
@@ -55,7 +55,7 @@
 .accounting-view .btn-action.edit:hover { background: #a7f3d0; border-color: #10b981; color: #047857; }
 .accounting-view .btn-action.edit:active { transform: scale(0.98); }
 
-/* ط²ط± طھط£ظƒظٹط¯ ط§ط³طھظ„ط§ظ… ط§ظ„ط¹ط±ط¨ظˆظ† â€” ظٹط¸ظ„ ظ…طھظ†ط§ط³ظ‚ط§ظ‹ ط¹ظ„ظ‰ ظƒظ„ ط£ط­ط¬ط§ظ… ط§ظ„ط´ط§ط´ط§طھ */
+/* Responsive confirm-deposit button sizing */
 .accounting-view .btn-confirm-deposit {
   padding: clamp(10px, 1.2vw, 16px) clamp(14px, 1.5vw, 22px);
   border-radius: clamp(10px, 0.8vw, 14px);

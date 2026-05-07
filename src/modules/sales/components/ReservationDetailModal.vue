@@ -79,6 +79,57 @@
             </dl>
           </section>
 
+          <section v-if="isOffPlanReservation" class="detail-section">
+            <h4 class="detail-section-title">تفاصيل مشاريع على الخارطة</h4>
+            <dl class="detail-dl">
+              <div class="detail-row">
+                <dt>مبلغ الدفعة المقدمة</dt>
+                <dd>
+                  {{ formatNumber(item.down_payment_amount || 0) }}
+                  <span class="detail-currency">ريال</span>
+                </dd>
+              </div>
+              <div class="detail-row">
+                <dt>تاريخ تسليم الوحدة</dt>
+                <dd>{{ formatDate(item.delivery_date) || '—' }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>الدفعة الأولى</dt>
+                <dd>
+                  {{ formatNumber(item.first_payment || 0) }}
+                  <span class="detail-currency">ريال</span>
+                </dd>
+              </div>
+              <div class="detail-row">
+                <dt>تاريخ الدفعة الأولى</dt>
+                <dd>{{ formatDate(item.first_payment_date) || '—' }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>الحساب</dt>
+                <dd>{{ item.account === 'developer' ? 'حساب المطور' : item.account === 'company' ? 'حساب الشركة' : '—' }}</dd>
+              </div>
+            </dl>
+            <div v-if="offPlanPayments.length" class="detail-payments-table-wrap">
+              <table class="detail-payments-table">
+                <thead>
+                  <tr>
+                    <th>مبلغ الدفعة</th>
+                    <th>تاريخ الدفعة</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, index) in offPlanPayments" :key="`off-plan-payment-${index}`">
+                    <td>
+                      {{ formatNumber(row.payment || 0) }}
+                      <span class="detail-currency">ريال</span>
+                    </td>
+                    <td>{{ formatDate(row.date) || '—' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
           <section v-if="item.receipt_voucher" class="detail-section">
             <h4 class="detail-section-title">إيصال الدفع</h4>
             <div class="detail-voucher-preview">
@@ -139,6 +190,39 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 const { formatDate, formatNumber } = useFormatters();
+
+const isOffPlanReservation = computed(() => {
+  const item = props.item || {};
+  const flagCandidates = [
+    item.is_off_plan,
+    item.project?.is_off_plan,
+    item.contract?.is_off_plan,
+  ];
+  const hasFlag = flagCandidates.some(v => {
+    if (v === true || v === 1 || v === '1') return true;
+    const text = String(v ?? '').trim().toLowerCase();
+    return text === 'true' || text === 'yes';
+  });
+  if (hasFlag) return true;
+  return Boolean(
+    item.down_payment_amount ||
+      item.delivery_date ||
+      item.first_payment ||
+      item.first_payment_date ||
+      item.account ||
+      (Array.isArray(item.payments) && item.payments.length > 0)
+  );
+});
+
+const offPlanPayments = computed(() => {
+  const rows = Array.isArray(props.item?.payments) ? props.item.payments : [];
+  return rows
+    .map(row => ({
+      payment: row?.payment != null ? Number(row.payment) : 0,
+      date: row?.date ? String(row.date) : '',
+    }))
+    .filter(row => Number.isFinite(row.payment) && row.payment > 0);
+});
 
 /** Commission tracker steps mapping */
 const commissionSteps = computed(() => {

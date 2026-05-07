@@ -3,10 +3,103 @@ import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
 
 /**
+ * Remove empty/undefined payload fields so we don't send noise to the backend.
+ * - Keeps `false` and `0`.
+ * - Drops empty strings.
+ * - Optionally keeps `null` (used for PATCH when user explicitly clears a value).
+ * @param {Record<string, any>} payload
+ * @param {{ keepNull?: boolean }} [opts]
+ */
+function cleanPayload(payload = {}, opts = {}) {
+  const keepNull = Boolean(opts?.keepNull);
+  /** @type {Record<string, any>} */
+  const out = {};
+  for (const [key, value] of Object.entries(payload || {})) {
+    if (value === undefined) continue;
+    if (value === null && !keepNull) continue;
+    if (typeof value === 'string' && value.trim() === '') continue;
+    out[key] = value;
+  }
+  return out;
+}
+
+/**
+ * Allowed query params for search-alerts list.
+ * Must not send sort_by / sort_dir.
+ * @param {Record<string, any>} params
+ */
+function cleanSearchAlertsListParams(params = {}) {
+  const { page, per_page, status } = params || {};
+  return cleanPayload({ page, per_page, status });
+}
+
+/**
  * Extended sales API: waiting list, payment plans, schedules, search, analytics.
  * Composed into default export in salesService.js (merged with core so `this` resolves).
  */
 export const salesServiceExtendedMethods = {
+  /**
+   * Unit Search Alerts (طلب وحدات)
+   * GET /api/sales/units/search-alerts
+   * Query: page, per_page, status (active|paused|matched|cancelled)
+   * IMPORTANT: Do not send sort_by/sort_dir.
+   * @param {Record<string, any>} params
+   */
+  async listUnitSearchAlerts(params = {}) {
+    try {
+      const r = await apiClient.get('/sales/units/search-alerts', {
+        params: cleanSearchAlertsListParams(params),
+      });
+      return r?.data ?? r;
+    } catch (error) {
+      return handleServiceError(error, 'List unit search alerts', 'get', { data: [], meta: {} });
+    }
+  },
+
+  /**
+   * GET /api/sales/units/search-alerts/{alert}
+   * @param {number|string} alertId
+   */
+  async getUnitSearchAlert(alertId) {
+    try {
+      const r = await apiClient.get(`/sales/units/search-alerts/${alertId}`);
+      return r?.data?.data ?? r?.data ?? r;
+    } catch (error) {
+      return handleServiceError(error, 'Get unit search alert', 'get', null);
+    }
+  },
+
+  /**
+   * POST /api/sales/units/search-alerts
+   * IMPORTANT: Do not send page/per_page/sort_by/sort_dir, and do not send nulls.
+   * @param {Record<string, any>} payload
+   */
+  async createUnitSearchAlert(payload = {}) {
+    const data = cleanPayload(payload, { keepNull: false });
+    const r = await apiClient.post('/sales/units/search-alerts', data);
+    return r?.data?.data ?? r?.data ?? r;
+  },
+
+  /**
+   * PATCH /api/sales/units/search-alerts/{alert}
+   * IMPORTANT: Send only changed fields. Null is allowed only when explicitly clearing.
+   * @param {number|string} alertId
+   * @param {Record<string, any>} patch
+   */
+  async updateUnitSearchAlert(alertId, patch = {}) {
+    const data = cleanPayload(patch, { keepNull: true });
+    const r = await apiClient.patch(`/sales/units/search-alerts/${alertId}`, data);
+    return r?.data?.data ?? r?.data ?? r;
+  },
+
+  /**
+   * DELETE /api/sales/units/search-alerts/{alert}
+   * @param {number|string} alertId
+   */
+  async deleteUnitSearchAlert(alertId) {
+    const r = await apiClient.delete(`/sales/units/search-alerts/${alertId}`);
+    return r?.data?.data ?? r?.data ?? r;
+  },
   /**
    * Add to waiting list
    * POST /sales/waiting-list

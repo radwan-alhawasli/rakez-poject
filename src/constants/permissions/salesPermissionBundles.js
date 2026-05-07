@@ -5,6 +5,7 @@ export const SALES_BASE_PERMISSIONS = [
   'sales.projects.view',
   'sales.units.view',
   'sales.units.book',
+  'sales.search_alerts.view',
   'sales.reservations.create',
   'sales.reservations.view',
   'sales.reservations.confirm',

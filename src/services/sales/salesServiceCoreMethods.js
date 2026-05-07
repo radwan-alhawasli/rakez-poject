@@ -227,11 +227,31 @@ export const salesServiceCoreMethods = {
    * GET /sales/units/:unitId/reservation-context
    * @param {number|string} unitId - Unit ID
    * @param {any} [params] - اختياري: query مثل include أو with إن دعمها الباكند (مثال: { include: 'teams' })
+   * @todo(api) Ensure reservation-context includes assigned project team + members for "sale participants" UX.
    * @returns {Promise<Object>} Reservation context data
    */
   getReservationContext(unitId, params = {}) {
     const config = params && typeof params === 'object' && Object.keys(params).length > 0 ? { params } : {};
     return apiClient.get(`/sales/units/${unitId}/reservation-context`, config);
+  },
+
+  /**
+   * Contract details source of truth for Off-Plan detection in reservation flow.
+   * GET /contracts/show/{contract_id}
+   * @param {number|string} contractId
+   * @returns {Promise<Record<string, any>>}
+   */
+  async getContractShow(contractId) {
+    if (contractId == null || contractId === '') return {};
+    try {
+      const response = await apiClient.get(`/contracts/show/${contractId}`);
+      const root = response?.data ?? response ?? {};
+      const body = root?.data ?? root;
+      if (body?.contract && typeof body.contract === 'object') return body.contract;
+      return body && typeof body === 'object' ? body : {};
+    } catch (error) {
+      return handleServiceError(error, 'Fetch contract show', 'get', {});
+    }
   },
 
   /**
@@ -243,29 +263,28 @@ export const salesServiceCoreMethods = {
    */
   createReservation(data) {
     const payload = normalizeReservationPayload(data);
+    const formData = new FormData();
+    Object.entries(payload).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === '') return;
+      if (key === 'payments' && Array.isArray(value)) {
+        value.forEach((row, index) => {
+          if (row?.payment != null && row.payment !== '') {
+            formData.append(`payments[${index}][payment]`, String(row.payment));
+          }
+          if (row?.date) {
+            formData.append(`payments[${index}][date]`, String(row.date));
+          }
+        });
+        return;
+      }
+      formData.append(key, String(value));
+    });
     if (data?.receipt_voucher instanceof File) {
-      const formData = new FormData();
-      Object.entries(payload).forEach(([key, value]) => {
-        if (value === undefined || value === null || value === '') return;
-        if (key === 'payments' && Array.isArray(value)) {
-          value.forEach((row, index) => {
-            if (row?.payment != null && row.payment !== '') {
-              formData.append(`payments[${index}][payment]`, String(row.payment));
-            }
-            if (row?.date) {
-              formData.append(`payments[${index}][date]`, String(row.date));
-            }
-          });
-          return;
-        }
-        formData.append(key, value);
-      });
       formData.append('receipt_voucher', data.receipt_voucher);
-      return apiClient.post('/sales/reservations', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
     }
-    return apiClient.post('/sales/reservations', payload);
+    return apiClient.post('/sales/reservations', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
   },
 
   /**

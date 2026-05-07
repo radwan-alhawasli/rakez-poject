@@ -13,11 +13,11 @@
     <!-- Import Type Selection -->
     <div class="import-type-section">
       <div class="form-group-info compact">
-        <h4 class="group-title text-center">اختر نوع الإحضار</h4>
+        <h4 class="group-title text-center">نوع المشروع</h4>
         <div class="select-wrapper-center">
-          <select class="form-input centered">
-            <option>مشاريع جاهزة</option>
-            <option>مشاريع على الخارطة</option>
+          <select v-model="form.project_type" class="form-input centered">
+            <option value="ready">جاهز</option>
+            <option value="off_plan">على الخارطة</option>
           </select>
         </div>
       </div>

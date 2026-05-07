@@ -223,9 +223,17 @@ const chatService = {
    */
   async listUsers(params = {}) {
     try {
-      const res = await apiClient.get('/chat/list_user', { params });
-      const { items } = extractPaginatedData(res);
-      const list = /** @type {any[]} */ (items);
+      const p = params && typeof params === 'object' ? { ...params } : {};
+      if (p.search && !p.q) p.q = p.search;
+      const res = await apiClient.get('/chat/list_user', { params: p });
+      const body = res?.data ?? {};
+      const { items } = extractPaginatedData(body, []);
+      const list =
+        /** @type {any[]} */ (items) ||
+        (Array.isArray(body?.data) ? body.data : null) ||
+        (Array.isArray(body?.users) ? body.users : null) ||
+        (Array.isArray(body?.employees) ? body.employees : null) ||
+        [];
       return list.map(u => ({
         id: u.id,
         name: u.name || u.full_name || u.username || u.display_name || 'مستخدم',

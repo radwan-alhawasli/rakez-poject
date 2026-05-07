@@ -15,6 +15,9 @@ let pusher = null;
 let channels = [];
 /** Pusher subscribe/bind must run once per connection; avoids duplicate handlers when init() is called again. */
 let realtimeSubscriptionsReady = false;
+/** @type {any} */
+let pollTimer = null;
+const POLL_INTERVAL_MS = 30_000;
 
 /**
  * @param {any} error
@@ -91,6 +94,13 @@ const notificationService = {
 
     await this.fetchAll();
     this.ensureRealtimeSubscriptions();
+
+    // Polling fallback when realtime isn't configured (or disabled).
+    if (!pusher && !pollTimer) {
+      pollTimer = setInterval(() => {
+        this.fetchAll();
+      }, POLL_INTERVAL_MS);
+    }
   },
 
   /**
@@ -136,6 +146,7 @@ const notificationService = {
         read: !!n.read_at || n.status === 'read',
         type: n.type || n.event_type || 'info',
         eventType: n.event_type || null,
+        context: n.context ?? n.data ?? n.payload ?? null,
         status: n.status || (n.read_at ? 'read' : 'pending'),
         actionRequired: !n.read_at && n.status !== 'read',
       }));
@@ -373,6 +384,10 @@ const notificationService = {
       pusher.disconnect();
       pusher = null;
       channels = [];
+    }
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
     }
     realtimeSubscriptionsReady = false;
   },

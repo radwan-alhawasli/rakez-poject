@@ -1,7 +1,8 @@
-/**
- * Normalize reservation form/API payload for POST /sales/reservations.
+﻿/**
+ * Normalize reservation payload for POST /sales/reservations.
+ * Sends core fields for all reservations and Off-Plan fields only when is_off_plan is true.
  * @param {any} data
- * @returns {Object}
+ * @returns {Record<string, any>}
  */
 export function normalizeReservationPayload(data) {
   const typeRaw = data?.reservation_type ?? data?.reservationType ?? 'negotiation';
@@ -13,50 +14,88 @@ export function normalizeReservationPayload(data) {
     تفاوض: 'negotiation',
     negotiation: 'negotiation',
   };
+
   const reservation_type =
     typeMap[String(typeRaw)] ??
     (typeRaw === 'confirmed_reservation' || typeRaw === 'negotiation' ? typeRaw : 'negotiation');
 
-  /** @type {any} */
+  const parseNumber = value => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const isTruthyOffPlan = value => {
+    if (value === true || value === 1 || value === '1') return true;
+    const t = String(value ?? '').trim().toLowerCase();
+    return t === 'true' || t === 'yes' || t === 'off_plan' || t === 'off-plan';
+  };
+
+  const is_off_plan = [
+    data?.is_off_plan,
+    data?.isOffPlan,
+    data?.project?.is_off_plan,
+    data?.contract?.is_off_plan,
+    data?.context?.is_off_plan,
+  ].some(isTruthyOffPlan);
+
+  const deposit_amount = parseNumber(
+    data?.deposit_amount ?? data?.depositAmount ?? data?.down_payment_amount ?? data?.downPaymentAmount ?? 0
+  );
+  const final_price = parseNumber(
+    data?.final_price ?? data?.finalPrice ?? data?.unit_price ?? data?.price ?? data?.proposed_price ?? 0
+  );
+  const commission_percentage = parseNumber(
+    data?.commission_percentage ?? data?.commissionPercentage ?? data?.commission_percent ?? 0
+  );
+
+  /** @type {Record<string, any>} */
   const payload = {
     contract_id: data?.contract_id,
     contract_unit_id: data?.contract_unit_id,
-    contract_date: data?.contract_date || new Date().toISOString().split('T')[0],
+    contract_date: data?.contract_date || data?.date || new Date().toISOString().split('T')[0],
     reservation_type,
     client_name: data?.client_name ?? '',
     client_mobile: data?.client_mobile ?? data?.phone ?? data?.mobile ?? '',
+    client_id_number: data?.client_id_number ?? data?.clientIdNumber ?? '',
+    deposit_amount,
+    commission_source: data?.commission_source ?? data?.commissionSource ?? data?.commission_from ?? 'owner',
+    final_price,
+    commission_percentage,
     client_nationality: data?.client_nationality ?? 'غير محدد',
     client_iban: data?.client_iban ?? data?.clientIban ?? '',
     payment_method: data?.payment_method ?? data?.paymentMethod ?? 'cash',
-    down_payment_amount: Number(data?.down_payment_amount ?? data?.downPaymentAmount ?? 0),
     down_payment_status: data?.down_payment_status ?? data?.downPaymentStatus ?? 'refundable',
     purchase_mechanism: data?.purchase_mechanism ?? data?.purchaseMechanism ?? 'cash',
-    delivery_date: data?.delivery_date ?? data?.deliveryDate ?? '',
-    first_payment:
-      data?.first_payment != null && data?.first_payment !== ''
-        ? Number(data.first_payment)
-        : Number(data?.down_payment_amount ?? data?.downPaymentAmount ?? 0),
-    first_payment_date: data?.first_payment_date ?? data?.firstPaymentDate ?? '',
-    account: data?.account ?? '',
+    is_off_plan,
   };
-  const paymentsRaw = Array.isArray(data?.payments) ? data.payments : [];
-  const payments = paymentsRaw
-    .map((/** @type {any} */ row) => ({
-      payment: row?.payment != null && row?.payment !== '' ? Number(row.payment) : NaN,
-      date: row?.date ? String(row.date) : '',
-    }))
-    .filter((/** @type {{ payment: number; date: string }} */ row) => Number.isFinite(row.payment) && row.payment > 0);
-  if (payments.length > 0) payload.payments = payments;
-  if (!Number.isFinite(payload.first_payment) || payload.first_payment <= 0) delete payload.first_payment;
-  if (!payload.first_payment_date) delete payload.first_payment_date;
-  if (!payload.delivery_date) delete payload.delivery_date;
-  if (!payload.account) delete payload.account;
+
+  if (is_off_plan) {
+    payload.down_payment_amount = parseNumber(data?.down_payment_amount ?? data?.downPaymentAmount ?? 0);
+    payload.delivery_date = data?.delivery_date ?? data?.deliveryDate ?? '';
+    payload.first_payment = parseNumber(data?.first_payment ?? data?.firstPayment ?? 0);
+    payload.first_payment_date = data?.first_payment_date ?? data?.firstPaymentDate ?? '';
+    payload.account = data?.account ?? '';
+
+    const paymentsRaw = Array.isArray(data?.payments) ? data.payments : [];
+    const payments = paymentsRaw
+      .map((/** @type {any} */ row) => ({
+        payment: row?.payment != null && row?.payment !== '' ? Number(row.payment) : NaN,
+        date: row?.date ? String(row.date) : '',
+      }))
+      .filter((/** @type {{ payment: number; date: string }} */ row) => Number.isFinite(row.payment) && row.payment > 0);
+
+    if (payments.length > 0) payload.payments = payments;
+    if (!payload.first_payment_date) delete payload.first_payment_date;
+  }
+
   if (data?.evacuation_date) payload.evacuation_date = data.evacuation_date;
+
   if (reservation_type === 'negotiation') {
     payload.negotiation_notes = data?.negotiation_notes ?? '';
     payload.negotiation_reason = data?.negotiation_reason ?? 'other';
     payload.proposed_price =
       data?.proposed_price != null && data?.proposed_price !== '' ? Number(data.proposed_price) : 0;
   }
+
   return payload;
 }

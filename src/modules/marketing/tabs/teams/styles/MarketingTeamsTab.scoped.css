@@ -1,4 +1,4 @@
-﻿/* ظ„ط§ ظ†ط³طھط®ط¯ظ… page-header / page-title ط§ظ„ط¹ط§ظ…ط© â€” طھطھط¹ط§ط±ط¶ ظ…ط¹ global-luxury (ط®ظ„ظپظٹط© ط¯ط§ظƒظ†ط© + ظ†طµ) */
+/* Marketing teams styles */
 .marketing-teams-page {
   direction: rtl;
   max-width: 920px;
@@ -256,7 +256,7 @@
   margin-bottom: 24px;
 }
 
-/* ظˆط¶ط¹ ط¯ط§ظƒظ†: ط£ظ„ظˆط§ظ† طµط±ظٹط­ط© ط­طھظ‰ ظ„ط§ طھط®طھظپظٹ ط§ظ„ظ†طµظˆطµ */
+/* Dark mode support */
 html.dark .mteams-select {
   background: #1e293b;
   border-color: #475569;

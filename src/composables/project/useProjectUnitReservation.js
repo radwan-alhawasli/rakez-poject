@@ -33,6 +33,8 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
   const reservationLookups = ref(null);
   /** @type {import('vue').Ref<any>} */
   const reservationContextRef = ref(null);
+  /** @type {import('vue').Ref<any[]>} */
+  const participantsEmployees = ref([]);
 
   const reservationLookupsForModal = computed(() => {
     const l = reservationLookups.value?.nationalities;
@@ -45,6 +47,7 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
       payment_methods: reservationLookups.value?.payment_methods ?? [],
       down_payment_statuses: reservationLookups.value?.down_payment_statuses ?? [],
       purchase_mechanisms: reservationLookups.value?.purchase_mechanisms ?? [],
+      participants_employees: participantsEmployees.value,
     };
   });
 
@@ -58,7 +61,8 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
     client_nationality: 'Saudi',
     client_iban: '',
     payment_method: 'bank_transfer',
-    down_payment_amount: 0,
+    deposit_amount: 0,
+    down_payment_amount: null,
     down_payment_status: 'pending',
     purchase_mechanism: 'cash',
     delivery_date: '',
@@ -108,7 +112,8 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
     reservationForm.client_mobile = '';
     reservationForm.client_nationality = 'Saudi';
     reservationForm.client_iban = '';
-    reservationForm.down_payment_amount = 0;
+    reservationForm.deposit_amount = 0;
+    reservationForm.down_payment_amount = null;
     reservationForm.delivery_date = '';
     reservationForm.first_payment = null;
     reservationForm.first_payment_date = '';
@@ -341,6 +346,15 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
       reservationLookups.value = null;
     }
 
+    // Best-effort: load team members for "sale participants" dropdown (leader permission only).
+    participantsEmployees.value = [];
+    try {
+      const members = await salesService.getTeamMembers({ with_ratings: false });
+      participantsEmployees.value = Array.isArray(members) ? members : [];
+    } catch {
+      participantsEmployees.value = [];
+    }
+
     /** @type {any[]} */
     let teamsList = [];
     if (projectId) {
@@ -382,7 +396,7 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
           client_phone: String(payload.client_mobile || '').trim(),
           client_email: String(reservationForm.client_email || '').trim(),
           client_id_number: String(reservationForm.client_id_number || '').trim(),
-          deposit_amount: Number(payload.down_payment_amount) || 0,
+          deposit_amount: Number(payload.deposit_amount ?? payload.down_payment_amount) || 0,
           final_price: finalPrice,
           commission_source: 'owner',
           commission_percentage: Number.isFinite(pct) && pct >= 0 ? pct : 3,

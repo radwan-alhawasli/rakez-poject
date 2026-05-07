@@ -15,7 +15,7 @@
       <form @submit.prevent="handleSubmit">
         <div class="form-head">
           <h3 class="section-label">بيانات المشروع الحصري</h3>
-          <p class="form-head-lead">املأ الحقول التالية بدقة؛ تُراجعُ الإدارةُ الطلبَ قبل الاعتماد.</p>
+          <p class="form-head-lead">املأ الحقول التالية بدقة؛ تراجع الإدارة الطلب قبل الاعتماد.</p>
         </div>
 
         <!-- Section: Developer Info -->
@@ -26,7 +26,7 @@
               <div class="field-group full">
                 <label>اختر مطورًا أو أضف جديدًا</label>
                 <p class="field-hint">
-                  يمكنك اختيار مطور من القائمة أو إضافة مطور جديد وإدخال بياناته يدوياً.
+                  يمكنك اختيار مطور من القائمة أو إضافة مطور جديد وإدخال بياناته يدويًا.
                 </p>
                 <div class="select-wrapper">
                   <select
@@ -98,6 +98,13 @@
                 <select v-model="form.side" class="form-input" required>
                   <option value="">اختر الاتجاه</option>
                   <option v-for="opt in sideOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label>نوع المشروع</label>
+                <select v-model="form.project_type" class="form-input" required>
+                  <option value="ready">جاهز</option>
+                  <option value="off_plan">على الخارطة</option>
                 </select>
               </div>
             </div>
@@ -276,7 +283,7 @@ const isLoading = ref(false);
 const developers = ref([]);
 const showSuccessConfirm = ref(false);
 
-/** يُرسل للـ API كـ side: n | e | s | w */
+/** يرسل للـ API كـ side: n | e | s | w */
 const sideOptions = [
   { value: 'n', label: 'شمال' },
   { value: 'e', label: 'شرق' },
@@ -290,6 +297,7 @@ const form = reactive({
   developer_name: '',
   developer_cr_number: '',
   project_name: '',
+  project_type: 'ready',
   side: '',
   project_location_url: '',
   developer_requiment: '',
@@ -451,6 +459,7 @@ const resetForm = () => {
   form.developer_name = '';
   form.developer_cr_number = '';
   form.project_name = '';
+  form.project_type = 'ready';
   form.side = '';
   form.project_location_url = '';
   form.developer_requiment = '';
@@ -472,6 +481,10 @@ const handleSubmit = async () => {
   }
   if (!form.project_name?.trim()) {
     toast.error('يرجى إدخال اسم المشروع');
+    return;
+  }
+  if (!['ready', 'off_plan'].includes(String(form.project_type))) {
+    toast.error('يرجى اختيار نوع المشروع');
     return;
   }
   if (!form.developer_id && !form.developer_name?.trim()) {
@@ -525,3 +538,4 @@ const handleSubmit = async () => {
 
 <style scoped src="./styles/ExclusiveProjectView.scoped.s1.css"></style>
 <style scoped src="./styles/ExclusiveProjectView.scoped.s2.css"></style>
+
