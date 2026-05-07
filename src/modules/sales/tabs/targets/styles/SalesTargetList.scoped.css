@@ -506,6 +506,18 @@
   cursor: not-allowed;
 }
 
+.btn-action-primary {
+  background: var(--color-navy, #27374d);
+  color: #fff;
+  border-color: var(--color-navy, #27374d);
+}
+
+.btn-action-primary:hover:not(:disabled) {
+  background: #1e2f46;
+  border-color: #1e2f46;
+  color: #fff;
+}
+
 @media (max-width: 768px) {
   .targets-grid {
     grid-template-columns: 1fr;

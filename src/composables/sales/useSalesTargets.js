@@ -20,6 +20,7 @@ export * from './salesTargetsNormalizer';
 export function useSalesTargets() {
   const { hasPermission } = usePermissions();
   const { formatCurrencyAr: formatCurrency, formatDate } = useFormatters();
+  const TARGET_ROLE_MODES = /** @type {const} */ (['executive', 'manager', 'leader', 'group_leader', 'member']);
 
   /** @type {import('vue').Ref<any[]>} */
   const targets = shallowRef([]);
@@ -27,6 +28,7 @@ export function useSalesTargets() {
   const targetsLoadError = ref('');
   const showCreateTargetModal = ref(false);
   const salesTargetMode = ref('legacy');
+  const forcedSalesTargetMode = ref('');
   const targetForm = reactive({
     assignee_marketer_id: '',
     contract_id: '',
@@ -71,6 +73,10 @@ export function useSalesTargets() {
   });
 
   const isTruthyFlag = value => value === true || value === 1 || value === '1';
+  const sanitizeSalesTargetMode = mode =>
+    TARGET_ROLE_MODES.includes(String(mode || ''))
+      ? String(mode || '')
+      : '';
 
   const resolveSalesTargetMode = () => {
     const user = /** @type {any} */ (authService.getCurrentUser()) || {};
@@ -96,6 +102,19 @@ export function useSalesTargets() {
     return 'member';
   };
 
+  const resolveActiveSalesTargetMode = explicitMode => {
+    const explicit = sanitizeSalesTargetMode(explicitMode);
+    if (explicit) return explicit;
+    const forced = sanitizeSalesTargetMode(forcedSalesTargetMode.value);
+    if (forced) return forced;
+    return resolveSalesTargetMode();
+  };
+
+  const setSalesTargetModeOverride = mode => {
+    forcedSalesTargetMode.value = sanitizeSalesTargetMode(mode);
+    salesTargetMode.value = resolveActiveSalesTargetMode();
+  };
+
   /** @param {any} [options] */
   const loadTargets = async (options = {}) => {
     if (options !== undefined && options !== null && typeof options === 'object') {
@@ -111,12 +130,19 @@ export function useSalesTargets() {
       page: targetsMeta.currentPage,
       per_page: targetsMeta.perPage,
     };
+    const requestedMode =
+      options !== undefined && options !== null && typeof options === 'object'
+        ? (/** @type {any} */ (options)).mode ?? (/** @type {any} */ (options)).salesTargetMode
+        : '';
+    if (requestedMode !== undefined) {
+      setSalesTargetModeOverride(requestedMode);
+    }
 
     targetsLoadError.value = '';
     isLoadingTargets.value = true;
     try {
       let result;
-      salesTargetMode.value = resolveSalesTargetMode();
+      salesTargetMode.value = resolveActiveSalesTargetMode(requestedMode);
       if (salesTargetMode.value === 'manager') {
         result = await salesService.getManagerTargets(params);
       } else if (salesTargetMode.value === 'executive') {
@@ -236,7 +262,7 @@ export function useSalesTargets() {
     }
     updatingTargetId.value = targetId;
     try {
-      salesTargetMode.value = resolveSalesTargetMode();
+      salesTargetMode.value = resolveActiveSalesTargetMode();
       if (salesTargetMode.value === 'manager') {
         notificationService.addNotification('Manager cannot update target status from this screen.', 'warning');
         return;
@@ -370,7 +396,7 @@ export function useSalesTargets() {
   watch(
     () => targetForm.contract_id,
     (newContractId) => {
-      if (resolveSalesTargetMode() !== 'leader') return;
+      if (resolveActiveSalesTargetMode() !== 'leader') return;
       nextTick(() => {
         targetForm.contract_unit_ids = [];
         if (newContractId) {
@@ -390,7 +416,7 @@ export function useSalesTargets() {
    * @param {Function} loadTeamProjects 
    */
   const openCreateTargetModal = async (teamMembers, teamProjects, loadTeamMembers, loadTeamProjects) => {
-    salesTargetMode.value = resolveSalesTargetMode();
+    salesTargetMode.value = resolveActiveSalesTargetMode();
     if (salesTargetMode.value === 'executive') {
       targetForm.line_type = targetForm.line_type || '';
       targetForm.value = targetForm.value || '';
@@ -411,7 +437,7 @@ export function useSalesTargets() {
    * المرجع: docs/SALES_TARGETS_API_SUMMARY.md
    */
   const createTarget = async () => {
-    salesTargetMode.value = resolveSalesTargetMode();
+    salesTargetMode.value = resolveActiveSalesTargetMode();
 
     if (salesTargetMode.value === 'manager' || salesTargetMode.value === 'group_leader' || salesTargetMode.value === 'member') {
       notificationService.addNotification('لا يمكن إنشاء هدف من هذه الشاشة لهذا الدور.', 'warning');
@@ -522,7 +548,7 @@ export function useSalesTargets() {
    * @param {any} target
    */
   const deleteTarget = async target => {
-    salesTargetMode.value = resolveSalesTargetMode();
+    salesTargetMode.value = resolveActiveSalesTargetMode();
     if (salesTargetMode.value !== 'executive') return;
     const targetId = getSalesTargetPatchId(target);
     if (targetId == null || targetId === '') {
@@ -547,8 +573,10 @@ export function useSalesTargets() {
     targetsOverview,
     distributionValidation,
     salesTargetMode,
+    forcedSalesTargetMode,
     activeContractId,
     updatingTargetId,
+    setSalesTargetModeOverride,
     patchTargetStatus,
     isTargetUpdating,
     isLoadingTargets,

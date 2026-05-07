@@ -35,29 +35,15 @@
     </div>
 
     <div>
-      <section v-if="isSalesExecutiveView" class="executive-units-panel">
-        <div class="executive-units-panel__header">
-          <h3 class="executive-units-panel__title">الوحدات المتاحة للمسؤول التنفيذي</h3>
-        </div>
-        <div v-if="isLoadingExecutiveUnits" class="executive-units-panel__state">جاري تحميل الوحدات المتاحة...</div>
-        <div v-else-if="executiveUnitsError" class="executive-units-panel__state executive-units-panel__state--error">
-          <p>{{ executiveUnitsError }}</p>
-          <button type="button" class="btn-add" @click="loadExecutiveAvailableUnits">إعادة المحاولة</button>
-        </div>
-        <div v-else-if="executiveUnitsRows.length === 0" class="executive-units-panel__state">
-          لا توجد بيانات للوحدات المتاحة حالياً.
-        </div>
-        <div v-else class="executive-units-grid">
-          <article
-            v-for="(row, idx) in executiveUnitsRows"
-            :key="row.key || idx"
-            class="executive-units-card"
-          >
-            <span class="executive-units-card__label">{{ row.label }}</span>
-            <strong class="executive-units-card__value">{{ row.value }}</strong>
-          </article>
-        </div>
-      </section>
+      <div v-if="isDetectingSalesRole" class="empty-state">
+        <div class="spinner"></div>
+        <p>جاري تحديد دور المستخدم...</p>
+      </div>
+
+      <template v-else>
+      <div v-if="showNoLedGroupsHint" class="role-detection-hint">
+        <p>لا توجد مجموعات تقودها، سيتم عرض أهدافك الشخصية.</p>
+      </div>
 
       <div v-if="showMemberOverviewCards" class="member-overview-grid">
         <div class="member-overview-card">
@@ -120,6 +106,9 @@
         :assign-action-label="assignActionLabel"
         :allow-delete="isSalesExecutiveView"
         :can-view-target-details="isSalesExecutiveView"
+        :is-executive-view="isSalesExecutiveView"
+        :is-manager-view="isSalesManagerView"
+        :is-group-leader-view="isGroupLeaderView"
         @open-units-modal="openUnitsModal"
         @toggle-card-menu="toggleCardMenu"
         @assign-marketers="openAssignMarketers"
@@ -136,6 +125,7 @@
         @page-change="p => loadTargets({ page: p })"
         @per-page-change="pp => loadTargets({ page: 1, perPage: pp })"
       />
+      </template>
     </div>
 
 
@@ -307,7 +297,7 @@ const {
   getTargetStatusClass, getTargetStatusText, getProgressPercentage, getDisplayedAchievedValue,
   loadTargets, patchTargetStatus, isTargetUpdating,
   openCreateTargetModal, onTargetFullProjectChange, toggleTargetUnit, createTarget,
-  salesTargetMode, deleteTarget,
+  salesTargetMode, deleteTarget, setSalesTargetModeOverride,
 } = useSalesTargets();
 const { teamMembers, teamProjects, loadTeamMembers, loadTeamProjects } = useSalesTeam();
 
@@ -442,7 +432,7 @@ async function saveExecutiveTargetDetails() {
     const refreshed = await salesService.getExecutiveTarget(targetId);
     executiveTargetDetails.value = normalizeSalesTargetItem(refreshed);
     notificationService.addNotification('تم تحديث الهدف بنجاح.', 'success');
-    await loadTargets();
+    await loadTargetsByCurrentRole();
   } catch (err) {
     const msg = err?.response?.data?.message || err?.message || 'فشل تحديث الهدف';
     notificationService.addNotification(msg, 'error');
@@ -460,13 +450,13 @@ function resolveContractScopeFromContext() {
   return Array.isArray(q) ? q[0] : q;
 }
 
-watch(
-  () => [route.query.contract_id, route.query.contractId, unref(injectedContractId)],
-  () => {
-    loadTargets({ contractId: resolveContractScopeFromContext() });
-  },
-  { immediate: true },
-);
+async function loadTargetsByCurrentRole() {
+  if (isDetectingSalesRole.value) return;
+  await loadTargets({
+    contractId: resolveContractScopeFromContext(),
+    mode: assignmentRoleMode.value,
+  });
+}
 
 const openMenuId = ref(null);
 const assignTarget = ref(null);
@@ -507,23 +497,44 @@ const currentUser = computed(() => /** @type {any} */ (authService.getCurrentUse
 const isTruthyFlag = v => v === true || v === 1 || v === '1';
 const isSalesManagerView = computed(() => isSalesManager(currentUser.value));
 const isSalesExecutiveView = computed(() => isSalesExecutive(currentUser.value));
-const isGroupLeaderView = computed(() =>
+const isGroupLeaderFlag = computed(() =>
   isTruthyFlag(currentUser.value?.is_group_leader) ||
   isTruthyFlag(currentUser.value?.is_team_group_leader) ||
   String(currentUser.value?.role_key || '').toLowerCase() === 'group_leader'
 );
-const isSalesLeaderView = computed(() => {
-  if (isSalesManagerView.value || isSalesExecutiveView.value || isGroupLeaderView.value) return false;
+const isSalesLeaderByFlags = computed(() => {
+  if (isSalesManagerView.value || isSalesExecutiveView.value || isGroupLeaderFlag.value) return false;
   const role = normalizeRole(currentUser.value?.type);
   if (role === 7) return true;
   return isSalesLeader(currentUser.value);
 });
-const assignmentRoleMode = computed(() => {
+const needsSalesRoleDetection = computed(
+  () => !isSalesManagerView.value && !isSalesExecutiveView.value && !isSalesLeaderByFlags.value
+);
+const isDetectingSalesRole = ref(false);
+const detectedSalesUserMode = ref('member');
+const detectedLedGroups = ref([]);
+const effectiveRoleMode = computed(() => {
   if (isSalesManagerView.value) return 'manager';
-  if (isSalesLeaderView.value) return 'leader';
-  if (isGroupLeaderView.value) return 'group_leader';
+  if (isSalesExecutiveView.value) return 'executive';
+  if (isSalesLeaderByFlags.value) return 'leader';
+  return detectedSalesUserMode.value === 'group_leader' ? 'group_leader' : 'member';
+});
+const isGroupLeaderView = computed(() => effectiveRoleMode.value === 'group_leader');
+const isSalesLeaderView = computed(() => effectiveRoleMode.value === 'leader');
+const assignmentRoleMode = computed(() => {
+  if (effectiveRoleMode.value === 'executive') return 'executive';
+  if (effectiveRoleMode.value === 'manager') return 'manager';
+  if (effectiveRoleMode.value === 'leader') return 'leader';
+  if (effectiveRoleMode.value === 'group_leader') return 'group_leader';
   return 'member';
 });
+const showNoLedGroupsHint = computed(() =>
+  needsSalesRoleDetection.value &&
+  !isDetectingSalesRole.value &&
+  assignmentRoleMode.value === 'member' &&
+  detectedLedGroups.value.length === 0
+);
 watch(
   isSalesExecutiveView,
   (isExecutive) => {
@@ -542,6 +553,14 @@ const canCreateTarget = computed(
     !isSalesManagerView.value &&
     !isGroupLeaderView.value
 );
+
+watch(
+  () => [route.query.contract_id, route.query.contractId, unref(injectedContractId), assignmentRoleMode.value],
+  () => {
+    loadTargetsByCurrentRole();
+  },
+);
+
 const assignmentCandidates = computed(() => {
   if (assignmentRoleMode.value === 'manager') {
     return (Array.isArray(managerTeams.value) ? managerTeams.value : []).map(t => ({
@@ -950,13 +969,14 @@ async function loadLeaderTeamContext() {
   }
 }
 
-async function loadGroupLeaderContext() {
+async function loadGroupLeaderContext(options = {}) {
   if (loadingGroupLeaderMembers.value) return;
   loadingGroupLeaderMembers.value = true;
   try {
+    const prefetchedGroups = Array.isArray(options?.groups) ? options.groups : null;
     const [teamInfo, groups, members] = await Promise.all([
       salesService.getGroupLeaderLedTeam().catch(() => null),
-      salesService.getGroupLeaderLedGroups().catch(() => []),
+      prefetchedGroups ? Promise.resolve(prefetchedGroups) : salesService.getGroupLeaderLedGroups().catch(() => []),
       salesService.getGroupLeaderMembers().catch(() => []),
     ]);
     ledTeam.value = teamInfo || null;
@@ -969,6 +989,45 @@ async function loadGroupLeaderContext() {
   } finally {
     loadingGroupLeaderMembers.value = false;
   }
+}
+
+async function detectSalesRoleAndLoadTargets() {
+  if (!needsSalesRoleDetection.value) {
+    detectedSalesUserMode.value = 'member';
+    detectedLedGroups.value = [];
+    setSalesTargetModeOverride(assignmentRoleMode.value);
+    await loadTargetsByCurrentRole();
+    return;
+  }
+
+  isDetectingSalesRole.value = true;
+  try {
+    const groups = await salesService.getGroupLeaderLedGroups().catch(() => []);
+    const list = Array.isArray(groups) ? groups : [];
+    detectedLedGroups.value = list;
+    detectedSalesUserMode.value = list.length > 0 ? 'group_leader' : 'member';
+    setSalesTargetModeOverride(detectedSalesUserMode.value);
+
+    if (detectedSalesUserMode.value === 'group_leader') {
+      await loadGroupLeaderContext({ groups: list });
+    } else {
+      ledTeam.value = null;
+      ledGroups.value = [];
+      groupLeaderMembers.value = [];
+    }
+  } catch (err) {
+    detectedSalesUserMode.value = 'member';
+    detectedLedGroups.value = [];
+    setSalesTargetModeOverride('member');
+    notificationService.addNotification(
+      err?.response?.data?.message || 'تعذر تحديد دور قائد المجموعة، سيتم عرض أهدافك الشخصية.',
+      'warning',
+    );
+  } finally {
+    isDetectingSalesRole.value = false;
+  }
+
+  await loadTargetsByCurrentRole();
 }
 
 function openAssignMarketers(target) {
@@ -1006,7 +1065,12 @@ async function saveAssignMarketers() {
     .filter(id => Number.isFinite(id) && id > 0);
 
   if (selectedIds.length === 0) {
-    notificationService.addNotification('يرجى اختيار فريق واحد على الأقل.', 'warning');
+    const selectMessage = assignmentRoleMode.value === 'group_leader'
+      ? 'يرجى اختيار عضو واحد على الأقل.'
+      : assignmentRoleMode.value === 'leader'
+        ? 'يرجى اختيار مجموعة واحدة على الأقل.'
+        : 'يرجى اختيار فريق واحد على الأقل.';
+    notificationService.addNotification(selectMessage, 'warning');
     return;
   }
 
@@ -1021,7 +1085,7 @@ async function saveAssignMarketers() {
     return !Number.isFinite(value) || value <= 0;
   });
   if (hasMissingOrInvalidValue) {
-    notificationService.addNotification('please put a target in the field', 'warning');
+    notificationService.addNotification('يرجى إدخال قيمة هدف صحيحة لكل عنصر محدد.', 'warning');
     return;
   }
 
@@ -1073,7 +1137,7 @@ async function saveAssignMarketers() {
     }
 
     closeAssignMarketers();
-    await loadTargets();
+    await loadTargetsByCurrentRole();
   } catch (err) {
     notificationService.addNotification(err?.response?.data?.message || 'فشل حفظ الهدف', 'error');
   } finally {
@@ -1092,14 +1156,21 @@ function onDocumentClick(e) {
   }, 0);
 }
 
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener('click', onDocumentClick);
   if (isSalesManagerView.value) {
+    setSalesTargetModeOverride('manager');
     loadManagerTeams();
+    await loadTargetsByCurrentRole();
   } else if (isSalesLeaderView.value) {
+    setSalesTargetModeOverride('leader');
     loadLeaderTeamContext();
-  } else if (isGroupLeaderView.value) {
-    loadGroupLeaderContext();
+    await loadTargetsByCurrentRole();
+  } else if (isSalesExecutiveView.value) {
+    setSalesTargetModeOverride('executive');
+    await loadTargetsByCurrentRole();
+  } else {
+    await detectSalesRoleAndLoadTargets();
   }
 });
 
@@ -1134,6 +1205,20 @@ onUnmounted(() => {
   margin-top: 6px;
   color: #0f172a;
   font-size: 18px;
+}
+
+.role-detection-hint {
+  margin-bottom: 12px;
+  border: 1px solid rgba(39, 55, 77, 0.12);
+  border-radius: 10px;
+  background: rgba(39, 55, 77, 0.05);
+  color: #334155;
+  padding: 10px 12px;
+}
+
+.role-detection-hint p {
+  margin: 0;
+  font-weight: 600;
 }
 
 .executive-units-panel {
