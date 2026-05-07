@@ -57,6 +57,7 @@
             <div class="groups-item__main">
               <strong>{{ groupName(group) }}</strong>
               <small>{{ teamName(groupTeamId(group)) }}</small>
+              <small>قائد المجموعة: {{ groupLeaderDisplayName(group) }}</small>
             </div>
             <div class="groups-item__actions">
               <button type="button" class="groups-link-btn" @click="showGroup(group)">التفاصيل</button>
@@ -76,13 +77,14 @@
             <p><strong>الاسم:</strong> {{ groupName(selectedGroup) }}</p>
             <p><strong>الفريق:</strong> {{ teamName(groupTeamId(selectedGroup)) }}</p>
             <p><strong>الوصف:</strong> {{ selectedGroup.description || '-' }}</p>
+            <p><strong>قائد المجموعة:</strong> {{ selectedGroupLeaderLabel }}</p>
           </div>
 
           <div class="groups-form-row">
             <label>تعيين قائد المجموعة</label>
             <select v-model="groupLeaderFormUserId" class="groups-input">
               <option value="">اختر عضواً</option>
-              <option v-for="member in freeTeamMemberOptions" :key="'leader-' + member.value" :value="member.value">
+              <option v-for="member in groupMemberOptions" :key="'leader-' + member.value" :value="member.value">
                 {{ member.label }}
               </option>
             </select>
@@ -287,6 +289,15 @@ const selectedGroupTeamMemberOptions = computed(() => {
     .filter(o => o.value);
 });
 
+const groupMemberOptions = computed(() =>
+  (Array.isArray(groupMembers.value) ? groupMembers.value : [])
+    .map(member => ({
+      value: String(memberId(member)),
+      label: memberName(member),
+    }))
+    .filter(option => option.value)
+);
+
 const freeTeamMemberOptions = computed(() => {
   const used = new Set(
     (Array.isArray(groupMembers.value) ? groupMembers.value : [])
@@ -296,6 +307,8 @@ const freeTeamMemberOptions = computed(() => {
   );
   return selectedGroupTeamMemberOptions.value.filter(o => !used.has(String(o.value)));
 });
+
+const selectedGroupLeaderLabel = computed(() => groupLeaderDisplayName(selectedGroup.value));
 
 const teamOptions = computed(() =>
   (Array.isArray(props.teams) ? props.teams : [])
@@ -334,6 +347,29 @@ function memberName(member) {
 function teamName(teamId) {
   const match = teamOptions.value.find(team => String(team.id) === String(teamId));
   return match?.name || (teamId ? `الفريق #${teamId}` : '-');
+}
+
+function groupLeaderDisplayName(group) {
+  const inlineName =
+    group?.leader?.user?.name ||
+    group?.leader?.name ||
+    group?.leader_name ||
+    group?.user?.name ||
+    '';
+  if (String(inlineName || '').trim()) return String(inlineName).trim();
+
+  const currentGroupId = groupId(group);
+  if (!currentGroupId) return 'null';
+  const row = (Array.isArray(groupLeaders.value) ? groupLeaders.value : []).find(
+    item => String(groupLeaderGroupId(item)) === String(currentGroupId)
+  );
+  const resolvedName =
+    row?.leader?.user?.name ||
+    row?.leader?.name ||
+    row?.user?.name ||
+    row?.name ||
+    '';
+  return String(resolvedName || '').trim() || 'null';
 }
 
 function resetGroupForm() {
@@ -554,10 +590,6 @@ function groupLeaderRowKey(row) {
 }
 
 async function loadGroupLeaders() {
-  if (props.hideSalesLeaderSection) {
-    groupLeaders.value = [];
-    return;
-  }
   groupLeadersLoading.value = true;
   try {
     const list = await teamService.getTeamGroupLeaders({}, apiOptions.value);

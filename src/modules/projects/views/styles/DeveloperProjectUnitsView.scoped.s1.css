@@ -294,6 +294,12 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+.actions-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 .claim-received-label {
   display: inline-flex;
   align-items: center;

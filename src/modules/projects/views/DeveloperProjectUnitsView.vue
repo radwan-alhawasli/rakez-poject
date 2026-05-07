@@ -184,14 +184,24 @@
                   </label>
                 </td>
                 <td>
-                  <button
-                    type="button"
-                    class="btn-download-mini"
-                    :disabled="sendingClaimId === claim.id"
-                    @click="sendClaimFileToDeveloper(claim.id)"
-                  >
-                    {{ sendingClaimId === claim.id ? 'جاري الإرسال...' : 'إرسال ملف المطالبة للمطور' }}
-                  </button>
+                  <div class="actions-inline">
+                    <button
+                      type="button"
+                      class="btn-download-mini"
+                      :disabled="viewingClaimId === claim.id"
+                      @click="viewClaimFile(claim)"
+                    >
+                      {{ viewingClaimId === claim.id ? 'جاري الفتح...' : 'عرض ملفات المطالبة' }}
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-download-mini"
+                      :disabled="sendingClaimId === claim.id"
+                      @click="sendClaimFileToDeveloper(claim.id)"
+                    >
+                      {{ sendingClaimId === claim.id ? 'جاري الإرسال...' : 'إرسال ملف المطالبة للمطور' }}
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -230,6 +240,7 @@ export default {
     const isLoadingUnits = ref(false);
     const isLoadingClaimFiles = ref(false);
     const updatingClaimId = ref(null);
+    const viewingClaimId = ref(null);
     const sendingClaimId = ref(null);
 
     const isDownloading = ref(null);
@@ -452,6 +463,28 @@ export default {
       }
     }
 
+    async function viewClaimFile(claim) {
+      const claimId = Number(claim?.id || 0);
+      if (!Number.isFinite(claimId) || claimId <= 0) return;
+      viewingClaimId.value = claimId;
+      try {
+        const res = await accountingService.generateClaimFilePdf(claimId);
+        const fileUrl = toAbsoluteFileUrl(
+          res?.download_url || res?.download_path || res?.pdf_path || claim?.download_url || claim?.pdf_path
+        );
+        if (!fileUrl) {
+          toast.warning('لا يوجد رابط صالح لعرض ملف المطالبة');
+          return;
+        }
+        window.open(fileUrl, '_blank', 'noopener,noreferrer');
+      } catch (error) {
+        logger.error('Error viewing claim file', error);
+        showApiError(error, 'تعذر عرض ملفات المطالبة');
+      } finally {
+        viewingClaimId.value = null;
+      }
+    }
+
     function formatClaimUnits(claim) {
       const ids = Array.isArray(claim?.reservation_ids) ? claim.reservation_ids : [];
       if (!ids.length) return '—';
@@ -561,6 +594,7 @@ export default {
       isLoadingClaimFiles,
       isDownloading,
       updatingClaimId,
+      viewingClaimId,
       sendingClaimId,
       filteredUnclaimedUnits,
       claimFilesForProject,
@@ -574,6 +608,7 @@ export default {
       openDownload,
       handleSubmit,
       markCommissionReceived,
+      viewClaimFile,
       sendClaimFileToDeveloper,
       formatClaimUnits,
       goBack,

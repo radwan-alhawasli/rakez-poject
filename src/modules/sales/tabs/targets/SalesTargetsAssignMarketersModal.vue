@@ -225,6 +225,17 @@ defineEmits(['close', 'save']);
 
 .assign-modal-header h3 {
   line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.assign-modal-header {
+  gap: 12px;
+}
+
+.assign-close {
+  flex-shrink: 0;
 }
 
 .assign-target-meta {

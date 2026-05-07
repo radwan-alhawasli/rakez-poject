@@ -70,6 +70,29 @@ function unwrapSalesHierarchyList(response) {
   const nested = root?.data && typeof root.data === 'object' ? root.data : null;
   const nestedMeta = nested?.meta && typeof nested.meta === 'object' ? nested.meta : {};
 
+  /**
+   * @param {any} value
+   * @returns {unknown[]}
+   */
+  const pickArray = value => {
+    if (!value || typeof value !== 'object') return [];
+    const candidates = [
+      value.data,
+      value.items,
+      value.lines,
+      value.targets,
+      value.executive_director_lines,
+      value.rows,
+      value.team_groups,
+      value.members,
+      value.member_users,
+    ];
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) return candidate;
+    }
+    return [];
+  };
+
   if (Array.isArray(items) && items.length > 0) {
     return { items, total, meta: { ...nestedMeta, ...topMeta } };
   }
@@ -77,46 +100,20 @@ function unwrapSalesHierarchyList(response) {
   if (Array.isArray(root)) {
     return { items: root, total: root.length, meta: { ...nestedMeta, ...topMeta } };
   }
-  if (Array.isArray(root?.data)) {
+  const rootList = pickArray(root);
+  if (rootList.length > 0) {
     return {
-      items: root.data,
-      total: root.total ?? root.data.length,
-      meta: { ...nestedMeta, ...topMeta },
-    };
-  }
-  if (Array.isArray(root?.items)) {
-    return {
-      items: root.items,
-      total: root.total ?? root.items.length,
-      meta: { ...nestedMeta, ...topMeta },
-    };
-  }
-  if (Array.isArray(root?.lines)) {
-    return {
-      items: root.lines,
-      total: root.total ?? root.lines.length,
+      items: rootList,
+      total: root.total ?? rootList.length,
       meta: { ...nestedMeta, ...topMeta },
     };
   }
   if (nested) {
-    if (Array.isArray(nested.data)) {
+    const nestedList = pickArray(nested);
+    if (nestedList.length > 0) {
       return {
-        items: nested.data,
-        total: nested.total ?? nested.data.length,
-        meta: { ...nestedMeta, ...topMeta },
-      };
-    }
-    if (Array.isArray(nested.items)) {
-      return {
-        items: nested.items,
-        total: nested.total ?? nested.items.length,
-        meta: { ...nestedMeta, ...topMeta },
-      };
-    }
-    if (Array.isArray(nested.lines)) {
-      return {
-        items: nested.lines,
-        total: nested.total ?? nested.lines.length,
+        items: nestedList,
+        total: nested.total ?? nestedList.length,
         meta: { ...nestedMeta, ...topMeta },
       };
     }
@@ -693,6 +690,8 @@ export const salesServiceCoreMethods = {
       if (Array.isArray(raw)) return raw;
       if (Array.isArray(raw?.items)) return raw.items;
       if (Array.isArray(raw?.groups)) return raw.groups;
+      if (Array.isArray(raw?.team_groups)) return raw.team_groups;
+      if (Array.isArray(raw?.data)) return raw.data;
       return [];
     } catch (error) {
       return handleServiceError(error, 'Fetch group leader led groups', 'get', []);
@@ -714,6 +713,8 @@ export const salesServiceCoreMethods = {
       if (Array.isArray(raw)) return raw;
       if (Array.isArray(raw?.items)) return raw.items;
       if (Array.isArray(raw?.members)) return raw.members;
+      if (Array.isArray(raw?.member_users)) return raw.member_users;
+      if (Array.isArray(raw?.data)) return raw.data;
       return [];
     } catch (error) {
       return handleServiceError(error, 'Fetch group leader members', 'get', []);

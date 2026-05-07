@@ -25,7 +25,7 @@
           <span class="target-card-ribbon__text">مكتمل</span>
         </div>
 
-        <div class="card-menu-wrap" @click.stop>
+        <div v-if="showCardMenu()" class="card-menu-wrap" @click.stop>
           <button
             type="button"
             class="card-menu-btn"
@@ -163,7 +163,36 @@
             {{ target.status_label_ar || getTargetStatusText(target) }}
           </span>
 
-          <div class="target-card-actions" v-if="canUpdateTarget(target)" @click.stop>
+          <div
+            v-if="(isExecutiveView && canViewTargetDetails) || isManagerView || isGroupLeaderView || canUpdateTarget(target)"
+            class="target-card-actions"
+            @click.stop
+          >
+            <button
+              v-if="isExecutiveView && canViewTargetDetails"
+              type="button"
+              class="btn-status-toggle btn-action-primary"
+              @click.stop="$emit('view-target-details', target)"
+            >
+              عرض التفاصيل
+            </button>
+            <button
+              v-if="isManagerView"
+              type="button"
+              class="btn-status-toggle btn-action-primary"
+              @click.stop="$emit('assign-marketers', target)"
+            >
+              {{ assignActionLabel }}
+            </button>
+            <button
+              v-if="isGroupLeaderView"
+              type="button"
+              class="btn-status-toggle btn-action-primary"
+              @click.stop="$emit('assign-marketers', target)"
+            >
+              {{ assignActionLabel }}
+            </button>
+            <template v-if="canUpdateTarget(target)">
             <button
               type="button"
               class="btn-status-toggle"
@@ -182,6 +211,7 @@
             >
               مكتمل
             </button>
+            </template>
           </div>
         </div>
       </div>
@@ -197,7 +227,7 @@ import {
   isTargetCompleted,
 } from '@/modules/sales/tabs/targets/salesTargetsTabDisplay.js';
 
-defineProps({
+const props = defineProps({
   displayTargets: {
     type: Array,
     required: true,
@@ -274,6 +304,18 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  isExecutiveView: {
+    type: Boolean,
+    default: false,
+  },
+  isManagerView: {
+    type: Boolean,
+    default: false,
+  },
+  isGroupLeaderView: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits([
@@ -305,6 +347,10 @@ function toggleCardMenu(id) {
 
 function updateTargetStatus(target, newStatus) {
   emit('update-target-status', target, newStatus);
+}
+
+function showCardMenu() {
+  return !props.isExecutiveView && !props.isManagerView;
 }
 </script>
 

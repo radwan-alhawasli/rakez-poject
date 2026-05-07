@@ -358,6 +358,10 @@
   filter: grayscale(0.2);
 }
 
+.claim-actions--units {
+  justify-content: flex-end;
+}
+
 .loading-state, .empty-state {
   text-align: center;
   padding: 60px;

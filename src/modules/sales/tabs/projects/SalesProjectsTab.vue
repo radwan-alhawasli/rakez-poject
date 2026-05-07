@@ -41,6 +41,7 @@
         <div class="card-title-block">
           <h3 class="card-title-main">{{ project.name }}</h3>
           <p class="card-title-type">{{ project.propertyTypeLabel }}</p>
+          <p class="card-title-developer">المطور: {{ project.developer_name || '—' }}</p>
         </div>
 
         <div class="card-content">
@@ -275,6 +276,13 @@ loadProjects();
   font-size: 13px;
   color: rgba(255, 255, 255, 0.9);
   margin: 0;
+}
+
+.project-management-design .card-title-developer {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 600;
 }
 
 .project-management-design .card-content {

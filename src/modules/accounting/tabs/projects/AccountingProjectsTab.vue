@@ -141,14 +141,24 @@
                     <span v-else class="status-badge none">لا يوجد</span>
                   </td>
                   <td>
-                    <button 
-                      v-if="unit.has_pdf" 
-                      class="btn-download-small" 
-                      @click="openPdf(unit.download_path)"
-                    >
-                      تحميل
-                    </button>
-                    <span v-else class="cell-placeholder">—</span>
+                    <div class="claim-actions claim-actions--units">
+                      <button
+                        v-if="unit.has_claim_file"
+                        class="btn-download"
+                        :disabled="viewingClaimId === unit.claim_file_id"
+                        @click="handleViewClaimFileForUnit(unit)"
+                      >
+                        {{ viewingClaimId === unit.claim_file_id ? 'جاري العرض...' : 'عرض ملف المطالبه' }}
+                      </button>
+                      <button 
+                        v-if="unit.has_pdf" 
+                        class="btn-download-small" 
+                        @click="openPdf(unit.download_path)"
+                      >
+                        تحميل
+                      </button>
+                      <span v-if="!unit.has_claim_file && !unit.has_pdf" class="cell-placeholder">—</span>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -403,6 +413,35 @@ async function handleViewClaimFile(claim) {
       '\u062a\u0639\u0630\u0631 \u0639\u0631\u0636 \u0645\u0644\u0641 \u0627\u0644\u0645\u0637\u0627\u0644\u0628\u0629',
       'error',
     );
+  } finally {
+    viewingClaimId.value = null;
+  }
+}
+
+async function handleViewClaimFileForUnit(unit) {
+  const claimId = Number(unit?.claim_file_id || unit?.claim_id || 0);
+  if (!Number.isFinite(claimId) || claimId <= 0) {
+    if (unit?.download_path) {
+      openPdf(unit.download_path);
+      return;
+    }
+    notificationService.addNotification('لا يوجد ملف مطالبة لهذه الوحدة', 'warning');
+    return;
+  }
+
+  viewingClaimId.value = claimId;
+  try {
+    const res = await accountingService.generateClaimFilePdf(claimId);
+    const pdfPath = res?.download_url || res?.download_path || res?.pdf_path || unit?.download_path;
+    if (pdfPath) {
+      openPdf(pdfPath);
+      notificationService.addNotification('تم فتح ملف المطالبة', 'success');
+    } else {
+      notificationService.addNotification('لم يتم العثور على رابط ملف المطالبة', 'warning');
+    }
+  } catch (error) {
+    logger.error('Failed to view claim file from unit row:', error);
+    notificationService.addNotification('تعذر عرض ملف المطالبة', 'error');
   } finally {
     viewingClaimId.value = null;
   }
