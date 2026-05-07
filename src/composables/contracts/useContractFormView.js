@@ -52,6 +52,9 @@ export function useContractFormView() {
     second_party_cr_number: '',
     second_party_signatory: '',
     second_party_role: '',
+    second_party_bank_name: '',
+    second_party_bank_account_name: '',
+    second_party_iban_number: '',
     city: '',
     city_id: '',
     project_name: '',
@@ -158,6 +161,14 @@ export function useContractFormView() {
     try {
       const data = await contractService.getContractById(id);
       if (data) {
+        const secondPartyData =
+          data.second_party_data && typeof data.second_party_data === 'object'
+            ? data.second_party_data
+            : {};
+        const secondParty =
+          data.second_party && typeof data.second_party === 'object'
+            ? data.second_party
+            : {};
         form.city = data.city || form.city;
         if (data.city_id != null && data.city_id !== '') {
           form.city_id = String(data.city_id);
@@ -206,6 +217,27 @@ export function useContractFormView() {
           data.second_party_cr_number || data.developer_number || form.second_party_cr_number;
         form.second_party_signatory = data.second_party_signatory || form.second_party_signatory;
         form.second_party_role = data.second_party_role || 'developer';
+        form.second_party_bank_name =
+          data.second_party_bank_name ||
+          secondPartyData.second_party_bank_name ||
+          secondPartyData.bank_name ||
+          secondParty.second_party_bank_name ||
+          secondParty.bank_name ||
+          form.second_party_bank_name;
+        form.second_party_bank_account_name =
+          data.second_party_bank_account_name ||
+          secondPartyData.second_party_bank_account_name ||
+          secondPartyData.bank_account_name ||
+          secondParty.second_party_bank_account_name ||
+          secondParty.bank_account_name ||
+          form.second_party_bank_account_name;
+        form.second_party_iban_number =
+          data.second_party_iban_number ||
+          secondPartyData.second_party_iban_number ||
+          secondPartyData.iban_number ||
+          secondParty.second_party_iban_number ||
+          secondParty.iban_number ||
+          form.second_party_iban_number;
 
         if (data.gregorian_date) {
           const dateStr = data.gregorian_date;
@@ -270,6 +302,9 @@ export function useContractFormView() {
       commission_from: form.commission_from,
       project_name: form.project_name,
       city: form.city,
+      second_party_bank_name: form.second_party_bank_name,
+      second_party_bank_account_name: form.second_party_bank_account_name,
+      second_party_iban_number: form.second_party_iban_number,
     };
     if (!validate(dataToValidate)) {
       const firstErr = Object.values(errors).flat()[0];
@@ -306,6 +341,9 @@ export function useContractFormView() {
           second_party_cr_number: form.second_party_cr_number,
           second_party_signatory: form.second_party_signatory,
           second_party_role: form.second_party_role,
+          second_party_bank_name: form.second_party_bank_name,
+          second_party_bank_account_name: form.second_party_bank_account_name,
+          second_party_iban_number: form.second_party_iban_number,
 
           gregorian_date: form.gregorian_date
             ? form.gregorian_date.split('-').reverse().join('-')

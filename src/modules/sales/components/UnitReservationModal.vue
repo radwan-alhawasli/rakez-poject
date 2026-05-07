@@ -1,3 +1,4 @@
+<!-- eslint-disable max-lines -->
 <template>
   <div class="rsv-overlay" @click.self="$emit('close')">
     <div class="rsv-modal rsv-modal--rakez" role="dialog" :aria-labelledby="titleId" dir="rtl">
@@ -113,6 +114,46 @@
               </div>
             </div>
 
+            <template v-if="isOnMapProject">
+              <div class="rsv-row rsv-row-2">
+                <div class="rsv-field">
+                  <label class="rsv-label">تاريخ تسليم الوحدة *</label>
+                  <input v-model="form.delivery_date" type="date" required class="rsv-input" />
+                </div>
+                <div class="rsv-field">
+                  <label class="rsv-label">الدفعة الأولى *</label>
+                  <input v-model.number="form.first_payment" type="number" min="0" step="1" required class="rsv-input" />
+                </div>
+              </div>
+
+              <div class="rsv-row rsv-row-2">
+                <div class="rsv-field">
+                  <label class="rsv-label">تاريخ الدفعة الأولى</label>
+                  <input v-model="form.first_payment_date" type="date" class="rsv-input" />
+                </div>
+                <div class="rsv-field">
+                  <label class="rsv-label">حساب الشركة أو المطور *</label>
+                  <select v-model="form.account" required class="rsv-input">
+                    <option value="">اختر الحساب</option>
+                    <option v-for="option in accountOptions" :key="option.value" :value="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div v-if="selectedAccountDetails.hasData" class="rsv-account-details">
+                <div v-if="selectedAccountDetails.accountNumber" class="rsv-account-line">
+                  <span class="rsv-account-key">رقم الحساب:</span>
+                  <span class="rsv-account-value">{{ selectedAccountDetails.accountNumber }}</span>
+                </div>
+                <div v-if="selectedAccountDetails.iban" class="rsv-account-line">
+                  <span class="rsv-account-key">IBAN:</span>
+                  <span class="rsv-account-value">{{ selectedAccountDetails.iban }}</span>
+                </div>
+              </div>
+            </template>
+
             <!-- حقول التفاوض (تظهر فقط عند اختيار حجز بغرض التفاوض) -->
             <template v-if="form.reservation_type === 'negotiation'">
               <div class="rsv-row rsv-row-2">
@@ -174,15 +215,6 @@
               </div>
             </div>
 
-          <SaleParticipantsSection
-            :participant-employees="participantEmployees"
-            :project-team-label="contextDisplay.projectTeam"
-            :my-sale-operation="form.my_sale_operation"
-            :other-participants="form.other_sale_participants"
-            @update:mySaleOperation="form.my_sale_operation = $event"
-            @update:otherParticipants="form.other_sale_participants = $event"
-          />
-
             <!-- قيمة العربون + طريقة الدفع + IBAN -->
             <div class="rsv-row rsv-row-3">
               <div class="rsv-field">
@@ -201,6 +233,56 @@
                 <input v-model="form.client_iban" type="text" class="rsv-input" placeholder="SA00..." />
               </div>
             </div>
+
+            <template v-if="isOnMapProject">
+              <div class="rsv-field rsv-field--full">
+                <label class="rsv-label">مبلغ الدفعة الأولى *</label>
+                <input v-model.number="form.down_payment_amount" type="number" min="0" step="1" required class="rsv-input" />
+              </div>
+
+              <div class="rsv-field rsv-field--full">
+                <div class="rsv-payments-head">
+                  <label class="rsv-label">دفعات السداد</label>
+                  <button type="button" class="rsv-btn-secondary rsv-btn-secondary--small" @click="addPaymentRow">
+                    إضافة دفعة
+                  </button>
+                </div>
+                <div class="rsv-payments-list">
+                  <div
+                    v-for="(row, index) in form.payments"
+                    :key="`payment-row-${index}`"
+                    class="rsv-row rsv-row-2 rsv-payment-row"
+                  >
+                    <div class="rsv-field">
+                      <label class="rsv-label">الدفعة {{ index + 1 }} *</label>
+                      <input
+                        v-model.number="row.payment"
+                        type="number"
+                        min="0"
+                        step="1"
+                        required
+                        class="rsv-input"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div class="rsv-field">
+                      <div class="rsv-payments-date-head">
+                        <label class="rsv-label">تاريخ الدفعة (اختياري)</label>
+                        <button
+                          v-if="form.payments.length > 1"
+                          type="button"
+                          class="rsv-link-btn"
+                          @click="removePaymentRow(index)"
+                        >
+                          حذف
+                        </button>
+                      </div>
+                      <input v-model="row.date" type="date" class="rsv-input" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
 
             <!-- صورة الإيصال (صورة السند) -->
             <div class="rsv-row rsv-row-1">
@@ -266,8 +348,8 @@
 </template>
 
 <script>
+/* eslint-disable max-lines */
 import { computed, reactive, watch, ref } from 'vue';
-import SaleParticipantsSection from './SaleParticipantsSection.vue';
 
 /** اسم فريق من استجابة API: نص، كائن (name / team_name)، أو مصفوفة فرق */
 function formatTeamLabel(value) {
@@ -302,7 +384,6 @@ function mergeReservationContextPayload(raw) {
 
 export default {
   name: 'UnitReservationModal',
-  components: { SaleParticipantsSection },
   props: {
     unit: { type: Object, default: () => ({}) },
     context: { type: Object, default: () => ({}) },
@@ -327,14 +408,15 @@ export default {
       client_mobile: '',
       client_nationality: 'Saudi',
       client_iban: '',
-      // --- Sale participants (UI only for now; see TODO in payload normalizer) ---
-      my_sale_operation: '',
-      /** @type {{ employee_id: string; operation: string }[]} */
-      other_sale_participants: [],
       payment_method: 'bank_transfer',
       down_payment_amount: 0,
       down_payment_status: 'refundable',
       purchase_mechanism: 'cash',
+      delivery_date: '',
+      first_payment: null,
+      first_payment_date: '',
+      account: '',
+      payments: [{ payment: null, date: '' }],
       negotiation_notes: '',
       negotiation_reason: '',
       proposed_price: null,
@@ -366,10 +448,27 @@ export default {
       if (input) input.value = '';
     };
 
+    const accountOptions = Object.freeze([
+      { value: 'company', label: 'حساب الشركة' },
+      { value: 'developer', label: 'حساب المطور' },
+    ]);
+
+    function addPaymentRow() {
+      form.payments.push({ payment: null, date: '' });
+    }
+
+    function removePaymentRow(index) {
+      if (form.payments.length <= 1) return;
+      form.payments.splice(index, 1);
+    }
+
     watch(
       () => props.formData,
       (data) => {
         if (data && typeof data === 'object') Object.assign(form, data);
+        if (!Array.isArray(form.payments) || form.payments.length === 0) {
+          form.payments = [{ payment: null, date: '' }];
+        }
       },
       { deep: true }
     );
@@ -390,8 +489,42 @@ export default {
       return (u?.unit_number || u?.unit_id || u?.id) ?? '—';
     });
 
+    const normalizedContext = computed(() => mergeReservationContextPayload(props.context));
+
+    const isOnMapProject = computed(() => {
+      const ctx = normalizedContext.value;
+      const project = ctx?.project && typeof ctx.project === 'object' ? ctx.project : {};
+      const contract = ctx?.contract && typeof ctx.contract === 'object' ? ctx.contract : {};
+      const unit = ctx?.unit && typeof ctx.unit === 'object' ? ctx.unit : props.unit || {};
+      const candidates = [
+        ctx?.project_type,
+        ctx?.projectType,
+        ctx?.type,
+        ctx?.category,
+        project.project_type,
+        project.type,
+        project.category,
+        contract.project_type,
+        contract.type,
+        contract.category,
+        unit.project_type,
+        unit.type,
+        unit.category,
+      ]
+        .filter(v => v != null && v !== '')
+        .map(v => String(v).toLowerCase().trim());
+      return candidates.some(value =>
+        value.includes('خارطة') ||
+        value.includes('الخارطة') ||
+        value.includes('on_map') ||
+        value.includes('on map') ||
+        value.includes('off-plan') ||
+        value.includes('off_plan')
+      );
+    });
+
     const contextDisplay = computed(() => {
-      const ctx = mergeReservationContextPayload(props.context);
+      const ctx = normalizedContext.value;
       const unit = ctx.unit || props.unit || {};
       const project = {
         ...(typeof ctx.contract === 'object' && ctx.contract ? ctx.contract : {}),
@@ -461,6 +594,54 @@ export default {
         projectTeam,
         marketerTeam,
         employeeName,
+      };
+    });
+
+    const selectedAccountDetails = computed(() => {
+      const ctx = normalizedContext.value;
+      const contract = ctx?.contract && typeof ctx.contract === 'object' ? ctx.contract : {};
+      const project = ctx?.project && typeof ctx.project === 'object' ? ctx.project : {};
+      const source = form.account === 'developer'
+        ? {
+            account_number:
+              ctx?.developer_bank_account ||
+              ctx?.developer_bank_account_number ||
+              ctx?.developer_account ||
+              contract?.developer_bank_account ||
+              contract?.developer_account,
+            iban:
+              ctx?.developer_iban ||
+              ctx?.developer_iban_number ||
+              contract?.developer_iban ||
+              project?.developer_iban,
+          }
+        : {
+            account_number:
+              ctx?.company_bank_account ||
+              ctx?.company_bank_account_number ||
+              ctx?.company_account ||
+              contract?.company_bank_account ||
+              project?.company_bank_account,
+            iban:
+              ctx?.company_iban ||
+              ctx?.company_iban_number ||
+              contract?.company_iban ||
+              project?.company_iban,
+          };
+
+      const accountNumber =
+        source.account_number != null && String(source.account_number).trim() !== ''
+          ? String(source.account_number).trim()
+          : '';
+      const iban =
+        source.iban != null && String(source.iban).trim() !== ''
+          ? String(source.iban).trim()
+          : '';
+
+      return {
+        accountNumber,
+        iban,
+        hasData: Boolean(accountNumber || iban),
       };
     });
 
@@ -573,12 +754,24 @@ export default {
       return list.map(s => ({ ...s, label: arabicLabel(DOWN_PAYMENT_LABELS, s) }));
     });
 
-    const participantEmployees = computed(() => {
-      const li = props.lookups?.participants_employees;
-      return Array.isArray(li) ? li : [];
-    });
-
     function onSubmit() {
+      if (isOnMapProject.value) {
+        const normalizedRows = Array.isArray(form.payments)
+          ? form.payments
+              .map(row => ({
+                payment:
+                  row?.payment != null && row?.payment !== '' ? Number(row.payment) : null,
+                date: row?.date ? String(row.date) : '',
+              }))
+              .filter(row => row.payment != null && Number.isFinite(row.payment) && row.payment > 0)
+          : [];
+
+        if (normalizedRows.length === 0) {
+          form.payments = [{ payment: null, date: '' }];
+          return;
+        }
+        form.payments = normalizedRows;
+      }
       emit('submit', { ...form });
     }
 
@@ -586,15 +779,19 @@ export default {
       titleId,
       form,
       unitLabel,
+      isOnMapProject,
       contextDisplay,
       reservationTypes,
       nationalities,
       paymentMethods,
       purchaseMechanisms,
       downPaymentStatuses,
-      participantEmployees,
+      accountOptions,
+      selectedAccountDetails,
       fileName,
       filePreview,
+      addPaymentRow,
+      removePaymentRow,
       onFileChange,
       removeFile,
       onSubmit,

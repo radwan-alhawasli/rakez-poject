@@ -228,6 +228,84 @@
   min-height: 72px;
 }
 
+.rsv-account-details {
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #fafafa;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rsv-account-line {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+}
+
+.rsv-account-key {
+  color: #757575;
+  font-weight: 700;
+  min-width: 82px;
+}
+
+.rsv-account-value {
+  color: #333c4e;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.rsv-payments-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.rsv-payments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rsv-payment-row {
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 10px;
+  background: #fafafa;
+}
+
+.rsv-payments-date-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rsv-link-btn {
+  background: transparent;
+  border: none;
+  color: #8c7350;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.rsv-link-btn:hover {
+  color: #6e5a3f;
+}
+
+.rsv-btn-secondary--small {
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  border-width: 1px;
+}
+
 /* ── Submit button ── */
 .rsv-submit {
   margin-top: 4px;

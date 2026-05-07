@@ -6,6 +6,7 @@ import { useFormatters } from '@/composables/useFormatters';
 import authService from '@/services/authService';
 import { isSalesExecutive, isSalesLeader, isSalesManager, normalizeRole } from '@/utils/rbac';
 import logger from '@/utils/logger';
+import { normalizeSalesExecutiveLineType } from '@/constants/salesTargetLineTypes';
 
 import { 
   mapStatusForApiPatch, 
@@ -446,15 +447,15 @@ export function useSalesTargets() {
 
     if (salesTargetMode.value === 'executive') {
       try {
-        const lineType = String(targetForm.line_type || '').trim();
+        const lineType = normalizeSalesExecutiveLineType(targetForm.line_type);
         const valueRaw = targetForm.value ?? targetForm.assigned_target_value;
         const valueNum = Number(valueRaw);
         if (!lineType) {
-          notificationService.addNotification('Line type is required.', 'warning');
+          notificationService.addNotification('نوع الهدف مطلوب.', 'warning');
           return;
         }
         if (!Number.isFinite(valueNum) || valueNum <= 0) {
-          notificationService.addNotification('Target value must be greater than zero.', 'warning');
+          notificationService.addNotification('قيمة الهدف يجب أن تكون أكبر من صفر.', 'warning');
           return;
         }
 
@@ -462,7 +463,7 @@ export function useSalesTargets() {
           line_type: lineType,
           value: String(valueNum),
         });
-        notificationService.addNotification('Target created successfully.', 'success');
+        notificationService.addNotification('تم إنشاء الهدف بنجاح.', 'success');
         showCreateTargetModal.value = false;
         await loadTargets();
 
@@ -478,7 +479,7 @@ export function useSalesTargets() {
       } catch (err) {
         const error = /** @type {any} */ (err);
         logger.error('Error creating executive target:', error);
-        const msg = error?.response?.data?.message || error?.message || 'Failed to create target';
+        const msg = error?.response?.data?.message || error?.message || 'فشل إنشاء الهدف';
         notificationService.addNotification(msg, 'error');
       }
       return;

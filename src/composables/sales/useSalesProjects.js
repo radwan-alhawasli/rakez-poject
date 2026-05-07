@@ -6,6 +6,7 @@ import { isSalesLeader } from '@/utils/rbac';
 import { useFormatters } from '@/composables/useFormatters';
 import logger from '@/utils/logger';
 import { computeSetupProgressPercentSixStages } from '@/utils/projectProgressSteps';
+import { resolveProjectDeveloperName, resolveProjectTypeLabel } from '@/utils/projectMeta';
 
 export function useSalesProjects() {
   const router = useRouter();
@@ -177,7 +178,8 @@ export function useSalesProjects() {
           location: loc,
           image: img || '/img/placeholder-project.jpg',
           hasImage,
-          developer_name: p.developer_name || p.developer || p.developer_info?.name,
+          developer_name: resolveProjectDeveloperName(p),
+          project_type_label: resolveProjectTypeLabel(p),
           status: contractStatus,
           contract_status: contractStatus,
           is_ready: p.is_ready ?? false,

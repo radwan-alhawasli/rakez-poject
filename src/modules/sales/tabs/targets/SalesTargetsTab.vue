@@ -198,13 +198,16 @@
           <template v-else>
             <div class="form-row">
               <label class="form-label" for="exec-target-line-type">نوع الهدف</label>
-              <input
-                id="exec-target-line-type"
-                v-model="executiveTargetForm.line_type"
-                type="text"
-                class="form-input"
-                placeholder="نوع الهدف"
-              />
+              <select id="exec-target-line-type" v-model="executiveTargetForm.line_type" class="form-select">
+                <option value="">اختر النوع</option>
+                <option
+                  v-for="option in SALES_EXECUTIVE_TARGET_TYPES"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
             </div>
 
             <div class="form-row">
@@ -284,6 +287,10 @@ import authService from '@/services/authService';
 import salesService from '@/services/salesService';
 import notificationService from '@/services/notificationService';
 import { isSalesExecutive, isSalesLeader, isSalesManager, normalizeRole } from '@/utils/rbac';
+import {
+  SALES_EXECUTIVE_TARGET_TYPES,
+  normalizeSalesExecutiveLineType,
+} from '@/constants/salesTargetLineTypes';
 
 const route = useRoute();
 /** أولوية على query: لوحة المشروع تمرّر ref معرّف العقد */
@@ -386,7 +393,7 @@ async function openExecutiveTargetDetails(target) {
     const result = await salesService.getExecutiveTarget(targetId);
     const normalized = normalizeSalesTargetItem(result);
     executiveTargetDetails.value = normalized;
-    executiveTargetForm.line_type = normalized?.line_type || '';
+    executiveTargetForm.line_type = normalizeSalesExecutiveLineType(normalized?.line_type || '');
     executiveTargetForm.value =
       normalized?.value ?? normalized?.target_value ?? normalized?.assigned_target_value ?? '';
   } catch (err) {
@@ -412,7 +419,7 @@ async function saveExecutiveTargetDetails() {
     return;
   }
 
-  const lineType = String(executiveTargetForm.line_type || '').trim();
+  const lineType = normalizeSalesExecutiveLineType(executiveTargetForm.line_type);
   const valueNumber = Number(executiveTargetForm.value);
   if (!lineType) {
     notificationService.addNotification('نوع الهدف مطلوب.', 'warning');

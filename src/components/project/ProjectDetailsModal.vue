@@ -49,6 +49,23 @@
             {{ project?.description ? 'Available' : 'Pending' }}
           </span>
         </div>
+
+        <div class="detail-box">
+          <span class="label">المطور</span>
+          <span class="value">{{ project?.developer_name || 'غير متوفر' }}</span>
+          <span
+            class="status-mini"
+            :class="getStatusClass(project?.developer_name ? 'available' : 'notfound')"
+          >
+            {{ project?.developer_name ? 'Available' : 'Not Found' }}
+          </span>
+        </div>
+
+        <div class="detail-box">
+          <span class="label">نوع المشروع</span>
+          <span class="value">{{ project?.project_type_label || 'غير محدد' }}</span>
+          <span class="status-mini" :class="getStatusClass('available')">Available</span>
+        </div>
       </div>
 
       <button class="close-modal-btn" @click="$emit('close')">إغلاق</button>

@@ -21,6 +21,11 @@
             </div>
           </div>
           <h1 class="tracker-page-header__title">{{ project.name }}</h1>
+          <p class="tracker-page-header__meta" v-if="project.project_type_label || project.developer_name">
+            <span v-if="project.project_type_label">نوع المشروع: {{ project.project_type_label }}</span>
+            <span v-if="project.project_type_label && project.developer_name"> • </span>
+            <span v-if="project.developer_name">المطور: {{ project.developer_name }}</span>
+          </p>
           <p v-if="project.notes" class="tracker-page-header__notes">{{ project.notes }}</p>
         </div>
       </header>
@@ -139,6 +144,7 @@ import logger from '@/utils/logger';
 import { extractSecondPartyShowRow, isProjectProgressFullyCompleted } from '@/utils/projectProgressSteps';
 import { isSalesLeader } from '@/utils/rbac';
 import { toast } from '@/composables/useToast';
+import { resolveProjectDeveloperName, resolveProjectTypeLabel } from '@/utils/projectMeta';
 import ProjectProgressTab from '@/components/project/ProjectProgressTab.vue';
 import ProjectUnitsTab from '@/components/project/ProjectUnitsTab.vue';
 import ProjectPhotographyTab from '@/components/project/ProjectPhotographyTab.vue';
@@ -218,7 +224,8 @@ const fetchProject = async () => {
           id: raw.contract_id ?? raw.id ?? id,
           name: raw.project_name || raw.name,
           advertiser_number: raw.advertiser_number || raw.advertiser_section_url || raw.advertiser_num_id || '—',
-          developer_name: raw.developer_name || raw.developer || raw.developer_info?.name,
+          developer_name: resolveProjectDeveloperName(raw),
+          project_type_label: resolveProjectTypeLabel(raw),
           location: raw.location || [raw.city, raw.district].filter(Boolean).join(' - '),
           description: raw.description || raw.project_description || raw.details,
           avgPrice: raw.average_unit_price || raw.avg_unit_price || raw.price,
@@ -241,7 +248,11 @@ const fetchProject = async () => {
       }
       const found = list.find(p => (p.id ?? p.contract_id) == id);
       if (found) {
-        project.value = found;
+        project.value = {
+          ...found,
+          developer_name: resolveProjectDeveloperName(found),
+          project_type_label: resolveProjectTypeLabel(found),
+        };
         if (found.project_progress) {
           projectProgress.value = found.project_progress;
           isTrackerCompleted.value = checkTrackerCompletion(found.project_progress);
@@ -259,6 +270,8 @@ const fetchProject = async () => {
         name: data.project_name || data.name,
         image: projectImage,
         notes: data.notes ?? data.note ?? null,
+        developer_name: resolveProjectDeveloperName(data),
+        project_type_label: resolveProjectTypeLabel(data),
         unit_count: data.unit_count ?? null,
         total_price: data.total_price ?? null,
         user: data.user ?? null,
