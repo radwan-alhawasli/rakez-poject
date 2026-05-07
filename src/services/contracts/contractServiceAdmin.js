@@ -18,10 +18,23 @@ export const contractServiceAdminMethods = {
   async getAllContracts(params = {}) {
 
     try {
-      const response = await apiClient.get('/contracts/admin-index', { params });
+      const response = await apiClient.get('/admin/contracts/adminIndex', { params });
       const { items, total } = extractPaginatedData(response, []);
       return { items, total };
     } catch (error) {
+      // Backward compatibility with older backend route.
+      if (getCaughtStatus(error) === 404) {
+        try {
+          const fallbackResponse = await apiClient.get('/contracts/admin-index', { params });
+          const { items, total } = extractPaginatedData(fallbackResponse, []);
+          return { items, total };
+        } catch (fallbackError) {
+          const fallbackStatus = getCaughtStatus(fallbackError);
+          if (fallbackStatus === 401) throw toThrowable(fallbackError);
+          logger.error('Fetch admin contracts (fallback):', fallbackError);
+          return { items: [], total: 0 };
+        }
+      }
       const status = getCaughtStatus(error);
       if (status === 401) throw toThrowable(error);
       logger.error('Fetch admin contracts:', error);
@@ -157,8 +170,17 @@ export const contractServiceAdminMethods = {
 
       const notesStr = notes != null ? String(notes).trim() : '';
       if (notesStr) body.notes = notesStr;
-      const response = await apiClient.patch(`/admin/contracts/adminUpdateStatus/${id}`, body);
-      return response.data;
+      try {
+        const response = await apiClient.patch(`/admin/contracts/adminUpdateStatus/${id}`, body);
+        return response.data;
+      } catch (patchError) {
+        const patchStatus = getCaughtStatus(patchError);
+        if (patchStatus !== 404 && patchStatus !== 405 && patchStatus !== 422) {
+          throw patchError;
+        }
+        const postResponse = await apiClient.post(`/admin/contracts/adminUpdateStatus/${id}`, body);
+        return postResponse.data;
+      }
     } catch (error) {
       return handleServiceError(error, 'Update contract status (Admin)', 'patch');
     }

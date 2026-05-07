@@ -6,6 +6,7 @@
  *     developer_name?: string,
  *     developer_cr_number?: string,
  *     project_name?: string,
+ *     project_type?: string,
  *     side?: string,
  *     city?: string,
  *     city_id?: string|number,
@@ -53,10 +54,12 @@ export function buildExclusiveContractPayload({
 
   const pctNum = parseFloat(String(commissionPercentInput || '0').replace(',', '.'));
   const pctValid = Number.isFinite(pctNum) ? pctNum : 0;
+  const isOffPlan = String(form.project_type || 'ready') === 'off_plan';
 
   return {
     side: form.side,
     project_name: form.project_name?.trim() || '',
+    is_off_plan: isOffPlan,
     developer_name: developerName,
     developer_number: developerNumber,
     city: form.city?.trim() || '',

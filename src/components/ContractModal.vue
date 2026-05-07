@@ -48,6 +48,22 @@
               <span class="detail-label">الهاتف</span>
               <span class="detail-value detail-value-mono">{{ contractDetails.secondPartyPhone }}</span>
             </div>
+            <div v-if="contractDetails.secondPartyAddress" class="detail-row">
+              <span class="detail-label">العنوان</span>
+              <span class="detail-value">{{ contractDetails.secondPartyAddress }}</span>
+            </div>
+            <div v-if="contractDetails.secondPartyBankName" class="detail-row">
+              <span class="detail-label">اسم البنك</span>
+              <span class="detail-value">{{ contractDetails.secondPartyBankName }}</span>
+            </div>
+            <div v-if="contractDetails.secondPartyBankAccountName" class="detail-row">
+              <span class="detail-label">رقم الحساب البنكي</span>
+              <span class="detail-value detail-value-mono">{{ contractDetails.secondPartyBankAccountName }}</span>
+            </div>
+            <div v-if="contractDetails.secondPartyIbanNumber" class="detail-row">
+              <span class="detail-label">رقم الآيبان</span>
+              <span class="detail-value detail-value-mono">{{ contractDetails.secondPartyIbanNumber }}</span>
+            </div>
           </div>
         </section>
 
@@ -72,6 +88,10 @@
             <div class="detail-row">
               <span class="detail-label">اسم المشروع</span>
               <span class="detail-value">{{ contractDetails.projectName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">نوع المشروع</span>
+              <span class="detail-value">{{ contractDetails.projectType }}</span>
             </div>
             <div class="detail-row">
               <span class="detail-label">نوع الوحدات</span>
@@ -108,13 +128,17 @@
             <span class="detail-label">السعي من</span>
             <span class="detail-value">{{ contractDetails.commissionFrom || '—' }}</span>
           </div>
+          <div v-if="contractDetails.notes" class="detail-row">
+            <span class="detail-label">ملاحظات</span>
+            <span class="detail-value">{{ contractDetails.notes }}</span>
+          </div>
         </div>
       </section>
     </div>
     <template #footer>
       <div class="modal-footer-action flex flex-col gap-3">
         <div
-          v-if="normalizedStatus === 'pending' && hasPermission('contracts.approve')"
+          v-if="normalizedStatus === 'pending' && canApproveActions"
           class="contract-notes-wrap w-full"
         >
           <label class="contract-notes-label">ملاحظات (اختياري)</label>
@@ -150,7 +174,7 @@
           <template v-else>
             <button @click="closeModal" class="btn-close-large" :disabled="isActionLoading">إغلاق</button>
             <div
-              v-if="normalizedStatus === 'pending' && hasPermission('contracts.approve')"
+              v-if="normalizedStatus === 'pending' && canApproveActions"
               class="action-buttons flex gap-2"
             >
               <button type="button" class="btn-reject" :disabled="isActionLoading" @click="rejectContract">
@@ -171,8 +195,10 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import AppModal from '@/components/AppModal.vue'
 import { usePermissions } from '@/composables/usePermissions'
+import authService from '@/services/authService'
 import contractService from '@/services/contractService'
 import { toast } from '@/composables/useToast'
+import { resolveProjectTypeLabel } from '@/utils/projectMeta'
 
 export default {
   name: 'ContractModal',
@@ -186,6 +212,9 @@ export default {
   emits: ['close', 'approve', 'reject'],
   setup(props, { emit }) {
     const { hasPermission } = usePermissions();
+    const currentUser = authService.getCurrentUser();
+    const isAdminUser = Number(currentUser?.type) === 1 || currentUser?.role === 'admin';
+    const canApproveActions = computed(() => hasPermission('contracts.approve') || isAdminUser);
     const isActionLoading = ref(false);
     /** تأكيد من واجهة الموقع: 'approve' | 'reject' | null */
     const pendingConfirm = ref(null);
@@ -292,7 +321,23 @@ export default {
         (c.developer_number != null ? String(c.developer_number) : '');
       const secondPartyEmail = (sp.second_party_email ?? c.second_party_email ?? '').toString().trim();
       const secondPartyPhone = (sp.second_party_phone ?? c.second_party_phone ?? '').toString().trim();
+      const secondPartyAddress = (sp.second_party_address ?? c.second_party_address ?? '').toString().trim();
+      const secondPartyBankName = (sp.second_party_bank_name ?? c.second_party_bank_name ?? '').toString().trim();
+      const secondPartyBankAccountName = (
+        sp.second_party_bank_account_name ??
+        c.second_party_bank_account_name ??
+        sp.bank_account_name ??
+        ''
+      ).toString().trim();
+      const secondPartyIbanNumber = (
+        sp.second_party_iban_number ??
+        c.second_party_iban_number ??
+        sp.iban_number ??
+        ''
+      ).toString().trim();
       const developerRole = (sp.second_party_role ?? c.second_party_role ?? '').toString().trim();
+      const projectType = resolveProjectTypeLabel(c);
+      const notes = (c.notes ?? c.note ?? c.description ?? '').toString().trim();
 
       return {
         // بيانات المطور — مسطّحة أو من second_party_data
@@ -306,9 +351,14 @@ export default {
         secondPartyCr: secondPartyCr || '',
         secondPartyEmail,
         secondPartyPhone,
+        secondPartyAddress,
+        secondPartyBankName,
+        secondPartyBankAccountName,
+        secondPartyIbanNumber,
 
         // بيانات المشروع - من API الحقول الصحيحة (unit_count, total_price, project_image_url)
         projectName: c.project_name || 'غير محدد',
+        projectType,
         projectImageUrl: projectImageUrl || null,
         unitType: unitType,
         unitCount: unitCount,
@@ -320,6 +370,7 @@ export default {
         // نسبة السعي والسعي من (فارغ إن لم يرجعه الـ API)
         commissionPercent,
         commissionFrom,
+        notes,
       };
     });
 
@@ -387,6 +438,7 @@ export default {
       confirmApproveOrReject,
       normalizedStatus,
       hasPermission,
+      canApproveActions,
       isActionLoading,
       pendingConfirm,
     };

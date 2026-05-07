@@ -314,3 +314,34 @@
   backdrop-filter: blur(4px);
   border-radius: 20px;
 }
+
+.detail-payments-table-wrap {
+  margin-top: 12px;
+  overflow-x: auto;
+  border: 1px solid rgba(181, 169, 154, 0.28);
+  border-radius: 10px;
+}
+
+.detail-payments-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 320px;
+}
+
+.detail-payments-table th,
+.detail-payments-table td {
+  padding: 10px 12px;
+  text-align: right;
+  border-bottom: 1px solid rgba(181, 169, 154, 0.2);
+}
+
+.detail-payments-table th {
+  background: rgba(39, 55, 77, 0.05);
+  color: var(--color-gold-dark, #9a8d7d);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.detail-payments-table tr:last-child td {
+  border-bottom: none;
+}

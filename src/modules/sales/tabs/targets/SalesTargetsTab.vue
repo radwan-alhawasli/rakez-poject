@@ -45,6 +45,45 @@
         <p>لا توجد مجموعات تقودها، سيتم عرض أهدافك الشخصية.</p>
       </div>
 
+      <div v-if="isSalesExecutiveView" class="executive-units-panel">
+        <div class="executive-units-panel__header">
+          <h3 class="executive-units-panel__title">ملخص الوحدات المتاحة لتحديد الأهداف</h3>
+          <button type="button" class="btn-secondary" @click="loadExecutiveAvailableUnits" :disabled="isLoadingExecutiveUnits">
+            {{ isLoadingExecutiveUnits ? 'جاري التحديث...' : 'تحديث' }}
+          </button>
+        </div>
+
+        <p v-if="executiveUnitsError" class="executive-units-panel__state executive-units-panel__state--error">
+          {{ executiveUnitsError }}
+        </p>
+        <p v-else-if="isLoadingExecutiveUnits" class="executive-units-panel__state">جاري تحميل الملخص...</p>
+
+        <template v-else>
+          <div class="executive-units-grid">
+            <div class="executive-units-card">
+              <span class="executive-units-card__label">إجمالي الوحدات المتاحة</span>
+              <strong class="executive-units-card__value">{{ formatEnglishNumber(executiveUnitsSummary.total_available) }}</strong>
+            </div>
+            <div class="executive-units-card">
+              <span class="executive-units-card__label">إجمالي قيمة الوحدات المتاحة</span>
+              <strong class="executive-units-card__value">{{ formatEnglishCurrency(executiveUnitsSummary.total_available_price) }}</strong>
+            </div>
+          </div>
+
+          <div v-if="executiveUnitsSummary.by_type_list.length" class="executive-units-by-type">
+            <div
+              v-for="item in executiveUnitsSummary.by_type_list"
+              :key="item.unit_type"
+              class="executive-units-card"
+            >
+              <span class="executive-units-card__label">{{ item.unit_type_label }}</span>
+              <strong class="executive-units-card__value">{{ formatEnglishNumber(item.count) }}</strong>
+              <span class="executive-units-card__sub">{{ formatEnglishCurrency(item.total_price) }}</span>
+            </div>
+          </div>
+        </template>
+      </div>
+
       <div v-if="showMemberOverviewCards" class="member-overview-grid">
         <div class="member-overview-card">
           <span class="member-overview-label">إجمالي الأهداف</span>
@@ -322,44 +361,54 @@ async function loadManagerTeams() {
   }
 }
 
-function normalizeExecutiveUnitsRows(payload) {
-  const data = payload?.data ?? payload;
-  if (Array.isArray(data)) {
-    return data.map((item, index) => ({
-      key: item?.id ?? item?.key ?? `item-${index}`,
-      label: item?.label ?? item?.line_type ?? item?.name ?? `عنصر ${index + 1}`,
-      value:
-        item?.count ??
-        item?.value ??
-        item?.available_units ??
-        item?.units_count ??
-        item?.total ??
-        0,
+const UNIT_TYPE_LABELS = Object.freeze({
+  apartment: 'شقة',
+  penthouse: 'بنتهاوس',
+  townhouse: 'تاون هاوس',
+  villa: 'فيلا',
+  duplex: 'دوبلكس',
+  land: 'أرض',
+});
+
+function normalizeUnitTypeLabel(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return 'غير محدد';
+  return UNIT_TYPE_LABELS[raw.toLowerCase()] || raw;
+}
+
+function normalizeExecutiveUnitsSummary(payload) {
+  const data = payload?.data ?? payload ?? {};
+  const byTypeListRaw = Array.isArray(data?.by_type_list) ? data.by_type_list : [];
+  const byTypeObj = data?.by_type && typeof data.by_type === 'object' ? data.by_type : {};
+  const byTypePriceObj =
+    data?.by_type_total_price && typeof data.by_type_total_price === 'object'
+      ? data.by_type_total_price
+      : {};
+
+  let by_type_list = byTypeListRaw.map(item => ({
+    unit_type: item?.unit_type ?? item?.type ?? 'unknown',
+    unit_type_label: normalizeUnitTypeLabel(item?.unit_type ?? item?.type),
+    count: Number(item?.count ?? 0) || 0,
+    total_price: Number(item?.total_price ?? 0) || 0,
+  }));
+
+  if (by_type_list.length === 0 && Object.keys(byTypeObj).length > 0) {
+    by_type_list = Object.keys(byTypeObj).map(key => ({
+      unit_type: key,
+      unit_type_label: normalizeUnitTypeLabel(key),
+      count: Number(byTypeObj[key] ?? 0) || 0,
+      total_price: Number(byTypePriceObj[key] ?? 0) || 0,
     }));
   }
 
-  if (data && typeof data === 'object') {
-    const buckets = [
-      data.available_units,
-      data.units,
-      data.items,
-      data.line_types,
-      data.types,
-    ];
-    for (const bucket of buckets) {
-      if (Array.isArray(bucket)) return normalizeExecutiveUnitsRows(bucket);
-    }
+  const totalAvailableFromList = by_type_list.reduce((sum, item) => sum + Number(item.count || 0), 0);
+  const totalPriceFromList = by_type_list.reduce((sum, item) => sum + Number(item.total_price || 0), 0);
 
-    return Object.entries(data)
-      .filter(([, value]) => ['number', 'string'].includes(typeof value))
-      .map(([key, value]) => ({
-        key,
-        label: key.replace(/_/g, ' '),
-        value,
-      }));
-  }
-
-  return [];
+  return {
+    total_available: Number(data?.total_available ?? totalAvailableFromList) || 0,
+    total_available_price: Number(data?.total_available_price ?? totalPriceFromList) || 0,
+    by_type_list,
+  };
 }
 
 async function loadExecutiveAvailableUnits() {
@@ -368,9 +417,9 @@ async function loadExecutiveAvailableUnits() {
   executiveUnitsError.value = '';
   try {
     const result = await salesService.getExecutiveAvailableUnits();
-    executiveUnitsRows.value = normalizeExecutiveUnitsRows(result);
+    executiveUnitsSummary.value = normalizeExecutiveUnitsSummary(result);
   } catch (err) {
-    executiveUnitsRows.value = [];
+    executiveUnitsSummary.value = normalizeExecutiveUnitsSummary({});
     executiveUnitsError.value =
       err?.response?.data?.message || err?.message || 'فشل تحميل الوحدات المتاحة';
   } finally {
@@ -486,7 +535,7 @@ const unitsModalRows = ref([]);
 const unitsModalUnfilteredCount = ref(0);
 const managerTeams = ref([]);
 const loadingManagerTeams = ref(false);
-const executiveUnitsRows = ref([]);
+const executiveUnitsSummary = ref(normalizeExecutiveUnitsSummary({}));
 const isLoadingExecutiveUnits = ref(false);
 const executiveUnitsError = ref('');
 const showExecutiveTargetModal = ref(false);
@@ -549,7 +598,7 @@ watch(
       loadExecutiveAvailableUnits();
       return;
     }
-    executiveUnitsRows.value = [];
+    executiveUnitsSummary.value = normalizeExecutiveUnitsSummary({});
     executiveUnitsError.value = '';
   },
   { immediate: true }
@@ -823,6 +872,14 @@ const showMemberOverviewCards = computed(() =>
   !targetsLoadError.value &&
   Number(targetsOverview.assigned_lines_count || 0) > 0
 );
+
+function formatEnglishNumber(value) {
+  return Number(value || 0).toLocaleString('en-US');
+}
+
+function formatEnglishCurrency(value) {
+  return `${formatEnglishNumber(value)} ر.س`;
+}
 
 
 const currentUserId = computed(() => {
@@ -1263,6 +1320,13 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
+  margin-bottom: 12px;
+}
+
+.executive-units-by-type {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
 }
 
 .executive-units-card {
@@ -1286,6 +1350,16 @@ onUnmounted(() => {
   font-size: 20px;
   font-weight: 800;
   line-height: 1.2;
+  direction: ltr;
+  text-align: right;
+}
+
+.executive-units-card__sub {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+  direction: ltr;
+  text-align: right;
 }
 </style>
 

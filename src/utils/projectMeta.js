@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @param {any} value
  * @returns {boolean}
  */
@@ -62,6 +62,16 @@ export function resolveProjectDeveloperName(project) {
 export function resolveProjectTypeLabel(project) {
   if (!project || typeof project !== 'object') return 'غير محدد';
 
+  const offPlanSources = [
+    project.is_off_plan,
+    project.project?.is_off_plan,
+    project.info?.is_off_plan,
+    project.second_party_data?.is_off_plan,
+  ];
+
+  if (offPlanSources.some(isTruthyFlag)) return 'على الخارطة';
+  if (offPlanSources.some(v => v === false || v === 0 || v === '0')) return 'جاهز';
+
   const candidates = [
     project.project_type,
     project.property_type,
@@ -82,7 +92,7 @@ export function resolveProjectTypeLabel(project) {
       value.includes('on map') ||
       value.includes('off-plan') ||
       value.includes('off_plan') ||
-      value.includes('under_construction'),
+      value.includes('under_construction')
     )
   ) {
     return 'على الخارطة';
@@ -92,7 +102,7 @@ export function resolveProjectTypeLabel(project) {
     candidates.some(value =>
       value.includes('جاهز') ||
       value.includes('ready') ||
-      value.includes('completed'),
+      value.includes('completed')
     )
   ) {
     return 'جاهز';
@@ -104,7 +114,7 @@ export function resolveProjectTypeLabel(project) {
     ['ready', 'ready_for_marketing', 'completed'].includes(
       String(project.status ?? project.contract_status ?? '')
         .trim()
-        .toLowerCase(),
+        .toLowerCase()
     );
 
   return isReady ? 'جاهز' : 'على الخارطة';

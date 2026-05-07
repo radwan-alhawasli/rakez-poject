@@ -17,6 +17,38 @@ import {
   unitsForApi,
 } from '@/utils/contractUnits';
 
+const PROJECT_TYPE_READY = 'ready';
+const PROJECT_TYPE_OFF_PLAN = 'off_plan';
+
+/**
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+function parseIsOffPlan(value) {
+  if (value === true || value === 1) return true;
+  if (value === false || value === 0 || value == null) return false;
+  const text = String(value).trim().toLowerCase();
+  return (
+    text === '1' ||
+    text === 'true' ||
+    text === 'yes' ||
+    text.includes('على الخارطة') ||
+    text.includes('الخارطة') ||
+    text === 'off_plan' ||
+    text === 'off-plan' ||
+    text === 'on_map' ||
+    text === 'on-map'
+  );
+}
+
+/**
+ * @param {unknown} value
+ * @returns {'ready' | 'off_plan'}
+ */
+function toProjectType(value) {
+  return parseIsOffPlan(value) ? PROJECT_TYPE_OFF_PLAN : PROJECT_TYPE_READY;
+}
+
 export function useContractFormView() {
   const router = useRouter();
   const route = useRoute();
@@ -57,6 +89,7 @@ export function useContractFormView() {
     second_party_iban_number: '',
     city: '',
     city_id: '',
+    project_type: PROJECT_TYPE_READY,
     project_name: '',
     district: '',
     district_id: '',
@@ -174,6 +207,12 @@ export function useContractFormView() {
           form.city_id = String(data.city_id);
         }
         form.project_name = data.project_name || form.project_name;
+        form.project_type = toProjectType(
+          data.is_off_plan ??
+            data.project?.is_off_plan ??
+            data.info?.is_off_plan ??
+            data.second_party_data?.is_off_plan
+        );
         form.district = data.district || form.district;
         if (data.district_id != null && data.district_id !== '') {
           form.district_id = String(data.district_id);
@@ -327,6 +366,11 @@ export function useContractFormView() {
       }
     }
 
+    if (!requestId.value && ![PROJECT_TYPE_READY, PROJECT_TYPE_OFF_PLAN].includes(form.project_type)) {
+      toast.error('ÙŠØ±Ø¬Ù‰ Ø§Ø®ØªÙŠØ§Ø± Ù†ÙˆØ¹ Ø§Ù„Ù…Ø´Ø±ÙˆØ¹');
+      return;
+    }
+
     isSaving.value = true;
     try {
       if (requestId.value) {
@@ -379,6 +423,7 @@ export function useContractFormView() {
           city_id: String(form.city_id),
           district: form.district,
           district_id: String(form.district_id),
+          is_off_plan: form.project_type === PROJECT_TYPE_OFF_PLAN,
           note: form.notes,
           commission_percent: String(form.commission_percent ?? '').trim() || '0',
           commission_from: form.commission_from,

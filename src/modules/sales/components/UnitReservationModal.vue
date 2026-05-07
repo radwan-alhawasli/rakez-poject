@@ -207,11 +207,22 @@
                 <input v-model="form.client_mobile" type="tel" required class="rsv-input" placeholder="05xxxxxxxx" />
               </div>
               <div class="rsv-field">
+                <label class="rsv-label">رقم هوية العميل *</label>
+                <input v-model="form.client_id_number" type="text" required class="rsv-input" placeholder="1234567890" />
+              </div>
+            </div>
+
+            <div class="rsv-row rsv-row-2">
+              <div class="rsv-field">
                 <label class="rsv-label">جنسية العميل *</label>
                 <select v-model="form.client_nationality" required class="rsv-input">
                   <option value="">اختر الجنسية</option>
                   <option v-for="n in nationalities" :key="n.value" :value="n.value">{{ n.label }}</option>
                 </select>
+              </div>
+              <div class="rsv-field">
+                <label class="rsv-label">السعر النهائي (ر.س)</label>
+                <input :value="form.final_price || 0" type="number" class="rsv-input" readonly />
               </div>
             </div>
 
@@ -219,7 +230,7 @@
             <div class="rsv-row rsv-row-3">
               <div class="rsv-field">
                 <label class="rsv-label">قيمة العربون (ر.س) *</label>
-                <input v-model.number="form.down_payment_amount" type="number" min="0" step="1" required class="rsv-input" />
+                <input v-model.number="form.deposit_amount" type="number" min="0" step="1" required class="rsv-input" />
               </div>
               <div class="rsv-field">
                 <label class="rsv-label">طريقة الدفع *</label>
@@ -236,13 +247,13 @@
 
             <template v-if="isOnMapProject">
               <div class="rsv-field rsv-field--full">
-                <label class="rsv-label">مبلغ الدفعة الأولى *</label>
+                <label class="rsv-label">مبلغ الدفعة المقدمة *</label>
                 <input v-model.number="form.down_payment_amount" type="number" min="0" step="1" required class="rsv-input" />
               </div>
 
               <div class="rsv-field rsv-field--full">
                 <div class="rsv-payments-head">
-                  <label class="rsv-label">دفعات السداد</label>
+                  <label class="rsv-label">جدول الدفعات</label>
                   <button type="button" class="rsv-btn-secondary rsv-btn-secondary--small" @click="addPaymentRow">
                     إضافة دفعة
                   </button>
@@ -254,7 +265,7 @@
                     class="rsv-row rsv-row-2 rsv-payment-row"
                   >
                     <div class="rsv-field">
-                      <label class="rsv-label">الدفعة {{ index + 1 }} *</label>
+                      <label class="rsv-label">مبلغ الدفعة {{ index + 1 }} *</label>
                       <input
                         v-model.number="row.payment"
                         type="number"
@@ -287,13 +298,14 @@
             <!-- صورة الإيصال (صورة السند) -->
             <div class="rsv-row rsv-row-1">
               <div class="rsv-field rsv-field--full">
-                <label class="rsv-label">صورة إيصال الدفع (اختياري)</label>
+                <label class="rsv-label">صورة إيصال الدفع *</label>
                 <div class="rsv-file-upload">
                   <input
                     type="file"
                     id="receipt_voucher"
                     accept="image/*"
                     class="rsv-file-input"
+                    required
                     @change="onFileChange"
                   />
                   <label for="receipt_voucher" class="rsv-file-label">
@@ -350,6 +362,7 @@
 <script>
 /* eslint-disable max-lines */
 import { computed, reactive, watch, ref } from 'vue';
+import salesService from '@/services/salesService';
 
 /** اسم فريق من استجابة API: نص، كائن (name / team_name)، أو مصفوفة فرق */
 function formatTeamLabel(value) {
@@ -382,6 +395,20 @@ function mergeReservationContextPayload(raw) {
   return { ...base, ...nested };
 }
 
+/**
+ * @param {any} value
+ * @returns {boolean|null}
+ */
+function parseOffPlanBoolean(value) {
+  if (value === true || value === 1 || value === '1') return true;
+  if (value === false || value === 0 || value === '0') return false;
+  const text = String(value ?? '').trim().toLowerCase();
+  if (!text) return null;
+  if (['true', 'yes', 'on_map', 'on-map', 'off_plan', 'off-plan'].includes(text)) return true;
+  if (['false', 'no', 'ready', 'جاهز'].includes(text)) return false;
+  return null;
+}
+
 export default {
   name: 'UnitReservationModal',
   props: {
@@ -406,16 +433,22 @@ export default {
       contract_date: new Date().toISOString().split('T')[0],
       client_name: '',
       client_mobile: '',
+      client_id_number: '',
       client_nationality: 'Saudi',
       client_iban: '',
       payment_method: 'bank_transfer',
-      down_payment_amount: 0,
+      deposit_amount: 0,
+      down_payment_amount: null,
       down_payment_status: 'refundable',
       purchase_mechanism: 'cash',
       delivery_date: '',
       first_payment: null,
       first_payment_date: '',
       account: '',
+      commission_source: 'owner',
+      final_price: 0,
+      commission_percentage: 3,
+      is_off_plan: false,
       payments: [{ payment: null, date: '' }],
       negotiation_notes: '',
       negotiation_reason: '',
@@ -426,6 +459,9 @@ export default {
 
     const fileName = ref('');
     const filePreview = ref('');
+    const contractShowData = ref({});
+    const contractShowLoaded = ref(false);
+    const contractShowRequestToken = ref(0);
 
     const onFileChange = (e) => {
       const file = e.target.files[0];
@@ -465,7 +501,12 @@ export default {
     watch(
       () => props.formData,
       (data) => {
-        if (data && typeof data === 'object') Object.assign(form, data);
+        if (data && typeof data === 'object') {
+          Object.assign(form, data);
+          if ((form.deposit_amount == null || form.deposit_amount === '') && form.down_payment_amount != null) {
+            form.deposit_amount = form.down_payment_amount;
+          }
+        }
         if (!Array.isArray(form.payments) || form.payments.length === 0) {
           form.payments = [{ payment: null, date: '' }];
         }
@@ -490,12 +531,72 @@ export default {
     });
 
     const normalizedContext = computed(() => mergeReservationContextPayload(props.context));
+    const contractIdForLookup = computed(() => {
+      const ctx = normalizedContext.value;
+      return (
+        form.contract_id ||
+        props.unit?.contract_id ||
+        ctx?.contract_id ||
+        ctx?.contract?.id ||
+        ctx?.project?.contract_id ||
+        ''
+      );
+    });
+
+    watch(
+      contractIdForLookup,
+      async (rawId) => {
+        const contractId = rawId != null && rawId !== '' ? Number(rawId) : NaN;
+        if (!Number.isFinite(contractId) || contractId <= 0) {
+          contractShowData.value = {};
+          contractShowLoaded.value = false;
+          return;
+        }
+
+        const token = contractShowRequestToken.value + 1;
+        contractShowRequestToken.value = token;
+        try {
+          const contract = await salesService.getContractShow(contractId);
+          if (token !== contractShowRequestToken.value) return;
+          contractShowData.value = contract && typeof contract === 'object' ? contract : {};
+          contractShowLoaded.value = true;
+        } catch {
+          if (token !== contractShowRequestToken.value) return;
+          contractShowData.value = {};
+          contractShowLoaded.value = false;
+        }
+      },
+      { immediate: true },
+    );
 
     const isOnMapProject = computed(() => {
       const ctx = normalizedContext.value;
+      const contractShow = contractShowData.value;
+      const contractShowFlag = parseOffPlanBoolean(
+        contractShow?.is_off_plan ??
+          contractShow?.project?.is_off_plan ??
+          contractShow?.exclusive_project?.is_off_plan,
+      );
+      if (contractShowLoaded.value && contractShowFlag !== null) {
+        return contractShowFlag;
+      }
+
       const project = ctx?.project && typeof ctx.project === 'object' ? ctx.project : {};
       const contract = ctx?.contract && typeof ctx.contract === 'object' ? ctx.contract : {};
       const unit = ctx?.unit && typeof ctx.unit === 'object' ? ctx.unit : props.unit || {};
+      const offPlanFlags = [
+        ctx?.is_off_plan,
+        ctx?.isOffPlan,
+        project?.is_off_plan,
+        contract?.is_off_plan,
+        unit?.is_off_plan,
+      ];
+      const hasOffPlanFlag = offPlanFlags.some(v => {
+        if (v === true || v === 1 || v === '1') return true;
+        const text = String(v ?? '').trim().toLowerCase();
+        return text === 'true' || text === 'yes';
+      });
+      if (hasOffPlanFlag) return true;
       const candidates = [
         ctx?.project_type,
         ctx?.projectType,
@@ -599,7 +700,11 @@ export default {
 
     const selectedAccountDetails = computed(() => {
       const ctx = normalizedContext.value;
-      const contract = ctx?.contract && typeof ctx.contract === 'object' ? ctx.contract : {};
+      const contractContext = ctx?.contract && typeof ctx.contract === 'object' ? ctx.contract : {};
+      const contractShow = contractShowData.value && typeof contractShowData.value === 'object'
+        ? contractShowData.value
+        : {};
+      const contract = { ...contractContext, ...contractShow };
       const project = ctx?.project && typeof ctx.project === 'object' ? ctx.project : {};
       const source = form.account === 'developer'
         ? {
@@ -607,11 +712,13 @@ export default {
               ctx?.developer_bank_account ||
               ctx?.developer_bank_account_number ||
               ctx?.developer_account ||
+              contract?.second_party_bank_account_name ||
               contract?.developer_bank_account ||
               contract?.developer_account,
             iban:
               ctx?.developer_iban ||
               ctx?.developer_iban_number ||
+              contract?.second_party_iban_number ||
               contract?.developer_iban ||
               project?.developer_iban,
           }
@@ -644,6 +751,50 @@ export default {
         hasData: Boolean(accountNumber || iban),
       };
     });
+
+    watch(
+      [isOnMapProject, normalizedContext],
+      ([isOffPlan, ctx]) => {
+        form.is_off_plan = Boolean(isOffPlan);
+        const unit = ctx?.unit && typeof ctx.unit === 'object' ? ctx.unit : props.unit || {};
+        const contractContext = ctx?.contract && typeof ctx.contract === 'object' ? ctx.contract : {};
+        const contractShow = contractShowData.value && typeof contractShowData.value === 'object'
+          ? contractShowData.value
+          : {};
+        const contract = { ...contractContext, ...contractShow };
+        const finalPriceRaw =
+          form.reservation_type === 'negotiation' && form.proposed_price != null && form.proposed_price !== ''
+            ? form.proposed_price
+            : unit?.price ?? unit?.total_price ?? unit?.total_unit_price ?? contract?.unit_price ?? form.final_price;
+        const finalPrice = Number(finalPriceRaw);
+        if (Number.isFinite(finalPrice) && finalPrice > 0) {
+          form.final_price = finalPrice;
+        }
+
+        const commissionPctRaw = contract?.commission_percent ?? contract?.commission_percentage ?? ctx?.commission_percentage;
+        const commissionPct = Number(commissionPctRaw);
+        if (Number.isFinite(commissionPct) && commissionPct >= 0) {
+          form.commission_percentage = commissionPct;
+        }
+
+        const commissionSourceRaw = contract?.commission_from ?? ctx?.commission_source ?? ctx?.commission_from;
+        if (commissionSourceRaw === 'owner' || commissionSourceRaw === 'buyer') {
+          form.commission_source = commissionSourceRaw;
+        }
+      },
+      { immediate: true, deep: true }
+    );
+
+    watch(
+      () => form.proposed_price,
+      value => {
+        if (form.reservation_type !== 'negotiation') return;
+        const proposed = Number(value);
+        if (Number.isFinite(proposed) && proposed > 0) {
+          form.final_price = proposed;
+        }
+      }
+    );
 
     // Arabic label maps — cover both API English values and Arabic keys
     const RESERVATION_LABELS = {
@@ -754,8 +905,23 @@ export default {
       return list.map(s => ({ ...s, label: arabicLabel(DOWN_PAYMENT_LABELS, s) }));
     });
 
-    function onSubmit() {
-      if (isOnMapProject.value) {
+    function onSubmit(event) {
+      const nativeForm = event?.target;
+      if (nativeForm && typeof nativeForm.checkValidity === 'function' && !nativeForm.checkValidity()) {
+        nativeForm.reportValidity?.();
+        return;
+      }
+
+      const payload = {
+        ...form,
+        deposit_amount: Number(form.deposit_amount) || 0,
+        commission_source: form.commission_source || 'owner',
+        final_price: Number(form.final_price) || 0,
+        commission_percentage: Number(form.commission_percentage) || 0,
+        is_off_plan: Boolean(isOnMapProject.value),
+      };
+
+      if (payload.is_off_plan) {
         const normalizedRows = Array.isArray(form.payments)
           ? form.payments
               .map(row => ({
@@ -770,9 +936,17 @@ export default {
           form.payments = [{ payment: null, date: '' }];
           return;
         }
-        form.payments = normalizedRows;
+        payload.payments = normalizedRows;
+      } else {
+        delete payload.down_payment_amount;
+        delete payload.delivery_date;
+        delete payload.first_payment;
+        delete payload.first_payment_date;
+        delete payload.account;
+        delete payload.payments;
       }
-      emit('submit', { ...form });
+
+      emit('submit', payload);
     }
 
     return {
@@ -801,3 +975,4 @@ export default {
 </script>
 
 <style scoped src="./styles/UnitReservationModal.scoped.s1.css"></style>
+
