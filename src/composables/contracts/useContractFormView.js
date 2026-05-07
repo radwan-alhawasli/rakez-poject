@@ -64,7 +64,7 @@ export function useContractFormView() {
 
   const form = reactive({
     phone: '',
-    signatory: 'عبد العزيز خالد عبد العزيز الجلعود',
+    signatory: 'ممثل الطرف الثاني بالتوقيع المعتمد',
     contract_city: 'الرياض',
     gregorian_date: '',
     hijri_date: '',
@@ -74,7 +74,7 @@ export function useContractFormView() {
     commission_percent: '',
     commission_from: '',
     release_date: '',
-    /** من API — يُعرض في «متوسط سعر الوحدات» عند التوفر */
+    /** من API أو محسوب من إجمالي أسعار الوحدات */
     total_price: null,
     second_party_name: '',
     second_party_id: '',
@@ -108,11 +108,11 @@ export function useContractFormView() {
     const v = (form.commission_from ?? '').toString().toLowerCase();
     if (v === 'owner') return 'المالك';
     if (v === 'partner') return 'المشتري';
-    return form.commission_from || '—';
+    return form.commission_from || '-';
   });
   const commissionPercentDisplay = computed(() => {
     const p = form.commission_percent;
-    if (p === '' || p == null) return '—';
+    if (p === '' || p == null) return '-';
     return `${String(p).trim()} %`;
   });
 
@@ -146,7 +146,7 @@ export function useContractFormView() {
 
   const filteredDistricts = computed(() => districtsForCityId(form.city_id));
 
-  /** عند تغيير المدينة يدوياً: إفراغ الحي فقط (وليس عند أول تحميل من الـ API). */
+  /** تحديث خيارات الأحياء ديناميكيًا عند تغيير المدينة */
   watch(
     () => form.city_id,
     (id, prev) => {
@@ -169,7 +169,7 @@ export function useContractFormView() {
     }
   );
 
-  /** بعد جلب المدن/الأحياء: ربط الأسماء بالمعرّفات القادمة من العقد. */
+  /** مزامنة أسماء المدينة/الحي بعد تحميل القوائم */
   watch([cities, districts], () => {
     if (form.city_id) {
       const c = cities.value.find(x => String(x.id) === String(form.city_id));
@@ -347,7 +347,7 @@ export function useContractFormView() {
     };
     if (!validate(dataToValidate)) {
       const firstErr = Object.values(errors).flat()[0];
-      toast.error(firstErr || 'يرجى ملء جميع الحقول المطلوبة');
+      toast.error(firstErr || 'يرجى تعبئة جميع الحقول المطلوبة');
       return;
     }
 
@@ -367,7 +367,7 @@ export function useContractFormView() {
     }
 
     if (!requestId.value && ![PROJECT_TYPE_READY, PROJECT_TYPE_OFF_PLAN].includes(form.project_type)) {
-      toast.error('ÙŠØ±Ø¬Ù‰ Ø§Ø®ØªÙŠØ§Ø± Ù†ÙˆØ¹ Ø§Ù„Ù…Ø´Ø±ÙˆØ¹');
+      toast.error('يرجى اختيار نوع المشروع');
       return;
     }
 
@@ -411,7 +411,7 @@ export function useContractFormView() {
         };
 
         await contractService.storeContractInfo(requestId.value, payload);
-        toast.success('تم حفظ العقد بنجاح');
+        toast.success('تم حفظ بيانات العقد');
         showDownloadModal.value = true;
       } else {
         const createPayload = {
@@ -440,7 +440,7 @@ export function useContractFormView() {
       }
     } catch (error) {
       logger.error('Save failed', error);
-      toast.error('حدث خطأ أثناء الحفظ');
+      toast.error('حدث خطأ أثناء حفظ البيانات');
     } finally {
       isSaving.value = false;
     }
@@ -467,7 +467,7 @@ export function useContractFormView() {
       link.click();
     } catch (error) {
       logger.error('Download failed', error);
-      toast.error('فشل تحميل ملف PDF. يرجى المحاولة مرة أخرى.');
+      toast.error('فشل تحميل ملف PDF. حاول مرة أخرى لاحقًا.');
     } finally {
       isDownloading.value = false;
     }

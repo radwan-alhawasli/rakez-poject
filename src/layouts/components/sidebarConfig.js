@@ -231,19 +231,17 @@ const ADMIN_LOCATIONS_ITEM = {
   tooltip: 'إدارة المدن والأحياء',
   icon: ICONS.projects,
 };
-<<<<<<< Updated upstream
 const ADMIN_COMMISSION_RULES_ITEM = {
   to: '/admin/commission-rules',
-  label: 'العمولات والنسب',
-  tooltip: 'العمولات والنسب',
+  label: 'قواعد العمولة',
+  tooltip: 'قواعد العمولة',
   icon: ICONS.money,
-=======
+};
 const ADMIN_CONTRACTS_ITEM = {
   to: '/admin/contracts',
   label: 'اعتماد العقود',
   tooltip: 'اعتماد العقود',
   icon: ICONS.contracts,
->>>>>>> Stashed changes
 };
 const ADMIN_ORDER_MARKETING_DEVELOPERS_ITEM = {
   to: '/admin/order-marketing-developers',
@@ -256,14 +254,15 @@ const ADMIN_ORDER_MARKETING_DEVELOPERS_ITEM = {
  * كتل قائمة الإدمن — يُزال التكرار حسب `to` مع الإبقاء على أول ظهور (تسميات قسم إدارة المشاريع أولاً).
  */
 const ADMIN_NAV_BLOCKS = [
-<<<<<<< Updated upstream
-  { label: 'الإدارة', items: [ADMIN_LOCATIONS_ITEM, ADMIN_COMMISSION_RULES_ITEM, ADMIN_ORDER_MARKETING_DEVELOPERS_ITEM] },
-=======
   {
-    label: 'الإدارة',
-    items: [ADMIN_LOCATIONS_ITEM, ADMIN_CONTRACTS_ITEM, ADMIN_ORDER_MARKETING_DEVELOPERS_ITEM],
+    label: 'الإدارة العامة',
+    items: [
+      ADMIN_LOCATIONS_ITEM,
+      ADMIN_COMMISSION_RULES_ITEM,
+      ADMIN_CONTRACTS_ITEM,
+      ADMIN_ORDER_MARKETING_DEVELOPERS_ITEM,
+    ],
   },
->>>>>>> Stashed changes
   { label: 'إدارة المشاريع', items: [...pmItems, ADMIN_CONTRACT_FORM_ITEM] },
   { label: 'المونتاج', items: editorItems },
   { label: 'المطور', items: developerItems },
