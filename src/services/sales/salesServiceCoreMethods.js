@@ -150,7 +150,16 @@ export const salesServiceCoreMethods = {
   async getExecutiveAvailableUnits(params = {}) {
     try {
       const response = await apiClient.get('/sales/executive/available-units', { params });
-      return response.data?.data ?? response.data ?? {};
+      const root = response?.data ?? {};
+      const summary =
+        root?.summary ??
+        root?.data?.summary ??
+        root?.data ??
+        {};
+      return {
+        ...root,
+        summary,
+      };
     } catch (error) {
       return handleServiceError(error, 'Fetch executive available units', 'get', {});
     }

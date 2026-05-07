@@ -2,10 +2,12 @@ import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { usePermissions } from '@/composables/usePermissions';
 import { PERMISSIONS } from '@/constants/permissions';
+import authService from '@/services/authService';
 
 const TAB_ROUTE_ENTRIES = Object.freeze([
   ['SalesDashboard', 'dashboard'],
   ['SalesTargets', 'targets'],
+  ['SalesMyRating', 'my-rating'],
   ['SalesProjects', 'projects'],
   ['SalesReservations', 'reservations'],
   ['SalesAttendance', 'attendance'],
@@ -44,6 +46,12 @@ const ALL_TABS = [
     id: 'targets',
     label: 'Targets',
     icon: '<circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle>',
+    requiredPermission: PERMISSIONS.SALES_TARGETS_VIEW,
+  },
+  {
+    id: 'my-rating',
+    label: 'تقييمي',
+    icon: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>',
     requiredPermission: PERMISSIONS.SALES_TARGETS_VIEW,
   },
   {
@@ -124,6 +132,20 @@ export function useSalesRouting() {
   const route = useRoute();
   const router = useRouter();
   const { hasPermission, hasAnyPermission } = usePermissions();
+  const asFlag = value => value === true || value === 1 || value === '1';
+
+  const canShowMyRatingTab = () => {
+    const user = authService.getCurrentUser() || {};
+    const role = Number(user?.type || 0);
+    const isExecutive = asFlag(user?.is_executive_director);
+    const isManager = asFlag(user?.is_manager);
+    const isGroupLeader =
+      asFlag(user?.is_group_leader) ||
+      asFlag(user?.is_team_group_leader) ||
+      String(user?.role_key || '').toLowerCase() === 'group_leader';
+    const isSalesMember = role === 6 && !isExecutive && !isManager && !isGroupLeader;
+    return isSalesMember || isGroupLeader;
+  };
 
   const getTabFromRoute = () => {
     const name = String(route.name || '');
@@ -146,6 +168,7 @@ export function useSalesRouting() {
 
   const visibleTabs = computed(() =>
     ALL_TABS.filter(tab => {
+      if (tab.id === 'my-rating' && !canShowMyRatingTab()) return false;
       if (tab.requiredPermission) return hasPermission(tab.requiredPermission);
       if (tab.requiredAny) return hasAnyPermission(tab.requiredAny);
       return true;

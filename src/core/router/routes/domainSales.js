@@ -14,6 +14,7 @@ export default {
     { path: '', name: 'Sales', redirect: { name: 'SalesDashboard' } },
     { path: 'dashboard', name: 'SalesDashboard', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_DASHBOARD_VIEW] } },
     { path: 'targets', name: 'SalesTargets', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_TARGETS_VIEW] } },
+    { path: 'my-rating', name: 'SalesMyRating', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_TARGETS_VIEW] } },
     { path: 'projects', name: 'SalesProjects', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_PROJECTS_VIEW] } },
     { path: 'unit-search', name: 'SalesUnitSearch', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_PROJECTS_VIEW] } },
     { path: 'reservations', name: 'SalesReservations', component: () => import('@/modules/sales/views/ReservationsView.vue'), meta: { permissions: [PERMISSIONS.SALES_RESERVATIONS_VIEW] } },

@@ -322,6 +322,7 @@ async function loadManagerTeams() {
   }
 }
 
+<<<<<<< Updated upstream
 function normalizeExecutiveUnitsRows(payload) {
   const data = payload?.data ?? payload;
   if (Array.isArray(data)) {
@@ -335,6 +336,45 @@ function normalizeExecutiveUnitsRows(payload) {
         item?.units_count ??
         item?.total ??
         0,
+=======
+const UNIT_TYPE_LABELS = Object.freeze({
+  apartment: 'شقة',
+  penthouse: 'بنتهاوس',
+  townhouse: 'تاون هاوس',
+  villa: 'فيلا',
+  duplex: 'دوبلكس',
+  land: 'أرض',
+});
+
+function normalizeUnitTypeLabel(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return 'غير محدد';
+  return UNIT_TYPE_LABELS[raw.toLowerCase()] || raw;
+}
+
+function normalizeExecutiveUnitsSummary(payload) {
+  const data = payload?.summary ?? payload?.data?.summary ?? payload?.data ?? payload ?? {};
+  const byTypeListRaw = Array.isArray(data?.by_type_list) ? data.by_type_list : [];
+  const byTypeObj = data?.by_type && typeof data.by_type === 'object' ? data.by_type : {};
+  const byTypePriceObj =
+    data?.by_type_total_price && typeof data.by_type_total_price === 'object'
+      ? data.by_type_total_price
+      : {};
+
+  let by_type_list = byTypeListRaw.map(item => ({
+    unit_type: item?.unit_type ?? item?.type ?? 'unknown',
+    unit_type_label: normalizeUnitTypeLabel(item?.unit_type ?? item?.type),
+    count: Number(item?.count ?? 0) || 0,
+    total_price: Number(item?.total_price ?? 0) || 0,
+  }));
+
+  if (by_type_list.length === 0 && Object.keys(byTypeObj).length > 0) {
+    by_type_list = Object.keys(byTypeObj).map(key => ({
+      unit_type: key,
+      unit_type_label: normalizeUnitTypeLabel(key),
+      count: Number(byTypeObj[key] ?? 0) || 0,
+      total_price: Number(byTypePriceObj[key] ?? 0) || 0,
+>>>>>>> Stashed changes
     }));
   }
 
@@ -1229,11 +1269,11 @@ onUnmounted(() => {
 }
 
 .executive-units-panel {
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   border: 1px solid rgba(39, 55, 77, 0.1);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.82);
-  padding: 16px;
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
 }
 
 .executive-units-panel__header {
@@ -1262,7 +1302,18 @@ onUnmounted(() => {
 .executive-units-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+<<<<<<< Updated upstream
   gap: 12px;
+=======
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.executive-units-by-type {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+>>>>>>> Stashed changes
 }
 
 .executive-units-card {
