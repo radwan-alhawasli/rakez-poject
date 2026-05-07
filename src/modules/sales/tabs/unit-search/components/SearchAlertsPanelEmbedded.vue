@@ -5,11 +5,6 @@
         <h2 class="alerts-title">طلبات العملاء / تنبيهات البحث</h2>
         <p class="alerts-subtitle">سجل طلب العميل عند عدم توفر وحدات مطابقة، وسيصلك إشعار داخلي عند التطابق.</p>
       </div>
-      <div class="alerts-head-actions">
-        <button class="btn-primary" type="button" @click="openCreate">
-          تسجيل طلب عميل
-        </button>
-      </div>
     </div>
 
     <div v-if="!canView" class="state-card state-denied">
@@ -220,10 +215,6 @@ const formBusy = ref(false);
 const cancelOpen = ref(false);
 const cancelBusy = ref(false);
 const cancelTargetId = ref('');
-
-function openCreate() {
-  createOpen.value = true;
-}
 
 function openDetail(a) {
   const id = a?.id ?? a?.alert_id ?? a?.uuid;

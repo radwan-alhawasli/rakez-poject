@@ -125,6 +125,15 @@
             </svg>
             بحث
           </button>
+          <button
+            v-if="canRegisterClientRequest"
+            type="button"
+            class="btn-empty-cta"
+            :disabled="isLoading"
+            @click="openCreateAlert"
+          >
+            تسجيل طلب عميل
+          </button>
           <button class="btn-reset" @click="resetFilters" :disabled="isLoading">
             إعادة تعيين
           </button>
@@ -211,9 +220,6 @@
           <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
         <p>لم يتم العثور على وحدات تطابق معايير البحث</p>
-        <button type="button" class="btn-empty-cta" @click="openCreateAlert">
-          تسجيل طلب عميل
-        </button>
         <div class="empty-hint">إنشاء تنبيه عند توفر وحدة مناسبة (إشعار داخلي)</div>
       </div>
     </template>
@@ -294,6 +300,25 @@ const alertPrefill = computed(() => ({
   status: 'active',
   expires_at: '',
 }));
+
+const canRegisterClientRequest = computed(() => {
+  // Only show CTA when user searched/filtered and no results exist.
+  const hasAny =
+    !!(
+      filters.q ||
+      filters.city ||
+      filters.district ||
+      filters.status ||
+      filters.unit_type ||
+      filters.min_area ||
+      filters.max_area ||
+      filters.min_bedrooms ||
+      filters.max_bedrooms ||
+      filters.min_price ||
+      filters.max_price
+    );
+  return hasAny && units.value.length === 0;
+});
 
 function openCreateAlert() {
   createAlertOpen.value = true;
