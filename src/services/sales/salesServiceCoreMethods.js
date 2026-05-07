@@ -4,6 +4,7 @@ import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
 import { normalizeReservationPayload } from '@/services/sales/salesReservationPayload.js';
 import logger from '@/utils/logger';
+import { normalizeSalesExecutiveLineType } from '@/constants/salesTargetLineTypes';
 
 /**
  * فك استجابة قوائم الأهداف — أشكال متعددة من Laravel / pagination.
@@ -236,9 +237,19 @@ export const salesServiceCoreMethods = {
     if (data?.receipt_voucher instanceof File) {
       const formData = new FormData();
       Object.entries(payload).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          formData.append(key, value);
+        if (value === undefined || value === null || value === '') return;
+        if (key === 'payments' && Array.isArray(value)) {
+          value.forEach((row, index) => {
+            if (row?.payment != null && row.payment !== '') {
+              formData.append(`payments[${index}][payment]`, String(row.payment));
+            }
+            if (row?.date) {
+              formData.append(`payments[${index}][date]`, String(row.date));
+            }
+          });
+          return;
         }
+        formData.append(key, value);
       });
       formData.append('receipt_voucher', data.receipt_voucher);
       return apiClient.post('/sales/reservations', formData, {
@@ -446,7 +457,11 @@ export const salesServiceCoreMethods = {
    * @returns {Promise<Object>}
    */
   async createExecutiveTarget(data) {
-    const response = await apiClient.post('/sales/executive-director-lines', data);
+    const payload = {
+      ...data,
+      line_type: normalizeSalesExecutiveLineType(data?.line_type),
+    };
+    const response = await apiClient.post('/sales/executive-director-lines', payload);
     return response.data?.data ?? response.data ?? {};
   },
 
@@ -458,7 +473,15 @@ export const salesServiceCoreMethods = {
    * @returns {Promise<Object>}
    */
   async updateExecutiveTarget(targetId, data) {
-    const response = await apiClient.put(`/sales/executive-director-lines/${targetId}`, data);
+    const payload = data && typeof data === 'object'
+      ? {
+          ...data,
+          ...(Object.prototype.hasOwnProperty.call(data, 'line_type')
+            ? { line_type: normalizeSalesExecutiveLineType(data.line_type) }
+            : {}),
+        }
+      : data;
+    const response = await apiClient.put(`/sales/executive-director-lines/${targetId}`, payload);
     return response.data?.data ?? response.data ?? {};
   },
 

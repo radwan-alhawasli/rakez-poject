@@ -128,6 +128,14 @@
   max-width: 56rem;
 }
 
+.tracker-page-header__meta {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(30, 41, 59, 0.82);
+  font-weight: 700;
+}
+
 /* Tabs */
 .tabs-nav {
   position: sticky;

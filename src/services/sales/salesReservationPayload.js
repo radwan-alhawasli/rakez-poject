@@ -31,7 +31,26 @@ export function normalizeReservationPayload(data) {
     down_payment_amount: Number(data?.down_payment_amount ?? data?.downPaymentAmount ?? 0),
     down_payment_status: data?.down_payment_status ?? data?.downPaymentStatus ?? 'refundable',
     purchase_mechanism: data?.purchase_mechanism ?? data?.purchaseMechanism ?? 'cash',
+    delivery_date: data?.delivery_date ?? data?.deliveryDate ?? '',
+    first_payment:
+      data?.first_payment != null && data?.first_payment !== ''
+        ? Number(data.first_payment)
+        : Number(data?.down_payment_amount ?? data?.downPaymentAmount ?? 0),
+    first_payment_date: data?.first_payment_date ?? data?.firstPaymentDate ?? '',
+    account: data?.account ?? '',
   };
+  const paymentsRaw = Array.isArray(data?.payments) ? data.payments : [];
+  const payments = paymentsRaw
+    .map((/** @type {any} */ row) => ({
+      payment: row?.payment != null && row?.payment !== '' ? Number(row.payment) : NaN,
+      date: row?.date ? String(row.date) : '',
+    }))
+    .filter((/** @type {{ payment: number; date: string }} */ row) => Number.isFinite(row.payment) && row.payment > 0);
+  if (payments.length > 0) payload.payments = payments;
+  if (!Number.isFinite(payload.first_payment) || payload.first_payment <= 0) delete payload.first_payment;
+  if (!payload.first_payment_date) delete payload.first_payment_date;
+  if (!payload.delivery_date) delete payload.delivery_date;
+  if (!payload.account) delete payload.account;
   if (data?.evacuation_date) payload.evacuation_date = data.evacuation_date;
   if (reservation_type === 'negotiation') {
     payload.negotiation_notes = data?.negotiation_notes ?? '';

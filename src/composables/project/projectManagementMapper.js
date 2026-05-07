@@ -3,6 +3,7 @@ import {
   computeSetupProgressPercentSixStages,
 } from '@/utils/projectProgressSteps';
 import { contractTimelineDisplay, isCompleteSecondTruthy } from '@/composables/project/useProjectManagementHelpers';
+import { resolveProjectDeveloperName, resolveProjectTypeLabel } from '@/utils/projectMeta';
 
 /**
  * Creates the initial mapped project structure from raw API list item.
@@ -65,13 +66,8 @@ export function mapProjectItem(p) {
       : p.statusLabel || p.status || '—';
 
   const propertyTypeLabel = (p.unit_type_label_ar && String(p.unit_type_label_ar).trim()) || unitType || (totalUnits ? 'وحدات' : 'مشروع');
-  const developerName =
-    p.developer_name ||
-    p.developer?.name ||
-    p.developer?.user?.name ||
-    p.developer_info?.name ||
-    p.second_party?.name ||
-    '';
+  const developerName = resolveProjectDeveloperName(p);
+  const projectTypeLabel = resolveProjectTypeLabel(p);
   
   const photo = p.photography_department;
   const imageUrl = p.project_image_url ?? (photo && (photo.image_url ?? photo.image)) ?? p.image ?? p.image_url ?? p.main_image ?? p.cover_image ?? p.photo ?? (typeof p.project_image === 'string' ? p.project_image : null);
@@ -123,6 +119,7 @@ export function mapProjectItem(p) {
     rakezStatusLabel,
     propertyTypeLabel,
     developer_name: developerName,
+    project_type_label: projectTypeLabel,
   };
 }
 
@@ -140,14 +137,8 @@ export function enrichProjectItem(proj, detail) {
   const detailImage = detail?.project_image_url ?? detail?.image ?? detail?.image_url ?? detail?.main_image ?? '';
   const detailImageStr = typeof detailImage === 'string' && detailImage.trim() ? detailImage.trim() : '';
   const hasImageFromDetail = !!detailImageStr;
-  const detailDeveloperName =
-    detail?.developer_name ||
-    detail?.developer?.name ||
-    detail?.developer?.user?.name ||
-    detail?.developer_info?.name ||
-    detail?.second_party?.name ||
-    proj?.developer_name ||
-    '';
+  const detailDeveloperName = resolveProjectDeveloperName(detail) || proj?.developer_name || '';
+  const detailProjectTypeLabel = resolveProjectTypeLabel(detail);
 
   const timelineFromDetail = contractTimelineDisplay({
     ...proj,
@@ -196,6 +187,7 @@ export function enrichProjectItem(proj, detail) {
       ...base,
       ...completeVisuals,
       developer_name: detailDeveloperName,
+      project_type_label: detailProjectTypeLabel || proj.project_type_label,
       setupProgress: setupProgressVal,
       ...timelineFromDetail,
       daysLeft: timelineFromDetail.daysLeftVal,
@@ -212,6 +204,7 @@ export function enrichProjectItem(proj, detail) {
     ...proj,
     ...completeVisuals,
     developer_name: detailDeveloperName,
+    project_type_label: detailProjectTypeLabel || proj.project_type_label,
     setupProgress: setupProgressVal,
     ...timelineFromDetail,
     daysLeft: timelineFromDetail.daysLeftVal,

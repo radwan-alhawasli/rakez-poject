@@ -61,6 +61,11 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
     down_payment_amount: 0,
     down_payment_status: 'pending',
     purchase_mechanism: 'cash',
+    delivery_date: '',
+    first_payment: null,
+    first_payment_date: '',
+    account: '',
+    payments: [{ payment: null, date: '' }],
     receipt_voucher: null,
     negotiation_notes: '',
     /** حقول إضافية لـ POST /project_management/reservations */
@@ -104,6 +109,11 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
     reservationForm.client_nationality = 'Saudi';
     reservationForm.client_iban = '';
     reservationForm.down_payment_amount = 0;
+    reservationForm.delivery_date = '';
+    reservationForm.first_payment = null;
+    reservationForm.first_payment_date = '';
+    reservationForm.account = '';
+    reservationForm.payments = [{ payment: null, date: '' }];
     reservationForm.negotiation_notes = '';
     reservationForm.client_email = '';
     reservationForm.client_id_number = '';

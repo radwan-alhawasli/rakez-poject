@@ -3,6 +3,7 @@ import notificationService from '@/services/notificationService';
 import teamService from '@/services/teamService';
 import logger from '@/utils/logger';
 import { toast } from '@/composables/useToast';
+import { resolveProjectDeveloperName, resolveProjectTypeLabel } from '@/utils/projectMeta';
 
 /**
  * Team assign, details, workspace, media modals + timeline helpers for project management list.
@@ -125,6 +126,8 @@ export function useProjectManagementModals(deps) {
           avgPrice: details.average_unit_price || details.avg_price || null,
           description: details.description || details.project_description || null,
           units: details.units || [],
+          developer_name: resolveProjectDeveloperName(details) || resolveProjectDeveloperName(selectedProject.value),
+          project_type_label: resolveProjectTypeLabel(details),
         };
       }
     } catch (e) {
