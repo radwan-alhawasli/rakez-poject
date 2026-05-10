@@ -45,6 +45,40 @@
         <p>لا توجد مجموعات تقودها، سيتم عرض أهدافك الشخصية.</p>
       </div>
 
+      <div v-if="isSalesExecutiveView" class="executive-units-panel">
+        <div class="executive-units-panel__header">
+          <h3 class="executive-units-panel__title">ملخص الوحدات المتاحة</h3>
+          <span v-if="isLoadingExecutiveUnits" class="executive-units-panel__state">جاري التحميل...</span>
+          <span v-else-if="executiveUnitsError" class="executive-units-panel__state executive-units-panel__state--error">
+            {{ executiveUnitsError }}
+          </span>
+        </div>
+
+        <template v-if="!isLoadingExecutiveUnits && !executiveUnitsError && executiveUnitsRows.length">
+          <div class="executive-units-grid">
+            <div
+              v-for="row in executiveUnitsPrimaryRows"
+              :key="row.key"
+              class="executive-units-card"
+            >
+              <span class="executive-units-card__label">{{ row.label }}</span>
+              <strong class="executive-units-card__value">{{ formatExecutiveSummaryValue(row) }}</strong>
+            </div>
+          </div>
+
+          <div class="executive-units-by-type">
+            <div
+              v-for="row in executiveUnitsByTypeRows"
+              :key="row.key"
+              class="executive-units-card"
+            >
+              <span class="executive-units-card__label">{{ row.label }}</span>
+              <strong class="executive-units-card__value">{{ formatExecutiveSummaryValue(row) }}</strong>
+            </div>
+          </div>
+        </template>
+      </div>
+
       <div v-if="showMemberOverviewCards" class="member-overview-grid">
         <div class="member-overview-card">
           <span class="member-overview-label">إجمالي الأهداف</span>
@@ -328,12 +362,12 @@ const UNIT_TYPE_LABELS = Object.freeze({
   townhouse: 'تاون هاوس',
   villa: 'فيلا',
   duplex: 'دوبلكس',
-  land: 'أرض',
+  land: 'أراضي',
 });
 
 function normalizeUnitTypeLabel(value) {
   const raw = String(value ?? '').trim();
-  if (!raw) return 'غير محدد';
+  if (!raw) return 'نوع غير محدد';
   return UNIT_TYPE_LABELS[raw.toLowerCase()] || raw;
 }
 
@@ -355,9 +389,9 @@ function normalizeExecutiveUnitsRows(payload) {
   }
 
   const byTypeListRaw = Array.isArray(data?.by_type_list) ? data.by_type_list : [];
-  const byTypeObj = data?.by_type && typeof data?.by_type === 'object' ? data.by_type : {};
+  const byTypeObj = data?.by_type && typeof data.by_type === 'object' ? data.by_type : {};
   const byTypePriceObj =
-    data?.by_type_total_price && typeof data?.by_type_total_price === 'object'
+    data?.by_type_total_price && typeof data.by_type_total_price === 'object'
       ? data.by_type_total_price
       : {};
 
@@ -394,12 +428,12 @@ function normalizeExecutiveUnitsRows(payload) {
     by_type_list.forEach(item => {
       rows.push({
         key: `type-count-${item.unit_type}`,
-        label: `${item.unit_type_label} (عدد)`,
+        label: `${item.unit_type_label} (عدد الوحدات)`,
         value: item.count,
       });
       rows.push({
         key: `type-price-${item.unit_type}`,
-        label: `${item.unit_type_label} (القيمة)`,
+        label: `${item.unit_type_label} (إجمالي السعر)`,
         value: item.total_price,
       });
     });
@@ -430,7 +464,6 @@ function normalizeExecutiveUnitsRows(payload) {
 
   return [];
 }
-
 async function loadExecutiveAvailableUnits() {
   if (!isSalesExecutiveView.value) return;
   isLoadingExecutiveUnits.value = true;
@@ -623,6 +656,25 @@ watch(
   },
   { immediate: true }
 );
+
+const executiveUnitsPrimaryRows = computed(() =>
+  (Array.isArray(executiveUnitsRows.value) ? executiveUnitsRows.value : []).filter(row =>
+    ['total_available', 'total_available_price'].includes(String(row?.key || ''))
+  )
+);
+
+const executiveUnitsByTypeRows = computed(() =>
+  (Array.isArray(executiveUnitsRows.value) ? executiveUnitsRows.value : []).filter(row =>
+    !['total_available', 'total_available_price'].includes(String(row?.key || ''))
+  )
+);
+
+function formatExecutiveSummaryValue(row) {
+  const numericValue = Number(row?.value ?? 0);
+  if (!Number.isFinite(numericValue)) return String(row?.value ?? '-');
+  return numericValue.toLocaleString('en-US');
+}
+
 const canCreateTarget = computed(
   () =>
     (isSalesExecutiveView.value || isSalesLeaderView.value) &&
@@ -1367,8 +1419,6 @@ onUnmounted(() => {
 
 <style scoped src="./styles/SalesTargetsTab.scoped.s1.css"></style>
 <style scoped src="./styles/SalesTargetsTab.scoped.s2.css"></style>
-
-
 
 
 

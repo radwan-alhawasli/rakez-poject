@@ -13,12 +13,19 @@ export async function getEligibleReservationParticipants(params = {}) {
   return res?.data?.data ?? res?.data ?? [];
 }
 
+/**
+ * @param {string | number | null | undefined} reservationId
+ */
 export async function getReservationParticipants(reservationId) {
   const id = String(reservationId ?? '').trim();
   const res = await apiClient.get(`/sales/reservations/${id}/participants`);
   return res?.data?.data ?? res?.data ?? [];
 }
 
+/**
+ * @param {string | number | null | undefined} reservationId
+ * @param {Record<string, any>} payload
+ */
 export async function syncReservationParticipants(reservationId, payload) {
   const id = String(reservationId ?? '').trim();
   const res = await apiClient.put(`/sales/reservations/${id}/participants`, payload);
