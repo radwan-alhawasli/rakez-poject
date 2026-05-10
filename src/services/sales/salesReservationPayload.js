@@ -19,11 +19,19 @@ export function normalizeReservationPayload(data) {
     typeMap[String(typeRaw)] ??
     (typeRaw === 'confirmed_reservation' || typeRaw === 'negotiation' ? typeRaw : 'negotiation');
 
+  /**
+   * @param {unknown} value
+   * @returns {number}
+   */
   const parseNumber = value => {
     const n = Number(value);
     return Number.isFinite(n) ? n : 0;
   };
 
+  /**
+   * @param {unknown} value
+   * @returns {boolean}
+   */
   const isTruthyOffPlan = value => {
     if (value === true || value === 1 || value === '1') return true;
     const t = String(value ?? '').trim().toLowerCase();
