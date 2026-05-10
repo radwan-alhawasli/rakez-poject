@@ -39,7 +39,7 @@ export default {
       }),
       meta: { roles: [ROLE_ADMIN, ROLE_SALES, ROLE_SALES_LEADER] },
     },
-    { path: 'reservations', name: 'SalesReservations', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_RESERVATIONS_VIEW] } },
+    { path: 'reservations', name: 'SalesReservations', component: () => import('@/modules/sales/views/ReservationsView.vue'), meta: { permissions: [PERMISSIONS.SALES_RESERVATIONS_VIEW] } }, 
     { path: 'attendance', name: 'SalesAttendance', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_ATTENDANCE_VIEW] } },
     { path: 'negotiations', name: 'SalesNegotiations', redirect: { name: 'SalesReservations' } },
     { path: 'team', name: 'SalesTeam', component: () => import('@/modules/sales/views/SalesViewExtended.vue'), meta: { permissions: [PERMISSIONS.SALES_TEAM_MANAGE] } },
