@@ -44,7 +44,7 @@
           <div class="v">{{ displayPercent(form.commission_percentage) }}</div>
         </div>
         <div class="summary-card">
-          <div class="k">عمولة المشروع المتوقعة</div>
+          <div class="k">معاينة عمولة المشروع</div>
           <div class="v">{{ preview.project_commission_amount != null ? formatMoney(preview.project_commission_amount) : '—' }}</div>
         </div>
         <div class="summary-card">
@@ -72,7 +72,7 @@
           <button type="button" class="nav-pill" @click="activeTab = 'commissions'; scrollTo('sec-assigned')">فريق المشروع</button>
           <button type="button" class="nav-pill" @click="activeTab = 'commissions'; scrollTo('sec-outside')">خارج الفريق</button>
           <button type="button" class="nav-pill" @click="activeTab = 'rewards'; scrollTo('sec-rewards')">المكافآت</button>
-          <button type="button" class="nav-pill" @click="activeTab = 'commissions'; scrollTo('sec-weights')">الأوزان</button>
+          <button type="button" class="nav-pill" @click="activeTab = 'participants'; scrollTo('sec-participants')">آلية المشاركين</button>
           <button type="button" class="nav-pill" @click="scrollTo('sec-preview')">المعاينة</button>
         </div>
 
@@ -96,6 +96,16 @@
             @click="activeTab = 'rewards'"
           >
             المكافآت
+          </button>
+          <button
+            type="button"
+            role="tab"
+            class="tab"
+            :class="{ active: activeTab === 'participants' }"
+            :aria-selected="activeTab === 'participants'"
+            @click="activeTab = 'participants'"
+          >
+            آلية المشاركين
           </button>
         </div>
 
@@ -172,27 +182,18 @@
                 {{ errors[`assigned_${t.value}_percentage`] }}
               </div>
 
-              <div class="chips">
-                <button
-                  v-for="w in weightOptions"
-                  :key="w.key"
-                  type="button"
-                  class="chip chip-btn"
-                  :class="{ active: getSelectedWeight('assigned', t.value) === w.value }"
-                  @click="setSelectedWeight('assigned', t.value, w.value)"
-                >
-                  {{ w.label }}
-                </button>
+              <div class="weights-preview" aria-label="معاينة تأثير الأوزان">
+                <div v-for="w in weightOptions" :key="w.key" class="weight-pill">
+                  <span class="weight-name">{{ w.label }}</span>
+                  <span class="weight-value">{{ formatPercent(weightedPercent(form[`assigned_${t.value}_percentage`], w.value)) }}</span>
+                  <span v-if="preview.project_commission_amount != null" class="weight-amount">
+                    {{ formatMoney(weightedAmount(form[`assigned_${t.value}_percentage`], w.value)) }}
+                  </span>
+                </div>
               </div>
 
               <div class="muted small">
-                الوزن المختار: <span class="chip chip-inline">{{ selectedWeightLabel('assigned', t.value) }}</span>
-                <span class="divider">•</span>
-                النسبة الفعلية: {{ formatPercent(weightedPercentSelected('assigned', t.value)) }}
-                <span v-if="preview.project_commission_amount != null">
-                  <span class="divider">•</span>
-                  {{ formatMoney(weightedAmountSelected('assigned', t.value)) }}
-                </span>
+                النسبة الفعلية = النسبة الأساسية × وزن المشاركة
               </div>
 
               <div v-if="preview.project_commission_amount != null" class="muted small">
@@ -232,27 +233,18 @@
                 {{ errors[`outside_${t.value}_percentage`] }}
               </div>
 
-              <div class="chips">
-                <button
-                  v-for="w in weightOptions"
-                  :key="w.key"
-                  type="button"
-                  class="chip chip-btn"
-                  :class="{ active: getSelectedWeight('outside', t.value) === w.value }"
-                  @click="setSelectedWeight('outside', t.value, w.value)"
-                >
-                  {{ w.label }}
-                </button>
+              <div class="weights-preview" aria-label="معاينة تأثير الأوزان">
+                <div v-for="w in weightOptions" :key="w.key" class="weight-pill">
+                  <span class="weight-name">{{ w.label }}</span>
+                  <span class="weight-value">{{ formatPercent(weightedPercent(form[`outside_${t.value}_percentage`], w.value)) }}</span>
+                  <span v-if="preview.project_commission_amount != null" class="weight-amount">
+                    {{ formatMoney(weightedAmount(form[`outside_${t.value}_percentage`], w.value)) }}
+                  </span>
+                </div>
               </div>
 
               <div class="muted small">
-                الوزن المختار: <span class="chip chip-inline">{{ selectedWeightLabel('outside', t.value) }}</span>
-                <span class="divider">•</span>
-                النسبة الفعلية: {{ formatPercent(weightedPercentSelected('outside', t.value)) }}
-                <span v-if="preview.project_commission_amount != null">
-                  <span class="divider">•</span>
-                  {{ formatMoney(weightedAmountSelected('outside', t.value)) }}
-                </span>
+                النسبة الفعلية = النسبة الأساسية × وزن المشاركة
               </div>
 
               <div v-if="preview.project_commission_amount != null" class="muted small">
@@ -302,15 +294,13 @@
           </div>
         </section>
 
-        <section v-if="activeTab === 'commissions'" id="sec-weights" class="panel">
+        <section v-if="activeTab === 'participants'" id="sec-participants" class="panel">
           <CommissionWeightMatrix
             :scopes="matrixScopes"
             :contribution-types="contributionTypes"
             :weight-options="weightOptions"
             :preview-amount="preview.project_commission_amount"
             :get-base-percent="basePercent"
-            :get-selected-weight="getSelectedWeight"
-            :get-selected-weight-label="selectedWeightLabel"
             :weighted-percent="weightedPercent"
             :weighted-amount="weightedAmount"
             :format-percent="formatPercent"
@@ -389,7 +379,7 @@
               <span>نسبة العمولة</span><span>{{ displayPercent(form.commission_percentage) }}</span>
             </div>
             <div class="row">
-              <span>عمولة المشروع المتوقعة</span>
+              <span>معاينة عمولة المشروع</span>
               <span>{{ preview.project_commission_amount != null ? formatMoney(preview.project_commission_amount) : '—' }}</span>
             </div>
             <div class="row"><span>إجمالي نسب فريق المشروع</span><span>{{ formatPercent(assignedTotal) }}</span></div>
@@ -456,11 +446,6 @@ const {
   displayPercent,
   weightedPercent,
   weightedAmount,
-  weightedPercentSelected,
-  weightedAmountSelected,
-  getSelectedWeight,
-  setSelectedWeight,
-  selectedWeightLabel,
   basePercent,
   runPreview,
   save,

@@ -15,7 +15,6 @@
             <th>النطاق</th>
             <th>العملية</th>
             <th>النسبة الأساسية</th>
-            <th>الوزن المختار</th>
             <th v-for="w in weightOptions" :key="w.key">{{ w.label }}</th>
           </tr>
         </thead>
@@ -25,21 +24,8 @@
               <td>{{ scope.label }}</td>
               <td>{{ t.label }}</td>
               <td>{{ formatPercent(getBasePercent(scope.key, t.value)) }}</td>
-              <td>
-                <div class="cell-col">
-                  <div class="selected-weight">
-                    {{ getSelectedWeightLabel(scope.key, t.value) }}
-                  </div>
-                  <div class="muted small">
-                    {{ formatPercent(weightedPercent(getBasePercent(scope.key, t.value), getSelectedWeight(scope.key, t.value))) }}
-                  </div>
-                  <div v-if="previewAmount != null" class="muted small">
-                    {{ formatMoney(weightedAmount(getBasePercent(scope.key, t.value), getSelectedWeight(scope.key, t.value))) }}
-                  </div>
-                </div>
-              </td>
               <td v-for="w in weightOptions" :key="scope.key + '-' + t.value + '-' + w.key">
-                <div class="cell-col" :class="{ highlight: getSelectedWeight(scope.key, t.value) === w.value }">
+                <div class="cell-col">
                   <div>{{ formatPercent(weightedPercent(getBasePercent(scope.key, t.value), w.value)) }}</div>
                   <div v-if="previewAmount != null" class="muted small">
                     {{ formatMoney(weightedAmount(getBasePercent(scope.key, t.value), w.value)) }}
@@ -65,8 +51,6 @@ defineProps({
   weightOptions: { type: Array, required: true },
   previewAmount: { type: [Number, null], default: null },
   getBasePercent: { type: Function, required: true },
-  getSelectedWeight: { type: Function, required: true },
-  getSelectedWeightLabel: { type: Function, required: true },
   weightedPercent: { type: Function, required: true },
   weightedAmount: { type: Function, required: true },
   formatPercent: { type: Function, required: true },
@@ -81,15 +65,6 @@ defineProps({
 .cell-col {
   display: grid;
   gap: 2px;
-}
-.cell-col.highlight {
-  padding: 6px 8px;
-  border-radius: 10px;
-  background: rgba(59, 130, 246, 0.12);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-}
-.selected-weight {
-  font-weight: 600;
 }
 .formula {
   margin-top: 10px;

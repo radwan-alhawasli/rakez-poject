@@ -108,29 +108,8 @@ export function useCommissionRewardsProject(projectId) {
   const employeesLoading = ref(false);
   const employees = ref([]);
 
-  const weightSelections = reactive({
-    assigned: { bring: 1, convince: 1, close: 1 },
-    outside: { bring: 1, convince: 1, close: 1 },
-  });
-
-  function getSelectedWeight(scope, type) {
-    const s = scope === 'outside' ? 'outside' : 'assigned';
-    const t = String(type || '');
-    const v = weightSelections?.[s]?.[t];
-    return typeof v === 'number' && Number.isFinite(v) ? v : 1;
-  }
-
-  function setSelectedWeight(scope, type, value) {
-    const s = scope === 'outside' ? 'outside' : 'assigned';
-    const t = String(type || '');
-    const n = Number(value);
-    if (!Number.isFinite(n)) return;
-    if (!weightSelections[s]) weightSelections[s] = {};
-    weightSelections[s][t] = n;
-  }
-
-  function selectedWeightLabel(scope, type) {
-    return weightLabelByValue.value[String(getSelectedWeight(scope, type))] || 'كامل';
+  function weightLabel(value) {
+    return weightLabelByValue.value[String(value)] || 'كامل';
   }
 
   function toNumberOrNull(v) {
@@ -203,14 +182,6 @@ export function useCommissionRewardsProject(projectId) {
   function basePercent(scope, type) {
     const key = scope === 'assigned' ? `assigned_${type}_percentage` : `outside_${type}_percentage`;
     return form[key];
-  }
-
-  function weightedPercentSelected(scope, type) {
-    return weightedPercent(basePercent(scope, type), getSelectedWeight(scope, type));
-  }
-
-  function weightedAmountSelected(scope, type) {
-    return weightedAmount(basePercent(scope, type), getSelectedWeight(scope, type));
   }
 
   function clearErrors() {
@@ -433,10 +404,7 @@ export function useCommissionRewardsProject(projectId) {
     sourceOptions,
     contributionTypes,
     weightOptions,
-    weightSelections,
-    getSelectedWeight,
-    setSelectedWeight,
-    selectedWeightLabel,
+    weightLabel,
     matrixScopes,
     managementRoles,
     assignedTotal,
@@ -451,8 +419,6 @@ export function useCommissionRewardsProject(projectId) {
     displayPercent,
     weightedPercent,
     weightedAmount,
-    weightedPercentSelected,
-    weightedAmountSelected,
     basePercent,
     runPreview,
     save,

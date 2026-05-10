@@ -239,10 +239,10 @@ const ADMIN_LOCATIONS_ITEM = {
   tooltip: 'إدارة المدن والأحياء',
   icon: ICONS.projects,
 };
-const ADMIN_COMMISSION_RULES_ITEM = {
-  to: '/admin/commission-rules',
-  label: 'العمولات والنسب',
-  tooltip: 'العمولات والنسب',
+const ADMIN_COMMISSIONS_REWARDS_ITEM = {
+  to: '/admin/commissions-rewards',
+  label: 'العمولات والمكافآت',
+  tooltip: 'العمولات والمكافآت',
   icon: ICONS.money,
 };
 const ADMIN_CONTRACTS_ITEM = {
@@ -266,7 +266,7 @@ const ADMIN_NAV_BLOCKS = [
     label: 'الإدارة العامة',
     items: [
       ADMIN_LOCATIONS_ITEM,
-      ADMIN_COMMISSION_RULES_ITEM,
+      ADMIN_COMMISSIONS_REWARDS_ITEM,
       ADMIN_CONTRACTS_ITEM,
       ADMIN_ORDER_MARKETING_DEVELOPERS_ITEM,
     ],
