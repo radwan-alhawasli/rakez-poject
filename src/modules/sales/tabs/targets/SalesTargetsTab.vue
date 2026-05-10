@@ -45,6 +45,40 @@
         <p>لا توجد مجموعات تقودها، سيتم عرض أهدافك الشخصية.</p>
       </div>
 
+      <div v-if="isSalesExecutiveView" class="executive-units-panel">
+        <div class="executive-units-panel__header">
+          <h3 class="executive-units-panel__title">ملخص الوحدات المتاحة</h3>
+          <span v-if="isLoadingExecutiveUnits" class="executive-units-panel__state">جاري التحميل...</span>
+          <span v-else-if="executiveUnitsError" class="executive-units-panel__state executive-units-panel__state--error">
+            {{ executiveUnitsError }}
+          </span>
+        </div>
+
+        <template v-if="!isLoadingExecutiveUnits && !executiveUnitsError && executiveUnitsRows.length">
+          <div class="executive-units-grid">
+            <div
+              v-for="row in executiveUnitsPrimaryRows"
+              :key="row.key"
+              class="executive-units-card"
+            >
+              <span class="executive-units-card__label">{{ row.label }}</span>
+              <strong class="executive-units-card__value">{{ formatExecutiveSummaryValue(row) }}</strong>
+            </div>
+          </div>
+
+          <div class="executive-units-by-type">
+            <div
+              v-for="row in executiveUnitsByTypeRows"
+              :key="row.key"
+              class="executive-units-card"
+            >
+              <span class="executive-units-card__label">{{ row.label }}</span>
+              <strong class="executive-units-card__value">{{ formatExecutiveSummaryValue(row) }}</strong>
+            </div>
+          </div>
+        </template>
+      </div>
+
       <div v-if="showMemberOverviewCards" class="member-overview-grid">
         <div class="member-overview-card">
           <span class="member-overview-label">إجمالي الأهداف</span>
@@ -323,17 +357,17 @@ async function loadManagerTeams() {
 }
 
 const UNIT_TYPE_LABELS = Object.freeze({
-  apartment: '???',
-  penthouse: '???????',
-  townhouse: '???? ????',
-  villa: '????',
-  duplex: '??????',
-  land: '???',
+  apartment: 'شقة',
+  penthouse: 'بنتهاوس',
+  townhouse: 'تاون هاوس',
+  villa: 'فيلا',
+  duplex: 'دوبلكس',
+  land: 'أراضي',
 });
 
 function normalizeUnitTypeLabel(value) {
   const raw = String(value ?? '').trim();
-  if (!raw) return '??? ????';
+  if (!raw) return 'نوع غير محدد';
   return UNIT_TYPE_LABELS[raw.toLowerCase()] || raw;
 }
 
@@ -343,7 +377,7 @@ function normalizeExecutiveUnitsRows(payload) {
   if (Array.isArray(data)) {
     return data.map((item, index) => ({
       key: item?.id ?? item?.key ?? `item-${index}`,
-      label: item?.label ?? item?.line_type ?? item?.name ?? `???? ${index + 1}`,
+      label: item?.label ?? item?.line_type ?? item?.name ?? `عنصر ${index + 1}`,
       value:
         item?.count ??
         item?.value ??
@@ -381,12 +415,12 @@ function normalizeExecutiveUnitsRows(payload) {
     const rows = [
       {
         key: 'total_available',
-        label: '?????? ??????? ???????',
+        label: 'إجمالي الوحدات المتاحة',
         value: Number(data?.total_available ?? 0) || 0,
       },
       {
         key: 'total_available_price',
-        label: '?????? ???? ??????? ???????',
+        label: 'إجمالي قيمة الوحدات المتاحة',
         value: Number(data?.total_available_price ?? 0) || 0,
       },
     ];
@@ -394,12 +428,12 @@ function normalizeExecutiveUnitsRows(payload) {
     by_type_list.forEach(item => {
       rows.push({
         key: `type-count-${item.unit_type}`,
-        label: `${item.unit_type_label} (???)`,
+        label: `${item.unit_type_label} (عدد الوحدات)`,
         value: item.count,
       });
       rows.push({
         key: `type-price-${item.unit_type}`,
-        label: `${item.unit_type_label} (??????)`,
+        label: `${item.unit_type_label} (إجمالي السعر)`,
         value: item.total_price,
       });
     });
@@ -622,6 +656,25 @@ watch(
   },
   { immediate: true }
 );
+
+const executiveUnitsPrimaryRows = computed(() =>
+  (Array.isArray(executiveUnitsRows.value) ? executiveUnitsRows.value : []).filter(row =>
+    ['total_available', 'total_available_price'].includes(String(row?.key || ''))
+  )
+);
+
+const executiveUnitsByTypeRows = computed(() =>
+  (Array.isArray(executiveUnitsRows.value) ? executiveUnitsRows.value : []).filter(row =>
+    !['total_available', 'total_available_price'].includes(String(row?.key || ''))
+  )
+);
+
+function formatExecutiveSummaryValue(row) {
+  const numericValue = Number(row?.value ?? 0);
+  if (!Number.isFinite(numericValue)) return String(row?.value ?? '-');
+  return numericValue.toLocaleString('en-US');
+}
+
 const canCreateTarget = computed(
   () =>
     (isSalesExecutiveView.value || isSalesLeaderView.value) &&
@@ -1330,9 +1383,6 @@ onUnmounted(() => {
 .executive-units-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-.executive-units-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
   margin-bottom: 10px;
 }
@@ -1341,7 +1391,6 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 10px;
-}
 }
 
 .executive-units-card {
