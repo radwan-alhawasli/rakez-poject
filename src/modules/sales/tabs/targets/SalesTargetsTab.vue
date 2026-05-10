@@ -322,13 +322,28 @@ async function loadManagerTeams() {
   }
 }
 
-<<<<<<< Updated upstream
+const UNIT_TYPE_LABELS = Object.freeze({
+  apartment: '???',
+  penthouse: '???????',
+  townhouse: '???? ????',
+  villa: '????',
+  duplex: '??????',
+  land: '???',
+});
+
+function normalizeUnitTypeLabel(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return '??? ????';
+  return UNIT_TYPE_LABELS[raw.toLowerCase()] || raw;
+}
+
 function normalizeExecutiveUnitsRows(payload) {
-  const data = payload?.data ?? payload;
+  const data = payload?.summary ?? payload?.data?.summary ?? payload?.data ?? payload ?? {};
+
   if (Array.isArray(data)) {
     return data.map((item, index) => ({
       key: item?.id ?? item?.key ?? `item-${index}`,
-      label: item?.label ?? item?.line_type ?? item?.name ?? `عنصر ${index + 1}`,
+      label: item?.label ?? item?.line_type ?? item?.name ?? `???? ${index + 1}`,
       value:
         item?.count ??
         item?.value ??
@@ -336,24 +351,9 @@ function normalizeExecutiveUnitsRows(payload) {
         item?.units_count ??
         item?.total ??
         0,
-=======
-const UNIT_TYPE_LABELS = Object.freeze({
-  apartment: 'شقة',
-  penthouse: 'بنتهاوس',
-  townhouse: 'تاون هاوس',
-  villa: 'فيلا',
-  duplex: 'دوبلكس',
-  land: 'أرض',
-});
+    }));
+  }
 
-function normalizeUnitTypeLabel(value) {
-  const raw = String(value ?? '').trim();
-  if (!raw) return 'غير محدد';
-  return UNIT_TYPE_LABELS[raw.toLowerCase()] || raw;
-}
-
-function normalizeExecutiveUnitsSummary(payload) {
-  const data = payload?.summary ?? payload?.data?.summary ?? payload?.data ?? payload ?? {};
   const byTypeListRaw = Array.isArray(data?.by_type_list) ? data.by_type_list : [];
   const byTypeObj = data?.by_type && typeof data.by_type === 'object' ? data.by_type : {};
   const byTypePriceObj =
@@ -374,8 +374,37 @@ function normalizeExecutiveUnitsSummary(payload) {
       unit_type_label: normalizeUnitTypeLabel(key),
       count: Number(byTypeObj[key] ?? 0) || 0,
       total_price: Number(byTypePriceObj[key] ?? 0) || 0,
->>>>>>> Stashed changes
     }));
+  }
+
+  if (by_type_list.length > 0 || data?.total_available != null || data?.total_available_price != null) {
+    const rows = [
+      {
+        key: 'total_available',
+        label: '?????? ??????? ???????',
+        value: Number(data?.total_available ?? 0) || 0,
+      },
+      {
+        key: 'total_available_price',
+        label: '?????? ???? ??????? ???????',
+        value: Number(data?.total_available_price ?? 0) || 0,
+      },
+    ];
+
+    by_type_list.forEach(item => {
+      rows.push({
+        key: `type-count-${item.unit_type}`,
+        label: `${item.unit_type_label} (???)`,
+        value: item.count,
+      });
+      rows.push({
+        key: `type-price-${item.unit_type}`,
+        label: `${item.unit_type_label} (??????)`,
+        value: item.total_price,
+      });
+    });
+
+    return rows;
   }
 
   if (data && typeof data === 'object') {
@@ -401,7 +430,6 @@ function normalizeExecutiveUnitsSummary(payload) {
 
   return [];
 }
-
 async function loadExecutiveAvailableUnits() {
   if (!isSalesExecutiveView.value) return;
   isLoadingExecutiveUnits.value = true;
@@ -1302,9 +1330,9 @@ onUnmounted(() => {
 .executive-units-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-<<<<<<< Updated upstream
-  gap: 12px;
-=======
+.executive-units-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
   margin-bottom: 10px;
 }
@@ -1313,7 +1341,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 10px;
->>>>>>> Stashed changes
+}
 }
 
 .executive-units-card {
