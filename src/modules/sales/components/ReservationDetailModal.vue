@@ -153,6 +153,28 @@
             </div>
           </section>
 
+          <section class="detail-section">
+            <h4 class="detail-section-title">معلومات المشتركين في البيعة</h4>
+
+            <div v-if="participantsLoading" class="detail-muted">جاري تحميل المشاركين...</div>
+            <div v-else-if="participantsError" class="detail-muted detail-muted--danger">تعذر تحميل المشاركين.</div>
+            <div v-else-if="!participants.length" class="detail-muted">لا توجد بيانات للمشاركين لهذا الحجز.</div>
+            <div v-else class="participants-list">
+              <div v-for="p in participants" :key="p.user_id" class="participant-row">
+                <div class="participant-name">{{ p.user?.name || p.user_name || `#${p.user_id}` }}</div>
+                <div class="participant-meta">
+                  <span class="meta-pill">{{ weightLabel(p.weight) }}</span>
+                  <span v-for="op in participantOps(p)" :key="op" class="meta-pill meta-pill--op">{{ op }}</span>
+                </div>
+                <div v-if="p.notes" class="participant-notes">{{ p.notes }}</div>
+              </div>
+            </div>
+
+            <div class="detail-muted detail-muted--hint">
+              ملاحظة: يتم حفظ المشاركين ضمن الحجز، وليس ضمن إعدادات المشروع.
+            </div>
+          </section>
+
           <section class="detail-section detail-section--last">
             <h4 class="detail-section-title">المسوق</h4>
             <dl class="detail-dl">
@@ -169,7 +191,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useFormatters } from '@/composables/useFormatters';
 import UiStepper from '@/components/ui/Stepper.vue';
 import {
@@ -179,6 +201,7 @@ import {
   purchaseMechanismLabel,
   reservationTypeLabel,
 } from '@/utils/reservationDisplayLabels';
+import { getReservationParticipants } from '@/services/salesReservationParticipantsApi';
 
 const props = defineProps({
   item: {
@@ -190,6 +213,29 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 const { formatDate, formatNumber } = useFormatters();
+
+const reservationId = computed(() => String(props.item?.reservation_id || props.item?.id || '').trim());
+const participantsLoading = ref(false);
+const participantsError = ref(false);
+const participants = ref([]);
+
+function weightLabel(value) {
+  const n = Number(value);
+  if (n === 0.25) return 'ربع';
+  if (n === 0.5) return 'نصف';
+  if (n === 0.75) return 'ثلاثة أرباع';
+  if (n === 1) return 'كامل';
+  return Number.isFinite(n) ? String(n) : '—';
+}
+
+function participantOps(p) {
+  /** @type {string[]} */
+  const ops = [];
+  if (p?.did_bring) ops.push('جلب');
+  if (p?.did_convince) ops.push('إقناع');
+  if (p?.did_close) ops.push('إقفال');
+  return ops.length ? ops : ['—'];
+}
 
 const isOffPlanReservation = computed(() => {
   const item = props.item || {};
@@ -212,6 +258,21 @@ const isOffPlanReservation = computed(() => {
       item.account ||
       (Array.isArray(item.payments) && item.payments.length > 0)
   );
+});
+
+onMounted(async () => {
+  if (!reservationId.value) return;
+  participantsLoading.value = true;
+  participantsError.value = false;
+  try {
+    const data = await getReservationParticipants(reservationId.value);
+    participants.value = Array.isArray(data) ? data : [];
+  } catch {
+    participants.value = [];
+    participantsError.value = true;
+  } finally {
+    participantsLoading.value = false;
+  }
 });
 
 const offPlanPayments = computed(() => {

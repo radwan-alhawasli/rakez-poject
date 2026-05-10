@@ -174,6 +174,60 @@
   padding-top: 12px;
 }
 
+.detail-muted {
+  font-size: 13px;
+  color: rgba(39, 55, 77, 0.7);
+  line-height: 1.6;
+}
+.detail-muted--danger {
+  color: #b91c1c;
+}
+.detail-muted--hint {
+  margin-top: 10px;
+}
+
+.participants-list {
+  display: grid;
+  gap: 10px;
+}
+.participant-row {
+  border: 1px solid rgba(181, 169, 154, 0.28);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(39, 55, 77, 0.02);
+}
+.participant-name {
+  font-weight: 800;
+  color: var(--color-navy, #27374d);
+}
+.participant-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.meta-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-navy, #27374d);
+  background: rgba(39, 55, 77, 0.06);
+  border: 1px solid rgba(39, 55, 77, 0.12);
+}
+.meta-pill--op {
+  background: rgba(181, 169, 154, 0.18);
+  border-color: rgba(181, 169, 154, 0.35);
+}
+.participant-notes {
+  margin-top: 8px;
+  font-size: 13px;
+  color: rgba(39, 55, 77, 0.75);
+  line-height: 1.6;
+}
+
 .detail-amount {
   font-variant-numeric: tabular-nums;
   font-weight: 800;
