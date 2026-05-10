@@ -154,6 +154,17 @@
   z-index: 0;
 }
 
+/* Commission admin pages: disable the busy architectural background for readability. */
+.main-content.no-commissions-bg {
+  background-image: none;
+  background-color: #f7f4ee;
+}
+.main-content.no-commissions-bg::before {
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .main-content::before {
     backdrop-filter: none;
