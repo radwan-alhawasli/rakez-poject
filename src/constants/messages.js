@@ -5,7 +5,7 @@
 
 /** @type {string} General error/success/loading messages */
 export const MSG_ERROR = 'حدث خطأ';
-export const MSG_SUCCESS = 'تمت العملية بنجاح';
+export const MSG_SUCCESS = 'تمت العملية بنجاح..';
 export const MSG_SAVED = 'تم الحفظ بنجاح';
 export const MSG_LOADING = 'جاري التحميل';
 export const MSG_SAVING = 'جاري الحفظ';
