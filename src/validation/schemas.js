@@ -81,6 +81,18 @@ export const contractFormSchema = z.object({
 export const contractInfoSchema = z.object({
   second_party_name: z.string().min(2, 'اسم الطرف الثاني مطلوب'),
   second_party_id: z.string().min(1, 'رقم هوية الطرف الثاني مطلوب'),
+  second_party_bank_name: z.union([z.string(), z.undefined()]).refine(v => {
+    const s = String(v ?? '').trim();
+    return s === '' || s.length >= 2;
+  }, 'اسم البنك يجب أن يكون حرفين على الأقل'),
+  second_party_bank_account_name: z.union([z.string(), z.undefined()]).refine(v => {
+    const s = String(v ?? '').trim();
+    return s === '' || s.length >= 3;
+  }, 'رقم الحساب البنكي يجب أن يكون 3 أحرف/أرقام على الأقل'),
+  second_party_iban_number: z.union([z.string(), z.undefined()]).refine(v => {
+    const s = String(v ?? '').trim();
+    return s === '' || s.length >= 10;
+  }, 'رقم الآيبان يجب أن يكون 10 أحرف/أرقام على الأقل'),
   gregorian_date: z.string().min(1, 'التاريخ الميلادي مطلوب'),
   agreement_duration_days: z.string().min(1, 'مدة الاتفاقية مطلوبة'),
   commission_percent: z.union([z.string(), z.number()]).refine(v => {

@@ -1,3 +1,4 @@
+<!-- eslint-disable max-lines -->
 <template>
   <div class="rsv-overlay" @click.self="$emit('close')">
     <div class="rsv-modal rsv-modal--rakez" role="dialog" :aria-labelledby="titleId" dir="rtl">
@@ -113,6 +114,46 @@
               </div>
             </div>
 
+            <template v-if="isOnMapProject">
+              <div class="rsv-row rsv-row-2">
+                <div class="rsv-field">
+                  <label class="rsv-label">تاريخ تسليم الوحدة *</label>
+                  <input v-model="form.delivery_date" type="date" required class="rsv-input" />
+                </div>
+                <div class="rsv-field">
+                  <label class="rsv-label">الدفعة الأولى *</label>
+                  <input v-model.number="form.first_payment" type="number" min="0" step="1" required class="rsv-input" />
+                </div>
+              </div>
+
+              <div class="rsv-row rsv-row-2">
+                <div class="rsv-field">
+                  <label class="rsv-label">تاريخ الدفعة الأولى</label>
+                  <input v-model="form.first_payment_date" type="date" class="rsv-input" />
+                </div>
+                <div class="rsv-field">
+                  <label class="rsv-label">حساب الشركة أو المطور *</label>
+                  <select v-model="form.account" required class="rsv-input">
+                    <option value="">اختر الحساب</option>
+                    <option v-for="option in accountOptions" :key="option.value" :value="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div v-if="selectedAccountDetails.hasData" class="rsv-account-details">
+                <div v-if="selectedAccountDetails.accountNumber" class="rsv-account-line">
+                  <span class="rsv-account-key">رقم الحساب:</span>
+                  <span class="rsv-account-value">{{ selectedAccountDetails.accountNumber }}</span>
+                </div>
+                <div v-if="selectedAccountDetails.iban" class="rsv-account-line">
+                  <span class="rsv-account-key">IBAN:</span>
+                  <span class="rsv-account-value">{{ selectedAccountDetails.iban }}</span>
+                </div>
+              </div>
+            </template>
+
             <!-- حقول التفاوض (تظهر فقط عند اختيار حجز بغرض التفاوض) -->
             <template v-if="form.reservation_type === 'negotiation'">
               <div class="rsv-row rsv-row-2">
@@ -166,28 +207,30 @@
                 <input v-model="form.client_mobile" type="tel" required class="rsv-input" placeholder="05xxxxxxxx" />
               </div>
               <div class="rsv-field">
+                <label class="rsv-label">رقم هوية العميل *</label>
+                <input v-model="form.client_id_number" type="text" required class="rsv-input" placeholder="1234567890" />
+              </div>
+            </div>
+
+            <div class="rsv-row rsv-row-2">
+              <div class="rsv-field">
                 <label class="rsv-label">جنسية العميل *</label>
                 <select v-model="form.client_nationality" required class="rsv-input">
                   <option value="">اختر الجنسية</option>
                   <option v-for="n in nationalities" :key="n.value" :value="n.value">{{ n.label }}</option>
                 </select>
               </div>
+              <div class="rsv-field">
+                <label class="rsv-label">السعر النهائي (ر.س)</label>
+                <input :value="form.final_price || 0" type="number" class="rsv-input" readonly />
+              </div>
             </div>
-
-          <SaleParticipantsSection
-            :participant-employees="participantEmployees"
-            :project-team-label="contextDisplay.projectTeam"
-            :my-sale-operation="form.my_sale_operation"
-            :other-participants="form.other_sale_participants"
-            @update:mySaleOperation="form.my_sale_operation = $event"
-            @update:otherParticipants="form.other_sale_participants = $event"
-          />
 
             <!-- قيمة العربون + طريقة الدفع + IBAN -->
             <div class="rsv-row rsv-row-3">
               <div class="rsv-field">
                 <label class="rsv-label">قيمة العربون (ر.س) *</label>
-                <input v-model.number="form.down_payment_amount" type="number" min="0" step="1" required class="rsv-input" />
+                <input v-model.number="form.deposit_amount" type="number" min="0" step="1" required class="rsv-input" />
               </div>
               <div class="rsv-field">
                 <label class="rsv-label">طريقة الدفع *</label>
@@ -202,16 +245,67 @@
               </div>
             </div>
 
+            <template v-if="isOnMapProject">
+              <div class="rsv-field rsv-field--full">
+                <label class="rsv-label">مبلغ الدفعة المقدمة *</label>
+                <input v-model.number="form.down_payment_amount" type="number" min="0" step="1" required class="rsv-input" />
+              </div>
+
+              <div class="rsv-field rsv-field--full">
+                <div class="rsv-payments-head">
+                  <label class="rsv-label">جدول الدفعات</label>
+                  <button type="button" class="rsv-btn-secondary rsv-btn-secondary--small" @click="addPaymentRow">
+                    إضافة دفعة
+                  </button>
+                </div>
+                <div class="rsv-payments-list">
+                  <div
+                    v-for="(row, index) in form.payments"
+                    :key="`payment-row-${index}`"
+                    class="rsv-row rsv-row-2 rsv-payment-row"
+                  >
+                    <div class="rsv-field">
+                      <label class="rsv-label">مبلغ الدفعة {{ index + 1 }} *</label>
+                      <input
+                        v-model.number="row.payment"
+                        type="number"
+                        min="0"
+                        step="1"
+                        required
+                        class="rsv-input"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div class="rsv-field">
+                      <div class="rsv-payments-date-head">
+                        <label class="rsv-label">تاريخ الدفعة (اختياري)</label>
+                        <button
+                          v-if="form.payments.length > 1"
+                          type="button"
+                          class="rsv-link-btn"
+                          @click="removePaymentRow(index)"
+                        >
+                          حذف
+                        </button>
+                      </div>
+                      <input v-model="row.date" type="date" class="rsv-input" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+
             <!-- صورة الإيصال (صورة السند) -->
             <div class="rsv-row rsv-row-1">
               <div class="rsv-field rsv-field--full">
-                <label class="rsv-label">صورة إيصال الدفع (اختياري)</label>
+                <label class="rsv-label">صورة إيصال الدفع *</label>
                 <div class="rsv-file-upload">
                   <input
                     type="file"
                     id="receipt_voucher"
                     accept="image/*"
                     class="rsv-file-input"
+                    required
                     @change="onFileChange"
                   />
                   <label for="receipt_voucher" class="rsv-file-label">
@@ -266,8 +360,9 @@
 </template>
 
 <script>
+/* eslint-disable max-lines */
 import { computed, reactive, watch, ref } from 'vue';
-import SaleParticipantsSection from './SaleParticipantsSection.vue';
+import salesService from '@/services/salesService';
 
 /** اسم فريق من استجابة API: نص، كائن (name / team_name)، أو مصفوفة فرق */
 function formatTeamLabel(value) {
@@ -300,9 +395,22 @@ function mergeReservationContextPayload(raw) {
   return { ...base, ...nested };
 }
 
+/**
+ * @param {any} value
+ * @returns {boolean|null}
+ */
+function parseOffPlanBoolean(value) {
+  if (value === true || value === 1 || value === '1') return true;
+  if (value === false || value === 0 || value === '0') return false;
+  const text = String(value ?? '').trim().toLowerCase();
+  if (!text) return null;
+  if (['true', 'yes', 'on_map', 'on-map', 'off_plan', 'off-plan'].includes(text)) return true;
+  if (['false', 'no', 'ready', 'جاهز'].includes(text)) return false;
+  return null;
+}
+
 export default {
   name: 'UnitReservationModal',
-  components: { SaleParticipantsSection },
   props: {
     unit: { type: Object, default: () => ({}) },
     context: { type: Object, default: () => ({}) },
@@ -325,16 +433,23 @@ export default {
       contract_date: new Date().toISOString().split('T')[0],
       client_name: '',
       client_mobile: '',
+      client_id_number: '',
       client_nationality: 'Saudi',
       client_iban: '',
-      // --- Sale participants (UI only for now; see TODO in payload normalizer) ---
-      my_sale_operation: '',
-      /** @type {{ employee_id: string; operation: string }[]} */
-      other_sale_participants: [],
       payment_method: 'bank_transfer',
-      down_payment_amount: 0,
+      deposit_amount: 0,
+      down_payment_amount: null,
       down_payment_status: 'refundable',
       purchase_mechanism: 'cash',
+      delivery_date: '',
+      first_payment: null,
+      first_payment_date: '',
+      account: '',
+      commission_source: 'owner',
+      final_price: 0,
+      commission_percentage: 3,
+      is_off_plan: false,
+      payments: [{ payment: null, date: '' }],
       negotiation_notes: '',
       negotiation_reason: '',
       proposed_price: null,
@@ -344,6 +459,9 @@ export default {
 
     const fileName = ref('');
     const filePreview = ref('');
+    const contractShowData = ref({});
+    const contractShowLoaded = ref(false);
+    const contractShowRequestToken = ref(0);
 
     const onFileChange = (e) => {
       const file = e.target.files[0];
@@ -366,10 +484,32 @@ export default {
       if (input) input.value = '';
     };
 
+    const accountOptions = Object.freeze([
+      { value: 'company', label: 'حساب الشركة' },
+      { value: 'developer', label: 'حساب المطور' },
+    ]);
+
+    function addPaymentRow() {
+      form.payments.push({ payment: null, date: '' });
+    }
+
+    function removePaymentRow(index) {
+      if (form.payments.length <= 1) return;
+      form.payments.splice(index, 1);
+    }
+
     watch(
       () => props.formData,
       (data) => {
-        if (data && typeof data === 'object') Object.assign(form, data);
+        if (data && typeof data === 'object') {
+          Object.assign(form, data);
+          if ((form.deposit_amount == null || form.deposit_amount === '') && form.down_payment_amount != null) {
+            form.deposit_amount = form.down_payment_amount;
+          }
+        }
+        if (!Array.isArray(form.payments) || form.payments.length === 0) {
+          form.payments = [{ payment: null, date: '' }];
+        }
       },
       { deep: true }
     );
@@ -390,8 +530,102 @@ export default {
       return (u?.unit_number || u?.unit_id || u?.id) ?? '—';
     });
 
+    const normalizedContext = computed(() => mergeReservationContextPayload(props.context));
+    const contractIdForLookup = computed(() => {
+      const ctx = normalizedContext.value;
+      return (
+        form.contract_id ||
+        props.unit?.contract_id ||
+        ctx?.contract_id ||
+        ctx?.contract?.id ||
+        ctx?.project?.contract_id ||
+        ''
+      );
+    });
+
+    watch(
+      contractIdForLookup,
+      async (rawId) => {
+        const contractId = rawId != null && rawId !== '' ? Number(rawId) : NaN;
+        if (!Number.isFinite(contractId) || contractId <= 0) {
+          contractShowData.value = {};
+          contractShowLoaded.value = false;
+          return;
+        }
+
+        const token = contractShowRequestToken.value + 1;
+        contractShowRequestToken.value = token;
+        try {
+          const contract = await salesService.getContractShow(contractId);
+          if (token !== contractShowRequestToken.value) return;
+          contractShowData.value = contract && typeof contract === 'object' ? contract : {};
+          contractShowLoaded.value = true;
+        } catch {
+          if (token !== contractShowRequestToken.value) return;
+          contractShowData.value = {};
+          contractShowLoaded.value = false;
+        }
+      },
+      { immediate: true },
+    );
+
+    const isOnMapProject = computed(() => {
+      const ctx = normalizedContext.value;
+      const contractShow = contractShowData.value;
+      const contractShowFlag = parseOffPlanBoolean(
+        contractShow?.is_off_plan ??
+          contractShow?.project?.is_off_plan ??
+          contractShow?.exclusive_project?.is_off_plan,
+      );
+      if (contractShowLoaded.value && contractShowFlag !== null) {
+        return contractShowFlag;
+      }
+
+      const project = ctx?.project && typeof ctx.project === 'object' ? ctx.project : {};
+      const contract = ctx?.contract && typeof ctx.contract === 'object' ? ctx.contract : {};
+      const unit = ctx?.unit && typeof ctx.unit === 'object' ? ctx.unit : props.unit || {};
+      const offPlanFlags = [
+        ctx?.is_off_plan,
+        ctx?.isOffPlan,
+        project?.is_off_plan,
+        contract?.is_off_plan,
+        unit?.is_off_plan,
+      ];
+      const hasOffPlanFlag = offPlanFlags.some(v => {
+        if (v === true || v === 1 || v === '1') return true;
+        const text = String(v ?? '').trim().toLowerCase();
+        return text === 'true' || text === 'yes';
+      });
+      if (hasOffPlanFlag) return true;
+      const candidates = [
+        ctx?.project_type,
+        ctx?.projectType,
+        ctx?.type,
+        ctx?.category,
+        project.project_type,
+        project.type,
+        project.category,
+        contract.project_type,
+        contract.type,
+        contract.category,
+        unit.project_type,
+        unit.type,
+        unit.category,
+      ]
+        .filter(v => v != null && v !== '')
+        .map(v => String(v).toLowerCase().trim());
+      return candidates.some(value =>
+        value.includes('خارطة') ||
+        value.includes('الخارطة') ||
+        value.includes('on_map') ||
+        value.includes('on map') ||
+        value.includes('off-plan') ||
+        value.includes('off_plan')
+      );
+    });
+
     const contextDisplay = computed(() => {
-      const ctx = mergeReservationContextPayload(props.context);
+      const ctx = normalizedContext.value;
       const unit = ctx.unit || props.unit || {};
       const project = {
         ...(typeof ctx.contract === 'object' && ctx.contract ? ctx.contract : {}),
@@ -463,6 +697,104 @@ export default {
         employeeName,
       };
     });
+
+    const selectedAccountDetails = computed(() => {
+      const ctx = normalizedContext.value;
+      const contractContext = ctx?.contract && typeof ctx.contract === 'object' ? ctx.contract : {};
+      const contractShow = contractShowData.value && typeof contractShowData.value === 'object'
+        ? contractShowData.value
+        : {};
+      const contract = { ...contractContext, ...contractShow };
+      const project = ctx?.project && typeof ctx.project === 'object' ? ctx.project : {};
+      const source = form.account === 'developer'
+        ? {
+            account_number:
+              ctx?.developer_bank_account ||
+              ctx?.developer_bank_account_number ||
+              ctx?.developer_account ||
+              contract?.second_party_bank_account_name ||
+              contract?.developer_bank_account ||
+              contract?.developer_account,
+            iban:
+              ctx?.developer_iban ||
+              ctx?.developer_iban_number ||
+              contract?.second_party_iban_number ||
+              contract?.developer_iban ||
+              project?.developer_iban,
+          }
+        : {
+            account_number:
+              ctx?.company_bank_account ||
+              ctx?.company_bank_account_number ||
+              ctx?.company_account ||
+              contract?.company_bank_account ||
+              project?.company_bank_account,
+            iban:
+              ctx?.company_iban ||
+              ctx?.company_iban_number ||
+              contract?.company_iban ||
+              project?.company_iban,
+          };
+
+      const accountNumber =
+        source.account_number != null && String(source.account_number).trim() !== ''
+          ? String(source.account_number).trim()
+          : '';
+      const iban =
+        source.iban != null && String(source.iban).trim() !== ''
+          ? String(source.iban).trim()
+          : '';
+
+      return {
+        accountNumber,
+        iban,
+        hasData: Boolean(accountNumber || iban),
+      };
+    });
+
+    watch(
+      [isOnMapProject, normalizedContext],
+      ([isOffPlan, ctx]) => {
+        form.is_off_plan = Boolean(isOffPlan);
+        const unit = ctx?.unit && typeof ctx.unit === 'object' ? ctx.unit : props.unit || {};
+        const contractContext = ctx?.contract && typeof ctx.contract === 'object' ? ctx.contract : {};
+        const contractShow = contractShowData.value && typeof contractShowData.value === 'object'
+          ? contractShowData.value
+          : {};
+        const contract = { ...contractContext, ...contractShow };
+        const finalPriceRaw =
+          form.reservation_type === 'negotiation' && form.proposed_price != null && form.proposed_price !== ''
+            ? form.proposed_price
+            : unit?.price ?? unit?.total_price ?? unit?.total_unit_price ?? contract?.unit_price ?? form.final_price;
+        const finalPrice = Number(finalPriceRaw);
+        if (Number.isFinite(finalPrice) && finalPrice > 0) {
+          form.final_price = finalPrice;
+        }
+
+        const commissionPctRaw = contract?.commission_percent ?? contract?.commission_percentage ?? ctx?.commission_percentage;
+        const commissionPct = Number(commissionPctRaw);
+        if (Number.isFinite(commissionPct) && commissionPct >= 0) {
+          form.commission_percentage = commissionPct;
+        }
+
+        const commissionSourceRaw = contract?.commission_from ?? ctx?.commission_source ?? ctx?.commission_from;
+        if (commissionSourceRaw === 'owner' || commissionSourceRaw === 'buyer') {
+          form.commission_source = commissionSourceRaw;
+        }
+      },
+      { immediate: true, deep: true }
+    );
+
+    watch(
+      () => form.proposed_price,
+      value => {
+        if (form.reservation_type !== 'negotiation') return;
+        const proposed = Number(value);
+        if (Number.isFinite(proposed) && proposed > 0) {
+          form.final_price = proposed;
+        }
+      }
+    );
 
     // Arabic label maps — cover both API English values and Arabic keys
     const RESERVATION_LABELS = {
@@ -573,28 +905,67 @@ export default {
       return list.map(s => ({ ...s, label: arabicLabel(DOWN_PAYMENT_LABELS, s) }));
     });
 
-    const participantEmployees = computed(() => {
-      const li = props.lookups?.participants_employees;
-      return Array.isArray(li) ? li : [];
-    });
+    function onSubmit(event) {
+      const nativeForm = event?.target;
+      if (nativeForm && typeof nativeForm.checkValidity === 'function' && !nativeForm.checkValidity()) {
+        nativeForm.reportValidity?.();
+        return;
+      }
 
-    function onSubmit() {
-      emit('submit', { ...form });
+      const payload = {
+        ...form,
+        deposit_amount: Number(form.deposit_amount) || 0,
+        commission_source: form.commission_source || 'owner',
+        final_price: Number(form.final_price) || 0,
+        commission_percentage: Number(form.commission_percentage) || 0,
+        is_off_plan: Boolean(isOnMapProject.value),
+      };
+
+      if (payload.is_off_plan) {
+        const normalizedRows = Array.isArray(form.payments)
+          ? form.payments
+              .map(row => ({
+                payment:
+                  row?.payment != null && row?.payment !== '' ? Number(row.payment) : null,
+                date: row?.date ? String(row.date) : '',
+              }))
+              .filter(row => row.payment != null && Number.isFinite(row.payment) && row.payment > 0)
+          : [];
+
+        if (normalizedRows.length === 0) {
+          form.payments = [{ payment: null, date: '' }];
+          return;
+        }
+        payload.payments = normalizedRows;
+      } else {
+        delete payload.down_payment_amount;
+        delete payload.delivery_date;
+        delete payload.first_payment;
+        delete payload.first_payment_date;
+        delete payload.account;
+        delete payload.payments;
+      }
+
+      emit('submit', payload);
     }
 
     return {
       titleId,
       form,
       unitLabel,
+      isOnMapProject,
       contextDisplay,
       reservationTypes,
       nationalities,
       paymentMethods,
       purchaseMechanisms,
       downPaymentStatuses,
-      participantEmployees,
+      accountOptions,
+      selectedAccountDetails,
       fileName,
       filePreview,
+      addPaymentRow,
+      removePaymentRow,
       onFileChange,
       removeFile,
       onSubmit,
@@ -604,3 +975,4 @@ export default {
 </script>
 
 <style scoped src="./styles/UnitReservationModal.scoped.s1.css"></style>
+

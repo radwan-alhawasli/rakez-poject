@@ -80,10 +80,13 @@
             <label class="form-label" for="create-target-line-type">نوع الهدف</label>
             <select id="create-target-line-type" v-model="targetForm.line_type" class="form-select" required>
               <option value="">اختر النوع</option>
-              <option value="villa">Villa</option>
-              <option value="apartment">Apartment</option>
-              <option value="townhouse">Townhouse</option>
-              <option value="land">Land</option>
+              <option
+                v-for="option in SALES_EXECUTIVE_TARGET_TYPES"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
             </select>
           </div>
 
@@ -116,6 +119,7 @@
 
 <script setup>
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { SALES_EXECUTIVE_TARGET_TYPES } from '@/constants/salesTargetLineTypes';
 
 defineProps({
   open: { type: Boolean, default: false },

@@ -65,6 +65,12 @@ export default [
     meta: { roles: [ROLE_ADMIN] },
   },
   {
+    path: 'admin/contracts',
+    name: 'AdminContracts',
+    component: () => import('@/modules/contracts/views/ContractsView.vue'),
+    meta: { roles: [ROLE_ADMIN] },
+  },
+  {
     path: 'admin/order-marketing-developers',
     name: 'AdminOrderMarketingDevelopers',
     component: () => import('@/modules/admin/views/AdminLocationsView.vue'),

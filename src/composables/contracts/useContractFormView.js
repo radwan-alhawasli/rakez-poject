@@ -17,6 +17,38 @@ import {
   unitsForApi,
 } from '@/utils/contractUnits';
 
+const PROJECT_TYPE_READY = 'ready';
+const PROJECT_TYPE_OFF_PLAN = 'off_plan';
+
+/**
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+function parseIsOffPlan(value) {
+  if (value === true || value === 1) return true;
+  if (value === false || value === 0 || value == null) return false;
+  const text = String(value).trim().toLowerCase();
+  return (
+    text === '1' ||
+    text === 'true' ||
+    text === 'yes' ||
+    text.includes('على الخارطة') ||
+    text.includes('الخارطة') ||
+    text === 'off_plan' ||
+    text === 'off-plan' ||
+    text === 'on_map' ||
+    text === 'on-map'
+  );
+}
+
+/**
+ * @param {unknown} value
+ * @returns {'ready' | 'off_plan'}
+ */
+function toProjectType(value) {
+  return parseIsOffPlan(value) ? PROJECT_TYPE_OFF_PLAN : PROJECT_TYPE_READY;
+}
+
 export function useContractFormView() {
   const router = useRouter();
   const route = useRoute();
@@ -32,7 +64,7 @@ export function useContractFormView() {
 
   const form = reactive({
     phone: '',
-    signatory: 'عبد العزيز خالد عبد العزيز الجلعود',
+    signatory: 'ممثل الطرف الثاني بالتوقيع المعتمد',
     contract_city: 'الرياض',
     gregorian_date: '',
     hijri_date: '',
@@ -42,7 +74,7 @@ export function useContractFormView() {
     commission_percent: '',
     commission_from: '',
     release_date: '',
-    /** من API — يُعرض في «متوسط سعر الوحدات» عند التوفر */
+    /** من API أو محسوب من إجمالي أسعار الوحدات */
     total_price: null,
     second_party_name: '',
     second_party_id: '',
@@ -52,8 +84,12 @@ export function useContractFormView() {
     second_party_cr_number: '',
     second_party_signatory: '',
     second_party_role: '',
+    second_party_bank_name: '',
+    second_party_bank_account_name: '',
+    second_party_iban_number: '',
     city: '',
     city_id: '',
+    project_type: PROJECT_TYPE_READY,
     project_name: '',
     district: '',
     district_id: '',
@@ -72,11 +108,11 @@ export function useContractFormView() {
     const v = (form.commission_from ?? '').toString().toLowerCase();
     if (v === 'owner') return 'المالك';
     if (v === 'partner') return 'المشتري';
-    return form.commission_from || '—';
+    return form.commission_from || '-';
   });
   const commissionPercentDisplay = computed(() => {
     const p = form.commission_percent;
-    if (p === '' || p == null) return '—';
+    if (p === '' || p == null) return '-';
     return `${String(p).trim()} %`;
   });
 
@@ -110,7 +146,7 @@ export function useContractFormView() {
 
   const filteredDistricts = computed(() => districtsForCityId(form.city_id));
 
-  /** عند تغيير المدينة يدوياً: إفراغ الحي فقط (وليس عند أول تحميل من الـ API). */
+  /** تحديث خيارات الأحياء ديناميكيًا عند تغيير المدينة */
   watch(
     () => form.city_id,
     (id, prev) => {
@@ -133,7 +169,7 @@ export function useContractFormView() {
     }
   );
 
-  /** بعد جلب المدن/الأحياء: ربط الأسماء بالمعرّفات القادمة من العقد. */
+  /** مزامنة أسماء المدينة/الحي بعد تحميل القوائم */
   watch([cities, districts], () => {
     if (form.city_id) {
       const c = cities.value.find(x => String(x.id) === String(form.city_id));
@@ -158,11 +194,25 @@ export function useContractFormView() {
     try {
       const data = await contractService.getContractById(id);
       if (data) {
+        const secondPartyData =
+          data.second_party_data && typeof data.second_party_data === 'object'
+            ? data.second_party_data
+            : {};
+        const secondParty =
+          data.second_party && typeof data.second_party === 'object'
+            ? data.second_party
+            : {};
         form.city = data.city || form.city;
         if (data.city_id != null && data.city_id !== '') {
           form.city_id = String(data.city_id);
         }
         form.project_name = data.project_name || form.project_name;
+        form.project_type = toProjectType(
+          data.is_off_plan ??
+            data.project?.is_off_plan ??
+            data.info?.is_off_plan ??
+            data.second_party_data?.is_off_plan
+        );
         form.district = data.district || form.district;
         if (data.district_id != null && data.district_id !== '') {
           form.district_id = String(data.district_id);
@@ -206,6 +256,27 @@ export function useContractFormView() {
           data.second_party_cr_number || data.developer_number || form.second_party_cr_number;
         form.second_party_signatory = data.second_party_signatory || form.second_party_signatory;
         form.second_party_role = data.second_party_role || 'developer';
+        form.second_party_bank_name =
+          data.second_party_bank_name ||
+          secondPartyData.second_party_bank_name ||
+          secondPartyData.bank_name ||
+          secondParty.second_party_bank_name ||
+          secondParty.bank_name ||
+          form.second_party_bank_name;
+        form.second_party_bank_account_name =
+          data.second_party_bank_account_name ||
+          secondPartyData.second_party_bank_account_name ||
+          secondPartyData.bank_account_name ||
+          secondParty.second_party_bank_account_name ||
+          secondParty.bank_account_name ||
+          form.second_party_bank_account_name;
+        form.second_party_iban_number =
+          data.second_party_iban_number ||
+          secondPartyData.second_party_iban_number ||
+          secondPartyData.iban_number ||
+          secondParty.second_party_iban_number ||
+          secondParty.iban_number ||
+          form.second_party_iban_number;
 
         if (data.gregorian_date) {
           const dateStr = data.gregorian_date;
@@ -270,10 +341,13 @@ export function useContractFormView() {
       commission_from: form.commission_from,
       project_name: form.project_name,
       city: form.city,
+      second_party_bank_name: form.second_party_bank_name,
+      second_party_bank_account_name: form.second_party_bank_account_name,
+      second_party_iban_number: form.second_party_iban_number,
     };
     if (!validate(dataToValidate)) {
       const firstErr = Object.values(errors).flat()[0];
-      toast.error(firstErr || 'يرجى ملء جميع الحقول المطلوبة');
+      toast.error(firstErr || 'يرجى تعبئة جميع الحقول المطلوبة');
       return;
     }
 
@@ -292,6 +366,11 @@ export function useContractFormView() {
       }
     }
 
+    if (!requestId.value && ![PROJECT_TYPE_READY, PROJECT_TYPE_OFF_PLAN].includes(form.project_type)) {
+      toast.error('يرجى اختيار نوع المشروع');
+      return;
+    }
+
     isSaving.value = true;
     try {
       if (requestId.value) {
@@ -306,6 +385,9 @@ export function useContractFormView() {
           second_party_cr_number: form.second_party_cr_number,
           second_party_signatory: form.second_party_signatory,
           second_party_role: form.second_party_role,
+          second_party_bank_name: form.second_party_bank_name,
+          second_party_bank_account_name: form.second_party_bank_account_name,
+          second_party_iban_number: form.second_party_iban_number,
 
           gregorian_date: form.gregorian_date
             ? form.gregorian_date.split('-').reverse().join('-')
@@ -329,7 +411,7 @@ export function useContractFormView() {
         };
 
         await contractService.storeContractInfo(requestId.value, payload);
-        toast.success('تم حفظ العقد بنجاح');
+        toast.success('تم حفظ بيانات العقد');
         showDownloadModal.value = true;
       } else {
         const createPayload = {
@@ -341,6 +423,7 @@ export function useContractFormView() {
           city_id: String(form.city_id),
           district: form.district,
           district_id: String(form.district_id),
+          is_off_plan: form.project_type === PROJECT_TYPE_OFF_PLAN,
           note: form.notes,
           commission_percent: String(form.commission_percent ?? '').trim() || '0',
           commission_from: form.commission_from,
@@ -357,7 +440,7 @@ export function useContractFormView() {
       }
     } catch (error) {
       logger.error('Save failed', error);
-      toast.error('حدث خطأ أثناء الحفظ');
+      toast.error('حدث خطأ أثناء حفظ البيانات');
     } finally {
       isSaving.value = false;
     }
@@ -384,7 +467,7 @@ export function useContractFormView() {
       link.click();
     } catch (error) {
       logger.error('Download failed', error);
-      toast.error('فشل تحميل ملف PDF. يرجى المحاولة مرة أخرى.');
+      toast.error('فشل تحميل ملف PDF. حاول مرة أخرى لاحقًا.');
     } finally {
       isDownloading.value = false;
     }

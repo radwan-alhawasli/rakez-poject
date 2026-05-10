@@ -171,7 +171,7 @@ const validationMessage = computed(() => {
 
 function formatAmount(value) {
   const n = Number(value || 0);
-  return Number.isFinite(n) ? n.toLocaleString('ar-SA') : '0';
+  return Number.isFinite(n) ? n.toLocaleString('en-US') : '0';
 }
 
 function isSelected(id) {
@@ -225,6 +225,17 @@ defineEmits(['close', 'save']);
 
 .assign-modal-header h3 {
   line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.assign-modal-header {
+  gap: 12px;
+}
+
+.assign-close {
+  flex-shrink: 0;
 }
 
 .assign-target-meta {

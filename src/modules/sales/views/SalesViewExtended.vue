@@ -3,6 +3,7 @@
     <div class="tab-content">
       <SalesDashboardTab v-if="activeTab === 'dashboard'" />
       <SalesTargetsTab v-else-if="activeTab === 'targets'" />
+      <SalesMyRatingTab v-else-if="activeTab === 'my-rating'" />
       <SalesProjectsTab v-else-if="activeTab === 'projects'" />
       <SalesUnitSearchTab v-else-if="activeTab === 'unit-search'" />
 
@@ -32,6 +33,9 @@ const SalesDashboardTab = defineAsyncComponent(() =>
 );
 const SalesTargetsTab = defineAsyncComponent(() =>
   import('@/modules/sales/tabs/targets/SalesTargetsTab.vue')
+);
+const SalesMyRatingTab = defineAsyncComponent(() =>
+  import('@/modules/sales/tabs/my-rating/SalesMyRatingTab.vue')
 );
 const SalesProjectsTab = defineAsyncComponent(() =>
   import('@/modules/sales/tabs/projects/SalesProjectsTab.vue')
@@ -63,6 +67,7 @@ export default {
     ReservationsView,
     SalesDashboardTab,
     SalesTargetsTab,
+    SalesMyRatingTab,
     SalesProjectsTab,
     SalesAttendanceTab,
     SalesTeamTab,

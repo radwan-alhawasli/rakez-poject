@@ -145,6 +145,19 @@ const visibleNavItems = computed(() => {
         u?.is_manager === '1'
       );
     }
+    if (item.showIf === 'salesMemberOrGroupLeader') {
+      const u = props.user || {};
+      const asFlag = value => value === true || value === 1 || value === '1';
+      const role = Number(props.userRole || u?.type || 0);
+      const isExecutive = asFlag(u?.is_executive_director);
+      const isManager = asFlag(u?.is_manager);
+      const isGroupLeader =
+        asFlag(u?.is_group_leader) ||
+        asFlag(u?.is_team_group_leader) ||
+        String(u?.role_key || '').toLowerCase() === 'group_leader';
+      const isSalesMember = role === 6 && !isExecutive && !isManager && !isGroupLeader;
+      return isSalesMember || isGroupLeader;
+    }
     return true;
   });
 });

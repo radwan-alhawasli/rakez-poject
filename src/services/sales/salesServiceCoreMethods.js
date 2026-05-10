@@ -4,6 +4,7 @@ import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
 import { normalizeReservationPayload } from '@/services/sales/salesReservationPayload.js';
 import logger from '@/utils/logger';
+import { normalizeSalesExecutiveLineType } from '@/constants/salesTargetLineTypes';
 
 /**
  * فك استجابة قوائم الأهداف — أشكال متعددة من Laravel / pagination.
@@ -70,6 +71,29 @@ function unwrapSalesHierarchyList(response) {
   const nested = root?.data && typeof root.data === 'object' ? root.data : null;
   const nestedMeta = nested?.meta && typeof nested.meta === 'object' ? nested.meta : {};
 
+  /**
+   * @param {any} value
+   * @returns {unknown[]}
+   */
+  const pickArray = value => {
+    if (!value || typeof value !== 'object') return [];
+    const candidates = [
+      value.data,
+      value.items,
+      value.lines,
+      value.targets,
+      value.executive_director_lines,
+      value.rows,
+      value.team_groups,
+      value.members,
+      value.member_users,
+    ];
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) return candidate;
+    }
+    return [];
+  };
+
   if (Array.isArray(items) && items.length > 0) {
     return { items, total, meta: { ...nestedMeta, ...topMeta } };
   }
@@ -77,46 +101,20 @@ function unwrapSalesHierarchyList(response) {
   if (Array.isArray(root)) {
     return { items: root, total: root.length, meta: { ...nestedMeta, ...topMeta } };
   }
-  if (Array.isArray(root?.data)) {
+  const rootList = pickArray(root);
+  if (rootList.length > 0) {
     return {
-      items: root.data,
-      total: root.total ?? root.data.length,
-      meta: { ...nestedMeta, ...topMeta },
-    };
-  }
-  if (Array.isArray(root?.items)) {
-    return {
-      items: root.items,
-      total: root.total ?? root.items.length,
-      meta: { ...nestedMeta, ...topMeta },
-    };
-  }
-  if (Array.isArray(root?.lines)) {
-    return {
-      items: root.lines,
-      total: root.total ?? root.lines.length,
+      items: rootList,
+      total: root.total ?? rootList.length,
       meta: { ...nestedMeta, ...topMeta },
     };
   }
   if (nested) {
-    if (Array.isArray(nested.data)) {
+    const nestedList = pickArray(nested);
+    if (nestedList.length > 0) {
       return {
-        items: nested.data,
-        total: nested.total ?? nested.data.length,
-        meta: { ...nestedMeta, ...topMeta },
-      };
-    }
-    if (Array.isArray(nested.items)) {
-      return {
-        items: nested.items,
-        total: nested.total ?? nested.items.length,
-        meta: { ...nestedMeta, ...topMeta },
-      };
-    }
-    if (Array.isArray(nested.lines)) {
-      return {
-        items: nested.lines,
-        total: nested.total ?? nested.lines.length,
+        items: nestedList,
+        total: nested.total ?? nestedList.length,
         meta: { ...nestedMeta, ...topMeta },
       };
     }
@@ -152,7 +150,16 @@ export const salesServiceCoreMethods = {
   async getExecutiveAvailableUnits(params = {}) {
     try {
       const response = await apiClient.get('/sales/executive/available-units', { params });
-      return response.data?.data ?? response.data ?? {};
+      const root = response?.data ?? {};
+      const summary =
+        root?.summary ??
+        root?.data?.summary ??
+        root?.data ??
+        {};
+      return {
+        ...root,
+        summary,
+      };
     } catch (error) {
       return handleServiceError(error, 'Fetch executive available units', 'get', {});
     }
@@ -229,6 +236,25 @@ export const salesServiceCoreMethods = {
   },
 
   /**
+   * Contract details source of truth for Off-Plan detection in reservation flow.
+   * GET /contracts/show/{contract_id}
+   * @param {number|string} contractId
+   * @returns {Promise<Record<string, any>>}
+   */
+  async getContractShow(contractId) {
+    if (contractId == null || contractId === '') return {};
+    try {
+      const response = await apiClient.get(`/contracts/show/${contractId}`);
+      const root = response?.data ?? response ?? {};
+      const body = root?.data ?? root;
+      if (body?.contract && typeof body.contract === 'object') return body.contract;
+      return body && typeof body === 'object' ? body : {};
+    } catch (error) {
+      return handleServiceError(error, 'Fetch contract show', 'get', {});
+    }
+  },
+
+  /**
    * Create a new reservation (payload normalized per API spec 1.6: reservation_type aliases, required fields, defaults).
    * Aliases: عقد|contract|confirmed → confirmed_reservation; تفاوض|negotiation → negotiation.
    * POST /sales/reservations — Spec 1.6
@@ -237,19 +263,28 @@ export const salesServiceCoreMethods = {
    */
   createReservation(data) {
     const payload = normalizeReservationPayload(data);
+    const formData = new FormData();
+    Object.entries(payload).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === '') return;
+      if (key === 'payments' && Array.isArray(value)) {
+        value.forEach((row, index) => {
+          if (row?.payment != null && row.payment !== '') {
+            formData.append(`payments[${index}][payment]`, String(row.payment));
+          }
+          if (row?.date) {
+            formData.append(`payments[${index}][date]`, String(row.date));
+          }
+        });
+        return;
+      }
+      formData.append(key, String(value));
+    });
     if (data?.receipt_voucher instanceof File) {
-      const formData = new FormData();
-      Object.entries(payload).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          formData.append(key, value);
-        }
-      });
       formData.append('receipt_voucher', data.receipt_voucher);
-      return apiClient.post('/sales/reservations', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
     }
-    return apiClient.post('/sales/reservations', payload);
+    return apiClient.post('/sales/reservations', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
   },
 
   /**
@@ -450,7 +485,11 @@ export const salesServiceCoreMethods = {
    * @returns {Promise<Object>}
    */
   async createExecutiveTarget(data) {
-    const response = await apiClient.post('/sales/executive-director-lines', data);
+    const payload = {
+      ...data,
+      line_type: normalizeSalesExecutiveLineType(data?.line_type),
+    };
+    const response = await apiClient.post('/sales/executive-director-lines', payload);
     return response.data?.data ?? response.data ?? {};
   },
 
@@ -462,7 +501,15 @@ export const salesServiceCoreMethods = {
    * @returns {Promise<Object>}
    */
   async updateExecutiveTarget(targetId, data) {
-    const response = await apiClient.put(`/sales/executive-director-lines/${targetId}`, data);
+    const payload = data && typeof data === 'object'
+      ? {
+          ...data,
+          ...(Object.prototype.hasOwnProperty.call(data, 'line_type')
+            ? { line_type: normalizeSalesExecutiveLineType(data.line_type) }
+            : {}),
+        }
+      : data;
+    const response = await apiClient.put(`/sales/executive-director-lines/${targetId}`, payload);
     return response.data?.data ?? response.data ?? {};
   },
 
@@ -694,6 +741,8 @@ export const salesServiceCoreMethods = {
       if (Array.isArray(raw)) return raw;
       if (Array.isArray(raw?.items)) return raw.items;
       if (Array.isArray(raw?.groups)) return raw.groups;
+      if (Array.isArray(raw?.team_groups)) return raw.team_groups;
+      if (Array.isArray(raw?.data)) return raw.data;
       return [];
     } catch (error) {
       return handleServiceError(error, 'Fetch group leader led groups', 'get', []);
@@ -715,6 +764,8 @@ export const salesServiceCoreMethods = {
       if (Array.isArray(raw)) return raw;
       if (Array.isArray(raw?.items)) return raw.items;
       if (Array.isArray(raw?.members)) return raw.members;
+      if (Array.isArray(raw?.member_users)) return raw.member_users;
+      if (Array.isArray(raw?.data)) return raw.data;
       return [];
     } catch (error) {
       return handleServiceError(error, 'Fetch group leader members', 'get', []);

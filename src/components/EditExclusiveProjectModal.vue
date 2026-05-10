@@ -43,6 +43,13 @@
             <input v-model="form.district" type="text" class="form-input" placeholder="مثال: الحمراء" />
           </div>
           <div class="field-group">
+            <label>نوع المشروع</label>
+            <select v-model="form.project_type" class="form-input">
+              <option value="ready">جاهز</option>
+              <option value="off_plan">على الخارطة</option>
+            </select>
+          </div>
+          <div class="field-group">
             <label>السعي من</label>
             <select v-model="form.commission_from" class="form-input">
               <option value="">اختر الطرف</option>
@@ -175,6 +182,7 @@ const form = reactive({
   project_name: '',
   developer_name: '',
   developer_number: '',
+  project_type: 'ready',
   city: '',
   district: '',
   total_units_value: 0,
@@ -210,6 +218,17 @@ function mapApiToForm(data) {
   form.project_name = data.project_name ?? data.name ?? '';
   form.developer_name = data.developer_name ?? data.second_party_name ?? '';
   form.developer_number = data.developer_number ?? data.second_party_cr_number ?? '';
+  const isOffPlanRaw =
+    data.is_off_plan ??
+    data.project?.is_off_plan ??
+    data.info?.is_off_plan ??
+    data.second_party_data?.is_off_plan;
+  form.project_type =
+    isOffPlanRaw === true || isOffPlanRaw === 1 || String(isOffPlanRaw).trim() === '1'
+      ? 'off_plan'
+      : String(isOffPlanRaw).toLowerCase() === 'true'
+        ? 'off_plan'
+        : 'ready';
   form.city = data.city ?? '';
   form.district = data.district ?? '';
   // من API: total_units_value أو unit_count
@@ -276,6 +295,7 @@ async function submit() {
   try {
     const payload = {
       project_name: form.project_name,
+      is_off_plan: form.project_type === 'off_plan',
       developer_name: form.developer_name,
       developer_number: form.developer_number,
       city: form.city,

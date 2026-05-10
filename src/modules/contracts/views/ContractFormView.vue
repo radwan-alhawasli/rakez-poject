@@ -13,11 +13,11 @@
     <!-- Import Type Selection -->
     <div class="import-type-section">
       <div class="form-group-info compact">
-        <h4 class="group-title text-center">اختر نوع الإحضار</h4>
+        <h4 class="group-title text-center">نوع المشروع</h4>
         <div class="select-wrapper-center">
-          <select class="form-input centered">
-            <option>مشاريع جاهزة</option>
-            <option>مشاريع تحت الإنشاء</option>
+          <select v-model="form.project_type" class="form-input centered">
+            <option value="ready">جاهز</option>
+            <option value="off_plan">على الخارطة</option>
           </select>
         </div>
       </div>
@@ -196,6 +196,39 @@
               <div class="field-group">
                 <label>يمثلها بالتوقيع على هذا العقد</label>
                 <input type="text" v-model="form.second_party_signatory" class="form-input" />
+              </div>
+            </div>
+
+            <div class="input-row grid-3">
+              <div class="field-group">
+                <label>اسم البنك</label>
+                <input
+                  type="text"
+                  v-model="form.second_party_bank_name"
+                  class="form-input"
+                  :class="{ 'input-error': getFieldError('second_party_bank_name') }"
+                />
+                <span v-if="getFieldError('second_party_bank_name')" class="field-error">{{ getFieldError('second_party_bank_name') }}</span>
+              </div>
+              <div class="field-group">
+                <label>رقم الحساب البنكي</label>
+                <input
+                  type="text"
+                  v-model="form.second_party_bank_account_name"
+                  class="form-input"
+                  :class="{ 'input-error': getFieldError('second_party_bank_account_name') }"
+                />
+                <span v-if="getFieldError('second_party_bank_account_name')" class="field-error">{{ getFieldError('second_party_bank_account_name') }}</span>
+              </div>
+              <div class="field-group">
+                <label>رقم الايبان iban</label>
+                <input
+                  type="text"
+                  v-model="form.second_party_iban_number"
+                  class="form-input"
+                  :class="{ 'input-error': getFieldError('second_party_iban_number') }"
+                />
+                <span v-if="getFieldError('second_party_iban_number')" class="field-error">{{ getFieldError('second_party_iban_number') }}</span>
               </div>
             </div>
 
