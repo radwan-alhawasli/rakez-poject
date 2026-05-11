@@ -1,21 +1,3 @@
-/* —— شارات حالة الوحدة —— */
-.unit-status-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  white-space: nowrap;
-  border: 1px solid transparent;
-}
-
-.unit-status--available  { background: rgba(5, 150, 105, 0.1);  color: #065f46; border-color: rgba(5, 150, 105, 0.2); }
-.unit-status--reserved   { background: rgba(234, 88, 12, 0.1);  color: #9a3412; border-color: rgba(234, 88, 12, 0.2); }
-.unit-status--sold       { background: rgba(127, 29, 29, 0.08); color: #7f1d1d; border-color: rgba(127, 29, 29, 0.15); }
-.unit-status--pending    { background: rgba(37, 99, 235, 0.08); color: #1e40af; border-color: rgba(37, 99, 235, 0.18); }
-.unit-status--cancelled  { background: rgba(71, 85, 105, 0.08); color: #475569; border-color: rgba(71, 85, 105, 0.15); }
-
 .detail-item--stacked {
   flex-direction: column;
   align-items: stretch;

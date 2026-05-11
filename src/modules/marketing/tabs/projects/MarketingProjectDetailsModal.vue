@@ -140,7 +140,7 @@
               <div class="detail-item clickable" @click="goToUnits(selectedProjectDetails.id)" style="cursor: pointer; border-color: #2563eb; background: rgba(37, 99, 235, 0.05)">
                 <span class="detail-label" style="color: #2563eb">وحدات المشروع</span>
                 <span class="detail-value link" style="color: #2563eb; font-weight: bold">
-                  عرض الوحدات ({{ unitsCount(selectedProjectDetails) }}) ↗
+                  عرض الوحدات ({{ (selectedProjectDetails?.units?.length ?? Number(selectedProjectDetails?.available_units_count ?? 0) + Number(selectedProjectDetails?.pending_units_count ?? 0)) || '?' }}) ↗
                 </span>
               </div>
               <div class="detail-item clickable" @click="goToPhotography(selectedProjectDetails.id)" style="cursor: pointer; border-color: #059669; background: rgba(5, 150, 105, 0.05)">
@@ -258,41 +258,27 @@
 
           <div v-else class="units-view">
             <div class="units-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px">
-              <h4 style="margin: 0; font-family: 'Amiri'; color: #1e3a5f">
-                وحدات المشروع ({{ unitsCount(selectedProjectDetails) }})
-              </h4>
+              <h4 style="margin: 0; font-family: 'Amiri'; color: #1e3a5f">وحدات المشروع ({{ selectedProjectDetails?.units?.length || 0 }})</h4>
               <button type="button" class="btn-text" @click="$emit('update:showUnitsTable', false)" style="background: none; border: none; color: #b1a28f; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 6px">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 عودة للتفاصيل
               </button>
             </div>
             <div v-if="isLoadingUnits" class="loading-state"><div class="spinner"></div><p>جاري تحميل الوحدات...</p></div>
-            <div v-else-if="!resolvedUnits(selectedProjectDetails).length" class="empty-state">
+            <div v-else-if="!selectedProjectDetails?.units?.length" class="empty-state">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-              <p>لا توجد وحدات مضافة لهذا المشروع.</p>
+              <p>لا توجد وحدات مضافة.</p>
             </div>
-            <div v-else class="table-wrapper table-responsive" style="max-height: 420px; overflow-y: auto">
+            <div v-else class="table-wrapper table-responsive" style="max-height: 400px; overflow-y: auto">
               <table class="luxury-table table-mobile-stacked" style="width: 100%">
-                <thead>
-                  <tr>
-                    <th>رقم الوحدة</th>
-                    <th>النوع</th>
-                    <th>الدور</th>
-                    <th>المساحة</th>
-                    <th>السعر</th>
-                    <th>الحالة</th>
-                  </tr>
-                </thead>
+                <thead><tr><th>رقم الوحدة</th><th>الدور</th><th>الغرف</th><th>مساحة</th><th>السعر</th></tr></thead>
                 <tbody>
-                  <tr v-for="unit in resolvedUnits(selectedProjectDetails)" :key="unit.id" class="hover-row">
-                    <td data-label="رقم الوحدة">{{ unit.unit_number ?? unit.unit_id ?? '—' }}</td>
-                    <td data-label="النوع">{{ unit.unit_type ?? unit.type ?? '—' }}</td>
-                    <td data-label="الدور">{{ unit.floor_number ?? unit.floor ?? '—' }}</td>
-                    <td data-label="المساحة">{{ unit.area_m2 ?? unit.area ? (unit.area_m2 ?? unit.area) + ' م²' : '—' }}</td>
-                    <td data-label="السعر" class="number">{{ unit.price ? formatCurrency(unit.price) : '—' }}</td>
-                    <td data-label="الحالة">
-                      <span class="unit-status-badge" :class="unitStatusClass(unit)">{{ unitStatusLabel(unit) }}</span>
-                    </td>
+                  <tr v-for="unit in selectedProjectDetails.units" :key="unit.id" class="hover-row">
+                    <td data-label="رقم الوحدة">{{ unit.unit_number || '-' }}</td>
+                    <td data-label="الدور">{{ unit.floor != null && !Number.isNaN(Number(unit.floor)) ? unit.floor : '-' }}</td>
+                    <td data-label="الغرف">{{ unit.rooms || '-' }}</td>
+                    <td data-label="مساحة">{{ unit.area ? unit.area + ' م²' : '-' }}</td>
+                    <td data-label="السعر" class="number">{{ unit.price ? formatCurrency(unit.price) : '-' }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -337,52 +323,6 @@ defineProps({
 });
 
 defineEmits(['close', 'update:showUnitsTable', 'update:marketingPercentDraft']);
-
-/** استخراج قائمة الوحدات: contract_units أولاً ثم units */
-function resolvedUnits(project) {
-  if (!project) return [];
-  const cu = project.contract_units;
-  if (Array.isArray(cu) && cu.length) return cu;
-  const u = project.units;
-  return Array.isArray(u) ? u : [];
-}
-
-/** العدد الكلي للوحدات */
-function unitsCount(project) {
-  const units = resolvedUnits(project);
-  if (units.length) return units.length;
-  const avail = Number(project?.available_units_count ?? 0);
-  const pend  = Number(project?.pending_units_count ?? 0);
-  return (avail + pend) || '?';
-}
-
-const STATUS_LABELS = {
-  available:        'متاح',
-  reserved:         'محجوز',
-  sold:             'مُباع',
-  pending:          'قيد المراجعة',
-  pending_approval: 'قيد الاعتماد',
-  cancelled:        'ملغي',
-};
-
-const STATUS_CLASSES = {
-  available:        'unit-status--available',
-  reserved:         'unit-status--reserved',
-  sold:             'unit-status--sold',
-  pending:          'unit-status--pending',
-  pending_approval: 'unit-status--pending',
-  cancelled:        'unit-status--cancelled',
-};
-
-function unitStatusLabel(unit) {
-  const s = String(unit?.status ?? unit?.unit_status ?? '').toLowerCase();
-  return STATUS_LABELS[s] || s || '—';
-}
-
-function unitStatusClass(unit) {
-  const s = String(unit?.status ?? unit?.unit_status ?? '').toLowerCase();
-  return STATUS_CLASSES[s] || '';
-}
 </script>
 
 <style scoped src="./styles/MarketingProjectsTab.scoped.css"></style>

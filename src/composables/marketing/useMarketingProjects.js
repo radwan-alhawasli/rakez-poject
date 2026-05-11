@@ -2,6 +2,7 @@ import { ref, reactive, computed, shallowRef, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import marketingService from '@/services/marketingService';
 import contractService from '@/services/contractService';
+import notificationService from '@/services/notificationService';
 import logger from '@/utils/logger';
 import { useFormatters } from '@/composables/useFormatters';
 import { usePermissions } from '@/composables/usePermissions';
@@ -21,13 +22,25 @@ import {
   marketingTeamDisplayName,
   marketingMemberDisplayName,
   marketingMemberRatingLabel,
-  firstMarketingPercentValidationMessage,
-  resolveContractIdForMarketingPatch,
-  resolveProjectPlanAttachmentUrl,
 } from '@/modules/marketing/tabs/projects/marketingProjectsUiHelpers.js';
 
-import { useMarketingProjectBudget } from '@/composables/marketing/useMarketingProjectBudget.js';
+/** @param {unknown} error */
+function firstMarketingPercentValidationMessage(error) {
+  const data =
+    error && typeof error === 'object' && 'response' in error && error.response && typeof error.response === 'object'
+      ? error.response.data
+      : null;
+  if (!data || typeof data !== 'object' || !data.errors || typeof data.errors !== 'object') return null;
+  const mp = /** @type {Record<string, unknown>} */ (data.errors).marketing_percent;
+  return Array.isArray(mp) && typeof mp[0] === 'string' ? mp[0] : null;
+}
 
+/** @param {Record<string, unknown>|null|undefined} d */
+function resolveContractIdForMarketingPatch(d) {
+  if (!d) return null;
+  const v = d.marketing_project?.contract_id ?? d.contract_id ?? d.id;
+  return v != null && v !== '' ? v : null;
+}
 
 export function useMarketingProjects() {
   const router = useRouter();
@@ -35,23 +48,20 @@ export function useMarketingProjects() {
   const { formatNumber, formatDate } = useFormatters();
   const formatCurrency = formatNumber;
 
+  const MARKETING_PERCENT_FIXED = 10;
+
   const projects = shallowRef([]);
   const projectSearchQuery = ref('');
   const projectsFilter = reactive({ completedContractsOnly: false });
   const isLoadingProjects = ref(false);
-  /** @type {import('vue').Ref<any>} */
   const selectedProjectDetails = ref(null);
   const isLoadingProjectDetails = ref(false);
   const showUnitsTable = ref(false);
   const isLoadingUnits = ref(false);
   const recommendedEmployeeByProjectId = ref({});
 
-  // Media modal
-  const showMediaModal = ref(false);
-  const mediaModalProject = ref(null);
-
   const marketingTeamsWithMembers = computed(() => {
-    const d = /** @type {any} */ (selectedProjectDetails.value);
+    const d = selectedProjectDetails.value;
     const teams = getProjectMarketingTeamsList(d);
     if (!teams.length) return [];
     return teams.map(t => ({
@@ -61,25 +71,24 @@ export function useMarketingProjects() {
   });
 
   const filteredProjects = computed(() => {
-    /** @type {any[]} */
     let list = projects.value;
     if (projectSearchQuery.value) {
       const q = projectSearchQuery.value.toLowerCase();
       list = list.filter(
-        (/** @type {any} */ p) =>
+        p =>
           (p.project_name || p.name || '').toLowerCase().includes(q) ||
           (p.developer_name || '').toLowerCase().includes(q)
       );
     }
     if (projectsFilter.completedContractsOnly) {
-      list = list.filter((/** @type {any} */ p) => p.contract_status === 'completed');
+      list = list.filter(p => p.contract_status === 'completed');
     }
     return list;
   });
 
   // Modals
   const showProjectDetailsModal = ref(false);
-
+  const showCalculateBudgetModal = ref(false);
   /** مودال «الخطة»: خطة المطور/المرفق + خطط الموظفين */
   const showProjectPlansModal = ref(false);
   const projectPlansModalProject = ref(null);
@@ -88,20 +97,22 @@ export function useMarketingProjects() {
   const projectPlansModalHasDeveloperPlan = ref(false);
   const projectPlansModalDeveloperPlan = ref(null);
   const projectPlansModalEmployeePlans = ref([]);
-
   /** مسودة حقل نسبة التسويق في مودال التفاصيل — تُزامن من GET وتُحفظ عبر PATCH */
   const marketingPercentDraft = ref('');
   const isSavingMarketingPercent = ref(false);
 
-  const {
-    showCalculateBudgetModal,
-    budgetForm,
-    budgetResult,
-    isSubmitting,
-    onBudgetProjectChange,
-    openCalculateBudgetModal,
-    calculateBudget,
-  } = useMarketingProjectBudget(projects);
+  // Budget form
+  const budgetForm = reactive({
+    project_id: '',
+    contract_id: '',
+    unit_price: '',
+    commission_percent: '',
+    marketing_percent: MARKETING_PERCENT_FIXED,
+    contract_duration_days: '',
+    contract_duration_months: '',
+  });
+  const budgetResult = ref(null);
+  const isSubmitting = ref(false);
 
   const loadProjects = async () => {
     isLoadingProjects.value = true;
@@ -119,7 +130,7 @@ export function useMarketingProjects() {
   };
 
   const syncMarketingPercentDraft = () => {
-    const p = /** @type {any} */ (selectedProjectDetails.value)?.marketing_percent;
+    const p = selectedProjectDetails.value?.marketing_percent;
     if (p === null || p === undefined || p === '') {
       marketingPercentDraft.value = '';
     } else {
@@ -127,28 +138,29 @@ export function useMarketingProjects() {
     }
   };
 
-  /** @param {any} projectOrId */
   const loadProjectDetails = async projectOrId => {
     const project = typeof projectOrId === 'object' && projectOrId != null ? projectOrId : null;
-    // marketing project id (primary key in marketing_projects table)
-    const marketingProjectId = project
-      ? project.id ?? project.marketing_project_id
+    const contractId = project
+      ? project.marketing_project?.contract_id ?? project.contract_id ?? project.id
       : projectOrId;
-    if (!marketingProjectId) return;
+    const projectId = project ? project.id ?? project.marketing_project_id : projectOrId;
+    if (!contractId && !projectId) return;
     isLoadingProjectDetails.value = true;
     let details = null;
     try {
       const [d, recommended] = await Promise.all([
-        marketingService.getProjectById(marketingProjectId),
-        marketingService.getRecommendedEmployee(marketingProjectId).catch(() => null),
+        contractId
+          ? marketingService.getProjectByContractId(contractId)
+          : marketingService.getProjectById(projectId),
+        projectId ? marketingService.getRecommendedEmployee(projectId) : Promise.resolve(null),
       ]);
       details = d;
       selectedProjectDetails.value = details;
       syncMarketingPercentDraft();
-      if (marketingProjectId && recommended != null && typeof recommended === 'object') {
+      if (projectId && recommended != null && typeof recommended === 'object') {
         recommendedEmployeeByProjectId.value = {
           ...recommendedEmployeeByProjectId.value,
-          [marketingProjectId]: recommended,
+          [projectId]: recommended,
         };
       }
     } catch (error) {
@@ -160,7 +172,7 @@ export function useMarketingProjects() {
   };
 
   const saveProjectMarketingPercent = async () => {
-    const d = /** @type {any} */ (selectedProjectDetails.value);
+    const d = selectedProjectDetails.value;
     const contractId = resolveContractIdForMarketingPatch(d);
     if (contractId == null || contractId === '') {
       toast.warning('تعذر تحديد رقم العقد لهذا المشروع');
@@ -204,7 +216,7 @@ export function useMarketingProjects() {
   };
 
   const clearProjectMarketingPercent = async () => {
-    const d = /** @type {any} */ (selectedProjectDetails.value);
+    const d = selectedProjectDetails.value;
     const contractId = resolveContractIdForMarketingPatch(d);
     if (contractId == null || contractId === '') {
       toast.warning('تعذر تحديد رقم العقد لهذا المشروع');
@@ -231,7 +243,6 @@ export function useMarketingProjects() {
     }
   };
 
-  /** @param {any} project */
   const viewProjectDetails = async project => {
     marketingPercentDraft.value = '';
     showProjectDetailsModal.value = true;
@@ -240,33 +251,14 @@ export function useMarketingProjects() {
     await loadProjectDetails(project);
   };
 
-  /** @param {any} project_id */
   const goToUnits = async project_id => {
     showUnitsTable.value = true;
-    const d = /** @type {any} */ (selectedProjectDetails.value);
-
-    // contract_units محمّلة بالفعل من GET /marketing/projects/:id — لا حاجة لـ API إضافي
-    const alreadyLoaded =
-      (d?.contract_units?.length ?? 0) > 0 ||
-      (d?.units?.length ?? 0) > 0;
-
-    if (alreadyLoaded) return;
-
-    // fallback: إذا لم تُرجع التفاصيل وحدات، نُحاول جلبها عبر contract_id
+    if (selectedProjectDetails.value?.units?.length > 0) return;
     isLoadingUnits.value = true;
     try {
-      const contractId =
-        d?.marketing_project?.contract_id ??
-        d?.contract_id ??
-        d?.contract_info?.id ??
-        project_id;
-      const units = await contractService.getContractUnits(contractId);
+      const units = await contractService.getContractUnits(project_id);
       if (selectedProjectDetails.value) {
-        selectedProjectDetails.value = {
-          ...(/** @type {any} */ (selectedProjectDetails.value)),
-          contract_units: Array.isArray(units) ? units : [],
-          units: Array.isArray(units) ? units : [],
-        };
+        selectedProjectDetails.value = { ...selectedProjectDetails.value, units };
       }
     } catch (error) {
       logger.error('Error loading units:', error);
@@ -275,16 +267,13 @@ export function useMarketingProjects() {
     }
   };
 
-  /** @param {any} projectId */
   const goToPhotography = projectId => {
     if (!projectId) return;
-    mediaModalProject.value = selectedProjectDetails.value;
-    showMediaModal.value = true;
+    router.push({ name: 'ProjectTracker', params: { id: String(projectId) }, query: { tab: 'photography' } }).catch(() => {});
   };
 
-  /** @param {any} projectId */
   const managePlan = projectId => {
-    const p = /** @type {any} */ (projects.value.find(x => String(/** @type {any} */ (x).id) === String(projectId)));
+    const p = projects.value.find(x => String(x.id) === String(projectId));
     router.push({
       name: 'MarketingPlans',
       query: {
@@ -296,7 +285,13 @@ export function useMarketingProjects() {
     }).catch(() => {});
   };
 
-  /** @param {any} plan */
+  const resolveProjectPlanAttachmentUrl = project => {
+    const raw = project?.project_plans || project?.marketing_project?.project_plans || project?.plan_url || '';
+    if (typeof raw !== 'string' || !raw.trim()) return '';
+    const u = raw.trim();
+    return u.startsWith('http') ? u : `${window.location.origin}${u.startsWith('/') ? u : `/${u}`}`;
+  };
+
   const developerPlanLooksPresent = plan => {
     if (!plan || typeof plan !== 'object') return false;
     if (plan.raw_plan || plan.rawPlan) return true;
@@ -310,7 +305,6 @@ export function useMarketingProjects() {
     );
   };
 
-  /** @param {any} project */
   const viewProjectPlan = async project => {
     if (!project) return;
     projectPlansModalProject.value = project;
@@ -368,8 +362,8 @@ export function useMarketingProjects() {
   };
 
   const goToDeveloperPlanEditorFromModal = () => {
-    const project = /** @type {any} */ (projectPlansModalProject.value);
-    const plan = /** @type {any} */ (projectPlansModalDeveloperPlan.value);
+    const project = projectPlansModalProject.value;
+    const plan = projectPlansModalDeveloperPlan.value;
     if (!project) return;
     const cid =
       project?.marketing_project?.contract_id ?? project?.contract_id ?? project?.contractId ?? project?.id;
@@ -394,32 +388,94 @@ export function useMarketingProjects() {
   };
 
   const goToManageDeveloperPlanFromPlansModal = () => {
-    const p = /** @type {any} */ (projectPlansModalProject.value);
+    const p = projectPlansModalProject.value;
     closeProjectPlansModal();
     if (p?.id) managePlan(p.id);
   };
 
   const goToEmployeePlansManagementFromModal = () => {
-    const p = /** @type {any} */ (projectPlansModalProject.value);
+    const p = projectPlansModalProject.value;
     const id = p?.id ?? p?.marketing_project_id;
     closeProjectPlansModal();
     if (id == null || id === '') return;
     router.push({ name: 'MarketingEmployeePlans', query: { projectId: String(id) } }).catch(() => {});
   };
 
+  // Budget calculation
+  const onBudgetProjectChange = () => {
+    if (!budgetForm.project_id) {
+      budgetForm.contract_id = '';
+      budgetForm.unit_price = '';
+      budgetForm.commission_percent = '';
+      return;
+    }
+    const p = projects.value.find(proj => String(proj.id) === String(budgetForm.project_id));
+    if (p) {
+      budgetForm.contract_id = p.contract_number ?? p.marketing_project?.contract_id ?? p.id ?? '';
+      budgetForm.unit_price = p.average_unit_price ?? '';
+      budgetForm.commission_percent = p.commission_percentage ?? '';
+    }
+  };
 
-  /** @param {any} project */
+  const openCalculateBudgetModal = () => {
+    budgetForm.project_id = '';
+    budgetForm.contract_id = '';
+    budgetForm.unit_price = '';
+    budgetForm.commission_percent = '';
+    budgetForm.marketing_percent = MARKETING_PERCENT_FIXED;
+    budgetForm.contract_duration_days = '';
+    budgetForm.contract_duration_months = '';
+    budgetResult.value = null;
+    showCalculateBudgetModal.value = true;
+  };
+
+  const calculateBudget = async () => {
+    if (!budgetForm.contract_id || !budgetForm.unit_price) {
+      toast.warning('الرجاء إدخال جميع الحقول المطلوبة');
+      return;
+    }
+    try {
+      isSubmitting.value = true;
+      const rawMarketingPercent = Number(budgetForm.marketing_percent) || MARKETING_PERCENT_FIXED;
+      const result = await marketingService.calculateBudget({
+        contract_id: parseInt(budgetForm.contract_id),
+        unit_price: parseFloat(budgetForm.unit_price),
+        marketing_percent: rawMarketingPercent,
+      });
+      const unitPrice = Number(budgetForm.unit_price) || 0;
+      const commissionPercent = Number(budgetForm.commission_percent) || 0;
+      const marketingPercent = rawMarketingPercent > 1 ? rawMarketingPercent / 100 : rawMarketingPercent;
+      const commissionValue = result.commission_value ?? unitPrice * (commissionPercent / 100);
+      const marketingValue = result.marketing_value ?? Number(commissionValue) * marketingPercent;
+      const durationDays = Number(budgetForm.contract_duration_days) || Number(result.contract_duration_days) || 0;
+      const durationMonths = Number(budgetForm.contract_duration_months) || Number(result.contract_duration_months) || 0;
+      const dailyBudget = durationDays ? Number(marketingValue) / durationDays : result.daily_budget ?? 0;
+      const monthlyBudget = durationMonths ? Number(marketingValue) / durationMonths : result.monthly_budget ?? 0;
+      budgetResult.value = {
+        commission_value: Number(commissionValue) || 0,
+        marketing_value: Number(marketingValue) || 0,
+        daily_budget: Number(dailyBudget) || 0,
+        monthly_budget: Number(monthlyBudget) || 0,
+      };
+      notificationService.addNotification(
+        `تم حساب الميزانية: إجمالي التسويق ${formatCurrency(marketingValue || 0)} ريال | يومي ${formatCurrency(dailyBudget || 0)} ريال | شهري ${formatCurrency(monthlyBudget || 0)} ريال`,
+        'success'
+      );
+      showCalculateBudgetModal.value = false;
+    } catch (error) {
+      logger.error('Error calculating budget:', error);
+      toast.error('حدث خطأ أثناء حساب الميزانية');
+    } finally {
+      isSubmitting.value = false;
+    }
+  };
+
   const getRecommendedEmployee = project =>
     getRecommendedEmployeePure(project, recommendedEmployeeByProjectId.value);
 
   onMounted(() => {
     loadProjects();
   });
-
-  const closeMediaModal = () => {
-    showMediaModal.value = false;
-    mediaModalProject.value = null;
-  };
 
   return {
     projects,
@@ -477,8 +533,5 @@ export function useMarketingProjects() {
     marketingTeamDisplayName,
     marketingMemberDisplayName,
     marketingMemberRatingLabel,
-    showMediaModal,
-    mediaModalProject,
-    closeMediaModal,
   };
 }

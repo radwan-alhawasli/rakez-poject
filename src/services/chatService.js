@@ -57,19 +57,86 @@ export function normalizeConversation(raw) {
  */
 export function normalizeMessage(raw) {
   if (!raw || typeof raw !== 'object') return null;
-  const attachment = raw.attachment || raw.file || raw.file_url || raw.media_url || null;
-  const type = raw.attachment_type || raw.type || raw.file_type || (attachment ? 'file' : 'text');
-  
+
+  const messageText = raw.message ?? raw.body ?? raw.text ?? '';
+
+  const attachmentsArray =
+    (Array.isArray(raw.attachments) ? raw.attachments : null) ||
+    (Array.isArray(raw.files) ? raw.files : null) ||
+    null;
+
+  const attachmentCandidate =
+    raw.attachment ??
+    raw.attachment_url ??
+    raw.file ??
+    raw.file_url ??
+    raw.media_url ??
+    raw.url ??
+    raw.path ??
+    (attachmentsArray && attachmentsArray[0]) ??
+    null;
+
+  const attachmentUrl =
+    typeof attachmentCandidate === 'string'
+      ? attachmentCandidate
+      : (attachmentCandidate && typeof attachmentCandidate === 'object'
+          ? (attachmentCandidate.url ?? attachmentCandidate.path ?? attachmentCandidate.file_url ?? attachmentCandidate.media_url)
+          : null);
+
+  const mimeType =
+    raw.mime_type ??
+    raw.mimetype ??
+    raw.content_type ??
+    raw.attachment_mime_type ??
+    raw.file_mime_type ??
+    (attachmentCandidate && typeof attachmentCandidate === 'object' ? (attachmentCandidate.mime_type ?? attachmentCandidate.mimetype ?? attachmentCandidate.type) : null) ??
+    null;
+
+  const fileName =
+    raw.file_name ??
+    raw.filename ??
+    raw.original_name ??
+    raw.name ??
+    (attachmentCandidate && typeof attachmentCandidate === 'object' ? (attachmentCandidate.file_name ?? attachmentCandidate.original_name ?? attachmentCandidate.name) : null) ??
+    null;
+
+  const fileSize =
+    raw.file_size ??
+    raw.size ??
+    (attachmentCandidate && typeof attachmentCandidate === 'object' ? (attachmentCandidate.file_size ?? attachmentCandidate.size) : null) ??
+    null;
+
+  const type =
+    raw.attachment_type ||
+    raw.file_type ||
+    // NOTE: raw.type is legacy in some payloads; keep it last.
+    (raw.type && raw.type !== 'text' ? raw.type : null) ||
+    (attachmentUrl ? 'file' : 'text');
+
   return {
     ...raw,
     id: raw.id,
-    conversation_id: raw.conversation_id,
-    sender_id: Number(raw.sender_id ?? raw.senderId ?? raw.user_id ?? raw.userId ?? raw.from_id ?? raw.fromId ?? (raw.user?.id) ?? 0),
-    message: raw.message ?? raw.body ?? raw.text ?? '',
+    conversation_id: raw.conversation_id ?? raw.conversationId ?? raw.thread_id ?? raw.threadId,
+    sender_id: Number(
+      raw.sender_id ??
+        raw.senderId ??
+        raw.user_id ??
+        raw.userId ??
+        raw.from_id ??
+        raw.fromId ??
+        raw.sender?.id ??
+        raw.user?.id ??
+        0
+    ),
+    message: messageText,
     is_read: !!(raw.is_read ?? raw.isRead),
     created_at: raw.created_at || raw.createdAt,
-    attachment,
+    attachment: attachmentUrl || null,
+    attachment_url: attachmentUrl || null,
     attachment_type: type,
+    mime_type: mimeType || null,
+    file_name: fileName || null,
+    file_size: fileSize != null ? Number(fileSize) : null,
   };
 }
 
@@ -167,9 +234,8 @@ const chatService = {
    */
   async sendAttachment(conversationId, formData) {
     try {
-      const res = await apiClient.post(`/chat/conversations/${conversationId}/messages`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      // Do not set Content-Type manually for FormData; axios will set the multipart boundary.
+      const res = await apiClient.post(`/chat/conversations/${conversationId}/messages`, formData);
       const raw = unwrap(res);
       return normalizeMessage(raw);
     } catch (error) {

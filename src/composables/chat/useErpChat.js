@@ -205,76 +205,80 @@ export function useErpChat() {
   const subscribeToConversation = convId => {
 
     if (!pusher || !convId) return;
-    
-    // Laravel private channels use the private-* prefix; try private first (required for Broadcast::channel auth).
-    const channelsToTry = [
-      `private-conversation.${convId}`,
-      `conversation.${convId}`,
-      `private-conversations.${convId}`,
-      `private-chat.${convId}`,
-      `private-chat.conversation.${convId}`,
-    ];
-    // Common event names in Laravel/Pusher setups
-    const eventsToTry = ['message.sent', 'MessageSent', 'message-sent', 'NewMessage', 'new-message'];
 
-    channelsToTry.forEach(channelName => {
-      if (pusherSubscriptions.some(s => s.channelName === channelName)) return;
-      
+    // Backend docs: Channel `conversation.{conversationId}`, Event `message.sent`.
+    // Subscribe to the documented channel first and keep a single fallback to the common private prefix.
+    const primaryChannel = `conversation.${convId}`;
+    const fallbackChannel = `private-conversation.${convId}`;
+
+    const ensureSubscribed = channelName => {
+      if (pusherSubscriptions.some(s => s.channelName === channelName)) return null;
       try {
         logger.debug(`[Chat Real-time] Subscribing to: ${channelName}`);
         const ch = pusher.subscribe(channelName);
-        
-        eventsToTry.forEach(eventName => {
-          ch.bind(eventName, (/** @type {any} */ data) => {
-            logger.debug(`[Chat Real-time] Event '${eventName}' on '${channelName}':`, data);
-            
-            // Normalize data (handle both root object and nested .message)
-            const msgData = data.message ? data.message : data;
-            const msg = normalizeMessage(msgData) || msgData;
-            
-            if (
-              Number(activeConversation.value?.id) === Number(convId) &&
-              currentUserId.value != null &&
-              Number(msg.sender_id) !== Number(currentUserId.value)
-            ) {
-              const exists = messages.value.find(m => m.id === msg.id);
-              if (!exists) {
-                messages.value = sortAndDedupeMessages([...messages.value, msg]);
-                nextTick(scrollToBottom);
-                // Mark as read in backend if it's the active conversation
-                chatService.markAsRead(convId).catch(() => {});
-              }
-            }
-            
-            // Update preview and unread count in sidebar
-            const c = conversations.value.find(x => String(x.id) === String(convId));
-            if (c) {
-              c._lastPreview = msg.message || msg.body || msg.text || '';
-              c.last_message_at = new Date().toISOString();
-              if (
-                currentUserId.value != null &&
-                Number(msg.sender_id) !== Number(currentUserId.value) &&
-                Number(activeConversation.value?.id) !== Number(convId)
-              ) {
-                c.unread_count = (c.unread_count || 0) + 1;
-              }
-            }
-          });
-        });
-
         pusherSubscriptions.push({ convId, channelName, ch });
-        
-        // Monitoring connection
+
         ch.bind('pusher:subscription_succeeded', () => {
           logger.debug(`[Chat Real-time] Subscription SUCCESS: ${channelName}`);
         });
         ch.bind('pusher:subscription_error', (/** @type {any} */ status) => {
           logger.warn(`[Chat Real-time] Subscription ERROR (${channelName}):`, status);
         });
+
+        return ch;
       } catch (err) {
         logger.warn(`[Chat Real-time] Subscription FAILED: ${channelName}`, err);
+        return null;
       }
-    });
+    };
+
+    const handleIncoming = (/** @type {any} */ data) => {
+      const msgData = data && typeof data === 'object' && data.message ? data.message : data;
+      const msg = normalizeMessage(msgData) || msgData;
+      if (!msg || !msg.id) return;
+
+      const senderId = Number(msg.sender_id ?? msg.senderId ?? 0);
+      const mine = currentUserId.value != null && senderId === Number(currentUserId.value);
+
+      if (Number(activeConversation.value?.id) === Number(convId)) {
+        const exists = messages.value.find(m => String(m.id) === String(msg.id));
+        if (!exists) {
+          messages.value = sortAndDedupeMessages([...messages.value, msg]);
+          nextTick(scrollToBottom);
+        }
+        if (!mine) {
+          chatService.markAsRead(convId).catch(() => {});
+        }
+      }
+
+      const c = conversations.value.find(x => String(x.id) === String(convId));
+      if (c) {
+        const previewText =
+          msg.message ||
+          (msg.attachment
+            ? (String(msg.mime_type || '').startsWith('audio/') ? 'رسالة صوتية' : 'مرفق')
+            : '');
+        c._lastPreview = previewText;
+        c.last_message_at = msg.created_at || new Date().toISOString();
+        if (!isActive(convId) && !mine) {
+          c.unread_count = (c.unread_count || 0) + 1;
+        }
+      }
+    };
+
+    const ch1 = ensureSubscribed(primaryChannel);
+    if (ch1) {
+      ch1.bind('message.sent', handleIncoming);
+      // Compatibility: some Laravel setups broadcast with a class name.
+      ch1.bind('MessageSent', handleIncoming);
+      return;
+    }
+
+    const ch2 = ensureSubscribed(fallbackChannel);
+    if (ch2) {
+      ch2.bind('message.sent', handleIncoming);
+      ch2.bind('MessageSent', handleIncoming);
+    }
   };
 
   const initPusher = () => {
@@ -409,6 +413,8 @@ export function useErpChat() {
     
     // Optimistic update
     const tempId = `temp-${Date.now()}`;
+    /** @type {string|null} */
+    const localObjectUrl = file ? URL.createObjectURL(file) : null;
     const tempMsg = {
       id: tempId,
       conversation_id: convId,
@@ -418,9 +424,13 @@ export function useErpChat() {
       created_at: new Date().toISOString(),
       _optimistic: true,
       _mine: true,
-      attachment_type: file ? (file.type.startsWith('image/') ? 'image' : 'file') : null,
+      attachment_type: file ? (file.type.startsWith('image/') ? 'image' : (file.type.startsWith('audio/') ? 'audio' : 'file')) : null,
       _isUploading: !!file,
-      attachment: file ? URL.createObjectURL(file) : null
+      attachment: localObjectUrl,
+      attachment_url: localObjectUrl,
+      mime_type: file ? file.type : null,
+      file_name: file ? file.name : null,
+      file_size: file ? file.size : null,
     };
     
     messages.value = sortAndDedupeMessages([...messages.value, tempMsg]);
@@ -434,6 +444,8 @@ export function useErpChat() {
       if (file) {
         const formData = new FormData();
         formData.append('message', text);
+        // TODO: Confirm backend multipart field name for chat attachments (attachment vs file vs media).
+        // Keeping `attachment` because it was the existing convention in this frontend.
         formData.append('attachment', file);
         realMsg = await chatService.sendAttachment(convId, formData);
       } else {
@@ -458,6 +470,13 @@ export function useErpChat() {
       // Mark optimistic message as failed or remove it
       messages.value = messages.value.filter(m => m.id !== tempId);
     } finally {
+      if (localObjectUrl) {
+        try {
+          URL.revokeObjectURL(localObjectUrl);
+        } catch (_) {
+          // ignore
+        }
+      }
       isSending.value = false;
     }
   };
@@ -471,8 +490,26 @@ export function useErpChat() {
 
   const startRecording = async () => {
     try {
+      if (typeof MediaRecorder === 'undefined' || !navigator?.mediaDevices?.getUserMedia) {
+        notificationService.addNotification('تسجيل الصوت غير مدعوم في هذا المتصفح', 'warning');
+        return;
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder.value = new MediaRecorder(stream);
+      /** Pick a supported mimeType when possible (Safari varies). */
+      let mimeType = '';
+      try {
+        const preferred = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4'];
+        for (const mt of preferred) {
+          if (typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported(mt)) {
+            mimeType = mt;
+            break;
+          }
+        }
+      } catch (_) {
+        // ignore
+      }
+
+      mediaRecorder.value = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
       audioChunks.value = [];
 
       mediaRecorder.value.ondataavailable = (/** @type {any} */ e) => {
@@ -480,8 +517,10 @@ export function useErpChat() {
       };
 
       mediaRecorder.value.onstop = async () => {
-        const audioBlob = new Blob(audioChunks.value, { type: 'audio/webm' });
-        const file = new File([audioBlob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+        const type = mimeType || mediaRecorder.value?.mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunks.value, { type });
+        const ext = type.includes('mp4') ? 'mp4' : (type.includes('ogg') ? 'ogg' : 'webm');
+        const file = new File([audioBlob], `voice-${Date.now()}.${ext}`, { type });
         await handleFileUpload(file);
         stream.getTracks().forEach(track => track.stop());
       };
@@ -502,7 +541,10 @@ export function useErpChat() {
     if (mediaRecorder.value && isRecording.value) {
       mediaRecorder.value.stop();
       isRecording.value = false;
-      if (recordingTimer) clearInterval(recordingTimer);
+      if (recordingTimer) {
+        clearInterval(recordingTimer);
+        recordingTimer = null;
+      }
     }
   };
 
