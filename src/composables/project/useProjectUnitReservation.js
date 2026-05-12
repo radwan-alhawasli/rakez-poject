@@ -17,6 +17,7 @@ import {
   downloadProjectManagementReservationVoucher,
   getProjectManagementReservationVoucherData,
 } from '@/services/teamService';
+import { getEligibleReservationParticipants } from '@/services/salesReservationParticipantsApi';
 
 /**
  * @param {string|number} projectId
@@ -346,13 +347,26 @@ export function useProjectUnitReservation(projectId, { loadUnits, useProjectMana
       reservationLookups.value = null;
     }
 
-    // Best-effort: load team members for "sale participants" dropdown (leader permission only).
+    // Best-effort: load eligible reservation participants, then fallback to team members.
     participantsEmployees.value = [];
     try {
-      const members = await salesService.getTeamMembers({ with_ratings: false });
-      participantsEmployees.value = Array.isArray(members) ? members : [];
+      const eligible = await getEligibleReservationParticipants({
+        contract_id: projectId,
+        contract_unit_id: unit.id,
+      });
+      if (Array.isArray(eligible) && eligible.length > 0) {
+        participantsEmployees.value = eligible;
+      } else {
+        const members = await salesService.getTeamMembers({ with_ratings: false });
+        participantsEmployees.value = Array.isArray(members) ? members : [];
+      }
     } catch {
-      participantsEmployees.value = [];
+      try {
+        const members = await salesService.getTeamMembers({ with_ratings: false });
+        participantsEmployees.value = Array.isArray(members) ? members : [];
+      } catch {
+        participantsEmployees.value = [];
+      }
     }
 
     /** @type {any[]} */

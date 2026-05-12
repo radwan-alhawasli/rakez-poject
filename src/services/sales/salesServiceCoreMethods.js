@@ -277,6 +277,23 @@ export const salesServiceCoreMethods = {
         });
         return;
       }
+      if (key === 'participants' && Array.isArray(value)) {
+        value.forEach((row, index) => {
+          if (row?.user_id != null && row.user_id !== '') {
+            formData.append(`participants[${index}][user_id]`, String(row.user_id));
+          }
+          formData.append(`participants[${index}][did_bring]`, row?.did_bring ? '1' : '0');
+          formData.append(`participants[${index}][did_convince]`, row?.did_convince ? '1' : '0');
+          formData.append(`participants[${index}][did_close]`, row?.did_close ? '1' : '0');
+          if (row?.weight != null && row.weight !== '') {
+            formData.append(`participants[${index}][weight]`, String(row.weight));
+          }
+          if (row?.notes != null && row.notes !== '') {
+            formData.append(`participants[${index}][notes]`, String(row.notes));
+          }
+        });
+        return;
+      }
       formData.append(key, String(value));
     });
     if (data?.receipt_voucher instanceof File) {

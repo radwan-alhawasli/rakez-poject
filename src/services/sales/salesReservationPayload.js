@@ -105,5 +105,28 @@ export function normalizeReservationPayload(data) {
       data?.proposed_price != null && data?.proposed_price !== '' ? Number(data.proposed_price) : 0;
   }
 
+  if (Array.isArray(data?.participants)) {
+    payload.participants = data.participants
+      .map((/** @type {any} */ participant) => ({
+        user_id: Number(participant?.user_id),
+        did_bring: Boolean(participant?.did_bring),
+        did_convince: Boolean(participant?.did_convince),
+        did_close: Boolean(participant?.did_close),
+        weight: Number(participant?.weight),
+        notes:
+          participant?.notes != null && String(participant.notes).trim() !== ''
+            ? String(participant.notes).trim()
+            : null,
+      }))
+      .filter(
+        (/** @type {{ user_id: number; did_bring: boolean; did_convince: boolean; did_close: boolean; weight: number }} */ participant) =>
+          Number.isFinite(participant.user_id) &&
+          participant.user_id > 0 &&
+          Number.isFinite(participant.weight) &&
+          participant.weight > 0 &&
+          (participant.did_bring || participant.did_convince || participant.did_close)
+      );
+  }
+
   return payload;
 }

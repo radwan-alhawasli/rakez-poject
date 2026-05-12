@@ -344,6 +344,120 @@
                 </select>
               </div>
             </div>
+
+            <div class="rsv-section rsv-section--participants">
+              <div class="rsv-participants-shell">
+                <div class="rsv-participants-shell-head">
+                  <div>
+                    <h3 class="rsv-section-title rsv-section-title--participants">معلومات المشتركين في البيعة</h3>
+                    <p class="rsv-participants-subtitle">
+                      اختر الموظفين المشاركين في جلب أو إقناع أو إقفال البيعة وحدد درجة مشاركة كل موظف.
+                    </p>
+                  </div>
+                  <button type="button" class="rsv-btn-secondary rsv-btn-secondary--add" @click="addParticipant">
+                    + إضافة مشارك
+                  </button>
+                </div>
+
+                <div v-if="participants.length === 0" class="rsv-participants-empty">
+                  لا يوجد مشاركون مضافون حالياً.
+                </div>
+
+                <div v-else class="rsv-participants-list" dir="rtl">
+                  <article
+                    v-for="participant in participants"
+                    :key="participant.local_id"
+                    class="rsv-participant-card"
+                  >
+                    <div class="rsv-participant-grid">
+                      <div class="rsv-participant-field">
+                        <label class="rsv-label rsv-participant-label">الموظف</label>
+                        <select v-model="participant.user_id" class="rsv-input">
+                          <option value="">اختر الموظف</option>
+                          <option
+                            v-for="employee in participantEmployeesOptions"
+                            :key="employee.value"
+                            :value="employee.value"
+                          >
+                            {{ employee.label }}
+                          </option>
+                        </select>
+                      </div>
+
+                      <div class="rsv-participant-field">
+                        <label class="rsv-label rsv-participant-label">درجة المشاركة</label>
+                        <select v-model.number="participant.weight" class="rsv-input">
+                          <option
+                            v-for="option in participationDegreeOptions"
+                            :key="option.value"
+                            :value="option.value"
+                          >
+                            {{ option.label }}
+                          </option>
+                        </select>
+                      </div>
+
+                      <div class="rsv-participant-field">
+                        <label class="rsv-label rsv-participant-label">العمليات</label>
+                        <div class="rsv-operation-pills">
+                          <label class="rsv-operation-pill" :class="{ 'is-active': participant.did_bring }">
+                            <input v-model="participant.did_bring" type="checkbox" />
+                            <span>جلب</span>
+                          </label>
+                          <label class="rsv-operation-pill" :class="{ 'is-active': participant.did_convince }">
+                            <input v-model="participant.did_convince" type="checkbox" />
+                            <span>إقناع</span>
+                          </label>
+                          <label class="rsv-operation-pill" :class="{ 'is-active': participant.did_close }">
+                            <input v-model="participant.did_close" type="checkbox" />
+                            <span>إقفال</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div class="rsv-participant-field">
+                        <label class="rsv-label rsv-participant-label">ملاحظات</label>
+                        <input
+                          v-model="participant.notes"
+                          type="text"
+                          class="rsv-input"
+                          placeholder="اختياري"
+                        />
+                      </div>
+
+                      <div class="rsv-participant-field rsv-participant-field--action">
+                        <label class="rsv-label rsv-participant-label">إجراء</label>
+                        <button
+                          type="button"
+                          class="rsv-btn-danger rsv-btn-danger--participant"
+                          @click="removeParticipant(participant.local_id)"
+                        >
+                          إزالة
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+
+                <div class="rsv-participants-summary">
+                  <div class="rsv-participants-summary-card" :class="participantTotalState(bringTotal)">
+                    <span class="rsv-participants-summary-label">مجموع درجات الجلب</span>
+                    <strong class="rsv-participants-summary-value">{{ formatParticipationPercent(bringTotal) }}</strong>
+                    <span class="rsv-participants-summary-status">{{ participantTotalText(bringTotal) }}</span>
+                  </div>
+                  <div class="rsv-participants-summary-card" :class="participantTotalState(convinceTotal)">
+                    <span class="rsv-participants-summary-label">مجموع درجات الإقناع</span>
+                    <strong class="rsv-participants-summary-value">{{ formatParticipationPercent(convinceTotal) }}</strong>
+                    <span class="rsv-participants-summary-status">{{ participantTotalText(convinceTotal) }}</span>
+                  </div>
+                  <div class="rsv-participants-summary-card" :class="participantTotalState(closeTotal)">
+                    <span class="rsv-participants-summary-label">مجموع درجات الإقفال</span>
+                    <strong class="rsv-participants-summary-value">{{ formatParticipationPercent(closeTotal) }}</strong>
+                    <span class="rsv-participants-summary-status">{{ participantTotalText(closeTotal) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
             </div>
 
             <!-- Submit -->
@@ -363,6 +477,27 @@
 /* eslint-disable max-lines */
 import { computed, reactive, watch, ref } from 'vue';
 import salesService from '@/services/salesService';
+
+const PARTICIPATION_DEGREE_OPTIONS = Object.freeze([
+  { value: 0.25, label: 'ربع المشاركة (25%)' },
+  { value: 0.5, label: 'نصف المشاركة (50%)' },
+  { value: 0.75, label: 'ثلاثة أرباع المشاركة (75%)' },
+  { value: 1, label: 'كامل المشاركة (100%)' },
+]);
+
+function createEmptyParticipant() {
+  return {
+    local_id: (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`,
+    user_id: '',
+    did_bring: false,
+    did_convince: false,
+    did_close: false,
+    weight: 1,
+    notes: '',
+  };
+}
 
 /** اسم فريق من استجابة API: نص، كائن (name / team_name)، أو مصفوفة فرق */
 function formatTeamLabel(value) {
@@ -462,6 +597,7 @@ export default {
     const contractShowData = ref({});
     const contractShowLoaded = ref(false);
     const contractShowRequestToken = ref(0);
+    const participants = ref([createEmptyParticipant()]);
 
     const onFileChange = (e) => {
       const file = e.target.files[0];
@@ -752,6 +888,77 @@ export default {
       };
     });
 
+    const participationDegreeOptions = PARTICIPATION_DEGREE_OPTIONS;
+
+    const participantEmployeesOptions = computed(() => {
+      const list = Array.isArray(props.lookups?.participants_employees) ? props.lookups.participants_employees : [];
+      return list.map(employee => ({
+        value: String(employee?.id ?? ''),
+        label: employee?.type ? `${employee.name} — ${employee.type}` : (employee?.name ?? '—'),
+      })).filter(option => option.value);
+    });
+
+    const sumParticipantWeights = operationKey =>
+      participants.value.reduce((total, participant) => {
+        if (!participant?.[operationKey]) return total;
+        const weight = Number(participant.weight);
+        return total + (Number.isFinite(weight) ? weight : 0);
+      }, 0);
+
+    const bringTotal = computed(() => sumParticipantWeights('did_bring'));
+    const convinceTotal = computed(() => sumParticipantWeights('did_convince'));
+    const closeTotal = computed(() => sumParticipantWeights('did_close'));
+
+    function addParticipant() {
+      participants.value.push(createEmptyParticipant());
+    }
+
+    function removeParticipant(localId) {
+      participants.value = participants.value.filter(participant => participant.local_id !== localId);
+      if (participants.value.length === 0) {
+        participants.value.push(createEmptyParticipant());
+      }
+    }
+
+    function formatParticipationPercent(value) {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) return '0%';
+      return `${Math.round(numeric * 100)}%`;
+    }
+
+    function participantTotalText(value) {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric) || numeric < 1) return 'أقل من كامل العملية';
+      if (numeric > 1) return 'يتجاوز كامل العملية';
+      return 'مكتمل';
+    }
+
+    function participantTotalState(value) {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric) || numeric < 1) return 'is-warning';
+      if (numeric > 1) return 'is-danger';
+      return 'is-success';
+    }
+
+    function cleanedParticipants() {
+      return participants.value
+        .filter(participant => {
+          const hasEmployee = String(participant?.user_id ?? '').trim() !== '';
+          const hasOperation = Boolean(participant?.did_bring || participant?.did_convince || participant?.did_close);
+          const hasNotes = String(participant?.notes ?? '').trim() !== '';
+          return hasEmployee || hasOperation || hasNotes;
+        })
+        .map(participant => ({
+          user_id: Number(participant.user_id),
+          did_bring: Boolean(participant.did_bring),
+          did_convince: Boolean(participant.did_convince),
+          did_close: Boolean(participant.did_close),
+          weight: Number(participant.weight) || 1,
+          notes: String(participant.notes ?? '').trim() || null,
+        }))
+        .filter(participant => Number.isFinite(participant.user_id) && participant.user_id > 0);
+    }
+
     watch(
       [isOnMapProject, normalizedContext],
       ([isOffPlan, ctx]) => {
@@ -946,6 +1153,11 @@ export default {
         delete payload.payments;
       }
 
+      const normalizedParticipants = cleanedParticipants();
+      if (normalizedParticipants.length > 0) {
+        payload.participants = normalizedParticipants;
+      }
+
       emit('submit', payload);
     }
 
@@ -962,10 +1174,21 @@ export default {
       downPaymentStatuses,
       accountOptions,
       selectedAccountDetails,
+      participants,
+      participationDegreeOptions,
+      participantEmployeesOptions,
+      bringTotal,
+      convinceTotal,
+      closeTotal,
       fileName,
       filePreview,
       addPaymentRow,
       removePaymentRow,
+      addParticipant,
+      removeParticipant,
+      formatParticipationPercent,
+      participantTotalText,
+      participantTotalState,
       onFileChange,
       removeFile,
       onSubmit,
