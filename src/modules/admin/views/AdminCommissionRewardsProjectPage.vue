@@ -67,15 +67,6 @@
 
       <div class="layout">
       <main class="main">
-        <div class="section-nav" role="navigation" aria-label="أقسام الإعداد">
-          <button type="button" class="nav-pill" @click="scrollTo('sec-basic')">العمولة الأساسية</button>
-          <button type="button" class="nav-pill" @click="activeTab = 'commissions'; scrollTo('sec-assigned')">فريق المشروع</button>
-          <button type="button" class="nav-pill" @click="activeTab = 'commissions'; scrollTo('sec-outside')">خارج الفريق</button>
-          <button type="button" class="nav-pill" @click="activeTab = 'rewards'; scrollTo('sec-rewards')">المكافآت</button>
-          <button type="button" class="nav-pill" @click="activeTab = 'participants'; scrollTo('sec-participants')">آلية المشاركين</button>
-          <button type="button" class="nav-pill" @click="scrollTo('sec-preview')">المعاينة</button>
-        </div>
-
         <div class="tabs" role="tablist" aria-label="العمولات والمكافآت">
           <button
             type="button"

@@ -240,7 +240,7 @@ const ADMIN_LOCATIONS_ITEM = {
   icon: ICONS.projects,
 };
 const ADMIN_COMMISSION_RULES_ITEM = {
-  to: '/admin/commission-rules',
+  to: '/admin/commissions-rewards',
   label: 'العمولات والنسب',
   tooltip: 'العمولات والنسب',
   icon: ICONS.money,
