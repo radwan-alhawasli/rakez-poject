@@ -9,8 +9,8 @@
           </svg>
         </span>
         <div class="salaries-hero-text">
-          <h1 id="salaries-tab-title" class="welcome-title">الرواتب وتوزيع العمولات</h1>
-          <p class="welcome-subtitle">إدارة رواتب الموظفين وصافي العمولات لكل فترة.</p>
+          <h1 id="salaries-tab-title" class="welcome-title">الرواتب وتوزيع العمولات والمكافآت</h1>
+          <p class="welcome-subtitle">إدارة رواتب الموظفين وصافي العمولات والمكافآت لكل فترة.</p>
           <span class="salaries-hero-meta" title="الفترة المعروضة">{{ monthLabelAr }}</span>
         </div>
       </div>
@@ -54,6 +54,7 @@
                   <th>القسم/الفريق</th>
                   <th>الراتب حسب العقد</th>
                   <th>العمولات</th>
+                  <th>المكافآت</th>
                   <th>الإجمالي</th>
                   <th>الحالة</th>
                   <th>الإجراءات</th>
@@ -66,7 +67,8 @@
                   <td data-label="القسم/الفريق">{{ salary.department || salary.team_name || '—' }}</td>
                   <td data-label="الراتب حسب العقد">{{ formatCurrency(salary.distribution?.base_salary ?? salary.contract_salary ?? salary.base_salary ?? salary.salary ?? 0) }}</td>
                   <td data-label="العمولات">{{ formatCurrency(salary.distribution?.total_commissions ?? salary.total_commissions ?? salary.net_monthly_commission ?? 0) }}</td>
-                  <td data-label="الإجمالي">{{ formatCurrency(salary.distribution?.total_amount ?? salary.total_amount ?? (Number(salary.contract_salary ?? salary.base_salary ?? 0) + Number(salary.total_commissions ?? 0))) }}</td>
+                  <td data-label="المكافآت">{{ formatCurrency(salary.distribution?.total_rewards ?? salary.total_rewards ?? salary.rewards_total ?? salary.summary?.total_rewards ?? 0) }}</td>
+                  <td data-label="الإجمالي">{{ formatCurrency(salary.distribution?.total_amount ?? salary.total_amount ?? (Number(salary.contract_salary ?? salary.base_salary ?? 0) + Number(salary.total_commissions ?? 0) + Number(salary.total_rewards ?? salary.rewards_total ?? salary.summary?.total_rewards ?? 0))) }}</td>
                   <td data-label="الحالة">
                     <span class="status-tag" :class="getStatusClass(salary.distribution?.status ?? salary.status)">{{ statusLabelAr(salary.distribution?.status ?? salary.distribution_status ?? salary.status) }}</span>
                   </td>

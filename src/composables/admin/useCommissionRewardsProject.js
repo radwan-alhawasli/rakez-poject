@@ -13,10 +13,16 @@ import {
 import {
   COMMISSION_CONTRIBUTION_TYPES,
   COMMISSION_SOURCE_LABEL,
-  COMMISSION_SOURCE_OPTIONS,
   COMMISSION_WEIGHT_OPTIONS,
 } from '@/constants/commissionsRewards';
 import { PERMISSIONS } from '@/constants/permissions';
+
+const PROJECT_SAI_SOURCE_LABEL = {
+  buyer: 'من المشتري',
+  owner: 'من المالك',
+};
+
+const PROJECT_SAI_UNAVAILABLE_LABEL = 'غير متوفر من بيانات المشروع';
 
 export function useCommissionRewardsProject(projectId) {
   const { hasPermission } = usePermissions();
@@ -43,7 +49,6 @@ export function useCommissionRewardsProject(projectId) {
   const settingId = ref('');
   const isActiveSetting = ref(false);
 
-  const sourceOptions = COMMISSION_SOURCE_OPTIONS;
   const contributionTypes = COMMISSION_CONTRIBUTION_TYPES;
   const weightOptions = COMMISSION_WEIGHT_OPTIONS;
 
@@ -111,6 +116,56 @@ export function useCommissionRewardsProject(projectId) {
   function weightLabel(value) {
     return weightLabelByValue.value[String(value)] || 'كامل';
   }
+
+  function normalizeSaiSource(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (normalized === 'buyer' || normalized === 'owner') return normalized;
+    return '';
+  }
+
+  function firstProjectValue(keys) {
+    const source = project.value ?? {};
+    for (const key of keys) {
+      const value = key.split('.').reduce((acc, part) => acc?.[part], source);
+      if (value !== null && value !== undefined && value !== '') return value;
+    }
+    return null;
+  }
+
+  const projectSaiSourceValue = computed(() =>
+    normalizeSaiSource(
+      firstProjectValue([
+        'commission_from',
+        'commission_source',
+        'contract.commission_from',
+        'contract.commission_source',
+        'contract_info.commission_from',
+        'contract_info.commission_source',
+      ])
+    )
+  );
+
+  const projectSaiSourceLabel = computed(() =>
+    PROJECT_SAI_SOURCE_LABEL[projectSaiSourceValue.value] ?? PROJECT_SAI_UNAVAILABLE_LABEL
+  );
+
+  const projectSaiPercentageValue = computed(() => {
+    const rawValue = firstProjectValue([
+      'commission_percent',
+      'commission_percentage',
+      'contract.commission_percent',
+      'contract.commission_percentage',
+      'contract_info.commission_percent',
+      'contract_info.commission_percentage',
+    ]);
+    return toNumberOrNull(rawValue);
+  });
+
+  const projectSaiPercentageDisplay = computed(() =>
+    projectSaiPercentageValue.value == null
+      ? PROJECT_SAI_UNAVAILABLE_LABEL
+      : `${projectSaiPercentageValue.value}%`
+  );
 
   function toNumberOrNull(v) {
     if (v === null || v === undefined) return null;
@@ -211,8 +266,8 @@ export function useCommissionRewardsProject(projectId) {
       if (n < 0 || n > 100) setError(k, 'النسبة يجب أن تكون بين 0 و 100');
     }
 
-    const commissionSource = String(form.commission_source || '');
-    if (commissionSource !== 'buyer' && commissionSource !== 'owner') {
+    const commissionSource = normalizeSaiSource(form.commission_source);
+    if (commissionSource && commissionSource !== 'buyer' && commissionSource !== 'owner') {
       setError('commission_source', 'هذا الحقل مطلوب');
     }
 
@@ -235,7 +290,7 @@ export function useCommissionRewardsProject(projectId) {
     const id = String(projectId.value || '').trim();
     return {
       project_id: Number(id),
-      commission_source: String(form.commission_source),
+      commission_source: normalizeSaiSource(form.commission_source) || null,
       commission_percentage: toNumberOrNull(form.commission_percentage),
       is_active: !!form.is_active,
       assigned_bring_percentage: toNumberOrNull(form.assigned_bring_percentage),
@@ -269,6 +324,14 @@ export function useCommissionRewardsProject(projectId) {
       else if (typeof next[k] === 'number') next[k] = String(next[k]);
     }
     Object.assign(form, next);
+  }
+
+  function syncReadOnlySaiFields() {
+    const source = projectSaiSourceValue.value;
+    const percentage = projectSaiPercentageValue.value;
+
+    form.commission_source = source || '';
+    form.commission_percentage = percentage == null ? '' : String(percentage);
   }
 
   async function loadEmployees() {
@@ -305,6 +368,7 @@ export function useCommissionRewardsProject(projectId) {
         isActiveSetting.value = false;
         Object.assign(form, emptyForm());
       }
+      syncReadOnlySaiFields();
     } catch (_) {
       loadError.value = true;
     } finally {
@@ -401,7 +465,6 @@ export function useCommissionRewardsProject(projectId) {
     previewError,
     employeesLoading,
     employees,
-    sourceOptions,
     contributionTypes,
     weightOptions,
     weightLabel,
@@ -412,6 +475,10 @@ export function useCommissionRewardsProject(projectId) {
     managementTotal,
     totalDistribution,
     blockingError,
+    projectSaiSourceValue,
+    projectSaiSourceLabel,
+    projectSaiPercentageValue,
+    projectSaiPercentageDisplay,
     sourceLabel,
     formatDate,
     formatMoney,

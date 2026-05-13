@@ -44,6 +44,10 @@
               {{ salary.commission_percentage != null ? (Number(salary.commission_percentage) || 0) + '%' : '—' }}
             </div>
             <div class="detail-row">
+              <span class="detail-label">إجمالي المكافآت:</span>
+              {{ formatCurrency(salary.total_rewards ?? salary.rewards_total ?? salary.summary?.total_rewards ?? 0) }}
+            </div>
+            <div class="detail-row">
               <span class="detail-label">حالة التوزيع للشهر:</span>
               {{ statusLabel(salary.distribution_status ?? salary.status) }}
             </div>
@@ -165,6 +169,36 @@
                     <td>{{ d.percentage != null ? (Number(d.percentage) || 0) + '%' : '—' }}</td>
                     <td>{{ formatCurrency(d.amount) }}</td>
                     <td>{{ statusLabel(d.status) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div v-if="rewardBreakdownRows.length" class="unit-breakdown">
+            <h4 class="breakdown-subtitle">تفاصيل المكافآت لهذا الشهر</h4>
+            <div class="table-responsive">
+              <table class="breakdown-table">
+                <thead>
+                  <tr>
+                    <th>المشروع</th>
+                    <th>الوحدة</th>
+                    <th>النطاق</th>
+                    <th>المصدر</th>
+                    <th>النسبة %</th>
+                    <th>المبلغ (ر.س)</th>
+                    <th>الحالة</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(reward, i) in rewardBreakdownRows" :key="i">
+                    <td>{{ reward.project_name || '—' }}</td>
+                    <td>{{ reward.unit_number || '—' }}</td>
+                    <td>{{ reward.source_scope_label || reward.source_scope || '—' }}</td>
+                    <td>{{ reward.source_type_label || reward.source_type || reward.source || '—' }}</td>
+                    <td>{{ reward.percentage != null ? (Number(reward.percentage) || 0) + '%' : '—' }}</td>
+                    <td>{{ formatCurrency(reward.amount) }}</td>
+                    <td>{{ statusLabel(reward.status) }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -369,6 +403,36 @@ export default {
       return Array.isArray(arr) ? arr : [];
     });
 
+    const rewardBreakdownRows = computed(() => {
+      const s = props.salary;
+      const details = s?.reward_details?.by_project;
+      if (!details) return [];
+      const rows = Array.isArray(details) ? details : Object.values(details);
+      return rows
+        .flatMap(item => {
+          if (!item || typeof item !== 'object') return [];
+          const baseRows = Array.isArray(item.items)
+            ? item.items
+            : Array.isArray(item.recipients)
+              ? item.recipients
+              : [item];
+
+          return baseRows.map(row => ({
+            project_name: row.project_name ?? item.project_name ?? item.project ?? '—',
+            unit_number: row.unit_number ?? item.unit_number ?? item.unit ?? '—',
+            source: row.source ?? item.source,
+            source_scope: row.source_scope ?? item.source_scope,
+            source_scope_label: row.source_scope_label ?? item.source_scope_label,
+            source_type: row.source_type ?? item.source_type,
+            source_type_label: row.source_type_label ?? item.source_type_label,
+            percentage: row.percentage ?? item.percentage,
+            amount: row.amount ?? item.amount ?? 0,
+            status: row.status ?? item.status ?? '—',
+          }));
+        })
+        .filter(Boolean);
+    });
+
     const STATUS_LABELS_AR = {
       pending: 'معلق',
       approved: 'معتمد',
@@ -428,6 +492,7 @@ export default {
       hasAnyCommissionValue,
       extraDataRows,
       monthlyDistributionsRows,
+      rewardBreakdownRows,
       formatCurrency,
       statusLabel,
     };

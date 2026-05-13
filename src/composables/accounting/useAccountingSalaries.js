@@ -20,6 +20,33 @@ export function useAccountingSalaries() {
   const isSavingSalary = ref(false);
   const isLoadingDetail = ref(false);
 
+  const toNumber = value => {
+    const numberValue = Number(value ?? 0);
+    return Number.isFinite(numberValue) ? numberValue : 0;
+  };
+
+  const extractTotalRewards = source => {
+    if (!source || typeof source !== 'object') return 0;
+    return toNumber(
+      source.total_rewards ??
+      source.rewards_total ??
+      source.summary?.total_rewards ??
+      source.salary_distribution?.total_rewards ??
+      source.distribution?.total_rewards
+    );
+  };
+
+  const extractRewardDetails = source => {
+    if (!source || typeof source !== 'object') return null;
+    return (
+      source.reward_details ??
+      source.summary?.reward_details ??
+      source.salary_distribution?.reward_details ??
+      source.distribution?.reward_details ??
+      null
+    );
+  };
+
   const loadSalaries = async () => {
     isLoading.value = true;
     try {
@@ -32,7 +59,11 @@ export function useAccountingSalaries() {
         page: currentPage.value,
         per_page: perPage.value,
       });
-      salaries.value = data?.items ?? (Array.isArray(data) ? data : []);
+      salaries.value = (data?.items ?? (Array.isArray(data) ? data : [])).map(item => ({
+        ...item,
+        total_rewards: extractTotalRewards(item),
+        reward_details: extractRewardDetails(item),
+      }));
       totalItems.value = data?.total ?? salaries.value.length;
     } catch (error) {
       logger.error('Error loading salaries:', error);
@@ -57,6 +88,18 @@ export function useAccountingSalaries() {
         const detail = await accountingService.getEmployeeSalary(employeeId, { year, month });
         const employee = detail?.employee && typeof detail.employee === 'object' ? detail.employee : {};
         const dist = detail?.salary_distribution && typeof detail.salary_distribution === 'object' ? detail.salary_distribution : null;
+        const detailRewardsTotal =
+          extractTotalRewards(detail) ||
+          extractTotalRewards(dist) ||
+          extractTotalRewards(employee) ||
+          extractTotalRewards(salary);
+
+        const detailRewardDetails =
+          extractRewardDetails(detail) ||
+          extractRewardDetails(dist) ||
+          extractRewardDetails(employee) ||
+          extractRewardDetails(salary);
+
         selectedSalary.value = {
           ...salary,
           ...detail,
@@ -78,7 +121,16 @@ export function useAccountingSalaries() {
           distribution_id: dist?.id ?? salary?.distribution_id ?? salary?.distribution?.id,
           base_salary: dist?.base_salary ?? salary?.base_salary ?? salary?.contract_salary,
           total_commissions: dist?.total_commissions ?? detail?.commissions_total ?? salary?.total_commissions,
-          total_amount: dist?.total_amount ?? salary?.total_amount,
+          total_rewards: detailRewardsTotal,
+          reward_details: detailRewardDetails,
+          total_amount:
+            dist?.total_amount ??
+            salary?.total_amount ??
+            (
+              toNumber(dist?.base_salary ?? salary?.base_salary ?? salary?.contract_salary) +
+              toNumber(dist?.total_commissions ?? detail?.commissions_total ?? salary?.total_commissions) +
+              detailRewardsTotal
+            ),
           status: dist?.status ?? salary?.status,
           salary_distribution: dist ?? salary?.salary_distribution,
         };
