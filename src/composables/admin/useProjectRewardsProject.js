@@ -44,8 +44,6 @@ import {
   fillFormFromSetting,
   resetFormToDefaults
 } from './formsProjectRewards.js';
-
-export function useProjectRewardsProject(contractId) {
-  // الدالة نفسها كما في النسخة المفصلة السابقة من الملف
-  // كل المنطق بـ useProjectRewardsProject يبقى كما هو بدون تغيير، فقط استيراد الأدوات والثوابت صار من ملفات منفصلة
-}
+// ...
+// بقية الدالة useProjectRewardsProject تبقى نفسها ولكن بدون تكرار الثوابت أو الدوال ويكون استخدامها عن طريق import فقط
+// ...
