@@ -6,6 +6,38 @@
 import { vi } from 'vitest';
 import { config } from '@vue/test-utils';
 
+vi.mock('@/services/chatService', async () => {
+  const actual = await vi.importActual('@/services/chatService');
+  return {
+    default: {
+      ...actual.default,
+      getUnreadCount: vi.fn().mockResolvedValue(0),
+    },
+  };
+});
+
+const originalFetch = globalThis.fetch?.bind(globalThis);
+globalThis.fetch = vi.fn(async (input, init) => {
+  const url = typeof input === 'string' ? input : input?.url || '';
+
+  if (
+    url.startsWith('http://localhost:8000') ||
+    url.startsWith('http://127.0.0.1:8000') ||
+    url.startsWith('/api/')
+  ) {
+    return new Response(JSON.stringify({ data: {}, count: 0 }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (originalFetch) {
+    return originalFetch(input, init);
+  }
+
+  throw new Error(`Unhandled fetch in tests: ${url}`);
+});
+
 const originalConsoleError = console.error.bind(console);
 vi.spyOn(console, 'error').mockImplementation((...args) => {
   if (String(args[0] || '').includes('Could not parse CSS stylesheet')) return;

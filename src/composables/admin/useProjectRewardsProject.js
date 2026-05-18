@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { computed, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from '@/composables/useToast';
