@@ -1,11 +1,20 @@
-﻿import apiClient from '@/api/apiClient';
+import apiClient from '@/api/apiClient';
 import { handleServiceError } from '@/utils/serviceErrorHandler';
 import { extractPaginatedData } from '@/utils/paginationUtils';
 
+/**
+ * @param {any} response
+ * @param {Record<string, any>} [fallback={}]
+ * @returns {any}
+ */
 function unwrap(response, fallback = {}) {
   return response?.data?.data ?? response?.data ?? fallback;
 }
 
+/**
+ * @param {any} response
+ * @returns {{ items: any[], total: number, meta: Record<string, any> }}
+ */
 function normalizePaginated(response) {
   const { items, total } = extractPaginatedData(response, []);
   const body = response?.data ?? response;
@@ -17,22 +26,24 @@ function normalizePaginated(response) {
   };
 }
 
+const emptyPaginationResult = { items: [], total: 0, meta: {} };
+
 const projectRewardService = {
+  /**
+   * @param {Record<string, any>} [params={}]
+   */
   async listSettings(params = {}) {
     try {
       const response = await apiClient.get('/accounting/project-reward-settings', { params });
       return normalizePaginated(response);
     } catch (error) {
-      return (
-        handleServiceError(error, 'List project reward settings', 'get', {
-          items: [],
-          total: 0,
-          meta: {},
-        }) || { items: [], total: 0, meta: {} }
-      );
+      return handleServiceError(error, 'List project reward settings', 'get', emptyPaginationResult) || emptyPaginationResult;
     }
   },
 
+  /**
+   * @param {Record<string, any>} payload
+   */
   async createSetting(payload) {
     try {
       const response = await apiClient.post('/accounting/project-reward-settings', payload);
@@ -42,6 +53,9 @@ const projectRewardService = {
     }
   },
 
+  /**
+   * @param {string|number} id
+   */
   async showSetting(id) {
     try {
       const response = await apiClient.get(`/accounting/project-reward-settings/${id}`);
@@ -51,6 +65,10 @@ const projectRewardService = {
     }
   },
 
+  /**
+   * @param {string|number} id
+   * @param {Record<string, any>} payload
+   */
   async updateSetting(id, payload) {
     try {
       const response = await apiClient.put(`/accounting/project-reward-settings/${id}`, payload);
@@ -60,6 +78,9 @@ const projectRewardService = {
     }
   },
 
+  /**
+   * @param {string|number} id
+   */
   async activateSetting(id) {
     try {
       const response = await apiClient.post(`/accounting/project-reward-settings/${id}/activate`);
@@ -69,6 +90,10 @@ const projectRewardService = {
     }
   },
 
+  /**
+   * @param {string|number} reservationId
+   * @param {Record<string, any>} payload
+   */
   async previewReward(reservationId, payload) {
     try {
       const response = await apiClient.post(`/accounting/reservations/${reservationId}/preview-reward`, payload);
@@ -78,6 +103,10 @@ const projectRewardService = {
     }
   },
 
+  /**
+   * @param {string|number} reservationId
+   * @param {Record<string, any>} payload
+   */
   async generateReward(reservationId, payload) {
     try {
       const response = await apiClient.post(`/accounting/reservations/${reservationId}/generate-reward`, payload);
@@ -87,21 +116,21 @@ const projectRewardService = {
     }
   },
 
+  /**
+   * @param {Record<string, any>} [params={}]
+   */
   async listRewards(params = {}) {
     try {
       const response = await apiClient.get('/accounting/project-rewards', { params });
       return normalizePaginated(response);
     } catch (error) {
-      return (
-        handleServiceError(error, 'List project rewards', 'get', {
-          items: [],
-          total: 0,
-          meta: {},
-        }) || { items: [], total: 0, meta: {} }
-      );
+      return handleServiceError(error, 'List project rewards', 'get', emptyPaginationResult) || emptyPaginationResult;
     }
   },
 
+  /**
+   * @param {string|number} id
+   */
   async showReward(id) {
     try {
       const response = await apiClient.get(`/accounting/project-rewards/${id}`);
@@ -111,6 +140,9 @@ const projectRewardService = {
     }
   },
 
+  /**
+   * @param {string|number} id
+   */
   async approveReward(id) {
     try {
       const response = await apiClient.post(`/accounting/project-rewards/${id}/approve`);
@@ -120,6 +152,10 @@ const projectRewardService = {
     }
   },
 
+  /**
+   * @param {string|number} id
+   * @param {string} reason
+   */
   async rejectReward(id, reason) {
     try {
       const response = await apiClient.post(`/accounting/project-rewards/${id}/reject`, { reason });
@@ -129,6 +165,9 @@ const projectRewardService = {
     }
   },
 
+  /**
+   * @param {string|number} id
+   */
   async markRewardPaid(id) {
     try {
       const response = await apiClient.post(`/accounting/project-rewards/${id}/mark-paid`);
